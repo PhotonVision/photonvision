@@ -10,14 +10,13 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
-import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout: AprilTagFieldLayout;
+  currentFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -46,8 +45,7 @@ export const useSettingsStore = defineStore("settings", {
           devName: "eth0"
         }
       ],
-      networkingDisabled: false,
-      matchCamerasOnlyByPath: false
+      networkingDisabled: false
     },
     lighting: {
       supported: true,
@@ -63,7 +61,8 @@ export const useSettingsStore = defineStore("settings", {
       cpuThr: undefined,
       cpuUptime: undefined,
       diskUtilPct: undefined,
-      npuUsage: undefined
+      npuUsage: undefined,
+      ipAddress: undefined
     },
     currentFieldLayout: {
       field: {
@@ -96,7 +95,8 @@ export const useSettingsStore = defineStore("settings", {
         cpuThr: data.cpuThr || undefined,
         cpuUptime: data.cpuUptime || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
-        npuUsage: data.npuUsage || undefined
+        npuUsage: data.npuUsage || undefined,
+        ipAddress: data.ipAddress || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {

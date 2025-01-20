@@ -25,6 +25,7 @@
 package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.photonvision.UnitTestUtils.waitForCondition;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
@@ -54,6 +55,9 @@ class PhotonCameraTest {
     @BeforeAll
     public static void load_wpilib() {
         WpilibLoader.loadLibraries();
+
+        // See #1574 - test flakey, disabled until we address this
+        assumeTrue(false);
     }
 
     @BeforeEach

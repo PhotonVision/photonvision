@@ -30,6 +30,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
+//import org.photonvision.jetson.JetsonMipiJNILoader;
 import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.processes.VisionModule;
@@ -114,23 +115,13 @@ public class PhotonConfiguration {
         cameraConfigurations.put(name, config);
     }
 
-    /**
-     * Delete a camera by its unique name
-     *
-     * @param name The camera name (usually unique name)
-     * @return True if the camera configuration was removed
-     */
-    public boolean removeCameraConfig(String name) {
-        return cameraConfigurations.remove(name) != null;
-    }
-
     public Map<String, Object> toHashMap() {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
 
         // Hack active interfaces into networkSettings
         var netConfigMap = networkConfig.toHashMap();
-        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllActiveWiredInterfaces());
+        netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
         netConfigMap.put("networkingDisabled", NetworkManager.getInstance().networkingIsDisabled);
 
         settingsSubmap.put("networkSettings", netConfigMap);
@@ -147,6 +138,11 @@ public class PhotonConfiguration {
                 LibCameraJNILoader.isSupported()
                         ? "Zerocopy Libcamera Working"
                         : ""); // TODO add support for other types of GPU accel
+        generalSubmap.put(
+                "cudaAcceleration",
+                false //JetsonMipiJNILoader.isSupported()
+                        ? "Jetson Cuda and mipi Working"
+                        : "");
         generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
         generalSubmap.put("availableModels", NeuralNetworkModelManager.getInstance().getModels());
         generalSubmap.put(
@@ -167,32 +163,14 @@ public class PhotonConfiguration {
 
         return map;
     }
-
-    public static class UILightingConfig {
-        public int brightness = 0;
-        public boolean supported = true;
-    }
-
-    public static class UICameraConfiguration {
-        @SuppressWarnings("unused")
-        public double fov;
-
-        public String nickname;
-        public String uniqueName;
-        public HashMap<String, Object> currentPipelineSettings;
-        public int currentPipelineIndex;
-        public List<String> pipelineNicknames;
-        public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-        public int outputStreamPort;
-        public int inputStreamPort;
-        public List<UICameraCalibrationCoefficients> calibrations;
-        public boolean isFovConfigurable = true;
-        public QuirkyCamera cameraQuirks;
-        public boolean isCSICamera;
-        public double minExposureRaw;
-        public double maxExposureRaw;
-        public double minWhiteBalanceTemp;
-        public double maxWhiteBalanceTemp;
+    /**
+     * Delete a camera by its unique name
+     *
+     * @param name The camera name (usually unique name)
+     * @return True if the camera configuration was removed
+     */
+    public boolean removeCameraConfig(String name) {
+        return cameraConfigurations.remove(name) != null;
     }
 
     @Override

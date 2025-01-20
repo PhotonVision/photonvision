@@ -66,13 +66,21 @@ const handleStreamResolutionChange = (value: number) => {
 const interactiveCols = computed(() =>
   (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
   (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+    ? 8
+    : 7
 );
 </script>
 
 <template>
   <div>
+    <pv-switch
+      v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
+      class="pt-2"
+      label="Auto Exposure"
+      :switch-cols="interactiveCols"
+      tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
+      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
+    />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
       :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
@@ -91,14 +99,6 @@ const interactiveCols = computed(() =>
       :max="100"
       :slider-cols="interactiveCols"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)"
-    />
-    <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
-      class="pt-2"
-      label="Auto Exposure"
-      :switch-cols="interactiveCols"
-      tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
@@ -130,25 +130,22 @@ const interactiveCols = computed(() =>
       tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
     />
-
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
-      class="pt-2"
       label="Auto White Balance"
       :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)"
     />
     <pv-slider
-      v-if="!useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
+      :disabled="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       label="White Balance Temperature"
       :min="useCameraSettingsStore().minWhiteBalanceTemp"
       :max="useCameraSettingsStore().maxWhiteBalanceTemp"
       :slider-cols="interactiveCols"
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)"
     />
-
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       label="Orientation"

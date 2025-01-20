@@ -17,7 +17,6 @@
 
 #include "net/TimeSyncServer.h"
 
-#include <fmt/core.h>
 #include <wpinet/UDPClient.h>
 #include <wpinet/uv/util.h>
 
@@ -31,6 +30,7 @@
 #include <thread>
 
 #include <wpi/Logger.h>
+#include <wpi/print.h>
 #include <wpi/struct/Struct.h>
 
 #include "ntcore_cpp.h"
@@ -59,7 +59,7 @@ static void ServerLoggerFunc(unsigned int level, const char* file,
 void wpi::tsp::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
                                            const sockaddr& sender,
                                            unsigned flags) {
-  // fmt::println("TimeSyncServer got ping!");
+  // wpi::println("TimeSyncServer got ping!");
 
   TspPing ping{wpi::UnpackStruct<TspPing>(data.bytes())};
 
@@ -85,7 +85,7 @@ void wpi::tsp::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
   wpi::uv::Buffer pongBuf{pongData};
   int sent =
       m_udp->TrySend(sender, wpi::SmallVector<wpi::uv::Buffer, 1>{pongBuf});
-  // fmt::println("Pong ret: {}", sent);
+  // wpi::println("Pong ret: {}", sent);
   if (static_cast<size_t>(sent) != wpi::Struct<TspPong>::GetSize()) {
     WPI_ERROR(m_logger, "Didn't send the whole pong back?");
     return;
@@ -97,17 +97,16 @@ void wpi::tsp::TimeSyncServer::UdpCallback(uv::Buffer& data, size_t n,
   //          pong.client_time, pong.server_time);
 }
 
-wpi::tsp::TimeSyncServer::TimeSyncServer(int port,
-                                         std::function<uint64_t()> timeProvider)
+wpi::tsp::TimeSyncServer::TimeSyncServer(int port)
     : m_logger{::ServerLoggerFunc},
-      m_timeProvider{timeProvider},
-      m_udp{wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)} {
-  m_loopRunner.ExecSync(
-      [this, port](uv::Loop&) { m_udp->Bind("0.0.0.0", port); });
-}
+      m_timeProvider{nt::Now},
+      m_udp{},
+      m_port(port) {}
 
 void wpi::tsp::TimeSyncServer::Start() {
   m_loopRunner.ExecSync([this](uv::Loop&) {
+    m_udp = {wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)};
+    m_udp->Bind("0.0.0.0", m_port);
     m_udp->received.connect(&wpi::tsp::TimeSyncServer::UdpCallback, this);
     m_udp->StartRecv();
   });

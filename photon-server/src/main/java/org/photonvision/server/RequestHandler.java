@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
@@ -37,10 +38,13 @@ import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -52,7 +56,8 @@ import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
-import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class RequestHandler {
@@ -97,7 +102,8 @@ public class RequestHandler {
 
         ConfigManager.getInstance().setWriteTaskEnabled(false);
         ConfigManager.getInstance().disableFlushOnShutdown();
-        // We want to delete the -whole- zip file, so we need to teardown loggers for now
+        // We want to delete the -whole- zip file, so we need to teardown loggers for
+        // now
         logger.info("Writing new settings zip (logs may be truncated)...");
         Logger.closeAllLoggers();
         if (ConfigManager.saveUploadedSettingsZip(tempFilePath.get())) {
@@ -387,7 +393,7 @@ public class RequestHandler {
         try {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
-            int index = data.get("index").asInt();
+            String cameraUniqueName = data.get("cameraUniqueName").asText();
             var settings =
                     JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
             var fov = settings.fov;
@@ -395,7 +401,7 @@ public class RequestHandler {
             logger.info("Changing camera FOV to: " + fov);
             logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
-            var module = VisionModuleManager.getInstance().getModule(index);
+            var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
             module.setFov(fov);
             module.changeCameraQuirks(settings.quirksToChange);
 
@@ -424,10 +430,13 @@ public class RequestHandler {
             ShellExec shell = new ShellExec();
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
             var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
+            // In the command below:
+            // dmesg = output all kernel logs since current boot
+            // cat /var/log/kern.log = output all kernal logs since first boot
             shell.executeBashCommand(
                     "journalctl -u photonvision.service > "
                             + tempPath.toAbsolutePath()
-                            + " && journalctl -k > "
+                            + " && dmesg > "
                             + tempPath2.toAbsolutePath());
 
             while (!shell.isOutputCompleted()) {
@@ -466,18 +475,20 @@ public class RequestHandler {
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
-        int index;
+        String cameraUniqueName;
 
         try {
-            index = kObjectMapper.readTree(ctx.bodyInputStream()).get("index").asInt();
+            cameraUniqueName =
+                    kObjectMapper.readTree(ctx.bodyInputStream()).get("cameraUniqueName").asText();
 
-            var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
+            var calData =
+                    VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
                 logger.error(
-                        "The calibration process failed. Calibration data for module at index ("
-                                + index
+                        "The calibration process failed. Calibration data for module at cameraUniqueName ("
+                                + cameraUniqueName
                                 + ") was null");
                 return;
             }
@@ -488,9 +499,9 @@ public class RequestHandler {
         } catch (JsonProcessingException e) {
             ctx.status(400);
             ctx.result(
-                    "The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.");
+                    "The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.");
             logger.error(
-                    "The 'index' field was not found in the request. Please make sure the index of the vision module is specified with the 'index' key.",
+                    "The 'cameraUniqueName' field was not found in the request. Please make sure the cameraUniqueName of the vision module is specified with the 'cameraUniqueName' key.",
                     e);
         } catch (Exception e) {
             ctx.status(500);
@@ -503,7 +514,7 @@ public class RequestHandler {
         try {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
-            int cameraIndex = data.get("cameraIndex").asInt();
+            String cameraUniqueName = data.get("cameraUniqueName").asText();
             var coeffs =
                     kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
 
@@ -512,7 +523,7 @@ public class RequestHandler {
                             DataChangeDestination.DCD_ACTIVEMODULE,
                             "calibrationUploaded",
                             coeffs,
-                            cameraIndex,
+                            cameraUniqueName,
                             null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
@@ -537,6 +548,82 @@ public class RequestHandler {
         restartProgram();
     }
 
+    public static void onImportObjectDetectionModelRequest(Context ctx) {
+        try {
+            // Retrieve the uploaded files
+            var modelFile = ctx.uploadedFile("rknn");
+            var labelsFile = ctx.uploadedFile("labels");
+
+            if (modelFile == null || labelsFile == null) {
+                ctx.status(400);
+                ctx.result(
+                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                logger.error(
+                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                return;
+            }
+
+            if (!modelFile.extension().contains("rknn") || !labelsFile.extension().contains("txt")) {
+                ctx.status(400);
+                ctx.result(
+                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                logger.error(
+                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                return;
+            }
+
+            // verify naming convention
+            // this check will need to be modified if different model types are added
+
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+
+            Pattern labelsPattern =
+                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+
+            if (!modelPattern.matcher(modelFile.filename()).matches()
+                    || !labelsPattern.matcher(labelsFile.filename()).matches()
+                    || !(modelFile
+                            .filename()
+                            .substring(0, modelFile.filename().indexOf("-"))
+                            .equals(labelsFile.filename().substring(0, labelsFile.filename().indexOf("-"))))) {
+                ctx.status(400);
+                ctx.result("The uploaded files were not named correctly.");
+                logger.error("The uploaded object detection model files were not named correctly.");
+                return;
+            }
+
+            // TODO move into neural network manager
+
+            var modelPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+            var labelsPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
+
+            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
+                modelFile.content().transferTo(out);
+            }
+
+            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
+                labelsFile.content().transferTo(out);
+            }
+
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
+
+            ctx.status(200).result("Successfully uploaded object detection model");
+        } catch (Exception e) {
+            ctx.status(500).result("Error processing files: " + e.getMessage());
+        }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+    }
+
     public static void onDeviceRestartRequest(Context ctx) {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
@@ -546,9 +633,9 @@ public class RequestHandler {
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
             String name = data.get("name").asText();
-            int idx = data.get("cameraIndex").asInt();
+            String cameraUniqueName = data.get("cameraUniqueName").asText();
 
-            VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
+            VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).setCameraNickname(name);
             ctx.status(200);
             ctx.result("Successfully changed the camera name to: " + name);
             logger.info("Successfully changed the camera name to: " + name);
@@ -572,14 +659,15 @@ public class RequestHandler {
     public static void onCalibrationSnapshotRequest(Context ctx) {
         logger.info(ctx.queryString().toString());
 
-        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
         var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
         CameraCalibrationCoefficients calList =
-                VisionModuleManager.getInstance()
-                        .getModule(idx)
+                VisionSourceManager.getInstance()
+                        .vmm
+                        .getModule(cameraUniqueName)
                         .getStateAsCameraConfig()
                         .calibrations
                         .stream()
@@ -595,7 +683,8 @@ public class RequestHandler {
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from
+        // 300k to 25k
         var jpegBytes = new MatOfByte();
         Mat img = null;
         try {
@@ -624,11 +713,12 @@ public class RequestHandler {
     public static void onCalibrationExportRequest(Context ctx) {
         logger.info(ctx.queryString().toString());
 
-        int idx = Integer.parseInt(ctx.queryParam("cameraIdx"));
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var cc = VisionModuleManager.getInstance().getModule(idx).getStateAsCameraConfig();
+        var cc =
+                VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
 
         CameraCalibrationCoefficients calList =
                 cc.calibrations.stream()
@@ -815,19 +905,63 @@ public class RequestHandler {
                 FileUtils.deleteDirectory(cameraDir);
             }
 
-            // prevent -anyone- else from writing camera configs -- but flush first
-            ConfigManager.getInstance().saveToDisk();
-            ConfigManager.getInstance().setWriteTaskEnabled(false);
-            ConfigManager.getInstance().disableFlushOnShutdown();
-            // remove the config from the global config and force-flush
-            ConfigManager.getInstance().getConfig().removeCameraConfig(name);
-            ConfigManager.getInstance().saveToDisk();
+            VisionSourceManager.getInstance().deleteVisionSource(name);
+
             ctx.status(200);
-            restartProgram();
         } catch (IOException e) {
             // todo
             logger.error("asdf", e);
             ctx.status(500);
         }
+    }
+
+    public static void onActivateMatchedCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+
+        if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(cameraUniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
+
+        ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
+    }
+
+    public static void onAssignUnmatchedCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        PVCameraInfo camera;
+        try {
+            camera = JacksonUtils.deserialize(ctx.queryParam("cameraInfo"), PVCameraInfo.class);
+        } catch (IOException e) {
+            ctx.status(401);
+            return;
+        }
+
+        if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
+            ctx.status(200);
+        } else {
+            ctx.status(404);
+        }
+
+        ctx.result("Successfully assigned camera: " + camera);
+    }
+
+    public static void onUnassignCameraRequest(Context ctx) {
+        logger.info(ctx.queryString().toString());
+
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+
+        if (VisionSourceManager.getInstance().deactivateVisionSource(cameraUniqueName)) {
+            ctx.status(200);
+        } else {
+            ctx.status(403);
+        }
+
+        ctx.status(200);
+
+        ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
     }
 }

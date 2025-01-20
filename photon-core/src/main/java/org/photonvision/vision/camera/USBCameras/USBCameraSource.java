@@ -18,16 +18,16 @@
 package org.photonvision.vision.camera.USBCameras;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.cscore.VideoProperty;
-import edu.wpi.first.util.RuntimeDetector;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.PVCameraInfo.PVUsbCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
@@ -39,36 +39,54 @@ public class USBCameraSource extends VisionSource {
     private final UsbCamera camera;
     protected GenericUSBCameraSettables settables;
     protected FrameProvider usbFrameProvider;
-    private final CvSink cvSink;
+
+    private void onCameraConnected() {
+        // Aid to the development team - record the properties available for whatever the user plugged
+        // in
+        printCameraProperaties();
+
+        settables.onCameraConnected();
+    }
 
     public USBCameraSource(CameraConfiguration config) {
         super(config);
 
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
-        // cscore will auto-reconnect to the camera path we give it. v4l does not guarantee that if i
-        // swap cameras around, the same /dev/videoN ID will be assigned to that camera. So instead
-        // default to pinning to a particular USB port, or by "path" (appears to be a global identifier)
-        // on Windows.
-        camera = new UsbCamera(config.nickname, config.getUSBPath().orElse(config.path));
-        cvSink = CameraServer.getVideo(this.camera);
 
-        // set vid/pid if not done already for future matching
-        if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
-        if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
+        if (!(config.matchedCameraInfo instanceof PVUsbCameraInfo)) {
+            logger.error(
+                    "USBCameraSource matched to a non-USB camera info?? "
+                            + config.matchedCameraInfo.toString());
+        }
 
+        camera = new UsbCamera(config.nickname, config.getDevicePath());
+
+        // TODO - I don't need this, do I?
+        // // set vid/pid if not done already for future matching
+        // if (config.usbVID <= 0) config.usbVID = this.camera.getInfo().vendorId;
+        // if (config.usbPID <= 0) config.usbPID = this.camera.getInfo().productId;
+
+        // TODO - why do we delegate this to USBCameraSource? Quirks are part of the CameraConfig??
+        // also TODO - is the config's saved usb info a reasonable guess for quirk detection? seems like
+        // yes to me...
         if (getCameraConfiguration().cameraQuirks == null) {
+            int vid =
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
+                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).vendorId
+                            : -1;
+            int pid =
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
+                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).productId
+                            : -1;
+
             getCameraConfiguration().cameraQuirks =
-                    QuirkyCamera.getQuirkyCamera(
-                            camera.getInfo().vendorId, camera.getInfo().productId, config.baseName);
+                    QuirkyCamera.getQuirkyCamera(vid, pid, config.matchedCameraInfo.name());
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
+
             logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
         } else logger.info("no quirks for:" + config.usbVID + ":" + config.usbPID + ":" + config.baseName + ".");
-
-        // Aid to the development team - record the properties available for whatever the user plugged
-        // in
-        printCameraProperaties();
 
         var cameraBroken = getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken);
 
@@ -85,17 +103,9 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Camera is likely to work, set up the Settables
             settables = createSettables(config, camera);
+            logger.info("Created settables " + settables);
 
-            if (settables.getAllVideoModes().isEmpty()) {
-                // No video modes produced from settables, disable the camera
-                logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
-                usbFrameProvider = null;
-
-            } else {
-                // Functional camera, set up the frame provider and configure defaults
-                usbFrameProvider = new USBFrameProvider(cvSink, settables);
-                settables.setAllCamDefaults();
-            }
+            usbFrameProvider = new USBFrameProvider(camera, settables, this::onCameraConnected);
         }
     }
 
@@ -113,7 +123,7 @@ public class USBCameraSource extends VisionSource {
         GenericUSBCameraSettables settables;
 
         if (quirks.hasQuirk(CameraQuirk.LifeCamControls)) {
-            if (RuntimeDetector.isWindows()) {
+            if (Platform.isWindows()) {
                 logger.debug("Using Microsoft Lifecam 3000 Windows-Specific Settables");
                 settables = new LifeCam3kWindowsCameraSettables(config, camera);
             } else {
@@ -124,7 +134,7 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using PlayStation Eye Camera Settables");
             settables = new PsEyeCameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.ArduOV2311Controls)) {
-            if (RuntimeDetector.isWindows()) {
+            if (Platform.isWindows()) {
                 logger.debug("Using Arducam OV2311 Windows-Specific Settables");
                 settables = new ArduOV2311WindowsCameraSettables(config, camera);
             } else {
@@ -138,6 +148,7 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using Arducam OV9782 Settables");
             settables = new ArduOV9782CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.InnoOV9281Controls)) {
+            logger.debug("Using Innovision OV9782 Settables");
             settables = new InnoOV9281CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.See3Cam_24CUG)) {
             settables = new See3Cam24CUGSettables(config, camera);
@@ -145,9 +156,6 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using Generic USB Cam Settables");
             settables = new GenericUSBCameraSettables(config, camera);
         }
-
-        settables.setUpExposureProperties();
-        settables.setUpWhiteBalanceProperties();
 
         return settables;
     }
@@ -160,7 +168,22 @@ public class USBCameraSource extends VisionSource {
         var oldConfig = this.cameraConfiguration;
         var oldCamera = this.camera;
 
+        // Re-create settables
+        var oldVideoMode = this.settables.getCurrentVideoMode();
         this.settables = createSettables(oldConfig, oldCamera);
+
+        // Settables only cache videomodes on connect - force this to happen next tick
+        if (settables.camera.isConnected()) {
+            this.settables.onCameraConnected();
+        } else {
+            this.usbFrameProvider.cameraPropertiesCached = false;
+        }
+
+        // And update the settables' FrameStaticProps
+        settables.setVideoMode(oldVideoMode);
+
+        // Propogate our updated settables over to the frame provider
+        ((USBFrameProvider) this.usbFrameProvider).updateSettables(this.settables);
     }
 
     private void printCameraProperaties() {
@@ -220,6 +243,14 @@ public class USBCameraSource extends VisionSource {
     }
 
     @Override
+    public void release() {
+        CameraServer.removeCamera(camera.getName());
+        camera.close();
+        usbFrameProvider.release();
+        usbFrameProvider = null;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null) return false;
@@ -234,9 +265,6 @@ public class USBCameraSource extends VisionSource {
         if (usbFrameProvider == null) {
             if (other.usbFrameProvider != null) return false;
         } else if (!usbFrameProvider.equals(other.usbFrameProvider)) return false;
-        if (cvSink == null) {
-            if (other.cvSink != null) return false;
-        } else if (!cvSink.equals(other.cvSink)) return false;
         if (getCameraConfiguration().cameraQuirks == null) {
             if (other.getCameraConfiguration().cameraQuirks != null) return false;
         } else if (!getCameraConfiguration()
@@ -252,7 +280,6 @@ public class USBCameraSource extends VisionSource {
                 settables,
                 usbFrameProvider,
                 cameraConfiguration,
-                cvSink,
                 getCameraConfiguration().cameraQuirks);
     }
 }

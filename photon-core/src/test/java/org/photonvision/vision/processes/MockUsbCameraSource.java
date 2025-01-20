@@ -31,7 +31,8 @@ public class MockUsbCameraSource extends USBCameraSource {
     public MockUsbCameraSource(CameraConfiguration config, int pid, int vid) {
         super(config);
 
-        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
+        getCameraConfiguration().cameraQuirks =
+                QuirkyCamera.getQuirkyCamera(pid, vid, config.matchedCameraInfo.name());
 
         /** File used as frame provider */
         usbFrameProvider =

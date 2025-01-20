@@ -81,8 +81,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
-    private final AprilTagFieldLayout tagLayout =
-            AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+    private final AprilTagFieldLayout tagLayout;
 
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -130,8 +129,24 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      */
     public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
+        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+    }
+
+    /**
+     * Constructs a handle for simulating {@link PhotonCamera} values. Processing simulated targets
+     * through this class will change the associated PhotonCamera's results.
+     *
+     * <p>By default, the minimum target area is 100 pixels and there is no maximum sight range.
+     *
+     * @param camera The camera to be simulated
+     * @param prop Properties of this camera such as FOV and FPS
+     * @param tagLayout The {@link AprilTagFieldLayout} used to solve for tag positions.
+     */
+    public PhotonCameraSim(
+            PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
         this.cam = camera;
         this.prop = prop;
+        this.tagLayout = tagLayout;
         setMinTargetAreaPixels(kDefaultMinAreaPx);
 
         videoSimRaw =
@@ -163,6 +178,30 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters) {
+        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this.minTargetAreaPercent = minTargetAreaPercent;
+        this.maxSightRangeMeters = maxSightRangeMeters;
+    }
+
+    /**
+     * Constructs a handle for simulating {@link PhotonCamera} values. Processing simulated targets
+     * through this class will change the associated PhotonCamera's results.
+     *
+     * @param camera The camera to be simulated
+     * @param prop Properties of this camera such as FOV and FPS
+     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     *     the camera's image to be processed. Match this with your contour filtering settings in the
+     *     PhotonVision GUI.
+     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
+     *     Note that minimum target area of the image is separate from this.
+     * @param tagLayout AprilTag field layout to use for multi-tag estimation
+     */
+    public PhotonCameraSim(
+            PhotonCamera camera,
+            SimCameraProperties prop,
+            double minTargetAreaPercent,
+            double maxSightRangeMeters,
+            AprilTagFieldLayout tagLayout) {
         this(camera, prop);
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
@@ -424,7 +463,7 @@ public class PhotonCameraSim implements AutoCloseable {
             var pnpSim = new PnpResult();
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
                 pnpSim =
-                        OpenCVHelp.solvePNP_SQPNP(
+                        OpenCVHelp.solvePNP_SQUARE(
                                         prop.getIntrinsics(),
                                         prop.getDistCoeffs(),
                                         tgt.getModel().vertices,

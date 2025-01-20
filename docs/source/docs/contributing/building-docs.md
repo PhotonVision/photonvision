@@ -18,7 +18,7 @@ You must install a set of Python dependencies in order to build the documentatio
 
 In order to build the documentation, you can run the following command in the docs sub-folder. This will automatically build docs every time a file changes, and serves them locally at `localhost:8000` by default.
 
-`~/photonvision/docs$ sphinx-autobuild --open-browser source/_build/html`
+`~/photonvision/docs$ sphinx-autobuild --open-browser source source/_build/html`
 
 ## Opening the Documentation
 

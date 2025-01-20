@@ -12,8 +12,7 @@ export enum PipelineType {
 
 export enum AprilTagFamily {
   Family36h11 = 0,
-  Family25h9 = 1,
-  Family16h5 = 2
+  Family16h5 = 1
 }
 
 export enum RobotOffsetPointMode {

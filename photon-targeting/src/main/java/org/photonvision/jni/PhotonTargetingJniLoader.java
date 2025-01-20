@@ -17,7 +17,6 @@
 
 package org.photonvision.jni;
 
-import edu.wpi.first.util.RuntimeDetector;
 import edu.wpi.first.util.RuntimeLoader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,10 +41,11 @@ public class PhotonTargetingJniLoader {
         var clazz = PhotonTargetingJniLoader.class;
 
         for (var libraryName : List.of("photontargeting", "photontargetingJNI")) {
-            if (RuntimeDetector.isAthena()) {
-                System.out.println("Detected rio - loading directly");
+            try {
                 RuntimeLoader.loadLibrary(libraryName);
                 continue;
+            } catch (Exception e) {
+                System.out.println("Direct library load failed; falling back to extraction");
             }
 
             var nativeLibName = System.mapLibraryName(libraryName);

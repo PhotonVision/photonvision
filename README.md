@@ -1,6 +1,6 @@
 # PhotonVision
 
-[![CI](https://github.com/PhotonVision/photonvision/workflows/CI/badge.svg)](https://github.com/PhotonVision/photonvision/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PhotonVision/photonvision/branch/master/graph/badge.svg)](https://codecov.io/gh/PhotonVision/photonvision) [![Discord](https://img.shields.io/discord/725836368059826228?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/wYxTwym)
+[![CI](https://github.com/PhotonVision/photonvision/workflows/CI/badge.svg)](https://github.com/PhotonVision/photonvision/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PhotonVision/photonvision/branch/main/graph/badge.svg)](https://codecov.io/gh/PhotonVision/photonvision) [![Discord](https://img.shields.io/discord/725836368059826228?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/wYxTwym)
 
 PhotonVision is the free, fast, and easy-to-use computer vision solution for the *FIRST* Robotics Competition. You can read an overview of our features [on our website](https://photonvision.org). You can find our comprehensive documentation [here](https://docs.photonvision.org).
 
@@ -17,7 +17,7 @@ If you are interested in contributing code or documentation to the project, plea
 ## Documentation
 
 - Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
-- Photon UI demo: [demo.photonvision.org](https://demo.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
+- Photon UI demo: [http://photonvision.global/](http://photonvision.global/) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
 - Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/javadoc/))
 - C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/doxygen/html/))
 
@@ -67,7 +67,7 @@ sudo apt install libcholmod3 liblapack3 libsuitesparseconfig5
 
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
 
-* [WPILib](https://github.com/wpilibsuite) - Specifically [cscore](https://github.com/wpilibsuite/allwpilib/tree/master/cscore), [CameraServer](https://github.com/wpilibsuite/allwpilib/tree/master/cameraserver), [NTCore](https://github.com/wpilibsuite/allwpilib/tree/master/ntcore), and [OpenCV](https://github.com/wpilibsuite/thirdparty-opencv).
+* [WPILib](https://github.com/wpilibsuite) - Specifically [cscore](https://github.com/wpilibsuite/allwpilib/tree/main/cscore), [CameraServer](https://github.com/wpilibsuite/allwpilib/tree/main/cameraserver), [NTCore](https://github.com/wpilibsuite/allwpilib/tree/main/ntcore), and [OpenCV](https://github.com/wpilibsuite/thirdparty-opencv).
 
 * [Apache Commons](https://commons.apache.org/) - Specifically [Commons Math](https://commons.apache.org/proper/commons-math/), and [Commons Lang](https://commons.apache.org/proper/commons-lang/)
 
