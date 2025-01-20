@@ -24,7 +24,7 @@ import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
+    public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
 
     public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
     public int threshStepSize = 40;

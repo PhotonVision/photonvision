@@ -18,71 +18,20 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.cscore.CameraServerCvJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
+import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
-    private static boolean has_loaded = false;
-
     public static boolean loadLibraries() {
-        if (has_loaded) return true;
-
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
-        // OpenCvLoader.Helper.setExtractOnStaticLoad(false);
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        // wpimathjni is a bit odd, it's all in the wpimathjni shared lib, but the java side stuff has
-        // been split.
-        // ArmFeedforwardJNI.Helper.setExtractOnStaticLoad(false);
-        // DAREJNI.Helper.setExtractOnStaticLoad(false);
-        // EigenJNI.Helper.setExtractOnStaticLoad(false);
-        // Ellipse2dJNI.Helper.setExtractOnStaticLoad(false);
-        // Pose3dJNI.Helper.setExtractOnStaticLoad(false);
-        // StateSpaceUtilJNI.Helper.setExtractOnStaticLoad(false);
-        // TrajectoryUtilJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    TestUtils.class,
-                    "wpiutiljni",
-                    "wpimathjni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    Core.NATIVE_LIBRARY_NAME,
-                    "cscorejni",
-                    "apriltagjni");
-
-            has_loaded = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            has_loaded = false;
-        }
-
-        return has_loaded;
+        return WpilibLoader.loadLibraries();
     }
 
     @SuppressWarnings("unused")
@@ -427,5 +376,9 @@ public class TestUtils {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
+    }
+
+    public static Path getConfigDirectoriesPath(boolean testMode) {
+        return getResourcesFolderPath(testMode).resolve("old_configs");
     }
 }

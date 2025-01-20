@@ -22,7 +22,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.vision.camera.LibcameraGpuSettables;
+import org.photonvision.vision.camera.csi.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -40,6 +40,8 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
         var vidMode = settables.getCurrentVideoMode();
         settables.setVideoMode(vidMode);
+        this.cameraPropertiesCached =
+                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override
@@ -101,7 +103,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
                     processedMat,
                     type,
                     MathUtils.wpiNanoTime() - latency,
-                    settables.getFrameStaticProperties());
+                    settables.getFrameStaticProperties().rotate(settables.getRotation()));
         }
     }
 
@@ -131,5 +133,31 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         LibCameraJNI.setFramesToCopy(settables.r_ptr, copyInput, copyOutput);
+    }
+
+    @Override
+    public void release() {
+        synchronized (settables.CAMERA_LOCK) {
+            LibCameraJNI.stopCamera(settables.r_ptr);
+            LibCameraJNI.destroyCamera(settables.r_ptr);
+            settables.r_ptr = 0;
+        }
+    }
+
+    @Override
+    public boolean checkCameraConnected() {
+        String[] cameraNames = LibCameraJNI.getCameraNames();
+        for (String name : cameraNames) {
+            if (name.equals(settables.getConfiguration().getDevicePath())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // To our knowledge the camera is always connected (after boot) with csi cameras
+    @Override
+    public boolean isConnected() {
+        return checkCameraConnected();
     }
 }

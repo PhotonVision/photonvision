@@ -163,29 +163,28 @@ public class PhotonConfiguration {
 
         return map;
     }
-
-    public static class UILightingConfig {
-        public int brightness = 0;
-        public boolean supported = true;
+    /**
+     * Delete a camera by its unique name
+     *
+     * @param name The camera name (usually unique name)
+     * @return True if the camera configuration was removed
+     */
+    public boolean removeCameraConfig(String name) {
+        return cameraConfigurations.remove(name) != null;
     }
 
-    public static class UICameraConfiguration {
-        @SuppressWarnings("unused")
-        public double fov;
-
-        public String nickname;
-        public String uniqueName;
-        public HashMap<String, Object> currentPipelineSettings;
-        public int currentPipelineIndex;
-        public List<String> pipelineNicknames;
-        public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-        public int outputStreamPort;
-        public int inputStreamPort;
-        public List<UICameraCalibrationCoefficients> calibrations;
-        public boolean isFovConfigurable = true;
-        public QuirkyCamera cameraQuirks;
-        public boolean isCSICamera;
-        public double minExposureRaw;
-        public double maxExposureRaw;
+    @Override
+    public String toString() {
+        return "PhotonConfiguration [\n  hardwareConfig="
+                + hardwareConfig
+                + "\n  hardwareSettings="
+                + hardwareSettings
+                + "\n  networkConfig="
+                + networkConfig
+                + "\n  atfl="
+                + atfl
+                + "\n  cameraConfigurations="
+                + cameraConfigurations
+                + "\n]";
     }
 }

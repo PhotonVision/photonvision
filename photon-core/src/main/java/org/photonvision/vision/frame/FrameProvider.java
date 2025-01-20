@@ -19,10 +19,32 @@ package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 
-public abstract class FrameProvider implements Supplier<Frame> {
+public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
+
+    // Escape hatch to allow us to synchronously (from the main vision thread) run
+    // extra
+    // setup/callbacks once cscore connects to our underlying device for the first
+    // time
+    public boolean cameraPropertiesCached = false;
+
+    protected void onCameraConnected() {
+        cameraPropertiesCached = true;
+    }
+
+    public abstract boolean isConnected();
+
+    public abstract boolean checkCameraConnected();
+
+    /**
+     * Returns if the camera has connected at some point. This is not if it is currently connected.
+     */
+    public boolean hasConnected() {
+        return cameraPropertiesCached;
+    }
 
     public abstract String getName();
 

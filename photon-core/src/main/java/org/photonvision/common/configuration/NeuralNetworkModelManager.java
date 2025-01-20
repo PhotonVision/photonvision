@@ -205,13 +205,11 @@ public class NeuralNetworkModelManager {
 
         try {
             switch (backend.get()) {
-                case RKNN:
+                case RKNN -> {
                     models.get(backend.get()).add(new RknnModel(model, labels));
                     logger.info(
                             "Loaded model " + model.getName() + " for backend " + backend.get().toString());
-                    break;
-                default:
-                    break;
+                }
             }
         } catch (IllegalArgumentException e) {
             logger.error("Failed to load model " + model.getName(), e);
@@ -223,29 +221,28 @@ public class NeuralNetworkModelManager {
     /**
      * Discovers DNN models from the specified folder.
      *
-     * @param modelsFolder The folder where the models are stored
+     * @param modelsDirectory The folder where the models are stored
      */
-    public void discoverModels(File modelsFolder) {
+    public void discoverModels(File modelsDirectory) {
         logger.info("Supported backends: " + supportedBackends);
 
-        if (!modelsFolder.exists()) {
-            logger.error("Models folder " + modelsFolder.getAbsolutePath() + " does not exist.");
+        if (!modelsDirectory.exists()) {
+            logger.error("Models folder " + modelsDirectory.getAbsolutePath() + " does not exist.");
             return;
         }
 
-        if (models == null) {
-            models = new HashMap<>();
-        }
+        models = new HashMap<>();
 
         try {
-            Files.walk(modelsFolder.toPath())
+            Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
                     .forEach(path -> loadModel(path.toFile()));
         } catch (IOException e) {
-            logger.error("Failed to discover models at " + modelsFolder.getAbsolutePath(), e);
+            logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent ordering
+        // After loading all of the models, sort them by name to ensure a consistent
+        // ordering
         models.forEach(
                 (backend, backendModels) ->
                         backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));

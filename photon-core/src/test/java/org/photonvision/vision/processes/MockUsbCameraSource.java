@@ -31,7 +31,8 @@ public class MockUsbCameraSource extends USBCameraSource {
     public MockUsbCameraSource(CameraConfiguration config, int pid, int vid) {
         super(config);
 
-        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(pid, vid, config.baseName);
+        getCameraConfiguration().cameraQuirks =
+                QuirkyCamera.getQuirkyCamera(pid, vid, config.matchedCameraInfo.name());
 
         /** File used as frame provider */
         usbFrameProvider =
@@ -72,5 +73,24 @@ public class MockUsbCameraSource extends USBCameraSource {
 
         @Override
         public void setUpExposureProperties() {}
+
+        @Override
+        protected void setUpWhiteBalanceProperties() {}
+
+        @Override
+        public void setWhiteBalanceTemp(double tempNumber) {}
+
+        @Override
+        public void setAutoWhiteBalance(boolean autoWB) {}
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 1;
+        }
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 2;
+        }
     }
 }

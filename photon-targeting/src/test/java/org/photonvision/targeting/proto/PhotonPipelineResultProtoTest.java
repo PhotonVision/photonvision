@@ -43,6 +43,7 @@ public class PhotonPipelineResultProtoTest {
                         3,
                         4,
                         5,
+                        1024,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -97,6 +98,7 @@ public class PhotonPipelineResultProtoTest {
                         3,
                         4,
                         5,
+                        1024,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

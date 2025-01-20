@@ -111,7 +111,7 @@ class PhotonTrackedTarget : public PhotonTrackedTarget_PhotonStruct {
 
   /**
    * Get the ratio of best:alternate pose reprojection errors, called ambiguity.
-   * This is betweeen 0 and 1 (0 being no ambiguity, and 1 meaning both have the
+   * This is between 0 and 1 (0 being no ambiguity, and 1 meaning both have the
    * same reprojection error). Numbers above 0.2 are likely to be ambiguous. -1
    * if invalid.
    */

@@ -22,8 +22,7 @@
  * SOFTWARE.
  */
 
-#ifndef PHOTONVISION_PHOTONLIB_CPP_EXAMPLES_POSEEST_SRC_MAIN_INCLUDE_SUBSYSTEMS_GAMEPIECELAUNCHER_H_
-#define PHOTONVISION_PHOTONLIB_CPP_EXAMPLES_POSEEST_SRC_MAIN_INCLUDE_SUBSYSTEMS_GAMEPIECELAUNCHER_H_
+#pragma once
 
 #include <cmath>
 #include <numbers>
@@ -58,9 +57,7 @@ class GamepieceLauncher {
   frc::LinearSystem<1, 1, 1> m_plant{frc::LinearSystemId::FlywheelSystem(
       m_gearbox, kFlywheelMomentOfInertia, 1.0)};
 
-  frc::sim::FlywheelSim launcherSim{m_plant, m_gearbox, 1.0};
+  frc::sim::FlywheelSim launcherSim{m_plant, m_gearbox};
 
   void simulationInit();  // Method to initialize simulation components
 };
-
-#endif  // PHOTONVISION_PHOTONLIB_CPP_EXAMPLES_POSEEST_SRC_MAIN_INCLUDE_SUBSYSTEMS_GAMEPIECELAUNCHER_H_

@@ -5,7 +5,9 @@ import type {
   LogLevel,
   MetricData,
   NetworkSettings,
-  QuirkyCamera
+  PVCameraInfo,
+  QuirkyCamera,
+  VsmState
 } from "@/types/SettingTypes";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import type { AprilTagFieldLayout, PipelineResult } from "@/types/PhotonTrackingTypes";
@@ -44,7 +46,9 @@ export type WebsocketVideoFormat = Record<
   }
 >;
 
+// Companion to UICameraConfiguration in Java
 export interface WebsocketCameraSettingsUpdate {
+  cameraPath: string;
   calibrations: CameraCalibrationResult[];
   currentPipelineIndex: number;
   currentPipelineSettings: ActivePipelineSettings;
@@ -60,6 +64,11 @@ export interface WebsocketCameraSettingsUpdate {
   cameraQuirks: QuirkyCamera;
   minExposureRaw: number;
   maxExposureRaw: number;
+  minWhiteBalanceTemp: number;
+  maxWhiteBalanceTemp: number;
+  matchedCameraInfo: PVCameraInfo;
+  isConnected: boolean;
+  hasConnected: boolean;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
@@ -94,8 +103,9 @@ export interface IncomingWebsocketData {
     deviceIps: string[];
   };
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
-  cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
+  cameraUniqueName?: string; // Sent when mutating pipeline settings to check against currently active
   calibrationData?: WebsocketCalibrationData;
+  visionSourceManager?: VsmState;
 }
 
 export enum WebsocketPipelineType {

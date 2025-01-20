@@ -1,5 +1,6 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
 import type { Pose3d } from "@/types/PhotonTrackingTypes";
+import type { WebsocketCameraSettingsUpdate } from "./WebsocketDataTypes";
 
 export interface GeneralSettings {
   version?: string;
@@ -22,6 +23,7 @@ export interface MetricData {
   cpuUptime?: string;
   diskUtilPct?: string;
   npuUsage?: string;
+  ipAddress?: string;
 }
 
 export enum NetworkConnectionType {
@@ -48,13 +50,58 @@ export interface NetworkSettings {
   setDHCPcommand?: string;
   networkInterfaceNames: NetworkInterfaceType[];
   networkingDisabled: boolean;
-  matchCamerasOnlyByPath: boolean;
 }
 
 export type ConfigurableNetworkSettings = Omit<
   NetworkSettings,
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
+
+export interface PVCameraInfoBase {
+  /*
+  Huge hack. In Jackson, this is set based on the underlying type -- this
+  then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
+  */
+  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+}
+
+export interface PVUsbCameraInfo {
+  dev: number;
+  name: string;
+  otherPaths: string[];
+  path: string;
+  vendorId: number;
+  productId: number;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+export interface PVCSICameraInfo {
+  baseName: string;
+  path: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+export interface PVFileCameraInfo {
+  path: string;
+  name: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+
+// This camera info will only ever hold one of its members - the others should be undefined.
+export class PVCameraInfo {
+  PVUsbCameraInfo: PVUsbCameraInfo | undefined;
+  PVCSICameraInfo: PVCSICameraInfo | undefined;
+  PVFileCameraInfo: PVFileCameraInfo | undefined;
+}
+
+export interface VsmState {
+  disabledConfigs: WebsocketCameraSettingsUpdate[];
+  allConnectedCameras: PVCameraInfo[];
+}
 
 export interface LightingSettings {
   supported: boolean;
@@ -142,7 +189,7 @@ export interface CameraCalibrationResult {
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
   calobjectWarp?: number[];
-  // We might have to omit observations for bandwith, so backend will send us this
+  // We might have to omit observations for bandwidth, so backend will send us this
   numSnapshots: number;
   meanErrors: number[];
 }
@@ -172,7 +219,9 @@ export interface QuirkyCamera {
   quirks: Record<ValidQuirks, boolean>;
 }
 
-export interface CameraSettings {
+export interface UiCameraConfiguration {
+  cameraPath: string;
+
   nickname: string;
   uniqueName: string;
 
@@ -198,6 +247,13 @@ export interface CameraSettings {
 
   minExposureRaw: number;
   maxExposureRaw: number;
+
+  minWhiteBalanceTemp: number;
+  maxWhiteBalanceTemp: number;
+
+  matchedCameraInfo: PVCameraInfo;
+  isConnected: boolean;
+  hasConnected: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -205,7 +261,9 @@ export interface CameraSettingsChangeRequest {
   quirksToChange: Record<ValidQuirks, boolean>;
 }
 
-export const PlaceholderCameraSettings: CameraSettings = {
+export const PlaceholderCameraSettings: UiCameraConfiguration = {
+  cameraPath: "/dev/null",
+
   nickname: "Placeholder Camera",
   uniqueName: "Placeholder Name",
   fov: {
@@ -286,20 +344,36 @@ export const PlaceholderCameraSettings: CameraSettings = {
     quirks: {
       AWBGain: false,
       AdjustableFocus: false,
-      ArduOV9281: false,
-      ArduOV2311: false,
-      ArduOV9782: false,
+      ArduOV9281Controls: false,
+      ArduOV2311Controls: false,
+      ArduOV9782Controls: false,
       ArduCamCamera: false,
       CompletelyBroken: false,
       FPSCap100: false,
       Gain: false,
       PiCam: false,
-      StickyFPS: false
+      StickyFPS: false,
+      InnoOV9281Controls: false,
+      LifeCamControls: false,
+      PsEyeControls: false
     }
   },
   isCSICamera: false,
   minExposureRaw: 1,
-  maxExposureRaw: 100
+  maxExposureRaw: 100,
+  minWhiteBalanceTemp: 2000,
+  maxWhiteBalanceTemp: 10000,
+  matchedCameraInfo: {
+    PVFileCameraInfo: {
+      name: "Foobar",
+      path: "/dev/foobar",
+      uniquePath: "/dev/foobar2"
+    },
+    PVCSICameraInfo: undefined,
+    PVUsbCameraInfo: undefined
+  },
+  isConnected: true,
+  hasConnected: true
 };
 
 export enum CalibrationBoardTypes {

@@ -116,6 +116,11 @@ public class FindBoardCornersPipe
                             Objdetect.getPredefinedDictionary(params.tagFamily.getValue()));
             board.setLegacyPattern(params.useOldPattern);
             detector = new CharucoDetector(board);
+            detector.getDetectorParameters().set_adaptiveThreshConstant(10);
+            detector.getDetectorParameters().set_adaptiveThreshWinSizeMin(11);
+            detector.getDetectorParameters().set_adaptiveThreshWinSizeStep(40);
+            detector.getDetectorParameters().set_adaptiveThreshWinSizeMax(91);
+
         } else {
             logger.error("Can't create pattern for unknown board type " + params.type);
         }

@@ -25,6 +25,7 @@
 #include "photon/PhotonCamera.h"
 
 #include <hal/FRCUsageReporting.h>
+#include <net/TimeSyncServer.h>
 
 #include <string>
 #include <string_view>
@@ -59,6 +60,22 @@ inline constexpr std::string_view bfw =
     ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
     "\n\n";
 
+// bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
+// to avoid calling this from static initialization
+static void InitTspServer() {
+  // We dont impose requirements about not calling the PhotonCamera constructor
+  // from different threads, so i guess we need this?
+  static std::mutex g_timeSyncServerMutex;
+  static bool g_timeSyncServerStarted{false};
+  static wpi::tsp::TimeSyncServer timesyncServer{5810};
+
+  std::lock_guard lock{g_timeSyncServerMutex};
+  if (!g_timeSyncServerStarted) {
+    timesyncServer.Start();
+    g_timeSyncServerStarted = true;
+  }
+}
+
 namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
@@ -69,6 +86,10 @@ void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
   VERSION_CHECK_ENABLED = enabled;
 }
 
+static const std::string TYPE_STRING =
+    std::string{"photonstruct:PhotonPipelineResult:"} +
+    std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
+
 PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
@@ -76,7 +97,7 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
               .Subscribe(
-                  "rawBytes", {},
+                  TYPE_STRING, {},
                   {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
@@ -106,6 +127,11 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       cameraName(cameraName) {
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
+
+  // The Robot class is actually created here:
+  // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/frc/RobotBase.h#L33
+  // so we should be fine to call this from the ctor
+  InitTspServer();
 }
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
@@ -262,17 +288,26 @@ void PhotonCamera::VerifyVersion() {
 
       std::string cameraNameOutString;
       for (unsigned int i = 0; i < cameraNames.size(); i++) {
-        cameraNameOutString += "\n" + cameraNames[i];
+        cameraNameOutString += ("\n" + cameraNames[i]);
       }
       FRC_ReportError(
           frc::warn::Warning,
-          "Found the following PhotonVision cameras on NetworkTables:{}",
+          "Found the following PhotonVision cameras on NetworkTables:\n{}",
           cameraNameOutString);
     }
   } else {
     std::string local_uuid{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
-    std::string remote_uuid =
+
+    // implicit conversion here might throw an exception, so be careful of that
+    wpi::json remote_uuid_json =
         rawBytesEntry.GetTopic().GetProperty("message_uuid");
+    if (!remote_uuid_json.is_string()) {
+      FRC_ReportError(frc::warn::Warning,
+                      "Cannot find property message_uuid for PhotonCamera {}",
+                      path);
+      return;
+    }
+    std::string remote_uuid{remote_uuid_json};
 
     if (local_uuid != remote_uuid) {
       FRC_ReportError(frc::warn::Warning, bfw);

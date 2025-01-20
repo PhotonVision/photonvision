@@ -30,8 +30,34 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
 
-@SuppressWarnings("unused")
+/** TODO: get rid of static {} blocks and refactor to singleton pattern */
 public class Logger {
+    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
+    private static final List<LogAppender> currentAppenders = new ArrayList<>();
+
+    private static final UILogAppender uiLogAppender = new UILogAppender();
+
+    // // TODO why's the logger care about this? split it out
+    // private static KernelLogLogger klogListener = null;
+
+    static {
+        levelMap.put(LogGroup.Camera, LogLevel.INFO);
+        levelMap.put(LogGroup.General, LogLevel.INFO);
+        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
+        levelMap.put(LogGroup.Data, LogLevel.INFO);
+        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
+        levelMap.put(LogGroup.Config, LogLevel.INFO);
+        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
+        levelMap.put(LogGroup.NetworkTables, LogLevel.DEBUG);
+        levelMap.put(LogGroup.System, LogLevel.DEBUG);
+
+        currentAppenders.add(new ConsoleLogAppender());
+        currentAppenders.add(uiLogAppender);
+        addFileAppender(PathManager.getInstance().getLogPath());
+
+        cleanLogs(PathManager.getInstance().getLogsDir());
+    }
+
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -49,8 +75,6 @@ public class Logger {
 
     private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
     private static boolean connected = false;
-
-    private static final UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -89,26 +113,6 @@ public class Logger {
         return builder.toString();
     }
 
-    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
-    private static final List<LogAppender> currentAppenders = new ArrayList<>();
-
-    static {
-        levelMap.put(LogGroup.Camera, LogLevel.INFO);
-        levelMap.put(LogGroup.General, LogLevel.INFO);
-        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
-        levelMap.put(LogGroup.Data, LogLevel.INFO);
-        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
-        levelMap.put(LogGroup.Config, LogLevel.INFO);
-        levelMap.put(LogGroup.CSCore, LogLevel.TRACE);
-    }
-
-    static {
-        currentAppenders.add(new ConsoleLogAppender());
-        currentAppenders.add(uiLogAppender);
-        addFileAppender(PathManager.getInstance().getLogPath());
-        cleanLogs(PathManager.getInstance().getLogsDir());
-    }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void addFileAppender(Path logFilePath) {
         var file = logFilePath.toFile();
@@ -121,6 +125,11 @@ public class Logger {
             }
         }
         currentAppenders.add(new FileLogAppender(logFilePath));
+    }
+
+    public static void closeAllLoggers() {
+        currentAppenders.forEach(LogAppender::shutdown);
+        currentAppenders.clear();
     }
 
     public static void cleanLogs(Path folderToClean) {
@@ -195,7 +204,7 @@ public class Logger {
         return logLevel.code <= levelMap.get(group).code;
     }
 
-    void log(String message, LogLevel level) {
+    public void log(String message, LogLevel level) {
         if (shouldLog(level)) {
             log(message, level, group, className);
         }
@@ -284,6 +293,9 @@ public class Logger {
 
     private interface LogAppender {
         void log(String message, LogLevel level);
+
+        /** Release any file or other resources currently held by the Logger */
+        default void shutdown() {}
     }
 
     private static class ConsoleLogAppender implements LogAppender {
@@ -341,6 +353,17 @@ public class Logger {
                 e.printStackTrace();
             } catch (NullPointerException e) {
                 // Nothing to do - no stream available for writing
+            }
+        }
+
+        @Override
+        public void shutdown() {
+            try {
+                out.close();
+                out = null;
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
         }
     }

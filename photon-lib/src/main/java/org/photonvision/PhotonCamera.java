@@ -32,9 +32,7 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
-import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
@@ -53,6 +51,7 @@ import java.util.stream.Collectors;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.timesync.TimeSyncSingleton;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -63,13 +62,6 @@ public class PhotonCamera implements AutoCloseable {
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
-    DoublePublisher latencyMillisEntry;
-    BooleanPublisher hasTargetEntry;
-    DoublePublisher targetPitchEntry;
-    DoublePublisher targetYawEntry;
-    DoublePublisher targetAreaEntry;
-    DoubleArrayPublisher targetPoseEntry;
-    DoublePublisher targetSkewEntry;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -85,13 +77,6 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
-        latencyMillisEntry.close();
-        hasTargetEntry.close();
-        targetPitchEntry.close();
-        targetYawEntry.close();
-        targetAreaEntry.close();
-        targetPoseEntry.close();
-        targetSkewEntry.close();
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
@@ -110,11 +95,14 @@ public class PhotonCamera implements AutoCloseable {
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 5;
-    private double lastVersionCheckTime = 0;
+    double lastVersionCheckTime = 0;
 
     private long prevHeartbeatValue = -1;
     private double prevHeartbeatChangeTime = 0;
     private static final double HEARTBEAT_DEBOUNCE_SEC = 0.5;
+
+    double prevTimeSyncWarnTime = 0;
+    private static final double WARN_DEBOUNCE_SEC = 5;
 
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
@@ -137,7 +125,7 @@ public class PhotonCamera implements AutoCloseable {
                 cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
-                                "rawBytes",
+                                PhotonPipelineResult.photonStruct.getTypeString(),
                                 new byte[] {},
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true),
@@ -166,6 +154,9 @@ public class PhotonCamera implements AutoCloseable {
 
         HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
         InstanceCount++;
+
+        // HACK - start a TimeSyncServer, if we haven't yet.
+        TimeSyncSingleton.load();
     }
 
     /**
@@ -185,15 +176,16 @@ public class PhotonCamera implements AutoCloseable {
      * make sure to call this frequently enough to avoid old results being discarded, too!
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
+        verifyVersion();
+
         List<PhotonPipelineResult> ret = new ArrayList<>();
 
+        // Grab the latest results. We don't care about the timestamps from NT - the metadata header has
+        // this, latency compensated by the Time Sync Client
         var changes = resultSubscriber.getAllChanges();
-
-        // TODO: NT4 timestamps are still not to be trusted. But it's the best we can do until we can
-        // make time sync more reliable.
         for (var c : changes) {
             var result = c.value;
-            result.setReceiveTimestampMicros(c.timestamp);
+            checkTimeSyncOrWarn(result);
             ret.add(result);
         }
 
@@ -211,19 +203,36 @@ public class PhotonCamera implements AutoCloseable {
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
+        // Grab the latest result. We don't care about the timestamp from NT - the metadata header has
+        // this, latency compensated by the Time Sync Client
         var ret = resultSubscriber.get();
 
         if (ret.timestamp == 0) return new PhotonPipelineResult();
 
         var result = ret.value;
 
-        // Set the timestamp of the result. Since PacketSubscriber doesn't realize that the result
-        // contains a thing with time knowledge, set it here.
-        // getLatestChange returns in microseconds, so we divide by 1e6 to convert to seconds.
-        // TODO: NT4 time sync is Not To Be Trusted, we should do something else?
-        result.setReceiveTimestampMicros(ret.timestamp);
+        checkTimeSyncOrWarn(result);
 
         return result;
+    }
+
+    private void checkTimeSyncOrWarn(PhotonPipelineResult result) {
+        if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
+            if (Timer.getFPGATimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
+                prevTimeSyncWarnTime = Timer.getFPGATimestamp();
+
+                DriverStation.reportWarning(
+                        "PhotonVision coprocessor at path "
+                                + path
+                                + " is not connected to the TimeSyncServer? It's been "
+                                + String.format("%.2f", result.metadata.timeSinceLastPong / 1e6)
+                                + "s since the coprocessor last heard a pong.\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
+                        false);
+            }
+        } else {
+            // Got a valid packet, reset the last time
+            prevTimeSyncWarnTime = 0;
+        }
     }
 
     /**
@@ -289,17 +298,12 @@ public class PhotonCamera implements AutoCloseable {
      */
     public VisionLEDMode getLEDMode() {
         int value = (int) ledModeState.get(-1);
-        switch (value) {
-            case 0:
-                return VisionLEDMode.kOff;
-            case 1:
-                return VisionLEDMode.kOn;
-            case 2:
-                return VisionLEDMode.kBlink;
-            case -1:
-            default:
-                return VisionLEDMode.kDefault;
-        }
+        return switch (value) {
+            case 0 -> VisionLEDMode.kOff;
+            case 1 -> VisionLEDMode.kOn;
+            case 2 -> VisionLEDMode.kBlink;
+            default -> VisionLEDMode.kDefault;
+        };
     }
 
     /**
@@ -371,7 +375,7 @@ public class PhotonCamera implements AutoCloseable {
         return cameraTable;
     }
 
-    private void verifyVersion() {
+    void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
         if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
@@ -408,7 +412,7 @@ public class PhotonCamera implements AutoCloseable {
         // Check for connection status. Warn if disconnected.
         else if (!isConnected()) {
             DriverStation.reportWarning(
-                    "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
+                    "PhotonVision coprocessor at path " + path + " is not sending new data.", false);
         }
 
         String versionString = versionEntry.get("");
@@ -423,7 +427,7 @@ public class PhotonCamera implements AutoCloseable {
                     "PhotonVision coprocessor at path "
                             + path
                             + " has not reported a message interface UUID - is your coprocessor's camera started?",
-                    true);
+                    false);
         } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise

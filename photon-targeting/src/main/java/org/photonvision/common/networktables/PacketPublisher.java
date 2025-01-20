@@ -87,11 +87,9 @@ public class PacketPublisher<T> implements AutoCloseable {
         instance.addSchema(typeString, "photonstructschema", struct.getSchema());
 
         for (var inner : struct.getNestedPhotonMessages()) {
-            System.out.println(inner.getTypeString());
             addSchemaImpl(inner, seen);
         }
         for (var inner : struct.getNestedWpilibMessages()) {
-            System.out.println(inner.getTypeString());
             instance.addSchema(inner);
         }
         seen.remove(typeString);

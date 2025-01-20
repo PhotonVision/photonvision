@@ -34,11 +34,14 @@ if (!is_demo) {
       if (data.updatePipelineResult !== undefined) {
         useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
       }
-      if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+      if (data.mutatePipelineSettings !== undefined && data.cameraUniqueName !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraUniqueName);
       }
       if (data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      }
+      if (data.visionSourceManager !== undefined) {
+        useStateStore().updateDiscoveredCameras(data.visionSourceManager);
       }
     },
     () => {
@@ -74,6 +77,24 @@ if (!is_demo) {
   html {
     font-size: 14px !important;
   }
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #232c37;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ffd843;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #e4c33c;
 }
 
 .main-container {

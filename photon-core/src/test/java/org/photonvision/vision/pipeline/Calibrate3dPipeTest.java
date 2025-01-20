@@ -32,6 +32,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -215,8 +216,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline =
-                new Calibrate3dPipeline(10, "test_calibration_common");
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(10);
         calibration3dPipeline.getSettings().boardType = boardType;
         calibration3dPipeline.getSettings().markerSize = markerSize;
         calibration3dPipeline.getSettings().tagFamily = tagFamily;
@@ -253,7 +253,10 @@ public class Calibrate3dPipeTest {
                         .map(it -> it.imagePoints)
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
-        var cal = calibration3dPipeline.tryCalibration();
+        var cal =
+                calibration3dPipeline.tryCalibration(
+                        ConfigManager.getInstance()
+                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
         calibration3dPipeline.finishCalibration();
 
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
@@ -284,7 +287,7 @@ public class Calibrate3dPipeTest {
     }
 
     /**
-     * Uses a given camera coefficents matrix set to "undistort" every image file found in a given
+     * Uses a given camera coefficientss matrix set to "undistort" every image file found in a given
      * directory and display them. Provides an easy way to visually debug the results of the
      * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
      * usually be left active in tests.
