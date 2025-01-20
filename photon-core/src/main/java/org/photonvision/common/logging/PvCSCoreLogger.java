@@ -34,7 +34,7 @@ public class PvCSCoreLogger {
     private Logger logger;
 
     private PvCSCoreLogger() {
-        CameraServerJNI.setLogger(this::logMsg, 5); // 7 RJS
+        CameraServerJNI.setLogger(this::logMsg, 7); // 7 RJS
         this.logger = new Logger(getClass(), LogGroup.CSCore);
     }
 

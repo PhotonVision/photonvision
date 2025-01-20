@@ -185,7 +185,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
             softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
             softSet("white_balance_automatic", 0);
-            softSet("white_balance_temperature", whiteBalanceTemperature);
+            //softSet("white_balance_temperature", whiteBalanceTemperature); // Comment to compile
 	        if(autoExposureProp != null)
             	autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
