@@ -3,7 +3,7 @@
 
 ## A primer on time
 
-Expecially starting around 2022 with AprilTags making localization easier, providing a way to know when a camera image was captured at became more important for localization.
+Especially starting around 2022 with AprilTags making localization easier, providing a way to know when a camera image was captured at became more important for localization.
 Since the [creation of USBFrameProvider](https://github.com/PhotonVision/photonvision/commit/f92bf670ded52b59a00352a4a49c277f01bae305), we used the time [provided by CSCore](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/cscore/CvSink.html#grabFrame(org.opencv.core.Mat)) to tell when a camera image was captured at, but just keeping track of "CSCore told us frame N was captured 104.21s after the Raspberry Pi turned on" isn't very helpful. We can decompose this into asking:
 
 - At what time was a particular image captured at, in the coprocessor's timebase?
@@ -29,13 +29,13 @@ WPILib's CSCore is a platform-agnostic wrapper around Windows, Linux, and MacOS 
 
 Prior to https://github.com/wpilibsuite/allwpilib/pull/7609, CSCore used the [time it dequeued the buffer at](https://github.com/wpilibsuite/allwpilib/blob/17a03514bad6de195639634b3d57d5ac411d601e/cscore/src/main/native/linux/UsbCameraImpl.cpp#L559) as the image capture time. But this doesn't account for exposure time or latency introduced by the camera + USB stack + Linux itself.
 
-V4L does expose (with some [very heavy caviets](https://github.com/torvalds/linux/blob/fc033cf25e612e840e545f8d5ad2edd6ba613ed5/drivers/media/usb/uvc/uvc_video.c#L600) for some troublesome cameras) its best guess at the time an image was captured at via [buffer flags](https://www.kernel.org/doc/html/v4.9/media/uapi/v4l/buffer.html#buffer-flags). In my testing, all my cameras were able to provide timestamps with both these flags set:
+V4L does expose (with some [very heavy caveats](https://github.com/torvalds/linux/blob/fc033cf25e612e840e545f8d5ad2edd6ba613ed5/drivers/media/usb/uvc/uvc_video.c#L600) for some troublesome cameras) its best guess at the time an image was captured at via [buffer flags](https://www.kernel.org/doc/html/v4.9/media/uapi/v4l/buffer.html#buffer-flags). In my testing, all my cameras were able to provide timestamps with both these flags set:
 - `V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC`: The buffer timestamp has been taken from the CLOCK_MONOTONIC clock [...] accessible via `clock_gettime()`.
 - `V4L2_BUF_FLAG_TSTAMP_SRC_SOE`: Start Of Exposure. The buffer timestamp has been taken when the exposure of the frame has begun.
 
 I'm sure that we'll find a camera that doesn't play nice, because we can't have nice things :). But until then, using this timestamp gets us a free accuracy bump.
 
-Other things to note: This gets us an estimate at when the camera *started* collecting photons. The camera's sensor will remain collecitng light for up to the total integration time, plus readout time for rolling shutter cameras.
+Other things to note: This gets us an estimate at when the camera *started* collecting photons. The camera's sensor will remain collecting light for up to the total integration time, plus readout time for rolling shutter cameras.
 
 ## Latency Testing
 
@@ -105,7 +105,7 @@ public class Robot extends TimedRobot {
 ```
 </details>
 
-I've decreased camera exposure as much as possible (so we know with reasonable confidence that the image was collected right at the start of the exposure time reported by V4L), but we only get back new images at 60fps. So we don't know when between frame N and N+1 the LED turned on - just that somtime between now and 1/60th of a second a go, the LED turned on.
+I've decreased camera exposure as much as possible (so we know with reasonable confidence that the image was collected right at the start of the exposure time reported by V4L), but we only get back new images at 60fps. So we don't know when between frame N and N+1 the LED turned on - just that sometime between now and 1/60th of a second a go, the LED turned on.
 
 The test coprocessor was an Orange Pi 5 running a PhotonVision 2025 (Ubuntu 24.04 based) image, with an ArduCam OV9782 at 1280x800, 60fps, MJPG running a reflective pipeline.
 
@@ -133,4 +133,4 @@ With the camera capturing at 60fps, the time between successive frames is only ~
 
 ### Future Work
 
-This test also makes no effort to isolate error from time syncronization from error introduced by frame time measurement - we're just interested in overall error. Future work could investigate the latency contribution
+This test also makes no effort to isolate error from time synchronization from error introduced by frame time measurement - we're just interested in overall error. Future work could investigate the latency contribution
