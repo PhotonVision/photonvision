@@ -16,7 +16,7 @@ class PhotonUtils:
     
     @staticmethod
     def estimateCameraToTarget(cameraToTargetTranslation : Translation2d, fieldToTarget : Pose2d, gyroAngle : Rotation2d):
-        return Transform2d(cameraToTargetTranslation, gyroAngle.__mul__(-1).__sub__(fieldToTarget.rotation()))
+        return Transform2d(cameraToTargetTranslation, gyroAngle * (-1) - (fieldToTarget.rotation()))
     
     @staticmethod
     def estimateFieldToCamera(cameraToTarget : Transform2d, fieldToTarget : Pose2d):
@@ -29,7 +29,7 @@ class PhotonUtils:
     
     @staticmethod
     def estimateFieldToRobotAprilTag(cameraToTarget : Transform3d, fieldRelativeTagPose : Pose3d, cameraToRobot : Transform3d):
-        return fieldRelativeTagPose.__add__(cameraToTarget.inverse()).__add__(cameraToRobot)
+        return fieldRelativeTagPose + cameraToTarget.inverse() + cameraToRobot
 
     @staticmethod
     def getYawToPose(robotPose : Pose2d, targetPose : Pose2d):
