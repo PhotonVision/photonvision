@@ -16,7 +16,7 @@ class PhotonUtils:
     
     @staticmethod
     def estimateCameraToTarget(cameraToTargetTranslation : Translation2d, fieldToTarget : Pose2d, gyroAngle : Rotation2d):
-        return Transform2d(cameraToTargetTranslation, gyroAngle * (-1) - (fieldToTarget.rotation()))
+        return Transform2d(cameraToTargetTranslation, gyroAngle * (-1) - fieldToTarget.rotation())
     
     @staticmethod
     def estimateFieldToCamera(cameraToTarget : Transform2d, fieldToTarget : Pose2d):
