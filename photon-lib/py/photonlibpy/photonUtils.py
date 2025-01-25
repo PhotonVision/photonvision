@@ -33,7 +33,7 @@ class PhotonUtils:
 
     @staticmethod
     def getYawToPose(robotPose : Pose2d, targetPose : Pose2d):
-        relativeTr1 = targetPose.relativeTo(robotPose).translation()
+        relativeTr1 = targetPose.rgitelativeTo(robotPose).translation()
         return Rotation2d(relativeTr1.X(), relativeTr1.Y())
     
     @staticmethod
