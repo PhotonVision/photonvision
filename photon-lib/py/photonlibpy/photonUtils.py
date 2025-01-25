@@ -16,7 +16,7 @@ class PhotonUtils:
     
     @staticmethod
     def estimateCameraToTarget(cameraToTargetTranslation : Translation2d, fieldToTarget : Pose2d, gyroAngle : Rotation2d):
-        return Transform2d(cameraToTargetTranslation, gyroAngle * (-1) - (fieldToTarget.rotation()))
+        return Transform2d(cameraToTargetTranslation, gyroAngle * (-1) - fieldToTarget.rotation())
     
     @staticmethod
     def estimateFieldToCamera(cameraToTarget : Transform2d, fieldToTarget : Pose2d):
@@ -33,7 +33,7 @@ class PhotonUtils:
 
     @staticmethod
     def getYawToPose(robotPose : Pose2d, targetPose : Pose2d):
-        relativeTr1 = targetPose.relativeTo(robotPose).translation()
+        relativeTr1 = targetPose.rgitelativeTo(robotPose).translation()
         return Rotation2d(relativeTr1.X(), relativeTr1.Y())
     
     @staticmethod
