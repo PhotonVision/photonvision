@@ -27,7 +27,7 @@ Using PhotonVision allows the user to calibrate for their specific camera, which
 
 ### Low Latency, High FPS Processing
 
-PhotonVision exposes specalized hardware on select coprocessors to maximize processing speed. This allows for lower-latency detection of targets to ensure you aren't losing out on any performance.
+PhotonVision exposes specialized hardware on select coprocessors to maximize processing speed. This allows for lower-latency detection of targets to ensure you aren't losing out on any performance.
 
 ### Fully Open Source and Active Developer Community
 

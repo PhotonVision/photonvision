@@ -444,7 +444,7 @@ public class VisionModule {
             return false;
         }
 
-        visionRunner.runSyncronously(
+        visionRunner.runSynchronously(
                 () -> {
                     settables.setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
                     settables.setBrightness(pipelineSettings.cameraBrightness);

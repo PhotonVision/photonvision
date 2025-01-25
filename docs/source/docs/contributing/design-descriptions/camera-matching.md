@@ -50,7 +50,7 @@ When a new camera (ie, one we can't match by-path to a deserialized CameraConfig
 
 ## Startup:
 
-- GIVEN An emtpy set of deserialized Camera Configurations
+- GIVEN An empty set of deserialized Camera Configurations
 <br>WHEN PhotonVision starts
 <br>THEN no VisionModules will be started
 
@@ -72,12 +72,12 @@ When a new camera (ie, one we can't match by-path to a deserialized CameraConfig
 
 ## Camera (re)enumeration:
 
-- GIVEN a NEW USB CAMERA is avaliable for enumeration
+- GIVEN a NEW USB CAMERA is available for enumeration
 <br>WHEN a USB camera is discovered by VisionSourceManager
 <br>AND the USB camera's VIDEO DEVICE PATH is not in the set of DESERIALIZED CAMERA CONFIGURATIONS
 <br>THEN a UNIQUE NAME will be assigned to the camera info
 
-- GIVEN a NEW USB CAMERA is avaliable for enumeration
+- GIVEN a NEW USB CAMERA is available for enumeration
 <br>WHEN a USB camera is discovered by VisionSourceManager
 <br>AND the USB camera's VIDEO DEVICE PATH is in the set of DESERIALIZED CAMERA CONFIGURATIONS
 <br>THEN a UNIQUE NAME equal to the matching DESERIALIZED CAMERA CONFIGURATION will be assigned to the camera info
@@ -86,13 +86,13 @@ When a new camera (ie, one we can't match by-path to a deserialized CameraConfig
 ## Creating from a new camera
 
 - Given: A UNIQUE NAME from a NEW USB CAMERA
-<br>WHEN I request a new VisionModule is created for this NEW USB CAMREA
+<br>WHEN I request a new VisionModule is created for this NEW USB CAMERA
 <br>AND the camera has a VALID USB PATH
 <br>AND the camera's VALID USB PATH is not in use by any CURRENTLY ACTIVE CAMERAS
 <br>THEN a NEW VisionModule will be started for the NEW USB CAMERA using the VALID USB PATH
 
 - Given: A UNIQUE NAME from a NEW USB CAMERA
-<br>WHEN I request a new VisionModule is created for this NEW USB CAMREA
+<br>WHEN I request a new VisionModule is created for this NEW USB CAMERA
 <br>AND the camera does not have a VALID USB PATH
 <br>AND the camera's VIDEO DEVICE PATH is not in use by any CURRENTLY ACTIVE CAMERAS
 <br>THEN a NEW VisionModule will be started for the NEW USB CAMERA using the VIDEO DEVICE PATH
