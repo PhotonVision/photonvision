@@ -145,7 +145,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     /**
-     * Returns the match Data collected from the NT. eg : Q58 for qualfication match 58. If not in
+     * Returns the match Data collected from the NT. eg : Q58 for qualification match 58. If not in
      * event, returns N/A-0-EVENTNAME
      */
     private String getMatchData() {

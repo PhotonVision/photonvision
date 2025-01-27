@@ -432,7 +432,7 @@ public class RequestHandler {
             var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
             // In the command below:
             // dmesg = output all kernel logs since current boot
-            // cat /var/log/kern.log = output all kernal logs since first boot
+            // cat /var/log/kern.log = output all kernel logs since first boot
             shell.executeBashCommand(
                     "journalctl -u photonvision.service > "
                             + tempPath.toAbsolutePath()
@@ -467,8 +467,8 @@ public class RequestHandler {
             }
         } catch (IOException e) {
             ctx.status(500);
-            ctx.result("There was an error while exporting journactl logs");
-            logger.error("There was an error while exporting journactl logs", e);
+            ctx.result("There was an error while exporting journalctl logs");
+            logger.error("There was an error while exporting journalctl logs", e);
         }
     }
 
