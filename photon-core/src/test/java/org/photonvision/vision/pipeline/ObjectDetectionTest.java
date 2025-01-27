@@ -84,7 +84,4 @@ public class ObjectDetectionTest {
         }
     }
 
-    public static void main(String[] args) {
-        testNameVerification(passNames, failNames);
-    }
 }
