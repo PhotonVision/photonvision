@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Pattern;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -300,5 +301,25 @@ public class NeuralNetworkModelManager {
         } catch (IOException | URISyntaxException e) {
             logger.error("Error extracting models", e);
         }
+    }
+
+    /**
+     * Check naming conventions for models and labels.
+     *
+     * @param modelName the name of the model
+     * @param labelsName the name of the labels file
+     * @return true if the names are valid, false otherwise
+     */
+    public boolean verifyModelName(String modelName, String labelsName) {
+        Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9._]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+
+        Pattern labelsPattern =
+                Pattern.compile("^[a-zA-Z0-9._]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+
+        return modelPattern.matcher(modelName).matches()
+                && labelsPattern.matcher(labelsName).matches()
+                && modelName
+                        .substring(0, modelName.lastIndexOf('.'))
+                        .equals(labelsName.substring(0, labelsName.lastIndexOf('-')));
     }
 }
