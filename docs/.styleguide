@@ -12,5 +12,6 @@ modifiableFileExclude {
   \.ico$
   \.rknn$
   \.svg$
+  \.woff2$
   gradlew
 }
