@@ -83,5 +83,4 @@ public class ObjectDetectionTest {
             assert !NeuralNetworkModelManager.verifyModelName(failName[0], failName[1]);
         }
     }
-
 }
