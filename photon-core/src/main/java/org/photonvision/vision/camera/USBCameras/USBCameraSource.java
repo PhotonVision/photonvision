@@ -180,7 +180,7 @@ public class USBCameraSource extends VisionSource {
         // And update the settables' FrameStaticProps
         settables.setVideoMode(oldVideoMode);
 
-        // Propogate our updated settables over to the frame provider
+        // Propagate our updated settables over to the frame provider
         ((USBFrameProvider) this.usbFrameProvider).updateSettables(this.settables);
     }
 
