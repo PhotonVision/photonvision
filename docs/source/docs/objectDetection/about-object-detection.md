@@ -44,7 +44,9 @@ PhotonVision currently ONLY supports 640x640 YOLOv5 & YOLOv8 models trained and 
 :::
 
 In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
-should be `name-verticalResolution-horizontalResolution-modelType`. Additionally, the labels
-file ought to have the same name as the RKNN file, with `-labels` appended to the end. For example, if the
-RKNN file is named `note-640-640-yolov5s.rknn`, the labels file should be named
-`note-640-640-yolov5s-labels.txt`.
+should be `name-verticalResolution-horizontalResolution-modelType`. The
+`name` should only include alphanumeric characters, periods, and underscores. Additionally, the labels
+file ought to have the same name as the RKNN file, with `-labels` appended to the end. For
+example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the labels file should be
+named `Algae_1.03.2025-640-640-yolov5s-labels.txt`. Note that ONLY 640x640 YOLOv5 & YOLOv8 models
+trained and converted to `.rknn` format for RK3588 CPUs are currently supported!

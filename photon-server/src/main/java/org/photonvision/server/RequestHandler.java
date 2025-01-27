@@ -575,10 +575,10 @@ public class RequestHandler {
             // verify naming convention
             // this check will need to be modified if different model types are added
 
-            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9._]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
 
             Pattern labelsPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+                    Pattern.compile("^[a-zA-Z0-9._]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
 
             if (!modelPattern.matcher(modelFile.filename()).matches()
                     || !labelsPattern.matcher(labelsFile.filename()).matches()
