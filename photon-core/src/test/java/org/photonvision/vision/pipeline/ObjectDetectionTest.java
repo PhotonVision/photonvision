@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 
 public class ObjectDetectionTest {
-
     private static LinkedList<String[]> passNames =
             new LinkedList<String[]>(
                     java.util.Arrays.asList(
