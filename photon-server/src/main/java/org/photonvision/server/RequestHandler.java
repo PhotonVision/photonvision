@@ -571,9 +571,9 @@ public class RequestHandler {
                 return;
             }
 
+            NeuralNetworkModelManager.getInstance();
             // verify naming convention
-            if (!NeuralNetworkModelManager.getInstance()
-                    .verifyModelName(modelFile.filename(), labelsFile.filename())) {
+            if (!NeuralNetworkModelManager.verifyModelName(modelFile.filename(), labelsFile.filename())) {
                 ctx.status(400);
                 ctx.result("The uploaded files were not named correctly.");
                 logger.error("The uploaded object detection model files were not named correctly.");

@@ -303,6 +303,9 @@ public class NeuralNetworkModelManager {
         }
     }
 
+    // this is static so that it can be accessed for tests without needing to create
+    // an instance of
+    // the class
     /**
      * Check naming conventions for models and labels.
      *
@@ -310,7 +313,12 @@ public class NeuralNetworkModelManager {
      * @param labelsName the name of the labels file
      * @return true if the names are valid, false otherwise
      */
-    public boolean verifyModelName(String modelName, String labelsName) {
+    public static boolean verifyModelName(String modelName, String labelsName) {
+        // check null
+        if (modelName == null || labelsName == null) {
+            return false;
+        }
+
         Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9._]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
 
         Pattern labelsPattern =
