@@ -319,6 +319,8 @@ public class NeuralNetworkModelManager {
             return false;
         }
 
+        // These patterns check that the naming convention of
+        // name-widthResolution-heightResolution-modelType is followed
         Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9._]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
 
         Pattern labelsPattern =
