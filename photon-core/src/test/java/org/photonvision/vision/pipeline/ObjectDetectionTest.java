@@ -85,10 +85,7 @@ public class ObjectDetectionTest {
 
     static Stream<Arguments> nameProvider() {
         return Stream.concat(
-            passNames.stream().map(name -> Arguments.of(true, name)),
-            failNames.stream().map(name -> Arguments.of(false, name))
-        );
+                passNames.stream().map(name -> Arguments.of(true, name)),
+                failNames.stream().map(name -> Arguments.of(false, name)));
     }
-        
-    
 }
