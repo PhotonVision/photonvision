@@ -17,8 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.LinkedList;
-import org.junit.jupiter.api.Test;
+import java.util.stream.Stream;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 
 public class ObjectDetectionTest {
@@ -72,15 +77,18 @@ public class ObjectDetectionTest {
                             new String[] {"A123-640-640.rknn", "different-labels.txt"},
                             new String[] {"z_y_test.model", ""}));
 
-    @Test
-    public static void testNameVerification(
-            LinkedList<String[]> passNames, LinkedList<String[]> failNames) {
-        for (String[] passName : passNames) {
-            assert NeuralNetworkModelManager.verifyModelName(passName[0], passName[1]);
-        }
-
-        for (String[] failName : failNames) {
-            assert !NeuralNetworkModelManager.verifyModelName(failName[0], failName[1]);
-        }
+    @ParameterizedTest
+    @MethodSource("nameProvider")
+    public void testNameVerification(boolean expected, String[] namePair) {
+        assertEquals(expected, NeuralNetworkModelManager.verifyModelName(namePair[0], namePair[1]));
     }
+
+    static Stream<Arguments> nameProvider() {
+        return Stream.concat(
+            passNames.stream().map(name -> Arguments.of(true, name)),
+            failNames.stream().map(name -> Arguments.of(false, name))
+        );
+    }
+        
+    
 }
