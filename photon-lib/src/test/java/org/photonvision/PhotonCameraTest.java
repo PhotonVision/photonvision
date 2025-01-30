@@ -122,7 +122,7 @@ class PhotonCameraTest {
 
     private static Stream<Arguments> testNtOffsets() {
         return Stream.of(
-                // various initializaiton orders
+                // various initialization orders
                 Arguments.of(1, 10, 30, 30),
                 Arguments.of(10, 2, 30, 30),
                 Arguments.of(10, 10, 30, 30),
