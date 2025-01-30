@@ -27,9 +27,7 @@ public class InnoOV9281CameraSettables extends GenericUSBCameraSettables {
 
     @Override
     protected void setUpExposureProperties() {
-	logger.debug("pre super setup");
         super.setUpExposureProperties();
-	logger.debug("post super setup");
 
         // Property limits are incorrect
         this.minExposure = 1;

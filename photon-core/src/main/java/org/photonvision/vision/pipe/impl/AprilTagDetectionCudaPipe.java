@@ -29,15 +29,12 @@ import org.opencv.core.Mat;
 public class AprilTagDetectionCudaPipe
         extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionCudaPipeParams>
         implements Releasable {
-    //private AprilTagDetector m_detector = new AprilTagDetector();
     private GpuDetectorJNI m_cudadetector = new GpuDetectorJNI();
     private long handle = 0;
 
     public AprilTagDetectionCudaPipe() {
         super();
 
-        //m_detector.addFamily("tag16h5");
-        //m_detector.addFamily("tag36h11");
 	handle = m_cudadetector.createGpuDetector(640,480); // just a guess
     }
 
@@ -46,10 +43,6 @@ public class AprilTagDetectionCudaPipe
         if (in.getMat().empty()) {
             return List.of();
         }
-
-        //if (m_detector == null) {
-        //    throw new RuntimeException("Apriltag detector was released!");
-        //}
 
         var ret = m_cudadetector.processimage(handle, in.getMat().getNativeObjAddr());
 
@@ -63,11 +56,6 @@ public class AprilTagDetectionCudaPipe
     @Override
     public void setParams(AprilTagDetectionCudaPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
-            //m_detector.setConfig(newParams.detectorParams);
-
-            //m_detector.clearFamilies();
-            //m_detector.addFamily(newParams.family.getNativeName());
-
 		if( newParams.cameraCalibrationCoefficients == null ) return;
 
 		final Mat cameraMatrix = newParams.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
@@ -91,8 +79,6 @@ public class AprilTagDetectionCudaPipe
 
     @Override
     public void release() {
-        //m_detector.close();
-        //m_detector = null;
 	m_cudadetector.destroyGpuDetector(handle);
 	m_cudadetector = null;
     }

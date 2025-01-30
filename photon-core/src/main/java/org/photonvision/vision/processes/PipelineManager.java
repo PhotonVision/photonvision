@@ -269,7 +269,6 @@ public class PipelineManager {
                         new AprilTagCudaPipeline((AprilTagCudaPipelineSettings) desiredPipelineSettings);
             }
             case Aruco -> {
-
                 logger.debug("Creating Aruco Pipeline");
                 currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
             }

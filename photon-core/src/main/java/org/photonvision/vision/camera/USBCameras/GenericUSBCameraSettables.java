@@ -183,11 +183,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 0);
             softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
-            softSet("white_balance_auto_preset", 2); // Auto white-balance disabled
-            softSet("white_balance_automatic", 0);
-            //softSet("white_balance_temperature", whiteBalanceTemperature); // Comment to compile
-	        if(autoExposureProp != null)
-            	autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+            if(autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
             // Most cameras leave exposure time absolute at the last value from their AE
             // algorithm.
@@ -199,10 +195,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             softSet("auto_exposure_bias", 12);
             softSet("iso_sensitivity_auto", 1);
             softSet("iso_sensitivity", 1); // Manual ISO adjustment by default
-            softSet("white_balance_auto_preset", 1); // Auto white-balance enabled
-            softSet("white_balance_automatic", 1);
-            if(autoExposureProp != null)
-                autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            if(autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
         }
     }
 
@@ -220,8 +213,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-	    	    if(autoExposureProp != null)
-                    autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
+                if(autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
                 int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
 
@@ -247,7 +239,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     @Override
     public void setBrightness(int brightness) {
         try {
-            //camera.setBrightness(brightness);
 	    softSet("brightness", brightness);
             this.lastBrightness = brightness;
         } catch (VideoException e) {
@@ -290,9 +281,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
 
             for (VideoMode videoMode : modes) {
-                // Filter grey modes
-                if (/*videoMode.pixelFormat == PixelFormat.kGray
-                        || */ videoMode.pixelFormat == PixelFormat.kUnknown) {
+                // Filter unknown modes
+                if ( videoMode.pixelFormat == PixelFormat.kUnknown) {
                     continue;
                 }
 
