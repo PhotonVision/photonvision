@@ -21,20 +21,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.photonvision.PhotonVersion;
-import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.networking.NetworkManager;
-import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.mrcal.MrCalJNILoader;
-import org.photonvision.raspi.LibCameraJNILoader;
-//import org.photonvision.jetson.JetsonMipiJNILoader;
-import org.photonvision.vision.calibration.UICameraCalibrationCoefficients;
-import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 
 public class PhotonConfiguration {
@@ -115,54 +101,6 @@ public class PhotonConfiguration {
         cameraConfigurations.put(name, config);
     }
 
-    // public Map<String, Object> toHashMap() {
-    //     Map<String, Object> map = new HashMap<>();
-    //     var settingsSubmap = new HashMap<String, Object>();
-
-    //     // Hack active interfaces into networkSettings
-    //     var netConfigMap = networkConfig.toHashMap();
-    //     netConfigMap.put("networkInterfaceNames", NetworkUtils.getAllWiredInterfaces());
-    //     netConfigMap.put("networkingDisabled", NetworkManager.getInstance().networkingIsDisabled);
-
-    //     settingsSubmap.put("networkSettings", netConfigMap);
-
-    //     var lightingConfig = new UILightingConfig();
-    //     lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
-    //     lightingConfig.supported = !hardwareConfig.ledPins.isEmpty();
-    //     settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
-    //     // General Settings
-    //     var generalSubmap = new HashMap<String, Object>();
-    //     generalSubmap.put("version", PhotonVersion.versionString);
-    //     generalSubmap.put(
-    //             "gpuAcceleration",
-    //             LibCameraJNILoader.isSupported()
-    //                     ? "Zerocopy Libcamera Working"
-    //                     : ""); // TODO add support for other types of GPU accel
-    //     generalSubmap.put(
-    //             "cudaAcceleration",
-    //             false //JetsonMipiJNILoader.isSupported()
-    //                     ? "Jetson Cuda and mipi Working"
-    //                     : "");
-    //     generalSubmap.put("mrCalWorking", MrCalJNILoader.getInstance().isLoaded());
-    //     generalSubmap.put("availableModels", NeuralNetworkModelManager.getInstance().getModels());
-    //     generalSubmap.put(
-    //             "supportedBackends", NeuralNetworkModelManager.getInstance().getSupportedBackends());
-    //     generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
-    //     generalSubmap.put("hardwarePlatform", Platform.getPlatformName());
-    //     settingsSubmap.put("general", generalSubmap);
-    //     // AprilTagFieldLayout
-    //     settingsSubmap.put("atfl", this.atfl);
-
-    //     map.put(
-    //             "cameraSettings",
-    //             VisionModuleManager.getInstance().getModules().stream()
-    //                     .map(VisionModule::toUICameraConfig)
-    //                     .map(SerializationUtils::objectToHashMap)
-    //                     .collect(Collectors.toList()));
-    //     map.put("settings", settingsSubmap);
-
-    //     return map;
-    // } // Comment to compile
     /**
      * Delete a camera by its unique name
      *

@@ -42,7 +42,6 @@ import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
-//import org.photonvision.jetson.JetsonMipiJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -229,13 +228,6 @@ public class Main {
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
-	/*try {
-	    if (Platform.isJetson()) {
-                JetsonMipiJNILoader.forceLoad();
-            }
-	} catch (IOException e) {
-	    logger.error("Faileto load JetsonMipiJNI!", e);
-	}*/
         try {
             if (Platform.isRK3588()) {
                 RknnDetectorJNI.forceLoad();
