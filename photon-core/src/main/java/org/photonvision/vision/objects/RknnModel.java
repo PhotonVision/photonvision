@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import org.opencv.core.Size;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.jni.RknnObjectDetector;
 import org.photonvision.rknn.RknnJNI;
 
@@ -63,10 +64,7 @@ public class RknnModel implements Model {
     public RknnModel(File modelFile, String labels) throws IllegalArgumentException, IOException {
         this.modelFile = modelFile;
 
-        String[] parts = modelFile.getName().split("-");
-        if (parts.length != 4) {
-            throw new IllegalArgumentException("Invalid model file name: " + modelFile);
-        }
+        String[] parts = NeuralNetworkModelManager.verifyModelName(modelFile.getName());
 
         this.version = getModelVersion(parts[3]);
 
