@@ -98,7 +98,6 @@ public class ObjectDetectionTest {
     @ParameterizedTest
     @MethodSource("verifyPassNameProvider")
     public void testRKNNVerificationPass(String[] names) {
-
         NeuralNetworkModelManager.verifyRKNNNames(names[0], names[1]);
     }
 
@@ -106,7 +105,6 @@ public class ObjectDetectionTest {
     @ParameterizedTest
     @MethodSource("verifyFailNameProvider")
     public void testRNNVerificationFail(String[] names) {
-
         assertThrows(
                 IllegalArgumentException.class,
                 () -> NeuralNetworkModelManager.verifyRKNNNames(names[0], names[1]));
