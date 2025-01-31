@@ -58,7 +58,23 @@ public class ObjectDetectionTest {
                             new String[] {
                                 "z_y_test.model-640-640-yolov8n.rknn", "z_y_test.model-640-640-yolov8n-labels.txt"
                             }));
-
+    private static LinkedList<String[]> parsedPassNames =
+            new LinkedList<String[]>(
+                    java.util.Arrays.asList(
+                            new String[] {"note", "640", "640", "yolov5s"},
+                            new String[] {"object", "640", "640", "yolov8n"},
+                            new String[] {"example_1.2", "640", "640", "yolov5l"},
+                            new String[] {"demo_3.5", "640", "640", "yolov8m"},
+                            new String[] {"sample", "640", "640", "yolov5x"},
+                            new String[] {"test_case", "640", "640", "yolov8s"},
+                            new String[] {"model_ABC", "640", "640", "yolov5n"},
+                            new String[] {"my_model", "640", "640", "yolov8x"},
+                            new String[] {"name_1.0", "640", "640", "yolov5n"},
+                            new String[] {"valid_name", "640", "640", "yolov8s"},
+                            new String[] {"test.model", "640", "640", "yolov5l"},
+                            new String[] {"case1_test", "640", "640", "yolov8m"},
+                            new String[] {"A123", "640", "640", "yolov5x"},
+                            new String[] {"z_y_test.model", "640", "640", "yolov8n"}));
     private static LinkedList<String[]> failNames =
             new LinkedList<String[]>(
                     java.util.Arrays.asList(
@@ -78,14 +94,26 @@ public class ObjectDetectionTest {
                             new String[] {"z_y_test.model", ""}));
 
     @ParameterizedTest
-    @MethodSource("nameProvider")
-    public void testNameVerification(boolean expected, String[] namePair) {
-        assertEquals(expected, NeuralNetworkModelManager.verifyModelName(namePair[0], namePair[1]));
+    @MethodSource("verifyNameProvider")
+    public void testRKNNNameVerification(boolean expected, String[] namePair) {
+        assertEquals(expected, NeuralNetworkModelManager.verifyRKNNNames(namePair[0], namePair[1]));
     }
 
-    static Stream<Arguments> nameProvider() {
+    @ParameterizedTest
+    @MethodSource("parseNameProvider")
+    public void testRKNNNameParsing(String[] expected, String name) {
+        assertEquals(expected, NeuralNetworkModelManager.parseRKNNName(name));
+    }
+
+    static Stream<Arguments> verifyNameProvider() {
         return Stream.concat(
                 passNames.stream().map(name -> Arguments.of(true, name)),
                 failNames.stream().map(name -> Arguments.of(false, name)));
+    }
+
+    static Stream<Arguments> parseNameProvider() {
+        // return a stream of parsed pass names, and the first element of each pass name
+        return passNames.stream()
+                .map(name -> Arguments.of(parsedPassNames.get(passNames.indexOf(name)), name[0]));
     }
 }

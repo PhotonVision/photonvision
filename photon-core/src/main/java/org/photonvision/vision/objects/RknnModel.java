@@ -64,7 +64,7 @@ public class RknnModel implements Model {
     public RknnModel(File modelFile, String labels) throws IllegalArgumentException, IOException {
         this.modelFile = modelFile;
 
-        String[] parts = NeuralNetworkModelManager.verifyModelName(modelFile.getName());
+        String[] parts = NeuralNetworkModelManager.parseRKNNName(modelFile.getName());
 
         this.version = getModelVersion(parts[3]);
 

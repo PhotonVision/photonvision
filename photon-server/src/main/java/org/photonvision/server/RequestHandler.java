@@ -572,7 +572,7 @@ public class RequestHandler {
             }
 
             // verify naming convention
-            NeuralNetworkModelManager.verifyModelName(modelFile.filename(), labelsFile.filename());
+            NeuralNetworkModelManager.verifyRKNNNames(modelFile.filename(), labelsFile.filename());
 
             // TODO move into neural network manager
 
