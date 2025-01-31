@@ -317,9 +317,9 @@ public class NeuralNetworkModelManager {
      *
      * @param modelName the name of the model
      * @param labelsName the name of the labels file
-     * @return true if the names are valid, false otherwise
+     * @throws IllegalArgumentException if the names are invalid
      */
-    public static boolean verifyRKNNNames(String modelName, String labelsName) {
+    public static void verifyRKNNNames(String modelName, String labelsName) {
         // check null
         if (modelName == null || labelsName == null) {
             throw new IllegalArgumentException("Model name and labels name cannot be null");
@@ -342,14 +342,15 @@ public class NeuralNetworkModelManager {
                 || !modelMatcher.group(4).equals(labelsMatcher.group(4))) {
             throw new IllegalArgumentException("Model name and labels name must be matching.");
         }
-
-        return true;
     }
 
     /**
      * Parse RKNN name and return the name, width, height, and model type.
      *
+     * <p>This is static as it is not dependent on the state of the class.
+     *
      * @param modelName the name of the model
+     * @throws IllegalArgumentException if the model name does not follow the naming convention
      * @return an array containing the name, width, height, and model type
      */
     public static String[] parseRKNNName(String modelName) {

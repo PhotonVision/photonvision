@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.LinkedList;
 import java.util.stream.Stream;
@@ -93,22 +94,37 @@ public class ObjectDetectionTest {
                             new String[] {"A123-640-640.rknn", "different-labels.txt"},
                             new String[] {"z_y_test.model", ""}));
 
+    // Test the model name validation for names that ought to pass
     @ParameterizedTest
-    @MethodSource("verifyNameProvider")
-    public void testRKNNNameVerification(boolean expected, String[] namePair) {
-        assertEquals(expected, NeuralNetworkModelManager.verifyRKNNNames(namePair[0], namePair[1]));
+    @MethodSource("validatePassNameProvider")
+    public void testModelValidationPass(String[] names) {
+
+        NeuralNetworkModelManager.verifyRKNNNames(names[0], names[1]);
     }
 
+    // Test the model name validation for names that ought to fail
+    @ParameterizedTest
+    @MethodSource("validateFailNameProvider")
+    public void testModelValidationFail(String[] names) {
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> NeuralNetworkModelManager.verifyRKNNNames(names[0], names[1]));
+    }
+
+    // Test the model name parsing
     @ParameterizedTest
     @MethodSource("parseNameProvider")
     public void testRKNNNameParsing(String[] expected, String name) {
         assertEquals(expected, NeuralNetworkModelManager.parseRKNNName(name));
     }
 
-    static Stream<Arguments> verifyNameProvider() {
-        return Stream.concat(
-                passNames.stream().map(name -> Arguments.of(true, name)),
-                failNames.stream().map(name -> Arguments.of(false, name)));
+    static Stream<Arguments> validatePassNameProvider() {
+        return passNames.stream().map(Arguments::of);
+    }
+
+    static Stream<Arguments> validateFailNameProvider() {
+        return failNames.stream().map(Arguments::of);
     }
 
     static Stream<Arguments> parseNameProvider() {
