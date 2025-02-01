@@ -4,13 +4,13 @@
 
 PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
 
-For the 2025 season, PhotonVision does not currently ship with a pre-trained detector. If teams are interested in using object detection, they can follow the custom process outlined {ref}`below <docs/objectDetection/about-object-detection:Uploading Custom Models>`.
+For the 2025 season, PhotonVision ships with a pretrained ALGAE model.  A model to detect coral is not currently stable, and interested teams should ask in the Photonvision discord.
 
 ## Tracking Objects
 
 Before you get started with object detection, ensure that you have followed the previous sections on installation, wiring, and networking. Next, open the Web UI, go to the top right card, and switch to the “Object Detection” type. You should see a screen similar to the image above.
 
-PhotonVision does not currently ship with a pretrained model. Models are trained to detect one or more object "classes" (such as cars, stoplights) in an input image. For each detected object, the model outputs a bounding box around where in the image the object is located, what class the object belongs to, and a unitless confidence between 0 and 1.
+Models are trained to detect one or more object "classes" (such as cars, stoplights) in an input image. For each detected object, the model outputs a bounding box around where in the image the object is located, what class the object belongs to, and a unitless confidence between 0 and 1.
 
 :::{note}
 This model output means that while its fairly easy to say that "this rectangle probably contains an object", we don't have any information about the object's orientation or location. Further math in user code would be required to make estimates about where an object is physically located relative to the camera.
