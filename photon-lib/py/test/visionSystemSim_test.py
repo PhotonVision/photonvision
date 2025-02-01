@@ -335,7 +335,7 @@ def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     assert target.getYaw() == pytest.approx(0.0, abs=0.5)
 
     dist = PhotonUtils.calculateDistanceToTargetMeters(
-       robotToCamera.Z(), targetPose.Z(), -pitchParam, math.degrees(target.getPitch())
+        robotToCamera.Z(), targetPose.Z(), -pitchParam, math.degrees(target.getPitch())
     )
     assert dist == pytest.approx(distParam, abs=0.25)
 
