@@ -111,7 +111,7 @@ public enum TargetModel implements Releasable {
     k2025Algae(
             List.of(
                     new Point3(
-                            -Units.inchesToMeters(6.25) / 2,
+                            -Units.inchesToMeters(16.25) / 2,
                             -Units.inchesToMeters(16.25) / 2,
                             -Units.inchesToMeters(16.25) / 2),
                     new Point3(
