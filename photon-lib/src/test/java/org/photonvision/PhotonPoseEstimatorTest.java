@@ -24,6 +24,7 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -698,10 +699,10 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
         PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_ON_RIO, Transform3d.kZero);
+                new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_PNP_ON_RIO, Transform3d.kZero);
         estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(camera.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
         // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
         assertAll(
