@@ -645,6 +645,71 @@ class PhotonPoseEstimatorTest {
         assertEquals(2.15, pose.getZ(), .01);
     }
 
+    @Test
+    void testMultiTagOnRioFallback() {
+        PhotonCameraInjector camera = new PhotonCameraInjector();
+        camera.result =
+                new PhotonPipelineResult(
+                        0,
+                        11 * 1_000_000,
+                        1_100_000,
+                        1024,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.0,
+                                        4.0,
+                                        0,
+                                        -1,
+                                        -1,
+                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        0.7,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))),
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.1,
+                                        6.7,
+                                        1,
+                                        -1,
+                                        -1,
+                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
+                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_ON_RIO, Transform3d.kZero);
+        estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Pose3d pose = estimatedPose.get().estimatedPose;
+        // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
+        assertAll(
+            () -> assertEquals(11, estimatedPose.get().timestampSeconds),
+            () -> assertEquals(1, pose.getX(), 1e-9),
+            () -> assertEquals(3, pose.getY(), 1e-9),
+            () -> assertEquals(2, pose.getZ(), 1e-9));
+    }
+
     private static class PhotonCameraInjector extends PhotonCamera {
         public PhotonCameraInjector() {
             super("Test");
