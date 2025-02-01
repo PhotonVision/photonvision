@@ -204,6 +204,11 @@ class PhotonPoseEstimator {
 
   inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
+  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result,
+                                           PoseStrategy strategy) {
+    return Update(result, std::nullopt, std::nullopt, strategy);
+  }
+
   std::optional<EstimatedRobotPose> Update(
       const PhotonPipelineResult& result,
       std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,

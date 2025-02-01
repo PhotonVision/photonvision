@@ -286,8 +286,8 @@ public class PhotonPoseEstimator {
      *   <li>No targets were found in the pipeline results.
      * </ul>
      *
-     * Will report a warning if strategy is multi-tag-on-rio, but camera calibration data is not
-     * provided
+     * Will report a warning if strategy is multi-tag-on-rio because camera calibration data is not
+     * provided in this overload.
      *
      * @param cameraResult The latest pipeline result from the camera
      * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
@@ -342,6 +342,11 @@ public class PhotonPoseEstimator {
     }
 
     private Optional<EstimatedRobotPose> update(
+            PhotonPipelineResult cameraResult, PoseStrategy strategy) {
+        return update(cameraResult, Optional.empty(), Optional.empty(), strategy);
+    }
+
+    private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs,
@@ -357,21 +362,8 @@ public class PhotonPoseEstimator {
                         yield closestToReferencePoseStrategy(cameraResult, referencePose);
                     }
                     case AVERAGE_BEST_TARGETS -> averageBestTargetsStrategy(cameraResult);
-                    case MULTI_TAG_PNP_ON_RIO -> {
-                        if (cameraMatrix.isEmpty()) {
-                            DriverStation.reportWarning(
-                                    "Camera matrix is empty for multi-tag-on-rio",
-                                    Thread.currentThread().getStackTrace());
-                            yield Optional.empty();
-                        } else if (distCoeffs.isEmpty()) {
-                            DriverStation.reportWarning(
-                                    "Camera matrix is empty for multi-tag-on-rio",
-                                    Thread.currentThread().getStackTrace());
-                            yield Optional.empty();
-                        } else {
-                            yield multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
-                        }
-                    }
+                    case MULTI_TAG_PNP_ON_RIO ->
+                            multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
                     case MULTI_TAG_PNP_ON_COPROCESSOR -> multiTagOnCoprocStrategy(cameraResult);
                 };
 
@@ -383,41 +375,44 @@ public class PhotonPoseEstimator {
     }
 
     private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(PhotonPipelineResult result) {
-        if (result.getMultiTagResult().isPresent()) {
-            var best_tf = result.getMultiTagResult().get().estimatedPose.best;
-            var best =
-                    new Pose3d()
-                            .plus(best_tf) // field-to-camera
-                            .relativeTo(fieldTags.getOrigin())
-                            .plus(robotToCamera.inverse()); // field-to-robot
-            return Optional.of(
-                    new EstimatedRobotPose(
-                            best,
-                            result.getTimestampSeconds(),
-                            result.getTargets(),
-                            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR));
-        } else {
-            // We can never fall back on another multitag strategy
-            return update(result, Optional.empty(), Optional.empty(), this.multiTagFallbackStrategy);
+        if (result.getMultiTagResult().isEmpty()) {
+            return update(result, this.multiTagFallbackStrategy);
         }
+
+        var best_tf = result.getMultiTagResult().get().estimatedPose.best;
+        var best =
+                new Pose3d()
+                        .plus(best_tf) // field-to-camera
+                        .relativeTo(fieldTags.getOrigin())
+                        .plus(robotToCamera.inverse()); // field-to-robot
+        return Optional.of(
+                new EstimatedRobotPose(
+                        best,
+                        result.getTimestampSeconds(),
+                        result.getTargets(),
+                        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR));
     }
 
     private Optional<EstimatedRobotPose> multiTagOnRioStrategy(
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N8, N1>> distCoeffsOpt) {
-        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
-        // cannot run multitagPNP, use fallback strategy
-        if (!hasCalibData || result.getTargets().size() < 2) {
-            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        if (cameraMatrixOpt.isEmpty() || distCoeffsOpt.isEmpty()) {
+            DriverStation.reportWarning(
+                    "No camera calibration data provided for multi-tag-on-rio",
+                    Thread.currentThread().getStackTrace());
+            return update(result, this.multiTagFallbackStrategy);
+        }
+
+        if (result.getTargets().size() < 2) {
+            return update(result, this.multiTagFallbackStrategy);
         }
 
         var pnpResult =
                 VisionEstimation.estimateCamPosePNP(
                         cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags, tagModel);
         // try fallback strategy if solvePNP fails for some reason
-        if (!pnpResult.isPresent())
-            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        if (!pnpResult.isPresent()) return update(result, this.multiTagFallbackStrategy);
         var best =
                 new Pose3d()
                         .plus(pnpResult.get().best) // field-to-camera
