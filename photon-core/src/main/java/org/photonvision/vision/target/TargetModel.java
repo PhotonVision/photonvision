@@ -108,6 +108,25 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(9.5) / 2,
                             -Units.inchesToMeters(9.5) / 2)),
             0),
+    k2025Algae(
+                List.of(
+                        new Point3(
+                                -Units.inchesToMeters(6.25) / 2,
+                                -Units.inchesToMeters(16.25) / 2,
+                                -Units.inchesToMeters(16.25) / 2),
+                        new Point3(
+                                -Units.inchesToMeters(16.25) / 2,
+                                Units.inchesToMeters(16.25) / 2,
+                                -Units.inchesToMeters(16.25) / 2),
+                        new Point3(
+                                Units.inchesToMeters(16.25) / 2,
+                                Units.inchesToMeters(16.25) / 2,
+                                -Units.inchesToMeters(16.25) / 2),
+                        new Point3(
+                                Units.inchesToMeters(16.25) / 2,
+                                -Units.inchesToMeters(16.25) / 2,
+                                -Units.inchesToMeters(16.25) / 2)),
+                0),
     // 2023 AprilTag, with 6 inch marker width (inner black square).
     @JsonAlias({"k6in_16h5"})
     kAprilTag6in_16h5(
