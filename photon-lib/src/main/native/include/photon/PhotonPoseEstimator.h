@@ -204,6 +204,16 @@ class PhotonPoseEstimator {
 
   inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
+  /**
+   * Internal convenience method for using a fallback strategy for update().
+   * This should only be called after timestamp checks have been done by another
+   * update() overload.
+   *
+   * @param cameraResult The latest pipeline result from the camera
+   * @param strategy The pose strategy to use
+   * @return an EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate.
+   */
   std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result,
                                            PoseStrategy strategy) {
     return Update(result, std::nullopt, std::nullopt, strategy);

@@ -341,6 +341,15 @@ public class PhotonPoseEstimator {
         return update(cameraResult, cameraMatrix, distCoeffs, this.primaryStrategy);
     }
 
+    /**
+     * Internal convenience method for using a fallback strategy for update(). This should only be
+     * called after timestamp checks have been done by another update() overload.
+     *
+     * @param cameraResult The latest pipeline result from the camera
+     * @param strategy The pose strategy to use
+     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
+     *     create the estimate.
+     */
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult, PoseStrategy strategy) {
         return update(cameraResult, Optional.empty(), Optional.empty(), strategy);
