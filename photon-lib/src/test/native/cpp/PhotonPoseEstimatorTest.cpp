@@ -420,7 +420,7 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
   EXPECT_FALSE(estimatedPose);
 }
 
-TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
+TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
