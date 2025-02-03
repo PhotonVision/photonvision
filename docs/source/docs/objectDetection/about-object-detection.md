@@ -2,7 +2,7 @@
 
 ## How does it work?
 
-PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
+PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. Please note that the Orange Pi 5/5+ are the only coprocessors that are currently supported. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
 
 For the 2025 season, PhotonVision ships with a pretrained ALGAE model.  A model to detect coral is not currently stable, and interested teams should ask in the Photonvision discord.
 
