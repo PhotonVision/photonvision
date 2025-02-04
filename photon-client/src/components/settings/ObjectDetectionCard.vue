@@ -8,6 +8,12 @@ const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
 
+// Filters out models that are not supported by the current backend, and returns a flattened list.
+const supportedModels = computed(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+});
+
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
   if (importRKNNFile.value === null || importLabelsFile.value === null) return;
@@ -57,11 +63,102 @@ const handleImport = async () => {
   importLabelsFile.value = null;
 };
 
-// Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
-  const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
-});
+const deleteModel = ref<String | null>(null);
+const showDeletionDialog = ref(false);
+
+const handleDeletion = () => {
+  useStateStore().showSnackbarMessage({
+    message: "Deleting Object Detection Model...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  if (deleteModel.value === null) return;
+
+  axios
+    .post("/utils/deleteObjectDetectionModel", {}, { params: { modelName: deleteModel.value.toString() } })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+
+  deleteModel.value = null;
+  showDeletionDialog.value = false;
+};
+
+const showNameEditDialog = ref(false);
+const oldName = ref<String | null>(null);
+const newName = ref<string | null>(null);
+
+const handleRename = () => {
+  useStateStore().showSnackbarMessage({
+    message: "Editing Object Detection Model Name...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  if (oldName.value === null || newName.value === null) return;
+
+  axios
+    .post(
+      "/utils/renameObjectDetectionModel",
+      {},
+      {
+        params: {
+          oldName: oldName.value.toString(),
+          newName: newName.value.toString()
+        }
+      }
+    )
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+
+  showNameEditDialog.value = false;
+  oldName.value = null;
+  newName.value = null;
+};
 </script>
 
 <template>
@@ -116,6 +213,68 @@ const supportedModels = computed(() => {
               </v-card-text>
             </v-card>
           </v-dialog>
+          <v-dialog
+            v-model="showNameEditDialog"
+            width="600"
+            @input="
+              () => {
+                newName = null;
+              }
+            "
+          >
+            <v-card color="primary" dark>
+              <v-card-title>Edit Object Detection Model Name</v-card-title>
+              <v-card-text>
+                Change the name of <code>{{ oldName }}</code
+                >. The new name must be unique, and contain no spaces. Naming convention should be
+                <code>name-verticalResolution-horizontalResolution-modelType</code>. For example,
+                <code>note-640-640-yolov5s</code>.
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-text-field v-model="newName" label="New Name" outlined dense clearable required></v-text-field>
+                </v-row>
+                <v-row
+                  class="mt-12 ml-8 mr-8 mb-1"
+                  style="display: flex; align-items: center; justify-content: center"
+                  align="center"
+                >
+                  <v-btn
+                    color="secondary"
+                    :disabled="newName === null || !/^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]$/.test(newName)"
+                    @click="handleRename"
+                  >
+                    <v-icon left class="open-icon"> mdi-pencil </v-icon>
+                    <span class="open-label">Edit Object Detection Model Name</span>
+                  </v-btn>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+          <v-dialog
+            v-model="showDeletionDialog"
+            width="600"
+            @input="
+              () => {
+                newName = null;
+              }
+            "
+          >
+            <v-card color="primary" dark>
+              <v-card-title>Delete {{ deleteModel }}</v-card-title>
+              <v-card-text>
+                Are you sure you want to delete this model?
+                <v-row
+                  class="mt-12 ml-8 mr-8 mb-1"
+                  style="display: flex; align-items: center; justify-content: center"
+                  align="center"
+                >
+                  <v-btn color="error" @click="handleDeletion">
+                    <v-icon left class="open-icon"> mdi-delete </v-icon>
+                    <span class="open-label">Yes, I'm Sure</span>
+                  </v-btn>
+                </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
         </v-col>
       </v-row>
       <v-row>
@@ -129,6 +288,16 @@ const supportedModels = computed(() => {
             <tbody>
               <tr v-for="model in supportedModels" :key="model">
                 <td>{{ model }}</td>
+                <td>
+                  <v-btn color="secondary" @click="() => ((oldName = model), (showNameEditDialog = true))">
+                    <v-icon left class="open-icon"> mdi-pencil </v-icon>
+                  </v-btn>
+                </td>
+                <td>
+                  <v-btn color="error" @click="() => ((deleteModel = model), (showDeletionDialog = true))">
+                    <v-icon left class="open-icon"> mdi-delete </v-icon>
+                  </v-btn>
+                </td>
               </tr>
             </tbody>
           </v-simple-table>

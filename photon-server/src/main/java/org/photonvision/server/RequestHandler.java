@@ -575,10 +575,10 @@ public class RequestHandler {
             // verify naming convention
             // this check will need to be modified if different model types are added
 
-            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
+            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]\\.rknn$");
 
             Pattern labelsPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
+                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]-labels\\.txt$");
 
             if (!modelPattern.matcher(modelFile.filename()).matches()
                     || !labelsPattern.matcher(labelsFile.filename()).matches()
@@ -613,6 +613,116 @@ public class RequestHandler {
                     .discoverModels(ConfigManager.getInstance().getModelsDirectory());
 
             ctx.status(200).result("Successfully uploaded object detection model");
+        } catch (Exception e) {
+            ctx.status(500).result("Error processing files: " + e.getMessage());
+            logger.error("Error processing files: " + e.getMessage());
+            return;
+        }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+    }
+
+    public static void onDeleteObjectDetectionModelRequest(Context ctx) {
+        try {
+            // check null
+            if (ctx.queryParam("modelName") == null) {
+                ctx.status(400);
+                ctx.result("No model name was provided");
+                logger.error("No model name was provided");
+                return;
+            }
+
+            String modelName = ctx.queryParam("modelName");
+            Path modelPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), modelName + ".rknn");
+            Path labelsPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(),
+                            modelName + "-labels.txt");
+
+            if (!Files.deleteIfExists(modelPath)) {
+                ctx.status(500);
+                ctx.result("Error deleting file: " + modelName + ".rknn located at " + modelPath);
+                logger.error("Error deleting file: " + modelName + ".rknn located at " + modelPath);
+                return;
+            }
+
+            if (!Files.deleteIfExists(labelsPath)) {
+                ctx.status(500);
+                ctx.result("Error deleting file: " + modelName + "-labels.txt located at " + labelsPath);
+                logger.error("Error deleting file: " + modelName + "-labels.txt located at " + labelsPath);
+                return;
+            }
+
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
+
+            ctx.status(200).result("Successfully deleted model: " + modelName);
+        } catch (Exception e) {
+            ctx.status(500).result("Error deleting model: " + e.getMessage());
+            logger.error("Error deleting model: " + e.getMessage());
+            return;
+        }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+    }
+
+    public static void onRenameObjectDetectionModelRequest(Context ctx) {
+        try {
+            // check null
+            if (ctx.queryParam("oldName") == null || ctx.queryParam("newName") == null) {
+                ctx.status(400);
+                ctx.result("No model name was provided");
+                logger.error("No model name was provided");
+                return;
+            }
+
+            // retrieve the new name and the old name.
+            String oldName = ctx.queryParam("oldName");
+            String newName = ctx.queryParam("newName");
+
+            // verify naming convention
+            // this check will need to be modified if different model types are added
+
+            Pattern namePattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][nsmlx]$");
+
+            if (!namePattern.matcher(newName).matches()) {
+                ctx.status(400);
+                ctx.result("The new name does not follow the naming convention.");
+                logger.error("The new name does not follow the naming convention.");
+                return;
+            }
+
+            // TODO move into neural network manager
+
+            var modelPath =
+                    Paths.get(ConfigManager.getInstance().getModelsDirectory().toString(), oldName + ".rknn");
+            var labelsPath =
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), oldName + "-labels.txt");
+            Files.move(
+                    modelPath,
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(), newName + ".rknn"));
+            Files.move(
+                    labelsPath,
+                    Paths.get(
+                            ConfigManager.getInstance().getModelsDirectory().toString(),
+                            newName + "-labels.txt"));
+
+            NeuralNetworkModelManager.getInstance()
+                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
+
+            ctx.status(200).result("Successfully renamed object detection model");
         } catch (Exception e) {
             ctx.status(500).result("Error processing files: " + e.getMessage());
         }
