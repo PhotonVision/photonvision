@@ -42,6 +42,8 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Atomic boolean to ensure that the native object can only be released once. */
     private AtomicBoolean released = new AtomicBoolean(false);
 
+    private boolean isUsingAllCores = true;
+
     /** Pointer to the native object */
     private final long objPointer;
 
@@ -82,7 +84,11 @@ public class RknnObjectDetector implements ObjectDetector {
     }
 
     public void setUseAllCores(boolean useAllCores) {
+        if (useAllCores == isUsingAllCores)
+            return;
+
         RknnJNI.setCoreMask(objPointer, determineCoreNum(useAllCores));
+        isUsingAllCores = useAllCores;
         System.out.println("Is using all cores: " + useAllCores);
     }
 
