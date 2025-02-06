@@ -81,6 +81,10 @@ public class RknnObjectDetector implements ObjectDetector {
         cleaner.register(this, this::release);
     }
 
+    public void setUseAllCores(boolean useAllCores) {
+        RknnJNI.setCoreMask(objPointer, determineCoreNum(useAllCores));
+    }
+
     /**
      * Returns the classes that the detector can detect
      *
@@ -147,5 +151,9 @@ public class RknnObjectDetector implements ObjectDetector {
             RknnJNI.destroy(objPointer);
             logger.debug("Released detector for model " + model.modelFile.getName());
         }
+    }
+
+    private int determineCoreNum(boolean useAllCores) {
+        return useAllCores ? 210 : -1;
     }
 }

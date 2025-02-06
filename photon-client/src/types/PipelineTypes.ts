@@ -297,6 +297,7 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   nms: number;
   box_thresh: number;
   model: string;
+  doesUseAllCores: boolean;
 }
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">

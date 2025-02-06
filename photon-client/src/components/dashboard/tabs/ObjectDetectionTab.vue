@@ -45,6 +45,15 @@ const selectedModel = computed({
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
+    <pv-switch
+        v-model="currentPipelineSettings.doesUseAllCores"
+        label="Use All Cores"
+        tooltip="Enables or Disables using all the cores of the NPU. When on, this might yeald faster results for one camera, but slower/more unstable results for multiple cameras."
+        @input="(args) => {
+          useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false);
+          RKNNJni.setCoreMask
+        }"
+    />
     <pv-select
       v-model="selectedModel"
       label="Model"

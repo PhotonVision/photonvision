@@ -75,6 +75,7 @@ public class ObjectDetectionPipeline
         params.model = selectedModel.get();
 
         objectDetectorPipe.setParams(params);
+        objectDetectorPipe.setUseAllCores(settings.useAllCores);
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
