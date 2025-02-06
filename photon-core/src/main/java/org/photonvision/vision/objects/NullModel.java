@@ -64,4 +64,8 @@ public class NullModel implements Model, ObjectDetector {
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
         return List.of();
     }
+
+    @Override
+    public void setUseAllCores(boolean useAllCores) {
+    }
 }
