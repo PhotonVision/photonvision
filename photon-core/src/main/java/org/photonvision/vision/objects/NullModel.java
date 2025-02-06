@@ -66,6 +66,5 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public void setUseAllCores(boolean useAllCores) {
-    }
+    public void setUseAllCores(boolean useAllCores) {}
 }
