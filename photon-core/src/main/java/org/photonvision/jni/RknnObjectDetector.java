@@ -84,8 +84,7 @@ public class RknnObjectDetector implements ObjectDetector {
     }
 
     public void setUseAllCores(boolean useAllCores) {
-        if (useAllCores == isUsingAllCores)
-            return;
+        if (useAllCores == isUsingAllCores) return;
 
         RknnJNI.setCoreMask(objPointer, determineCoreNum(useAllCores));
         isUsingAllCores = useAllCores;
