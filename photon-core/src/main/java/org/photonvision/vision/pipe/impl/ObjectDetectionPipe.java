@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.List;
-import java.util.Optional;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.objects.Model;
@@ -28,15 +26,18 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
+import java.util.List;
+import java.util.Optional;
+
 public class ObjectDetectionPipe
         extends CVPipe<
-                CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
+        CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
         implements Releasable {
     private ObjectDetector detector;
 
-    public ObjectDetectionPipe() {
+    public ObjectDetectionPipe(boolean useAllCores) {
         Optional<Model> defaultModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
-        detector = defaultModel.map(Model::load).orElse(NullModel.getInstance());
+        detector = defaultModel.map((model) -> model.load(useAllCores)).orElse(NullModel.getInstance());
     }
 
     public void setUseAllCores(boolean useAllCores) {
@@ -48,8 +49,10 @@ public class ObjectDetectionPipe
         // Check if the model has changed
         if (detector.getModel() != params.model) {
             detector.release();
-            detector = params.model.load();
+            detector = params.model.load(params.useAllCores);
         }
+
+        detector.setUseAllCores(params.useAllCores);
 
         Mat frame = in.getMat();
         if (frame.empty()) {
@@ -64,8 +67,10 @@ public class ObjectDetectionPipe
         public double nms;
         public int max_detections;
         public Model model;
+        public boolean useAllCores;
 
-        public ObjectDetectionPipeParams() {}
+        public ObjectDetectionPipeParams() {
+        }
     }
 
     public List<String> getClassNames() {

@@ -85,7 +85,7 @@ public class RknnModel implements Model {
         return modelFile.getName();
     }
 
-    public ObjectDetector load() {
-        return new RknnObjectDetector(this, inputSize);
+    public ObjectDetector load(boolean useAllCores) {
+        return new RknnObjectDetector(this, inputSize, useAllCores);
     }
 }

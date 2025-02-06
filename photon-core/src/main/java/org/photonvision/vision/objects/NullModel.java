@@ -36,7 +36,7 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public ObjectDetector load() {
+    public ObjectDetector load(boolean useAllCores) {
         return this;
     }
 
@@ -66,5 +66,7 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public void setUseAllCores(boolean useAllCores) {}
+    public void setUseAllCores(boolean useAllCores) {
+        // Do nothing
+    }
 }
