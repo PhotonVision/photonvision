@@ -83,6 +83,7 @@ public class RknnObjectDetector implements ObjectDetector {
 
     public void setUseAllCores(boolean useAllCores) {
         RknnJNI.setCoreMask(objPointer, determineCoreNum(useAllCores));
+        System.out.println("Is using all cores: "  + useAllCores);
     }
 
     /**
