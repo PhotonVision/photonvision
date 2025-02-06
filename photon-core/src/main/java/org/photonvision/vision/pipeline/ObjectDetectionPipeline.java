@@ -47,11 +47,13 @@ public class ObjectDetectionPipeline
     public ObjectDetectionPipeline() {
         super(PROCESSING_TYPE);
         settings = new ObjectDetectionPipelineSettings();
+        objectDetectorPipe.setUseAllCores(settings.useAllCores);
     }
 
     public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+        objectDetectorPipe.setUseAllCores(settings.useAllCores);
     }
 
     @Override

@@ -50,7 +50,7 @@ const selectedModel = computed({
       v-model="currentPipelineSettings.useAllCores"
       label="Use All Cores"
       :label-cols="4"
-      tooltip="Enables or Disables using all the cores of the NPU. When on, this might yield faster results for one camera, but slower/more unstable results for multiple cameras."
+      tooltip="Enables or Disables using all the cores of the NPU. When on, this might yield faster results for one camera, but slower/more unstable results for multiple cameras. Might take a few seconds to take effect, or require a restart."
       @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ useAllCores: args }, true)"
     />
     <pv-select
