@@ -47,11 +47,11 @@ const selectedModel = computed({
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
     <pv-switch
-      v-model="currentPipelineSettings.doesUseAllCores"
+      v-model="currentPipelineSettings.useAllCores"
       label="Use All Cores"
       :label-cols="4"
       tooltip="Enables or Disables using all the cores of the NPU. When on, this might yield faster results for one camera, but slower/more unstable results for multiple cameras."
-      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ doesUseAllCores: args }, true)"
+      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ useAllCores: args }, true)"
     />
     <pv-select
       v-model="selectedModel"
