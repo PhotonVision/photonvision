@@ -73,7 +73,6 @@ public class ObjectDetectionPipeline
         }
 
         params.model = selectedModel.get();
-
         params.useAllCores = settings.useAllCores;
 
         objectDetectorPipe.setParams(params);
