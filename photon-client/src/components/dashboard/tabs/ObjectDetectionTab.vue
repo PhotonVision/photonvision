@@ -5,6 +5,7 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import { computed, getCurrentInstance } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import PvSwitch from "@/components/common/pv-switch.vue";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -48,8 +49,9 @@ const selectedModel = computed({
     <pv-switch
       v-model="currentPipelineSettings.doesUseAllCores"
       label="Use All Cores"
+      :label-cols="4"
       tooltip="Enables or Disables using all the cores of the NPU. When on, this might yield faster results for one camera, but slower/more unstable results for multiple cameras."
-      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ doesUseAllCores: value }, true)"
+      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ doesUseAllCores: args }, true)"
     />
     <pv-select
       v-model="selectedModel"
