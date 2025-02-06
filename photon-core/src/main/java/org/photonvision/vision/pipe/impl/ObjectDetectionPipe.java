@@ -39,6 +39,10 @@ public class ObjectDetectionPipe
         detector = defaultModel.map(Model::load).orElse(NullModel.getInstance());
     }
 
+    public void setUseAllCores(boolean useAllCores) {
+        detector.setUseAllCores(useAllCores);
+    }
+
     @Override
     protected List<NeuralNetworkPipeResult> process(CVMat in) {
         // Check if the model has changed

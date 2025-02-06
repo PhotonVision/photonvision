@@ -57,4 +57,6 @@ public interface ObjectDetector extends Releasable {
      *     empty list if the detector is not initialized or if no objects are detected.
      */
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh);
+
+    public void setUseAllCores(boolean useAllCores);
 }

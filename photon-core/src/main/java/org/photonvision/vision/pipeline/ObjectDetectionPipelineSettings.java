@@ -24,6 +24,7 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
     public String model;
+    public boolean useAllCores;
 
     public ObjectDetectionPipelineSettings() {
         super();
@@ -36,5 +37,6 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         nms = .45;
         model =
                 NeuralNetworkModelManager.getInstance().getDefaultModel().map(Model::getName).orElse("");
+        useAllCores = true;
     }
 }
