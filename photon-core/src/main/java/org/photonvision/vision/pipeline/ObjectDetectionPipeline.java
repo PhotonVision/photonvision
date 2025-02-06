@@ -17,6 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -30,10 +33,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {

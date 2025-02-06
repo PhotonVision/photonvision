@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.util.List;
+import java.util.Optional;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.objects.Model;
@@ -26,12 +28,9 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
-import java.util.List;
-import java.util.Optional;
-
 public class ObjectDetectionPipe
         extends CVPipe<
-        CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
+                CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
         implements Releasable {
     private ObjectDetector detector;
 
@@ -69,8 +68,7 @@ public class ObjectDetectionPipe
         public Model model;
         public boolean useAllCores;
 
-        public ObjectDetectionPipeParams() {
-        }
+        public ObjectDetectionPipeParams() {}
     }
 
     public List<String> getClassNames() {
