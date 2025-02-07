@@ -89,14 +89,21 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
 ```{eval-rst}
 .. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/357d8a518a93f7a1f8084a79449249e613b605a7/photonlib-java-examples/apriltagExample/src/main/java/frc/robot/PhotonCameraWrapper.java
-      :language: java
-      :lines: 85-88
+   .. code-block:: Java
+      
+    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        for (var change : camera.getAllUnreadResults()) {
+            visionEst = photonEstimator.update(change);
+            updateEstimationStdDevs(visionEst, change.getTargets());
+        }
+        return visionEst;
+    }
 
    .. code-block:: C++
 
-      std::pair<frc::Pose2d, units::millisecond_t> getEstimatedGlobalPose(
-          frc::Pose3d prevEstimatedRobotPose) {
+    std::pair<frc::Pose2d, units::millisecond_t> getEstimatedGlobalPose(
+      frc::Pose3d prevEstimatedRobotPose) {
         robotPoseEstimator.SetReferencePose(prevEstimatedRobotPose);
         units::millisecond_t currentTime = frc::Timer::GetFPGATimestamp();
         auto result = robotPoseEstimator.Update();
@@ -106,13 +113,11 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
         } else {
           return std::make_pair(frc::Pose2d(), 0_ms);
         }
-      }
+    }
 
    .. code-block:: Python
 
       # Coming Soon!
-
-
 
 ```
 
