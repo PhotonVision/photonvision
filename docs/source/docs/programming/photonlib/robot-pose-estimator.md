@@ -26,7 +26,8 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
    .. code-block:: Python
 
-        # Coming Soon!
+      # The field from AprilTagField will be different depending on the game
+      kAprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
 
 ```
 
@@ -77,7 +78,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
         )
 
         self.camPoseEst = PhotonPoseEstimator(
-            loadAprilTagLayoutField(AprilTagField.kDefaultField),
+            kAprilTagFieldLayout,
             PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
             kRobotToCam
         )
@@ -102,11 +103,8 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
    .. code-block:: C++
 
-    std::Optional<EstimatedRobotPose> getEstimatedGlobalPose(
-      frc::Pose3d prevEstimatedRobotPose) {
-        robotPoseEstimator.SetReferencePose(prevEstimatedRobotPose);
+    std::Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         std::Optional<EstimatedRobotPose> latest = std::nullopt;
-
         for(auto result : camera.GetAllUnreadResults()) {
             latest = robotPoseEstimator.Update(result);
         }
@@ -115,7 +113,7 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
    .. code-block:: Python
 
-      # Coming Soon!
+    # Coming Soon!
 
 ```
 
