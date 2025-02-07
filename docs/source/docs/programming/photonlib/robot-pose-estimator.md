@@ -21,7 +21,7 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
    .. code-block:: C++
 
-      // The parameter for LoadAPrilTagLayoutField will be different depending on the game.
+      // The parameter for LoadAprilTagLayoutField will be different depending on the game.
       frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::kDefaultField);
 
    .. code-block:: Python
@@ -32,7 +32,7 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has six possible values:
+The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, and `Transform3d`. `PoseStrategy` has six possible values:
 
 - MULTI_TAG_PNP_ON_COPROCESSOR
     - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
@@ -52,34 +52,22 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 .. tab-set-code::
    .. code-block:: Java
 
-      //Forward Camera
-      cam = new PhotonCamera("testCamera");
+      //Forward Camera Location
       Transform3d robotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0,0,0)); //Cam mounted facing forward, half a meter forward of center, half a meter up from center.
 
       // Construct PhotonPoseEstimator
-      PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cam, robotToCam);
+      PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, robotToCam);
 
    .. code-block:: C++
 
-      // Forward Camera
-      std::shared_ptr<photonlib::PhotonCamera> cameraOne =
-          std::make_shared<photonlib::PhotonCamera>("testCamera");
       // Camera is mounted facing forward, half a meter forward of center, half a
       // meter up from center.
       frc::Transform3d robotToCam =
           frc::Transform3d(frc::Translation3d(0.5_m, 0_m, 0.5_m),
                           frc::Rotation3d(0_rad, 0_rad, 0_rad));
 
-      // ... Add other cameras here
-
-      // Assemble the list of cameras & mount locations
-      std::vector<
-          std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
-          cameras;
-      cameras.push_back(std::make_pair(cameraOne, robotToCam));
-
       photonlib::RobotPoseEstimator estimator(
-          aprilTags, photonlib::CLOSEST_TO_REFERENCE_POSE, cameras);
+          aprilTags, photonlib::CLOSEST_TO_REFERENCE_POSE, robotToCam);
 
    .. code-block:: Python
 
@@ -88,12 +76,9 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
             wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
         )
 
-        self.cam = PhotonCamera("YOUR CAMERA NAME")
-
         self.camPoseEst = PhotonPoseEstimator(
             loadAprilTagLayoutField(AprilTagField.kDefaultField),
             PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
-            self.cam,
             kRobotToCam
         )
 ```
