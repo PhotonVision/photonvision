@@ -102,17 +102,15 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
    .. code-block:: C++
 
-    std::pair<frc::Pose2d, units::millisecond_t> getEstimatedGlobalPose(
+    std::Optional<EstimatedRobotPose> getEstimatedGlobalPose(
       frc::Pose3d prevEstimatedRobotPose) {
         robotPoseEstimator.SetReferencePose(prevEstimatedRobotPose);
-        units::millisecond_t currentTime = frc::Timer::GetFPGATimestamp();
-        auto result = robotPoseEstimator.Update();
-        if (result.second) {
-          return std::make_pair<>(result.first.ToPose2d(),
-                                  currentTime - result.second);
-        } else {
-          return std::make_pair(frc::Pose2d(), 0_ms);
+        std::Optional<EstimatedRobotPose> latest = std::nullopt;
+
+        for(auto result : camera.GetAllUnreadResults()) {
+            latest = robotPoseEstimator.Update(result);
         }
+        return latest;
     }
 
    .. code-block:: Python
