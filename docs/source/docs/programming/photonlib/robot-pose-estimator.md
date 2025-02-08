@@ -91,7 +91,7 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 ```{eval-rst}
 .. tab-set-code::
    .. code-block:: Java
-      
+
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         for (var change : camera.getAllUnreadResults()) {
