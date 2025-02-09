@@ -305,10 +305,10 @@ public class NeuralNetworkModelManager {
     }
 
     private static Pattern modelPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsml]*)\\.rknn$");
+            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
 
     private static Pattern labelsPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsml]*)-labels\\.txt$");
+            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
 
     /**
      * Check naming conventions for models and labels.
