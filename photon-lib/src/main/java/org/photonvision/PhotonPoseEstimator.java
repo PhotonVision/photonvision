@@ -425,7 +425,6 @@ public class PhotonPoseEstimator {
     }
 
     private Optional<EstimatedRobotPose> pnpDistanceTrigSolveStrategy(PhotonPipelineResult result) {
-
         PhotonTrackedTarget bestTarget = result.getBestTarget();
 
         if (bestTarget == null) return Optional.empty();
