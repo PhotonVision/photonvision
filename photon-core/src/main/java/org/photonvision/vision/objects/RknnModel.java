@@ -40,6 +40,8 @@ public class RknnModel implements Model {
      *
      * <p>"yolov8" -> "YOLO_V8"
      *
+     * <p>"yolov11" -> "YOLO_V11"
+     *
      * @param modelName The model's filename
      * @return The model version
      */
@@ -49,6 +51,8 @@ public class RknnModel implements Model {
             return RknnJNI.ModelVersion.YOLO_V5;
         } else if (modelName.contains("yolov8")) {
             return RknnJNI.ModelVersion.YOLO_V8;
+        } else if (modelName.contains("yolov11")) {
+            return RknnJNI.ModelVersion.YOLO_V11;
         } else {
             throw new IllegalArgumentException("Unknown model version for model " + modelName);
         }

@@ -572,8 +572,10 @@ public class RequestHandler {
             }
 
             // verify naming convention
+
             // throws IllegalArgumentException if the model name is invalid
             NeuralNetworkModelManager.verifyRKNNNames(modelFile.filename(), labelsFile.filename());
+
 
             // TODO move into neural network manager
 
