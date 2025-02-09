@@ -29,7 +29,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
@@ -573,25 +572,9 @@ public class RequestHandler {
             }
 
             // verify naming convention
-            // this check will need to be modified if different model types are added
 
-            Pattern modelPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov(?:5|8|11)[a-z]*\\.rknn$");
-
-            Pattern labelsPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov(?:5|8|11)[a-z]*-labels\\.txt$");
-
-            if (!modelPattern.matcher(modelFile.filename()).matches()
-                    || !labelsPattern.matcher(labelsFile.filename()).matches()
-                    || !(modelFile
-                            .filename()
-                            .substring(0, modelFile.filename().indexOf("-"))
-                            .equals(labelsFile.filename().substring(0, labelsFile.filename().indexOf("-"))))) {
-                ctx.status(400);
-                ctx.result("The uploaded files were not named correctly.");
-                logger.error("The uploaded object detection model files were not named correctly.");
-                return;
-            }
+            // throws IllegalArgumentException if the model name is invalid
+            NeuralNetworkModelManager.verifyRKNNNames(modelFile.filename(), labelsFile.filename());
 
             // TODO move into neural network manager
 
