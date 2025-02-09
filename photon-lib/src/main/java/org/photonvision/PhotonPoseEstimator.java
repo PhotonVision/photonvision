@@ -276,23 +276,25 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Add robot heading data to buffer. Must be called periodically for the 
+     * Add robot heading data to buffer. Must be called periodically for the
      * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
      *
-     * @param timestampSeconds timestamp of the robot heading data.  
-     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field coordinates.
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
      */
     public void addHeadingData(double timestampSeconds, Rotation3d heading) {
         addHeadingData(timestampSeconds, heading.toRotation2d());
     }
 
     /**
-     * Add robot heading data to buffer. Must be called periodically for the 
+     * Add robot heading data to buffer. Must be called periodically for the
      * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
      *
-     * @param timestampSeconds timestamp of the robot heading data.  
-     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field coordinates.
-    */
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
     public void addHeadingData(double timestampSeconds, Rotation2d heading) {
         headingBuffer.addSample(timestampSeconds, heading);
     }
