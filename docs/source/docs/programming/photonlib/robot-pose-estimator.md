@@ -4,7 +4,7 @@
 For more information on how to methods to get AprilTag data, look {ref}`here <docs/programming/photonlib/getting-target-data:Getting AprilTag Data From A Target>`.
 :::
 
-PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. The `PhotonPoseEstimator` class works with one camera per object instance, but more than one instance may be created.
+PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. 
 
 ## Creating an `AprilTagFieldLayout`
 
@@ -14,10 +14,9 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
-
-      // The field from AprilTagFields will be different depending on the game.
-      AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+    :language: java
+    :lines: 47-49
 
    .. code-block:: C++
 
@@ -29,6 +28,25 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
       # The field from AprilTagField will be different depending on the game
       kAprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
 
+```
+
+## Defining the Robot to Camera `Transform3d`
+
+Another necessary argument for creating a `PhotonPoseEstimator` is the `Transform3d` representing the robot-relative location and orientation of the camera. A `Transform3d` contains a `Translation3d` and a `Rotation3d`. The `Translation3d` is created in meters and the `Rotation3d` is created with degrees.
+
+```{eval-rst}
+.. tab-set-code::
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
+     :language: java
+     :lines: 43-45
+
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Constants.h
+     :language: c++
+     :lines: 43-45
+
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 33-36
 ```
 
 ## Creating a `PhotonPoseEstimator`
@@ -51,21 +69,11 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
-
-      //Forward Camera Location
-      Transform3d robotToCam = new Transform3d(new Translation3d(0.5, 0.0, 0.5), new Rotation3d(0,0,0)); //Cam mounted facing forward, half a meter forward of center, half a meter up from center.
-
-      // Construct PhotonPoseEstimator
-      PhotonPoseEstimator photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, robotToCam);
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+    :language: java
+    :lines: 59-61
 
    .. code-block:: C++
-
-      // Camera is mounted facing forward, half a meter forward of center, half a
-      // meter up from center.
-      frc::Transform3d robotToCam =
-          frc::Transform3d(frc::Translation3d(0.5_m, 0_m, 0.5_m),
-                          frc::Rotation3d(0_rad, 0_rad, 0_rad));
 
       photonlib::RobotPoseEstimator estimator(
           aprilTags, photonlib::CLOSEST_TO_REFERENCE_POSE, robotToCam);
@@ -85,6 +93,23 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 ```
 
 ## Using a `PhotonPoseEstimator`
+
+The final prerequisite to using your `PhotonPoseEstimator` is creating a `PhotonCamera`. To do this, you must set the name of your camera in Photon Client. From there you can define the camera in code.
+
+```{eval-rst}
+.. tab-set-code::
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+     :language: java
+     :lines: 57
+
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
+     :language: c++
+     :lines: 55
+
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 44
+```
 
 Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotPose`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`.
 
