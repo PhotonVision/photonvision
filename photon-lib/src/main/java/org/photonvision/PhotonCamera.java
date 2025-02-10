@@ -159,8 +159,12 @@ public class PhotonCamera implements AutoCloseable {
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();
-
+        
         // HACK - check if things are compatible
+        verifyDependencies();
+    }
+
+    public static void verifyDependencies() {
         if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
             String bfw =
                     "\n\n\n\n\n"
