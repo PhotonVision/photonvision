@@ -4,7 +4,7 @@
 For more information on how to methods to get AprilTag data, look {ref}`here <docs/programming/photonlib/getting-target-data:Getting AprilTag Data From A Target>`.
 :::
 
-PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. 
+PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose.
 
 ## Creating an `AprilTagFieldLayout`
 
@@ -16,17 +16,15 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
     :language: java
-    :lines: 47-49
+    :lines: 48-49
 
-   .. code-block:: C++
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Constants.h
+    :language: c++
+    :lines: 46-47
 
-      // The parameter for LoadAprilTagLayoutField will be different depending on the game.
-      frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::kDefaultField);
-
-   .. code-block:: Python
-
-      # The field from AprilTagField will be different depending on the game
-      kAprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+    :language: python
+    :lines: 46
 
 ```
 
@@ -38,7 +36,7 @@ Another necessary argument for creating a `PhotonPoseEstimator` is the `Transfor
 .. tab-set-code::
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Constants.java
      :language: java
-     :lines: 43-45
+     :lines: 44-45
 
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Constants.h
      :language: c++
@@ -73,17 +71,11 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
     :language: java
     :lines: 59-61
 
-   .. code-block:: C++
-
-      photonlib::RobotPoseEstimator estimator(
-          aprilTags, photonlib::CLOSEST_TO_REFERENCE_POSE, robotToCam);
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+    :language: c++
+    :lines: 141-144
 
    .. code-block:: Python
-
-        kRobotToCam = wpimath.geometry.Transform3d(
-            wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
-            wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
-        )
 
         self.camPoseEst = PhotonPoseEstimator(
             kAprilTagFieldLayout,
@@ -115,26 +107,13 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+    :language: java
+    :lines: 96-114
 
-    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-        Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera.getAllUnreadResults()) {
-            visionEst = photonEstimator.update(change);
-            updateEstimationStdDevs(visionEst, change.getTargets());
-        }
-        return visionEst;
-    }
-
-   .. code-block:: C++
-
-    std::Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
-        std::Optional<EstimatedRobotPose> latest = std::nullopt;
-        for(auto result : camera.GetAllUnreadResults()) {
-            latest = robotPoseEstimator.Update(result);
-        }
-        return latest;
-    }
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+    :language: c++
+    :lines: 71-93
 
    .. code-block:: Python
 
