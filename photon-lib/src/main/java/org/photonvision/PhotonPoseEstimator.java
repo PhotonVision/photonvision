@@ -429,11 +429,26 @@ public class PhotonPoseEstimator {
 
         if (bestTarget == null) return Optional.empty();
 
-        double distance2d =
-                bestTarget.getBestCameraToTarget().getTranslation().getDistance(Translation3d.kZero)
-                        * Math.cos(
-                                -getRobotToCameraTransform().getRotation().getY()
-                                        + Math.toRadians(bestTarget.getPitch()));
+        Translation2d camToTagTranslation =
+                new Pose3d(
+                                Translation3d.kZero,
+                                new Rotation3d(
+                                        0,
+                                        -Math.toRadians(bestTarget.getPitch()),
+                                        -Math.toRadians(bestTarget.getYaw())))
+                        .transformBy(
+                                new Transform3d(
+                                        new Translation3d(
+                                                bestTarget
+                                                        .getBestCameraToTarget()
+                                                        .getTranslation()
+                                                        .getDistance(Translation3d.kZero),
+                                                0,
+                                                0),
+                                        Rotation3d.kZero))
+                        .getTranslation()
+                        .rotateBy(new Rotation3d(0, getRobotToCameraTransform().getRotation().getY(), 0))
+                        .toTranslation2d();
 
         if (headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
             return Optional.empty();
@@ -446,14 +461,14 @@ public class PhotonPoseEstimator {
                         getRobotToCameraTransform()
                                 .getRotation()
                                 .toRotation2d()
-                                .plus(Rotation2d.fromDegrees(-bestTarget.getYaw())));
+                                .plus(camToTagTranslation.getAngle()));
 
         if (fieldTags.getTagPose(bestTarget.getFiducialId()).isEmpty()) return Optional.empty();
         var tagPose2d = fieldTags.getTagPose(bestTarget.getFiducialId()).get().toPose2d();
 
         Translation2d fieldToCameraTranslation =
                 new Pose2d(tagPose2d.getTranslation(), camToTagRotation.plus(Rotation2d.kPi))
-                        .transformBy(new Transform2d(distance2d, 0, Rotation2d.kZero))
+                        .transformBy(new Transform2d(camToTagTranslation.getNorm(), 0, Rotation2d.kZero))
                         .getTranslation();
 
         Pose2d robotPose =
