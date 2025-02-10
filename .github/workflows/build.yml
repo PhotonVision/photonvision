@@ -436,7 +436,7 @@ jobs:
           - os: ubuntu-22.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/Dev/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-22.04
