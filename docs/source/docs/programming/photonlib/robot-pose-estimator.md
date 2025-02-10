@@ -69,20 +69,20 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
     :language: java
-    :lines: 59-61
+    :lines: 59-60
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
     :language: c++
     :lines: 141-144
 
-   .. code-block:: Python
-
-        self.camPoseEst = PhotonPoseEstimator(
-            kAprilTagFieldLayout,
-            PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
-            kRobotToCam
-        )
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+    :language: python
+    :lines: 45-50
 ```
+
+:::{note}
+Python still takes a `PhotonCamera` in the constructor, so you must create the camera as shown in the next section and then return and use it to create the `PhotonPoseEstimator`.
+:::
 
 ## Using a `PhotonPoseEstimator`
 
@@ -115,13 +115,13 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
     :language: c++
     :lines: 71-93
 
-   .. code-block:: Python
-
-    # Coming Soon!
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 53
 
 ```
 
-You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `RobotPoseEstimator` every loop using `addVisionMeasurement()`. TODO: add example note
+You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`. TODO: add example note
 
 ## Additional `PhotonPoseEstimator` Methods
 
@@ -132,3 +132,7 @@ Updates the stored reference pose when using the CLOSEST_TO_REFERENCE_POSE strat
 ### `setLastPose(Pose3d lastPose)`
 
 Update the stored last pose. Useful for setting the initial estimate when using the CLOSEST_TO_LAST_POSE strategy.
+
+### `setMultiTagFallbackStrategy(PoseStrategy strategy)`
+
+Determines the fallback strategy for pose estimation. You are strongly encouraged to set this.
