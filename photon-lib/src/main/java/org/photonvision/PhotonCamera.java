@@ -159,7 +159,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();
-        
+
         // HACK - check if things are compatible
         verifyDependencies();
     }
