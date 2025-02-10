@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -300,5 +302,67 @@ public class NeuralNetworkModelManager {
         } catch (IOException | URISyntaxException e) {
             logger.error("Error extracting models", e);
         }
+    }
+
+    private static Pattern modelPattern =
+            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
+
+    private static Pattern labelsPattern =
+            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
+
+    /**
+     * Check naming conventions for models and labels.
+     *
+     * <p>This is static as it is not dependent on the state of the class.
+     *
+     * @param modelName the name of the model
+     * @param labelsName the name of the labels file
+     * @throws IllegalArgumentException if the names are invalid
+     */
+    public static void verifyRKNNNames(String modelName, String labelsName) {
+        // check null
+        if (modelName == null || labelsName == null) {
+            throw new IllegalArgumentException("Model name and labels name cannot be null");
+        }
+
+        // These patterns check that the naming convention of
+        // name-widthResolution-heightResolution-modelType is followed
+
+        Matcher modelMatcher = modelPattern.matcher(modelName);
+        Matcher labelsMatcher = labelsPattern.matcher(labelsName);
+
+        if (!modelMatcher.matches() || !labelsMatcher.matches()) {
+            throw new IllegalArgumentException(
+                    "Model name and labels name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn and name-widthResolution-heightResolution-modelType-labels.txt");
+        }
+
+        if (!modelMatcher.group(1).equals(labelsMatcher.group(1))
+                || !modelMatcher.group(2).equals(labelsMatcher.group(2))
+                || !modelMatcher.group(3).equals(labelsMatcher.group(3))
+                || !modelMatcher.group(4).equals(labelsMatcher.group(4))) {
+            throw new IllegalArgumentException("Model name and labels name must be matching.");
+        }
+    }
+
+    /**
+     * Parse RKNN name and return the name, width, height, and model type.
+     *
+     * <p>This is static as it is not dependent on the state of the class.
+     *
+     * @param modelName the name of the model
+     * @throws IllegalArgumentException if the model name does not follow the naming convention
+     * @return an array containing the name, width, height, and model type
+     */
+    public static String[] parseRKNNName(String modelName) {
+        Matcher modelMatcher = modelPattern.matcher(modelName);
+
+        if (!modelMatcher.matches()) {
+            throw new IllegalArgumentException(
+                    "Model name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn");
+        }
+
+        return new String[] {
+            modelMatcher.group(1), modelMatcher.group(2), modelMatcher.group(3), modelMatcher.group(4)
+        };
     }
 }

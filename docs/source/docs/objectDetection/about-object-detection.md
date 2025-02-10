@@ -4,7 +4,7 @@
 
 PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. Please note that the Orange Pi 5/5+ are the only coprocessors that are currently supported. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
 
-For the 2025 season, PhotonVision ships with a pretrained ALGAE model.  A model to detect coral is not currently stable, and interested teams should ask in the Photonvision discord.
+For the 2025 season, PhotonVision ships with a pretrained ALGAE model. A model to detect coral is not currently stable, and interested teams should ask in the Photonvision discord.
 
 ## Tracking Objects
 
@@ -36,19 +36,20 @@ Photonvision will letterbox your camera frame to 640x640. This means that if you
 ## Training Custom Models
 
 :::{warning}
-Power users only. This requires some setup, such as obtaining your own dataset and installing various tools. It's additionally advised to have a general knowledge of ML before attempting to train your own model. Additionally, this is not officialy supported by Photonvision, and any problems that may arise are not attributable to Photonvision.
+Power users only. This requires some setup, such as obtaining your own dataset and installing various tools. It's additionally advised to have a general knowledge of ML before attempting to train your own model. Additionally, this is not officially supported by Photonvision, and any problems that may arise are not attributable to Photonvision.
 :::
 
-Before beginning, it is necessary to install the [rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2). Then, install the relevant [Ultralytics repository](https://github.com/airockchip?tab=repositories&q=yolo&type=&language=&sort=) from this list. After training your model, export it to ``rknn``. This will give you an ``onnx`` file, formatted for conversion. Copy this file to the relevant folder in [rknn_model_zoo](https://github.com/airockchip/rknn_model_zoo), and use the conversion script located there to convert it. If necessary, modify the script to provide the path to your training database for quantization.
+Before beginning, it is necessary to install the [rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2). Then, install the relevant [Ultralytics repository](https://github.com/airockchip?tab=repositories&q=yolo&type=&language=&sort=) from this list. After training your model, export it to `rknn`. This will give you an `onnx` file, formatted for conversion. Copy this file to the relevant folder in [rknn_model_zoo](https://github.com/airockchip/rknn_model_zoo), and use the conversion script located there to convert it. If necessary, modify the script to provide the path to your training database for quantization.
 
 ## Uploading Custom Models
 
 :::{warning}
-PhotonVision currently ONLY supports 640x640 YOLOv5 & YOLOv8 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
+PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLO11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
 In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
-should be `name-verticalResolution-horizontalResolution-modelType`. Additionally, the labels
-file ought to have the same name as the RKNN file, with `-labels` appended to the end. For example, if the
-RKNN file is named `note-640-640-yolov5s.rknn`, the labels file should be named
-`note-640-640-yolov5s-labels.txt`.
+should be `name-verticalResolution-horizontalResolution-modelType`. The
+`name` should only include alphanumeric characters, periods, and underscores. Additionally, the labels
+file ought to have the same name as the RKNN file, with `-labels` appended to the end. For
+example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the labels file should be
+named `Algae_1.03.2025-640-640-yolov5s-labels.txt`.
