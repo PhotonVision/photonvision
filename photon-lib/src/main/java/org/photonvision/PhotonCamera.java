@@ -43,11 +43,13 @@ import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.WPILibVersion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.opencv.core.Core;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -157,6 +159,72 @@ public class PhotonCamera implements AutoCloseable {
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();
+
+        // HACK - check if things are compatible
+        if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
+            String bfw =
+                    "\n\n\n\n\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>                                          \n"
+                            + ">>> You are running an incompatible version  \n"
+                            + ">>> of PhotonVision !                        \n"
+                            + ">>>                                          \n"
+                            + ">>> PhotonLib "
+                            + PhotonVersion.versionString
+                            + " is built for WPILib "
+                            + PhotonVersion.wpilibTargetVersion
+                            + "\n"
+                            + ">>> but you are using WPILib "
+                            + WPILibVersion.Version
+                            + ">>>                                          \n"
+                            + ">>> This is neither tested nor supported.    \n"
+                            + ">>> You MUST update PhotonVision,            \n"
+                            + ">>> PhotonLib, or both.                      \n"
+                            + ">>> Verify the output of `./gradlew dependencies` \n"
+                            + ">>>                                          \n"
+                            + ">>> Your code will now crash.                \n"
+                            + ">>> We hope your day gets better.            \n"
+                            + ">>>                                          \n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+            DriverStation.reportWarning(bfw, false);
+            DriverStation.reportError(bfw, false);
+            throw new UnsupportedOperationException(bfw);
+        }
+        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
+            String bfw =
+                    "\n\n\n\n\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>                                          \n"
+                            + ">>> You are running an incompatible version  \n"
+                            + ">>> of PhotonVision !                        \n"
+                            + ">>>                                          \n"
+                            + ">>> PhotonLib "
+                            + PhotonVersion.versionString
+                            + " is built for OpenCV "
+                            + PhotonVersion.opencvTargetVersion
+                            + "\n"
+                            + ">>> but you are using OpenCV "
+                            + Core.VERSION
+                            + ">>>                                          \n"
+                            + ">>> This is neither tested nor supported.    \n"
+                            + ">>> You MUST update PhotonVision,            \n"
+                            + ">>> PhotonLib, or both.                      \n"
+                            + ">>> Verify the output of `./gradlew dependencies` \n"
+                            + ">>>                                          \n"
+                            + ">>> Your code will now crash.                \n"
+                            + ">>> We hope your day gets better.            \n"
+                            + ">>>                                          \n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+            DriverStation.reportWarning(bfw, false);
+            DriverStation.reportError(bfw, false);
+            throw new UnsupportedOperationException(bfw);
+        }
     }
 
     /**

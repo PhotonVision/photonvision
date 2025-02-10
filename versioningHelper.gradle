@@ -35,9 +35,10 @@ gradle.allprojects {
         File versionFileOut = new File(path.toAbsolutePath().toString())
         versionFileOut.delete()
         def read = versionFileIn.text.replace('${version}', version)
-            .replace('${date}', date)
-            .replace('${wpilibVersion}', wpilibVersion)
-            .replace('${opencvVersion}', openCVversion)
+                .replace('${date}', date)
+                .replace('${wpilibVersion}', wpilibVersion)
+                // Note that OpenCV is usually {VERSION}-{some suffix}, we just want the first bit
+                .replace('${opencvVersion}', openCVversion.split("-").first())
         if (!versionFileOut.parentFile.exists()) versionFileOut.parentFile.mkdirs()
         if (!versionFileOut.exists()) versionFileOut.createNewFile()
         versionFileOut.write(read)
