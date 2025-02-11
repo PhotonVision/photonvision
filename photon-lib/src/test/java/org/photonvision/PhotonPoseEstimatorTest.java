@@ -511,8 +511,12 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(4.795, 0.978, -0.106), new Rotation3d(new Quaternion(0.032, -0.066, 0.314, 0.947))),
-                                        new Transform3d(new Translation3d(4.795, 0.978, -0.106), new Rotation3d(new Quaternion(0.227, -0.022, 0.320, -0.920))),
+                                        new Transform3d(
+                                                new Translation3d(4.795, 0.978, -0.106),
+                                                new Rotation3d(new Quaternion(0.032, -0.066, 0.314, 0.947))),
+                                        new Transform3d(
+                                                new Translation3d(4.795, 0.978, -0.106),
+                                                new Rotation3d(new Quaternion(0.227, -0.022, 0.320, -0.920))),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -523,21 +527,20 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))
-                                ));
+                                                new TargetCorner(7, 8)))));
 
         var estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
-                new Transform3d(
-                  -Units.inchesToMeters(12),
-                  -Units.inchesToMeters(11),
-                  3,
-                  new Rotation3d(
-                      Units.degreesToRadians(37),
-                      Units.degreesToRadians(6),
-                      Units.degreesToRadians(60))));
+                        new Transform3d(
+                                -Units.inchesToMeters(12),
+                                -Units.inchesToMeters(11),
+                                3,
+                                new Rotation3d(
+                                        Units.degreesToRadians(37),
+                                        Units.degreesToRadians(6),
+                                        Units.degreesToRadians(60))));
 
         estimator.addHeadingData(cameraOne.result.getTimestampSeconds(), Rotation2d.fromRadians(2.197));
 
@@ -548,7 +551,7 @@ class PhotonPoseEstimatorTest {
         assertEquals(7.30, pose.getX(), .01);
         assertEquals(4.42, pose.getY(), .01);
         assertEquals(0.0, pose.getZ(), .01);
-        
+
         /* Straight on */
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -565,8 +568,12 @@ class PhotonPoseEstimatorTest {
                                         0,
                                         -1,
                                         -1,
-                                        new Transform3d(new Translation3d(1.911, -0.012, 0), new Rotation3d(new Quaternion(0.161, 0, 0, -0.987))),
-                                        new Transform3d(new Translation3d(4.795, 0.978, -0.106), new Rotation3d(new Quaternion(0.227, -0.022, 0.320, -0.920))),
+                                        new Transform3d(
+                                                new Translation3d(1.911, -0.012, 0),
+                                                new Rotation3d(new Quaternion(0.161, 0, 0, -0.987))),
+                                        new Transform3d(
+                                                new Translation3d(4.795, 0.978, -0.106),
+                                                new Rotation3d(new Quaternion(0.227, -0.022, 0.320, -0.920))),
                                         0.4,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -577,22 +584,20 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))
-                                ));
+                                                new TargetCorner(7, 8)))));
 
         estimator =
                 new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
-                new Transform3d(
-                  -Units.inchesToMeters(0),
-                  -Units.inchesToMeters(0),
-                  3,
-                  new Rotation3d(
-                      Units.degreesToRadians(0),
-                      Units.degreesToRadians(0),
-                      Units.degreesToRadians(0)))    
-                );
+                        new Transform3d(
+                                -Units.inchesToMeters(0),
+                                -Units.inchesToMeters(0),
+                                3,
+                                new Rotation3d(
+                                        Units.degreesToRadians(0),
+                                        Units.degreesToRadians(0),
+                                        Units.degreesToRadians(0))));
 
         estimator.addHeadingData(cameraOne.result.getTimestampSeconds(), Rotation2d.fromRadians(2.818));
 
@@ -603,7 +608,6 @@ class PhotonPoseEstimatorTest {
         assertEquals(4.81, pose.getX(), .01);
         assertEquals(2.38, pose.getY(), .01);
         assertEquals(0.0, pose.getZ(), .01);
-
     }
 
     @Test

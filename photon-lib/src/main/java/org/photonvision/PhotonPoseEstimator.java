@@ -93,8 +93,8 @@ public class PhotonPoseEstimator {
          * Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
          * to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
          * data is up-to-date.
-         * 
-         * Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
+         *
+         * <p>Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
          *
          * <p>https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98
          */
@@ -441,15 +441,14 @@ public class PhotonPoseEstimator {
                         .transformBy(
                                 new Transform3d(
                                         new Translation3d(
-                                                bestTarget
-                                                        .getBestCameraToTarget()
-                                                        .getTranslation()
-                                                        .getNorm(),
-                                                0,
-                                                0),
+                                                bestTarget.getBestCameraToTarget().getTranslation().getNorm(), 0, 0),
                                         Rotation3d.kZero))
                         .getTranslation()
-                        .rotateBy(new Rotation3d(getRobotToCameraTransform().getRotation().getX(), getRobotToCameraTransform().getRotation().getY(), 0))
+                        .rotateBy(
+                                new Rotation3d(
+                                        getRobotToCameraTransform().getRotation().getX(),
+                                        getRobotToCameraTransform().getRotation().getY(),
+                                        0))
                         .toTranslation2d();
 
         if (headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
