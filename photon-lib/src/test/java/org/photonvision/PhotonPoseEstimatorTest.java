@@ -32,6 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -487,6 +489,65 @@ class PhotonPoseEstimatorTest {
         assertEquals(.9, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(1, pose.getZ(), .01);
+    }
+
+    @Test
+    void pnpDistanceTrigSolve() {
+        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+
+        // With Roll, Pitch, Yaw
+        cameraOne.result =
+                new PhotonPipelineResult(
+                        0,
+                        18000000,
+                        1200000,
+                        1024,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        -11.533,
+                                        -1.269,
+                                        0.061,
+                                        0,
+                                        0,
+                                        -1,
+                                        -1,
+                                        new Transform3d(new Translation3d(4.795, 0.978, -0.106), new Rotation3d(new Quaternion(0.032, -0.066, 0.314, 0.947))),
+                                        new Transform3d(new Translation3d(4.795, 0.978, -0.106), new Rotation3d(new Quaternion(0.227, -0.022, 0.320, -0.920))),
+                                        0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))
+                                ));
+
+        var estimator =
+                new PhotonPoseEstimator(
+                        aprilTags,
+                        PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
+                new Transform3d(
+                  -Units.inchesToMeters(12),
+                  -Units.inchesToMeters(11),
+                  3,
+                  new Rotation3d(
+                      Units.degreesToRadians(37),
+                      Units.degreesToRadians(6),
+                      Units.degreesToRadians(60))));
+
+        estimator.addHeadingData(cameraOne.result.getTimestampSeconds(), Rotation2d.fromRadians(2.197));
+
+        var estimatedPose = estimator.update(cameraOne.result);
+        var pose = estimatedPose.get().estimatedPose;
+
+        assertEquals(18, estimatedPose.get().timestampSeconds);
+        assertEquals(7.30, pose.getX(), .01);
+        assertEquals(4.42, pose.getY(), .01);
+        assertEquals(0.0, pose.getZ(), .01);
     }
 
     @Test
