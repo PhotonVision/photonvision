@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import org.opencv.core.Size;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.jni.RknnObjectDetector;
 import org.photonvision.rknn.RknnJNI;
 
@@ -39,6 +40,8 @@ public class RknnModel implements Model {
      *
      * <p>"yolov8" -> "YOLO_V8"
      *
+     * <p>"yolov11" -> "YOLO_V11"
+     *
      * @param modelName The model's filename
      * @return The model version
      */
@@ -48,6 +51,8 @@ public class RknnModel implements Model {
             return RknnJNI.ModelVersion.YOLO_V5;
         } else if (modelName.contains("yolov8")) {
             return RknnJNI.ModelVersion.YOLO_V8;
+        } else if (modelName.contains("yolov11")) {
+            return RknnJNI.ModelVersion.YOLO_V11;
         } else {
             throw new IllegalArgumentException("Unknown model version for model " + modelName);
         }
@@ -63,10 +68,8 @@ public class RknnModel implements Model {
     public RknnModel(File modelFile, String labels) throws IllegalArgumentException, IOException {
         this.modelFile = modelFile;
 
-        String[] parts = modelFile.getName().split("-");
-        if (parts.length != 4) {
-            throw new IllegalArgumentException("Invalid model file name: " + modelFile);
-        }
+        // parseRKNNName throws an IllegalArgumentException if the model name is invalid
+        String[] parts = NeuralNetworkModelManager.parseRKNNName(modelFile.getName());
 
         this.version = getModelVersion(parts[3]);
 
