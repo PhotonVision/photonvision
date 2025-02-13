@@ -107,23 +107,25 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
             inputPort: d.inputStreamPort,
             outputPort: d.outputStreamPort
           },
-          validVideoFormats: d.videoFormatList ? Object.entries(d.videoFormatList)
-            .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .map<VideoFormat>(([k, v], i) => ({
-              resolution: {
-                width: v.width,
-                height: v.height
-              },
-              fps: v.fps,
-              pixelFormat: v.pixelFormat,
-              index: v.index || i,
-              diagonalFOV: v.diagonalFOV,
-              horizontalFOV: v.horizontalFOV,
-              verticalFOV: v.verticalFOV,
-              standardDeviation: v.standardDeviation,
-              mean: v.mean
-            })) : [],
+          validVideoFormats: d.videoFormatList
+            ? Object.entries(d.videoFormatList)
+                .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                .map<VideoFormat>(([k, v], i) => ({
+                  resolution: {
+                    width: v.width,
+                    height: v.height
+                  },
+                  fps: v.fps,
+                  pixelFormat: v.pixelFormat,
+                  index: v.index || i,
+                  diagonalFOV: v.diagonalFOV,
+                  horizontalFOV: v.horizontalFOV,
+                  verticalFOV: v.verticalFOV,
+                  standardDeviation: v.standardDeviation,
+                  mean: v.mean
+                }))
+            : [],
           completeCalibrations: d.calibrations,
           isCSICamera: d.isCSICamera,
           minExposureRaw: d.minExposureRaw,
