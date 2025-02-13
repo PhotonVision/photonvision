@@ -45,7 +45,8 @@
 #include "photon/dataflow/structures/Packet.h"
 
 inline void verifyDependencies() {
-  if (!(std::string_view{GetWPILibVersion()} == std::string_view{photon::PhotonVersion::wpilibTargetVersion})) {
+  if (!(std::string_view{GetWPILibVersion()} ==
+        std::string_view{photon::PhotonVersion::wpilibTargetVersion})) {
     std::string bfw =
         "\n\n\n\n\n"
         ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
