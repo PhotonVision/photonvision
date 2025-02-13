@@ -99,7 +99,7 @@ inline void verifyDependencies() {
         ">>> but you are using OpenCV ";
     bfw += cv::getVersionString();
     bfw +=
-        ">>>                                          \n"
+        "\n>>>                                          \n"
         ">>> This is neither tested nor supported.    \n"
         ">>> You MUST update PhotonVision,            \n"
         ">>> PhotonLib, or both.                      \n"
