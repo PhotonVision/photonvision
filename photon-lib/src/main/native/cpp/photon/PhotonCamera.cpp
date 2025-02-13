@@ -80,7 +80,8 @@ inline void verifyDependencies() {
     FRC_ReportError(frc::err::Error, bfw);
     throw new std::runtime_error(std::string{bfw});
   }
-  if (!(std::string_view{cv::getVersionString()} == std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
+  if (!(std::string_view{cv::getVersionString()} ==
+        std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
     std::string bfw =
         "\n\n\n\n\n"
         ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
