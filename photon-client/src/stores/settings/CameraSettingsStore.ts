@@ -123,7 +123,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
               verticalFOV: v.verticalFOV,
               standardDeviation: v.standardDeviation,
               mean: v.mean
-            })),
+            })) : [],
           completeCalibrations: d.calibrations,
           isCSICamera: d.isCSICamera,
           minExposureRaw: d.minExposureRaw,
