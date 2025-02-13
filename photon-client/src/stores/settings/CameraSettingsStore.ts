@@ -42,8 +42,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentPipelineType - 2;
     },
     currentVideoFormat(): VideoFormat {
-      return this.currentCameraSettings.
-      [this.currentPipelineSettings.cameraVideoModeIndex];
+      return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
     isCurrentVideoFormatCalibrated(): boolean {
       return this.currentCameraSettings.completeCalibrations.some((v) =>
