@@ -505,18 +505,18 @@ class PhotonPoseEstimatorTest {
                         .toList();
 
         /* Compound Rolled + Pitched + Yaw */
+
+        Transform3d compoundTestTransform =
+                new Transform3d(
+                        -Units.inchesToMeters(12),
+                        -Units.inchesToMeters(11),
+                        3,
+                        new Rotation3d(
+                                Units.degreesToRadians(37), Units.degreesToRadians(6), Units.degreesToRadians(60)));
+
         var estimator =
                 new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
-                        new Transform3d(
-                                -Units.inchesToMeters(12),
-                                -Units.inchesToMeters(11),
-                                3,
-                                new Rotation3d(
-                                        Units.degreesToRadians(37),
-                                        Units.degreesToRadians(6),
-                                        Units.degreesToRadians(60))));
+                        aprilTags, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
 
         /* this is the real pose of the robot base we test against */
         var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
@@ -534,13 +534,10 @@ class PhotonPoseEstimatorTest {
         assertEquals(0.0, pose.getZ(), .01);
 
         /* Straight on */
-        estimator.setRobotToCameraTransform(
-                new Transform3d(
-                        -Units.inchesToMeters(0),
-                        -Units.inchesToMeters(0),
-                        3,
-                        new Rotation3d(
-                                Units.degreesToRadians(0), Units.degreesToRadians(0), Units.degreesToRadians(0))));
+
+        Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, new Rotation3d(0, 0, 0));
+
+        estimator.setRobotToCameraTransform(straightOnTestTransform);
 
         /* Pose to compare with */
         realPose = new Pose3d(4.81, 2.38, 0, new Rotation3d(0, 0, 2.818));
