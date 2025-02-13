@@ -80,7 +80,6 @@ public class VisionModule {
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     private final StatusLEDConsumer statusLEDsConsumer;
-    protected final int moduleIndex;
     protected final QuirkyCamera cameraQuirks;
 
     protected TrackedTarget lastPipelineResultBestTarget;
@@ -94,7 +93,7 @@ public class VisionModule {
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
 
-    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
+    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
         logger =
                 new Logger(
                         VisionModule.class,
@@ -133,8 +132,6 @@ public class VisionModule {
                         this.cameraQuirks,
                         getChangeSubscriber());
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
-        this.moduleIndex = index;
-
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
         createStreams();
@@ -148,8 +145,9 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
-        uiDataConsumer = new UIDataPublisher(index);
-        statusLEDsConsumer = new StatusLEDConsumer(index);
+        uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
+        statusLEDsConsumer =
+                new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
         addResultConsumer(statusLEDsConsumer);
@@ -446,7 +444,7 @@ public class VisionModule {
             return false;
         }
 
-        visionRunner.runSyncronously(
+        visionRunner.runSynchronously(
                 () -> {
                     settables.setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
                     settables.setBrightness(pipelineSettings.cameraBrightness);
@@ -531,7 +529,6 @@ public class VisionModule {
         HashMap<String, Object> map = new HashMap<>();
         HashMap<String, Object> subMap = new HashMap<>();
         subMap.put(propertyName, value);
-        map.put("cameraIndex", this.moduleIndex);
         map.put("mutatePipelineSettings", subMap);
 
         DataChangeService.getInstance()

@@ -79,6 +79,7 @@ source_suffix = [".rst", ".md"]
 
 
 def setup(app):
+    app.add_css_file("css/v4-font-face.min.css")
     app.add_css_file("css/pv-icons.css")
 
 

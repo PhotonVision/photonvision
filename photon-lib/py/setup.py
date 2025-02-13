@@ -59,11 +59,11 @@ setup(
     version=versionString,
     install_requires=[
         "numpy~=2.1",
-        "wpilib<2026,>=2025.0.0b1",
-        "robotpy-wpimath<2026,>=2025.0.0b1",
-        "robotpy-apriltag<2026,>=2025.0.0b1",
-        "robotpy-cscore<2026,>=2025.0.0b1",
-        "pyntcore<2026,>=2025.0.0b1",
+        "wpilib<2026,>=2025.2.1",
+        "robotpy-wpimath<2026,>=2025.2.1",
+        "robotpy-apriltag<2026,>=2025.2.1",
+        "robotpy-cscore<2026,>=2025.2.1",
+        "pyntcore<2026,>=2025.2.1",
         "opencv-python;platform_machine!='roborio'",
     ],
     description=descriptionStr,
@@ -71,4 +71,7 @@ setup(
     author="Photonvision Development Team",
     long_description="A Pure-python implementation of PhotonLib",
     long_description_content_type="text/markdown",
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+    ],
 )

@@ -146,7 +146,7 @@ onBeforeUpdate(() => {
 <template>
   <v-row no-gutters class="tabGroups">
     <template v-if="!useCameraSettingsStore().hasConnected">
-      <v-col v-if="!useCameraSettingsStore().hasConnected" cols="12">
+      <v-col cols="12">
         <v-card color="error">
           <v-card-title class="white--text">
             Camera has not connected. Please check your connection and try again.
@@ -173,7 +173,7 @@ onBeforeUpdate(() => {
               {{ tabConfig.tabName }}
             </v-tab>
           </v-tabs>
-          <div class="pl-4 pr-4 pt-4 pb-2">
+          <div class="pl-2 pr-2 pt-3 pb-3">
             <KeepAlive>
               <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
             </KeepAlive>
