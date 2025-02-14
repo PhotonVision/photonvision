@@ -446,26 +446,24 @@ public class PhotonPoseEstimator {
                         .getTranslation()
                         .rotateBy(
                                 new Rotation3d(
-                                        getRobotToCameraTransform().getRotation().getX(),
-                                        getRobotToCameraTransform().getRotation().getY(),
-                                        0))
+                                        robotToCamera.getRotation().getX(), robotToCamera.getRotation().getY(), 0))
                         .toTranslation2d();
 
-        if (headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
+        var headingSampleOpt = headingBuffer.getSample(result.getTimestampSeconds());
+        if (headingSampleOpt.isEmpty()) {
             return Optional.empty();
         }
-
-        Rotation2d headingSample = headingBuffer.getSample(result.getTimestampSeconds()).get();
+        Rotation2d headingSample = headingSampleOpt.get();
 
         Rotation2d camToTagRotation =
                 headingSample.plus(
-                        getRobotToCameraTransform()
-                                .getRotation()
-                                .toRotation2d()
-                                .plus(camToTagTranslation.getAngle()));
+                        robotToCamera.getRotation().toRotation2d().plus(camToTagTranslation.getAngle()));
 
-        if (fieldTags.getTagPose(bestTarget.getFiducialId()).isEmpty()) return Optional.empty();
-        var tagPose2d = fieldTags.getTagPose(bestTarget.getFiducialId()).get().toPose2d();
+        var tagPoseOpt = fieldTags.getTagPose(bestTarget.getFiducialId());
+        if (tagPoseOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        var tagPose2d = tagPoseOpt.get().toPose2d();
 
         Translation2d fieldToCameraTranslation =
                 new Pose2d(tagPose2d.getTranslation(), camToTagRotation.plus(Rotation2d.kPi))
@@ -475,12 +473,10 @@ public class PhotonPoseEstimator {
         Pose2d robotPose =
                 new Pose2d(
                                 fieldToCameraTranslation,
-                                headingSample.plus(getRobotToCameraTransform().getRotation().toRotation2d()))
+                                headingSample.plus(robotToCamera.getRotation().toRotation2d()))
                         .transformBy(
                                 new Transform2d(
-                                        new Pose3d(
-                                                        getRobotToCameraTransform().getTranslation(),
-                                                        getRobotToCameraTransform().getRotation())
+                                        new Pose3d(robotToCamera.getTranslation(), robotToCamera.getRotation())
                                                 .toPose2d(),
                                         Pose2d.kZero));
 
