@@ -11,6 +11,7 @@ Any issues this pull request closes or pull requests this supersedes should be l
 Merge checklist:
 - [ ] Pull Request title is [short, imperative summary](https://cbea.ms/git-commit/) of proposed changes
 - [ ] The description documents the _what_ and _why_
+- [ ] If this PR changes behavior or adds a feature, user documentation is updated
 - [ ] If this PR touches photon-serde, all messages have been regenerated and hashes have not changed unexpectedly
 - [ ] If this PR touches configuration, this is backwards compatible with settings back to v2024.3.1
 - [ ] If this PR addresses a bug, a regression test for it is added
