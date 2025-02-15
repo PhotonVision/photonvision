@@ -33,7 +33,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -457,17 +456,11 @@ public class PhotonPoseEstimator {
         Translation2d fieldToCameraTranslation =
                 tagPose2d.getTranslation().plus(camToTagTranslation.unaryMinus());
 
-        Pose2d robotPose =
-                new Pose2d(
-                                fieldToCameraTranslation,
-                                headingSample.plus(robotToCamera.getRotation().toRotation2d()))
-                        .transformBy(
-                                new Transform2d(
-                                                robotToCamera.getTranslation().toTranslation2d(),
-                                                robotToCamera.getRotation().toRotation2d())
-                                        .inverse());
+        Translation2d camToRobotTranslation =
+                robotToCamera.getTranslation().toTranslation2d().unaryMinus().rotateBy(headingSample);
 
-        robotPose = new Pose2d(robotPose.getTranslation(), headingSample);
+        Pose2d robotPose =
+                new Pose2d(fieldToCameraTranslation.plus(camToRobotTranslation), headingSample);
 
         return Optional.of(
                 new EstimatedRobotPose(
