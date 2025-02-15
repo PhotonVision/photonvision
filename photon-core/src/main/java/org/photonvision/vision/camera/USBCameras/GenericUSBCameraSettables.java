@@ -179,6 +179,12 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         if (!cameraAutoExposure) {
             // Pick a bunch of reasonable setting defaults for vision processing
+            
+            // FIXME: Fix issue 1771, it's hacky...but it works
+            // First switch to auto exposure
+            if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_ENABLED);
+            
+            // Then switch to manual and apply settings
             softSet("auto_exposure_bias", 0);
             softSet("iso_sensitivity_auto", 0); // Disable auto ISO adjustment
             softSet("iso_sensitivity", 0); // Manual ISO adjustment
