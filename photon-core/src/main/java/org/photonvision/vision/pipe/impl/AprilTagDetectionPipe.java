@@ -59,6 +59,7 @@ public class AprilTagDetectionPipe
     public void setParams(AprilTagDetectionPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
             m_detector.setConfig(newParams.detectorParams);
+            m_detector.setQuadThresholdParameters(newParams.quadParams);
 
             m_detector.clearFamilies();
             m_detector.addFamily(newParams.family.getNativeName());

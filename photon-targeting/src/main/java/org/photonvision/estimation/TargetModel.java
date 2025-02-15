@@ -175,11 +175,10 @@ public class TargetModel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj instanceof TargetModel) {
-            var o = (TargetModel) obj;
-            return vertices.equals(o.vertices) && isPlanar == o.isPlanar && isSpherical == o.isSpherical;
-        }
-        return false;
+        return this == obj
+                && obj instanceof TargetModel o
+                && vertices.equals(o.vertices)
+                && isPlanar == o.isPlanar
+                && isSpherical == o.isSpherical;
     }
 }

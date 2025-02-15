@@ -32,9 +32,7 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
-import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
@@ -45,11 +43,13 @@ import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.WPILibVersion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.opencv.core.Core;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -64,13 +64,6 @@ public class PhotonCamera implements AutoCloseable {
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
-    DoublePublisher latencyMillisEntry;
-    BooleanPublisher hasTargetEntry;
-    DoublePublisher targetPitchEntry;
-    DoublePublisher targetYawEntry;
-    DoublePublisher targetAreaEntry;
-    DoubleArrayPublisher targetPoseEntry;
-    DoublePublisher targetSkewEntry;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -86,13 +79,6 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
-        latencyMillisEntry.close();
-        hasTargetEntry.close();
-        targetPitchEntry.close();
-        targetYawEntry.close();
-        targetAreaEntry.close();
-        targetPoseEntry.close();
-        targetSkewEntry.close();
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
@@ -111,13 +97,13 @@ public class PhotonCamera implements AutoCloseable {
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 5;
-    private double lastVersionCheckTime = 0;
+    double lastVersionCheckTime = 0;
 
     private long prevHeartbeatValue = -1;
     private double prevHeartbeatChangeTime = 0;
     private static final double HEARTBEAT_DEBOUNCE_SEC = 0.5;
 
-    private double prevTimeSyncWarnTime = 0;
+    double prevTimeSyncWarnTime = 0;
     private static final double WARN_DEBOUNCE_SEC = 5;
 
     public static void setVersionCheckEnabled(boolean enabled) {
@@ -173,6 +159,76 @@ public class PhotonCamera implements AutoCloseable {
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();
+
+        // HACK - check if things are compatible
+        verifyDependencies();
+    }
+
+    public static void verifyDependencies() {
+        if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
+            String bfw =
+                    "\n\n\n\n\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>                                          \n"
+                            + ">>> You are running an incompatible version  \n"
+                            + ">>> of PhotonVision !                        \n"
+                            + ">>>                                          \n"
+                            + ">>> PhotonLib "
+                            + PhotonVersion.versionString
+                            + " is built for WPILib "
+                            + PhotonVersion.wpilibTargetVersion
+                            + "\n"
+                            + ">>> but you are using WPILib "
+                            + WPILibVersion.Version
+                            + ">>>                                          \n"
+                            + ">>> This is neither tested nor supported.    \n"
+                            + ">>> You MUST update PhotonVision,            \n"
+                            + ">>> PhotonLib, or both.                      \n"
+                            + ">>> Verify the output of `./gradlew dependencies` \n"
+                            + ">>>                                          \n"
+                            + ">>> Your code will now crash.                \n"
+                            + ">>> We hope your day gets better.            \n"
+                            + ">>>                                          \n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+            DriverStation.reportWarning(bfw, false);
+            DriverStation.reportError(bfw, false);
+            throw new UnsupportedOperationException(bfw);
+        }
+        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
+            String bfw =
+                    "\n\n\n\n\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>                                          \n"
+                            + ">>> You are running an incompatible version  \n"
+                            + ">>> of PhotonVision !                        \n"
+                            + ">>>                                          \n"
+                            + ">>> PhotonLib "
+                            + PhotonVersion.versionString
+                            + " is built for OpenCV "
+                            + PhotonVersion.opencvTargetVersion
+                            + "\n"
+                            + ">>> but you are using OpenCV "
+                            + Core.VERSION
+                            + ">>>                                          \n"
+                            + ">>> This is neither tested nor supported.    \n"
+                            + ">>> You MUST update PhotonVision,            \n"
+                            + ">>> PhotonLib, or both.                      \n"
+                            + ">>> Verify the output of `./gradlew dependencies` \n"
+                            + ">>>                                          \n"
+                            + ">>> Your code will now crash.                \n"
+                            + ">>> We hope your day gets better.            \n"
+                            + ">>>                                          \n"
+                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+            DriverStation.reportWarning(bfw, false);
+            DriverStation.reportError(bfw, false);
+            throw new UnsupportedOperationException(bfw);
+        }
     }
 
     /**
@@ -314,17 +370,12 @@ public class PhotonCamera implements AutoCloseable {
      */
     public VisionLEDMode getLEDMode() {
         int value = (int) ledModeState.get(-1);
-        switch (value) {
-            case 0:
-                return VisionLEDMode.kOff;
-            case 1:
-                return VisionLEDMode.kOn;
-            case 2:
-                return VisionLEDMode.kBlink;
-            case -1:
-            default:
-                return VisionLEDMode.kDefault;
-        }
+        return switch (value) {
+            case 0 -> VisionLEDMode.kOff;
+            case 1 -> VisionLEDMode.kOn;
+            case 2 -> VisionLEDMode.kBlink;
+            default -> VisionLEDMode.kDefault;
+        };
     }
 
     /**
@@ -396,7 +447,7 @@ public class PhotonCamera implements AutoCloseable {
         return cameraTable;
     }
 
-    private void verifyVersion() {
+    void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
         if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
@@ -433,7 +484,7 @@ public class PhotonCamera implements AutoCloseable {
         // Check for connection status. Warn if disconnected.
         else if (!isConnected()) {
             DriverStation.reportWarning(
-                    "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
+                    "PhotonVision coprocessor at path " + path + " is not sending new data.", false);
         }
 
         String versionString = versionEntry.get("");
@@ -448,7 +499,7 @@ public class PhotonCamera implements AutoCloseable {
                     "PhotonVision coprocessor at path "
                             + path
                             + " has not reported a message interface UUID - is your coprocessor's camera started?",
-                    true);
+                    false);
         } else if (!local_uuid.equals(remote_uuid)) {
             // Error on a verified version mismatch
             // But stay silent otherwise

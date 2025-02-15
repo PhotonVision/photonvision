@@ -16,8 +16,9 @@
 ###############################################################################
 
 from time import sleep
-from photonlibpy import PhotonCamera
+
 import ntcore
+from photonlibpy import PhotonCamera
 from photonlibpy.photonCamera import setVersionCheckEnabled
 
 

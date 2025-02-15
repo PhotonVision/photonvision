@@ -8,7 +8,7 @@ This section contains the build instructions from the source code available at [
 
 **Java Development Kit:**
 
- This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2025+. If you don't have this JDK with WPILib, you can follow the instructions to install JDK 17 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-17-lts).
+ This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2025+. **Windows Users must use the JDK that ships with WPILib.** For other platforms, you can follow the instructions to install JDK 17 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-17-lts).
 
 **Node JS:**
 
@@ -139,25 +139,7 @@ The `deploy` command is tested against Raspberry Pi coprocessors. Other similar 
 
 ### Using PhotonLib Builds
 
-The build process includes the following task:
-
-```{eval-rst}
-.. tab-set::
-
-   .. tab-item:: Linux
-
-      ``./gradlew generateVendorJson``
-
-   .. tab-item:: macOS
-
-      ``./gradlew generateVendorJson``
-
-   .. tab-item:: Windows (cmd)
-
-      ``gradlew generateVendorJson``
-```
-
-This generates a vendordep JSON of your local build at `photon-lib/build/generated/vendordeps/photonlib.json`.
+The build process automatically generates a vendordep JSON of your local build at `photon-lib/build/generated/vendordeps/photonlib.json`.
 
 The photonlib source can be published to your local maven repository after building:
 
@@ -185,30 +167,31 @@ repositories {
 }
 ```
 
+### VSCode Test Runner Extension
+
+With the VSCode [Extension Pack for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack), you can get the Test Runner for Java and Gradle for Java extensions. This lets you easily run specific tests through the IDE:
+
+```{image} assets/vscode-runner-tests.png
+:alt: An image showing how unit tests can be ran in VSCode through the Test Runner for Java extension.
+```
+
+To correctly run PhotonVision tests this way, you must [delegate the tests to Gradle](https://code.visualstudio.com/docs/java/java-build#_delegate-tests-to-gradle). Debugging tests like this will [**not** currently](https://github.com/microsoft/build-server-for-gradle/issues/119) collect outputs.
+
 ### Debugging PhotonVision Running Locally
 
-One way is by running the program using gradle with the {code}`--debug-jvm` flag. Run the program with {code}`./gradlew run --debug-jvm`, and attach to it with VSCode by adding the following to {code}`launch.json`. Note args can be passed with {code}`--args="foobar"`.
+Unit tests can instead be debugged through the ``test`` Gradle task for a specific subproject in VSCode, found in the Gradle tab:
 
-```
-{
-   // Use IntelliSense to learn about possible attributes.
-   // Hover to view descriptions of existing attributes.
-   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-   "version": "0.2.0",
-   "configurations": [
-      {
-            "type": "java",
-            "name": "Attach to Remote Program",
-            "request": "attach",
-            "hostName": "localhost",
-            "port": "5005",
-            "projectName": "photon-core",
-      }
-   ]
-}
+```{image} assets/vscode-gradle-tests.png
+:alt: An image showing how unit tests can be debugged in VSCode through the Gradle for Java extension.
 ```
 
-PhotonVision can also be run using the gradle tasks plugin with {code}`"args": "--debug-jvm"` added to launch.json.
+However, this will run all tests in a subproject.
+
+Similarly, a local instance of PhotonVision can be debugged in the same way using the Gradle ``run`` task. In both cases, additional arguments can be specified:
+
+```{image} assets/vscode-gradle-args.png
+:alt: An image showing how VSCode gradle tasks can specify additional arguments.
+```
 
 ### Debugging PhotonVision Running on a CoProcessor
 
@@ -247,17 +230,15 @@ You can run one of the many built in examples straight from the command line, to
 
 #### Running C++/Java
 
-PhotonLib must first be published to your local maven repository, then the copy PhotonLib task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
+PhotonLib must first be published to your local maven repository. This will also copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
 
 ```
 ~/photonvision$ ./gradlew publishToMavenLocal
 
 ~/photonvision$ cd photonlib-java-examples
-~/photonvision/photonlib-java-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-java-examples$ ./gradlew <example-name>:simulateJava
 
 ~/photonvision$ cd photonlib-cpp-examples
-~/photonvision/photonlib-cpp-examples$ ./gradlew copyPhotonlib
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
 
@@ -283,4 +264,12 @@ Then, run the examples:
 ```
 > cd photonlib-python-examples
 > run.bat <example name>
+```
+
+#### Downloading Pipeline Artifacts
+
+Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from pipelines by run ID and name:
+
+```
+~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```

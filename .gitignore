@@ -131,27 +131,12 @@ New client/photon-client/*
 *.jfr
 .DS_Store
 # *.iml
-photon-server/build
-photon-server/photon-vision
-photon-server/src/main/resources/web
-photon-server/src/main/java/org/photonvision/PhotonVersion.java
-photon-server/src/main/generated/native/include/org_photonvision_raspi_PicamJNI.h
 *.bin
 .gradle
 .gradle/*
 photonvision_config
-build/spotlessJava
-build/*
-build
-photon-lib/src/main/java/org/photonvision/PhotonVersion.java
-photon-lib/bin/main/images/*
-/photonlib-java-examples/bin/
-photon-lib/src/generate/native/include/PhotonVersion.h
-.gitattributes
-lib/*
-photon-server/lib/libapriltag.so
-photon-server/bin/main/nativelibraries/apriltag/*
-photon-server/src/main/resources/nativelibraries/apriltag/*
+bin*/
+build*/
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*
@@ -161,10 +146,7 @@ photonlib-cpp-examples/*/vendordeps/*
 photonlib-cpp-examples/*/networktables.json.bck
 photonlib-java-examples/*/networktables.json.bck
 *.sqlite
-photon-server/src/main/resources/web/index.html
-photon-lib/src/generate/native/cpp/PhotonVersion.cpp
-
+photon-server/src/main/resources/web/*
 venv
-
 .venv/*
 .venv

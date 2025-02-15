@@ -26,20 +26,31 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
-    protected static final Logger logger =
-            new Logger(VisionSourceSettables.class, LogGroup.VisionModule);
+    protected Logger logger;
 
     private final CameraConfiguration configuration;
 
     protected VisionSourceSettables(CameraConfiguration configuration) {
         this.configuration = configuration;
+        this.logger =
+                new Logger(VisionSourceSettables.class, configuration.nickname, LogGroup.VisionModule);
     }
 
-    protected FrameStaticProperties frameStaticProperties;
-    protected HashMap<Integer, VideoMode> videoModes;
+    protected FrameStaticProperties frameStaticProperties = null;
+    protected HashMap<Integer, VideoMode> videoModes = new HashMap<>();
 
     public CameraConfiguration getConfiguration() {
         return configuration;
+    }
+
+    // If the device has been connected at least once, and we cached properties
+    protected boolean cameraPropertiesCached = false;
+
+    /**
+     * Runs exactly once the first time that the underlying device goes from disconnected to connected
+     */
+    public void onCameraConnected() {
+        cameraPropertiesCached = true;
     }
 
     public abstract void setExposureRaw(double exposureRaw);
@@ -59,7 +70,7 @@ public abstract class VisionSourceSettables {
     public abstract void setGain(int gain);
 
     // Pretty uncommon so instead of abstract this is just a no-op by default
-    // Overriden by cameras with AWB gain support
+    // Overridden by cameras with AWB gain support
     public void setRedGain(int red) {}
 
     public void setBlueGain(int blue) {}
@@ -109,7 +120,7 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
-    private void calculateFrameStaticProps() {
+    protected void calculateFrameStaticProps() {
         var videoMode = getCurrentVideoMode();
         this.frameStaticProperties =
                 new FrameStaticProperties(

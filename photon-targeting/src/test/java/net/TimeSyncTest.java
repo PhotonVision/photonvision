@@ -36,6 +36,8 @@ public class TimeSyncTest {
         if (!PhotonTargetingJniLoader.load()) {
             fail();
         }
+
+        HAL.initialize(1000, 0);
     }
 
     @AfterAll
@@ -45,8 +47,6 @@ public class TimeSyncTest {
 
     @Test
     public void smoketest() throws InterruptedException {
-        HAL.initialize(1000, 0);
-
         // NetworkTableInstance.getDefault().stopClient();
         // NetworkTableInstance.getDefault().startServer();
 

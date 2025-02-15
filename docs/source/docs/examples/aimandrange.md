@@ -1,6 +1,6 @@
 # Combining Aiming and Getting in Range
 
-The following example is from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/master/photonlib-java-examples/aimandrange)/[C++](https://github.com/PhotonVision/photonvision/tree/master/photonlib-cpp-examples/aimandrange)).
+The following example is from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/main/photonlib-java-examples/aimandrange)/[C++](https://github.com/PhotonVision/photonvision/tree/main/photonlib-cpp-examples/aimandrange)).
 
 ## Knowledge and Equipment Needed
 

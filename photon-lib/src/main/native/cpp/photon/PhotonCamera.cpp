@@ -25,11 +25,14 @@
 #include "photon/PhotonCamera.h"
 
 #include <hal/FRCUsageReporting.h>
+#include <net/TimeSyncServer.h>
 
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include <WPILibVersion.h>
 #include <frc/Errors.h>
 #include <frc/RobotController.h>
 #include <frc/Timer.h>
@@ -38,26 +41,97 @@
 #include <wpi/json.h>
 
 #include "PhotonVersion.h"
+#include "opencv2/core/utility.hpp"
 #include "photon/dataflow/structures/Packet.h"
 
-inline constexpr std::string_view bfw =
-    "\n\n\n\n"
-    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-    ">>>                                          \n"
-    ">>> You are running an incompatible version  \n"
-    ">>> of PhotonVision on your coprocessor!     \n"
-    ">>>                                          \n"
-    ">>> This is neither tested nor supported.    \n"
-    ">>> You MUST update PhotonVision,            \n"
-    ">>> PhotonLib, or both.                      \n"
-    ">>>                                          \n"
-    ">>> Your code will now crash.                \n"
-    ">>> We hope your day gets better.            \n"
-    ">>>                                          \n"
-    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-    "\n\n";
+inline void verifyDependencies() {
+  if (!(std::string_view{GetWPILibVersion()} ==
+        std::string_view{photon::PhotonVersion::wpilibTargetVersion})) {
+    std::string bfw =
+        "\n\n\n\n\n"
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+        ">>>                                          \n"
+        ">>> You are running an incompatible version  \n"
+        ">>> of PhotonVision !                        \n"
+        ">>>                                          \n"
+        ">>> PhotonLib ";
+    bfw += photon::PhotonVersion::versionString;
+    bfw += " is built for WPILib ";
+    bfw += photon::PhotonVersion::wpilibTargetVersion;
+    bfw +=
+        "\n"
+        ">>> but you are using WPILib ";
+    bfw += GetWPILibVersion();
+    bfw +=
+        "\n>>>                                          \n"
+        ">>> This is neither tested nor supported.    \n"
+        ">>> You MUST update PhotonVision,            \n"
+        ">>> PhotonLib, or both.                      \n"
+        ">>> Verify the output of `./gradlew dependencies` \n"
+        ">>>                                          \n"
+        ">>> Your code will now crash.                \n"
+        ">>> We hope your day gets better.            \n"
+        ">>>                                          \n"
+        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+    FRC_ReportWarning(bfw);
+    FRC_ReportError(frc::err::Error, bfw);
+    throw new std::runtime_error(std::string{bfw});
+  }
+  if (!(std::string_view{cv::getVersionString()} ==
+        std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
+    std::string bfw =
+        "\n\n\n\n\n"
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+        ">>>                                          \n"
+        ">>> You are running an incompatible version  \n"
+        ">>> of PhotonVision !                        \n"
+        ">>>                                          \n"
+        ">>> PhotonLib ";
+    bfw += photon::PhotonVersion::versionString;
+    bfw += " is built for OpenCV ";
+    bfw += photon::PhotonVersion::opencvTargetVersion;
+    bfw +=
+        "\n"
+        ">>> but you are using OpenCV ";
+    bfw += cv::getVersionString();
+    bfw +=
+        "\n>>>                                          \n"
+        ">>> This is neither tested nor supported.    \n"
+        ">>> You MUST update PhotonVision,            \n"
+        ">>> PhotonLib, or both.                      \n"
+        ">>> Verify the output of `./gradlew dependencies` \n"
+        ">>>                                          \n"
+        ">>> Your code will now crash.                \n"
+        ">>> We hope your day gets better.            \n"
+        ">>>                                          \n"
+        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+
+    FRC_ReportWarning(bfw);
+    FRC_ReportError(frc::err::Error, bfw);
+    throw new std::runtime_error(std::string{bfw});
+  }
+}
+
+// bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
+// to avoid calling this from static initialization
+static void InitTspServer() {
+  // We dont impose requirements about not calling the PhotonCamera constructor
+  // from different threads, so i guess we need this?
+  static std::mutex g_timeSyncServerMutex;
+  static bool g_timeSyncServerStarted{false};
+  static wpi::tsp::TimeSyncServer timesyncServer{5810};
+
+  std::lock_guard lock{g_timeSyncServerMutex};
+  if (!g_timeSyncServerStarted) {
+    timesyncServer.Start();
+    g_timeSyncServerStarted = true;
+  }
+}
 
 namespace photon {
 
@@ -108,8 +182,14 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       cameraName(cameraName) {
+  verifyDependencies();
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
+
+  // The Robot class is actually created here:
+  // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/frc/RobotBase.h#L33
+  // so we should be fine to call this from the ctor
+  InitTspServer();
 }
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
@@ -283,11 +363,30 @@ void PhotonCamera::VerifyVersion() {
       FRC_ReportError(frc::warn::Warning,
                       "Cannot find property message_uuid for PhotonCamera {}",
                       path);
+      return;
     }
     std::string remote_uuid{remote_uuid_json};
 
     if (local_uuid != remote_uuid) {
-      FRC_ReportError(frc::warn::Warning, bfw);
+      constexpr std::string_view bfw =
+          "\n\n\n\n"
+          ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+          ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+          ">>>                                          \n"
+          ">>> You are running an incompatible version  \n"
+          ">>> of PhotonVision on your coprocessor!     \n"
+          ">>>                                          \n"
+          ">>> This is neither tested nor supported.    \n"
+          ">>> You MUST update PhotonVision,            \n"
+          ">>> PhotonLib, or both.                      \n"
+          ">>>                                          \n"
+          ">>> Your code will now crash.                \n"
+          ">>> We hope your day gets better.            \n"
+          ">>>                                          \n"
+          ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+          ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+          "\n\n";
+      FRC_ReportWarning(bfw);
       std::string error_str = fmt::format(
           "Photonlib version {} (message definition version {}) does not match "
           "coprocessor version {} (message definition version {})!",

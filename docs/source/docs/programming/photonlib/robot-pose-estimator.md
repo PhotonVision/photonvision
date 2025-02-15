@@ -17,14 +17,14 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
    .. code-block:: Java
 
       // The field from AprilTagFields will be different depending on the game.
-      AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+      AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
    .. code-block:: C++
 
       // The parameter for LoadAPrilTagLayoutField will be different depending on the game.
-      frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::k2024Crescendo);
+      frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::kDefaultField);
 
-    .. code-block:: Python
+   .. code-block:: Python
 
         # Coming Soon!
 
@@ -81,7 +81,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
       photonlib::RobotPoseEstimator estimator(
           aprilTags, photonlib::CLOSEST_TO_REFERENCE_POSE, cameras);
 
-    .. code-block:: Python
+   .. code-block:: Python
 
         kRobotToCam = wpimath.geometry.Transform3d(
             wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
@@ -91,7 +91,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
         self.cam = PhotonCamera("YOUR CAMERA NAME")
 
         self.camPoseEst = PhotonPoseEstimator(
-            loadAprilTagLayoutField(AprilTagField.k2024Crescendo),
+            loadAprilTagLayoutField(AprilTagField.kDefaultField),
             PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
             self.cam,
             kRobotToCam
@@ -123,7 +123,9 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
         }
       }
 
-    .. code-block:: Python
+   .. code-block:: Python
+
+      # Coming Soon!
 
 
 

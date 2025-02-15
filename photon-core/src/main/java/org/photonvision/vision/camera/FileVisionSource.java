@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.camera;
 
+import edu.wpi.first.cscore.UsbCameraInfo;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
@@ -40,7 +41,8 @@ public class FileVisionSource extends VisionSource {
                         : null;
         frameProvider =
                 new FileFrameProvider(
-                        Path.of(cameraConfiguration.path),
+                        // TODO - create new File/replay camera info type
+                        Path.of(cameraConfiguration.getDevicePath()),
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
                         calibration);
@@ -53,7 +55,12 @@ public class FileVisionSource extends VisionSource {
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
-        super(new CameraConfiguration(name, imagePath));
+        // TODO - create new File/replay camera info type
+        super(
+                new CameraConfiguration(
+                        PVCameraInfo.fromUsbCameraInfo(new UsbCameraInfo(0, imagePath, name, null, 0, 0)),
+                        name,
+                        name));
         frameProvider = new FileFrameProvider(imagePath, fov);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
@@ -85,7 +92,12 @@ public class FileVisionSource extends VisionSource {
         return false; // Assume USB cameras do not have photonvision-controlled LEDs
     }
 
-    private static class FileSourceSettables extends VisionSourceSettables {
+    @Override
+    public void release() {
+        frameProvider.release();
+    }
+
+    public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 
         private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();

@@ -164,7 +164,7 @@ public class PhotonPipelineResult
 
     /**
      * Returns the estimated time the frame was taken, in the Time Sync Server's time base (nt::Now).
-     * This is calculated using the estiamted offset between Time Sync Server time and local time. The
+     * This is calculated using the estimated offset between Time Sync Server time and local time. The
      * robot shall run a server, so the offset shall be 0.
      *
      * @return The timestamp in seconds

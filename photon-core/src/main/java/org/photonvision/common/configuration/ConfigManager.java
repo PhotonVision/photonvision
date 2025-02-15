@@ -70,16 +70,12 @@ public class ConfigManager {
         if (INSTANCE == null) {
             Path rootFolder = PathManager.getInstance().getRootFolder();
             switch (m_saveStrat) {
-                case SQL:
-                    INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
-                    break;
-                case LEGACY:
-                    INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
-                    break;
-                case ATOMIC_ZIP:
-                    // not yet done, fall through
-                default:
-                    break;
+                case SQL -> INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
+                case LEGACY ->
+                        INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
+                case ATOMIC_ZIP -> {
+                    // TODO: Not done yet
+                }
             }
         }
         return INSTANCE;
@@ -198,6 +194,11 @@ public class ConfigManager {
 
     public void addCameraConfigurations(List<VisionSource> sources) {
         getConfig().addCameraConfigs(sources);
+        requestSave();
+    }
+
+    public void addCameraConfiguration(CameraConfiguration config) {
+        getConfig().addCameraConfig(config);
         requestSave();
     }
 
@@ -340,7 +341,8 @@ public class ConfigManager {
 
     /**
      * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
-     * settings from getting its new configs overwritten at program exit and before theyre all loaded.
+     * settings from getting its new configs overwritten at program exit and before they're all
+     * loaded.
      */
     public void disableFlushOnShutdown() {
         this.flushOnShutdown = false;

@@ -11,8 +11,7 @@ export enum PipelineType {
 
 export enum AprilTagFamily {
   Family36h11 = 0,
-  Family25h9 = 1,
-  Family16h5 = 2
+  Family16h5 = 1
 }
 
 export enum RobotOffsetPointMode {
@@ -28,7 +27,8 @@ export enum TargetModel {
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
   AprilTag6in_16h5 = 5,
-  AprilTag6p5in_36h11 = 6
+  AprilTag6p5in_36h11 = 6,
+  ReefscapeAlgae = 7
 }
 
 export interface PipelineSettings {

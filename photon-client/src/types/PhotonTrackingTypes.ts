@@ -67,6 +67,7 @@ export interface MultitagResult {
 }
 
 export interface PipelineResult {
+  sequenceID: number;
   fps: number;
   latency: number;
   targets: PhotonTarget[];

@@ -69,5 +69,6 @@ public class PhotonPipelineResultProto
         msg.setSequenceId(value.metadata.getSequenceID());
         msg.setCaptureTimestampMicros(value.metadata.getCaptureTimestampMicros());
         msg.setNtPublishTimestampMicros(value.metadata.getPublishTimestampMicros());
+        msg.setTimeSinceLastPongMicros(value.metadata.timeSinceLastPong);
     }
 }

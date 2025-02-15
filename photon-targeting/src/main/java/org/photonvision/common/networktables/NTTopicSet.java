@@ -80,7 +80,8 @@ public class NTTopicSet {
                         .publish(
                                 PhotonPipelineResult.photonStruct.getTypeString(),
                                 PubSubOption.periodic(0.01),
-                                PubSubOption.sendAll(true));
+                                PubSubOption.sendAll(true),
+                                PubSubOption.keepDuplicates(true));
 
         resultPublisher =
                 new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);

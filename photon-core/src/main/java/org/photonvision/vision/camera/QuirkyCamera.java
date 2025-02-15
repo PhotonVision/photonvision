@@ -31,9 +31,9 @@ public class QuirkyCamera {
                     // SeeCam, which has an odd exposure range
                     new QuirkyCamera(
                             0x2560, 0xc128, "See3Cam_24CUG", CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG),
-                    // Chris's older generic "Logitec HD Webcam"
+                    // Chris's older generic "Logitech HD Webcam"
                     new QuirkyCamera(0x9331, 0x5A3, CameraQuirk.CompletelyBroken),
-                    // Logitec C270
+                    // Logitech C270
                     new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken),
                     // A laptop internal camera someone found broken
                     new QuirkyCamera(0x0bda, 0x5510, CameraQuirk.CompletelyBroken),
@@ -143,7 +143,7 @@ public class QuirkyCamera {
      * @param usbVid USB VID of camera
      * @param usbPid USB PID of camera
      * @param baseName CSCore name of camera
-     * @param displayName Human-friendly quicky camera name
+     * @param displayName Human-friendly quirky camera name
      * @param quirks Camera quirks
      */
     private QuirkyCamera(
@@ -160,7 +160,7 @@ public class QuirkyCamera {
             this.quirks.put(q, true);
         }
 
-        // (2) for all other quirks in CameraQuirks (in this version of Photon), defalut to false
+        // (2) for all other quirks in CameraQuirks (in this version of Photon), default to false
         for (var q : CameraQuirk.values()) {
             this.quirks.putIfAbsent(q, false);
         }

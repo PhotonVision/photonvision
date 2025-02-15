@@ -28,7 +28,7 @@ public enum PigpioCommand {
     PCMD_WVDEL(50), // int wave_delete(unsigned wave_id)
     PCMD_WVTX(51), // int wave_tx_send(unsigned wave_id) (once)
     PCMD_WVTXR(52), // int wave_tx_send(unsigned wave_id) (repeat)
-    PCMD_GDC(83), // int get_duty_cyle(unsigned user_gpio)
+    PCMD_GDC(83), // int get_duty_cycle(unsigned user_gpio)
     PCMD_HP(86), // int hardware_pwm(unsigned gpio, unsigned PWMfreq, unsigned PWMduty)
     PCMD_WVTXM(100); // int wave_tx_send(unsigned wave_id, unsigned wave_mode)
 

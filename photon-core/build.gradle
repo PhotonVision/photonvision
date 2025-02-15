@@ -1,9 +1,8 @@
-plugins {
-    id 'edu.wpi.first.WpilibTools' version '1.3.0'
-}
+apply plugin: 'edu.wpi.first.WpilibTools'
 
 import java.nio.file.Path
 
+ext.licenseFile = file("$rootDir/LICENSE")
 apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
@@ -17,7 +16,6 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpilibc")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
@@ -65,9 +63,13 @@ dependencies {
 }
 
 task writeCurrentVersion {
-    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
-            versionString)
+    doLast {
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "java", "org", "photonvision", "PhotonVersion.java"),
+                versionString)
+    }
 }
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
+sourceSets.main.java.srcDir "${buildDir}/generated/java/"
 
-build.dependsOn writeCurrentVersion
+compileJava.dependsOn writeCurrentVersion

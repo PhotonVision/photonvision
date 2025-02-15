@@ -24,8 +24,6 @@ TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;
   using namespace std::chrono_literals;
 
-  HAL_Initialize(500, 0);
-
   TimeSyncServer server{5812};
   TimeSyncClient client{"127.0.0.1", 5812, 100ms};
 
@@ -35,7 +33,7 @@ TEST(TimeSyncProtocolTest, Smoketest) {
   for (int i = 0; i < 10; i++) {
     std::this_thread::sleep_for(100ms);
     TimeSyncClient::Metadata m = client.GetMetadata();
-    fmt::println("Offset={} rtt={}", m.offset, m.rtt2);
+    wpi::println("Offset={} rtt={}", m.offset, m.rtt2);
   }
 
   server.Stop();

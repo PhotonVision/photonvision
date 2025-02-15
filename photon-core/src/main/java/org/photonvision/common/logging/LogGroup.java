@@ -26,4 +26,5 @@ public enum LogGroup {
     Config,
     CSCore,
     NetworkTables,
+    System,
 }

@@ -20,6 +20,7 @@
 #include <cstdio>
 #include <string>
 
+#include "jni_utils.h"
 #include "net/TimeSyncClient.h"
 
 using namespace wpi::tsp;
@@ -117,6 +118,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncClient_start
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   client->Start();
 }
@@ -130,6 +132,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncClient_stop
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   client->Stop();
   delete client;
@@ -144,6 +147,7 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_TimeSyncClient_getOffset
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR_RETURN(ptr, 0);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   return client->GetOffset();
 }
@@ -157,6 +161,7 @@ JNIEXPORT jobject JNICALL
 Java_org_photonvision_jni_TimeSyncClient_getLatestMetadata
   (JNIEnv* env, jclass, jlong ptr)
 {
+  CHECK_PTR_RETURN(ptr, nullptr);
   TimeSyncClient* client = reinterpret_cast<TimeSyncClient*>(ptr);
   auto m{client->GetMetadata()};
   auto ret = env->NewObject(metadataClass, metadataCtor, m.offset, m.pingsSent,

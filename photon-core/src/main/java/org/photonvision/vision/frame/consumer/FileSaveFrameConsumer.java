@@ -145,28 +145,32 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     /**
-     * Returns the match Data collected from the NT. eg : Q58 for qualfication match 58. If not in
+     * Returns the match Data collected from the NT. eg : Q58 for qualification match 58. If not in
      * event, returns N/A-0-EVENTNAME
      */
     private String getMatchData() {
         var matchType = ntMatchType.getAtomic();
         if (matchType.timestamp == 0) {
             // no NT info yet
-            logger.warn("Did not recieve match type, defaulting to 0");
+            logger.warn("Did not receive match type, defaulting to 0");
         }
 
         var matchNum = ntMatchNum.getAtomic();
         if (matchNum.timestamp == 0) {
-            logger.warn("Did not recieve match num, defaulting to -1");
+            logger.warn("Did not receive match num, defaulting to -1");
         }
 
         var eventName = ntEventName.getAtomic();
         if (eventName.timestamp == 0) {
-            logger.warn("Did not recieve event name, defaulting to 'UNKNOWN'");
+            logger.warn("Did not receive event name, defaulting to 'UNKNOWN'");
         }
 
         String matchTypeStr =
                 matchTypes[MathUtil.clamp((int) matchType.value, 0, matchTypes.length - 1)];
         return matchTypeStr + "-" + matchNum.value + "-" + eventName.value;
+    }
+
+    public void close() {
+        // troododfa;lkjadsf;lkfdsaj otgooadflsk;j
     }
 }

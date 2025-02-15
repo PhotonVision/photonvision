@@ -151,7 +151,7 @@ public class OpenCVTest {
         assertEquals(
                 actualRelation.camToTargPitch.getDegrees(),
                 pitchDiff.getDegrees()
-                        * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perpsective distortion
+                        * Math.cos(yaw2d.getRadians()), // adjust for unaccounted perspective distortion
                 kRotDeltaDeg,
                 "2d pitch doesn't match 3d");
         assertEquals(

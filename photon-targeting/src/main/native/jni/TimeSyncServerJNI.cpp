@@ -20,6 +20,7 @@
 
 #include <cstdio>
 
+#include "jni_utils.h"
 #include "net/TimeSyncServer.h"
 
 using namespace wpi::tsp;
@@ -47,6 +48,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncServer_start
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncServer* server = reinterpret_cast<TimeSyncServer*>(ptr);
   server->Start();
 }
@@ -60,6 +62,7 @@ JNIEXPORT void JNICALL
 Java_org_photonvision_jni_TimeSyncServer_stop
   (JNIEnv*, jclass, jlong ptr)
 {
+  CHECK_PTR(ptr);
   TimeSyncServer* server = reinterpret_cast<TimeSyncServer*>(ptr);
   server->Stop();
   delete server;

@@ -34,11 +34,14 @@ if (!is_demo) {
       if (data.updatePipelineResult !== undefined) {
         useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
       }
-      if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+      if (data.mutatePipelineSettings !== undefined && data.cameraUniqueName !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraUniqueName);
       }
       if (data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      }
+      if (data.visionSourceManager !== undefined) {
+        useStateStore().updateDiscoveredCameras(data.visionSourceManager);
       }
     },
     () => {
