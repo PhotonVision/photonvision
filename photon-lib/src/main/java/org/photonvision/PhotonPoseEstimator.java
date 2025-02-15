@@ -448,8 +448,6 @@ public class PhotonPoseEstimator {
                         .toTranslation2d()
                         .rotateBy(headingSample);
 
-        Rotation2d camToTagRotation = camToTagTranslation.getAngle();
-
         var tagPoseOpt = fieldTags.getTagPose(bestTarget.getFiducialId());
         if (tagPoseOpt.isEmpty()) {
             return Optional.empty();
@@ -457,11 +455,7 @@ public class PhotonPoseEstimator {
         var tagPose2d = tagPoseOpt.get().toPose2d();
 
         Translation2d fieldToCameraTranslation =
-                tagPose2d
-                        .getTranslation()
-                        .plus(
-                                new Translation2d(
-                                        camToTagTranslation.getNorm(), camToTagRotation.plus(Rotation2d.kPi)));
+                tagPose2d.getTranslation().plus(camToTagTranslation.unaryMinus());
 
         Pose2d robotPose =
                 new Pose2d(
