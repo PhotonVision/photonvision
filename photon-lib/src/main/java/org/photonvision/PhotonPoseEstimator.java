@@ -431,6 +431,12 @@ public class PhotonPoseEstimator {
 
         if (bestTarget == null) return Optional.empty();
 
+        var headingSampleOpt = headingBuffer.getSample(result.getTimestampSeconds());
+        if (headingSampleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Rotation2d headingSample = headingSampleOpt.get();
+
         Translation2d camToTagTranslation =
                 new Translation3d(
                                 bestTarget.getBestCameraToTarget().getTranslation().getNorm(),
@@ -438,20 +444,11 @@ public class PhotonPoseEstimator {
                                         0,
                                         -Math.toRadians(bestTarget.getPitch()),
                                         -Math.toRadians(bestTarget.getYaw())))
-                        .rotateBy(
-                                new Rotation3d(
-                                        robotToCamera.getRotation().getX(), robotToCamera.getRotation().getY(), 0))
-                        .toTranslation2d();
+                        .rotateBy(robotToCamera.getRotation())
+                        .toTranslation2d()
+                        .rotateBy(headingSample);
 
-        var headingSampleOpt = headingBuffer.getSample(result.getTimestampSeconds());
-        if (headingSampleOpt.isEmpty()) {
-            return Optional.empty();
-        }
-        Rotation2d headingSample = headingSampleOpt.get();
-
-        Rotation2d camToTagRotation =
-                headingSample.plus(
-                        robotToCamera.getRotation().toRotation2d().plus(camToTagTranslation.getAngle()));
+        Rotation2d camToTagRotation = camToTagTranslation.getAngle();
 
         var tagPoseOpt = fieldTags.getTagPose(bestTarget.getFiducialId());
         if (tagPoseOpt.isEmpty()) {
