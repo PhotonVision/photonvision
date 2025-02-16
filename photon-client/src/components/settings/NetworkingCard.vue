@@ -7,6 +7,7 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import { denounce } from "lodash";
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
@@ -123,6 +124,8 @@ const saveGeneralSettings = () => {
       }
     });
 };
+
+const withDebounceSaveGeneralSettings = debounce(saveGeneralSettings, 500);
 
 const currentNetworkInterfaceIndex = computed<number>({
   get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
@@ -278,7 +281,7 @@ watchEffect(() => {
         color="accent"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
-        @click="saveGeneralSettings"
+        @click="withDebounceSaveGeneralSettings"
       >
         Save
       </v-btn>
