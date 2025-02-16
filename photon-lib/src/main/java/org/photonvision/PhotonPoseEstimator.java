@@ -31,9 +31,12 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
@@ -83,7 +86,18 @@ public class PhotonPoseEstimator {
          * Use all visible tags to compute a single pose estimate. This runs on the RoboRIO, and can
          * take a lot of time.
          */
-        MULTI_TAG_PNP_ON_RIO
+        MULTI_TAG_PNP_ON_RIO,
+
+        /**
+         * Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
+         * to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
+         * data is up-to-date.
+         *
+         * <p>Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
+         *
+         * <p>https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98
+         */
+        PNP_DISTANCE_TRIG_SOLVE
     }
 
     private AprilTagFieldLayout fieldTags;
@@ -96,6 +110,9 @@ public class PhotonPoseEstimator {
     private Pose3d referencePose;
     protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
+
+    private final TimeInterpolatableBuffer<Rotation2d> headingBuffer =
+            TimeInterpolatableBuffer.createBuffer(1.0);
 
     /**
      * Create a new PhotonPoseEstimator.
@@ -260,6 +277,30 @@ public class PhotonPoseEstimator {
     }
 
     /**
+     * Add robot heading data to buffer. Must be called periodically for the
+     * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
+     *
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void addHeadingData(double timestampSeconds, Rotation3d heading) {
+        addHeadingData(timestampSeconds, heading.toRotation2d());
+    }
+
+    /**
+     * Add robot heading data to buffer. Must be called periodically for the
+     * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
+     *
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void addHeadingData(double timestampSeconds, Rotation2d heading) {
+        headingBuffer.addSample(timestampSeconds, heading);
+    }
+
+    /**
      * @return The current transform from the center of the robot to the camera mount position
      */
     public Transform3d getRobotToCameraTransform() {
@@ -374,6 +415,7 @@ public class PhotonPoseEstimator {
                     case MULTI_TAG_PNP_ON_RIO ->
                             multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
                     case MULTI_TAG_PNP_ON_COPROCESSOR -> multiTagOnCoprocStrategy(cameraResult);
+                    case PNP_DISTANCE_TRIG_SOLVE -> pnpDistanceTrigSolveStrategy(cameraResult);
                 };
 
         if (estimatedPose.isPresent()) {
@@ -381,6 +423,51 @@ public class PhotonPoseEstimator {
         }
 
         return estimatedPose;
+    }
+
+    private Optional<EstimatedRobotPose> pnpDistanceTrigSolveStrategy(PhotonPipelineResult result) {
+        PhotonTrackedTarget bestTarget = result.getBestTarget();
+
+        if (bestTarget == null) return Optional.empty();
+
+        var headingSampleOpt = headingBuffer.getSample(result.getTimestampSeconds());
+        if (headingSampleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Rotation2d headingSample = headingSampleOpt.get();
+
+        Translation2d camToTagTranslation =
+                new Translation3d(
+                                bestTarget.getBestCameraToTarget().getTranslation().getNorm(),
+                                new Rotation3d(
+                                        0,
+                                        -Math.toRadians(bestTarget.getPitch()),
+                                        -Math.toRadians(bestTarget.getYaw())))
+                        .rotateBy(robotToCamera.getRotation())
+                        .toTranslation2d()
+                        .rotateBy(headingSample);
+
+        var tagPoseOpt = fieldTags.getTagPose(bestTarget.getFiducialId());
+        if (tagPoseOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        var tagPose2d = tagPoseOpt.get().toPose2d();
+
+        Translation2d fieldToCameraTranslation =
+                tagPose2d.getTranslation().plus(camToTagTranslation.unaryMinus());
+
+        Translation2d camToRobotTranslation =
+                robotToCamera.getTranslation().toTranslation2d().unaryMinus().rotateBy(headingSample);
+
+        Pose2d robotPose =
+                new Pose2d(fieldToCameraTranslation.plus(camToRobotTranslation), headingSample);
+
+        return Optional.of(
+                new EstimatedRobotPose(
+                        new Pose3d(robotPose),
+                        result.getTimestampSeconds(),
+                        result.getTargets(),
+                        PoseStrategy.PNP_DISTANCE_TRIG_SOLVE));
     }
 
     private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(PhotonPipelineResult result) {

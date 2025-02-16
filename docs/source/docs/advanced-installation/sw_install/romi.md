@@ -20,7 +20,7 @@ To install a compatible version of PhotonVision, enter these commands in the SSH
 ```bash
 $ wget https://git.io/JJrEP -O install.sh
 $ sudo chmod +x install.sh
-$ sudo ./install.sh -v 2023.4.2
+$ sudo ./install.sh -v v2023.4.2
 ```
 The install script requires an internet connection, so connecting the Raspberry Pi to an internet-connected router via an Ethernet cable will be the easiest solution. The pi must remain writable while you are following these steps!
 :::
