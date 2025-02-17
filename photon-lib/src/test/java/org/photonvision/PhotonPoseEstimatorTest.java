@@ -24,6 +24,7 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +42,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -489,6 +494,68 @@ class PhotonPoseEstimatorTest {
     }
 
     @Test
+    void pnpDistanceTrigSolve() {
+        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+        PhotonCameraSim cameraOneSim =
+                new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG());
+
+        List<VisionTargetSim> simTargets =
+                aprilTags.getTags().stream()
+                        .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
+                        .toList();
+
+        /* Compound Rolled + Pitched + Yaw */
+
+        Transform3d compoundTestTransform =
+                new Transform3d(
+                        -Units.inchesToMeters(12),
+                        -Units.inchesToMeters(11),
+                        3,
+                        new Rotation3d(
+                                Units.degreesToRadians(37), Units.degreesToRadians(6), Units.degreesToRadians(60)));
+
+        var estimator =
+                new PhotonPoseEstimator(
+                        aprilTags, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
+
+        /* this is the real pose of the robot base we test against */
+        var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
+        PhotonPipelineResult result =
+                cameraOneSim.process(
+                        1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+
+        estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+
+        var estimatedPose = estimator.update(result);
+        var pose = estimatedPose.get().estimatedPose;
+
+        assertEquals(realPose.getX(), pose.getX(), .01);
+        assertEquals(realPose.getY(), pose.getY(), .01);
+        assertEquals(0.0, pose.getZ(), .01);
+
+        /* Straight on */
+
+        Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, new Rotation3d(0, 0, 0));
+
+        estimator.setRobotToCameraTransform(straightOnTestTransform);
+
+        /* Pose to compare with */
+        realPose = new Pose3d(4.81, 2.38, 0, new Rotation3d(0, 0, 2.818));
+        result =
+                cameraOneSim.process(
+                        1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+
+        estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+
+        estimatedPose = estimator.update(result);
+        pose = estimatedPose.get().estimatedPose;
+
+        assertEquals(realPose.getX(), pose.getX(), .01);
+        assertEquals(realPose.getY(), pose.getY(), .01);
+        assertEquals(0.0, pose.getZ(), .01);
+    }
+
+    @Test
     void cacheIsInvalidated() {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         var result =
@@ -643,6 +710,72 @@ class PhotonPoseEstimatorTest {
         assertEquals(2.15, pose.getX(), .01);
         assertEquals(2.15, pose.getY(), .01);
         assertEquals(2.15, pose.getZ(), .01);
+    }
+
+    @Test
+    void testMultiTagOnRioFallback() {
+        PhotonCameraInjector camera = new PhotonCameraInjector();
+        camera.result =
+                new PhotonPipelineResult(
+                        0,
+                        11 * 1_000_000,
+                        1_100_000,
+                        1024,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.0,
+                                        4.0,
+                                        0,
+                                        -1,
+                                        -1,
+                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        0.7,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))),
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.1,
+                                        6.7,
+                                        1,
+                                        -1,
+                                        -1,
+                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
+                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_PNP_ON_RIO, Transform3d.kZero);
+        estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(camera.result);
+        Pose3d pose = estimatedPose.get().estimatedPose;
+        // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
+        assertAll(
+                () -> assertEquals(11, estimatedPose.get().timestampSeconds),
+                () -> assertEquals(1, pose.getX(), 1e-9),
+                () -> assertEquals(3, pose.getY(), 1e-9),
+                () -> assertEquals(2, pose.getZ(), 1e-9));
     }
 
     private static class PhotonCameraInjector extends PhotonCamera {
