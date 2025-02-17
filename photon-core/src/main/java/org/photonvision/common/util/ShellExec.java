@@ -145,8 +145,9 @@ public class ShellExec {
         exitCode = 0;
         if (wait) {
             try {
-                process.waitFor();
-                exitCode = process.exitValue();
+                exitCode = process.waitFor();
+                errorGobbler.join();
+                outputGobbler.join();
             } catch (InterruptedException ignored) {
             }
         }
