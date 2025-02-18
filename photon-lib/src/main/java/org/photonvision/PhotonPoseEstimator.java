@@ -446,14 +446,14 @@ public class PhotonPoseEstimator {
      */
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult, PoseStrategy strategy) {
-        return update(cameraResult, Optional.empty(), Optional.empty(), strategy);
+        return update(cameraResult, Optional.empty(), Optional.empty(), Optional.empty(), strategy);
     }
 
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs,
-            ConstrainedSolvepnpParams meme,
+            Optional<ConstrainedSolvepnpParams> meme,
             PoseStrategy strategy) {
         Optional<EstimatedRobotPose> estimatedPose =
                 switch (strategy) {
@@ -471,7 +471,7 @@ public class PhotonPoseEstimator {
                     case MULTI_TAG_PNP_ON_COPROCESSOR -> multiTagOnCoprocStrategy(cameraResult);
                     case PNP_DISTANCE_TRIG_SOLVE -> pnpDistanceTrigSolveStrategy(cameraResult);
                     case CONSTRAINED_SOLVEPNP ->
-                            constrainedPnpStrategy(cameraResult, cameraMatrix, distCoeffs, meme);
+                            constrainedPnpStrategy(cameraResult, cameraMatrix, distCoeffs, meme.get());
                 };
 
         if (estimatedPose.isPresent()) {
