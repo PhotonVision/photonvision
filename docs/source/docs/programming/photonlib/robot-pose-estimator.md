@@ -47,6 +47,15 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
     - Choose the Pose which is closest to the last pose calculated.
 - AVERAGE_BEST_TARGETS
     - Choose the Pose which is the average of all the poses from each tag.
+- MULTI_TAG_PNP_ON_RIO
+    - A slower, older version of MULTI_TAG_PNP_ON_COPROCESSOR, not recommended for use.
+- PNP_DISTANCE_TRIG_SOLVE
+    - Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
+      to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
+      data is up-to-date. Based on a reference implementation by [FRC Team 6328 Mechanical Advantage](https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98).
+- CONSTRAINED_SOLVEPNP
+    - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
+      flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
 
 ```{eval-rst}
 .. tab-set-code::
