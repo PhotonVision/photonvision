@@ -886,12 +886,14 @@ class PhotonPoseEstimatorTest {
                         PoseStrategy.CONSTRAINED_SOLVEPNP,
                         kRobotToCam);
 
+        estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.kZero);
+
         Optional<EstimatedRobotPose> estimatedPose =
                 estimator.update(
                         result,
                         Optional.of(cameraMat),
                         Optional.of(distortion),
-                        new ConstrainedSolvepnpParams(true, Rotation2d.kZero, 0));
+                        new ConstrainedSolvepnpParams(true, 0));
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
     }
