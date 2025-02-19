@@ -403,7 +403,6 @@ public class PhotonPoseEstimator {
      * @param distCoeffs Camera calibration data for multi-tag-on-rio strategy - can be empty
      *     otherwise
      * @param constrainedPnpParams Constrained SolvePNP params, if needed.
-     *
      * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
      *     create the estimate.
      */
@@ -536,16 +535,19 @@ public class PhotonPoseEstimator {
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
         // cannot run multitagPNP, use fallback strategy
         if (!hasCalibData) {
-            return update(result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
         }
 
         if (constrainedPnpParams.isEmpty()) {
-          return Optional.empty();
+            return Optional.empty();
         }
 
         // Need heading if heading fixed
-        if (!constrainedPnpParams.get().headingFree && headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
-            return update(result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+        if (!constrainedPnpParams.get().headingFree
+                && headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
         }
 
         Pose3d fieldToRobotSeed;
@@ -553,19 +555,18 @@ public class PhotonPoseEstimator {
         // Attempt to use multi-tag to get a pose estimate seed
         if (result.getMultiTagResult().isPresent()) {
             fieldToRobotSeed =
-                    Pose3d.kZero
-                            .plus(
-                                    result
-                                            .getMultiTagResult()
-                                            .get()
-                                            .estimatedPose
-                                            .best
-                                            .plus(robotToCamera.inverse()));
+                    Pose3d.kZero.plus(
+                            result.getMultiTagResult().get().estimatedPose.best.plus(robotToCamera.inverse()));
         } else {
             // HACK - use fallback strategy to gimme a seed pose
             // TODO - make sure nested update doesn't break state
             var nestedUpdate =
-                    update(result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+                    update(
+                            result,
+                            cameraMatrixOpt,
+                            distCoeffsOpt,
+                            Optional.empty(),
+                            this.multiTagFallbackStrategy);
             if (nestedUpdate.isEmpty()) {
                 // best i can do is bail
                 return Optional.empty();
@@ -595,7 +596,8 @@ public class PhotonPoseEstimator {
                         constrainedPnpParams.get().headingScaleFactor);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResult.isPresent())
-            return update(result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
         var best = Pose3d.kZero.plus(pnpResult.get().best); // field-to-robot
 
         return Optional.of(
@@ -645,7 +647,8 @@ public class PhotonPoseEstimator {
                         cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags, tagModel);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResult.isPresent())
-            return update(result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
 
         var best =
                 Pose3d.kZero
