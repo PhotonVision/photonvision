@@ -440,7 +440,7 @@ public class PhotonPoseEstimator {
      * called after timestamp checks have been done by another update() overload.
      *
      * @param cameraResult The latest pipeline result from the camera
-     * @param strategy The pose strategy to use
+     * @param strategy The pose strategy to use. Can't be CONSTRAINED_SOLVEPNP.
      * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
      *     create the estimate.
      */
