@@ -104,7 +104,7 @@ public class PhotonPoseEstimator {
          * flat on the floor. This computation takes place on the RoboRIO, and typically takes not more
          * than 2ms. See {@link PhotonPoseEstimator.ConstrainedSolvepnpParams} and {@link
          * org.photonvision.jni.ConstrainedSolvepnpJni} for details and tuning handles this strategy
-         * exposes.
+         * exposes. This also needs addHeadingData called every frame so heading data is up-to-date.
          */
         CONSTRAINED_SOLVEPNP
     }
