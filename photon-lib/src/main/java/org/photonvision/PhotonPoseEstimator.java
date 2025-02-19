@@ -532,7 +532,7 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N8, N1>> distCoeffsOpt,
-            ConstrainedSolvepnpParams meme) {
+            ConstrainedSolvepnpParams constrainedPnpParams) {
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
         // cannot run multitagPNP, use fallback strategy
         if (!hasCalibData) {
@@ -540,7 +540,7 @@ public class PhotonPoseEstimator {
         }
 
         // Need heading if heading fixed
-        if (!meme.headingFree && headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
+        if (!constrainedPnpParams.headingFree && headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
             return update(result, cameraMatrixOpt, distCoeffsOpt, null, this.multiTagFallbackStrategy);
         }
 
@@ -569,7 +569,7 @@ public class PhotonPoseEstimator {
             fieldToRobotSeed = nestedUpdate.get().estimatedPose;
         }
 
-        if (!meme.headingFree) {
+        if (!constrainedPnpParams.headingFree) {
             // If heading fixed, force rotation component
             fieldToRobotSeed =
                     new Pose3d(
@@ -586,9 +586,9 @@ public class PhotonPoseEstimator {
                         fieldToRobotSeed,
                         fieldTags,
                         tagModel,
-                        meme.headingFree,
+                        constrainedPnpParams.headingFree,
                         headingBuffer.getSample(result.getTimestampSeconds()).get(),
-                        meme.headingScaleFactor);
+                        constrainedPnpParams.headingScaleFactor);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResult.isPresent())
             return update(result, cameraMatrixOpt, distCoeffsOpt, null, this.multiTagFallbackStrategy);
