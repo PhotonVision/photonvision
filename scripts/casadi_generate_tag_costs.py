@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from pathlib import Path
 
 import casadi as ca
@@ -139,7 +141,7 @@ def generate_costs(num_tags, robot_heading_free):
     )
 
     cg = CodeGenerator(
-        f"casadi_meme_{num_tags}_tags_{'free' if robot_heading_free else 'fixed'}",
+        f"constrained_solvepnp_{num_tags}_tags_{'free' if robot_heading_free else 'fixed'}",
         {
             "with_header": True,
             "cpp": False,
@@ -157,7 +159,7 @@ def generate_costs(num_tags, robot_heading_free):
         / "native"
         / "cpp"
         / "photon"
-        / "casadi_meme"
+        / "constrained_solvepnp"
         / "generate"
     )
     if not os.path.exists(output_dir):
