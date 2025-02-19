@@ -231,6 +231,6 @@ public class HardwareManager {
     }
 
     public HashMap<String, String> getMetrics() {
-        return metricsManager.getMetrics();
+        return metricsManager.getMetricsObject();
     }
 }

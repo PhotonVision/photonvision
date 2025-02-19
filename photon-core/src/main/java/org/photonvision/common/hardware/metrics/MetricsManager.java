@@ -36,7 +36,6 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.ShellExec;
 
 public class MetricsManager {
-
     final Logger logger = new Logger(MetricsManager.class, LogGroup.General);
 
     CmdBase cmds;
