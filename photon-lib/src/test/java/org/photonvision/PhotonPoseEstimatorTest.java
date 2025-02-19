@@ -893,7 +893,7 @@ class PhotonPoseEstimatorTest {
                         result,
                         Optional.of(cameraMat),
                         Optional.of(distortion),
-                        new ConstrainedSolvepnpParams(true, 0));
+                        Optional.of(new ConstrainedSolvepnpParams(true, 0)));
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
     }
