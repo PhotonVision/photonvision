@@ -549,7 +549,7 @@ public class PhotonPoseEstimator {
         // Attempt to use multi-tag to get a pose estimate seed
         if (result.getMultiTagResult().isPresent()) {
             fieldToRobotSeed =
-                    new Pose3d()
+                    Pose3d.kZero
                             .plus(
                                     result
                                             .getMultiTagResult()
@@ -592,7 +592,7 @@ public class PhotonPoseEstimator {
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResult.isPresent())
             return update(result, cameraMatrixOpt, distCoeffsOpt, null, this.multiTagFallbackStrategy);
-        var best = new Pose3d().plus(pnpResult.get().best); // field-to-robot
+        var best = Pose3d.kZero.plus(pnpResult.get().best); // field-to-robot
 
         return Optional.of(
                 new EstimatedRobotPose(
@@ -609,7 +609,7 @@ public class PhotonPoseEstimator {
 
         var best_tf = result.getMultiTagResult().get().estimatedPose.best;
         var best =
-                new Pose3d()
+                Pose3d.kZero
                         .plus(best_tf) // field-to-camera
                         .relativeTo(fieldTags.getOrigin())
                         .plus(robotToCamera.inverse()); // field-to-robot
@@ -644,7 +644,7 @@ public class PhotonPoseEstimator {
             return update(result, cameraMatrixOpt, distCoeffsOpt, null, this.multiTagFallbackStrategy);
 
         var best =
-                new Pose3d()
+                Pose3d.kZero
                         .plus(pnpResult.get().best) // field-to-camera
                         .plus(robotToCamera.inverse()); // field-to-robot
 
