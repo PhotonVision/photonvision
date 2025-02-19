@@ -385,7 +385,7 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs) {
-        return update(cameraResult, cameraMatrix, distCoeffs, null);
+        return update(cameraResult, cameraMatrix, distCoeffs, Optional.empty());
     }
 
     /**
