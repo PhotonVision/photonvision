@@ -104,7 +104,10 @@ public class PhotonPoseEstimator {
          * flat on the floor. This computation takes place on the RoboRIO, and typically takes not more
          * than 2ms. See {@link PhotonPoseEstimator.ConstrainedSolvepnpParams} and {@link
          * org.photonvision.jni.ConstrainedSolvepnpJni} for details and tuning handles this strategy
-         * exposes. This also needs addHeadingData called every frame so heading data is up-to-date.
+         * exposes. This strategy needs addHeadingData called every frame so heading data is up-to-date.
+         * If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an initial seed to
+         * the optimization algorithm -- otherwise, the multi-tag fallback strategy will be used as the
+         * seed.
          */
         CONSTRAINED_SOLVEPNP
     }
