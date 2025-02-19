@@ -538,7 +538,7 @@ public class PhotonPoseEstimator {
         }
 
         // Need heading if heading fixed
-        if (!meme.headingFree && headingBuffer.getSample(result.getTimestampSeconds()) == null) {
+        if (!meme.headingFree && headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
             return update(result, cameraMatrixOpt, distCoeffsOpt, null, this.multiTagFallbackStrategy);
         }
 
@@ -570,7 +570,7 @@ public class PhotonPoseEstimator {
         if (!meme.headingFree) {
             // If heading fixed, force rotation component
             fieldToRobotSeed =
-                    new Pose3d(fieldToRobotSeed.getTranslation(), new Rotation3d(meme.headingMeasurement));
+                    new Pose3d(fieldToRobotSeed.getTranslation(), new Rotation3d(headingBuffer.getSample(result.getTimestampSeconds()).get()));
         }
 
         var pnpResult =
@@ -583,7 +583,7 @@ public class PhotonPoseEstimator {
                         fieldTags,
                         tagModel,
                         meme.headingFree,
-                        meme.headingMeasurement,
+                        headingBuffer.getSample(result.getTimestampSeconds()).get(),
                         meme.headingScaleFactor);
         // try fallback strategy if solvePNP fails for some reason
         if (!pnpResult.isPresent())
