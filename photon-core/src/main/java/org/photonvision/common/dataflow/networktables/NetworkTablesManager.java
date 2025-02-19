@@ -201,6 +201,12 @@ public class NetworkTablesManager {
         kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
+    private void broadcastMetrics() {
+        HardwareManager.getInstance()
+                .getMetrics()
+                .forEach((k, v) -> kRootTable.getSubTable("metrics").getEntry(k).setString(v));
+    }
+
     public void setConfig(NetworkConfig config) {
         if (config.runNTServer) {
             setServerMode();
@@ -256,6 +262,8 @@ public class NetworkTablesManager {
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
+
+        broadcastMetrics();
     }
 
     public long getTimeSinceLastPong() {
