@@ -56,6 +56,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 - CONSTRAINED_SOLVEPNP
     - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
       flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
+      This also requires addHeadingData to be called every frame so heading data is up to date.
 
 ```{eval-rst}
 .. tab-set-code::
