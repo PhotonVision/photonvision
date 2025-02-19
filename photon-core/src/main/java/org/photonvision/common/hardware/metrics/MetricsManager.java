@@ -36,6 +36,7 @@ import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.ShellExec;
 
 public class MetricsManager {
+
     final Logger logger = new Logger(MetricsManager.class, LogGroup.General);
 
     CmdBase cmds;
@@ -129,9 +130,9 @@ public class MetricsManager {
         return addr;
     }
 
-    public HashMap<String, String> getMetrics() {
+    public HashMap<String, String> getMetricsObject() {
         HashMap<String, String> metrics = new HashMap<String, String>();
-
+        
         metrics.put("cpuTemp", this.getTemp());
         metrics.put("cpuUtil", this.getUtilization());
         metrics.put("cpuMem", this.getMemory());
@@ -147,21 +148,11 @@ public class MetricsManager {
         return metrics;
     }
 
+    
+
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
-        final var metrics = new HashMap<String, String>();
-
-        metrics.put("cpuTemp", this.getTemp());
-        metrics.put("cpuUtil", this.getUtilization());
-        metrics.put("cpuMem", this.getMemory());
-        metrics.put("cpuThr", this.getThrottleReason());
-        metrics.put("cpuUptime", this.getUptime());
-        metrics.put("gpuMem", this.getGPUMemorySplit());
-        metrics.put("ramUtil", this.getUsedRam());
-        metrics.put("gpuMemUtil", this.getMallocedMemory());
-        metrics.put("diskUtilPct", this.getUsedDiskPct());
-        metrics.put("npuUsage", this.getNpuUsage());
-        metrics.put("ipAddress", this.getIpAddress());
+        HashMap<String, String> metrics = getMetricsObject();
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
