@@ -808,6 +808,7 @@ class PhotonPoseEstimatorTest {
                 () -> assertEquals(2, pose.getZ(), 1e-9));
     }
 
+    @Test
     public void testConstrainedPnpOneTag() {
         var distortion = VecBuilder.fill(0, 0, 0, 0, 0, 0, 0, 0);
         var cameraMat =
@@ -896,6 +897,18 @@ class PhotonPoseEstimatorTest {
                         Optional.of(new ConstrainedSolvepnpParams(true, 0)));
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
+    }
+
+    @Test
+    void testConstrainedPnpEmptyCase() {
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
+                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo),
+                        PoseStrategy.CONSTRAINED_SOLVEPNP,
+                        Transform3d.kZero);
+        PhotonPipelineResult result = new PhotonPipelineResult();
+        var estimate = estimator.update(result);
+        assertEquals(estimate, Optional.empty());
     }
 
     private static class PhotonCameraInjector extends PhotonCamera {
