@@ -570,7 +570,9 @@ public class PhotonPoseEstimator {
         if (!meme.headingFree) {
             // If heading fixed, force rotation component
             fieldToRobotSeed =
-                    new Pose3d(fieldToRobotSeed.getTranslation(), new Rotation3d(headingBuffer.getSample(result.getTimestampSeconds()).get()));
+                    new Pose3d(
+                            fieldToRobotSeed.getTranslation(),
+                            new Rotation3d(headingBuffer.getSample(result.getTimestampSeconds()).get()));
         }
 
         var pnpResult =
