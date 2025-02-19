@@ -455,7 +455,7 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs,
-            ConstrainedSolvepnpParams meme,
+            ConstrainedSolvepnpParams constrainedPnpParams,
             PoseStrategy strategy) {
         Optional<EstimatedRobotPose> estimatedPose =
                 switch (strategy) {
@@ -473,7 +473,7 @@ public class PhotonPoseEstimator {
                     case MULTI_TAG_PNP_ON_COPROCESSOR -> multiTagOnCoprocStrategy(cameraResult);
                     case PNP_DISTANCE_TRIG_SOLVE -> pnpDistanceTrigSolveStrategy(cameraResult);
                     case CONSTRAINED_SOLVEPNP ->
-                            constrainedPnpStrategy(cameraResult, cameraMatrix, distCoeffs, meme);
+                            constrainedPnpStrategy(cameraResult, cameraMatrix, distCoeffs, constrainedPnpParams);
                 };
 
         if (estimatedPose.isPresent()) {
