@@ -165,17 +165,18 @@ void print_cost(casadi_real robot_x, casadi_real robot_y,
   for (int i = 0; i < 10; i++) {
     auto start = wpi::Now();
     auto x_out = constrained_solvepnp::do_optimization(
-        true, TAG_COUNT, constrained_solvepnp::CameraCalibration{fx, fy, cx, cy},
-        robot2camera, x_guess, field2points, point_observations, 0, 0);
+        true, TAG_COUNT,
+        constrained_solvepnp::CameraCalibration{fx, fy, cx, cy}, robot2camera,
+        x_guess, field2points, point_observations, 0, 0);
     auto end = wpi::Now();
 
-    std::cout
-        << "iter "
-        << i
-        // << "\nGuess:\n" << x_guess << "\n Optimized ->\n"
-        //   << std::endl << x_out.value_or(constrained_solvepnp::RobotStateMat::Zero())
-        << "\nSucceeded? " << static_cast<bool>(x_out) << "\nIn "
-        << (end - start) << "uS" << std::endl;
+    std::cout << "iter "
+              << i
+              // << "\nGuess:\n" << x_guess << "\n Optimized ->\n"
+              //   << std::endl <<
+              //   x_out.value_or(constrained_solvepnp::RobotStateMat::Zero())
+              << "\nSucceeded? " << static_cast<bool>(x_out) << "\nIn "
+              << (end - start) << "uS" << std::endl;
   }
 }
 

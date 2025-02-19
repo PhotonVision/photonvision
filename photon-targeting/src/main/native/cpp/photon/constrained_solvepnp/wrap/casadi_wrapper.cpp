@@ -163,9 +163,11 @@ struct ProblemState {
 #undef MAKE_ARGV
 };
 
-wpi::expected<constrained_solvepnp::RobotStateMat, sleipnir::SolverExitCondition>
+wpi::expected<constrained_solvepnp::RobotStateMat,
+              sleipnir::SolverExitCondition>
 constrained_solvepnp::do_optimization(
-    bool heading_free, int nTags, constrained_solvepnp::CameraCalibration cameraCal,
+    bool heading_free, int nTags,
+    constrained_solvepnp::CameraCalibration cameraCal,
     // Note that casadi is column major, apparently
     Eigen::Matrix<casadi_real, 4, 4, Eigen::ColMajor> robot2camera,
     constrained_solvepnp::RobotStateMat x_guess,
