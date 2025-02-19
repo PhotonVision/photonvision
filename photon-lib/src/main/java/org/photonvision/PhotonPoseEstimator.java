@@ -116,7 +116,6 @@ public class PhotonPoseEstimator {
      *
      * @param headingFree If true, heading is completely free to vary. If false, heading excursions
      *     from the provided heading measurement will be penalized
-     * @param headingMeasurement The current heading estimate
      * @param headingScaleFactor If headingFree is false, this weights the cost of changing our robot
      *     heading estimate against the tag corner reprojection error const.
      */
