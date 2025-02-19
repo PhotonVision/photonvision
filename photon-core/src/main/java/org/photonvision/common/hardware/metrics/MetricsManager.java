@@ -129,7 +129,7 @@ public class MetricsManager {
         return addr;
     }
 
-    public HashMap<String, String> getMetricsObject() {
+    public HashMap<String, String> getMetrics() {
         HashMap<String, String> metrics = new HashMap<String, String>();
 
         metrics.put("cpuTemp", this.getTemp());
@@ -149,7 +149,7 @@ public class MetricsManager {
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
-        HashMap<String, String> metrics = getMetricsObject();
+        HashMap<String, String> metrics = getMetrics();
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
