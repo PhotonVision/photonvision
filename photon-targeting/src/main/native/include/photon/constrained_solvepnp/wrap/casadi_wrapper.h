@@ -21,7 +21,7 @@
 #include <sleipnir/optimization/SolverExitCondition.hpp>
 #include <wpi/expected>
 
-namespace casadi_meme {
+namespace constrained_solvepnp {
 using casadi_real = double;
 /**
  * Pinhole camera coefficients
@@ -50,4 +50,4 @@ wpi::expected<RobotStateMat, sleipnir::SolverExitCondition> do_optimization(
         point_observations,
     double gyroθ, double gyroErrorScaleFac);
 
-}  // namespace casadi_meme
+}  // namespace constrained_solvepnp

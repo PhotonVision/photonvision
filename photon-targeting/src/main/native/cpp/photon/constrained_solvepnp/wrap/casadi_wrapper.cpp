@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "photon/casadi_meme/wrap/casadi_wrapper.h"
+#include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 
 #include <fmt/core.h>
 
@@ -31,26 +31,26 @@
 #include <frc/fmt/Eigen.h>
 #include <wpi/timestamp.h>
 
-#include "../generate/casadi_meme_10_tags_fixed.h"
-#include "../generate/casadi_meme_10_tags_free.h"
-#include "../generate/casadi_meme_1_tags_fixed.h"
-#include "../generate/casadi_meme_1_tags_free.h"
-#include "../generate/casadi_meme_2_tags_fixed.h"
-#include "../generate/casadi_meme_2_tags_free.h"
-#include "../generate/casadi_meme_3_tags_fixed.h"
-#include "../generate/casadi_meme_3_tags_free.h"
-#include "../generate/casadi_meme_4_tags_fixed.h"
-#include "../generate/casadi_meme_4_tags_free.h"
-#include "../generate/casadi_meme_5_tags_fixed.h"
-#include "../generate/casadi_meme_5_tags_free.h"
-#include "../generate/casadi_meme_6_tags_fixed.h"
-#include "../generate/casadi_meme_6_tags_free.h"
-#include "../generate/casadi_meme_7_tags_fixed.h"
-#include "../generate/casadi_meme_7_tags_free.h"
-#include "../generate/casadi_meme_8_tags_fixed.h"
-#include "../generate/casadi_meme_8_tags_free.h"
-#include "../generate/casadi_meme_9_tags_fixed.h"
-#include "../generate/casadi_meme_9_tags_free.h"
+#include "../generate/constrained_solvepnp_10_tags_fixed.h"
+#include "../generate/constrained_solvepnp_10_tags_free.h"
+#include "../generate/constrained_solvepnp_1_tags_fixed.h"
+#include "../generate/constrained_solvepnp_1_tags_free.h"
+#include "../generate/constrained_solvepnp_2_tags_fixed.h"
+#include "../generate/constrained_solvepnp_2_tags_free.h"
+#include "../generate/constrained_solvepnp_3_tags_fixed.h"
+#include "../generate/constrained_solvepnp_3_tags_free.h"
+#include "../generate/constrained_solvepnp_4_tags_fixed.h"
+#include "../generate/constrained_solvepnp_4_tags_free.h"
+#include "../generate/constrained_solvepnp_5_tags_fixed.h"
+#include "../generate/constrained_solvepnp_5_tags_free.h"
+#include "../generate/constrained_solvepnp_6_tags_fixed.h"
+#include "../generate/constrained_solvepnp_6_tags_free.h"
+#include "../generate/constrained_solvepnp_7_tags_fixed.h"
+#include "../generate/constrained_solvepnp_7_tags_free.h"
+#include "../generate/constrained_solvepnp_8_tags_fixed.h"
+#include "../generate/constrained_solvepnp_8_tags_free.h"
+#include "../generate/constrained_solvepnp_9_tags_fixed.h"
+#include "../generate/constrained_solvepnp_9_tags_free.h"
 
 constexpr bool VERBOSE = false;
 
@@ -109,7 +109,7 @@ struct ProblemState {
   Eigen::Matrix<casadi_real, 4, Eigen::Dynamic, Eigen::ColMajor> field2points;
   Eigen::Matrix<casadi_real, 2, Eigen::Dynamic, Eigen::ColMajor>
       point_observations;
-  casadi_meme::CameraCalibration cameraCal;
+  constrained_solvepnp::CameraCalibration cameraCal;
 
   // our Problem with function pointers
   Problem problemSelected;
@@ -163,12 +163,12 @@ struct ProblemState {
 #undef MAKE_ARGV
 };
 
-wpi::expected<casadi_meme::RobotStateMat, sleipnir::SolverExitCondition>
-casadi_meme::do_optimization(
-    bool heading_free, int nTags, casadi_meme::CameraCalibration cameraCal,
+wpi::expected<constrained_solvepnp::RobotStateMat, sleipnir::SolverExitCondition>
+constrained_solvepnp::do_optimization(
+    bool heading_free, int nTags, constrained_solvepnp::CameraCalibration cameraCal,
     // Note that casadi is column major, apparently
     Eigen::Matrix<casadi_real, 4, 4, Eigen::ColMajor> robot2camera,
-    casadi_meme::RobotStateMat x_guess,
+    constrained_solvepnp::RobotStateMat x_guess,
     Eigen::Matrix<casadi_real, 4, Eigen::Dynamic, Eigen::ColMajor> field2points,
     Eigen::Matrix<casadi_real, 2, Eigen::Dynamic, Eigen::ColMajor>
         point_observations,

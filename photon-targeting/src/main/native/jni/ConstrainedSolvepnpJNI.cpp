@@ -23,7 +23,7 @@
 #include <vector>
 
 #include "org_photonvision_jni_ConstrainedSolvepnpJni.h"
-#include "photon/casadi_meme/wrap/casadi_wrapper.h"
+#include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 
 std::vector<double> convertJDoubleArray(JNIEnv* env, jdoubleArray array) {
   jsize length = env->GetArrayLength(array);
@@ -57,7 +57,7 @@ Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
   auto field2pointsVec = convertJDoubleArray(env, field2points);
   auto pointObservationsVec = convertJDoubleArray(env, pointObservations);
 
-  casadi_meme::CameraCalibration cameraCal_{
+  constrained_solvepnp::CameraCalibration cameraCal_{
       cameraCalVec[0],
       cameraCalVec[1],
       cameraCalVec[2],
@@ -84,8 +84,8 @@ Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
   std::cout << "observations:\n" << pointObservationsMat << std::endl;
 #endif
 
-  wpi::expected<casadi_meme::RobotStateMat, sleipnir::SolverExitCondition>
-      result = casadi_meme::do_optimization(
+  wpi::expected<constrained_solvepnp::RobotStateMat, sleipnir::SolverExitCondition>
+      result = constrained_solvepnp::do_optimization(
           headingFree, nTags, cameraCal_, robot2cameraMat, xGuessMat,
           field2pointsMat, pointObservationsMat, gyro_θ, gyro_error_scale_fac);
 

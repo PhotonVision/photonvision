@@ -15,7 +15,7 @@ extern "C" {
   #define _CASADI_NAMESPACE_CONCAT(NS, ID) NS ## ID
   #define CASADI_PREFIX(ID) CASADI_NAMESPACE_CONCAT(CODEGEN_PREFIX, ID)
 #else
-  #define CASADI_PREFIX(ID) casadi_meme_7_tags_fixed_ ## ID
+  #define CASADI_PREFIX(ID) constrained_solvepnp_7_tags_fixed_ ## ID
 #endif
 
 #include <math.h>

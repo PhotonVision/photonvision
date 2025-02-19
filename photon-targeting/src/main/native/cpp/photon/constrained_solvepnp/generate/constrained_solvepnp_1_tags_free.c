@@ -15,7 +15,7 @@ extern "C" {
   #define _CASADI_NAMESPACE_CONCAT(NS, ID) NS ## ID
   #define CASADI_PREFIX(ID) CASADI_NAMESPACE_CONCAT(CODEGEN_PREFIX, ID)
 #else
-  #define CASADI_PREFIX(ID) casadi_meme_1_tags_fixed_ ## ID
+  #define CASADI_PREFIX(ID) constrained_solvepnp_1_tags_free_ ## ID
 #endif
 
 #include <math.h>
@@ -62,480 +62,474 @@ static const casadi_int casadi_s2[15] = {2, 4, 0, 2, 4, 6, 8, 0, 1, 0, 1, 0, 1, 
 static const casadi_int casadi_s3[7] = {3, 1, 0, 3, 0, 1, 2};
 static const casadi_int casadi_s4[15] = {3, 3, 0, 3, 6, 9, 0, 1, 2, 0, 1, 2, 0, 1, 2};
 
-/* calc_J_1_tags_heading_fixed:(robot_x,robot_y,robot_θ,fx,fy,cx,cy,robot2camera[4x4],field2points[4x4],point_observations[2x4],gyro_θ,gyro_error_scale_fac)->(J) */
+/* calc_J_1_tags_heading_free:(robot_x,robot_y,robot_θ,fx,fy,cx,cy,robot2camera[4x4],field2points[4x4],point_observations[2x4],gyro_θ,gyro_error_scale_fac)->(J) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
-  casadi_real a0, a1, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a2, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a3, a30, a31, a32, a4, a5, a6, a7, a8, a9;
+  casadi_real a0, a1, a10, a11, a12, a13, a14, a15, a16, a17, a18, a19, a2, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a3, a30, a31, a4, a5, a6, a7, a8, a9;
   a0=arg[3]? arg[3][0] : 0;
   a1=arg[2]? arg[2][0] : 0;
   a2=cos(a1);
   a3=arg[7]? arg[7][0] : 0;
   a4=(a2*a3);
-  a5=sin(a1);
-  a6=arg[7]? arg[7][1] : 0;
-  a7=(a5*a6);
-  a4=(a4-a7);
-  a7=arg[0]? arg[0][0] : 0;
-  a8=arg[7]? arg[7][3] : 0;
-  a9=(a7*a8);
-  a4=(a4+a9);
-  a9=casadi_sq(a4);
-  a3=(a5*a3);
-  a6=(a2*a6);
-  a3=(a3+a6);
-  a6=arg[1]? arg[1][0] : 0;
-  a10=(a6*a8);
-  a3=(a3+a10);
-  a10=casadi_sq(a3);
-  a9=(a9+a10);
-  a10=arg[7]? arg[7][2] : 0;
-  a11=casadi_sq(a10);
-  a9=(a9+a11);
-  a11=casadi_sq(a8);
-  a9=(a9+a11);
-  a9=sqrt(a9);
-  a4=(a4/a9);
-  a11=arg[7]? arg[7][12] : 0;
-  a12=(a2*a11);
-  a13=arg[7]? arg[7][13] : 0;
-  a14=(a5*a13);
-  a12=(a12-a14);
-  a14=arg[7]? arg[7][15] : 0;
-  a15=(a7*a14);
-  a12=(a12+a15);
-  a15=(a12*a4);
-  a11=(a5*a11);
-  a13=(a2*a13);
-  a11=(a11+a13);
-  a13=(a6*a14);
-  a11=(a11+a13);
-  a3=(a3/a9);
-  a13=(a11*a3);
-  a15=(a15+a13);
-  a13=arg[7]? arg[7][14] : 0;
-  a10=(a10/a9);
-  a16=(a13*a10);
-  a15=(a15+a16);
-  a8=(a8/a9);
-  a16=(a14*a8);
-  a15=(a15+a16);
-  a16=(a15*a4);
-  a12=(a12-a16);
-  a16=arg[7]? arg[7][4] : 0;
-  a17=(a2*a16);
-  a18=arg[7]? arg[7][5] : 0;
-  a19=(a5*a18);
-  a17=(a17-a19);
-  a19=arg[7]? arg[7][7] : 0;
-  a20=(a7*a19);
-  a17=(a17+a20);
-  a20=(a17*a4);
-  a16=(a5*a16);
-  a18=(a2*a18);
-  a16=(a16+a18);
-  a18=(a6*a19);
-  a16=(a16+a18);
-  a18=(a16*a3);
-  a20=(a20+a18);
-  a18=arg[7]? arg[7][6] : 0;
-  a21=(a18*a10);
+  a1=sin(a1);
+  a5=arg[7]? arg[7][1] : 0;
+  a6=(a1*a5);
+  a4=(a4-a6);
+  a6=arg[0]? arg[0][0] : 0;
+  a7=arg[7]? arg[7][3] : 0;
+  a8=(a6*a7);
+  a4=(a4+a8);
+  a8=casadi_sq(a4);
+  a3=(a1*a3);
+  a5=(a2*a5);
+  a3=(a3+a5);
+  a5=arg[1]? arg[1][0] : 0;
+  a9=(a5*a7);
+  a3=(a3+a9);
+  a9=casadi_sq(a3);
+  a8=(a8+a9);
+  a9=arg[7]? arg[7][2] : 0;
+  a10=casadi_sq(a9);
+  a8=(a8+a10);
+  a10=casadi_sq(a7);
+  a8=(a8+a10);
+  a8=sqrt(a8);
+  a4=(a4/a8);
+  a10=arg[7]? arg[7][12] : 0;
+  a11=(a2*a10);
+  a12=arg[7]? arg[7][13] : 0;
+  a13=(a1*a12);
+  a11=(a11-a13);
+  a13=arg[7]? arg[7][15] : 0;
+  a14=(a6*a13);
+  a11=(a11+a14);
+  a14=(a11*a4);
+  a10=(a1*a10);
+  a12=(a2*a12);
+  a10=(a10+a12);
+  a12=(a5*a13);
+  a10=(a10+a12);
+  a3=(a3/a8);
+  a12=(a10*a3);
+  a14=(a14+a12);
+  a12=arg[7]? arg[7][14] : 0;
+  a9=(a9/a8);
+  a15=(a12*a9);
+  a14=(a14+a15);
+  a7=(a7/a8);
+  a15=(a13*a7);
+  a14=(a14+a15);
+  a15=(a14*a4);
+  a11=(a11-a15);
+  a15=arg[7]? arg[7][4] : 0;
+  a16=(a2*a15);
+  a17=arg[7]? arg[7][5] : 0;
+  a18=(a1*a17);
+  a16=(a16-a18);
+  a18=arg[7]? arg[7][7] : 0;
+  a19=(a6*a18);
+  a16=(a16+a19);
+  a19=(a16*a4);
+  a15=(a1*a15);
+  a17=(a2*a17);
+  a15=(a15+a17);
+  a17=(a5*a18);
+  a15=(a15+a17);
+  a17=(a15*a3);
+  a19=(a19+a17);
+  a17=arg[7]? arg[7][6] : 0;
+  a20=(a17*a9);
+  a19=(a19+a20);
+  a20=(a18*a7);
+  a19=(a19+a20);
+  a20=(a19*a4);
+  a16=(a16-a20);
+  a20=casadi_sq(a16);
+  a21=(a19*a3);
+  a15=(a15-a21);
+  a21=casadi_sq(a15);
   a20=(a20+a21);
-  a21=(a19*a8);
-  a20=(a20+a21);
-  a21=(a20*a4);
+  a21=(a19*a9);
   a17=(a17-a21);
   a21=casadi_sq(a17);
-  a22=(a20*a3);
-  a16=(a16-a22);
-  a22=casadi_sq(a16);
+  a20=(a20+a21);
+  a21=(a19*a7);
+  a18=(a18-a21);
+  a21=casadi_sq(a18);
+  a20=(a20+a21);
+  a20=sqrt(a20);
+  a16=(a16/a20);
+  a21=(a11*a16);
+  a22=(a14*a3);
+  a10=(a10-a22);
+  a15=(a15/a20);
+  a22=(a10*a15);
   a21=(a21+a22);
-  a22=(a20*a10);
-  a18=(a18-a22);
-  a22=casadi_sq(a18);
-  a21=(a21+a22);
-  a22=(a20*a8);
-  a19=(a19-a22);
-  a22=casadi_sq(a19);
-  a21=(a21+a22);
-  a21=sqrt(a21);
-  a17=(a17/a21);
+  a22=(a14*a9);
+  a12=(a12-a22);
+  a17=(a17/a20);
   a22=(a12*a17);
-  a23=(a15*a3);
-  a11=(a11-a23);
-  a16=(a16/a21);
-  a23=(a11*a16);
-  a22=(a22+a23);
-  a23=(a15*a10);
-  a13=(a13-a23);
-  a18=(a18/a21);
-  a23=(a13*a18);
-  a22=(a22+a23);
-  a23=(a15*a8);
-  a14=(a14-a23);
-  a19=(a19/a21);
-  a23=(a14*a19);
-  a22=(a22+a23);
-  a23=(a22*a17);
-  a12=(a12-a23);
-  a23=arg[7]? arg[7][8] : 0;
-  a24=(a2*a23);
-  a25=arg[7]? arg[7][9] : 0;
-  a26=(a5*a25);
-  a24=(a24-a26);
-  a26=arg[7]? arg[7][11] : 0;
-  a7=(a7*a26);
-  a24=(a24+a7);
-  a7=(a24*a4);
-  a5=(a5*a23);
-  a2=(a2*a25);
-  a5=(a5+a2);
-  a6=(a6*a26);
-  a5=(a5+a6);
-  a6=(a5*a3);
-  a7=(a7+a6);
-  a6=arg[7]? arg[7][10] : 0;
-  a2=(a6*a10);
-  a7=(a7+a2);
-  a2=(a26*a8);
-  a7=(a7+a2);
-  a2=(a7*a4);
-  a24=(a24-a2);
-  a2=(a24*a17);
-  a25=(a7*a3);
-  a5=(a5-a25);
-  a25=(a5*a16);
-  a2=(a2+a25);
-  a25=(a7*a10);
-  a6=(a6-a25);
-  a25=(a6*a18);
-  a2=(a2+a25);
-  a25=(a7*a8);
-  a26=(a26-a25);
-  a25=(a26*a19);
-  a2=(a2+a25);
-  a25=(a2*a17);
-  a24=(a24-a25);
-  a25=casadi_sq(a24);
-  a23=(a2*a16);
-  a5=(a5-a23);
-  a23=casadi_sq(a5);
-  a25=(a25+a23);
-  a23=(a2*a18);
-  a6=(a6-a23);
-  a23=casadi_sq(a6);
-  a25=(a25+a23);
-  a23=(a2*a19);
-  a26=(a26-a23);
-  a23=casadi_sq(a26);
-  a25=(a25+a23);
-  a25=sqrt(a25);
-  a24=(a24/a25);
-  a23=(a12*a24);
-  a27=(a22*a16);
-  a11=(a11-a27);
-  a5=(a5/a25);
-  a27=(a11*a5);
-  a23=(a23+a27);
-  a27=(a22*a18);
-  a13=(a13-a27);
-  a6=(a6/a25);
-  a27=(a13*a6);
-  a23=(a23+a27);
-  a27=(a22*a19);
-  a14=(a14-a27);
-  a26=(a26/a25);
-  a27=(a14*a26);
-  a23=(a23+a27);
-  a27=(a23*a24);
+  a21=(a21+a22);
+  a22=(a14*a7);
+  a13=(a13-a22);
+  a18=(a18/a20);
+  a22=(a13*a18);
+  a21=(a21+a22);
+  a22=(a21*a16);
+  a11=(a11-a22);
+  a22=arg[7]? arg[7][8] : 0;
+  a23=(a2*a22);
+  a24=arg[7]? arg[7][9] : 0;
+  a25=(a1*a24);
+  a23=(a23-a25);
+  a25=arg[7]? arg[7][11] : 0;
+  a6=(a6*a25);
+  a23=(a23+a6);
+  a6=(a23*a4);
+  a1=(a1*a22);
+  a2=(a2*a24);
+  a1=(a1+a2);
+  a5=(a5*a25);
+  a1=(a1+a5);
+  a5=(a1*a3);
+  a6=(a6+a5);
+  a5=arg[7]? arg[7][10] : 0;
+  a2=(a5*a9);
+  a6=(a6+a2);
+  a2=(a25*a7);
+  a6=(a6+a2);
+  a2=(a6*a4);
+  a23=(a23-a2);
+  a2=(a23*a16);
+  a24=(a6*a3);
+  a1=(a1-a24);
+  a24=(a1*a15);
+  a2=(a2+a24);
+  a24=(a6*a9);
+  a5=(a5-a24);
+  a24=(a5*a17);
+  a2=(a2+a24);
+  a24=(a6*a7);
+  a25=(a25-a24);
+  a24=(a25*a18);
+  a2=(a2+a24);
+  a24=(a2*a16);
+  a23=(a23-a24);
+  a24=casadi_sq(a23);
+  a22=(a2*a15);
+  a1=(a1-a22);
+  a22=casadi_sq(a1);
+  a24=(a24+a22);
+  a22=(a2*a17);
+  a5=(a5-a22);
+  a22=casadi_sq(a5);
+  a24=(a24+a22);
+  a22=(a2*a18);
+  a25=(a25-a22);
+  a22=casadi_sq(a25);
+  a24=(a24+a22);
+  a24=sqrt(a24);
+  a23=(a23/a24);
+  a22=(a11*a23);
+  a26=(a21*a15);
+  a10=(a10-a26);
+  a1=(a1/a24);
+  a26=(a10*a1);
+  a22=(a22+a26);
+  a26=(a21*a17);
+  a12=(a12-a26);
+  a5=(a5/a24);
+  a26=(a12*a5);
+  a22=(a22+a26);
+  a26=(a21*a18);
+  a13=(a13-a26);
+  a25=(a25/a24);
+  a26=(a13*a25);
+  a22=(a22+a26);
+  a26=(a22*a23);
+  a11=(a11-a26);
+  a26=casadi_sq(a11);
+  a27=(a22*a1);
+  a10=(a10-a27);
+  a27=casadi_sq(a10);
+  a26=(a26+a27);
+  a27=(a22*a5);
   a12=(a12-a27);
   a27=casadi_sq(a12);
-  a28=(a23*a5);
-  a11=(a11-a28);
-  a28=casadi_sq(a11);
-  a27=(a27+a28);
-  a28=(a23*a6);
-  a13=(a13-a28);
-  a28=casadi_sq(a13);
-  a27=(a27+a28);
-  a28=(a23*a26);
-  a14=(a14-a28);
-  a28=casadi_sq(a14);
-  a27=(a27+a28);
-  a27=sqrt(a27);
-  a12=(a12/a27);
-  a12=(a12/a27);
-  a28=(a15*a12);
-  a4=(a4-a28);
-  a28=(a23*a12);
-  a24=(a24-a28);
-  a24=(a24/a25);
-  a28=(a7*a24);
-  a4=(a4-a28);
-  a12=(a22*a12);
-  a17=(a17-a12);
-  a12=(a2*a24);
-  a17=(a17-a12);
-  a17=(a17/a21);
-  a12=(a20*a17);
-  a4=(a4-a12);
-  a4=(a4/a9);
-  a12=arg[8]? arg[8][0] : 0;
-  a28=(a4*a12);
-  a11=(a11/a27);
-  a11=(a11/a27);
-  a29=(a15*a11);
-  a3=(a3-a29);
-  a29=(a23*a11);
-  a5=(a5-a29);
-  a5=(a5/a25);
-  a29=(a7*a5);
-  a3=(a3-a29);
-  a11=(a22*a11);
+  a26=(a26+a27);
+  a27=(a22*a25);
+  a13=(a13-a27);
+  a27=casadi_sq(a13);
+  a26=(a26+a27);
+  a26=sqrt(a26);
+  a11=(a11/a26);
+  a11=(a11/a26);
+  a27=(a14*a11);
+  a4=(a4-a27);
+  a27=(a22*a11);
+  a23=(a23-a27);
+  a23=(a23/a24);
+  a27=(a6*a23);
+  a4=(a4-a27);
+  a11=(a21*a11);
   a16=(a16-a11);
-  a11=(a2*a5);
+  a11=(a2*a23);
   a16=(a16-a11);
-  a16=(a16/a21);
-  a11=(a20*a16);
-  a3=(a3-a11);
-  a3=(a3/a9);
-  a11=arg[8]? arg[8][1] : 0;
-  a29=(a3*a11);
-  a28=(a28+a29);
-  a13=(a13/a27);
-  a13=(a13/a27);
-  a29=(a15*a13);
-  a10=(a10-a29);
-  a29=(a23*a13);
-  a6=(a6-a29);
-  a6=(a6/a25);
-  a29=(a7*a6);
-  a10=(a10-a29);
-  a13=(a22*a13);
-  a18=(a18-a13);
-  a13=(a2*a6);
-  a18=(a18-a13);
-  a18=(a18/a21);
-  a13=(a20*a18);
-  a10=(a10-a13);
-  a10=(a10/a9);
-  a13=arg[8]? arg[8][2] : 0;
-  a29=(a10*a13);
-  a28=(a28+a29);
-  a14=(a14/a27);
-  a14=(a14/a27);
-  a15=(a15*a14);
-  a8=(a8-a15);
-  a23=(a23*a14);
-  a26=(a26-a23);
-  a26=(a26/a25);
-  a7=(a7*a26);
-  a8=(a8-a7);
-  a22=(a22*a14);
-  a19=(a19-a22);
-  a2=(a2*a26);
-  a19=(a19-a2);
-  a19=(a19/a21);
-  a20=(a20*a19);
-  a8=(a8-a20);
-  a8=(a8/a9);
-  a9=arg[8]? arg[8][3] : 0;
-  a20=(a8*a9);
-  a28=(a28+a20);
-  a20=(a24*a12);
-  a21=(a5*a11);
-  a20=(a20+a21);
-  a21=(a6*a13);
-  a20=(a20+a21);
-  a21=(a26*a9);
-  a20=(a20+a21);
-  a28=(a28/a20);
-  a28=(a0*a28);
-  a21=arg[5]? arg[5][0] : 0;
-  a28=(a28+a21);
+  a16=(a16/a20);
+  a11=(a19*a16);
+  a4=(a4-a11);
+  a4=(a4/a8);
+  a11=arg[8]? arg[8][0] : 0;
+  a27=(a4*a11);
+  a10=(a10/a26);
+  a10=(a10/a26);
+  a28=(a14*a10);
+  a3=(a3-a28);
+  a28=(a22*a10);
+  a1=(a1-a28);
+  a1=(a1/a24);
+  a28=(a6*a1);
+  a3=(a3-a28);
+  a10=(a21*a10);
+  a15=(a15-a10);
+  a10=(a2*a1);
+  a15=(a15-a10);
+  a15=(a15/a20);
+  a10=(a19*a15);
+  a3=(a3-a10);
+  a3=(a3/a8);
+  a10=arg[8]? arg[8][1] : 0;
+  a28=(a3*a10);
+  a27=(a27+a28);
+  a12=(a12/a26);
+  a12=(a12/a26);
+  a28=(a14*a12);
+  a9=(a9-a28);
+  a28=(a22*a12);
+  a5=(a5-a28);
+  a5=(a5/a24);
+  a28=(a6*a5);
+  a9=(a9-a28);
+  a12=(a21*a12);
+  a17=(a17-a12);
+  a12=(a2*a5);
+  a17=(a17-a12);
+  a17=(a17/a20);
+  a12=(a19*a17);
+  a9=(a9-a12);
+  a9=(a9/a8);
+  a12=arg[8]? arg[8][2] : 0;
+  a28=(a9*a12);
+  a27=(a27+a28);
+  a13=(a13/a26);
+  a13=(a13/a26);
+  a14=(a14*a13);
+  a7=(a7-a14);
+  a22=(a22*a13);
+  a25=(a25-a22);
+  a25=(a25/a24);
+  a6=(a6*a25);
+  a7=(a7-a6);
+  a21=(a21*a13);
+  a18=(a18-a21);
+  a2=(a2*a25);
+  a18=(a18-a2);
+  a18=(a18/a20);
+  a19=(a19*a18);
+  a7=(a7-a19);
+  a7=(a7/a8);
+  a8=arg[8]? arg[8][3] : 0;
+  a19=(a7*a8);
+  a27=(a27+a19);
+  a19=(a23*a11);
+  a20=(a1*a10);
+  a19=(a19+a20);
+  a20=(a5*a12);
+  a19=(a19+a20);
+  a20=(a25*a8);
+  a19=(a19+a20);
+  a27=(a27/a19);
+  a27=(a0*a27);
+  a20=arg[5]? arg[5][0] : 0;
+  a27=(a27+a20);
   a2=arg[9]? arg[9][0] : 0;
-  a28=(a28-a2);
-  a28=casadi_sq(a28);
+  a27=(a27-a2);
+  a27=casadi_sq(a27);
   a2=arg[8]? arg[8][4] : 0;
-  a22=(a4*a2);
-  a14=arg[8]? arg[8][5] : 0;
-  a7=(a3*a14);
-  a22=(a22+a7);
-  a7=arg[8]? arg[8][6] : 0;
-  a25=(a10*a7);
-  a22=(a22+a25);
-  a25=arg[8]? arg[8][7] : 0;
-  a23=(a8*a25);
-  a22=(a22+a23);
-  a23=(a24*a2);
-  a15=(a5*a14);
-  a23=(a23+a15);
-  a15=(a6*a7);
-  a23=(a23+a15);
-  a15=(a26*a25);
-  a23=(a23+a15);
-  a22=(a22/a23);
-  a22=(a0*a22);
-  a22=(a22+a21);
-  a15=arg[9]? arg[9][2] : 0;
-  a22=(a22-a15);
-  a22=casadi_sq(a22);
-  a28=(a28+a22);
-  a22=arg[8]? arg[8][8] : 0;
-  a15=(a4*a22);
-  a27=arg[8]? arg[8][9] : 0;
-  a29=(a3*a27);
-  a15=(a15+a29);
-  a29=arg[8]? arg[8][10] : 0;
-  a30=(a10*a29);
-  a15=(a15+a30);
-  a30=arg[8]? arg[8][11] : 0;
-  a31=(a8*a30);
-  a15=(a15+a31);
-  a31=(a24*a22);
-  a32=(a5*a27);
-  a31=(a31+a32);
-  a32=(a6*a29);
-  a31=(a31+a32);
-  a32=(a26*a30);
-  a31=(a31+a32);
-  a15=(a15/a31);
-  a15=(a0*a15);
-  a15=(a15+a21);
-  a32=arg[9]? arg[9][4] : 0;
-  a15=(a15-a32);
-  a15=casadi_sq(a15);
-  a28=(a28+a15);
-  a15=arg[8]? arg[8][12] : 0;
-  a4=(a4*a15);
-  a32=arg[8]? arg[8][13] : 0;
-  a3=(a3*a32);
+  a21=(a4*a2);
+  a13=arg[8]? arg[8][5] : 0;
+  a6=(a3*a13);
+  a21=(a21+a6);
+  a6=arg[8]? arg[8][6] : 0;
+  a24=(a9*a6);
+  a21=(a21+a24);
+  a24=arg[8]? arg[8][7] : 0;
+  a22=(a7*a24);
+  a21=(a21+a22);
+  a22=(a23*a2);
+  a14=(a1*a13);
+  a22=(a22+a14);
+  a14=(a5*a6);
+  a22=(a22+a14);
+  a14=(a25*a24);
+  a22=(a22+a14);
+  a21=(a21/a22);
+  a21=(a0*a21);
+  a21=(a21+a20);
+  a14=arg[9]? arg[9][2] : 0;
+  a21=(a21-a14);
+  a21=casadi_sq(a21);
+  a27=(a27+a21);
+  a21=arg[8]? arg[8][8] : 0;
+  a14=(a4*a21);
+  a26=arg[8]? arg[8][9] : 0;
+  a28=(a3*a26);
+  a14=(a14+a28);
+  a28=arg[8]? arg[8][10] : 0;
+  a29=(a9*a28);
+  a14=(a14+a29);
+  a29=arg[8]? arg[8][11] : 0;
+  a30=(a7*a29);
+  a14=(a14+a30);
+  a30=(a23*a21);
+  a31=(a1*a26);
+  a30=(a30+a31);
+  a31=(a5*a28);
+  a30=(a30+a31);
+  a31=(a25*a29);
+  a30=(a30+a31);
+  a14=(a14/a30);
+  a14=(a0*a14);
+  a14=(a14+a20);
+  a31=arg[9]? arg[9][4] : 0;
+  a14=(a14-a31);
+  a14=casadi_sq(a14);
+  a27=(a27+a14);
+  a14=arg[8]? arg[8][12] : 0;
+  a4=(a4*a14);
+  a31=arg[8]? arg[8][13] : 0;
+  a3=(a3*a31);
   a4=(a4+a3);
   a3=arg[8]? arg[8][14] : 0;
-  a10=(a10*a3);
-  a4=(a4+a10);
-  a10=arg[8]? arg[8][15] : 0;
-  a8=(a8*a10);
-  a4=(a4+a8);
-  a24=(a24*a15);
-  a5=(a5*a32);
-  a24=(a24+a5);
-  a6=(a6*a3);
-  a24=(a24+a6);
-  a26=(a26*a10);
-  a24=(a24+a26);
-  a4=(a4/a24);
+  a9=(a9*a3);
+  a4=(a4+a9);
+  a9=arg[8]? arg[8][15] : 0;
+  a7=(a7*a9);
+  a4=(a4+a7);
+  a23=(a23*a14);
+  a1=(a1*a31);
+  a23=(a23+a1);
+  a5=(a5*a3);
+  a23=(a23+a5);
+  a25=(a25*a9);
+  a23=(a23+a25);
+  a4=(a4/a23);
   a0=(a0*a4);
-  a0=(a0+a21);
-  a21=arg[9]? arg[9][6] : 0;
-  a0=(a0-a21);
-  a0=casadi_sq(a0);
-  a28=(a28+a0);
-  a0=arg[4]? arg[4][0] : 0;
-  a12=(a17*a12);
-  a11=(a16*a11);
-  a12=(a12+a11);
-  a13=(a18*a13);
-  a12=(a12+a13);
-  a9=(a19*a9);
-  a12=(a12+a9);
-  a12=(a12/a20);
-  a12=(a0*a12);
-  a20=arg[6]? arg[6][0] : 0;
-  a12=(a12+a20);
-  a9=arg[9]? arg[9][1] : 0;
-  a12=(a12-a9);
-  a12=casadi_sq(a12);
-  a2=(a17*a2);
-  a14=(a16*a14);
-  a2=(a2+a14);
-  a7=(a18*a7);
-  a2=(a2+a7);
-  a25=(a19*a25);
-  a2=(a2+a25);
-  a2=(a2/a23);
-  a2=(a0*a2);
-  a2=(a2+a20);
-  a23=arg[9]? arg[9][3] : 0;
-  a2=(a2-a23);
-  a2=casadi_sq(a2);
-  a12=(a12+a2);
-  a22=(a17*a22);
-  a27=(a16*a27);
-  a22=(a22+a27);
-  a29=(a18*a29);
-  a22=(a22+a29);
-  a30=(a19*a30);
-  a22=(a22+a30);
-  a22=(a22/a31);
-  a22=(a0*a22);
-  a22=(a22+a20);
-  a31=arg[9]? arg[9][5] : 0;
-  a22=(a22-a31);
-  a22=casadi_sq(a22);
-  a12=(a12+a22);
-  a17=(a17*a15);
-  a16=(a16*a32);
-  a17=(a17+a16);
-  a18=(a18*a3);
-  a17=(a17+a18);
-  a19=(a19*a10);
-  a17=(a17+a19);
-  a17=(a17/a24);
-  a0=(a0*a17);
   a0=(a0+a20);
-  a20=arg[9]? arg[9][7] : 0;
+  a20=arg[9]? arg[9][6] : 0;
   a0=(a0-a20);
   a0=casadi_sq(a0);
-  a12=(a12+a0);
-  a28=(a28+a12);
-  a12=arg[11]? arg[11][0] : 0;
-  a0=arg[10]? arg[10][0] : 0;
-  a0=(a0-a1);
+  a27=(a27+a0);
+  a0=arg[4]? arg[4][0] : 0;
+  a11=(a16*a11);
+  a10=(a15*a10);
+  a11=(a11+a10);
+  a12=(a17*a12);
+  a11=(a11+a12);
+  a8=(a18*a8);
+  a11=(a11+a8);
+  a11=(a11/a19);
+  a11=(a0*a11);
+  a19=arg[6]? arg[6][0] : 0;
+  a11=(a11+a19);
+  a8=arg[9]? arg[9][1] : 0;
+  a11=(a11-a8);
+  a11=casadi_sq(a11);
+  a2=(a16*a2);
+  a13=(a15*a13);
+  a2=(a2+a13);
+  a6=(a17*a6);
+  a2=(a2+a6);
+  a24=(a18*a24);
+  a2=(a2+a24);
+  a2=(a2/a22);
+  a2=(a0*a2);
+  a2=(a2+a19);
+  a22=arg[9]? arg[9][3] : 0;
+  a2=(a2-a22);
+  a2=casadi_sq(a2);
+  a11=(a11+a2);
+  a21=(a16*a21);
+  a26=(a15*a26);
+  a21=(a21+a26);
+  a28=(a17*a28);
+  a21=(a21+a28);
+  a29=(a18*a29);
+  a21=(a21+a29);
+  a21=(a21/a30);
+  a21=(a0*a21);
+  a21=(a21+a19);
+  a30=arg[9]? arg[9][5] : 0;
+  a21=(a21-a30);
+  a21=casadi_sq(a21);
+  a11=(a11+a21);
+  a16=(a16*a14);
+  a15=(a15*a31);
+  a16=(a16+a15);
+  a17=(a17*a3);
+  a16=(a16+a17);
+  a18=(a18*a9);
+  a16=(a16+a18);
+  a16=(a16/a23);
+  a0=(a0*a16);
+  a0=(a0+a19);
+  a19=arg[9]? arg[9][7] : 0;
+  a0=(a0-a19);
   a0=casadi_sq(a0);
-  a12=(a12*a0);
-  a28=(a28+a12);
-  if (res[0]!=0) res[0][0]=a28;
+  a11=(a11+a0);
+  a27=(a27+a11);
+  if (res[0]!=0) res[0][0]=a27;
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem){
+CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_free(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem){
   return casadi_f0(arg, res, iw, w, mem);
 }
 
-CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_alloc_mem(void) {
+CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_free_alloc_mem(void) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_init_mem(int mem) {
+CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_free_init_mem(int mem) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_fixed_free_mem(int mem) {
+CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_free_free_mem(int mem) {
 }
 
-CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_checkout(void) {
+CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_free_checkout(void) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_fixed_release(int mem) {
+CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_free_release(int mem) {
 }
 
-CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_fixed_incref(void) {
+CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_free_incref(void) {
 }
 
-CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_fixed_decref(void) {
+CASADI_SYMBOL_EXPORT void calc_J_1_tags_heading_free_decref(void) {
 }
 
-CASADI_SYMBOL_EXPORT casadi_int calc_J_1_tags_heading_fixed_n_in(void) { return 12;}
+CASADI_SYMBOL_EXPORT casadi_int calc_J_1_tags_heading_free_n_in(void) { return 12;}
 
-CASADI_SYMBOL_EXPORT casadi_int calc_J_1_tags_heading_fixed_n_out(void) { return 1;}
+CASADI_SYMBOL_EXPORT casadi_int calc_J_1_tags_heading_free_n_out(void) { return 1;}
 
-CASADI_SYMBOL_EXPORT casadi_real calc_J_1_tags_heading_fixed_default_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT casadi_real calc_J_1_tags_heading_free_default_in(casadi_int i) {
   switch (i) {
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT const char* calc_J_1_tags_heading_fixed_name_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT const char* calc_J_1_tags_heading_free_name_in(casadi_int i) {
   switch (i) {
     case 0: return "robot_x";
     case 1: return "robot_y";
@@ -553,14 +547,14 @@ CASADI_SYMBOL_EXPORT const char* calc_J_1_tags_heading_fixed_name_in(casadi_int 
   }
 }
 
-CASADI_SYMBOL_EXPORT const char* calc_J_1_tags_heading_fixed_name_out(casadi_int i) {
+CASADI_SYMBOL_EXPORT const char* calc_J_1_tags_heading_free_name_out(casadi_int i) {
   switch (i) {
     case 0: return "J";
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT const casadi_int* calc_J_1_tags_heading_fixed_sparsity_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT const casadi_int* calc_J_1_tags_heading_free_sparsity_in(casadi_int i) {
   switch (i) {
     case 0: return casadi_s0;
     case 1: return casadi_s0;
@@ -578,14 +572,14 @@ CASADI_SYMBOL_EXPORT const casadi_int* calc_J_1_tags_heading_fixed_sparsity_in(c
   }
 }
 
-CASADI_SYMBOL_EXPORT const casadi_int* calc_J_1_tags_heading_fixed_sparsity_out(casadi_int i) {
+CASADI_SYMBOL_EXPORT const casadi_int* calc_J_1_tags_heading_free_sparsity_out(casadi_int i) {
   switch (i) {
     case 0: return casadi_s0;
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
+CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_free_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
   if (sz_arg) *sz_arg = 12;
   if (sz_res) *sz_res = 1;
   if (sz_iw) *sz_iw = 0;
@@ -593,7 +587,7 @@ CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_work(casadi_int *sz_arg, ca
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
+CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_free_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
   if (sz_arg) *sz_arg = 12*sizeof(const casadi_real*);
   if (sz_res) *sz_res = 1*sizeof(casadi_real*);
   if (sz_iw) *sz_iw = 0*sizeof(casadi_int);
@@ -601,7 +595,7 @@ CASADI_SYMBOL_EXPORT int calc_J_1_tags_heading_fixed_work_bytes(casadi_int *sz_a
   return 0;
 }
 
-/* calc_gradJ_1_tags_heading_fixed:(robot_x,robot_y,robot_θ,fx,fy,cx,cy,robot2camera[4x4],field2points[4x4],point_observations[2x4],gyro_θ,gyro_error_scale_fac)->(grad_J[3]) */
+/* calc_gradJ_1_tags_heading_free:(robot_x,robot_y,robot_θ,fx,fy,cx,cy,robot2camera[4x4],field2points[4x4],point_observations[2x4],gyro_θ,gyro_error_scale_fac)->(grad_J[3]) */
 static int casadi_f1(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0, a1, a10, a100, a101, a102, a103, a104, a105, a106, a107, a108, a109, a11, a110, a111, a112, a113, a114, a115, a116, a117, a118, a119, a12, a120, a121, a122, a123, a124, a125, a13, a14, a15, a16, a17, a18, a19, a2, a20, a21, a22, a23, a24, a25, a26, a27, a28, a29, a3, a30, a31, a32, a33, a34, a35, a36, a37, a38, a39, a4, a40, a41, a42, a43, a44, a45, a46, a47, a48, a49, a5, a50, a51, a52, a53, a54, a55, a56, a57, a58, a59, a6, a60, a61, a62, a63, a64, a65, a66, a67, a68, a69, a7, a70, a71, a72, a73, a74, a75, a76, a77, a78, a79, a8, a80, a81, a82, a83, a84, a85, a86, a87, a88, a89, a9, a90, a91, a92, a93, a94, a95, a96, a97, a98, a99;
   a0=arg[7]? arg[7][11] : 0;
@@ -1610,12 +1604,6 @@ static int casadi_f1(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   a14=(a11*a4);
   a12=(a12-a14);
   a0=(a0*a12);
-  a12=arg[10]? arg[10][0] : 0;
-  a12=(a12-a1);
-  a12=(a12+a12);
-  a14=arg[11]? arg[11][0] : 0;
-  a12=(a12*a14);
-  a0=(a0-a12);
   a1=sin(a1);
   a48=(a48*a87);
   a46=(a46*a66);
@@ -1638,45 +1626,45 @@ static int casadi_f1(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem){
+CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_free(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem){
   return casadi_f1(arg, res, iw, w, mem);
 }
 
-CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_alloc_mem(void) {
+CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_free_alloc_mem(void) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_init_mem(int mem) {
+CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_free_init_mem(int mem) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_fixed_free_mem(int mem) {
+CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_free_free_mem(int mem) {
 }
 
-CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_checkout(void) {
+CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_free_checkout(void) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_fixed_release(int mem) {
+CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_free_release(int mem) {
 }
 
-CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_fixed_incref(void) {
+CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_free_incref(void) {
 }
 
-CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_fixed_decref(void) {
+CASADI_SYMBOL_EXPORT void calc_gradJ_1_tags_heading_free_decref(void) {
 }
 
-CASADI_SYMBOL_EXPORT casadi_int calc_gradJ_1_tags_heading_fixed_n_in(void) { return 12;}
+CASADI_SYMBOL_EXPORT casadi_int calc_gradJ_1_tags_heading_free_n_in(void) { return 12;}
 
-CASADI_SYMBOL_EXPORT casadi_int calc_gradJ_1_tags_heading_fixed_n_out(void) { return 1;}
+CASADI_SYMBOL_EXPORT casadi_int calc_gradJ_1_tags_heading_free_n_out(void) { return 1;}
 
-CASADI_SYMBOL_EXPORT casadi_real calc_gradJ_1_tags_heading_fixed_default_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT casadi_real calc_gradJ_1_tags_heading_free_default_in(casadi_int i) {
   switch (i) {
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT const char* calc_gradJ_1_tags_heading_fixed_name_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT const char* calc_gradJ_1_tags_heading_free_name_in(casadi_int i) {
   switch (i) {
     case 0: return "robot_x";
     case 1: return "robot_y";
@@ -1694,14 +1682,14 @@ CASADI_SYMBOL_EXPORT const char* calc_gradJ_1_tags_heading_fixed_name_in(casadi_
   }
 }
 
-CASADI_SYMBOL_EXPORT const char* calc_gradJ_1_tags_heading_fixed_name_out(casadi_int i) {
+CASADI_SYMBOL_EXPORT const char* calc_gradJ_1_tags_heading_free_name_out(casadi_int i) {
   switch (i) {
     case 0: return "grad_J";
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT const casadi_int* calc_gradJ_1_tags_heading_fixed_sparsity_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT const casadi_int* calc_gradJ_1_tags_heading_free_sparsity_in(casadi_int i) {
   switch (i) {
     case 0: return casadi_s0;
     case 1: return casadi_s0;
@@ -1719,14 +1707,14 @@ CASADI_SYMBOL_EXPORT const casadi_int* calc_gradJ_1_tags_heading_fixed_sparsity_
   }
 }
 
-CASADI_SYMBOL_EXPORT const casadi_int* calc_gradJ_1_tags_heading_fixed_sparsity_out(casadi_int i) {
+CASADI_SYMBOL_EXPORT const casadi_int* calc_gradJ_1_tags_heading_free_sparsity_out(casadi_int i) {
   switch (i) {
     case 0: return casadi_s3;
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
+CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_free_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
   if (sz_arg) *sz_arg = 12;
   if (sz_res) *sz_res = 1;
   if (sz_iw) *sz_iw = 0;
@@ -1734,7 +1722,7 @@ CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_work(casadi_int *sz_arg
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
+CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_free_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
   if (sz_arg) *sz_arg = 12*sizeof(const casadi_real*);
   if (sz_res) *sz_res = 1*sizeof(casadi_real*);
   if (sz_iw) *sz_iw = 0*sizeof(casadi_int);
@@ -1742,7 +1730,7 @@ CASADI_SYMBOL_EXPORT int calc_gradJ_1_tags_heading_fixed_work_bytes(casadi_int *
   return 0;
 }
 
-/* calc_hessJ_1_tags_heading_fixed:(robot_x,robot_y,robot_θ,fx,fy,cx,cy,robot2camera[4x4],field2points[4x4],point_observations[2x4],gyro_θ,gyro_error_scale_fac)->(hess_J[3x3]) */
+/* calc_hessJ_1_tags_heading_free:(robot_x,robot_y,robot_θ,fx,fy,cx,cy,robot2camera[4x4],field2points[4x4],point_observations[2x4],gyro_θ,gyro_error_scale_fac)->(hess_J[3x3]) */
 static int casadi_f2(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0, a1, a10, a100, a101, a102, a103, a104, a105, a106, a107, a108, a109, a11, a110, a111, a112, a113, a114, a115, a116, a117, a118, a119, a12, a120, a121, a122, a123, a124, a125, a126, a127, a128, a129, a13, a130, a131, a132, a133, a134, a135, a136, a137, a138, a139, a14, a140, a141, a142, a143, a144, a145, a146, a147, a148, a149, a15, a150, a151, a152, a153, a154, a155, a156, a157, a158, a159, a16, a160, a161, a162, a163, a164, a165, a166, a167, a168, a169, a17, a170, a171, a172, a173, a174, a175, a176, a177, a178, a179, a18, a180, a181, a182, a183, a184, a185, a186, a187, a188, a189, a19, a190, a191, a192, a193, a194, a195, a196, a197, a198, a199, a2, a20, a200, a201, a202, a203, a204, a205, a206, a207, a208, a209, a21, a210, a211, a212, a213, a214, a215, a216, a217, a218, a219, a22, a220, a221, a222, a223, a224, a225, a226, a227, a228, a229, a23, a230, a231, a232, a233, a234, a235, a236, a237, a238, a239, a24, a240, a241, a242, a243, a244, a245, a246, a247, a248, a249, a25, a250, a251, a252, a253, a254, a255, a256, a257, a258, a259, a26, a260, a261, a262, a263, a264, a265, a266, a267, a268, a269, a27, a270, a271, a272, a273, a274, a275, a276, a277, a278, a279, a28, a280, a281, a282, a283, a284, a285, a286, a287, a288, a289, a29, a290, a291, a292, a293, a294, a295, a296, a297, a298, a299, a3, a30, a300, a301, a302, a303, a304, a305, a306, a307, a308, a309, a31, a310, a311, a312, a313, a314, a315, a316, a317, a318, a319, a32, a320, a321, a322, a323, a324, a325, a326, a327, a328, a329, a33, a330, a331, a332, a333, a334, a335, a336, a337, a338, a339, a34, a340, a341, a342, a343, a344, a345, a346, a347, a348, a349, a35, a350, a351, a352, a353, a354, a355, a356, a357, a358, a359, a36, a360, a361, a362, a363, a364, a365, a366, a367, a368, a369, a37, a370, a371, a372, a373, a374, a375, a376, a377, a378, a379, a38, a380, a381, a382, a383, a384, a385, a386, a387, a388, a389, a39, a390, a391, a392, a393, a394, a395, a396, a397, a398, a399, a4, a40, a400, a401, a402, a403, a404, a405, a406, a407, a408, a409, a41, a410, a411, a412, a413, a414, a415, a416, a417, a418, a419, a42, a420, a421, a422, a423, a424, a425, a426, a427, a428, a429, a43, a430, a431, a432, a433, a434, a435, a436, a437, a438, a439, a44, a440, a441, a442, a443, a444, a445, a446, a447, a448, a449, a45, a450, a451, a452, a453, a454, a455, a456, a457, a458, a459, a46, a460, a461, a462, a463, a464, a465, a466, a467, a468, a469, a47, a470, a471, a472, a48, a49, a5, a50, a51, a52, a53, a54, a55, a56, a57, a58, a59, a6, a60, a61, a62, a63, a64, a65, a66, a67, a68, a69, a7, a70, a71, a72, a73, a74, a75, a76, a77, a78, a79, a8, a80, a81, a82, a83, a84, a85, a86, a87, a88, a89, a9, a90, a91, a92, a93, a94, a95, a96, a97, a98, a99;
   a0=arg[7]? arg[7][11] : 0;
@@ -7707,10 +7695,6 @@ static int casadi_f2(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   a10=sin(a2);
   a87=(a87*a10);
   a0=(a0-a87);
-  a87=-2.;
-  a10=arg[11]? arg[11][0] : 0;
-  a87=(a87*a10);
-  a0=(a0-a87);
   a384=(a48*a384);
   a253=(a46*a253);
   a384=(a384+a253);
@@ -7751,45 +7735,45 @@ static int casadi_f2(const casadi_real** arg, casadi_real** res, casadi_int* iw,
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem){
+CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_free(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem){
   return casadi_f2(arg, res, iw, w, mem);
 }
 
-CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed_alloc_mem(void) {
+CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_free_alloc_mem(void) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed_init_mem(int mem) {
+CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_free_init_mem(int mem) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_fixed_free_mem(int mem) {
+CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_free_free_mem(int mem) {
 }
 
-CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed_checkout(void) {
+CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_free_checkout(void) {
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_fixed_release(int mem) {
+CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_free_release(int mem) {
 }
 
-CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_fixed_incref(void) {
+CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_free_incref(void) {
 }
 
-CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_fixed_decref(void) {
+CASADI_SYMBOL_EXPORT void calc_hessJ_1_tags_heading_free_decref(void) {
 }
 
-CASADI_SYMBOL_EXPORT casadi_int calc_hessJ_1_tags_heading_fixed_n_in(void) { return 12;}
+CASADI_SYMBOL_EXPORT casadi_int calc_hessJ_1_tags_heading_free_n_in(void) { return 12;}
 
-CASADI_SYMBOL_EXPORT casadi_int calc_hessJ_1_tags_heading_fixed_n_out(void) { return 1;}
+CASADI_SYMBOL_EXPORT casadi_int calc_hessJ_1_tags_heading_free_n_out(void) { return 1;}
 
-CASADI_SYMBOL_EXPORT casadi_real calc_hessJ_1_tags_heading_fixed_default_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT casadi_real calc_hessJ_1_tags_heading_free_default_in(casadi_int i) {
   switch (i) {
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT const char* calc_hessJ_1_tags_heading_fixed_name_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT const char* calc_hessJ_1_tags_heading_free_name_in(casadi_int i) {
   switch (i) {
     case 0: return "robot_x";
     case 1: return "robot_y";
@@ -7807,14 +7791,14 @@ CASADI_SYMBOL_EXPORT const char* calc_hessJ_1_tags_heading_fixed_name_in(casadi_
   }
 }
 
-CASADI_SYMBOL_EXPORT const char* calc_hessJ_1_tags_heading_fixed_name_out(casadi_int i) {
+CASADI_SYMBOL_EXPORT const char* calc_hessJ_1_tags_heading_free_name_out(casadi_int i) {
   switch (i) {
     case 0: return "hess_J";
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT const casadi_int* calc_hessJ_1_tags_heading_fixed_sparsity_in(casadi_int i) {
+CASADI_SYMBOL_EXPORT const casadi_int* calc_hessJ_1_tags_heading_free_sparsity_in(casadi_int i) {
   switch (i) {
     case 0: return casadi_s0;
     case 1: return casadi_s0;
@@ -7832,14 +7816,14 @@ CASADI_SYMBOL_EXPORT const casadi_int* calc_hessJ_1_tags_heading_fixed_sparsity_
   }
 }
 
-CASADI_SYMBOL_EXPORT const casadi_int* calc_hessJ_1_tags_heading_fixed_sparsity_out(casadi_int i) {
+CASADI_SYMBOL_EXPORT const casadi_int* calc_hessJ_1_tags_heading_free_sparsity_out(casadi_int i) {
   switch (i) {
     case 0: return casadi_s4;
     default: return 0;
   }
 }
 
-CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
+CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_free_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
   if (sz_arg) *sz_arg = 12;
   if (sz_res) *sz_res = 1;
   if (sz_iw) *sz_iw = 0;
@@ -7847,7 +7831,7 @@ CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed_work(casadi_int *sz_arg
   return 0;
 }
 
-CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_fixed_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
+CASADI_SYMBOL_EXPORT int calc_hessJ_1_tags_heading_free_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w) {
   if (sz_arg) *sz_arg = 12*sizeof(const casadi_real*);
   if (sz_res) *sz_res = 1*sizeof(casadi_real*);
   if (sz_iw) *sz_iw = 0*sizeof(casadi_int);
