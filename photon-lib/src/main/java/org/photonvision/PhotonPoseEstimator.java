@@ -121,7 +121,7 @@ public class PhotonPoseEstimator {
      *     heading estimate against the tag corner reprojection error const.
      */
     public static final record ConstrainedSolvepnpParams(
-            boolean headingFree, Rotation2d headingMeasurement, double headingScaleFactor) {}
+            boolean headingFree, double headingScaleFactor) {}
 
     private AprilTagFieldLayout fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag36h11;
@@ -538,7 +538,7 @@ public class PhotonPoseEstimator {
         }
 
         // Need heading if heading fixed
-        if (!meme.headingFree && meme.headingMeasurement == null) {
+        if (!meme.headingFree && headingBuffer.getSample(result.getTimestampSeconds()) == null) {
             return update(result, cameraMatrixOpt, distCoeffsOpt, null, this.multiTagFallbackStrategy);
         }
 
