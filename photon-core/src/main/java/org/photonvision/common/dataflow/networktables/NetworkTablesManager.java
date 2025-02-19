@@ -248,9 +248,9 @@ public class NetworkTablesManager {
 
     // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
     // it'll never connect. This hack works around it by restarting the client/server while the nt
-    // instance
-    // isn't connected, same as clicking the save button in the settings menu (or restarting the
-    // service)
+    // instance isn't connected, same as clicking the save button in the settings menu
+    // (or restarting the service)
+    // It's also used to update the metrics every tick
     private void ntTick() {
         if (!ntInstance.isConnected()
                 && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {

@@ -132,7 +132,7 @@ public class MetricsManager {
 
     public HashMap<String, String> getMetricsObject() {
         HashMap<String, String> metrics = new HashMap<String, String>();
-        
+
         metrics.put("cpuTemp", this.getTemp());
         metrics.put("cpuUtil", this.getUtilization());
         metrics.put("cpuMem", this.getMemory());
@@ -147,8 +147,6 @@ public class MetricsManager {
 
         return metrics;
     }
-
-    
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
