@@ -20,11 +20,13 @@ package org.photonvision.vision.pipeline;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.opencv.core.Rect;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
@@ -36,6 +38,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
+    private final CropPipe cropPipe = new CropPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
@@ -56,6 +59,9 @@ public class ObjectDetectionPipeline
 
     @Override
     protected void setPipeParamsImpl() {
+        Rect staticCrop = settings.getStaticCrop();
+        cropPipe.setParams(staticCrop);
+
         var params = new ObjectDetectionPipeParams();
         params.confidence = settings.confidence;
         params.nms = settings.nms;
@@ -113,10 +119,13 @@ public class ObjectDetectionPipeline
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
 
+        CVPipeResult<CVMat> croppedFrame = cropPipe.run(frame.colorImage);
+        sumPipeNanosElapsed += croppedFrame.nanosElapsed;
+
         // ***************** change based on backend ***********************
 
         CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
-                objectDetectorPipe.run(frame.colorImage);
+                objectDetectorPipe.run(croppedFrame.output);
         sumPipeNanosElapsed += rknnResult.nanosElapsed;
 
         var names = objectDetectorPipe.getClassNames();
