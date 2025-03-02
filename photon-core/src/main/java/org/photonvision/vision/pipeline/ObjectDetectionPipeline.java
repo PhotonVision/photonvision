@@ -37,21 +37,21 @@ import org.photonvision.vision.target.TrackedTarget;
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
+    private final ObjectDetectionPipe objectDetectorPipe;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public ObjectDetectionPipeline() {
-        super(PROCESSING_TYPE);
-        settings = new ObjectDetectionPipelineSettings();
+        this(new ObjectDetectionPipelineSettings());
     }
 
     public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
+        objectDetectorPipe = new ObjectDetectionPipe(settings.useAllCores);
     }
 
     @Override
@@ -73,6 +73,7 @@ public class ObjectDetectionPipeline
         }
 
         params.model = selectedModel.get();
+        params.useAllCores = settings.useAllCores;
 
         objectDetectorPipe.setParams(params);
 
