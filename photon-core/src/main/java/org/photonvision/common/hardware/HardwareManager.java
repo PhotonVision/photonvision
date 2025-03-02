@@ -229,4 +229,8 @@ public class HardwareManager {
     public void publishMetrics() {
         metricsManager.publishMetrics();
     }
+
+    public HashMap<String, String> getMetrics() {
+        return metricsManager.getMetrics();
+    }
 }
