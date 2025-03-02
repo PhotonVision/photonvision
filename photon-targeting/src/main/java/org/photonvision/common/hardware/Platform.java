@@ -244,7 +244,7 @@ public enum Platform {
     }
 
     private static boolean isRock5C() {
-        return fileHasText("/proc/device-tree/mode", "ROCK 5C");
+        return fileHasText("/proc/device-tree/model", "ROCK 5C");
     }
 
     private static boolean isCoolPi4b() {
