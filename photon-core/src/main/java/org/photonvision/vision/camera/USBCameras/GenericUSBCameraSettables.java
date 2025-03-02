@@ -293,6 +293,9 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
                 videoModesList.add(videoMode);
             }
+            if (videoModesList.isEmpty()) {
+                logger.error("No video modes found for camera " + camera.getName());
+            }
         } catch (Exception e) {
             logger.error("Exception while enumerating video modes!", e);
             videoModesList = List.of();
