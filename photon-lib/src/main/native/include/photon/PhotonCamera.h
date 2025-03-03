@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#include <Alert.h>
+#include <frc/Alert.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
