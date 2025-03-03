@@ -156,6 +156,6 @@ Updates the stored reference pose when using the CLOSEST_TO_REFERENCE_POSE strat
 
 Update the stored last pose. Useful for setting the initial estimate when using the CLOSEST_TO_LAST_POSE strategy.
 
-### `public void addHeadingData(double timestampSeconds, Rotation3d heading)`
+### `addHeadingData(double timestampSeconds, Rotation3d heading)`
 
 Adds robot heading data to be stored in buffer. Must be called periodically with a proper timestamp for the PNP_DISTANCE_TRIG_SOLVE and CONSTRAINED_SOLVEPNP strategies
