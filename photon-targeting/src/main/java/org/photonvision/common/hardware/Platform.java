@@ -121,7 +121,7 @@ public enum Platform {
     }
 
     public static boolean isRK3588() {
-        return Platform.isOrangePi() || Platform.isCoolPi4b();
+        return Platform.isOrangePi() || Platform.isCoolPi4b() || Platform.isRock5C();
     }
 
     public static boolean isRaspberryPi() {
@@ -217,7 +217,7 @@ public enum Platform {
                 return LINUX_32;
             } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
                 // TODO - os detection needed?
-                if (isOrangePi()) {
+                if (isRK3588()) {
                     return LINUX_RK3588_64;
                 } else {
                     return LINUX_AARCH64;
@@ -241,6 +241,10 @@ public enum Platform {
 
     private static boolean isOrangePi() {
         return fileHasText("/proc/device-tree/model", "Orange Pi 5");
+    }
+
+    private static boolean isRock5C() {
+        return fileHasText("/proc/device-tree/model", "ROCK 5C");
     }
 
     private static boolean isCoolPi4b() {
