@@ -179,9 +179,15 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
+      heartbeatSubscriber(
+          rootTable->GetIntegerTopic("heartbeat").Subscribe(-1)),
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
-      cameraName(cameraName) {
+      cameraName(cameraName),
+      disconnectAlert(
+          {.text = "PhotonCamera \"" + cameraName + "\" is disconnected.",
+           .type = frc::Alert::AlertType::kWarning}),
+      timesyncAlert({.text = "", .type = frc::Alert::AlertType::kWarning}) {
   verifyDependencies();
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
@@ -217,6 +223,8 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Create the new result;
   PhotonPipelineResult result = packet.Unpack<PhotonPipelineResult>();
 
+  CheckTimeSyncOrWarn(result);
+
   result.SetReceiveTimestamp(now);
 
   return result;
@@ -229,6 +237,7 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
 
   // Prints warning if not connected
   VerifyVersion();
+  UpdateDisconnectAlert();
 
   const auto changes = rawBytesEntry.ReadQueue();
 
@@ -247,6 +256,8 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
     photon::Packet packet{value.value};
     auto result = packet.Unpack<PhotonPipelineResult>();
 
+    CheckTimeSyncOrWarn(result);
+
     // TODO: NT4 timestamps are still not to be trusted. But it's the best we
     // can do until we can make time sync more reliable.
     result.SetReceiveTimestamp(units::microsecond_t(value.time) -
@@ -256,6 +267,37 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
   }
 
   return ret;
+}
+
+void PhotonCamera::UpdateDisconnectAlert() {
+  disconnectAlert.Set(!IsConnected());
+}
+
+void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
+  if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
+    if (frc::Timer::GetFPGATimestamp() <
+        (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
+      prevSyncWarnTime = frc::Timer::GetFPGATimestamp();
+
+      std::string warningText =
+          "PhotonVision coprocessor at path " + path +
+          " is not connected to the TimeSyncServer? It's been " +
+          result.metadata.timeSinceLastPong / 1e6 +
+          "s since the coprocessor last heard a pong.";
+
+      FRC_ReportWarning(
+          warningText +
+          "\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more "
+          "information.");
+
+      timesyncAlert.setText(warningText);
+      timesyncAlert.set(true);
+    }
+  } else {
+    // Got a valid packet, reset the last time
+    prevTimeSyncWarnTime = 0_s;
+    timesyncAlert.Set(false);
+  }
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
@@ -288,6 +330,19 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 
 const std::string_view PhotonCamera::GetCameraName() const {
   return cameraName;
+}
+
+bool PhotonCamera::IsConnected() const {
+  auto currentHeartbeat = heartbeatSubscriber.Get();
+  auto now = frc::Timer::GetFPGATimestamp();
+
+  if (currentHeartbeat != prevHeartbeatValue) {
+    // New heartbeat value from the coprocessor
+    prevHeartbeatChangeTime = now;
+    prevHeartbeatValue = currentHeartbeat;
+  }
+
+  return (now - prevHeartbeatChangeTime) < HEARTBEAT_DEBOUNCE_SEC;
 }
 
 std::optional<PhotonCamera::CameraMatrix> PhotonCamera::GetCameraMatrix() {
