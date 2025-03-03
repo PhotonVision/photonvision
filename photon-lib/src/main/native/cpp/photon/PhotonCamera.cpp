@@ -282,7 +282,7 @@ void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
       std::string warningText =
           "PhotonVision coprocessor at path " + path +
           " is not connected to the TimeSyncServer? It's been " +
-          result.metadata.timeSinceLastPong / 1e6 +
+          std::to_string(result.metadata.timeSinceLastPong / 1e6) +
           "s since the coprocessor last heard a pong.";
 
       FRC_ReportWarning(
