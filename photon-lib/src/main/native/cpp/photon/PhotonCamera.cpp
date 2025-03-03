@@ -290,8 +290,8 @@ void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
           "\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more "
           "information.");
 
-      timesyncAlert.setText(warningText);
-      timesyncAlert.set(true);
+      timesyncAlert.SetText(warningText);
+      timesyncAlert.Set(true);
     }
   } else {
     // Got a valid packet, reset the last time
