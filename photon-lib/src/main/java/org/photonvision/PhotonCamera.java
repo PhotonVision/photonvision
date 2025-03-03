@@ -41,6 +41,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
@@ -106,6 +108,9 @@ public class PhotonCamera implements AutoCloseable {
     double prevTimeSyncWarnTime = 0;
     private static final double WARN_DEBOUNCE_SEC = 5;
 
+    private final Alert disconnectAlert;
+    private final Alert timesyncAlert;
+
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
@@ -120,6 +125,9 @@ public class PhotonCamera implements AutoCloseable {
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
         name = cameraName;
+        disconnectAlert =
+                new Alert("PhotonCamera \"" + name + "\" is disconnected.", AlertType.kWarning);
+        timesyncAlert = new Alert("", AlertType.kWarning);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();
@@ -249,6 +257,7 @@ public class PhotonCamera implements AutoCloseable {
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
         verifyVersion();
+        updateDisconnectAlert();
 
         List<PhotonPipelineResult> ret = new ArrayList<>();
 
@@ -274,6 +283,7 @@ public class PhotonCamera implements AutoCloseable {
     @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
+        updateDisconnectAlert();
 
         // Grab the latest result. We don't care about the timestamp from NT - the metadata header has
         // this, latency compensated by the Time Sync Client
@@ -288,22 +298,34 @@ public class PhotonCamera implements AutoCloseable {
         return result;
     }
 
+    private void updateDisconnectAlert() {
+        disconnectAlert.set(!isConnected());
+    }
+
     private void checkTimeSyncOrWarn(PhotonPipelineResult result) {
         if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
             if (Timer.getFPGATimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
                 prevTimeSyncWarnTime = Timer.getFPGATimestamp();
 
-                DriverStation.reportWarning(
+                String warningText =
                         "PhotonVision coprocessor at path "
                                 + path
                                 + " is not connected to the TimeSyncServer? It's been "
                                 + String.format("%.2f", result.metadata.timeSinceLastPong / 1e6)
-                                + "s since the coprocessor last heard a pong.\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
+                                + "s since the coprocessor last heard a pong.";
+
+                timesyncAlert.setText(warningText);
+                timesyncAlert.set(true);
+
+                DriverStation.reportWarning(
+                        warningText
+                                + "\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
                         false);
             }
         } else {
             // Got a valid packet, reset the last time
             prevTimeSyncWarnTime = 0;
+            timesyncAlert.set(false);
         }
     }
 
