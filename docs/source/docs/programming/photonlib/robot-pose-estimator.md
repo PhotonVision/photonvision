@@ -32,7 +32,7 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has six possible values:
+The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has nine possible values:
 
 - MULTI_TAG_PNP_ON_COPROCESSOR
     - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
@@ -155,3 +155,7 @@ Updates the stored reference pose when using the CLOSEST_TO_REFERENCE_POSE strat
 ### `setLastPose(Pose3d lastPose)`
 
 Update the stored last pose. Useful for setting the initial estimate when using the CLOSEST_TO_LAST_POSE strategy.
+
+### `addHeadingData(double timestampSeconds, Rotation2d heading)`
+
+Adds robot heading data to be stored in buffer. Must be called periodically with a proper timestamp for the PNP_DISTANCE_TRIG_SOLVE and CONSTRAINED_SOLVEPNP strategies
