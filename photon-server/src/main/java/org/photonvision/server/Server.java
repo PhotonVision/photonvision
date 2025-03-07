@@ -102,7 +102,7 @@ public class Server {
                                     });
                         });
 
-        /*Web Socket Events for Data Exchange */
+        /* Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
@@ -112,7 +112,7 @@ public class Server {
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 
-        /*API Events*/
+        /* API Events */
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
@@ -127,6 +127,9 @@ public class Server {
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
+        app.post(
+                "/api/utils/importObjectDetectionModel",
+                RequestHandler::onImportObjectDetectionModelRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);

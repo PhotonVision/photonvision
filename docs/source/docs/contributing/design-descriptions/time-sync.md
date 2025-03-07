@@ -76,7 +76,7 @@ Communication between server and clients shall occur over the User Datagram Prot
 
 ## Message Format
 
-The message format forgoes CRCs (as these are provided by the Ethernet physical layer) or packet delimination (as our packetsa are assumed be under the network MTU). **TSP Ping** and **TSP Pong** messages shall be encoded in a manor compatible with a WPILib packed struct with respect to byte alignment and endienness.
+The message format forgoes CRCs (as these are provided by the Ethernet physical layer) or packet delineation (as our packets are assumed be under the network MTU). **TSP Ping** and **TSP Pong** messages shall be encoded in a manor compatible with a WPILib packed struct with respect to byte alignment and endianness.
 
 ### TSP Ping
 
@@ -98,7 +98,7 @@ The message format forgoes CRCs (as these are provided by the Ethernet physical 
 
 ## Optional Protocol Extensions
 
-Clients may publish statistics to NetworkTables. If they do, they shall publish to a key that is globally unique per participant in the Time Synronization network. If a client implements this, it shall provide the following publishers:
+Clients may publish statistics to NetworkTables. If they do, they shall publish to a key that is globally unique per participant in the Time Synchronization network. If a client implements this, it shall provide the following publishers:
 
 | Key | Type | Notes |
 | ------ | ------ | ---- |
