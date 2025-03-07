@@ -29,7 +29,6 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     static final int MAX_MULTI_TARGET_RESULTS = 10;
 
     protected S settings;
-    
     protected FrameStaticProperties frameStaticProperties;
     protected QuirkyCamera cameraQuirks;
 
@@ -74,8 +73,6 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
-        
-        
         setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
 
         // if (frame.image.getMat().empty()) {
