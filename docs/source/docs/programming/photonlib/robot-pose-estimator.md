@@ -17,12 +17,12 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
    .. code-block:: Java
 
       // The field from AprilTagFields will be different depending on the game.
-      AprilTagFieldLayout aprilTagFieldLayout = AprilTagFields.k2024Crescendo.loadAprilTagLayoutField();
+      AprilTagFieldLayout aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
    .. code-block:: C++
 
       // The parameter for LoadAPrilTagLayoutField will be different depending on the game.
-      frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::k2024Crescendo);
+      frc::AprilTagFieldLayout aprilTagFieldLayout = frc::LoadAprilTagLayoutField(frc::AprilTagField::kDefaultField);
 
    .. code-block:: Python
 
@@ -32,7 +32,7 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has six possible values:
+The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has nine possible values:
 
 - MULTI_TAG_PNP_ON_COPROCESSOR
     - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
@@ -47,6 +47,19 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
     - Choose the Pose which is closest to the last pose calculated.
 - AVERAGE_BEST_TARGETS
     - Choose the Pose which is the average of all the poses from each tag.
+- MULTI_TAG_PNP_ON_RIO
+    - A slower, older version of MULTI_TAG_PNP_ON_COPROCESSOR, not recommended for use.
+- PNP_DISTANCE_TRIG_SOLVE
+    - Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
+      to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
+      data is up-to-date. Based on a reference implementation by [FRC Team 6328 Mechanical Advantage](https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98).
+- CONSTRAINED_SOLVEPNP
+    - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
+      flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
+      This also requires addHeadingData to be called every frame so heading data is up to date.
+      If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an initial seed to
+      the optimization algorithm -- otherwise, the multi-tag fallback strategy will be used as the
+      seed.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -91,7 +104,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
         self.cam = PhotonCamera("YOUR CAMERA NAME")
 
         self.camPoseEst = PhotonPoseEstimator(
-            loadAprilTagLayoutField(AprilTagField.k2024Crescendo),
+            loadAprilTagLayoutField(AprilTagField.kDefaultField),
             PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
             self.cam,
             kRobotToCam
@@ -142,3 +155,7 @@ Updates the stored reference pose when using the CLOSEST_TO_REFERENCE_POSE strat
 ### `setLastPose(Pose3d lastPose)`
 
 Update the stored last pose. Useful for setting the initial estimate when using the CLOSEST_TO_LAST_POSE strategy.
+
+### `addHeadingData(double timestampSeconds, Rotation2d heading)`
+
+Adds robot heading data to be stored in buffer. Must be called periodically with a proper timestamp for the PNP_DISTANCE_TRIG_SOLVE and CONSTRAINED_SOLVEPNP strategies

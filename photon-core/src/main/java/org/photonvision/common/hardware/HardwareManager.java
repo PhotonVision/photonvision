@@ -167,13 +167,13 @@ public class HardwareManager {
 
     // API's supporting status LEDs
 
-    private Map<Integer, Boolean> pipelineTargets = new HashMap<Integer, Boolean>();
+    private Map<String, Boolean> pipelineTargets = new HashMap<String, Boolean>();
     private boolean ntConnected = false;
     private boolean systemRunning = false;
     private int blinkCounter = 0;
 
-    public void setTargetsVisibleStatus(int pipelineIdx, boolean hasTargets) {
-        pipelineTargets.put(pipelineIdx, hasTargets);
+    public void setTargetsVisibleStatus(String uniqueName, boolean hasTargets) {
+        pipelineTargets.put(uniqueName, hasTargets);
     }
 
     public void setNTConnected(boolean isConnected) {

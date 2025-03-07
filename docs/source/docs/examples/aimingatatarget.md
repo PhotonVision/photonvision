@@ -5,9 +5,9 @@ The following example is from the PhotonLib example repository ([Java](https://g
 ## Knowledge and Equipment Needed
 
 - A Robot
-- A camera mounted rigidly to the robot's frame, cenetered and pointed forward.
-- A coprocessor running PhotonVision with an AprilTag or Aurco 2D Pipeline.
-- [A printout of AprilTag 7](https://firstfrc.blob.core.windows.net/frc2024/FieldAssets/Apriltag_Images_and_User_Guide.pdf), mounted on a rigid and flat surface.
+- A camera mounted rigidly to the robot's frame, centered and pointed forward.
+- A coprocessor running PhotonVision with an AprilTag or Aruco 2D Pipeline.
+- [A printout of AprilTag 7](https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/Apriltag_Images_and_User_Guide.pdf), mounted on a rigid and flat surface.
 
 ## Code
 

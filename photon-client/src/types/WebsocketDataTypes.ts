@@ -103,7 +103,7 @@ export interface IncomingWebsocketData {
     deviceIps: string[];
   };
   mutatePipelineSettings?: Partial<ActivePipelineSettings>;
-  cameraIndex?: number; // Sent when mutating pipeline settings to check against currently active
+  cameraUniqueName?: string; // Sent when mutating pipeline settings to check against currently active
   calibrationData?: WebsocketCalibrationData;
   visionSourceManager?: VsmState;
 }
