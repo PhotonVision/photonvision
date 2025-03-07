@@ -1,7 +1,5 @@
 # Pi Camera Configuration
 
-This page covers specifics about the _Raspberry Pi_ CSI camera configuration.
-
 ## Background
 
 The Raspberry Pi CSI Camera port is routed through and processed by the GPU. Since the GPU boots before the CPU, it must be configured properly for the attached camera. Additionally, this configuration cannot be changed without rebooting.

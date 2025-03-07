@@ -42,13 +42,12 @@ const cameraViewType = computed<number[]>({
 // TODO - deduplicate with needsCamerasConfigured
 const warningShown = computed<boolean>(() => {
   return (
-    Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    useCameraSettingsStore().cameras["Placeholder Name"] === PlaceholderCameraSettings
+    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
   );
 });
 
 const arducamWarningShown = computed<boolean>(() => {
-  return Object.values(useCameraSettingsStore().cameras).some(
+  return useCameraSettingsStore().cameras.some(
     (c) =>
       c.cameraQuirks?.quirks?.ArduCamCamera === true &&
       !(
@@ -63,10 +62,10 @@ const arducamWarningShown = computed<boolean>(() => {
 <template>
   <v-container class="pa-3" fluid>
     <v-banner
-      v-if="arducamWarningShown"
       v-model="arducamWarningShown"
+      v-if="arducamWarningShown"
       rounded
-      color="error"
+      color="red"
       dark
       class="mb-3"
       icon="mdi-alert-circle-outline"
@@ -87,7 +86,7 @@ const arducamWarningShown = computed<boolean>(() => {
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog v-if="warningShown" v-model="warningShown" :persistent="false" max-width="800" dark>
+    <v-dialog :persistent="false" v-model="warningShown" v-if="warningShown" max-width="800" dark>
       <v-card dark flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>

@@ -2,7 +2,6 @@ import { defineStore } from "pinia";
 import type { LogMessage, VsmState } from "@/types/SettingTypes";
 import type { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import type { MultitagResult, PipelineResult } from "@/types/PhotonTrackingTypes";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type {
   WebsocketCalibrationData,
   WebsocketLogMessage,
@@ -23,7 +22,7 @@ interface StateStore {
   showLogModal: boolean;
   sidebarFolded: boolean;
   logMessages: LogMessage[];
-  currentCameraUniqueName: string;
+  currentCameraIndex: number;
 
   backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
@@ -49,7 +48,6 @@ interface StateStore {
 
 export const useStateStore = defineStore("state", {
   state: (): StateStore => {
-    const cameraStore = useCameraSettingsStore();
     return {
       backendConnected: false,
       websocket: undefined,
@@ -61,7 +59,7 @@ export const useStateStore = defineStore("state", {
       sidebarFolded:
         localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
       logMessages: [],
-      currentCameraUniqueName: Object.keys(cameraStore.cameras)[0],
+      currentCameraIndex: 0,
 
       backendResults: {
         0: {
@@ -99,12 +97,11 @@ export const useStateStore = defineStore("state", {
   },
   getters: {
     currentPipelineResults(): PipelineResult | undefined {
-      return this.backendResults[this.currentCameraUniqueName.toString()];
+      return this.backendResults[this.currentCameraIndex.toString()];
     },
     currentMultitagBuffer(): MultitagResult[] | undefined {
-      if (!this.multitagResultBuffer[this.currentCameraUniqueName])
-        this.multitagResultBuffer[this.currentCameraUniqueName] = [];
-      return this.multitagResultBuffer[this.currentCameraUniqueName];
+      if (!this.multitagResultBuffer[this.currentCameraIndex]) this.multitagResultBuffer[this.currentCameraIndex] = [];
+      return this.multitagResultBuffer[this.currentCameraIndex];
     }
   },
   actions: {

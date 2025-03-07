@@ -172,9 +172,9 @@ public final class PhotonUtils {
      * Estimates the pose of the robot in the field coordinate system, given the pose of the fiducial
      * tag, the robot relative to the camera, and the target relative to the camera.
      *
+     * @param fieldRelativeTagPose Pose3D the field relative pose of the target
      * @param cameraToRobot Transform3D of the robot relative to the camera. Origin of the robot is
      *     defined as the center.
-     * @param fieldRelativeTagPose Pose3D the field relative pose of the target
      * @param cameraToTarget Transform3D of the target relative to the camera, returned by
      *     PhotonVision
      * @return Transform3d Robot position relative to the field

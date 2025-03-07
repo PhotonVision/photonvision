@@ -20,8 +20,7 @@ const mdAndUp = computed<boolean>(() => getCurrentInstance()?.proxy.$vuetify.bre
 
 const needsCamerasConfigured = computed<boolean>(() => {
   return (
-    Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    useCameraSettingsStore().cameras["PlaceHolder Name"] === PlaceholderCameraSettings
+    useCameraSettingsStore().cameras.length === 0 || useCameraSettingsStore().cameras[0] === PlaceholderCameraSettings
   );
 });
 </script>
@@ -81,17 +80,17 @@ const needsCamerasConfigured = computed<boolean>(() => {
           <v-list-item-title>Documentation</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+      <v-list-item v-if="mdAndUp" link @click="() => (compact = !compact)">
+        <v-list-item-icon>
+          <v-icon v-if="compact || !mdAndUp"> mdi-chevron-right </v-icon>
+          <v-icon v-else> mdi-chevron-left </v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Compact Mode</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
 
       <div style="position: absolute; bottom: 0; left: 0">
-        <v-list-item v-if="mdAndUp" link @click="() => (compact = !compact)">
-          <v-list-item-icon>
-            <v-icon v-if="compact || !mdAndUp"> mdi-chevron-right </v-icon>
-            <v-icon v-else> mdi-chevron-left </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>Compact Mode</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
         <v-list-item>
           <v-list-item-icon>
             <v-icon v-if="useSettingsStore().network.runNTServer"> mdi-server </v-icon>

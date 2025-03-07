@@ -17,12 +17,11 @@
 
 package org.photonvision.common.networking;
 
-import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.NoSuchElementException;
+
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -39,7 +38,6 @@ import org.photonvision.common.util.TimedTaskManager;
 
 public class NetworkManager {
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
-    private HashMap<String, String> activeConnections = new HashMap<String, String>();
 
     private NetworkManager() {}
 
@@ -63,21 +61,17 @@ public class NetworkManager {
 
         if (!Platform.isLinux()) {
             logger.info("Not managing network on non-Linux platforms.");
-            this.networkingIsDisabled = true;
             return;
         }
 
         if (!PlatformUtils.isRoot()) {
             logger.error("Cannot manage network without root!");
-            this.networkingIsDisabled = true;
             return;
         }
 
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
-            activeConnections.put(
-                    deviceInfo.devName, NetworkUtils.getActiveConnection(deviceInfo.devName));
             monitorDevice(deviceInfo.devName, 5000);
         }
 
@@ -87,9 +81,7 @@ public class NetworkManager {
             try {
                 // if the configured interface isn't in the list of available ones, select one that is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
-                logger.warn(
-                        "The configured interface doesn't match any available interface. Applying configuration to "
-                                + iFace.devName);
+                logger.warn("The configured interface doesn't match any available interface. Applying configuration to " + iFace.devName);
                 // update NetworkConfig with found interface
                 config.networkManagerIface = iFace.devName;
                 ConfigManager.getInstance().requestSave();
@@ -104,13 +96,7 @@ public class NetworkManager {
             }
         }
 
-        logger.info(
-                "Setting "
-                        + config.connectionType
-                        + " with team "
-                        + config.ntServerAddress
-                        + " on "
-                        + config.networkManagerIface);
+        logger.info("Setting " + config.connectionType + " with team " + config.ntServerAddress + " on " + config.networkManagerIface);
 
         // always set hostname (unless it's blank)
         if (!config.hostname.isBlank()) {
@@ -143,14 +129,15 @@ public class NetworkManager {
             var shell = new ShellExec(true, false);
             shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
             var oldHostname = shell.getOutput().replace("\n", "");
-            logger.debug("Old host name: \"" + oldHostname + "\"");
-            logger.debug("New host name: \"" + hostname + "\"");
+            logger.debug("Old host name: >" + oldHostname +"<");
+            logger.debug("New host name: >" + hostname +"<");
 
             if (!oldHostname.equals(hostname)) {
                 var setHostnameRetCode =
                         shell.executeBashCommand(
                                 "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", hostname));
-                setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname " + hostname);
+                setHostnameRetCode =
+                        shell.executeBashCommand("hostnamectl set-hostname " + hostname);
 
                 // Add to /etc/hosts
                 var addHostRetCode =
@@ -181,23 +168,31 @@ public class NetworkManager {
     private void setConnectionDHCP(NetworkConfig config) {
         String connName = "dhcp-" + config.networkManagerIface;
 
+        String addDHCPcommand = """
+            nmcli connection add
+            con-name "${connection}"
+            ifname "${interface}"
+            type ethernet
+            autoconnect no
+            ipv4.method auto
+            ipv6.method disabled
+            """;
+        addDHCPcommand = addDHCPcommand.replaceAll("[\\n]", " ");
+
         var shell = new ShellExec();
         try {
             if (NetworkUtils.connDoesNotExist(connName)) {
-                logger.info("Creating DHCP connection " + connName);
+                // create connection
+                logger.info("Creating the DHCP connection " + connName );
                 shell.executeBashCommand(
-                        NetworkingCommands.addConnectionCommand
-                                .replace("${connection}", connName)
-                                .replace("${interface}", config.networkManagerIface));
+                    addDHCPcommand
+                        .replace("${connection}", connName)
+                        .replace("${interface}", config.networkManagerIface)
+                    );
             }
-            logger.info("Updating the DHCP connection " + connName);
-            shell.executeBashCommand(
-                    NetworkingCommands.modDHCPCommand.replace("${connection}", connName));
             // activate it
-            logger.info("Activating DHCP connection " + connName);
-            shell.executeBashCommand(
-                    "nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
-            activeConnections.put(config.networkManagerIface, connName);
+            logger.info("Activating the DHCP connection " + connName );
+            shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
         } catch (Exception e) {
             logger.error("Exception while setting DHCP!", e);
         }
@@ -205,6 +200,20 @@ public class NetworkManager {
 
     private void setConnectionStatic(NetworkConfig config) {
         String connName = "static-" + config.networkManagerIface;
+        String addStaticCommand = """
+            nmcli connection add
+            con-name "${connection}"
+            ifname "${interface}"
+            type ethernet
+            autoconnect no
+            ipv4.addresses ${ipaddr}/8
+            ipv4.gateway ${gateway}
+            ipv4.method "manual"
+            ipv6.method "disabled"
+            """;
+        addStaticCommand = addStaticCommand.replaceAll("[\\n]", " ");
+
+        String modStaticCommand = "nmcli connection mod \"${connection}\" ipv4.addresses ${ipaddr}/8 ipv4.gateway ${gateway}";
 
         if (config.staticIp.isBlank()) {
             logger.warn("Got empty static IP?");
@@ -213,31 +222,34 @@ public class NetworkManager {
 
         // guess at the gateway from the staticIp
         String[] parts = config.staticIp.split("\\.");
-        parts[parts.length - 1] = "1";
+        parts[parts.length-1] = "1";
         String gateway = String.join(".", parts);
 
         var shell = new ShellExec();
         try {
             if (NetworkUtils.connDoesNotExist(connName)) {
                 // create connection
-                logger.info("Creating Static connection " + connName);
+                logger.info("Creating the Static connection " + connName );
                 shell.executeBashCommand(
-                        NetworkingCommands.addConnectionCommand
-                                .replace("${connection}", connName)
-                                .replace("${interface}", config.networkManagerIface));
+                    addStaticCommand
+                        .replace("${connection}", connName)
+                        .replace("${interface}", config.networkManagerIface)
+                        .replace("${ipaddr}", config.staticIp)
+                        .replace("${gateway}", gateway)
+                    );
+            } else {
+                // modify it in case the static IP address is different
+                logger.info("Modifying the Static connection " + connName );
+                shell.executeBashCommand(
+                    modStaticCommand
+                        .replace("${connection}", connName)
+                        .replace("${ipaddr}", config.staticIp)
+                        .replace("${gateway}", gateway)
+                    );
             }
-            // modify it in case the static IP address is different
-            logger.info("Updating the Static connection " + connName);
-            shell.executeBashCommand(
-                    NetworkingCommands.modStaticCommand
-                            .replace("${connection}", connName)
-                            .replace("${ipaddr}", config.staticIp)
-                            .replace("${gateway}", gateway));
             // activate it
-            logger.info("Activating the Static connection " + connName);
-            shell.executeBashCommand(
-                    "nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
-            activeConnections.put(config.networkManagerIface, connName);
+            logger.info("Activating the Static connection " + connName );
+            shell.executeBashCommand("nmcli connection up \"${connection}\"".replace("${connection}", connName), false);
         } catch (Exception e) {
             logger.error("Error while setting static IP!", e);
         }
@@ -255,59 +267,31 @@ public class NetworkManager {
             logger.error("Can't find " + path + ", so can't monitor " + devName);
             return;
         }
-        var last =
-                new Object() {
-                    boolean carrier = true;
-                    boolean exceptionLogged = false;
-                    String addresses = "";
-                };
-        Runnable task =
-                () -> {
-                    try {
-                        boolean carrier = Files.readString(path).trim().equals("1");
-                        if (carrier != last.carrier) {
-                            if (carrier) {
-                                // carrier came back
-                                logger.info("Interface " + devName + " has re-connected, reinitializing");
-                                reinitialize();
-                            } else {
-                                logger.warn("Interface " + devName + " is disconnected, check Ethernet!");
-                            }
-                        }
-                        var iFace = NetworkInterface.getByName(devName);
-                        if (iFace != null && iFace.isUp()) {
-                            String tmpAddresses = "";
-                            tmpAddresses = iFace.getInterfaceAddresses().toString();
-                            if (!last.addresses.equals(tmpAddresses)) {
-                                // addresses have changed, log the difference
-                                last.addresses = tmpAddresses;
-                                logger.info("Interface " + devName + " has address(es): " + last.addresses);
-                            }
-                            var conn = NetworkUtils.getActiveConnection(devName);
-                            if (!conn.equals(activeConnections.get(devName))) {
-                                logger.warn(
-                                        "Unexpected connection "
-                                                + conn
-                                                + " active on "
-                                                + devName
-                                                + ". Expected "
-                                                + activeConnections.get(devName));
-                                logger.info("Reinitializing");
-                                reinitialize();
-                            }
-                        }
-                        last.carrier = carrier;
-                        last.exceptionLogged = false;
-                    } catch (Exception e) {
-                        if (!last.exceptionLogged) {
-                            // Log the exception only once, but keep trying
-                            logger.error("Could not check network status for " + devName, e);
-                            last.exceptionLogged = true;
-                        }
+        logger.debug("Watching network interface at path: " + path);
+        var last = new Object() {boolean carrier = true; boolean exceptionLogged = false;};
+        Runnable task = () -> {
+            try {
+                boolean carrier = Files.readString(path).trim().equals("1");
+                if (carrier != last.carrier) {
+                    if (carrier) {
+                        // carrier came back
+                        logger.info("Interface " + devName + " has re-connected, reinitializing");
+                        reinitialize();
+                    } else {
+                        logger.warn("Interface " + devName + " is disconnected, check Ethernet!");
                     }
-                };
+                }
+                last.carrier = carrier;
+                last.exceptionLogged = false;
+                } catch (Exception e) {
+                    if (!last.exceptionLogged) {
+                        // Log the exception only once, but keep trying
+                        logger.error("Could not check network status for " + devName, e);
+                        last.exceptionLogged = true;
+                    }
+                }
+            };
 
         TimedTaskManager.getInstance().addTask(taskName, task, millisInterval);
-        logger.debug("Watching network interface at path: " + path);
     }
 }

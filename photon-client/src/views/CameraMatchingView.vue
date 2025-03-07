@@ -7,58 +7,42 @@ import {
   PVCameraInfo,
   type PVCSICameraInfo,
   type PVFileCameraInfo,
-  type PVUsbCameraInfo,
-  type UiCameraConfiguration
+  type PVUsbCameraInfo
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
-import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
-import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
+import _ from "lodash";
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
 
-const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
-  if (activatingModule.value) return;
-  activatingModule.value = true;
   const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
-  url.searchParams.set("cameraUniqueName", moduleUniqueName);
+  url.searchParams.set("uniqueName", moduleUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => (activatingModule.value = false));
+  });
 };
-
-const assigningCamera = ref(false);
-const assignCamera = (cameraInfo: PVCameraInfo) => {
-  if (assigningCamera.value) return;
-  assigningCamera.value = true;
+const activateCamera = (cameraInfo: PVCameraInfo) => {
   const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
   url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => (assigningCamera.value = false));
+  });
 };
-
-const deactivatingModule = ref(false);
-const deactivateModule = (cameraUniqueName: string) => {
-  if (deactivatingModule.value) return;
-  deactivatingModule.value = true;
+const deactivateCamera = (cameraUniqueName: string) => {
   const url = new URL(`http://${host}/api/utils/unassignCamera`);
-  url.searchParams.set("cameraUniqueName", cameraUniqueName);
+  url.searchParams.set("uniqueName", cameraUniqueName);
 
   fetch(url.toString(), {
     method: "POST"
-  }).finally(() => (deactivatingModule.value = false));
+  });
 };
 
-const deletingCamera = ref(false);
 const deleteThisCamera = (cameraName: string) => {
-  if (deletingCamera.value) return;
-  deletingCamera.value = true;
   const payload = {
     cameraUniqueName: cameraName
   };
@@ -67,7 +51,7 @@ const deleteThisCamera = (cameraName: string) => {
     .post("/utils/nukeOneCamera", payload)
     .then(() => {
       useStateStore().showSnackbarMessage({
-        message: "Camera deleted successfully",
+        message: "Successfully deleted " + cameraName,
         color: "success"
       });
     })
@@ -88,36 +72,10 @@ const deleteThisCamera = (cameraName: string) => {
           color: "error"
         });
       }
-    })
-    .finally(() => {
-      setCameraDeleting(null);
-      deletingCamera.value = false;
     });
 };
 
-const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
-  if (camera1.PVUsbCameraInfo && camera2.PVUsbCameraInfo)
-    return (
-      camera1.PVUsbCameraInfo.name === camera2.PVUsbCameraInfo.name &&
-      camera1.PVUsbCameraInfo.vendorId === camera2.PVUsbCameraInfo.vendorId &&
-      camera1.PVUsbCameraInfo.productId === camera2.PVUsbCameraInfo.productId &&
-      camera1.PVUsbCameraInfo.uniquePath === camera2.PVUsbCameraInfo.uniquePath
-    );
-  else if (camera1.PVCSICameraInfo && camera2.PVCSICameraInfo)
-    return (
-      camera1.PVCSICameraInfo.uniquePath === camera2.PVCSICameraInfo.uniquePath &&
-      camera1.PVCSICameraInfo.baseName === camera2.PVCSICameraInfo.baseName
-    );
-  else if (camera1.PVFileCameraInfo && camera2.PVFileCameraInfo)
-    return (
-      camera1.PVFileCameraInfo.uniquePath === camera2.PVFileCameraInfo.uniquePath &&
-      camera1.PVFileCameraInfo.name === camera2.PVFileCameraInfo.name
-    );
-  else return false;
-};
-
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
-  if (!camera) return null;
+const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
   }
@@ -130,80 +88,77 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
   return {};
 };
 
+const uniquePathForCamera = (info: PVCameraInfo) => {
+  if (info.PVUsbCameraInfo) {
+    return info.PVUsbCameraInfo.uniquePath;
+  }
+  if (info.PVCSICameraInfo) {
+    return info.PVCSICameraInfo.uniquePath;
+  }
+  if (info.PVFileCameraInfo) {
+    return info.PVFileCameraInfo.uniquePath;
+  }
+
+  // TODO - wut
+  return "";
+};
+
 /**
  * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
  */
 const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
-      PVFileCameraInfo: undefined,
+      PVFileCameraInfo: {
+        name: "!",
+        path: "!",
+        uniquePath: "!"
+      },
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined
     };
   }
   return (
     useStateStore().vsmState.allConnectedCameras.find(
-      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
+      (it) => uniquePathForCamera(it) === uniquePathForCamera(info)
     ) || {
-      PVFileCameraInfo: undefined,
+      PVFileCameraInfo: {
+        name: "!",
+        path: "!",
+        uniquePath: "!"
+      },
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined
     }
   );
 };
 
-const cameraCononected = (uniquePath: string): boolean => {
-  return (
-    useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
-  );
-};
-
 const unmatchedCameras = computed(() => {
-  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map(
-    (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath
-  );
-  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map(
-    (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath
+  const activeVmPaths = useCameraSettingsStore().cameras.map((it) => uniquePathForCamera(it.matchedCameraInfo));
+  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) =>
+    uniquePathForCamera(it.matchedCameraInfo)
   );
 
   return useStateStore().vsmState.allConnectedCameras.filter(
-    (it) =>
-      !activeVmPaths.includes(cameraInfoFor(it).uniquePath) && !disabledVmPaths.includes(cameraInfoFor(it).uniquePath)
+    (it) => !activeVmPaths.includes(uniquePathForCamera(it)) && !disabledVmPaths.includes(uniquePathForCamera(it))
   );
 });
 
 const activeVisionModules = computed(() =>
-  Object.values(useCameraSettingsStore().cameras)
-    // Ignore placeholder camera
-    .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
-    // Display connected cameras first
-    .sort(
-      (first, second) =>
-        (cameraCononected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
-        (cameraCononected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
-    )
+  useCameraSettingsStore().cameras.filter(
+    (camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings)
+  )
 );
-
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const viewingDetails = ref(false);
-const viewingCamera = ref<[PVCameraInfo | null, boolean | null]>([null, null]);
-const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null) => {
-  viewingDetails.value = camera !== null && isConnected !== null;
-  viewingCamera.value = [camera, isConnected];
-};
+const showCurrentView = ref(false);
+const viewingCamera = ref<PVCameraInfo | null>(null);
 
-const viewingDeleteCamera = ref(false);
-const cameraToDelete = ref<UiCameraConfiguration | WebsocketCameraSettingsUpdate | null>(null);
-const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettingsUpdate | null) => {
-  yesDeleteMySettingsText.value = "";
-  viewingDeleteCamera.value = camera !== null;
-  cameraToDelete.value = camera;
-};
-const yesDeleteMySettingsText = ref("");
-const exportSettings = ref();
-const openExportSettingsPrompt = () => {
-  exportSettings.value.click();
+const setCameraView = (camera: PVCameraInfo | null, showCurrent: boolean = false) => {
+  viewingDetails.value = camera !== null;
+  viewingCamera.value = camera;
+  showCurrentView.value = showCurrent;
 };
 </script>
 
@@ -212,40 +167,40 @@ const openExportSettingsPrompt = () => {
     <v-row>
       <!-- Active modules -->
       <v-col
-        v-for="(module, index) in activeVisionModules"
-        :key="`enabled-${module.uniqueName}`"
         cols="12"
         sm="6"
         lg="4"
+        v-for="(module, index) in activeVisionModules"
+        :key="`enabled-${module.uniqueName}`"
       >
         <v-card dark color="primary">
-          <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="pb-2"
-            >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
-          >
-          <v-card-subtitle
-            v-else-if="
-              cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-              camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
-            "
-            class="pb-2"
+          <v-card-title>{{ module.nickname }}</v-card-title>
+          <v-card-subtitle v-if="_.isEqual(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
-          <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
+          <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
             <v-simple-table dark dense>
               <tbody>
                 <tr>
                   <td>Streams:</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="active-status">
+                      Input Stream
+                    </a>
                     /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="active-status">
+                      Output Stream
+                    </a>
                   </td>
                 </tr>
                 <tr>
                   <td>Pipelines</td>
                   <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                </tr>
+                <tr>
+                  <td>Connected</td>
+                  <td>{{ module.isConnected }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>
@@ -256,64 +211,49 @@ const openExportSettingsPrompt = () => {
                     }}
                   </td>
                 </tr>
-                <tr
-                  v-if="
-                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-                    useStateStore().backendResults[module.uniqueName]
-                  "
-                >
-                  <td style="width: 50%">Frames Processed</td>
+                <tr v-if="module.isConnected && useStateStore().backendResults[index]">
+                  <td>Frames Processed</td>
                   <td>
-                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
-                      useStateStore().backendResults[module.uniqueName].fps
+                    {{ useStateStore().backendResults[index].sequenceID }} ({{
+                      useStateStore().backendResults[index].fps
                     }}
                     FPS)
                   </td>
                 </tr>
               </tbody>
             </v-simple-table>
-            <div
-              v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
-              :id="`stream-container-${index}`"
-              class="d-flex flex-column justify-center align-center mt-3"
-              style="height: 250px"
-            >
-              <photon-camera-stream
-                :id="`output-camera-stream-${index}`"
-                :camera-settings="module"
-                stream-type="Processed"
-              />
-            </div>
+            <photon-camera-stream
+              class="mt-3"
+              id="output-camera-stream"
+              :camera-settings="module"
+              stream-type="Processed"
+              style="width: 100%; height: auto"
+            />
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="secondary"
-                  style="width: 100%"
-                  @click="
-                    setCameraView(
-                      module.matchedCameraInfo,
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
-                    )
-                  "
-                >
+                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo, true)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
+                  @click="deactivateCamera(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
-                  :loading="deactivatingModule"
-                  @click="deactivateModule(module.uniqueName)"
                 >
                   Deactivate
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
+                <v-btn
+                  class="black--text pa-0"
+                  @click="deleteThisCamera(module.uniqueName)"
+                  color="red"
+                  style="width: 100%"
+                >
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -323,10 +263,10 @@ const openExportSettingsPrompt = () => {
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
+      <v-col cols="12" sm="6" lg="4" v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`">
         <v-card dark color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
-          <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
+          <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text>
             <v-simple-table dense>
               <tbody>
@@ -342,7 +282,7 @@ const openExportSettingsPrompt = () => {
                 </tr>
                 <tr>
                   <td>Connected</td>
-                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
+                  <td>{{ module.isConnected }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>
@@ -359,32 +299,27 @@ const openExportSettingsPrompt = () => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="secondary"
-                  style="width: 100%"
-                  @click="
-                    setCameraView(
-                      module.matchedCameraInfo,
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
-                    )
-                  "
-                >
+                <v-btn color="secondary" @click="setCameraView(module.matchedCameraInfo)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="black--text"
+                  @click="activateModule(module.uniqueName)"
                   color="accent"
                   style="width: 100%"
-                  :loading="activatingModule"
-                  @click="activateModule(module.uniqueName)"
                 >
                   Activate
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
+                <v-btn
+                  class="black--text pa-0"
+                  @click="deleteThisCamera(module.uniqueName)"
+                  color="red"
+                  style="width: 100%"
+                >
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -394,9 +329,9 @@ const openExportSettingsPrompt = () => {
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
+      <v-col cols="12" sm="6" lg="4" v-for="(camera, index) in unmatchedCameras" :key="index">
         <v-card dark color="primary">
-          <v-card-title class="pb-2">
+          <v-card-title>
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
@@ -410,18 +345,12 @@ const openExportSettingsPrompt = () => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera, false)">
+                <v-btn color="secondary" @click="setCameraView(camera)" style="width: 100%">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
-                <v-btn
-                  class="black--text"
-                  color="accent"
-                  style="width: 100%"
-                  :loading="assigningCamera"
-                  @click="assignCamera(camera)"
-                >
+                <v-btn class="black--text" @click="activateCamera(camera)" color="accent" style="width: 100%">
                   Activate
                 </v-btn>
               </v-col>
@@ -447,73 +376,36 @@ const openExportSettingsPrompt = () => {
     </v-row>
 
     <!-- Camera details modal -->
-    <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" dark flat color="primary">
+    <v-dialog v-model="viewingDetails">
+      <v-card dark flat color="primary" v-if="viewingCamera !== null">
         <v-card-title class="d-flex justify-space-between">
-          <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
-          <v-btn text @click="setCameraView(null, null)">
+          <span>{{ cameraInfoFor(viewingCamera)?.name ?? cameraInfoFor(viewingCamera)?.baseName }}</span>
+          <v-btn text @click="setCameraView(null)">
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text v-if="!viewingCamera[1]">
-          <PvCameraInfoCard :camera="viewingCamera[0]" />
-        </v-card-text>
-        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
-          <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
-            It looks like a different camera may have been connected to this device! Compare the following information
-            carefully.
-          </v-banner>
-          <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
-        </v-card-text>
-        <v-card-text v-else>
-          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-
-    <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera" dark width="800">
-      <v-card v-if="cameraToDelete !== null" dark class="dialog-container pa-3 pb-2" color="primary" flat>
-        <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
-          <v-row class="align-center pt-6">
-            <v-col cols="12" md="6">
-              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon left class="open-icon"> mdi-export </v-icon>
-                <span class="open-label">Backup Settings</span>
-                <a
-                  ref="exportSettings"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="`http://${host}/api/settings/photonvision_config.zip`"
-                  download="photonvision-settings.zip"
-                  target="_blank"
-                />
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text>
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-text>
-          <v-btn
-            block
-            color="error"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
-            :loading="deletingCamera"
-            @click="deleteThisCamera(cameraToDelete.uniqueName)"
+          <v-banner
+            v-show="!_.isEqual(getMatchedDevice(viewingCamera), viewingCamera)"
+            rounded
+            color="red"
+            text-color="white"
+            icon="mdi-information-outline"
+            class="mb-3"
           >
-            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">DELETE (UNRECOVERABLE)</span>
-          </v-btn>
+            Camera Mismatched:<br />It looks like a different camera has been connected to this device! Compare the
+            below information carefully.
+          </v-banner>
+          <div v-if="showCurrentView">
+            <h3>Saved camera</h3>
+            <PvCameraInfoCard :camera="viewingCamera" :showTitle="false" />
+            <br />
+            <h3>Current camera</h3>
+            <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" :showTitle="false" />
+          </div>
+          <div v-else>
+            <PvCameraInfoCard :camera="viewingCamera" />
+          </div>
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -525,6 +417,7 @@ const openExportSettingsPrompt = () => {
   background-color: #006492 !important;
 }
 
+a:link,
 .active-status {
   color: rgb(14, 240, 14);
   background-color: transparent;
@@ -544,7 +437,6 @@ a:hover {
 }
 
 a:active,
-.stream-link,
 .mismatch-status {
   color: yellow;
   background-color: transparent;

@@ -57,8 +57,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     public void onDataChangeEvent(DataChangeEvent<?> event) {
         if (event instanceof IncomingWebSocketEvent wsEvent) {
             // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
-            if (wsEvent.cameraUniqueName != null
-                    && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
+            if (wsEvent.cameraIndex != null
+                    && (wsEvent.cameraIndex == parentModule.moduleIndex || wsEvent.cameraIndex == -1)) {
                 logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
                 changeListLock.lock();
                 try {
@@ -206,7 +206,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             parentModule.startCalibration(deserialized);
             parentModule.saveAndBroadcastAll();
         } catch (Exception e) {
-            logger.error("Error deserializing start-calibration request", e);
+            logger.error("Error deserailizing start-calibration request", e);
         }
     }
 

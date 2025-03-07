@@ -36,9 +36,6 @@ class PhotonCameraSim:
         self,
         camera: PhotonCamera,
         props: SimCameraProperties = SimCameraProperties.PERFECT_90DEG(),
-        tagLayout: AprilTagFieldLayout = AprilTagFieldLayout.loadField(
-            AprilTagField.kDefaultField
-        ),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
     ):
@@ -67,7 +64,7 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
-        self.tagLayout = tagLayout
+        self.tagLayout = AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo)
 
         self.cam = camera
         self.prop = props
@@ -423,9 +420,9 @@ class PhotonCameraSim:
         now_micros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
             metadata=PhotonPipelineMetadata(
+                self.heartbeatCounter,
                 int(now_micros - latency * 1e6),
                 int(now_micros),
-                self.heartbeatCounter,
                 # Pretend like we heard a pong recently
                 int(np.random.uniform(950, 1050)),
             ),

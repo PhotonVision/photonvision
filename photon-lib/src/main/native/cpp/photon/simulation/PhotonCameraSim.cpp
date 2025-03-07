@@ -29,19 +29,12 @@
 #include <utility>
 #include <vector>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/apriltag/AprilTagFields.h>
-
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
-    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
-                      frc::AprilTagFieldLayout::LoadField(
-                          frc::AprilTagField::kDefaultField)) {}
-
+    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG()) {}
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
-                                 const SimCameraProperties& props,
-                                 const frc::AprilTagFieldLayout& tagLayout)
-    : prop{props}, cam{camera}, tagLayout{tagLayout} {
+                                 const SimCameraProperties& props)
+    : prop(props), cam(camera) {
   SetMinTargetAreaPixels(kDefaultMinAreaPx);
   videoSimRaw =
       frc::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
@@ -53,7 +46,6 @@ PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
   ts.subTable = cam->GetCameraTable();
   ts.UpdateEntries();
 }
-
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
                                  const SimCameraProperties& props,
                                  double minTargetAreaPercent,

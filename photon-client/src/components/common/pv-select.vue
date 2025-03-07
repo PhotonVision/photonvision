@@ -2,7 +2,7 @@
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
-export interface SelectItem {
+interface SelectItem {
   name: string | number;
   value: string | number;
   disabled?: boolean;
@@ -14,7 +14,7 @@ const props = withDefaults(
     tooltip?: string;
     selectCols?: number;
     // TODO fully update v-model usage in custom components on Vue3 update
-    value: any;
+    value: number;
     disabled?: boolean;
     items: string[] | number[] | SelectItem[];
   }>(),
@@ -25,7 +25,7 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: "input", value: string): void;
+  (e: "input", value: number): void;
 }>();
 
 const localValue = computed({
@@ -49,29 +49,24 @@ const items = computed<SelectItem[]>(() => {
 </script>
 
 <template>
-  <div class="d-flex">
-    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
-    </v-col>
-    <v-col :cols="selectCols" class="d-flex align-center pr-0">
-      <v-select
-        v-model="localValue"
-        :items="items"
-        item-text="name"
-        item-value="value"
-        item-disabled="disabled"
-        dark
-        color="accent"
-        item-color="secondary"
-        :disabled="disabled"
-        hide-details="auto"
-      />
-    </v-col>
+  <div>
+    <v-row dense align="center">
+      <v-col :cols="12 - selectCols">
+        <tooltipped-label :tooltip="tooltip" :label="label" />
+      </v-col>
+      <v-col :cols="selectCols">
+        <v-select
+          v-model="localValue"
+          :items="items"
+          item-text="name"
+          item-value="value"
+          item-disabled="disabled"
+          dark
+          color="accent"
+          item-color="secondary"
+          :disabled="disabled"
+        />
+      </v-col>
+    </v-row>
   </div>
 </template>
-<style scoped>
-.v-select {
-  padding-top: 0px;
-  margin-top: 0px;
-}
-</style>

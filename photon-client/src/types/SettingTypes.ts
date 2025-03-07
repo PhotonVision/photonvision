@@ -23,7 +23,6 @@ export interface MetricData {
   cpuUptime?: string;
   diskUtilPct?: string;
   npuUsage?: string;
-  ipAddress?: string;
 }
 
 export enum NetworkConnectionType {
@@ -50,6 +49,7 @@ export interface NetworkSettings {
   setDHCPcommand?: string;
   networkInterfaceNames: NetworkInterfaceType[];
   networkingDisabled: boolean;
+  matchCamerasOnlyByPath: boolean;
 }
 
 export type ConfigurableNetworkSettings = Omit<

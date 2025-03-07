@@ -91,14 +91,16 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card dark style="background-color: #006492">
+  <v-card dark class="pr-6 pb-3" style="background-color: #006492">
     <v-card-title>Camera Control</v-card-title>
-    <v-card-text>
-      <v-btn color="secondary" @click="fetchSnapshots">
-        <v-icon left class="open-icon"> mdi-folder </v-icon>
-        <span class="open-label">Show Saved Snapshots</span>
-      </v-btn>
-    </v-card-text>
+    <v-row class="pl-6">
+      <v-col>
+        <v-btn color="secondary" @click="fetchSnapshots">
+          <v-icon left class="open-icon"> mdi-folder </v-icon>
+          <span class="open-label">Show Saved Snapshots</span>
+        </v-btn>
+      </v-col>
+    </v-row>
     <v-dialog v-model="showSnapshotViewerDialog">
       <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
         <v-card-title> View Saved Frame Snapshots </v-card-title>

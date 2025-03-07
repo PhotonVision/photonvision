@@ -108,7 +108,7 @@ public class SwerveModule {
             SwerveModuleState desiredState, boolean openLoop, boolean steerInPlace) {
         Rotation2d currentRotation = getAbsoluteHeading();
         // Avoid turning more than 90 degrees by inverting speed on large angle changes
-        desiredState.optimize(currentRotation);
+        desiredState = SwerveModuleState.optimize(desiredState, currentRotation);
 
         this.desiredState = desiredState;
     }

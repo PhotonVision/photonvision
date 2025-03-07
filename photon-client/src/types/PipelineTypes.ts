@@ -27,8 +27,7 @@ export enum TargetModel {
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
   AprilTag6in_16h5 = 5,
-  AprilTag6p5in_36h11 = 6,
-  ReefscapeAlgae = 7
+  AprilTag6p5in_36h11 = 6
 }
 
 export interface PipelineSettings {

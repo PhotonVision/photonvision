@@ -31,7 +31,7 @@ public enum CameraQuirk {
     /** Separate red/blue gain controls available */
     @JsonAlias("AWBGain") // remove after https://github.com/PhotonVision/photonvision/issues/1488
     AwbRedBlueGain,
-    /** Will not work with photonvision - Logitech C270 at least */
+    /** Will not work with photonvision - Logitec C270 at least */
     CompletelyBroken,
     /** Has adjustable focus and autofocus switch */
     AdjustableFocus,

@@ -35,18 +35,24 @@ public class VisionModuleManager {
         return visionModules;
     }
 
-    public VisionModule getModule(String uniqueName) {
+    public VisionModule getModule(String nickname) {
         for (var module : visionModules) {
-            if (module.getStateAsCameraConfig().uniqueName.equals(uniqueName)) return module;
+            if (module.getStateAsCameraConfig().nickname.equals(nickname)) return module;
         }
         return null;
+    }
+
+    public VisionModule getModule(int i) {
+        return visionModules.get(i);
     }
 
     public synchronized VisionModule addSource(VisionSource visionSource) {
         visionSource.cameraConfiguration.streamIndex = newCameraIndex();
 
         var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-        var module = new VisionModule(pipelineManager, visionSource);
+        var module =
+                new VisionModule(
+                        pipelineManager, visionSource, visionSource.cameraConfiguration.streamIndex);
         visionModules.add(module);
 
         return module;

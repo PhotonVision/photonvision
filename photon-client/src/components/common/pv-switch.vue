@@ -11,13 +11,11 @@ const props = withDefaults(
     disabled?: boolean;
     labelCols?: number;
     switchCols?: number;
-    dense?: boolean;
   }>(),
   {
     disabled: false,
     labelCols: 2,
-    switchCols: 8,
-    dense: false
+    switchCols: 8
   }
 );
 
@@ -32,17 +30,14 @@ const localValue = computed({
 </script>
 
 <template>
-  <div class="d-flex">
-    <v-col :cols="12 - switchCols || labelCols" class="d-flex align-center pl-0">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
-    </v-col>
-    <v-col :cols="switchCols || 12 - labelCols" class="d-flex align-center pr-0">
-      <v-switch v-model="localValue" dark :disabled="disabled" color="#ffd843" hide-details="auto" class="pb-1" />
-    </v-col>
+  <div>
+    <v-row dense align="center">
+      <v-col :cols="12 - switchCols || labelCols">
+        <tooltipped-label :tooltip="tooltip" :label="label" />
+      </v-col>
+      <v-col :cols="switchCols || 12 - labelCols">
+        <v-switch v-model="localValue" dark :disabled="disabled" color="#ffd843" />
+      </v-col>
+    </v-row>
   </div>
 </template>
-<style scoped>
-.v-input--selection-controls {
-  margin-top: 0px;
-}
-</style>

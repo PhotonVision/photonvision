@@ -143,8 +143,8 @@ public class SwerveDrive {
     }
 
     /**
-     * Command the swerve modules to the desired states. Velocities exceeding the maximum speed will
-     * be desaturated (while preserving the ratios between modules).
+     * Command the swerve modules to the desired states. Velocites exceeding the maximum speed will be
+     * desaturated (while preserving the ratios between modules).
      *
      * @param openLoop If swerve modules should use feedforward only and ignore velocity feedback
      *     control.

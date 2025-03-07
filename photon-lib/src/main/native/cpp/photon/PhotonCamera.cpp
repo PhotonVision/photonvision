@@ -27,12 +27,10 @@
 #include <hal/FRCUsageReporting.h>
 #include <net/TimeSyncServer.h>
 
-#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include <WPILibVersion.h>
 #include <frc/Errors.h>
 #include <frc/RobotController.h>
 #include <frc/Timer.h>
@@ -41,81 +39,26 @@
 #include <wpi/json.h>
 
 #include "PhotonVersion.h"
-#include "opencv2/core/utility.hpp"
 #include "photon/dataflow/structures/Packet.h"
 
-inline void verifyDependencies() {
-  if (!(std::string_view{GetWPILibVersion()} ==
-        std::string_view{photon::PhotonVersion::wpilibTargetVersion})) {
-    std::string bfw =
-        "\n\n\n\n\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>                                          \n"
-        ">>> You are running an incompatible version  \n"
-        ">>> of PhotonVision !                        \n"
-        ">>>                                          \n"
-        ">>> PhotonLib ";
-    bfw += photon::PhotonVersion::versionString;
-    bfw += " is built for WPILib ";
-    bfw += photon::PhotonVersion::wpilibTargetVersion;
-    bfw +=
-        "\n"
-        ">>> but you are using WPILib ";
-    bfw += GetWPILibVersion();
-    bfw +=
-        "\n>>>                                          \n"
-        ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update PhotonVision,            \n"
-        ">>> PhotonLib, or both.                      \n"
-        ">>> Verify the output of `./gradlew dependencies` \n"
-        ">>>                                          \n"
-        ">>> Your code will now crash.                \n"
-        ">>> We hope your day gets better.            \n"
-        ">>>                                          \n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-
-    FRC_ReportWarning(bfw);
-    FRC_ReportError(frc::err::Error, bfw);
-    throw new std::runtime_error(std::string{bfw});
-  }
-  if (!(std::string_view{cv::getVersionString()} ==
-        std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
-    std::string bfw =
-        "\n\n\n\n\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>                                          \n"
-        ">>> You are running an incompatible version  \n"
-        ">>> of PhotonVision !                        \n"
-        ">>>                                          \n"
-        ">>> PhotonLib ";
-    bfw += photon::PhotonVersion::versionString;
-    bfw += " is built for OpenCV ";
-    bfw += photon::PhotonVersion::opencvTargetVersion;
-    bfw +=
-        "\n"
-        ">>> but you are using OpenCV ";
-    bfw += cv::getVersionString();
-    bfw +=
-        "\n>>>                                          \n"
-        ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update PhotonVision,            \n"
-        ">>> PhotonLib, or both.                      \n"
-        ">>> Verify the output of `./gradlew dependencies` \n"
-        ">>>                                          \n"
-        ">>> Your code will now crash.                \n"
-        ">>> We hope your day gets better.            \n"
-        ">>>                                          \n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-
-    FRC_ReportWarning(bfw);
-    FRC_ReportError(frc::err::Error, bfw);
-    throw new std::runtime_error(std::string{bfw});
-  }
-}
+inline constexpr std::string_view bfw =
+    "\n\n\n\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    ">>>                                          \n"
+    ">>> You are running an incompatible version  \n"
+    ">>> of PhotonVision on your coprocessor!     \n"
+    ">>>                                          \n"
+    ">>> This is neither tested nor supported.    \n"
+    ">>> You MUST update PhotonVision,            \n"
+    ">>> PhotonLib, or both.                      \n"
+    ">>>                                          \n"
+    ">>> Your code will now crash.                \n"
+    ">>> We hope your day gets better.            \n"
+    ">>>                                          \n"
+    ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
+    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+    "\n\n";
 
 // bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
 // to avoid calling this from static initialization
@@ -182,7 +125,6 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       cameraName(cameraName) {
-  verifyDependencies();
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
 
@@ -368,25 +310,7 @@ void PhotonCamera::VerifyVersion() {
     std::string remote_uuid{remote_uuid_json};
 
     if (local_uuid != remote_uuid) {
-      constexpr std::string_view bfw =
-          "\n\n\n\n"
-          ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-          ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-          ">>>                                          \n"
-          ">>> You are running an incompatible version  \n"
-          ">>> of PhotonVision on your coprocessor!     \n"
-          ">>>                                          \n"
-          ">>> This is neither tested nor supported.    \n"
-          ">>> You MUST update PhotonVision,            \n"
-          ">>> PhotonLib, or both.                      \n"
-          ">>>                                          \n"
-          ">>> Your code will now crash.                \n"
-          ">>> We hope your day gets better.            \n"
-          ">>>                                          \n"
-          ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-          ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-          "\n\n";
-      FRC_ReportWarning(bfw);
+      FRC_ReportError(frc::warn::Warning, bfw);
       std::string error_str = fmt::format(
           "Photonlib version {} (message definition version {}) does not match "
           "coprocessor version {} (message definition version {})!",

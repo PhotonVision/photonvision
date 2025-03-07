@@ -40,15 +40,8 @@ public class ShellExec {
         this.readError = readError;
     }
 
-    /**
-     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
-     *
-     * @param command Bash command to execute
-     * @return process exit code
-     */
     public int executeBashCommand(String command) throws IOException {
-        return executeBashCommand(command, true, true);
+        return executeBashCommand(command, true);
     }
 
     /**
@@ -56,25 +49,10 @@ public class ShellExec {
      * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
      *
      * @param command Bash command to execute
-     * @param wait true if the command should wait for the proccess to complete
-     * @return process exit code
+     * @return true if bash got started, but your command may have failed.
      */
     public int executeBashCommand(String command, boolean wait) throws IOException {
-        return executeBashCommand(command, true, true);
-    }
-
-    /**
-     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
-     * This runs the commands with the default logging.
-     *
-     * @param command Bash command to execute
-     * @param wait true if the command should wait for the proccess to complete
-     * @param debug true if the command and return value should be logged
-     * @return process exit code
-     */
-    public int executeBashCommand(String command, boolean wait, boolean debug) throws IOException {
-        if (debug) logger.debug("Executing \"" + command + "\"");
+        logger.debug("Executing \"" + command + "\"");
 
         boolean success = false;
         Runtime r = Runtime.getRuntime();
@@ -90,7 +68,7 @@ public class ShellExec {
         // Consume streams, older jvm's had a memory leak if streams were not read,
         // some other jvm+OS combinations may block unless streams are consumed.
         int retcode = doProcess(wait, process);
-        if (debug) logger.debug("Got exit code " + retcode);
+        logger.debug("Got exit code " + retcode);
         return retcode;
     }
 
@@ -145,9 +123,8 @@ public class ShellExec {
         exitCode = 0;
         if (wait) {
             try {
-                exitCode = process.waitFor();
-                errorGobbler.join();
-                outputGobbler.join();
+                process.waitFor();
+                exitCode = process.exitValue();
             } catch (InterruptedException ignored) {
             }
         }

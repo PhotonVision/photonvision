@@ -24,12 +24,13 @@
 
 #pragma once
 
+#include <regex>
+#include <string>
+
 namespace photon {
 namespace PhotonVersion {
 extern const char* versionString;
 extern const char* buildDate;
 extern const bool isRelease;
-extern const char* wpilibTargetVersion;
-extern const char* opencvTargetVersion;
 }  // namespace PhotonVersion
 }  // namespace photon

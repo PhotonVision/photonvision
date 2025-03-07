@@ -604,14 +604,10 @@ def test_TagAmbiguity() -> None:
 
     robotPose = Pose2d()
     visionSysSim.update(robotPose)
-    tgt = camera.getLatestResult().getBestTarget()
-    assert tgt is not None
-    ambiguity = tgt.getPoseAmbiguity()
+    ambiguity = camera.getLatestResult().getBestTarget().getPoseAmbiguity()
     assert ambiguity > 0.5, "Tag ambiguity expected to be high"
 
     robotPose = Pose2d(Translation2d(-2.0, -2.0), Rotation2d.fromDegrees(30.0))
     visionSysSim.update(robotPose)
-    tgt = camera.getLatestResult().getBestTarget()
-    assert tgt is not None
-    ambiguity = tgt.getPoseAmbiguity()
+    ambiguity = camera.getLatestResult().getBestTarget().getPoseAmbiguity()
     assert 0 < ambiguity < 0.2, "Tag ambiguity expected to be high"

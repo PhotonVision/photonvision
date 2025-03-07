@@ -175,47 +175,40 @@ const interactiveCols = computed(() =>
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)"
     />
+    <v-divider class="mt-3" />
     <div>
-      <div class="white--text pt-3">Color Picker</div>
-      <div class="d-flex pt-3">
+      <div class="pt-3 white--text">Color Picker</div>
+      <v-row justify="center" class="mt-3 mb-3">
         <template v-if="!useStateStore().colorPickingMode">
-          <v-col cols="4" class="pl-0 pr-2">
-            <v-btn
-              small
-              block
-              color="accent"
-              class="black--text"
-              @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
-            >
-              <v-icon left> mdi-minus </v-icon>
-              Shrink Range
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="pl-0 pr-0">
-            <v-btn color="accent" class="black--text" small block @click="enableColorPicking(1)">
-              <v-icon left> mdi-plus-minus </v-icon>
-              {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="pl-2 pr-0">
-            <v-btn
-              small
-              block
-              color="accent"
-              class="black--text"
-              @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
-            >
-              <v-icon left> mdi-plus </v-icon>
-              Expand Range
-            </v-btn>
-          </v-col>
+          <v-btn
+            color="accent"
+            class="ma-2 black--text"
+            small
+            @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
+          >
+            <v-icon left> mdi-minus </v-icon>
+            Shrink Range
+          </v-btn>
+          <v-btn color="accent" class="ma-2 black--text" small @click="enableColorPicking(1)">
+            <v-icon left> mdi-plus-minus </v-icon>
+            {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
+          </v-btn>
+          <v-btn
+            color="accent"
+            class="ma-2 black--text"
+            small
+            @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
+          >
+            <v-icon left> mdi-plus </v-icon>
+            Expand Range
+          </v-btn>
         </template>
         <template v-else>
-          <v-card-text class="pa-0 pt-3 pb-3">
-            <v-btn block color="accent" class="black--text" small @click="disableColorPicking"> Cancel </v-btn>
-          </v-card-text>
+          <v-btn color="accent" class="ma-2 black--text" style="width: 30%" small @click="disableColorPicking">
+            Cancel
+          </v-btn>
         </template>
-      </div>
+      </v-row>
     </div>
   </div>
 </template>

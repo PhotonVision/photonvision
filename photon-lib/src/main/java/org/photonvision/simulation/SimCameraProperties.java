@@ -160,12 +160,11 @@ public class SimCameraProperties {
         if (!success) throw new IOException("Requested resolution not found in calibration");
     }
 
-    public SimCameraProperties setRandomSeed(long seed) {
+    public void setRandomSeed(long seed) {
         rand.setSeed(seed);
-        return this;
     }
 
-    public SimCameraProperties setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
+    public void setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
         if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
             fovDiag = Rotation2d.fromDegrees(MathUtil.clamp(fovDiag.getDegrees(), 1, 179));
             DriverStation.reportError(
@@ -190,11 +189,9 @@ public class SimCameraProperties {
         // create camera intrinsics matrix
         var camIntrinsics = MatBuilder.fill(Nat.N3(), Nat.N3(), fx, 0, cx, 0, fy, cy, 0, 0, 1);
         setCalibration(resWidth, resHeight, camIntrinsics, distCoeff);
-
-        return this;
     }
 
-    public SimCameraProperties setCalibration(
+    public void setCalibration(
             int resWidth, int resHeight, Matrix<N3, N3> camIntrinsics, Matrix<N8, N1> distCoeffs) {
         this.resWidth = resWidth;
         this.resHeight = resHeight;
@@ -225,54 +222,43 @@ public class SimCameraProperties {
             viewplanes.add(
                     new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
         }
-
-        return this;
     }
 
-    public SimCameraProperties setCalibError(double avgErrorPx, double errorStdDevPx) {
+    public void setCalibError(double avgErrorPx, double errorStdDevPx) {
         this.avgErrorPx = avgErrorPx;
         this.errorStdDevPx = errorStdDevPx;
-        return this;
     }
 
     /**
      * @param fps The average frames per second the camera should process at. <b>Exposure time limits
      *     FPS if set!</b>
      */
-    public SimCameraProperties setFPS(double fps) {
+    public void setFPS(double fps) {
         frameSpeedMs = Math.max(1000.0 / fps, exposureTimeMs);
-
-        return this;
     }
 
     /**
      * @param exposureTimeMs The amount of time the "shutter" is open for one frame. Affects motion
      *     blur. <b>Frame speed(from FPS) is limited to this!</b>
      */
-    public SimCameraProperties setExposureTimeMs(double exposureTimeMs) {
+    public void setExposureTimeMs(double exposureTimeMs) {
         this.exposureTimeMs = exposureTimeMs;
         frameSpeedMs = Math.max(frameSpeedMs, exposureTimeMs);
-
-        return this;
     }
 
     /**
      * @param avgLatencyMs The average latency (from image capture to data published) in milliseconds
      *     a frame should have
      */
-    public SimCameraProperties setAvgLatencyMs(double avgLatencyMs) {
+    public void setAvgLatencyMs(double avgLatencyMs) {
         this.avgLatencyMs = avgLatencyMs;
-
-        return this;
     }
 
     /**
      * @param latencyStdDevMs The standard deviation in milliseconds of the latency
      */
-    public SimCameraProperties setLatencyStdDevMs(double latencyStdDevMs) {
+    public void setLatencyStdDevMs(double latencyStdDevMs) {
         this.latencyStdDevMs = latencyStdDevMs;
-
-        return this;
     }
 
     public int getResWidth() {

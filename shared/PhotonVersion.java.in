@@ -38,10 +38,6 @@ public final class PhotonVersion {
     public static final String buildDate = "${date}";
     public static final boolean isRelease = !versionString.startsWith("dev");
 
-    // Versions of dependant libraries
-    public static final String wpilibTargetVersion = "${wpilibVersion}";
-    public static final String opencvTargetVersion = "${opencvVersion}";
-
     public static final boolean versionMatches(String other) {
         String c = versionString;
         Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");

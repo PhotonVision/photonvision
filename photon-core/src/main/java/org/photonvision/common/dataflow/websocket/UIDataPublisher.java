@@ -31,11 +31,11 @@ import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 public class UIDataPublisher implements CVPipelineResultConsumer {
     private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
 
-    private final String uniqueName;
+    private final int index;
     private long lastUIResultUpdateTime = 0;
 
-    public UIDataPublisher(String uniqueName) {
-        this.uniqueName = uniqueName;
+    public UIDataPublisher(int index) {
+        this.index = index;
     }
 
     @Override
@@ -74,8 +74,8 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             dataMap.put("multitagResult", multitagData);
         }
 
-        var uiMap = new HashMap<String, HashMap<String, Object>>();
-        uiMap.put(uniqueName, dataMap);
+        var uiMap = new HashMap<Integer, HashMap<String, Object>>();
+        uiMap.put(index, dataMap);
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));

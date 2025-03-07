@@ -17,6 +17,6 @@ Arducam cameras are supported for setups with multiple devices. This is possible
 3. **Save Settings**: Ensure that you save the settings after selecting the appropriate camera model for each device.
 
 ```{image} images/setArducamModel.png
-:alt: The camera model can be selected from the Arducam model selector in the cameras tab
+:alt: The camera model can be selected from the Arudcam model selector in the cameras tab
 :align: center
 ```

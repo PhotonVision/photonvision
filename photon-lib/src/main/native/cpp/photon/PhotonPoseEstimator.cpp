@@ -350,17 +350,18 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnCoprocStrategy(
     PhotonPipelineResult result) {
-  if (!result.MultiTagResult()) {
-    return Update(result, this->multiTagFallbackStrategy);
+  if (result.MultiTagResult()) {
+    const auto field2camera = result.MultiTagResult()->estimatedPose.best;
+
+    const auto fieldToRobot =
+        frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
+    return photon::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
+                                      result.GetTargets(),
+                                      MULTI_TAG_PNP_ON_COPROCESSOR);
   }
 
-  const auto field2camera = result.MultiTagResult()->estimatedPose.best;
-
-  const auto fieldToRobot =
-      frc::Pose3d() + field2camera + m_robotToCamera.Inverse();
-  return photon::EstimatedRobotPose(fieldToRobot, result.GetTimestamp(),
-                                    result.GetTargets(),
-                                    MULTI_TAG_PNP_ON_COPROCESSOR);
+  return Update(result, std::nullopt, std::nullopt,
+                this->multiTagFallbackStrategy);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
@@ -369,17 +370,19 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
     std::optional<PhotonCamera::DistortionMatrix> distCoeffs) {
   using namespace frc;
 
+  // Need at least 2 targets
+  if (!result.HasTargets() || result.GetTargets().size() < 2) {
+    return Update(result, std::nullopt, std::nullopt,
+                  this->multiTagFallbackStrategy);
+  }
+
   if (!camMat || !distCoeffs) {
     FRC_ReportError(frc::warn::Warning,
                     "No camera calibration data provided to "
                     "PhotonPoseEstimator::MultiTagOnRioStrategy!",
                     "");
-    return Update(result, this->multiTagFallbackStrategy);
-  }
-
-  // Need at least 2 targets
-  if (!result.HasTargets() || result.GetTargets().size() < 2) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return Update(result, std::nullopt, std::nullopt,
+                  this->multiTagFallbackStrategy);
   }
 
   auto const targets = result.GetTargets();
@@ -405,7 +408,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagOnRioStrategy(
 
   // We should only do multi-tag if at least 2 tags (* 4 corners/tag)
   if (imagePoints.size() < 8) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
   // Output mats for results

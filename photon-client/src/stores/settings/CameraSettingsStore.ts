@@ -18,18 +18,17 @@ import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
 interface CameraSettingsStore {
-  cameras: { [key: string]: UiCameraConfiguration };
+  cameras: UiCameraConfiguration[];
 }
 
 export const useCameraSettingsStore = defineStore("cameraSettings", {
   state: (): CameraSettingsStore => ({
-    cameras: { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings }
+    cameras: [PlaceholderCameraSettings]
   }),
   getters: {
     // TODO update types to update this value being undefined. This would be a decently large change.
     currentCameraSettings(): UiCameraConfiguration {
-      const currentCameraUniqueName = useStateStore().currentCameraUniqueName;
-      return this.cameras[currentCameraUniqueName] || PlaceholderCameraSettings;
+      return this.cameras[useStateStore().currentCameraIndex];
     },
     currentPipelineSettings(): ActivePipelineSettings {
       return this.currentCameraSettings.pipelineSettings;
@@ -50,19 +49,19 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       );
     },
     cameraNames(): string[] {
-      return Object.values(this.cameras).map((c) => c.nickname);
+      return this.cameras.map((c) => c.nickname);
     },
     cameraUniqueNames(): string[] {
-      return Object.values(this.cameras).map((c) => c.uniqueName);
+      return this.cameras.map((c) => c.uniqueName);
     },
     currentCameraName(): string {
-      return this.cameras[useStateStore().currentCameraUniqueName].nickname;
+      return this.cameraNames[useStateStore().currentCameraIndex];
     },
     pipelineNames(): string[] {
       return this.currentCameraSettings.pipelineNicknames;
     },
     currentPipelineName(): string {
-      return this.pipelineNames[useStateStore().currentCameraUniqueName];
+      return this.pipelineNames[useStateStore().currentCameraIndex];
     },
     isDriverMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
@@ -94,79 +93,72 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   },
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
-      const configuredCameras = data.reduce<{ [key: string]: UiCameraConfiguration }>((acc, d) => {
-        acc[d.uniqueName] = {
-          cameraPath: d.cameraPath,
-          nickname: d.nickname,
-          uniqueName: d.uniqueName,
-          fov: {
-            value: d.fov,
-            managedByVendor: !d.isFovConfigurable
-          },
-          stream: {
-            inputPort: d.inputStreamPort,
-            outputPort: d.outputStreamPort
-          },
-          validVideoFormats: Object.entries(d.videoFormatList)
-            .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .map<VideoFormat>(([k, v], i) => ({
-              resolution: {
-                width: v.width,
-                height: v.height
-              },
-              fps: v.fps,
-              pixelFormat: v.pixelFormat,
-              index: v.index || i,
-              diagonalFOV: v.diagonalFOV,
-              horizontalFOV: v.horizontalFOV,
-              verticalFOV: v.verticalFOV,
-              standardDeviation: v.standardDeviation,
-              mean: v.mean
-            })),
-          completeCalibrations: d.calibrations,
-          isCSICamera: d.isCSICamera,
-          minExposureRaw: d.minExposureRaw,
-          maxExposureRaw: d.maxExposureRaw,
-          pipelineNicknames: d.pipelineNicknames,
-          currentPipelineIndex: d.currentPipelineIndex,
-          pipelineSettings: d.currentPipelineSettings,
-          cameraQuirks: d.cameraQuirks,
-          minWhiteBalanceTemp: d.minWhiteBalanceTemp,
-          maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
-          matchedCameraInfo: d.matchedCameraInfo,
-          isConnected: d.isConnected,
-          hasConnected: d.hasConnected
-        };
-        return acc;
-      }, {});
-      this.cameras =
-        Object.keys(configuredCameras).length > 0
-          ? configuredCameras
-          : { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings };
+      const configuredCameras = data.map<UiCameraConfiguration>((d) => ({
+        cameraPath: d.cameraPath,
 
-      // Ensure currentCameraUniqueName is valid
-      if (!this.cameras[useStateStore().currentCameraUniqueName]) {
-        useStateStore().currentCameraUniqueName = Object.keys(this.cameras)[0];
-      }
+        nickname: d.nickname,
+        uniqueName: d.uniqueName,
+        fov: {
+          value: d.fov,
+          managedByVendor: !d.isFovConfigurable
+        },
+        stream: {
+          inputPort: d.inputStreamPort,
+          outputPort: d.outputStreamPort
+        },
+        validVideoFormats: Object.entries(d.videoFormatList)
+          .sort(([firstKey], [secondKey]) => parseInt(firstKey) - parseInt(secondKey))
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          .map<VideoFormat>(([k, v], i) => ({
+            resolution: {
+              width: v.width,
+              height: v.height
+            },
+            fps: v.fps,
+            pixelFormat: v.pixelFormat,
+            index: v.index || i,
+            diagonalFOV: v.diagonalFOV,
+            horizontalFOV: v.horizontalFOV,
+            verticalFOV: v.verticalFOV,
+            standardDeviation: v.standardDeviation,
+            mean: v.mean
+          })),
+        completeCalibrations: d.calibrations,
+        isCSICamera: d.isCSICamera,
+        minExposureRaw: d.minExposureRaw,
+        maxExposureRaw: d.maxExposureRaw,
+        pipelineNicknames: d.pipelineNicknames,
+        currentPipelineIndex: d.currentPipelineIndex,
+        pipelineSettings: d.currentPipelineSettings,
+        cameraQuirks: d.cameraQuirks,
+        minWhiteBalanceTemp: d.minWhiteBalanceTemp,
+        maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
+        matchedCameraInfo: d.matchedCameraInfo,
+        isConnected: d.isConnected,
+        hasConnected: d.hasConnected
+      }));
+
+      // Clamp index to between 0 and [length - 1]
+      useStateStore().currentCameraIndex = Math.max(
+        0,
+        Math.min(useStateStore().currentCameraIndex, configuredCameras.length - 1)
+      );
+
+      this.cameras = configuredCameras.length > 0 ? configuredCameras : [PlaceholderCameraSettings];
     },
-
     /**
      * Update the configurable camera settings.
      *
      * @param data camera settings to save.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera.
      */
-    updateCameraSettings(
-      data: CameraSettingsChangeRequest,
-      cameraUniqueName: String = useStateStore().currentCameraUniqueName
-    ) {
+    updateCameraSettings(data: CameraSettingsChangeRequest, cameraIndex: number = useStateStore().currentCameraIndex) {
       // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
       const payload = {
         settings: {
           ...data
         },
-        cameraUniqueName: cameraUniqueName
+        index: cameraIndex
       };
       return axios.post("/settings/camera", payload);
     },
@@ -175,16 +167,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newPipelineName the name of the new pipeline.
      * @param pipelineType the type of the new pipeline. Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera
      */
     createNewPipeline(
       newPipelineName: string,
       pipelineType: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
-      cameraUniqueName: String = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         addNewPipeline: [newPipelineName, pipelineType],
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
@@ -193,30 +185,30 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param settings settings to modify. The type of the settings should match the currently selected pipeline type.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera
      */
     changeCurrentPipelineSetting(
       settings: ActiveConfigurablePipelineSettings,
       updateStore = true,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         changePipelineSetting: {
           ...settings,
-          cameraUniqueName: cameraUniqueName
+          cameraIndex: cameraIndex
         }
       };
       if (updateStore) {
-        this.changePipelineSettingsInStore(settings, cameraUniqueName);
+        this.changePipelineSettingsInStore(settings, cameraIndex);
       }
       useStateStore().websocket?.send(payload, true);
     },
     changePipelineSettingsInStore(
       settings: Partial<ActivePipelineSettings>,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       Object.entries(settings).forEach(([k, v]) => {
-        this.cameras[cameraUniqueName].pipelineSettings[k] = v;
+        this.cameras[cameraIndex].pipelineSettings[k] = v;
       });
     },
     /**
@@ -224,19 +216,19 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newName the new nickname for the camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera
      */
     changeCurrentPipelineNickname(
       newName: string,
       updateStore = true,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         changePipelineName: newName,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       if (updateStore) {
-        this.cameras[cameraUniqueName].pipelineSettings.pipelineNickname = newName;
+        this.cameras[cameraIndex].pipelineSettings.pipelineNickname = newName;
       }
       useStateStore().websocket?.send(payload, true);
     },
@@ -244,15 +236,15 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Modify the Pipeline type of the currently selected pipeline of the provided camera. This overwrites the current pipeline's settings when the backend resets the current pipeline settings.
      *
      * @param type the pipeline type to set.  Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera.
      */
     changeCurrentPipelineType(
       type: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         pipelineType: type,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
@@ -261,44 +253,44 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param index pipeline index to set.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera.
      */
     changeCurrentPipelineIndex(
       index: number,
       updateStore = true,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         currentPipeline: index,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       if (updateStore) {
         if (
-          this.cameras[cameraUniqueName].currentPipelineIndex !== -1 &&
-          this.cameras[cameraUniqueName].currentPipelineIndex !== -2
+          this.cameras[cameraIndex].currentPipelineIndex !== -1 &&
+          this.cameras[cameraIndex].currentPipelineIndex !== -2
         ) {
-          this.cameras[cameraUniqueName].lastPipelineIndex = this.cameras[cameraUniqueName].currentPipelineIndex;
+          this.cameras[cameraIndex].lastPipelineIndex = this.cameras[cameraIndex].currentPipelineIndex;
         }
-        this.cameras[cameraUniqueName].currentPipelineIndex = index;
+        this.cameras[cameraIndex].currentPipelineIndex = index;
       }
       useStateStore().websocket?.send(payload, true);
     },
-    setDriverMode(isDriverMode: boolean, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    setDriverMode(isDriverMode: boolean, cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         driverMode: isDriverMode,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
     /**
      * Change the currently selected pipeline of the provided camera.
      *
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera's pipeline to change.
      */
-    deleteCurrentPipeline(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    deleteCurrentPipeline(cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         deleteCurrentPipeline: {},
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
@@ -306,27 +298,27 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Duplicate the pipeline at the provided index.
      *
      * @param pipelineIndex index of the pipeline to duplicate.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera.
      */
-    duplicatePipeline(pipelineIndex: number, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    duplicatePipeline(pipelineIndex: number, cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         duplicatePipeline: pipelineIndex,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
     /**
      * Change the currently set camera
      *
-     * @param cameraUniqueName the unique name of the camera.
+     * @param cameraIndex the index of the camera to set as the current camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
      */
-    setCurrentCameraUniqueName(cameraUniqueName: string, updateStore = true) {
+    setCurrentCameraIndex(cameraIndex: number, updateStore = true) {
       const payload = {
-        cameraUniqueName: cameraUniqueName
+        currentCamera: cameraIndex
       };
       if (updateStore) {
-        useStateStore().currentCameraUniqueName = cameraUniqueName;
+        useStateStore().currentCameraIndex = cameraIndex;
       }
       useStateStore().websocket?.send(payload, true);
     },
@@ -335,17 +327,17 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newName the new nickname of the camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera.
      * @return HTTP request promise to the backend
      */
     changeCameraNickname(
       newName: string,
       updateStore = true,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         name: newName,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       if (updateStore) {
         this.currentCameraSettings.nickname = newName;
@@ -356,7 +348,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Start the 3D calibration process for the provided camera.
      *
      * @param calibrationInitData initialization calibration data.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraIndex the index of the camera.
      */
     startPnPCalibration(
       calibrationInitData: {
@@ -368,7 +360,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
         useOldPattern: boolean;
         tagFamily: CalibrationTagFamilies;
       },
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const stateCalibData = useStateStore().calibrationData;
       const payload = {
@@ -379,63 +371,63 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           videoModeIndex: stateCalibData.videoFormatIndex,
           ...calibrationInitData
         },
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
     /**
      * End the 3D calibration process for the provided camera.
      *
-     * @param cameraUniqueName the unique name of the camera.
+     * @param cameraIndex the index of the camera
      * @return HTTP request promise to the backend
      */
-    endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName });
+    endPnPCalibration(cameraIndex: number = useStateStore().currentCameraIndex) {
+      return axios.post("/calibration/end", { index: cameraIndex });
     },
 
     importCalibrationFromData(
       data: { calibration: CameraCalibrationResult },
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ) {
       const payload = {
         ...data,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       return axios.post("/calibration/importFromData", payload);
     },
     /**
      * Take a snapshot for the calibration processes
      *
-     * @param cameraUniqueName the unique name of the camera that is currently in the calibration process
+     * @param cameraIndex the index of the camera that is currently in the calibration process
      */
-    takeCalibrationSnapshot(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    takeCalibrationSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         takeCalibrationSnapshot: true,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
     /**
      * Save a snapshot of the input frame of the camera.
      *
-     * @param cameraUniqueName the unique name of the camera
+     * @param cameraIndex the index of the camera
      */
-    saveInputSnapshot(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    saveInputSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         saveInputSnapshot: true,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
     /**
      * Save a snapshot of the output frame of the camera.
      *
-     * @param cameraUniqueName the unique name of the camera
+     * @param cameraIndex the index of the camera
      */
-    saveOutputSnapshot(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    saveOutputSnapshot(cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         saveOutputSnapshot: true,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
@@ -443,42 +435,35 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Set the robot offset mode type.
      *
      * @param type Offset type to take.
-     * @param cameraUniqueName the unique name of the camera
+     * @param cameraIndex the index of the camera.
      */
-    takeRobotOffsetPoint(type: RobotOffsetType, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+    takeRobotOffsetPoint(type: RobotOffsetType, cameraIndex: number = useStateStore().currentCameraIndex) {
       const payload = {
         robotOffsetPoint: type,
-        cameraUniqueName: cameraUniqueName
+        cameraIndex: cameraIndex
       };
       useStateStore().websocket?.send(payload, true);
     },
     getCalibrationCoeffs(
       resolution: Resolution,
-      cameraUniqueName: string = useStateStore().currentCameraUniqueName
+      cameraIndex: number = useStateStore().currentCameraIndex
     ): CameraCalibrationResult | undefined {
-      return this.cameras[cameraUniqueName].completeCalibrations.find((v) =>
-        resolutionsAreEqual(v.resolution, resolution)
-      );
+      return this.cameras[cameraIndex].completeCalibrations.find((v) => resolutionsAreEqual(v.resolution, resolution));
     },
-    getCalImageUrl(
-      host: string,
-      resolution: Resolution,
-      idx: number,
-      cameraUniqueName = useStateStore().currentCameraUniqueName
-    ) {
+    getCalImageUrl(host: string, resolution: Resolution, idx: number, cameraIdx = useStateStore().currentCameraIndex) {
       const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
       url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
       url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
       url.searchParams.set("snapshotIdx", Math.round(idx).toFixed(0));
-      url.searchParams.set("cameraUniqueName", cameraUniqueName.replace(" ", "").trim().toLowerCase());
+      url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
 
       return url.href;
     },
-    getCalJSONUrl(host: string, resolution: Resolution, cameraUniqueName = useStateStore().currentCameraUniqueName) {
+    getCalJSONUrl(host: string, resolution: Resolution, cameraIdx = useStateStore().currentCameraIndex) {
       const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
       url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
       url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
-      url.searchParams.set("cameraUniqueName", cameraUniqueName.replace(" ", "").trim().toLowerCase());
+      url.searchParams.set("cameraIdx", Math.round(cameraIdx).toFixed(0));
 
       return url.href;
     }

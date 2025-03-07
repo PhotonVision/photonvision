@@ -106,7 +106,7 @@ You can get a [translation](https://docs.wpilib.org/en/latest/docs/software/adva
    .. code-block:: C++
 
       // Calculate a translation from the camera to the target.
-      frc::Translation2d translation = photonlib::PhotonUtils::EstimateCameraToTargetTranslation(
+      frc::Translation2d translation = photonlib::PhotonUtils::EstimateCameraToTargetTranslationn(
         distance, frc::Rotation2d(units::degree_t(-target.GetYaw())));
 
    .. code-block:: Python

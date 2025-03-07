@@ -6,10 +6,6 @@ PhotonVision can combine AprilTag detections from multiple simultaneously observ
 MultiTag requires an accurate field layout JSON to be uploaded! Differences between this layout and the tags' physical location will drive error in the estimated pose output.
 :::
 
-:::{warning}
-For the 2025 Reefscape Season, there are two different field layouts. The first is the [welded field layout](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape-welded.json), which photonvision ships with. The second is the [Andymark field layout](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape-andymark.json). It is very important to ensure that you use the correct field layout, both in the [PhotonPoseEstimator](https://docs.photonvision.org/en/latest/docs/programming/photonlib/robot-pose-estimator.html#apriltags-and-photonposeestimator) and on the [coprocessor](https://docs.photonvision.org/en/latest/docs/apriltag-pipelines/multitag.html#updating-the-field-layout).
-:::
-
 ## Enabling MultiTag
 
 Ensure that your camera is calibrated and 3D mode is enabled. Navigate to the Output tab and enable "Do Multi-Target Estimation". This enables MultiTag to use the uploaded field layout JSON to calculate your camera's pose in the field. This 3D transform will be shown as an additional table in the "targets" tab, along with the IDs of AprilTags used to compute this transform.
@@ -55,7 +51,7 @@ The returned field to camera transform is a transform from the fixed field origi
 
 ## Updating the Field Layout
 
-PhotonVision ships by default with the [2025 welded field layout JSON](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape-welded.json). The layout can be inspected by navigating to the settings tab and scrolling down to the "AprilTag Field Layout" card, as shown below.
+PhotonVision ships by default with the [2024 field layout JSON](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2024-crescendo.json). The layout can be inspected by navigating to the settings tab and scrolling down to the "AprilTag Field Layout" card, as shown below.
 
 ```{image} images/field-layout.png
 :alt: The currently saved field layout in the Photon UI

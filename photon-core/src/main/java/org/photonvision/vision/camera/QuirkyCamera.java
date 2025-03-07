@@ -31,9 +31,9 @@ public class QuirkyCamera {
                     // SeeCam, which has an odd exposure range
                     new QuirkyCamera(
                             0x2560, 0xc128, "See3Cam_24CUG", CameraQuirk.Gain, CameraQuirk.See3Cam_24CUG),
-                    // Chris's older generic "Logitech HD Webcam"
+                    // Chris's older generic "Logitec HD Webcam"
                     new QuirkyCamera(0x9331, 0x5A3, CameraQuirk.CompletelyBroken),
-                    // Logitech C270
+                    // Logitec C270
                     new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken),
                     // A laptop internal camera someone found broken
                     new QuirkyCamera(0x0bda, 0x5510, CameraQuirk.CompletelyBroken),

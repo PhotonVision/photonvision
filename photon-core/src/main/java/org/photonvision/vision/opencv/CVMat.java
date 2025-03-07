@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.opencv;
 
-import edu.wpi.first.util.RawFrame;
 import java.util.HashMap;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
@@ -32,14 +31,9 @@ public class CVMat implements Releasable {
     private static boolean shouldPrint;
 
     private final Mat mat;
-    private final RawFrame backingFrame;
 
     public CVMat() {
         this(new Mat());
-    }
-
-    public CVMat(Mat mat) {
-        this(mat, null);
     }
 
     public void copyFrom(CVMat srcMat) {
@@ -62,10 +56,8 @@ public class CVMat implements Releasable {
         return traceStr;
     }
 
-    public CVMat(Mat mat, RawFrame frame) {
+    public CVMat(Mat mat) {
         this.mat = mat;
-        this.backingFrame = frame;
-
         allMatCounter++;
         allMats.put(mat, allMatCounter);
 
@@ -77,8 +69,6 @@ public class CVMat implements Releasable {
 
     @Override
     public void release() {
-        if (this.backingFrame != null) this.backingFrame.close();
-
         // If this mat is empty, all we can do is return
         if (mat.empty()) return;
 

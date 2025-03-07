@@ -17,8 +17,8 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
 const interactiveCols = computed(() =>
   (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
   (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 8
-    : 7
+    ? 9
+    : 8
 );
 </script>
 
@@ -30,6 +30,14 @@ const interactiveCols = computed(() =>
       :items="['AprilTag Family 36h11', 'AprilTag Family 16h5']"
       :select-cols="interactiveCols"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+    />
+    <pv-switch
+      v-model="currentPipelineSettings.useCornerRefinement"
+      class="pt-2"
+      label="Refine Corners"
+      tooltip="Further refine the initial corners with subpixel accuracy."
+      :switch-cols="interactiveCols"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
     />
     <pv-range-slider
       v-model="currentPipelineSettings.threshWinSizes"
@@ -43,6 +51,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="currentPipelineSettings.threshStepSize"
+      class="pt-2"
       :slider-cols="interactiveCols"
       label="Thresh Step Size"
       tooltip="Smaller values will cause more steps between the min/max sizes. More, varied steps can improve detection robustness to lighting, but may decrease performance."
@@ -53,6 +62,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="currentPipelineSettings.threshConstant"
+      class="pt-2"
       :slider-cols="interactiveCols"
       label="Thresh Constant"
       tooltip="Affects the threshold window mean value cutoff for all steps. Higher values can improve performance, but may harm detection rate."
@@ -62,14 +72,8 @@ const interactiveCols = computed(() =>
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)"
     />
     <pv-switch
-      v-model="currentPipelineSettings.useCornerRefinement"
-      label="Refine Corners"
-      tooltip="Further refine the initial corners with subpixel accuracy."
-      :switch-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
-    />
-    <pv-switch
       v-model="currentPipelineSettings.debugThreshold"
+      class="pt-2"
       label="Debug Threshold"
       tooltip="Display the first threshold step to the color stream."
       :switch-cols="interactiveCols"

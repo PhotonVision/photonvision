@@ -28,7 +28,7 @@ import org.photonvision.common.logging.Logger;
  * Our blessed images inject the current version via this build workflow:
  * https://github.com/PhotonVision/photon-image-modifier/blob/2e5ddb6b599df0be921c12c8dbe7b939ecd7f615/.github/workflows/main.yml#L67
  *
- * <p>This class provides a convenient abstraction around this
+ * <p>This class provides a convienent abstraction around this
  */
 public class OsImageVersion {
     private static final Logger logger = new Logger(OsImageVersion.class, LogGroup.General);

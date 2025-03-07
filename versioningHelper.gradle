@@ -34,11 +34,7 @@ gradle.allprojects {
         String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
         File versionFileOut = new File(path.toAbsolutePath().toString())
         versionFileOut.delete()
-        def read = versionFileIn.text.replace('${version}', version)
-                .replace('${date}', date)
-                .replace('${wpilibVersion}', wpilibVersion)
-                // Note that OpenCV is usually {VERSION}-{some suffix}, we just want the first bit
-                .replace('${opencvVersion}', openCVversion.split("-").first())
+        def read = versionFileIn.text.replace('${version}', version).replace('${date}', date)
         if (!versionFileOut.parentFile.exists()) versionFileOut.parentFile.mkdirs()
         if (!versionFileOut.exists()) versionFileOut.createNewFile()
         versionFileOut.write(read)

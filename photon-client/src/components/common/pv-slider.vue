@@ -45,45 +45,47 @@ const localValue = computed({
 </script>
 
 <template>
-  <div class="d-flex">
-    <v-col :cols="12 - sliderCols" class="pl-0 d-flex align-center">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
-    </v-col>
-    <v-col :cols="sliderCols - 1">
-      <v-slider
-        v-model="localValue"
-        dark
-        class="align-center"
-        :max="max"
-        :min="min"
-        hide-details
-        color="accent"
-        :disabled="disabled"
-        :step="step"
-        append-icon="mdi-menu-right"
-        prepend-icon="mdi-menu-left"
-        @click:append="localValue += step"
-        @click:prepend="localValue -= step"
-      />
-    </v-col>
-    <v-col :cols="1" class="pr-0">
-      <v-text-field
-        :value="localValue"
-        dark
-        color="accent"
-        :max="max"
-        :min="min"
-        :disabled="disabled"
-        class="mt-0 pt-0"
-        hide-details
-        single-line
-        type="number"
-        style="width: 100%"
-        :step="step"
-        :hide-spin-buttons="true"
-        @keyup.enter="localValue = $event.target.value"
-        @blur="localValue = $event.target.value"
-      />
-    </v-col>
+  <div>
+    <v-row dense align="center">
+      <v-col :cols="12 - sliderCols - 1">
+        <tooltipped-label :tooltip="tooltip" :label="label" />
+      </v-col>
+      <v-col :cols="sliderCols">
+        <v-slider
+          v-model="localValue"
+          dark
+          class="align-center"
+          :max="max"
+          :min="min"
+          hide-details
+          color="accent"
+          :disabled="disabled"
+          :step="step"
+          append-icon="mdi-menu-right"
+          prepend-icon="mdi-menu-left"
+          @click:append="localValue += step"
+          @click:prepend="localValue -= step"
+        />
+      </v-col>
+      <v-col :cols="1">
+        <v-text-field
+          :value="localValue"
+          dark
+          color="accent"
+          :max="max"
+          :min="min"
+          :disabled="disabled"
+          class="mt-0 pt-0"
+          hide-details
+          single-line
+          type="number"
+          style="width: 45px"
+          :step="step"
+          :hide-spin-buttons="true"
+          @keyup.enter="localValue = $event.target.value"
+          @blur="localValue = $event.target.value"
+        />
+      </v-col>
+    </v-row>
   </div>
 </template>

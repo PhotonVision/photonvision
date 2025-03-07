@@ -139,7 +139,7 @@ public class CalibrationRotationPipeTest {
 
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200), new Point(300, 100)};
 
-        // Distort the original points
+        // Distort the origonal points
         var distortedOriginalPoints =
                 OpenCVHelp.distortPoints(
                         List.of(originalPoints),

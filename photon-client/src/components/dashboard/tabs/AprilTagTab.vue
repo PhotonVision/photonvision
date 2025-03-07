@@ -17,8 +17,8 @@ const currentPipelineSettings = computed<ActivePipelineSettings>(
 const interactiveCols = computed(() =>
   (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
   (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 8
-    : 7
+    ? 9
+    : 8
 );
 </script>
 
@@ -33,6 +33,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="currentPipelineSettings.decimate"
+      class="pt-2"
       :slider-cols="interactiveCols"
       label="Decimate"
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
@@ -42,6 +43,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="currentPipelineSettings.blur"
+      class="pt-2"
       :slider-cols="interactiveCols"
       label="Blur"
       tooltip="Gaussian blur added to the image, high FPS cost for slightly decreased noise"
@@ -52,6 +54,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="currentPipelineSettings.threads"
+      class="pt-2"
       :slider-cols="interactiveCols"
       label="Threads"
       tooltip="Number of threads spawned by the AprilTag detector"
@@ -59,8 +62,16 @@ const interactiveCols = computed(() =>
       :max="8"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)"
     />
+    <pv-switch
+      v-model="currentPipelineSettings.refineEdges"
+      class="pt-2"
+      label="Refine Edges"
+      tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
+      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)"
+    />
     <pv-slider
       v-model="currentPipelineSettings.decisionMargin"
+      class="pt-2 pb-4"
       :slider-cols="interactiveCols"
       label="Decision Margin Cutoff"
       tooltip="Tags with a 'margin' (decoding quality score) less than this wil be rejected. Increase this to reduce the number of false positive detections"
@@ -70,19 +81,13 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="currentPipelineSettings.numIterations"
+      class="pt-2 pb-4"
       :slider-cols="interactiveCols"
       label="Pose Estimation Iterations"
       tooltip="Number of iterations the pose estimation algorithm will run, 50-100 is a good starting point"
       :min="0"
       :max="500"
       @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)"
-    />
-    <pv-switch
-      v-model="currentPipelineSettings.refineEdges"
-      :switch-cols="interactiveCols"
-      label="Refine Edges"
-      tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)"
     />
   </div>
 </template>

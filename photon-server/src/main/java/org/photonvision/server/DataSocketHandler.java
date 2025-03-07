@@ -99,10 +99,10 @@ public class DataSocketHandler {
                     objectMapper.readValue(context.data(), new TypeReference<>() {});
 
             // Special case the current camera index
-            String cameraUniqueName = "";
-            if (deserializedData.get("cameraUniqueName") instanceof String camUniqueNameValue) {
-                cameraUniqueName = camUniqueNameValue;
-                deserializedData.remove("cameraUniqueName");
+            Integer cameraIndex = null;
+            if (deserializedData.get("cameraIndex") instanceof Integer camIndexValue) {
+                cameraIndex = camIndexValue;
+                deserializedData.remove("cameraIndex");
             }
 
             for (Map.Entry<String, Object> entry : deserializedData.entrySet()) {
@@ -135,7 +135,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "isDriverMode",
                                             data,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
 
                             dcService.publishEvents(dmIsDriverEvent);
@@ -146,7 +146,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "cameraNickname",
                                             (String) entryValue,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(ccnEvent);
                         }
@@ -156,7 +156,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "pipelineName",
                                             (String) entryValue,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(cpnEvent);
                         }
@@ -173,7 +173,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "newPipelineInfo",
                                             Pair.of(name, type),
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(newPipelineEvent);
                         }
@@ -184,14 +184,14 @@ public class DataSocketHandler {
                         case SMT_DUPLICATEPIPELINE -> {
                             var pipeIndex = (Integer) entryValue;
 
-                            logger.info("Duplicating pipe@index" + pipeIndex + " for camera " + cameraUniqueName);
+                            logger.info("Duplicating pipe@index" + pipeIndex + " for camera " + cameraIndex);
 
                             var newPipelineEvent =
                                     new IncomingWebSocketEvent<>(
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "duplicatePipeline",
                                             pipeIndex,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(newPipelineEvent);
                         }
@@ -201,7 +201,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "deleteCurrPipeline",
                                             0,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(deleteCurrentPipelineEvent);
                         }
@@ -211,7 +211,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "robotOffsetPoint",
                                             (Integer) entryValue,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             null);
                             dcService.publishEvent(robotOffsetPointEvent);
                         }
@@ -227,7 +227,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "changePipeline",
                                             (Integer) entryValue,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(changePipelineEvent);
                         }
@@ -237,7 +237,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "startCalibration",
                                             (Map) entryValue,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(changePipelineEvent);
                         }
@@ -247,7 +247,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "saveInputSnapshot",
                                             0,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(takeInputSnapshotEvent);
                         }
@@ -257,7 +257,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "saveOutputSnapshot",
                                             0,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(takeOutputSnapshotEvent);
                         }
@@ -267,7 +267,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "takeCalSnapshot",
                                             0,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(takeCalSnapshotEvent);
                         }
@@ -275,9 +275,9 @@ public class DataSocketHandler {
                             HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
 
                             if (data.size() >= 2) {
-                                var cameraIndex2 = (String) data.get("cameraUniqueName");
+                                var cameraIndex2 = (int) data.get("cameraIndex");
                                 for (var dataEntry : data.entrySet()) {
-                                    if (dataEntry.getKey().equals("cameraUniqueName")) {
+                                    if (dataEntry.getKey().equals("cameraIndex")) {
                                         continue;
                                     }
                                     var pipelineSettingChangeEvent =
@@ -299,7 +299,7 @@ public class DataSocketHandler {
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "changePipelineType",
                                             (Integer) entryValue,
-                                            cameraUniqueName,
+                                            cameraIndex,
                                             context);
                             dcService.publishEvent(changePipelineEvent);
                         }

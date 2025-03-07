@@ -23,7 +23,7 @@ import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
 
 public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
-    public final String cameraUniqueName;
+    public final Integer cameraIndex;
     public final WsContext originContext;
 
     public IncomingWebSocketEvent(DataChangeDestination destType, String propertyName, T newValue) {
@@ -34,10 +34,10 @@ public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
             DataChangeDestination destType,
             String propertyName,
             T newValue,
-            String cameraUniqueName,
+            Integer cameraIndex,
             WsContext originContext) {
         super(DataChangeSource.DCS_WEBSOCKET, destType, propertyName, newValue);
-        this.cameraUniqueName = cameraUniqueName;
+        this.cameraIndex = cameraIndex;
         this.originContext = originContext;
     }
 
@@ -50,8 +50,8 @@ public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
     @Override
     public String toString() {
         return "IncomingWebSocketEvent{"
-                + "cameraUniqueName="
-                + cameraUniqueName
+                + "cameraIndex="
+                + cameraIndex
                 + ", sourceType="
                 + sourceType
                 + ", destType="

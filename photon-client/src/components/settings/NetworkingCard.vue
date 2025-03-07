@@ -59,7 +59,8 @@ const settingsHaveChanged = (): boolean => {
     a.shouldPublishProto !== b.shouldPublishProto ||
     a.networkManagerIface !== b.networkManagerIface ||
     a.setStaticCommand !== b.setStaticCommand ||
-    a.setDHCPcommand !== b.setDHCPcommand
+    a.setDHCPcommand !== b.setDHCPcommand ||
+    a.matchCamerasOnlyByPath !== b.matchCamerasOnlyByPath
   );
 };
 
@@ -77,6 +78,7 @@ const saveGeneralSettings = () => {
     setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
     shouldManage: tempSettingsStruct.value.shouldManage,
     shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
+    matchCamerasOnlyByPath: tempSettingsStruct.value.matchCamerasOnlyByPath,
     staticIp: tempSettingsStruct.value.staticIp
   };
 
@@ -136,11 +138,11 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Global Settings</v-card-title>
-    <div class="pa-6 pt-0">
-      <v-divider class="pb-3" />
-      <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
+  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
+    <v-card-title>Global Settings</v-card-title>
+    <v-divider />
+    <v-card-title>Networking</v-card-title>
+    <div class="ml-5">
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -155,9 +157,9 @@ watchEffect(() => {
           ]"
         />
         <v-banner
-          v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
+          v-show="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded
-          color="error"
+          color="red"
           text-color="white"
           style="margin: 10px 0"
           icon="mdi-alert-circle-outline"
@@ -202,8 +204,8 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pt-3 pb-3">Advanced Networking</v-card-title>
+        <v-divider class="pb-3" />
+        <span style="font-weight: 700">Advanced Networking</span>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -211,6 +213,7 @@ watchEffect(() => {
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
+          class="pt-2"
         />
         <pv-select
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -226,14 +229,14 @@ watchEffect(() => {
           :items="useSettingsStore().networkInterfaceNames"
         />
         <v-banner
-          v-if="
+          v-show="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
             useSettingsStore().network.canManage &&
             !useSettingsStore().network.networkingDisabled
           "
           rounded
-          color="error"
+          color="red"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -243,36 +246,65 @@ watchEffect(() => {
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-if="tempSettingsStruct.runNTServer"
+          v-show="tempSettingsStruct.runNTServer"
           rounded
-          color="error"
+          color="red"
           text-color="white"
           icon="mdi-information-outline"
         >
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
-        <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pt-3 pb-3">Miscellaneous</v-card-title>
+
+        <v-divider />
+        <v-card-title>Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
+          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-if="tempSettingsStruct.shouldPublishProto"
+          v-show="tempSettingsStruct.shouldPublishProto"
           rounded
-          color="error"
+          color="red"
+          class="mb-3"
           text-color="white"
           icon="mdi-information-outline"
         >
           This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
           this mode.
         </v-banner>
-        <v-divider class="mt-3 mb-6" />
+        <pv-switch
+          v-model="tempSettingsStruct.matchCamerasOnlyByPath"
+          label="Strictly match ONLY known cameras"
+          tooltip="ONLY match cameras by the USB port they're plugged into + (basename or USB VID/PID), and never only by the device product string. Also disables automatic detection of new cameras."
+          class="mt-3 mb-2"
+          :label-cols="4"
+        />
+        <v-banner
+          v-show="tempSettingsStruct.matchCamerasOnlyByPath"
+          rounded
+          color="red"
+          class="mb-3"
+          text-color="white"
+          icon="mdi-information-outline"
+        >
+          Physical cameras will be strictly matched to camera configurations using physical USB port they are plugged
+          into, in addition to device name and other USB metadata. Additionally, no new cameras are allowed to be added.
+          This setting is useful for guaranteeing that an already known and configured camera can never be matched as an
+          "unknown"/"new" camera, which resets pipelines and calibration data.
+          <p />
+          Cameras will NOT be matched if they change USB ports, and new cameras plugged into this coprocessor will NOT
+          be automatically recognized or configured for vision processing.
+          <p />
+          To add a new camera to this coprocessor, disable this setting, connect the camera, and re-enable.
+        </v-banner>
+        <v-divider class="mb-3" />
       </v-form>
       <v-btn
         color="accent"

@@ -194,47 +194,6 @@ public class VisionSourceManagerTest {
     }
 
     @Test
-    public void testOtherPathsOrderChange() throws InterruptedException {
-        // GIVEN a VSM
-        var vsm = new TestVsm();
-        // AND one camera and camera config with flipped otherpaths order
-        var cam =
-                PVCameraInfo.fromUsbCameraInfo(
-                        new UsbCameraInfo(
-                                0,
-                                "/dev/video0",
-                                "Lifecam HD-3000",
-                                new String[] {"/dev/v4l/by-path/usbv2/foobar1", "/dev/v4l/by-path/usb/foobar1"},
-                                5940,
-                                5940));
-
-        var camOtherPaths =
-                PVCameraInfo.fromUsbCameraInfo(
-                        new UsbCameraInfo(
-                                1,
-                                "/dev/video1",
-                                "Lifecam HD-3000",
-                                new String[] {"/dev/v4l/by-path/usb/foobar1", "/dev/v4l/by-path/usbv2/foobar1"},
-                                5940,
-                                5940));
-        CameraConfiguration camOtherPathsConf = new CameraConfiguration(camOtherPaths);
-        camOtherPathsConf.nickname = "TestCamera";
-        camOtherPathsConf.deactivated = false;
-
-        vsm.registerLoadedConfigs(List.of(camOtherPathsConf));
-
-        vsm.assignUnmatchedCamera(cam);
-
-        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
-        assertEquals(1, vsm.vmm.getModules().size());
-        assertEquals(cam.uniquePath(), camOtherPaths.uniquePath());
-
-        Thread.sleep(2000);
-
-        vsm.teardown();
-    }
-
-    @Test
     public void testDuplicate() throws InterruptedException, IOException {
         var fileCamera1 =
                 PVCameraInfo.fromFileInfo(

@@ -4,9 +4,7 @@ import subprocess
 from setuptools import find_packages, setup
 
 gitDescribeResult = (
-    subprocess.check_output(
-        ["git", "describe", "--tags", "--match=v*", "--exclude=*rc*", "--always"]
-    )
+    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
     .decode("utf-8")
     .strip()
 )
@@ -20,7 +18,7 @@ m = re.search(
 # which should be PEP440 compliant
 if m:
     versionString = m.group(0)
-    # Hack -- for strings like v2024.1.1, do NOT add maturity/suffix
+    # Hack -- for strings like v2024.1.1, do NOT add matruity/suffix
     if len(m.group(2)) > 0:
         print("using beta group matcher")
         prefix = m.group(1)
@@ -61,11 +59,11 @@ setup(
     version=versionString,
     install_requires=[
         "numpy~=2.1",
-        "wpilib<2026,>=2025.3.1",
-        "robotpy-wpimath<2026,>=2025.3.1",
-        "robotpy-apriltag<2026,>=2025.3.1",
-        "robotpy-cscore<2026,>=2025.3.1",
-        "pyntcore<2026,>=2025.3.1",
+        "wpilib<2026,>=2025.0.0b1",
+        "robotpy-wpimath<2026,>=2025.0.0b1",
+        "robotpy-apriltag<2026,>=2025.0.0b1",
+        "robotpy-cscore<2026,>=2025.0.0b1",
+        "pyntcore<2026,>=2025.0.0b1",
         "opencv-python;platform_machine!='roborio'",
     ],
     description=descriptionStr,
@@ -73,7 +71,4 @@ setup(
     author="Photonvision Development Team",
     long_description="A Pure-python implementation of PhotonLib",
     long_description_content_type="text/markdown",
-    classifiers=[
-        "License :: OSI Approved :: MIT License",
-    ],
 )

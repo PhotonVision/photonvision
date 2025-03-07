@@ -27,7 +27,6 @@ from wpilib import RobotController, Timer
 
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
-from .timesync.timeSyncServer import inst
 from .version import PHOTONLIB_VERSION  # type: ignore[import-untyped]
 
 
@@ -104,9 +103,6 @@ class PhotonCamera:
 
         self._prevHeartbeat = 0
         self._prevHeartbeatChangeTime = Timer.getFPGATimestamp()
-
-        # Start the time sync server
-        inst.start()
 
     def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
         """

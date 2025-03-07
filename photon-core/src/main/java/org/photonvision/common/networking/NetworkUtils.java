@@ -18,7 +18,6 @@
 package org.photonvision.common.networking;
 
 import java.io.IOException;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -157,50 +156,15 @@ public class NetworkUtils {
         return null;
     }
 
-    public static String getActiveConnection(String devName) {
-        var shell = new ShellExec(true, true);
-        try {
-            shell.executeBashCommand(
-                    "nmcli -g GENERAL.CONNECTION dev show \"" + devName + "\"", true, false);
-            return shell.getOutput().strip();
-        } catch (Exception e) {
-            logger.error("Exception from nmcli!");
-        }
-        return "";
-    }
-
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
-            shell.executeBashCommand(
-                    "nmcli -g GENERAL.STATE connection show \"" + connName + "\"", true, false);
+            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+            shell.executeBashCommand("nmcli -f GENERAL.STATE connection show \"" + connName + "\"");
             return (shell.getExitCode() == 10);
         } catch (Exception e) {
             logger.error("Exception from nmcli!");
         }
         return false;
-    }
-
-    public static String getIPAddresses(String iFaceName) {
-        if (iFaceName == null || iFaceName.isBlank()) {
-            return "";
-        }
-        List<String> addresses = new ArrayList<String>();
-        try {
-            var iFace = NetworkInterface.getByName(iFaceName);
-            if (iFace != null && iFace.isUp()) {
-                for (var addr : iFace.getInterfaceAddresses()) {
-                    var addrStr = addr.getAddress().toString();
-                    if (addrStr.startsWith("/")) {
-                        addrStr = addrStr.substring(1);
-                    }
-                    addrStr = addrStr + "/" + addr.getNetworkPrefixLength();
-                    addresses.add(addrStr);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return String.join(", ", addresses);
     }
 }
