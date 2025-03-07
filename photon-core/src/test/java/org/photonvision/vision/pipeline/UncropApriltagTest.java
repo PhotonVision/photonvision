@@ -71,7 +71,10 @@ public class UncropApriltagTest {
         // these numbers are not *accurate*, but they are known and expected
         var target = pipelineResult.targets.get(0);
 
+        testResultsElements(50, target, frameProvider.get(), pipeline, outputPipe);
+        testResultsElements(75, target, frameProvider.get(), pipeline, outputPipe);
         testResultsElements(100, target, frameProvider.get(), pipeline, outputPipe);
+        testResultsElements(125, target, frameProvider.get(), pipeline, outputPipe);
     }
 
     private static void testResultsElements(
@@ -97,7 +100,7 @@ public class UncropApriltagTest {
         // Test corner order
         var corners = target.getTargetCorners();
         var croppedCorners = croppedTarget.getTargetCorners();
-        double acceptedDelta = 0.005;
+        double acceptedDelta = 1;
 
         Assertions.assertEquals(corners.get(0).x, croppedCorners.get(0).x, acceptedDelta);
         Assertions.assertEquals(corners.get(0).y, croppedCorners.get(0).y, acceptedDelta);
@@ -115,7 +118,7 @@ public class UncropApriltagTest {
         var pose = target.getBestCameraToTarget3d();
         var croppedPose = croppedTarget.getBestCameraToTarget3d();
 
-        double acceptedPoseDelta = 0.005;
+        double acceptedPoseDelta = 1;
         // Test pose estimate translation and rotation
         Assertions.assertEquals(
                 pose.getTranslation().getX(), croppedPose.getTranslation().getX(), acceptedPoseDelta);

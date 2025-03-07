@@ -31,12 +31,17 @@ public class UncropApriltagsPipe
 
     @Override
     protected List<AprilTagDetection> process(List<AprilTagDetection> in) {
+        // System.out.println(in.get(0).getHomography()[0]);
+        if(params.x == 0 && params.y == 0){
+            return in;
+        }
         List<AprilTagDetection> results = new ArrayList<>();
-
+        
         for (AprilTagDetection detection : in) {
+            
             double[] offsetCorners = offsetCorners(detection);
             offsetHomography(reformatCorners(offsetCorners));
-
+            
             results.add(
                     new AprilTagDetection(
                             detection.getFamily(),
@@ -47,7 +52,28 @@ public class UncropApriltagsPipe
                             detection.getCenterX() + this.params.x,
                             detection.getCenterY() + this.params.y,
                             offsetCorners));
+        
+
         }
+        System.out.println(results.get(0).getHomography()[0]);
+        // System.out.println(
+        //     "0X - " + results.get(0).getCornerX(0) +
+        //     "\n0Y - " + results.get(0).getCornerY(0)
+        // );
+
+        // System.out.println(
+        //     "1X - " + results.get(0).getCornerX(1) +
+        //     "\n1Y - " + results.get(0).getCornerY(1)
+        // );
+        // System.out.println(
+        //     "2X - " + results.get(0).getCornerX(2) +
+        //     "\n2Y - " + results.get(0).getCornerY(2)
+        // );
+        // System.out.println(
+        //     "3X - " + results.get(0).getCornerX(3) +
+        //     "\n3Y - " + results.get(0).getCornerY(3)
+        //     + "\n\n"
+        // );
         return results;
     }
 
@@ -146,14 +172,14 @@ public class UncropApriltagsPipe
 
     private double[] offsetCorners(AprilTagDetection detection) {
         return new double[] {
-            detection.getCornerX(0) + this.params.x,
-            detection.getCornerY(0) + this.params.y,
-            detection.getCornerX(1) + this.params.x,
-            detection.getCornerY(1) + this.params.y,
-            detection.getCornerX(2) + this.params.x,
-            detection.getCornerY(2) + this.params.y,
-            detection.getCornerX(3) + this.params.x,
-            detection.getCornerY(3) + this.params.y
+            detection.getCorners()[0] + this.params.x,
+            detection.getCorners()[1] + this.params.y,
+            detection.getCorners()[2] + this.params.x,
+            detection.getCorners()[3] + this.params.y,
+            detection.getCorners()[4] + this.params.x,
+            detection.getCorners()[5] + this.params.y,
+            detection.getCorners()[6] + this.params.x,
+            detection.getCorners()[7] + this.params.y
         };
     }
 
