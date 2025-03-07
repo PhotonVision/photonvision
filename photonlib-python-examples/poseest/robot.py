@@ -43,7 +43,7 @@ class MyRobot(wpilib.TimedRobot):
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
         self.camPoseEst = PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagField.k2024Crescendo),
+            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
             PoseStrategy.LOWEST_AMBIGUITY,
             self.cam,
             kRobotToCam,

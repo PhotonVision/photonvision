@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import loadingImage from "@/assets/images/loading.svg";
+import loadingImage from "@/assets/images/loading-transparent.svg";
 import type { StyleValue } from "vue/types/jsx";
 import PvIcon from "@/components/common/pv-icon.vue";
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
@@ -130,18 +130,25 @@ onBeforeUnmount(() => {
   display: flex;
   position: relative;
   width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 .stream-loading {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 25%;
+  height: 25%;
+  object-fit: contain;
 }
 
 .stream-video {
   position: absolute;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .stream-overlay {

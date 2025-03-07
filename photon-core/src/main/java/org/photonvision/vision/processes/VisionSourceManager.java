@@ -213,6 +213,7 @@ public class VisionSourceManager {
                                         .equals(cameraInfo.uniquePath()))) {
             logger.error(
                     "Camera unique-path already in use by active VisionModule! Cannot add " + cameraInfo);
+            return false;
         }
 
         var source = loadVisionSourceFromCamConfig(new CameraConfiguration(cameraInfo));
@@ -365,7 +366,7 @@ public class VisionSourceManager {
      * CameraConfiguration}'s matchedCameraInfo. We depend on the underlying {@link VisionSource} to
      * be robust to disconnected sources at boot
      *
-     * <p>Verify that nickname is unique within the set of desesrialized camera configurations, adding
+     * <p>Verify that nickname is unique within the set of deserialized camera configurations, adding
      * random characters if this isn't the case
      */
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
