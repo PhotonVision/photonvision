@@ -92,8 +92,8 @@ const supportedModels = computed(() => {
                 <code>name</code> should only include alphanumeric characters, periods, and underscores. Additionally,
                 the labels file ought to have the same name as the RKNN file, with <code>-labels</code> appended to the
                 end. For example, if the RKNN file is named <code>note-640-640-yolov5s.rknn</code>, the labels file
-                should be named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5, YOLOv8, and YOLOv11
-                models trained and converted to `.rknn` format for RK3588 CPUs are currently supported!
+                should be named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5, YOLOv8, 
+                and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are currently supported!
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input v-model="importRKNNFile" label="RKNN File" accept=".rknn" />
                 </v-row>
