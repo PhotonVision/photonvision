@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+#include <fmt/ranges.h>
 #include <gtest/gtest.h>
 #include <hal/HAL.h>
 #include <net/TimeSyncClient.h>
@@ -114,6 +115,7 @@ TEST(PhotonCameraTest, Alerts) {
 
     // THEN the camera isn't disconnected
     auto alerts = SmartDashboard::GetStringArray("PhotonAlerts/warnings", {});
+    fmt::println("{}:{}: saw alerts: {}", __FILE__, __LINE__, alerts);
     EXPECT_TRUE(
         std::none_of(alerts.begin(), alerts.end(),
                      [&disconnectedCameraString](const std::string& alert) {
