@@ -26,8 +26,14 @@
 #include <hal/HAL.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
+#include <photon/PhotonCamera.h>
+#include <photon/simulation/PhotonCameraSim.h>
 
-#include "photon/PhotonCamera.h"
+#include <string>
+#include <vector>
+
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <networktables/NetworkTableInstance.h>
 
 TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;
@@ -51,4 +57,77 @@ TEST(TimeSyncProtocolTest, Smoketest) {
   }
 
   client.Stop();
+}
+
+TEST(PhotonCameraTest, Alerts) {
+  using frc::SmartDashboard;
+
+  // GIVEN a local-only NT instance
+  auto inst = nt::NetworkTableInstance::GetDefault();
+  inst.StopClient();
+  inst.StopServer();
+  inst.StartLocal();
+  // (We can't create our own instance, SmartDashboard will always use the
+  // default)
+
+  const std::string cameraName = "foobar";
+
+  // AND a PhotonCamera that is disconnected
+  photon::PhotonCamera camera(inst, cameraName);
+  EXPECT_FALSE(camera.IsConnected());
+  std::string disconnectedCameraString =
+      "PhotonCamera '" + cameraName + "' is disconnected.";
+
+  // Loop to hit cases past first iteration
+  for (int i = 0; i < 10; i++) {
+    // WHEN we update the camera
+    camera.GetAllUnreadResults();
+    // AND we tick SmartDashboard
+    SmartDashboard::UpdateValues();
+
+    // The alert state will be set (hard-coded here)
+    auto alerts = SmartDashboard::GetStringArray("PhotonAlerts/warnings", {});
+    EXPECT_TRUE(
+        std::any_of(alerts.begin(), alerts.end(),
+                    [&disconnectedCameraString](const std::string& alert) {
+                      return alert == disconnectedCameraString;
+                    }));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+
+  // GIVEN a simulated camera
+  photon::PhotonCameraSim sim(&camera);
+  // AND a result with a timeSinceLastPong in the past
+  photon::PhotonPipelineMetadata metadata{1, 2, 3, 10 * 1000000};
+  photon::PhotonPipelineResult noPongResult{
+      metadata, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt};
+
+  // Loop to hit cases past first iteration
+  for (int i = 0; i < 10; i++) {
+    // AND a PhotonCamera with a "new" result
+    sim.SubmitProcessedFrame(noPongResult);
+    // WHEN we update the camera
+    camera.GetAllUnreadResults();
+    // AND we tick SmartDashboard
+    SmartDashboard::UpdateValues();
+
+    // THEN the camera isn't disconnected
+    auto alerts = SmartDashboard::GetStringArray("PhotonAlerts/warnings", {});
+    EXPECT_TRUE(
+        std::none_of(alerts.begin(), alerts.end(),
+                     [&disconnectedCameraString](const std::string& alert) {
+                       return alert == disconnectedCameraString;
+                     }));
+
+    // AND the alert string looks like a timesync warning
+    EXPECT_EQ(
+        1, std::count_if(
+               alerts.begin(), alerts.end(), [](const std::string& alert) {
+                 return alert.find("is not connected to the TimeSyncServer") !=
+                        std::string::npos;
+               }));
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
 }

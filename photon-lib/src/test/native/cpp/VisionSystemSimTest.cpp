@@ -509,6 +509,9 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
 
   auto camResults = camera.GetLatestResult();
   auto targetSpan = camResults.GetTargets();
+
+  fmt::println("Camera saw seq {}", camResults.metadata.sequenceID);
+
   std::vector<photon::PhotonTrackedTarget> targets;
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
