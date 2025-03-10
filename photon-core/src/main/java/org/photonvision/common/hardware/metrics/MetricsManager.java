@@ -129,9 +129,8 @@ public class MetricsManager {
         return addr;
     }
 
-    public void publishMetrics() {
-        logger.debug("Publishing Metrics...");
-        final var metrics = new HashMap<String, String>();
+    public HashMap<String, String> getMetrics() {
+        HashMap<String, String> metrics = new HashMap<String, String>();
 
         metrics.put("cpuTemp", this.getTemp());
         metrics.put("cpuUtil", this.getUtilization());
@@ -144,6 +143,13 @@ public class MetricsManager {
         metrics.put("diskUtilPct", this.getUsedDiskPct());
         metrics.put("npuUsage", this.getNpuUsage());
         metrics.put("ipAddress", this.getIpAddress());
+
+        return metrics;
+    }
+
+    public void publishMetrics() {
+        logger.debug("Publishing Metrics...");
+        HashMap<String, String> metrics = getMetrics();
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
