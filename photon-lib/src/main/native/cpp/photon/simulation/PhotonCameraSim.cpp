@@ -390,6 +390,8 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
   ts.heartbeatPublisher.Set(heartbeatCounter, ReceiveTimestamp);
 
   ts.subTable->GetInstance().Flush();
+
+  fmt::println("published seq {} at {}", result.metadata.sequenceID, ReceiveTimestamp);
 }
 
 }  // namespace photon
