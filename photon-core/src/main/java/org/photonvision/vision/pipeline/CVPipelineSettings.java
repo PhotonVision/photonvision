@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
+import org.opencv.core.Rect;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
@@ -61,6 +62,12 @@ public class CVPipelineSettings implements Cloneable {
     public boolean cameraAutoWhiteBalance = false;
     public double cameraWhiteBalanceTemp = 4000;
 
+    // Static cropping settings
+    public int static_x = 0;
+    public int static_y = 0;
+    public int static_width = Integer.MAX_VALUE;
+    public int static_height = Integer.MAX_VALUE;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,7 +89,11 @@ public class CVPipelineSettings implements Cloneable {
                 && pipelineNickname.equals(that.pipelineNickname)
                 && streamingFrameDivisor == that.streamingFrameDivisor
                 && inputShouldShow == that.inputShouldShow
-                && outputShouldShow == that.outputShouldShow;
+                && outputShouldShow == that.outputShouldShow
+                && static_x == that.static_x
+                && static_y == that.static_y
+                && static_width == that.static_width
+                && static_height == that.static_height;
     }
 
     @Override
@@ -115,6 +126,10 @@ public class CVPipelineSettings implements Cloneable {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public Rect getStaticCrop() {
+        return new Rect(static_x, static_y, static_width, static_height);
     }
 
     @Override

@@ -8,6 +8,7 @@ import ThresholdTab from "@/components/dashboard/tabs/ThresholdTab.vue";
 import ContoursTab from "@/components/dashboard/tabs/ContoursTab.vue";
 import AprilTagTab from "@/components/dashboard/tabs/AprilTagTab.vue";
 import ArucoTab from "@/components/dashboard/tabs/ArucoTab.vue";
+import CropTab from "./tabs/CropTab.vue";
 import ObjectDetectionTab from "@/components/dashboard/tabs/ObjectDetectionTab.vue";
 import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
@@ -24,6 +25,10 @@ const allTabs = Object.freeze({
   inputTab: {
     tabName: "Input",
     component: InputTab
+  },
+  cropTab: {
+    tabName: "Crop",
+    component: CropTab
   },
   thresholdTab: {
     tabName: "Threshold",
@@ -76,6 +81,7 @@ const getTabGroups = (): ConfigOption[][] => {
     return [
       [
         allTabs.inputTab,
+        allTabs.cropTab,
         allTabs.thresholdTab,
         allTabs.contoursTab,
         allTabs.apriltagTab,
@@ -87,7 +93,7 @@ const getTabGroups = (): ConfigOption[][] => {
     ];
   } else if (lgAndDown) {
     return [
-      [allTabs.inputTab],
+      [allTabs.inputTab, allTabs.cropTab],
       [
         allTabs.thresholdTab,
         allTabs.contoursTab,
@@ -100,7 +106,7 @@ const getTabGroups = (): ConfigOption[][] => {
     ];
   } else if (xl) {
     return [
-      [allTabs.inputTab],
+      [allTabs.inputTab, allTabs.cropTab],
       [allTabs.thresholdTab],
       [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
@@ -118,6 +124,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
   const isObjectDetection =
     useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
+  const isReflective = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Reflective;
 
   return getTabGroups()
     .map((tabGroup) =>
@@ -128,8 +135,9 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
-          !(!isAruco && tabConfig.tabName === "Aruco") &&
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out aruco unless we actually are doing Aruco
+          !(!isAruco && tabConfig.tabName === "Aruco") && //Filter out aruco unless we actually are doing Aruco
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection") &&
+          !(isReflective && tabConfig.tabName === "Crop")
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
