@@ -55,7 +55,7 @@ public final class OpenCVHelp {
     private static final Rotation3d EDN_TO_NWU;
 
     /**
-     * @deprecated Replaced by {@link OpenCVLoader#forceStaticLoad()}
+     * @deprecated Replaced by {@link OpenCvLoader#forceStaticLoad()}
      */
     @Deprecated(since = "2025", forRemoval = true)
     public static void forceLoadOpenCV() {
