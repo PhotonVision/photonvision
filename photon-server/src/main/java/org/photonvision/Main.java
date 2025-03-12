@@ -18,7 +18,6 @@
 package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -176,9 +175,6 @@ public class Main {
         if (OsImageVersion.IMAGE_VERSION.isPresent()) {
             logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
         }
-
-        // Check that the MSVC runtime is valid before loading any other native libraries
-        WPIUtilJNI.checkMsvcRuntime();
 
         try {
             if (!handleArgs(args)) {

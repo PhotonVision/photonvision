@@ -45,9 +45,11 @@ public class WpilibLoader {
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
         try {
-            CombinedRuntimeLoader.loadLibraries(
+                // Need to load wpiutil first before checking if the MSVC runtime is valid
+		CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, "wpiutiljni");
+		WPIUtilJNI.checkMsvcRuntime();
+		CombinedRuntimeLoader.loadLibraries(
                     WpilibLoader.class,
-                    "wpiutiljni",
                     "wpimathjni",
                     "ntcorejni",
                     "wpinetjni",
@@ -56,7 +58,7 @@ public class WpilibLoader {
                     "apriltagjni");
 
             CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, Core.NATIVE_LIBRARY_NAME);
-
+            System.out.println("lmao did we get here??");
             has_loaded = true;
         } catch (IOException e) {
             e.printStackTrace();
