@@ -58,7 +58,6 @@ public class WpilibLoader {
                     "apriltagjni");
 
             CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, Core.NATIVE_LIBRARY_NAME);
-            System.out.println("lmao did we get here??");
             has_loaded = true;
         } catch (IOException e) {
             e.printStackTrace();
