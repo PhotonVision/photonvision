@@ -25,6 +25,7 @@
 package org.photonvision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
@@ -159,6 +160,11 @@ public class PhotonPoseEstimator {
         this.primaryStrategy = strategy;
         this.robotToCamera = robotToCamera;
 
+        if (strategy == PoseStrategy.MULTI_TAG_PNP_ON_RIO
+                || strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
+            OpenCvLoader.forceStaticLoad();
+        }
+
         HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
         InstanceCount++;
     }
@@ -231,6 +237,11 @@ public class PhotonPoseEstimator {
      */
     public void setPrimaryStrategy(PoseStrategy strategy) {
         checkUpdate(this.primaryStrategy, strategy);
+
+        if (strategy == PoseStrategy.MULTI_TAG_PNP_ON_RIO
+                || strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
+            OpenCvLoader.forceStaticLoad();
+        }
         this.primaryStrategy = strategy;
     }
 

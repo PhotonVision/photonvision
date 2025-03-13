@@ -33,6 +33,7 @@ import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -57,7 +58,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.jni.PhotonTargetingJniLoader;
@@ -84,7 +84,7 @@ class VisionSystemSimTest {
             fail(e);
         }
 
-        OpenCVHelp.forceLoadOpenCV();
+        OpenCvLoader.forceStaticLoad();
 
         // See #1574 - test flakey, disabled until we address this
         assumeTrue(false);

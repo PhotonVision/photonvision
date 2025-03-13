@@ -19,6 +19,7 @@ package org.photonvision.estimation;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -105,6 +106,8 @@ public class VisionEstimation {
         if (knownTags.isEmpty() || corners.isEmpty() || corners.size() % 4 != 0) {
             return Optional.empty();
         }
+        OpenCvLoader.forceStaticLoad();
+
         Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // single-tag pnp
@@ -200,6 +203,8 @@ public class VisionEstimation {
         if (knownTags.isEmpty() || corners.isEmpty() || corners.size() % 4 != 0) {
             return Optional.empty();
         }
+        OpenCvLoader.forceStaticLoad();
+
         Point[] points = OpenCVHelp.cornersToPoints(corners);
 
         // Undistort
