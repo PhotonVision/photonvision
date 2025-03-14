@@ -387,6 +387,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
                                      distortion.data() + distortion.size()};
   ts.cameraDistortionPublisher.Set(distortionView, ReceiveTimestamp);
 
+  fmt::println("Setting heartbeat to {}", heartbeatCounter);
   ts.heartbeatPublisher.Set(heartbeatCounter, ReceiveTimestamp);
 
   ts.subTable->GetInstance().Flush();

@@ -341,6 +341,10 @@ bool PhotonCamera::IsConnected() {
   auto currentHeartbeat = heartbeatSubscriber.Get();
   auto now = frc::Timer::GetFPGATimestamp();
 
+  fmt::println("CAMERA: Current {} now {} prevChangeTime {} prevChanveValue {}",
+               currentHeartbeat, now, prevHeartbeatChangeTime,
+               prevHeartbeatValue);
+
   if (currentHeartbeat < 0) {
     // we have never heard from the camera
     return false;

@@ -100,11 +100,13 @@ TEST(PhotonCameraTest, Alerts) {
   // GIVEN a simulated camera
   photon::PhotonCameraSim sim(&camera);
   // AND a result with a timeSinceLastPong in the past
-  photon::PhotonPipelineMetadata metadata{1, 2, 3, 10 * 1000000};
+  photon::PhotonPipelineMetadata metadata{3, 1, 2, 10 * 1000000};
   photon::PhotonPipelineResult noPongResult{
       metadata, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt};
 
   // Loop to hit cases past first iteration
+  fmt::println("Checking stage 2");
+
   for (int i = 0; i < 10; i++) {
     // AND a PhotonCamera with a "new" result
     sim.SubmitProcessedFrame(noPongResult);
