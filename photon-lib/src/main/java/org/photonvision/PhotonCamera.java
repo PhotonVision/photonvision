@@ -71,7 +71,7 @@ public class PhotonCamera implements AutoCloseable {
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
     IntegerSubscriber pipelineIndexState, ledModeState;
-    IntegerSubscriber heartbeatEntry;
+    IntegerSubscriber heartbeatSubscriber;
     DoubleArraySubscriber cameraIntrinsicsSubscriber;
     DoubleArraySubscriber cameraDistortionSubscriber;
     MultiSubscriber topicNameSubscriber;
@@ -149,7 +149,7 @@ public class PhotonCamera implements AutoCloseable {
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
         pipelineIndexState = cameraTable.getIntegerTopic("pipelineIndexState").subscribe(0);
-        heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
+        heartbeatSubscriber = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
         cameraIntrinsicsSubscriber =
                 cameraTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
         cameraDistortionSubscriber =
@@ -428,7 +428,7 @@ public class PhotonCamera implements AutoCloseable {
      * @return True if the camera is actively sending frame data, false otherwise.
      */
     public boolean isConnected() {
-        var curHeartbeat = heartbeatEntry.get();
+        var curHeartbeat = heartbeatSubscriber.get();
         var now = Timer.getFPGATimestamp();
 
         if (curHeartbeat < 0) {
@@ -484,7 +484,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
-        if (!heartbeatEntry.exists()) {
+        if (!heartbeatSubscriber.exists()) {
             var cameraNames = getTablesThatLookLikePhotonCameras();
             if (cameraNames.isEmpty()) {
                 DriverStation.reportError(
