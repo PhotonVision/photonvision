@@ -38,6 +38,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.Arrays;
@@ -364,5 +365,27 @@ class PhotonCameraTest {
 
             Thread.sleep(20);
         }
+
+        final double HEARTBEAT_TIMEOUT = 0.5;
+
+        // GIVEN a PhotonCamera provided new results 
+        SimHooks.pauseTiming();
+        sim.submitProcessedFrame(noPongResult);
+        camera.getAllUnreadResults();
+        // AND in a connected state
+        assertTrue(camera.isConnected());
+
+        // WHEN we wait the timeout
+        SimHooks.stepTiming(HEARTBEAT_TIMEOUT * 1.5);
+
+        // THEN the camera will not be connected
+        assertFalse(camera.isConnected());
+
+        // WHEN we then provide new results 
+        SimHooks.stepTiming(0.02);
+        sim.submitProcessedFrame(noPongResult);
+        camera.getAllUnreadResults();
+        // THEN the camera will not be connected
+        assertTrue(camera.isConnected());
     }
 }
