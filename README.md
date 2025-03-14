@@ -42,6 +42,7 @@ Note that these are case sensitive!
     * linuxathena
 - `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
 - `-Pprofile`: enables JVM profiling
+- `-PwithSanitizers`: On Linux, enables `-fsanitize=address,undefined,leak`
 
 If you're cross-compiling, you'll need the wpilib toolchain installed. This can be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
 
