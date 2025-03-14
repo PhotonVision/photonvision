@@ -105,8 +105,6 @@ TEST(PhotonCameraTest, Alerts) {
       metadata, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt};
 
   // Loop to hit cases past first iteration
-  fmt::println("Checking stage 2");
-
   for (int i = 0; i < 10; i++) {
     // AND a PhotonCamera with a "new" result
     sim.Process(0_s, frc::Pose3d{}, {}); // Update the heartbeat, too
