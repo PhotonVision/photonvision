@@ -88,6 +88,8 @@ class PhotonCameraTest {
         inst.close();
         inst = null;
 
+        SimHooks.resumeTiming();
+
         HAL.shutdown();
     }
 
