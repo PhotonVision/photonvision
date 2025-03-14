@@ -335,7 +335,6 @@ PhotonPipelineResult PhotonCameraSim::Process(
     }
   }
 
-  heartbeatCounter++;
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
                              units::microsecond_t{latency}.to<int64_t>(),
@@ -389,6 +388,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
 
   fmt::println("Setting heartbeat to {}", heartbeatCounter);
   ts.heartbeatPublisher.Set(heartbeatCounter, ReceiveTimestamp);
+  heartbeatCounter++;
 
   ts.subTable->GetInstance().Flush();
 }

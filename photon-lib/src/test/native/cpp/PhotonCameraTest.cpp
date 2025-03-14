@@ -109,6 +109,7 @@ TEST(PhotonCameraTest, Alerts) {
 
   for (int i = 0; i < 10; i++) {
     // AND a PhotonCamera with a "new" result
+    sim.Process(0_s, frc::Pose3d{}, {}); // Update the heartbeat, too
     sim.SubmitProcessedFrame(noPongResult);
     // WHEN we update the camera
     camera.GetAllUnreadResults();
