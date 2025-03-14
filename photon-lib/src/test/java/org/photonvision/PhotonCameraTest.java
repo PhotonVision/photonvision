@@ -368,7 +368,7 @@ class PhotonCameraTest {
 
         final double HEARTBEAT_TIMEOUT = 0.5;
 
-        // GIVEN a PhotonCamera provided new results 
+        // GIVEN a PhotonCamera provided new results
         SimHooks.pauseTiming();
         sim.submitProcessedFrame(noPongResult);
         camera.getAllUnreadResults();
@@ -381,7 +381,7 @@ class PhotonCameraTest {
         // THEN the camera will not be connected
         assertFalse(camera.isConnected());
 
-        // WHEN we then provide new results 
+        // WHEN we then provide new results
         SimHooks.stepTiming(0.02);
         sim.submitProcessedFrame(noPongResult);
         camera.getAllUnreadResults();
