@@ -42,6 +42,8 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Atomic boolean to ensure that the native object can only be released once. */
     private AtomicBoolean released = new AtomicBoolean(false);
 
+    private boolean isUsingAllCores = true;
+
     /** Pointer to the native object */
     private final long objPointer;
 
@@ -61,14 +63,21 @@ public class RknnObjectDetector implements ObjectDetector {
      * @param model The model to create the detector from.
      * @param inputSize The required image dimensions for the model. Images will be {@link
      *     Letterbox}ed to this shape.
+     * @param useAllCores Whether the model should use all possible NPU cores, or use an automatic
+     *     assignment.
      */
-    public RknnObjectDetector(RknnModel model, Size inputSize) {
+    public RknnObjectDetector(RknnModel model, Size inputSize, boolean useAllCores) {
         this.model = model;
         this.inputSize = inputSize;
 
         // Create the detector
+        isUsingAllCores = useAllCores;
         objPointer =
-                RknnJNI.create(model.modelFile.getPath(), model.labels.size(), model.version.ordinal(), -1);
+                RknnJNI.create(
+                        model.modelFile.getPath(),
+                        model.labels.size(),
+                        model.version.ordinal(),
+                        determineCoreNum(useAllCores));
         if (objPointer <= 0) {
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
@@ -78,6 +87,14 @@ public class RknnObjectDetector implements ObjectDetector {
 
         // Register the cleaner to release the detector when it goes out of scope
         cleaner.register(this, this::release);
+    }
+
+    public void setUseAllCores(boolean useAllCores) {
+        if (useAllCores == isUsingAllCores) return;
+
+        RknnJNI.setCoreMask(objPointer, determineCoreNum(useAllCores));
+        isUsingAllCores = useAllCores;
+        System.out.println("Is using all cores: " + useAllCores);
     }
 
     /**
@@ -146,5 +163,9 @@ public class RknnObjectDetector implements ObjectDetector {
             RknnJNI.destroy(objPointer);
             logger.debug("Released detector for model " + model.modelFile.getName());
         }
+    }
+
+    private int determineCoreNum(boolean useAllCores) {
+        return useAllCores ? 210 : -1;
     }
 }
