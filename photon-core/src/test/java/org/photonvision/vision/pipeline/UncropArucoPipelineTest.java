@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +30,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
-public class AprilTagTest {
+public class UncropArucoPipelineTest {
     @BeforeEach
     public void setup() {
         TestUtils.loadLibraries();
@@ -39,8 +38,8 @@ public class AprilTagTest {
     }
 
     @Test
-    public void testApriltagFacingCamera() {
-        var pipeline = new AprilTagPipeline();
+    public void testArucoFacingCamera() {
+        var pipeline = new ArucoPipeline();
 
         pipeline.getSettings().inputShouldShow = true;
         pipeline.getSettings().outputShouldDraw = true;
@@ -59,6 +58,7 @@ public class AprilTagTest {
 
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+
         printTestResults(pipelineResult);
 
         // Draw on input
@@ -69,77 +69,60 @@ public class AprilTagTest {
 
         TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
+        pipeline.getSettings().static_x = 100;
+
+        CVPipelineResult croppedResults;
+        croppedResults = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+
+        printTestResults(croppedResults);
+
+        var ret_cropped =
+                outputPipe.process(
+                        croppedResults.inputAndOutputFrame, pipeline.getSettings(), croppedResults.targets);
+
+        TestUtils.showImage(
+                ret_cropped.inputAndOutputFrame.processedImage.getMat(), "Cropped Pipeline output", 999999);
         // these numbers are not *accurate*, but they are known and expected
         var target = pipelineResult.targets.get(0);
+        var croppedTarget = croppedResults.targets.get(0);
 
         // Test corner order
         var corners = target.getTargetCorners();
-        Assertions.assertEquals(260, corners.get(0).x, 10);
-        Assertions.assertEquals(245, corners.get(0).y, 10);
-        Assertions.assertEquals(315, corners.get(1).x, 10);
-        Assertions.assertEquals(245, corners.get(1).y, 10);
-        Assertions.assertEquals(315, corners.get(2).x, 10);
-        Assertions.assertEquals(190, corners.get(2).y, 10);
-        Assertions.assertEquals(260, corners.get(3).x, 10);
-        Assertions.assertEquals(190, corners.get(3).y, 10);
+        var croppedCorners = croppedTarget.getTargetCorners();
+        double acceptedDelta = 0.005;
+
+        Assertions.assertEquals(corners.get(0).x, croppedCorners.get(0).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(0).y, croppedCorners.get(0).y, acceptedDelta);
+        Assertions.assertEquals(corners.get(1).x, croppedCorners.get(1).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(1).y, croppedCorners.get(1).y, acceptedDelta);
+        Assertions.assertEquals(corners.get(2).x, croppedCorners.get(2).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(2).y, croppedCorners.get(2).y, acceptedDelta);
+        Assertions.assertEquals(corners.get(3).x, croppedCorners.get(3).x, acceptedDelta);
+        Assertions.assertEquals(corners.get(3).y, croppedCorners.get(3).y, acceptedDelta);
+
+        Assertions.assertEquals(target.getArea(), croppedTarget.getArea(), acceptedDelta);
+        Assertions.assertEquals(target.getSkew(), croppedTarget.getSkew(), acceptedDelta);
+        Assertions.assertEquals(target.getYaw(), croppedTarget.getYaw(), acceptedDelta);
+        Assertions.assertEquals(target.getPitch(), croppedTarget.getPitch(), acceptedDelta);
 
         var pose = target.getBestCameraToTarget3d();
-        // Test pose estimate translation
-        Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(0.1, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+        var croppedPose = croppedTarget.getBestCameraToTarget3d();
 
-        // Test pose estimate rotation
-        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
-        // This visible tag is facing the camera almost parallel, so in world space:
+        double acceptedPoseDelta = 0.005;
 
-        // The object's X axis should be (-1, 0, 0)
+        // Test pose estimate translation and rotation
         Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
-        // The object's Y axis should be (0, -1, 0)
+                pose.getTranslation().getX(), croppedPose.getTranslation().getX(), acceptedPoseDelta);
         Assertions.assertEquals(
-                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
-        // The object's Z axis should be (0, 0, 1)
-        Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
-    }
-
-    @Test
-    public void testApriltagDistorted() {
-        var pipeline = new AprilTagPipeline();
-
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
-
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
-
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
-
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
-
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        double acceptedDelta = 9;
-        Assertions.assertEquals(4.14, pose.getTranslation().getX(), acceptedDelta);
-        Assertions.assertEquals(2, pose.getTranslation().getY(), acceptedDelta);
-        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), acceptedDelta);
+                pose.getTranslation().getY(), croppedPose.getTranslation().getY(), acceptedPoseDelta);
+        Assertions.assertEquals(
+                pose.getTranslation().getZ(), croppedPose.getTranslation().getZ(), acceptedPoseDelta);
+        Assertions.assertEquals(
+                pose.getRotation().getX(), croppedPose.getRotation().getX(), acceptedPoseDelta);
+        Assertions.assertEquals(
+                pose.getRotation().getY(), croppedPose.getRotation().getY(), acceptedPoseDelta);
+        Assertions.assertEquals(
+                pose.getRotation().getZ(), croppedPose.getRotation().getZ(), acceptedPoseDelta);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
