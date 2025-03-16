@@ -174,7 +174,19 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
     }
 
+    @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
+        if (configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281Controls)
+                && !cameraAutoExposure) {
+            // Poke the camera to get it into auto exposure mode
+            setAutoExposureImpl(true);
+            setAutoExposureImpl(false);
+        } else {
+            setAutoExposureImpl(cameraAutoExposure);
+        }
+    }
+
+    public void setAutoExposureImpl(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
         if (!cameraAutoExposure) {
