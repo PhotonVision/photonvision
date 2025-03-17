@@ -32,14 +32,13 @@ import org.photonvision.vision.target.TrackedTarget;
 public class DrawCalibrationPipe
         extends MutatingPipe<
                 Pair<Mat, List<TrackedTarget>>, DrawCalibrationPipe.DrawCalibrationPipeParams> {
-    Scalar[] chessboardColors =
-            new Scalar[] {
-                ColorHelper.colorToScalar(Color.RED, 0.4),
-                ColorHelper.colorToScalar(Color.ORANGE, 0.4),
-                ColorHelper.colorToScalar(Color.GREEN, 0.4),
-                ColorHelper.colorToScalar(Color.BLUE, 0.4),
-                ColorHelper.colorToScalar(Color.MAGENTA, 0.4),
-            };
+    Scalar[] chessboardColors = {
+        ColorHelper.colorToScalar(Color.RED, 0.4),
+        ColorHelper.colorToScalar(Color.ORANGE, 0.4),
+        ColorHelper.colorToScalar(Color.GREEN, 0.4),
+        ColorHelper.colorToScalar(Color.BLUE, 0.4),
+        ColorHelper.colorToScalar(Color.MAGENTA, 0.4),
+    };
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {

@@ -50,10 +50,9 @@ public class ConstrainedSolvepnpTest {
 
     @Test
     public void smoketest() {
-        double[] cameraCal =
-                new double[] {
-                    600, 600, 300, 150,
-                };
+        double[] cameraCal = {
+            600, 600, 300, 150,
+        };
 
         var field2points =
                 MatBuilder.fill(
@@ -86,7 +85,7 @@ public class ConstrainedSolvepnpTest {
                 MatBuilder.fill(Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
 
         // Initial guess for optimization
-        double[] x_guess = new double[] {0.2, 0.1, -.05};
+        double[] x_guess = {0.2, 0.1, -.05};
 
         var ret =
                 ConstrainedSolvepnpJni.do_optimization(
