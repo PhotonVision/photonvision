@@ -308,7 +308,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         // On vendor cameras, respect blacklisted indices
         var indexBlacklist =
-                ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
+                ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices();
         for (int badIdx : indexBlacklist) {
             sortedList.remove(badIdx);
         }
