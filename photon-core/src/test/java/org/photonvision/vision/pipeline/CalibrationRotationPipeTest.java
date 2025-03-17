@@ -123,7 +123,7 @@ public class CalibrationRotationPipeTest {
                                     0.09625562194891251,
                                     -0.1860797479660746
                                 }),
-                        new double[] {},
+                        new double[0],
                         List.of(),
                         new Size(),
                         1,
@@ -288,7 +288,7 @@ public class CalibrationRotationPipeTest {
                                     0.04625562194891251,
                                     -0.0860797479660746
                                 }),
-                        new double[] {},
+                        new double[0],
                         List.of(),
                         new Size(),
                         1,

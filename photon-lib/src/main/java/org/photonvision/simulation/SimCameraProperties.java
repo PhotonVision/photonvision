@@ -202,24 +202,20 @@ public class SimCameraProperties {
         this.distCoeffs = distCoeffs;
 
         // left, right, up, and down view planes
-        var p =
-                new Translation3d[] {
-                    new Translation3d(
-                            1,
-                            new Rotation3d(0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI / 2)).getRadians())),
-                    new Translation3d(
-                            1,
-                            new Rotation3d(
-                                    0, 0, getPixelYaw(resWidth).plus(new Rotation2d(Math.PI / 2)).getRadians())),
-                    new Translation3d(
-                            1,
-                            new Rotation3d(
-                                    0, getPixelPitch(0).plus(new Rotation2d(Math.PI / 2)).getRadians(), 0)),
-                    new Translation3d(
-                            1,
-                            new Rotation3d(
-                                    0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
-                };
+        Translation3d[] p = {
+            new Translation3d(
+                    1, new Rotation3d(0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI / 2)).getRadians())),
+            new Translation3d(
+                    1,
+                    new Rotation3d(
+                            0, 0, getPixelYaw(resWidth).plus(new Rotation2d(Math.PI / 2)).getRadians())),
+            new Translation3d(
+                    1, new Rotation3d(0, getPixelPitch(0).plus(new Rotation2d(Math.PI / 2)).getRadians(), 0)),
+            new Translation3d(
+                    1,
+                    new Rotation3d(
+                            0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
+        };
         viewplanes.clear();
         for (Translation3d translation3d : p) {
             viewplanes.add(
