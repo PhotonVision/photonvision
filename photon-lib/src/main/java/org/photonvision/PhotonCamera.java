@@ -138,7 +138,7 @@ public class PhotonCamera implements AutoCloseable {
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 PhotonPipelineResult.photonStruct.getTypeString(),
-                                new byte[] {},
+                                new byte[0],
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true),
                                 PubSubOption.pollStorage(20));
