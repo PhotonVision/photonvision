@@ -248,13 +248,12 @@ public class VisionEstimation {
         }
 
         // fx fy cx cy
-        double[] cameraCal =
-                new double[] {
-                    cameraMatrix.get(0, 0),
-                    cameraMatrix.get(1, 1),
-                    cameraMatrix.get(0, 2),
-                    cameraMatrix.get(1, 2),
-                };
+        double[] cameraCal = {
+            cameraMatrix.get(0, 0),
+            cameraMatrix.get(1, 1),
+            cameraMatrix.get(0, 2),
+            cameraMatrix.get(1, 2),
+        };
 
         var guess2 = robotPoseSeed.toPose2d();
 
