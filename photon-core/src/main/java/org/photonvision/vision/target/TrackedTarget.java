@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
@@ -502,7 +503,6 @@ public class TrackedTarget implements Releasable {
                 double verticalFocalLength,
                 double imageArea,
                 CameraCalibrationCoefficients cal) {
-
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
             this.robotOffsetPointMode = robotOffsetPointMode;
@@ -522,7 +522,6 @@ public class TrackedTarget implements Releasable {
                 Point robotOffsetSinglePoint,
                 DualOffsetValues dualOffsetValues,
                 FrameStaticProperties frameStaticProperties) {
-
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
             this.robotOffsetPointMode = robotOffsetPointMode;
