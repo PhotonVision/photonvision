@@ -8,12 +8,11 @@ Python/app/__pycache__/
 
 Python/app/handlers/__pycache__/
 
-\.vscode/
-
 /.vs
-
 backend/settings/
-/.vscode/
+.vscode/
+source/_build
+source/docs/_build
 # Compiled class file
 *.class
 
@@ -109,7 +108,6 @@ fabric.properties
 
 # Temporary build files
 **/.gradle
-**/target
 **/src/main/java/META-INF
 **/.settings
 **/.classpath
