@@ -39,7 +39,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);
 
     // match type's values from the FMS.
-    private static final String[] matchTypes = {"N/A", "P", "Q", "E", "EV"};
+    private static final String[] matchTypes = {"None", "P", "Q", "E", "EV"};
 
     // Formatters to generate unique, timestamped file names
     private static final String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
@@ -74,7 +74,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
         NetworkTable fmsTable = NetworkTablesManager.getInstance().getNTInst().getTable("FMSInfo");
         this.ntEventName = fmsTable.getStringTopic("EventName").subscribe("UNKNOWN");
-        this.ntMatchNum = fmsTable.getIntegerTopic("MatchNumber").subscribe(-1);
+        this.ntMatchNum = fmsTable.getIntegerTopic("MatchNumber").subscribe(0);
         this.ntMatchType = fmsTable.getIntegerTopic("MatchType").subscribe(0);
 
         updateCameraNickname(camNickname);
@@ -146,18 +146,18 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
     /**
      * Returns the match Data collected from the NT. eg : Q58 for qualification match 58. If not in
-     * event, returns N/A-0-EVENTNAME
+     * event, returns None-0-Unknown
      */
     private String getMatchData() {
         var matchType = ntMatchType.getAtomic();
         if (matchType.timestamp == 0) {
             // no NT info yet
-            logger.warn("Did not receive match type, defaulting to 0");
+            logger.warn("Did not receive match type, defaulting to None");
         }
 
         var matchNum = ntMatchNum.getAtomic();
         if (matchNum.timestamp == 0) {
-            logger.warn("Did not receive match num, defaulting to -1");
+            logger.warn("Did not receive match num, defaulting to 0");
         }
 
         var eventName = ntEventName.getAtomic();
