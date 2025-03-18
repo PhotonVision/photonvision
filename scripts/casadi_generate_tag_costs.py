@@ -9,11 +9,9 @@ from numpy import *
 
 def generate_costs(num_tags, robot_heading_free):
 
-    # Camera calibration parameters
-    fx = ca.SX.sym("fx")
-    fy = ca.SX.sym("fy")
-    cx = ca.SX.sym("cx")
-    cy = ca.SX.sym("cy")
+    # Instead of using camera calibration, we instead use "normalized pixel coordinates". Convert from (u, v) coordinates to normalized (x'', y'') coordinates with:
+    # x'' = (u - c_x) / f_x
+    # y'' = (u - c_y) / f_y
 
     # Decision variables
     robot_x = ca.SX.sym("robot_x")
@@ -60,15 +58,12 @@ def generate_costs(num_tags, robot_heading_free):
     z = camera2point[2, :]
 
     # Observed coordinates
-    u_observed = point_observations[0, :]
+    X_observed = point_observations[0, :]
     v_observed = point_observations[1, :]
 
     # Project to image plane
     X = x / z
     Y = y / z
-
-    u = fx * X + cx
-    v = fy * Y + cy
 
     # Reprojection error
     u_err = u - u_observed
@@ -93,10 +88,10 @@ def generate_costs(num_tags, robot_heading_free):
         robot_x,
         robot_y,
         robot_θ,
-        fx,
-        fy,
-        cx,
-        cy,
+        # fx,
+        # fy,
+        # cx,
+        # cy,
         robot2camera,
         field2points,
         point_observations,
@@ -107,10 +102,10 @@ def generate_costs(num_tags, robot_heading_free):
         "robot_x",
         "robot_y",
         "robot_θ",
-        "fx",
-        "fy",
-        "cx",
-        "cy",
+        # "fx",
+        # "fy",
+        # "cx",
+        # "cy",
         "robot2camera",
         "field2points",
         "point_observations",
