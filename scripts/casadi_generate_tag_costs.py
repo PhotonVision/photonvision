@@ -9,10 +9,6 @@ from numpy import *
 
 def generate_costs(num_tags, robot_heading_free):
 
-    # Instead of using camera calibration, we instead use "normalized pixel coordinates". Convert from (u, v) coordinates to normalized (x'', y'') coordinates with:
-    # x'' = (u - c_x) / f_x
-    # y'' = (u - c_y) / f_y
-
     # Decision variables
     robot_x = ca.SX.sym("robot_x")
     robot_y = ca.SX.sym("robot_y")
@@ -58,19 +54,24 @@ def generate_costs(num_tags, robot_heading_free):
     z = camera2point[2, :]
 
     # Observed coordinates
-    X_observed = point_observations[0, :]
-    v_observed = point_observations[1, :]
+    # Note that instead of using camera calibration, we expect the caller to provide
+    # "normalized pixel coordinates". Convert from (u, v) coordinates to normalized
+    # (x'', y'') coordinates with:
+    # x'' = (u - c_x) / f_x
+    # y'' = (u - c_y) / f_y
+    xʼʼ_observed = point_observations[0, :]
+    yʼʼ_observed = point_observations[1, :]
 
-    # Project to image plane
-    X = x / z
-    Y = y / z
+    # Where we expected to see the landmarks at, in normalized pixel coordinates
+    xʼʼ = x / z
+    yʼʼ = y / z
 
     # Reprojection error
-    u_err = u - u_observed
-    v_err = v - v_observed
+    xʼʼ_err = xʼʼ - xʼʼ_observed
+    yʼʼ_err = yʼʼ - yʼʼ_observed
 
     # Frobenius norm - sqrt(sum squared of each component). Square to remove sqrt
-    J = ca.norm_fro(u_err) ** 2 + ca.norm_fro(v_err) ** 2
+    J = ca.norm_fro(xʼʼ_err) ** 2 + ca.norm_fro(yʼʼ_err) ** 2
 
     # And penalize gyro error excursion
     if not robot_heading_free:
