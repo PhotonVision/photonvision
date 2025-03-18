@@ -109,7 +109,6 @@ fabric.properties
 
 # Temporary build files
 **/.gradle
-**/target
 **/src/main/java/META-INF
 **/.settings
 **/.classpath
