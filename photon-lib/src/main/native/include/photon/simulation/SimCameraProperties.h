@@ -280,8 +280,8 @@ class SimCameraProperties {
   int resHeight;
   Eigen::Matrix<double, 3, 3> camIntrinsics;
   Eigen::Matrix<double, 8, 1> distCoeffs;
-  double avgErrorPx;
-  double errorStdDevPx;
+  double avgErrorPx{0};
+  double errorStdDevPx{0};
   units::second_t frameSpeed{0};
   units::second_t exposureTime{0};
   units::second_t avgLatency{0};

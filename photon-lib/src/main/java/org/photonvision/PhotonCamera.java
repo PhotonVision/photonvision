@@ -41,6 +41,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.WPILibVersion;
@@ -59,6 +61,7 @@ import org.photonvision.timesync.TimeSyncSingleton;
 public class PhotonCamera implements AutoCloseable {
     private static int InstanceCount = 0;
     public static final String kTableName = "photonvision";
+    private static final String PHOTON_ALERT_GROUP = "PhotonAlerts";
 
     private final NetworkTable cameraTable;
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
@@ -68,7 +71,7 @@ public class PhotonCamera implements AutoCloseable {
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
     IntegerSubscriber pipelineIndexState, ledModeState;
-    IntegerSubscriber heartbeatEntry;
+    IntegerSubscriber heartbeatSubscriber;
     DoubleArraySubscriber cameraIntrinsicsSubscriber;
     DoubleArraySubscriber cameraDistortionSubscriber;
     MultiSubscriber topicNameSubscriber;
@@ -106,6 +109,9 @@ public class PhotonCamera implements AutoCloseable {
     double prevTimeSyncWarnTime = 0;
     private static final double WARN_DEBOUNCE_SEC = 5;
 
+    private final Alert disconnectAlert;
+    private final Alert timesyncAlert;
+
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
@@ -120,6 +126,10 @@ public class PhotonCamera implements AutoCloseable {
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
         name = cameraName;
+        disconnectAlert =
+                new Alert(
+                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", AlertType.kWarning);
+        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", AlertType.kWarning);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();
@@ -139,7 +149,7 @@ public class PhotonCamera implements AutoCloseable {
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
         pipelineIndexState = cameraTable.getIntegerTopic("pipelineIndexState").subscribe(0);
-        heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
+        heartbeatSubscriber = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
         cameraIntrinsicsSubscriber =
                 cameraTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
         cameraDistortionSubscriber =
@@ -249,6 +259,7 @@ public class PhotonCamera implements AutoCloseable {
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
         verifyVersion();
+        updateDisconnectAlert();
 
         List<PhotonPipelineResult> ret = new ArrayList<>();
 
@@ -274,6 +285,7 @@ public class PhotonCamera implements AutoCloseable {
     @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
+        updateDisconnectAlert();
 
         // Grab the latest result. We don't care about the timestamp from NT - the metadata header has
         // this, latency compensated by the Time Sync Client
@@ -288,22 +300,34 @@ public class PhotonCamera implements AutoCloseable {
         return result;
     }
 
+    private void updateDisconnectAlert() {
+        disconnectAlert.set(!isConnected());
+    }
+
     private void checkTimeSyncOrWarn(PhotonPipelineResult result) {
         if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
+            String warningText =
+                    "PhotonVision coprocessor at path "
+                            + path
+                            + " is not connected to the TimeSyncServer? It's been "
+                            + String.format("%.2f", result.metadata.timeSinceLastPong / 1e6)
+                            + "s since the coprocessor last heard a pong.";
+
+            timesyncAlert.setText(warningText);
+            timesyncAlert.set(true);
+
             if (Timer.getFPGATimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
                 prevTimeSyncWarnTime = Timer.getFPGATimestamp();
 
                 DriverStation.reportWarning(
-                        "PhotonVision coprocessor at path "
-                                + path
-                                + " is not connected to the TimeSyncServer? It's been "
-                                + String.format("%.2f", result.metadata.timeSinceLastPong / 1e6)
-                                + "s since the coprocessor last heard a pong.\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
+                        warningText
+                                + "\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
                         false);
             }
         } else {
             // Got a valid packet, reset the last time
             prevTimeSyncWarnTime = 0;
+            timesyncAlert.set(false);
         }
     }
 
@@ -404,8 +428,13 @@ public class PhotonCamera implements AutoCloseable {
      * @return True if the camera is actively sending frame data, false otherwise.
      */
     public boolean isConnected() {
-        var curHeartbeat = heartbeatEntry.get();
+        var curHeartbeat = heartbeatSubscriber.get();
         var now = Timer.getFPGATimestamp();
+
+        if (curHeartbeat < 0) {
+            // we have never heard from the camera
+            return false;
+        }
 
         if (curHeartbeat != prevHeartbeatValue) {
             // New heartbeat value from the coprocessor
@@ -455,7 +484,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
-        if (!heartbeatEntry.exists()) {
+        if (!heartbeatSubscriber.exists()) {
             var cameraNames = getTablesThatLookLikePhotonCameras();
             if (cameraNames.isEmpty()) {
                 DriverStation.reportError(

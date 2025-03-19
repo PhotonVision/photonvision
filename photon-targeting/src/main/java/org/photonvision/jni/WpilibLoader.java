@@ -17,10 +17,6 @@
 
 package org.photonvision.jni;
 
-import java.io.IOException;
-
-import org.opencv.core.Core;
-
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.OpenCvLoader;
@@ -30,9 +26,12 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+import java.io.IOException;
+import org.opencv.core.Core;
 
 public class WpilibLoader {
     private static boolean has_loaded = false;
+
     public static boolean loadLibraries() {
         if (has_loaded) return true;
 
@@ -45,9 +44,11 @@ public class WpilibLoader {
         WPIMathJNI.Helper.setExtractOnStaticLoad(false);
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
         try {
+            // Need to load wpiutil first before checking if the MSVC runtime is valid
+            CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, "wpiutiljni");
+            WPIUtilJNI.checkMsvcRuntime();
             CombinedRuntimeLoader.loadLibraries(
                     WpilibLoader.class,
-                    "wpiutiljni",
                     "wpimathjni",
                     "ntcorejni",
                     "wpinetjni",
@@ -56,7 +57,6 @@ public class WpilibLoader {
                     "apriltagjni");
 
             CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, Core.NATIVE_LIBRARY_NAME);
-
             has_loaded = true;
         } catch (IOException e) {
             e.printStackTrace();
