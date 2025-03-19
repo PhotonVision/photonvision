@@ -84,8 +84,6 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     public void accept(CVMat image, Date now) {
         long currentCount = saveFrameEntry.get();
 
-        System.out.println("currentCount: " + currentCount + " savedImagesCount: " + savedImagesCount);
-
         // Await save request
         if (currentCount == -1) return;
 
