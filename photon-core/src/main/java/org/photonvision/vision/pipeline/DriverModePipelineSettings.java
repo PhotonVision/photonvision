@@ -24,7 +24,7 @@ import org.photonvision.vision.processes.PipelineManager;
 @JsonTypeName("DriverModePipelineSettings")
 public class DriverModePipelineSettings extends CVPipelineSettings {
     public DoubleCouple offsetPoint = new DoubleCouple();
-    public boolean crosshair = false;
+    public boolean crosshair = true;
 
     public DriverModePipelineSettings() {
         super();
