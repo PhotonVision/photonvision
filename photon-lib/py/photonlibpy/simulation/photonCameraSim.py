@@ -476,11 +476,11 @@ class PhotonCameraSim:
             )
 
         intrinsics = self.prop.getIntrinsics()
-        intrinsicsView = list(intrinsics.flatten().tolist())
+        intrinsicsView = typing.Sequence[intrinsics.flatten().tolist()]
         self.ts.cameraIntrinsicsPublisher.set(intrinsicsView, receiveTimestamp_us)
 
         distortion = self.prop.getDistCoeffs()
-        distortionView = list(distortion.flatten().tolist())
+        distortionView = typing.Sequence[distortion.flatten().tolist()]
         self.ts.cameraDistortionPublisher.set(distortionView, receiveTimestamp_us)
 
         self.ts.heartbeatPublisher.set(self.heartbeatCounter, receiveTimestamp_us)
