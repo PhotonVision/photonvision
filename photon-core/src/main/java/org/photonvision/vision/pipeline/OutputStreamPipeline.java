@@ -19,10 +19,12 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Scalar;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.DrawRectanglePipe.DrawRectanglePipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -43,6 +45,9 @@ public class OutputStreamPipeline {
     private final Draw3dArucoPipe draw3dArucoPipe = new Draw3dArucoPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
+
+    private static final Scalar yellow = new Scalar(0, 255, 255);
+    private final DrawRectanglePipe drawStaticCropPipe = new DrawRectanglePipe(yellow);
 
     private final long[] pipeProfileNanos = new long[12];
 
@@ -120,6 +125,8 @@ public class OutputStreamPipeline {
                             settings.streamingFrameDivisor,
                             ((Calibration3dPipelineSettings) settings).drawAllSnapshots));
         }
+
+        drawStaticCropPipe.setParams(new DrawRectanglePipeParams(settings.getStaticCrop()));
     }
 
     public CVPipelineResult process(
@@ -154,6 +161,10 @@ public class OutputStreamPipeline {
             // Draw 2D Crosshair on output
             var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
+
+            // Draw static crop rectangle on output
+            var drawStaticRectangleResult = drawStaticCropPipe.run(outMat);
+            sumPipeNanosElapsed += pipeProfileNanos[9] = drawStaticRectangleResult.nanosElapsed;
 
             if (!(settings instanceof AprilTagPipelineSettings)
                     && !(settings instanceof ArucoPipelineSettings)
