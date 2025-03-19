@@ -203,6 +203,8 @@ public class Main {
         }
         logger.info("WPI JNI libraries loaded.");
 
+        Logger.addNtAppender();
+
         try {
             boolean success = PhotonTargetingJniLoader.load();
 
