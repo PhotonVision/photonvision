@@ -34,10 +34,10 @@ const casadi_int* calc_J_6_tags_heading_fixed_sparsity_in(casadi_int i);
 const casadi_int* calc_J_6_tags_heading_fixed_sparsity_out(casadi_int i);
 int calc_J_6_tags_heading_fixed_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w);
 int calc_J_6_tags_heading_fixed_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w);
-#define calc_J_6_tags_heading_fixed_SZ_ARG 12
+#define calc_J_6_tags_heading_fixed_SZ_ARG 8
 #define calc_J_6_tags_heading_fixed_SZ_RES 1
 #define calc_J_6_tags_heading_fixed_SZ_IW 0
-#define calc_J_6_tags_heading_fixed_SZ_W 133
+#define calc_J_6_tags_heading_fixed_SZ_W 131
 int calc_gradJ_6_tags_heading_fixed(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem);
 int calc_gradJ_6_tags_heading_fixed_alloc_mem(void);
 int calc_gradJ_6_tags_heading_fixed_init_mem(int mem);
@@ -55,10 +55,10 @@ const casadi_int* calc_gradJ_6_tags_heading_fixed_sparsity_in(casadi_int i);
 const casadi_int* calc_gradJ_6_tags_heading_fixed_sparsity_out(casadi_int i);
 int calc_gradJ_6_tags_heading_fixed_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w);
 int calc_gradJ_6_tags_heading_fixed_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w);
-#define calc_gradJ_6_tags_heading_fixed_SZ_ARG 12
+#define calc_gradJ_6_tags_heading_fixed_SZ_ARG 8
 #define calc_gradJ_6_tags_heading_fixed_SZ_RES 1
 #define calc_gradJ_6_tags_heading_fixed_SZ_IW 0
-#define calc_gradJ_6_tags_heading_fixed_SZ_W 286
+#define calc_gradJ_6_tags_heading_fixed_SZ_W 285
 int calc_hessJ_6_tags_heading_fixed(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem);
 int calc_hessJ_6_tags_heading_fixed_alloc_mem(void);
 int calc_hessJ_6_tags_heading_fixed_init_mem(int mem);
@@ -76,10 +76,10 @@ const casadi_int* calc_hessJ_6_tags_heading_fixed_sparsity_in(casadi_int i);
 const casadi_int* calc_hessJ_6_tags_heading_fixed_sparsity_out(casadi_int i);
 int calc_hessJ_6_tags_heading_fixed_work(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w);
 int calc_hessJ_6_tags_heading_fixed_work_bytes(casadi_int *sz_arg, casadi_int* sz_res, casadi_int *sz_iw, casadi_int *sz_w);
-#define calc_hessJ_6_tags_heading_fixed_SZ_ARG 12
+#define calc_hessJ_6_tags_heading_fixed_SZ_ARG 8
 #define calc_hessJ_6_tags_heading_fixed_SZ_RES 1
 #define calc_hessJ_6_tags_heading_fixed_SZ_IW 0
-#define calc_hessJ_6_tags_heading_fixed_SZ_W 840
+#define calc_hessJ_6_tags_heading_fixed_SZ_W 838
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
