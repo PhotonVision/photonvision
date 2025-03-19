@@ -290,13 +290,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       };
       useStateStore().websocket?.send(payload, true);
     },
-    setCrosshairMode(isCrosshairMode: boolean, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      const payload = {
-        crosshairMode: isCrosshairMode,
-        cameraUniqueName: cameraUniqueName
-      };
-      useStateStore().websocket?.send(payload, true);
-    },
     /**
      * Change the currently selected pipeline of the provided camera.
      *
