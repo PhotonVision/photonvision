@@ -69,6 +69,16 @@ In the root directory:
       ``gradlew buildAndCopyUI``
 ```
 
+### Using hot reload on the UI
+
+In the photon-client directory:
+
+```bash
+npm run dev
+```
+
+This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
+
 ### Build and Run PhotonVision
 
 To compile and run the project, issue the following command in the root directory:
