@@ -27,16 +27,19 @@ package org.photonvision.common.configuration;
 public final class DatabaseSchema {
     public static final String[] migrations = {
         // #1 - initial schema
-        "CREATE TABLE IF NOT EXISTS global (\n"
-                + " filename TINYTEXT PRIMARY KEY,\n"
-                + " contents mediumtext NOT NULL\n"
-                + ");"
-                + "CREATE TABLE IF NOT EXISTS cameras (\n"
-                + " unique_name TINYTEXT PRIMARY KEY,\n"
-                + " config_json text NOT NULL,\n"
-                + " drivermode_json text NOT NULL,\n"
-                + " pipeline_jsons mediumtext NOT NULL\n"
-                + ");",
+        // spotless:off
+        """
+        CREATE TABLE IF NOT EXISTS global (
+         filename TINYTEXT PRIMARY KEY,
+         contents mediumtext NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS cameras (
+         unique_name TINYTEXT PRIMARY KEY,
+         config_json text NOT NULL,
+         drivermode_json text NOT NULL,
+         pipeline_jsons mediumtext NOT NULL
+         );""",
+        // spotless:on
         // #2 - add column otherpaths_json
         "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';",
         // add future migrations here

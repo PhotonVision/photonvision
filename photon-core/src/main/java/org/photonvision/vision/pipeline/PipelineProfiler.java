@@ -37,19 +37,18 @@ public class PipelineProfiler {
      * output) 14 - draw2dTargetsPipe (on input) 15 - draw2dTargetsPipe (on output) 16 -
      * draw3dTargetsPipe (OPTIONAL, on input) 17 - draw3dTargetsPipe (OPTIONAL, on output)
      */
-    private static final String[] ReflectivePipeNames =
-            new String[] {
-                "RotateImage",
-                "HSV",
-                "FindContours",
-                "SpeckleReject",
-                "FilterContours",
-                "GroupContours",
-                "SortContours",
-                "Collect2dTargets",
-                "CornerDetection",
-                "SolvePNP",
-            };
+    private static final String[] ReflectivePipeNames = {
+        "RotateImage",
+        "HSV",
+        "FindContours",
+        "SpeckleReject",
+        "FilterContours",
+        "GroupContours",
+        "SortContours",
+        "Collect2dTargets",
+        "CornerDetection",
+        "SolvePNP",
+    };
 
     public static final int ReflectivePipeCount = ReflectivePipeNames.length;
 
