@@ -34,9 +34,13 @@ public class ObjectDetectionPipe
         implements Releasable {
     private ObjectDetector detector;
 
-    public ObjectDetectionPipe() {
+    public ObjectDetectionPipe(boolean useAllCores) {
         Optional<Model> defaultModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
-        detector = defaultModel.map(Model::load).orElse(NullModel.getInstance());
+        detector = defaultModel.map((model) -> model.load(useAllCores)).orElse(NullModel.getInstance());
+    }
+
+    public void setUseAllCores(boolean useAllCores) {
+        detector.setUseAllCores(useAllCores);
     }
 
     @Override
@@ -44,8 +48,10 @@ public class ObjectDetectionPipe
         // Check if the model has changed
         if (detector.getModel() != params.model) {
             detector.release();
-            detector = params.model.load();
+            detector = params.model.load(params.useAllCores);
         }
+
+        detector.setUseAllCores(params.useAllCores);
 
         Mat frame = in.getMat();
         if (frame.empty()) {
@@ -60,6 +66,7 @@ public class ObjectDetectionPipe
         public double nms;
         public int max_detections;
         public Model model;
+        public boolean useAllCores;
 
         public ObjectDetectionPipeParams() {}
     }

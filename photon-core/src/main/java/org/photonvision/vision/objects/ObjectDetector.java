@@ -30,7 +30,7 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
  *   <li>{@link Model}s are discovered by {@link NeuralNetworkModelManager}
  *   <li>{@link Model} is selected as a parameter of {@link
  *       org.photonvision.vision.pipe.impl.ObjectDetectionPipe ObjectDetectionPipe}
- *   <li>{@link Model#load()} is called to create a ObjectDetector instance
+ *   <li>{@link Model#load(boolean)} is called to create a ObjectDetector instance
  *   <li>{@link ObjectDetector#detect(Mat, double, double)} is called to perform object detection
  *   <li>{@link ObjectDetector#release()} is called to release resources
  * </ol>
@@ -57,4 +57,6 @@ public interface ObjectDetector extends Releasable {
      *     empty list if the detector is not initialized or if no objects are detected.
      */
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh);
+
+    public void setUseAllCores(boolean useAllCores);
 }
