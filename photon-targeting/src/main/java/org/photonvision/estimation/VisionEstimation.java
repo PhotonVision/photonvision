@@ -44,6 +44,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class VisionEstimation {
     /** Get the visible {@link AprilTag}s which are in the tag layout using the visible tag IDs. */
     public static List<AprilTag> getVisibleLayoutTags(
@@ -142,6 +145,18 @@ public class VisionEstimation {
                             camToOrigin.get().ambiguity,
                             camToOrigin.get().bestReprojErr,
                             camToOrigin.get().altReprojErr));
+        }
+    }
+
+    private static class DebugData {
+        public double[] cameraCal;
+        public SimpleMatrix field2points;
+        public SimpleMatrix point_observations;
+        
+        public DebugData(double[] cameraCal, SimpleMatrix field2points, SimpleMatrix point_observations) {
+            this.cameraCal = cameraCal;
+            this.field2points = field2points;
+            this.point_observations = point_observations;
         }
     }
 
@@ -258,9 +273,15 @@ public class VisionEstimation {
 
         var guess2 = robotPoseSeed.toPose2d();
 
-        System.out.println("cameraCal:\n" + cameraCal);
-        System.out.println("field2points:\n" + field2points);
-        System.out.println("point_observations:\n" + point_observations);
+
+        // Replace the println statements with:
+        var debugData = new DebugData(cameraCal, field2points, point_observations);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            System.out.println(mapper.writeValueAsString(debugData));
+        } catch (JsonProcessingException e) {
+            System.err.println("Failed to serialize debug data: " + e.getMessage());
+        }
 
         var ret =
                 ConstrainedSolvepnpJni.do_optimization(
