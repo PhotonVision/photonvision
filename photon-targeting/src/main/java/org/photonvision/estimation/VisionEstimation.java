@@ -258,6 +258,10 @@ public class VisionEstimation {
 
         var guess2 = robotPoseSeed.toPose2d();
 
+        System.out.println("cameraCal:\n" + cameraCal);
+        System.out.println("field2points:\n" + field2points);
+        System.out.println("point_observations:\n" + point_observations);
+
         var ret =
                 ConstrainedSolvepnpJni.do_optimization(
                         headingFree,

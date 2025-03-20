@@ -928,4 +928,46 @@ class PhotonPoseEstimatorTest {
             return result;
         }
     }
+
+
+    @Test
+    public void meme() {
+        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+
+        List<VisionTargetSim> simTargets =
+                aprilTags.getTags().stream()
+                        .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
+                        .toList();
+
+        /* Compound Rolled + Pitched + Yaw */
+
+        Transform3d compoundTestTransform =
+                new Transform3d(
+                        -Units.inchesToMeters(12),
+                        -Units.inchesToMeters(11),
+                        3,
+                        new Rotation3d(
+                                Units.degreesToRadians(37), Units.degreesToRadians(6), Units.degreesToRadians(60)));
+
+        var estimator =
+                new PhotonPoseEstimator(
+                        aprilTags, PoseStrategy.CONSTRAINED_SOLVEPNP, compoundTestTransform);
+
+        /* this is the real pose of the robot base we test against */
+        var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
+
+        PhotonCameraSim cameraOneSim =
+                new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG());
+        PhotonPipelineResult result =
+                cameraOneSim.process(
+                        1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+        cameraOneSim.submitProcessedFrame(result);
+
+        estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(result, cameraOne.getCameraMatrix(), cameraOne.getDistCoeffs(), Optional.of(new ConstrainedSolvepnpParams(true, 0)));
+
+        System.out.println("Ground truth: " + realPose);
+
+        System.out.println(estimatedPose);
+    }
 }
