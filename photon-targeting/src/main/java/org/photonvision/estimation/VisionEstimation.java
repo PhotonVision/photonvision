@@ -30,10 +30,13 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.ejml.data.DMatrixRMaj;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfDouble;
@@ -150,13 +153,19 @@ public class VisionEstimation {
 
     private static class DebugData {
         public double[] cameraCal;
-        public SimpleMatrix field2points;
-        public SimpleMatrix point_observations;
+        public DMatrixRMaj field2points;
+        public DMatrixRMaj point_observations;
         
         public DebugData(double[] cameraCal, SimpleMatrix field2points, SimpleMatrix point_observations) {
             this.cameraCal = cameraCal;
-            this.field2points = field2points;
-            this.point_observations = point_observations;
+            this.field2points = field2points.getDDRM();
+            this.point_observations = point_observations.getDDRM();
+        }
+
+        @Override
+        public String toString() {
+            return "DebugData [cameraCal=" + Arrays.toString(cameraCal) + ", field2points=" + field2points
+                    + ", point_observations=" + point_observations + "]";
         }
     }
 
@@ -282,6 +291,7 @@ public class VisionEstimation {
         } catch (JsonProcessingException e) {
             System.err.println("Failed to serialize debug data: " + e.getMessage());
         }
+        System.out.println(debugData);
 
         var ret =
                 ConstrainedSolvepnpJni.do_optimization(

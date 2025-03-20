@@ -66,6 +66,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 class PhotonPoseEstimatorTest {
     static AprilTagFieldLayout aprilTags;
 
@@ -931,42 +934,48 @@ class PhotonPoseEstimatorTest {
 
 
     @Test
-    public void meme() {
+    public void meme() throws JsonProcessingException {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
 
+        var layout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
         List<VisionTargetSim> simTargets =
-                aprilTags.getTags().stream()
+                layout.getTags().stream()
                         .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
                         .toList();
 
         /* Compound Rolled + Pitched + Yaw */
 
-        Transform3d compoundTestTransform =
+        Transform3d robot2camera =
                 new Transform3d(
                         -Units.inchesToMeters(12),
                         -Units.inchesToMeters(11),
-                        3,
+                        0.5,
                         new Rotation3d(
-                                Units.degreesToRadians(37), Units.degreesToRadians(6), Units.degreesToRadians(60)));
+                                Units.degreesToRadians(0), Units.degreesToRadians(6), Units.degreesToRadians(0)));
 
         var estimator =
                 new PhotonPoseEstimator(
-                        aprilTags, PoseStrategy.CONSTRAINED_SOLVEPNP, compoundTestTransform);
+                        layout, PoseStrategy.CONSTRAINED_SOLVEPNP, robot2camera);
 
         /* this is the real pose of the robot base we test against */
-        var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
+        var realPose = new Pose3d(1, 4, 0, new Rotation3d(0, 0, 0));
 
         PhotonCameraSim cameraOneSim =
-                new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG());
+                new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG(), layout);
+        cameraOneSim.setMinTargetAreaPercent(0.01);
+        cameraOneSim.enableDrawWireframe(true);
         PhotonPipelineResult result =
                 cameraOneSim.process(
                         1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
         cameraOneSim.submitProcessedFrame(result);
 
+        assertTrue(result.targets.size() > 0);
+
         estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
         Optional<EstimatedRobotPose> estimatedPose = estimator.update(result, cameraOne.getCameraMatrix(), cameraOne.getDistCoeffs(), Optional.of(new ConstrainedSolvepnpParams(true, 0)));
 
-        System.out.println("Ground truth: " + realPose);
+        System.out.println("Ground truth field2robot:\n" + new ObjectMapper().writeValueAsString(realPose.toMatrix().getStorage().getDDRM()));
+        System.out.println("Ground truth robot2camera:\n" + new ObjectMapper().writeValueAsString(robot2camera.toMatrix().getStorage().getDDRM()));
 
         System.out.println(estimatedPose);
     }
