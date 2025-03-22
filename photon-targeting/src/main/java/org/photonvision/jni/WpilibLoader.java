@@ -50,6 +50,7 @@ public class WpilibLoader {
             CombinedRuntimeLoader.loadLibraries(
                     WpilibLoader.class,
                     "wpimathjni",
+                    "wpilibc",
                     "ntcorejni",
                     "wpinetjni",
                     "wpiHaljni",
