@@ -67,7 +67,6 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-// See #1574 - flakey on windows and also linux, so commenting out until we bump wpilib
 class VisionSystemSimTest {
     private static final double kRotDeltaDeg = 0.25;
 
@@ -85,9 +84,6 @@ class VisionSystemSimTest {
         }
 
         OpenCvLoader.forceStaticLoad();
-
-        // See #1574 - test flakey, disabled until we address this
-        assumeTrue(false);
     }
 
     @BeforeEach

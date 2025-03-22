@@ -72,6 +72,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilibc_shared")
         }
         "${nativeName}JNI"(JniNativeLibrarySpec) {
 
@@ -245,7 +246,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 }
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
-
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpilibc")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
