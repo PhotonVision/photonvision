@@ -11,7 +11,7 @@ When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physic
 :::{tab-item} New Radio (2025 - present)
 
 ```{danger}
-Ensure that the radio's DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature may electrically destroy your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/getting-started/passive-power-over-ethernet-poe-for-downstream-devices)
+Ensure that the radio's DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature may electrically destroy your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/overview/wiring-your-radio#power-over-ethernet-poe-for-downstream-devices)
 ```
 
 ```{image} images/networking-diagram-vividhosting.png
