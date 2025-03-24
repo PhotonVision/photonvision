@@ -129,8 +129,8 @@ TEST(TimeSyncClientTest, CalculateBoth) {
 
   // AND a ping-pong sent with no delay
   // client -> server -> client
-  int64_t offset {-234};
-  int64_t network_latency {23};
+  int64_t offset{-234};
+  int64_t network_latency{23};
 
   uint64_t ping_client_time{100};
   uint64_t pong_server_time{ping_client_time + offset + network_latency};
