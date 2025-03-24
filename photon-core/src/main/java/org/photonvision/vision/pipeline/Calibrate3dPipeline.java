@@ -17,12 +17,12 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.util.Units;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
