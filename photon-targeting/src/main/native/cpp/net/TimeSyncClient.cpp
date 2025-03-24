@@ -57,7 +57,9 @@ static void ClientLoggerFunc(unsigned int level, const char* file,
              line);
 }
 
-void wpi::tsp::TimeSyncClient::updateStatistics(uint64_t pong_local_time, wpi::tsp::TspPing ping, wpi::tsp::TspPong pong) {
+void wpi::tsp::TimeSyncClient::UpdateStatistics(uint64_t pong_local_time,
+                                                wpi::tsp::TspPing ping,
+                                                wpi::tsp::TspPong pong) {
   // when time = send_time+rtt2/2, server time = server time
   // server time = local time + offset
   // offset = (server time - local time) = (server time) - (send_time +
@@ -145,7 +147,7 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
     return;
   }
 
-  updateStatistics(pong_local_time, ping, pong);
+  UpdateStatistics(pong_local_time, ping, pong);
 
   // using std::cout;
   // wpi::println("Ping-ponged! RTT2 {} uS, offset {} uS", rtt2,

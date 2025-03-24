@@ -97,8 +97,9 @@ class TimeSyncClient {
   int64_t GetOffset();
   Metadata GetMetadata();
 
- private:
-  void updateStatistics(uint64_t pong_local_time, wpi::tsp::TspPing ping, wpi::tsp::TspPong pong);
+  // public for testability
+  void UpdateStatistics(uint64_t pong_local_time, wpi::tsp::TspPing ping,
+                        wpi::tsp::TspPong pong);
 };
 
 }  // namespace tsp
