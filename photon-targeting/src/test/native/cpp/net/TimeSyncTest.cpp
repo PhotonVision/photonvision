@@ -86,7 +86,8 @@ TEST(TimeSyncClientTest, CalculateZeroOffset) {
   // WHEN we update statistics
   client.UpdateStatistics(pong_client_time, ping, pong);
 
-  // THEN the statistics will reflect no delay
+  // THEN the statistics will reflect no offset, and the expected rtt2
+  // (client-to-client) latency
   EXPECT_EQ(0, client.GetMetadata().offset);
   EXPECT_EQ(20, client.GetMetadata().rtt2);
   EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
@@ -113,7 +114,7 @@ TEST(TimeSyncClientTest, CalculateZeroRtt) {
   // WHEN we update statistics
   client.UpdateStatistics(pong_client_time, ping, pong);
 
-  // THEN the statistics will reflect no delay
+  // THEN the statistics will reflect the expected 23ms offset
   EXPECT_EQ(23, client.GetMetadata().offset);
   EXPECT_EQ(0, client.GetMetadata().rtt2);
   EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
@@ -143,7 +144,7 @@ TEST(TimeSyncClientTest, CalculateBoth) {
   // WHEN we update statistics
   client.UpdateStatistics(pong_client_time, ping, pong);
 
-  // THEN the statistics will reflect no delay
+  // THEN the statistics will reflect the expected latency and RTT
   EXPECT_EQ(offset, client.GetMetadata().offset);
   EXPECT_EQ(network_latency * 2, client.GetMetadata().rtt2);
   EXPECT_EQ(1u, client.GetMetadata().pongsReceived);
