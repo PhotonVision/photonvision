@@ -5,7 +5,10 @@ import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from 
 import JsPDF from "jspdf";
 import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
-import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
+import Charuco_4X4_1000_8x8 from "@/assets/images/charuco_boards/charuco_4x4_1000_size8x8.png";
+import Charuco_5X5_1000_8x8 from "@/assets/images/charuco_boards/charuco_5x5_1000_size8x8.png";
+import Charuco_6X6_1000_8x8 from "@/assets/images/charuco_boards/charuco_6x6_1000_size8x8.png";
+import Charuco_7X7_1000_8x8 from "@/assets/images/charuco_boards/charuco_7x7_1000_size8x8.png";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
@@ -90,6 +93,7 @@ const tooManyPoints = computed(
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
+  var calibrationType = "";
 
   doc.addFileToVFS("Prompt-Regular.tff", PromptRegular);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -121,14 +125,32 @@ const downloadCalibBoard = () => {
         maxWidth: (paperWidth - 2.0) / 2,
         align: "right"
       });
+      calibrationType += "Chessboard";
       break;
 
     case CalibrationBoardTypes.Charuco:
       // Add pregenerated charuco
       const charucoImage = new Image();
-      charucoImage.src = CharucoImage;
-      doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
+      switch (tagFamily.value) {
+        case CalibrationTagFamilies.Dict_4X4_1000:
+          charucoImage.src = Charuco_4X4_1000_8x8;
+          break;
+        case CalibrationTagFamilies.Dict_5X5_1000:
+          charucoImage.src = Charuco_5X5_1000_8x8;
+          break;
+        case CalibrationTagFamilies.Dict_6X6_1000:
+          charucoImage.src = Charuco_6X6_1000_8x8;
+          break;
+        case CalibrationTagFamilies.Dict_7X7_1000:
+          charucoImage.src = Charuco_7X7_1000_8x8;
+          break;
+        default:
+          charucoImage.src = Charuco_4X4_1000_8x8;
+          break;
+      }
 
+      calibrationType += CalibrationTagFamilies[tagFamily.value];
+      doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
       doc.text("8 x 8 | 1in & 0.75in", paperWidth - 1, 1.0, {
         maxWidth: (paperWidth - 2.0) / 2,
         align: "right"
@@ -155,7 +177,7 @@ const downloadCalibBoard = () => {
   logoImage.src = MonoLogo;
   doc.addImage(logoImage, "PNG", 1.0, 0.75, 1.4, 0.5);
 
-  doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
+  doc.save(`CalibrationTarget_${calibrationType}.pdf`);
 };
 
 const isCalibrating = computed(
@@ -252,7 +274,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-simple-table>
       </v-card-text>
       <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-6 pt-0">
-        <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 white--text"
+        <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-3 white--text"
           >Configure New Calibration</v-card-subtitle
         >
         <v-form ref="form" v-model="settingsValid">
@@ -266,7 +288,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             :items="getUniqueVideoResolutionStrings()"
           />
           <pv-select
-            v-show="isCalibrating && boardType != CalibrationBoardTypes.Charuco"
+            v-if="isCalibrating && boardType != CalibrationBoardTypes.Charuco"
             v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
             label="Decimation"
             tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -283,7 +305,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             :disabled="isCalibrating"
           />
           <pv-select
-            v-show="boardType == CalibrationBoardTypes.Charuco"
+            v-if="boardType === CalibrationBoardTypes.Charuco"
             v-model="tagFamily"
             label="Tag Family"
             tooltip="Dictionary of aruco markers on the charuco board"
@@ -292,18 +314,18 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             :disabled="isCalibrating"
           />
           <pv-number-input
-            v-model="squareSizeIn"
-            label="Pattern Spacing (in)"
-            tooltip="Spacing between pattern features in inches"
+            v-if="boardType === CalibrationBoardTypes.Charuco"
+            v-model="markerSizeIn"
+            label="Marker Size (in)"
+            tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
             :disabled="isCalibrating"
             :rules="[(v) => v > 0 || 'Size must be positive']"
             :label-cols="4"
           />
           <pv-number-input
-            v-show="boardType == CalibrationBoardTypes.Charuco"
-            v-model="markerSizeIn"
-            label="Marker Size (in)"
-            tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
+            v-model="squareSizeIn"
+            label="Pattern Spacing (in)"
+            tooltip="Spacing between pattern features in inches"
             :disabled="isCalibrating"
             :rules="[(v) => v > 0 || 'Size must be positive']"
             :label-cols="4"
@@ -325,7 +347,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             :label-cols="4"
           />
           <pv-switch
-            v-show="boardType == CalibrationBoardTypes.Charuco"
+            v-if="boardType === CalibrationBoardTypes.Charuco"
             v-model="useOldPattern"
             label="Old OpenCV Pattern"
             :disabled="isCalibrating"
@@ -358,7 +380,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         <pv-switch
           v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
           label="Auto Exposure"
-          :label-cols="4"
+          :switch-cols="8"
           tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
         />
@@ -369,7 +391,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           tooltip="Directly controls how long the camera shutter remains open. Units are dependant on the underlying driver."
           :min="useCameraSettingsStore().minExposureRaw"
           :max="useCameraSettingsStore().maxExposureRaw"
-          :slider-cols="7"
+          :slider-cols="8"
           :step="1"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)"
         />
@@ -378,7 +400,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           label="Brightness"
           :min="0"
           :max="100"
-          :slider-cols="7"
+          :slider-cols="8"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)"
         />
         <pv-slider
@@ -388,7 +410,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           tooltip="Controls camera gain, similar to brightness"
           :min="0"
           :max="100"
-          :slider-cols="7"
+          :slider-cols="8"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
         />
         <pv-slider
@@ -397,7 +419,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           label="Red AWB Gain"
           :min="0"
           :max="100"
-          :slider-cols="7"
+          :slider-cols="8"
           tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)"
         />
@@ -407,7 +429,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           label="Blue AWB Gain"
           :min="0"
           :max="100"
-          :slider-cols="7"
+          :slider-cols="8"
           tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
           @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
         />
