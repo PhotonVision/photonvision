@@ -56,9 +56,6 @@ public class ObjectDetectionPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        var params = new ObjectDetectionPipeParams();
-        params.confidence = settings.confidence;
-        params.nms = settings.nms;
         Optional<Model> selectedModel =
                 NeuralNetworkModelManager.getInstance().getModel(settings.model);
 
@@ -71,8 +68,8 @@ public class ObjectDetectionPipeline
         if (selectedModel.isEmpty()) {
             selectedModel = Optional.of(NullModel.getInstance());
         }
-
-        params.model = selectedModel.get();
+        var params =
+                new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get());
 
         objectDetectorPipe.setParams(params);
 

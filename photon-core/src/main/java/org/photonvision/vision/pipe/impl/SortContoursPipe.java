@@ -39,46 +39,23 @@ public class SortContoursPipe
 
         if (!in.isEmpty()) {
             m_sortedContours.addAll(in);
-            if (params.getSortMode() != ContourSortMode.Centermost) {
-                m_sortedContours.sort(params.getSortMode().getComparator());
+            if (params.sortMode() != ContourSortMode.Centermost) {
+                m_sortedContours.sort(params.sortMode().getComparator());
             } else {
                 // we need knowledge of camera properties to calculate this distance -- do it ourselves
                 m_sortedContours.sort(Comparator.comparingDouble(this::calcSquareCenterDistance));
             }
         }
 
-        return new ArrayList<>(
-                m_sortedContours.subList(0, Math.min(in.size(), params.getMaxTargets())));
+        return new ArrayList<>(m_sortedContours.subList(0, Math.min(in.size(), params.maxTargets())));
     }
 
     private double calcSquareCenterDistance(PotentialTarget tgt) {
         return Math.sqrt(
-                Math.pow(params.getCamProperties().centerX - tgt.getMinAreaRect().center.x, 2)
-                        + Math.pow(params.getCamProperties().centerY - tgt.getMinAreaRect().center.y, 2));
+                Math.pow(params.frameStaticProperties().centerX - tgt.getMinAreaRect().center.x, 2)
+                        + Math.pow(params.frameStaticProperties().centerY - tgt.getMinAreaRect().center.y, 2));
     }
 
-    public static class SortContoursParams {
-        private final ContourSortMode m_sortMode;
-        private final int m_maxTargets;
-        private final FrameStaticProperties m_frameStaticProperties;
-
-        public SortContoursParams(
-                ContourSortMode sortMode, int maxTargets, FrameStaticProperties camProperties) {
-            m_sortMode = sortMode;
-            m_maxTargets = maxTargets;
-            m_frameStaticProperties = camProperties;
-        }
-
-        public ContourSortMode getSortMode() {
-            return m_sortMode;
-        }
-
-        public FrameStaticProperties getCamProperties() {
-            return m_frameStaticProperties;
-        }
-
-        public int getMaxTargets() {
-            return m_maxTargets;
-        }
-    }
+    public static record SortContoursParams(
+            ContourSortMode sortMode, int maxTargets, FrameStaticProperties frameStaticProperties) {}
 }

@@ -86,8 +86,8 @@ public class ArucoPoseEstimatorPipe
             Calib3d.solvePnPGeneric(
                     objectPoints,
                     imagePoints,
-                    params.calibration.getCameraIntrinsicsMat(),
-                    params.calibration.getDistCoeffsMat(),
+                    params.calibration().getCameraIntrinsicsMat(),
+                    params.calibration().getDistCoeffsMat(),
                     rvecs,
                     tvecs,
                     false,
@@ -147,15 +147,7 @@ public class ArucoPoseEstimatorPipe
         reprojectionErrors.release();
     }
 
-    public static class ArucoPoseEstimatorPipeParams {
-        final CameraCalibrationCoefficients calibration;
-        final double tagSize;
-
-        // object vertices defined by tag size
-
-        public ArucoPoseEstimatorPipeParams(CameraCalibrationCoefficients cal, double tagSize) {
-            this.calibration = cal;
-            this.tagSize = tagSize;
-        }
-    }
+    // object vertices defined by tag size
+    public static record ArucoPoseEstimatorPipeParams(
+            CameraCalibrationCoefficients calibration, double tagSize) {}
 }
