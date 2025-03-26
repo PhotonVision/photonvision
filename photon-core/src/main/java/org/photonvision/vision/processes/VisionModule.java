@@ -364,24 +364,24 @@ public class VisionModule {
     public void startCalibration(UICalibrationData data) {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
 
-        var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
+        var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex());
         var resolution = new Size(videoMode.width, videoMode.height);
 
-        settings.cameraVideoModeIndex = data.videoModeIndex;
-        visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
+        settings.cameraVideoModeIndex = data.videoModeIndex();
+        visionSource.getSettables().setVideoModeIndex(data.videoModeIndex());
         logger.info(
                 "Starting calibration at resolution index "
-                        + data.videoModeIndex
+                        + data.videoModeIndex()
                         + " and settings "
                         + data);
-        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
-        settings.markerSize = Units.inchesToMeters(data.markerSizeIn);
-        settings.boardHeight = data.patternHeight;
-        settings.boardWidth = data.patternWidth;
-        settings.boardType = data.boardType;
+        settings.gridSize = Units.inchesToMeters(data.squareSizeIn());
+        settings.markerSize = Units.inchesToMeters(data.markerSizeIn());
+        settings.boardHeight = data.patternHeight();
+        settings.boardWidth = data.patternWidth();
+        settings.boardType = data.boardType();
         settings.resolution = resolution;
-        settings.useOldPattern = data.useOldPattern;
-        settings.tagFamily = data.tagFamily;
+        settings.useOldPattern = data.useOldPattern();
+        settings.tagFamily = data.tagFamily();
 
         // Disable gain if not applicable
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
