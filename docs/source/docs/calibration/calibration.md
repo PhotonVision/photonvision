@@ -52,7 +52,7 @@ We'll next select a resolution to calibrate and populate our pattern spacing, ma
 :::
 
 :::{note}
-If you have a [calib.io](https://calib.io/) CharuCo Target you will have to enter the paramaters of your target. For example if your taget says "9x12 | Chceker Size: 30 mm | Marker Size: 22 mm | Dictionary: AruCo DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the baord wont be detected duting calibration. If you swap the width and height your calibration will have a very high error.
+If you have a [calib.io](https://calib.io/) CharuCo Target you will have to enter the paramaters of your target. For example if your target says "9x12 | Checker Size: 30 mm | Marker Size: 22 mm | Dictionary: AruCo DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the board wont be detected during calibration. If you swap the width and height your calibration will have a very high error.
 :::
 
 ### 4. Take at calibration images from various angles.
