@@ -19,46 +19,18 @@ package org.photonvision.vision.pipeline;
 
 import org.opencv.objdetect.Objdetect;
 
-public class UICalibrationData {
-    public int videoModeIndex;
-    public int count;
-    public int minCount;
-    public boolean hasEnough;
-    public double squareSizeIn;
-    public int patternWidth;
-    public int patternHeight;
-    public BoardType boardType;
-    public double markerSizeIn;
-    public boolean useOldPattern;
-    public TagFamily tagFamily;
-
-    public UICalibrationData() {}
-
-    public UICalibrationData(
-            int count,
-            int videoModeIndex,
-            int minCount,
-            boolean hasEnough,
-            double squareSizeIn,
-            double markerSizeIn,
-            int patternWidth,
-            int patternHeight,
-            BoardType boardType,
-            boolean useOldPattern,
-            TagFamily tagFamily) {
-        this.count = count;
-        this.minCount = minCount;
-        this.videoModeIndex = videoModeIndex;
-        this.hasEnough = hasEnough;
-        this.squareSizeIn = squareSizeIn;
-        this.markerSizeIn = markerSizeIn;
-        this.patternWidth = patternWidth;
-        this.patternHeight = patternHeight;
-        this.boardType = boardType;
-        this.useOldPattern = useOldPattern;
-        this.tagFamily = tagFamily;
-    }
-
+public record UICalibrationData(
+        int count,
+        int videoModeIndex,
+        int minCount,
+        boolean hasEnough,
+        double squareSizeIn,
+        double markerSizeIn,
+        int patternWidth,
+        int patternHeight,
+        BoardType boardType,
+        boolean useOldPattern,
+        TagFamily tagFamily) {
     public enum BoardType {
         CHESSBOARD,
         CHARUCOBOARD,
@@ -81,33 +53,5 @@ public class UICalibrationData {
         private TagFamily(int value) {
             this.value = value;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "UICalibrationData{"
-                + "videoModeIndex="
-                + videoModeIndex
-                + ", count="
-                + count
-                + ", minCount="
-                + minCount
-                + ", hasEnough="
-                + hasEnough
-                + ", squareSizeIn="
-                + squareSizeIn
-                + ", markerSizeIn="
-                + markerSizeIn
-                + ", patternWidth="
-                + patternWidth
-                + ", patternHeight="
-                + patternHeight
-                + ", boardType="
-                + boardType
-                + ", tagFamily="
-                + tagFamily
-                + ", useOldPattern="
-                + useOldPattern
-                + '}';
     }
 }

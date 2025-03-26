@@ -59,13 +59,12 @@ public class ArucoDetectionPipe
             for (var detection : detections) {
                 double[] xCorners = detection.getXCorners();
                 double[] yCorners = detection.getYCorners();
-                Point[] cornerPoints =
-                        new Point[] {
-                            new Point(xCorners[0], yCorners[0]),
-                            new Point(xCorners[1], yCorners[1]),
-                            new Point(xCorners[2], yCorners[2]),
-                            new Point(xCorners[3], yCorners[3])
-                        };
+                Point[] cornerPoints = {
+                    new Point(xCorners[0], yCorners[0]),
+                    new Point(xCorners[1], yCorners[1]),
+                    new Point(xCorners[2], yCorners[2]),
+                    new Point(xCorners[3], yCorners[3])
+                };
                 double bltr =
                         Math.hypot(
                                 cornerPoints[2].x - cornerPoints[0].x, cornerPoints[2].y - cornerPoints[0].y);

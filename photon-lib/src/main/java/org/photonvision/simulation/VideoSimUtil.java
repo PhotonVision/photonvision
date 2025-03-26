@@ -39,7 +39,6 @@ import java.util.Map;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -103,16 +102,8 @@ public class VideoSimUtil {
      */
     private static Mat get36h11TagImage(int id) {
         RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
-
-        var buf = frame.getData();
-        byte[] arr = new byte[buf.remaining()];
-        buf.get(arr);
-        // frame.close();
-
-        var mat = new MatOfByte(arr).reshape(1, 10).submat(new Rect(0, 0, 10, 10));
-        mat.dump();
-
-        return mat;
+        return new Mat(
+                frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
     }
 
     /** Gets the points representing the marker(black square) corners. */
