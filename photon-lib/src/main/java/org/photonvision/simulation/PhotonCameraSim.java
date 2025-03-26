@@ -47,6 +47,7 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonTargetSortMode;
@@ -522,6 +523,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 }
             }
             videoSimRaw.putFrame(videoSimFrameRaw);
+            Imgcodecs.imwrite("videoSimFrameRaw.png", videoSimFrameRaw);
         } else videoSimRaw.setConnectionStrategy(ConnectionStrategy.kForceClose);
         // draw/annotate target detection outline on processed view
         if (videoSimProcEnabled) {
@@ -558,6 +560,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);
+            Imgcodecs.imwrite("videoSimFrameProcessed.png", videoSimFrameProcessed);
         } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
 
         // calculate multitag results
