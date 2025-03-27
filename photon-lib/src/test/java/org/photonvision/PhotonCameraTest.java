@@ -193,9 +193,6 @@ class PhotonCameraTest {
     @MethodSource("testNtOffsets")
     public void testRestartingRobotAndCoproc(
             int robotStart, int coprocStart, int robotRestart, int coprocRestart) throws Throwable {
-        // See #1574 - test flakey, disabled until we address this
-        assumeTrue(false);
-
         var robotNt = NetworkTableInstance.create();
         var coprocNt = NetworkTableInstance.create();
 
