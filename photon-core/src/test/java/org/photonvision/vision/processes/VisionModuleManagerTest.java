@@ -190,7 +190,7 @@ public class VisionModuleManagerTest {
         sleep(1500);
 
         Assertions.assertNotNull(module0DataConsumer.result);
-        printTestResults(module0DataConsumer.result);
+        TestUtils.printTestResults(module0DataConsumer.result);
     }
 
     @Test
@@ -251,13 +251,6 @@ public class VisionModuleManagerTest {
         assertTrue(idxs.contains(2));
         assertTrue(idxs.contains(3));
         assertTrue(idxs.contains(4));
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.print(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
     }
 
     private void sleep(int millis) {

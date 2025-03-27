@@ -24,10 +24,13 @@ import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.stream.Collectors;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class TestUtils {
     public static boolean loadLibraries() {
@@ -370,6 +373,22 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static void printTestResults(CVPipelineResult pipelineResult) {
+        double fps = 1000 / pipelineResult.getLatencyMillis();
+        System.out.print(
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
+        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+    }
+
+    public static void printTestResultsWithLocation(CVPipelineResult pipelineResult) {
+        printTestResults(pipelineResult);
+        System.out.println(
+                "Found targets at "
+                        + pipelineResult.targets.stream()
+                                .map(TrackedTarget::getBestCameraToTarget3d)
+                                .collect(Collectors.toList()));
     }
 
     public static Path getTestMode2023ImagePath() {

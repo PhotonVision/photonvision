@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.geometry.Translation3d;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,6 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class AprilTagTest {
     @BeforeEach
@@ -59,7 +57,7 @@ public class AprilTagTest {
 
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -124,7 +122,7 @@ public class AprilTagTest {
 
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -139,17 +137,5 @@ public class AprilTagTest {
         Assertions.assertEquals(4.14, pose.getTranslation().getX(), 0.2);
         Assertions.assertEquals(2, pose.getTranslation().getY(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-        System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
     }
 }
