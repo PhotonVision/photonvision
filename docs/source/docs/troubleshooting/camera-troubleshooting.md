@@ -106,3 +106,7 @@ We expect an output similar to the following. For picameras, note the "unicam" e
                 /dev/media2
             Cannot open device /dev/video0, exiting.
 ```
+
+## Random Disconnects
+
+This is a common issue with Arducam cameras, or other cameras with exposed boards, similar to Arducams. We currently believe it occurs due to electrostatic discharge. The recommended solution is fully enclosing the camera inside of a case, which can be 3D-printed or sourced from a reputable vendor.
