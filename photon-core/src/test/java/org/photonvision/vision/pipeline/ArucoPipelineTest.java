@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.geometry.Translation3d;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +28,6 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class ArucoPipelineTest {
     @BeforeEach
@@ -59,7 +57,7 @@ public class ArucoPipelineTest {
 
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -101,17 +99,5 @@ public class ArucoPipelineTest {
                 -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
         // The object's Z axis should be (0, 0, 1)
         Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-        System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
     }
 }
