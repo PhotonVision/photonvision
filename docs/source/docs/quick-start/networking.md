@@ -66,6 +66,10 @@ you can set the team number to "localhost", and PhotonVision will send data to t
 
 ## Port Forwarding
 
+:::{note}
+If you are using a VH-109 radio (2025 and later), you should not use port forwarding.  Instead, tether to the dedicated DS ethernet port on the VH-109.
+:::
+
 If you would like to access your Ethernet-connected vision device from a computer when tethered to the USB port on the roboRIO, you can use [WPILib's](https://docs.wpilib.org/en/stable/docs/networking/networking-utilities/portforwarding.html) `PortForwarder`.
 
 ```{eval-rst}
