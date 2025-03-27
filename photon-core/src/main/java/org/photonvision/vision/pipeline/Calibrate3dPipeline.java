@@ -22,7 +22,6 @@ import edu.wpi.first.math.util.Units;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -166,9 +165,7 @@ public class Calibrate3dPipeline
     }
 
     List<List<Point>> getCornersList() {
-        return foundCornersList.stream()
-                .map(it -> it.imagePoints.toList())
-                .collect(Collectors.toList());
+        return foundCornersList.stream().map(it -> it.imagePoints.toList()).toList();
     }
 
     public boolean hasEnough() {

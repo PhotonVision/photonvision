@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 import edu.wpi.first.math.Pair;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -199,7 +198,7 @@ public class ColoredShapePipeline
                 sortContoursPipe.run(
                         filterShapeResult.output.stream()
                                 .map(shape -> new PotentialTarget(shape.getContour(), shape))
-                                .collect(Collectors.toList()));
+                                .toList());
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
         CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =

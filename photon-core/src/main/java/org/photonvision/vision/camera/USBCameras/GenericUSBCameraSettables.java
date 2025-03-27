@@ -25,11 +25,9 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.PixelFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -301,9 +299,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         var sortedList =
                 videoModesList.stream()
                         .distinct() // remove redundant video mode entries
-                        .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                        .collect(Collectors.toList());
-        Collections.reverse(sortedList);
+                        .sorted(((a, b) -> (a.width + a.height) - (b.width + b.height)))
+                        .toList();
 
         for (VideoMode videoMode : sortedList) {
             videoModes.put(sortedList.indexOf(videoMode), videoMode);

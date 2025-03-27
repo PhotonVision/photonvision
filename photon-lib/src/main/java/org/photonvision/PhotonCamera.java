@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.opencv.core.Core;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
@@ -594,6 +593,6 @@ public class PhotonCamera implements AutoCloseable {
                         it -> {
                             return rootPhotonTable.getSubTable(it).getEntry("rawBytes").exists();
                         })
-                .collect(Collectors.toList());
+                .toList();
     }
 }
