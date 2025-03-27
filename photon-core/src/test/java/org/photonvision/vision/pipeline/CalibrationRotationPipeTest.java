@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -151,13 +150,13 @@ public class CalibrationRotationPipeTest {
         var rotatedDistortedPoints =
                 distortedOriginalPoints.stream()
                         .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
-                        .collect(Collectors.toList());
+                        .toList();
 
         // Now let's instead rotate then distort
         var rotatedOriginalPoints =
                 Arrays.stream(originalPoints)
                         .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
-                        .collect(Collectors.toList());
+                        .toList();
 
         var distortedRotatedPoints =
                 OpenCVHelp.distortPoints(
@@ -310,9 +309,7 @@ public class CalibrationRotationPipeTest {
         // rotate and try again
         var rotAngle = ImageRotationMode.DEG_90_CCW;
         var rotatedDistortedPoints =
-                distortedCorners.stream()
-                        .map(it -> rotAngle.rotatePoint(it, 1280, 720))
-                        .collect(Collectors.toList());
+                distortedCorners.stream().map(it -> rotAngle.rotatePoint(it, 1280, 720)).toList();
         pipe.setParams(
                 new SolvePNPPipeParams(
                         coeffs.rotateCoefficients(rotAngle), TargetModel.kAprilTag6p5in_36h11));

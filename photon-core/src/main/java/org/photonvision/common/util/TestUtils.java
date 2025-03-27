@@ -24,7 +24,6 @@ import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.stream.Collectors;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.jni.WpilibLoader;
@@ -386,9 +385,7 @@ public class TestUtils {
         printTestResults(pipelineResult);
         System.out.println(
                 "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
+                        + pipelineResult.targets.stream().map(TrackedTarget::getBestCameraToTarget3d).toList());
     }
 
     public static Path getTestMode2023ImagePath() {

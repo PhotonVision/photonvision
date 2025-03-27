@@ -18,7 +18,6 @@
 package org.photonvision.common.dataflow.websocket;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -64,6 +63,6 @@ public class UIPhotonConfiguration {
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
-                        .collect(Collectors.toList()));
+                        .toList());
     }
 }

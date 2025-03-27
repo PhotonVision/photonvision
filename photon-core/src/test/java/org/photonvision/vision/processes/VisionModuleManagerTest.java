@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -233,15 +232,12 @@ public class VisionModuleManagerTest {
         var modules =
                 List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
                         .map(vmm::addSource)
-                        .collect(Collectors.toList());
+                        .toList();
 
         System.out.println(
                 Arrays.toString(
                         modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
-        var idxs =
-                modules.stream()
-                        .map(it -> it.getCameraConfiguration().streamIndex)
-                        .collect(Collectors.toList());
+        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
         assertTrue(usbSimulation.equals(usbSimulation));
         assertTrue(!usbSimulation.equals(usbSimulation2));

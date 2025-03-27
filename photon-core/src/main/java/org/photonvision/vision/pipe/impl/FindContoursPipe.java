@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.imgproc.Imgproc;
@@ -40,7 +39,7 @@ public class FindContoursPipe
         Imgproc.findContours(
                 in, m_foundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_KCOS);
 
-        return m_foundContours.stream().map(Contour::new).collect(Collectors.toList());
+        return m_foundContours.stream().map(Contour::new).toList();
     }
 
     public static class FindContoursParams {}
