@@ -18,11 +18,12 @@
 package org.photonvision.vision.calibration;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.opencv.core.Size;
 
 public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficients {
     public int numSnapshots;
+
+    /** Immutable list of mean errors. */
     public List<Double> meanErrors;
 
     public UICameraCalibrationCoefficients(
@@ -54,6 +55,6 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                                                 .mapToDouble(it -> Math.sqrt(it.x * it.x + it.y * it.y))
                                                 .average()
                                                 .orElse(0))
-                        .collect(Collectors.toList());
+                        .toList();
     }
 }

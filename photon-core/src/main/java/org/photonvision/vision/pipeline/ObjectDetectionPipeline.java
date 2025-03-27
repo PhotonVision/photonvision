@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -127,9 +126,7 @@ public class ObjectDetectionPipeline
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
                 sortContoursPipe.run(
-                        filterContoursResult.output.stream()
-                                .map(shape -> new PotentialTarget(shape))
-                                .collect(Collectors.toList()));
+                        filterContoursResult.output.stream().map(shape -> new PotentialTarget(shape)).toList());
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
         CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
