@@ -111,4 +111,4 @@ We expect an output similar to the following. For picameras, note the "unicam" e
 
 This is a common issue with Arducam cameras, or other cameras with exposed boards, similar to Arducams. We currently believe it occurs due to electrostatic discharge (ESD). The recommended solution is fully enclosing the camera inside of a case, which can be 3D-printed or sourced from a reputable vendor. Using an anti-static spray on the case can also be helpful in reducing ESD. If the camera was previously damaged, due to ESD or some other reason, this is not guaranteed to resolve the problem.
 
-To ensure that the camera remains safe from ESD when not in the case, it is recommended that when handling, cameras are only held by the corners. Additionally, cameras should be stored in ESD safe bags, which they are commonly shipped in.
+To ensure that the camera remains safe from ESD when not in the case, it is recommended that when handling, cameras are only held by the corners. Additionally, cameras should be stored in ESD safe bags which they are commonly shipped in.
