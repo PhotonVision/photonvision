@@ -38,7 +38,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;

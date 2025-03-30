@@ -42,9 +42,9 @@ public class ObjectDetectionPipe
     @Override
     protected List<NeuralNetworkPipeResult> process(CVMat in) {
         // Check if the model has changed
-        if (detector.getModel() != params.model) {
+        if (detector.getModel() != params.model()) {
             detector.release();
-            detector = params.model.load();
+            detector = params.model().load();
         }
 
         Mat frame = in.getMat();
@@ -52,17 +52,10 @@ public class ObjectDetectionPipe
             return List.of();
         }
 
-        return detector.detect(in.getMat(), params.nms, params.confidence);
+        return detector.detect(in.getMat(), params.nms(), params.confidence());
     }
 
-    public static class ObjectDetectionPipeParams {
-        public double confidence;
-        public double nms;
-        public int max_detections;
-        public Model model;
-
-        public ObjectDetectionPipeParams() {}
-    }
+    public static record ObjectDetectionPipeParams(double confidence, double nms, Model model) {}
 
     public List<String> getClassNames() {
         return detector.getClasses();

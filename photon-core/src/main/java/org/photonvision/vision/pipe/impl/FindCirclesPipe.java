@@ -49,9 +49,9 @@ public class FindCirclesPipe
         circles.release();
         List<CVShape> output = new ArrayList<>();
 
-        var diag = params.diagonalLengthPx;
-        var minRadius = (int) (params.minRadius * diag / 100.0);
-        var maxRadius = (int) (params.maxRadius * diag / 100.0);
+        var diag = params.diagonalLengthPx();
+        var minRadius = (int) (params.minRadius() * diag / 100.0);
+        var maxRadius = (int) (params.maxRadius() * diag / 100.0);
 
         Imgproc.HoughCircles(
                 in.getLeft(),
@@ -65,9 +65,9 @@ public class FindCirclesPipe
                 unless some small very circles need to be detected.
                 */
                 1.0,
-                params.minDist,
-                params.maxCannyThresh,
-                Math.max(1.0, params.accuracy),
+                params.minDist(),
+                params.maxCannyThresh(),
+                Math.max(1.0, params.accuracy()),
                 minRadius,
                 maxRadius);
         // Great, we now found the center point of the circle, and it's radius, but we have no idea what
@@ -91,8 +91,8 @@ public class FindCirclesPipe
                 // NOTE: This means that the centroid of the contour must be within the "allowable
                 // threshold"
                 // of the center of the circle
-                if (Math.abs(x_center - (mu.m10 / mu.m00)) <= params.allowableThreshold
-                        && Math.abs(y_center - (mu.m01 / mu.m00)) <= params.allowableThreshold) {
+                if (Math.abs(x_center - (mu.m10 / mu.m00)) <= params.allowableThreshold()
+                        && Math.abs(y_center - (mu.m01 / mu.m00)) <= params.allowableThreshold()) {
                     // If it is, then add it to the output array
                     output.add(new CVShape(contour, new Point(c[0], c[1]), c[2]));
                     unmatchedContours.remove(contour);
@@ -107,41 +107,29 @@ public class FindCirclesPipe
         return output;
     }
 
-    public static class FindCirclePipeParams {
-        private final int allowableThreshold;
-        private final int minRadius;
-        private final int maxRadius;
-        private final int minDist;
-        private final int maxCannyThresh;
-        private final int accuracy;
-        private final double diagonalLengthPx;
-
-        /*
-         * @params minDist - Minimum distance between the centers of the detected circles.
-         * If the parameter is too small, multiple neighbor circles may be falsely detected in addition to a true one. If it is too large, some circles may be missed.
-         *
-         * @param maxCannyThresh -First method-specific parameter. In case of #HOUGH_GRADIENT and #HOUGH_GRADIENT_ALT, it is the higher threshold of the two passed to the Canny edge detector (the lower one is twice smaller).
-         * Note that #HOUGH_GRADIENT_ALT uses #Scharr algorithm to compute image derivatives, so the threshold value should normally be higher, such as 300 or normally exposed and contrasty images.
-         *
-         *
-         * @param allowableThreshold - When finding the corresponding contour, this is used to see how close a center should be to a contour for it to be considered THAT contour.
-         * Should be increased with lower resolutions and decreased with higher resolution
-         *  */
-        public FindCirclePipeParams(
-                int allowableThreshold,
-                int minRadius,
-                int minDist,
-                int maxRadius,
-                int maxCannyThresh,
-                int accuracy,
-                double diagonalLengthPx) {
-            this.allowableThreshold = allowableThreshold;
-            this.minRadius = minRadius;
-            this.maxRadius = maxRadius;
-            this.minDist = minDist;
-            this.maxCannyThresh = maxCannyThresh;
-            this.accuracy = accuracy;
-            this.diagonalLengthPx = diagonalLengthPx;
-        }
-    }
+    /**
+     * @param allowableThreshold When finding the corresponding contour, this is used to see how close
+     *     a center should be to a contour for it to be considered THAT contour. Should be increased
+     *     with lower resolutions and decreased with higher resolution
+     * @param minRadius Minimum circle radius, [0, 100]
+     * @param minDist Minimum distance between the centers of the detected circles. If the parameter
+     *     is too small, multiple neighbor circles may be falsely detected in addition to a true one.
+     *     If it is too large, some circles may be missed.
+     * @param maxRadius Maximum circle radius, [0, 100]
+     * @param maxCannyThresh First method-specific parameter. In case of #HOUGH_GRADIENT and
+     *     #HOUGH_GRADIENT_ALT, it is the higher threshold of the two passed to the Canny edge
+     *     detector (the lower one is twice smaller). Note that #HOUGH_GRADIENT_ALT uses #Scharr
+     *     algorithm to compute image derivatives, so the threshold value should normally be higher,
+     *     such as 300 or normally exposed and contrasty images.
+     * @param accuracy Circle accuracy, [1, 100]
+     * @param diagonalLengthPx The diagonal length of the image in pixels
+     */
+    public static record FindCirclePipeParams(
+            int allowableThreshold,
+            int minRadius,
+            int minDist,
+            int maxRadius,
+            int maxCannyThresh,
+            int accuracy,
+            double diagonalLengthPx) {}
 }
