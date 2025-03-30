@@ -51,9 +51,9 @@ public class SortContoursPipe
     }
 
     private double calcSquareCenterDistance(PotentialTarget tgt) {
-        return Math.sqrt(
-                Math.pow(params.frameStaticProperties().centerX - tgt.getMinAreaRect().center.x, 2)
-                        + Math.pow(params.frameStaticProperties().centerY - tgt.getMinAreaRect().center.y, 2));
+        return Math.hypot(
+                params.frameStaticProperties().centerX - tgt.getMinAreaRect().center.x,
+                params.frameStaticProperties().centerY - tgt.getMinAreaRect().center.y);
     }
 
     public static record SortContoursParams(

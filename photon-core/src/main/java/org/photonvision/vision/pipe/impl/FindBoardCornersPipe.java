@@ -170,9 +170,7 @@ public class FindBoardCornersPipe
             // +1 idx Neighbor distance
             double[] startPoint = inPoints.get(pointIdx, 0);
             double[] endPoint = inPoints.get(pointIdx + 1, 0);
-            double deltaX = startPoint[0] - endPoint[0];
-            double deltaY = startPoint[1] - endPoint[1];
-            double distToNext = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            double distToNext = Math.hypot(startPoint[0] - endPoint[0], startPoint[1] - endPoint[1]);
 
             minSpacing = Math.min(distToNext, minSpacing);
         }
