@@ -85,9 +85,7 @@ public class CornerDetectionPipe
      * @return The straight line distance between them.
      */
     private static double distanceBetween(Point a, Point b) {
-        double xDelta = a.x - b.x;
-        double yDelta = a.y - b.y;
-        return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
+        return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
     /**

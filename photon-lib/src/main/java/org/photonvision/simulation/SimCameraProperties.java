@@ -171,7 +171,7 @@ public class SimCameraProperties {
             DriverStation.reportError(
                     "Requested invalid FOV! Clamping between (1, 179) degrees...", false);
         }
-        double resDiag = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
+        double resDiag = Math.hypot(resWidth, resHeight);
         double diagRatio = Math.tan(fovDiag.getRadians() / 2);
         var fovWidth = new Rotation2d(Math.atan(diagRatio * (resWidth / resDiag)) * 2);
         var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
