@@ -121,12 +121,12 @@ public class CornerDetectionPipe
         var isOpen = !convexHull && target.hasSubContours();
         var peri = Imgproc.arcLength(targetContour, true);
         Imgproc.approxPolyDP(
-                targetContour, polyOutput, params.accuracyPercentage / 600.0 * peri, !isOpen);
+                targetContour, polyOutput, params.accuracyPercentage() / 600.0 * peri, !isOpen);
 
         // we must have at least 4 corners for this strategy to work.
         // If we are looking for an exact side count that is handled here too.
         var pointList = new ArrayList<>(polyOutput.toList());
-        if (pointList.size() < 4 || (params.exactSideCount && params.sideCount != pointList.size()))
+        if (pointList.size() < 4 || (params.exactSideCount() && params.sideCount() != pointList.size()))
             return null;
 
         target.setApproximateBoundingPolygon(polyOutput);
@@ -177,29 +177,15 @@ public class CornerDetectionPipe
         return List.of(bl, br, tr, tl);
     }
 
-    public static class CornerDetectionPipeParameters {
-        private final DetectionStrategy cornerDetectionStrategy;
-
-        private final boolean calculateConvexHulls;
-        private final boolean exactSideCount;
-        private final int sideCount;
-
-        /** This number can be changed to change how "accurate" our approximate polygon must be. */
-        private final double accuracyPercentage;
-
-        public CornerDetectionPipeParameters(
-                DetectionStrategy cornerDetectionStrategy,
-                boolean calculateConvexHulls,
-                boolean exactSideCount,
-                int sideCount,
-                double accuracyPercentage) {
-            this.cornerDetectionStrategy = cornerDetectionStrategy;
-            this.calculateConvexHulls = calculateConvexHulls;
-            this.exactSideCount = exactSideCount;
-            this.sideCount = sideCount;
-            this.accuracyPercentage = accuracyPercentage;
-        }
-    }
+    /**
+     * @param accuracyPercentage Represents how "accurate" our approximate polygon must be.
+     */
+    public static record CornerDetectionPipeParameters(
+            DetectionStrategy cornerDetectionStrategy,
+            boolean calculateConvexHulls,
+            boolean exactSideCount,
+            int sideCount,
+            double accuracyPercentage) {}
 
     public enum DetectionStrategy {
         APPROX_POLY_DP_AND_EXTREME_CORNERS
