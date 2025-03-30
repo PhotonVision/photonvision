@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
@@ -305,13 +304,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                         .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
                         .collect(Collectors.toList());
         Collections.reverse(sortedList);
-
-        // On vendor cameras, respect blacklisted indices
-        var indexBlacklist =
-                ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices();
-        for (int badIdx : indexBlacklist) {
-            sortedList.remove(badIdx);
-        }
 
         for (VideoMode videoMode : sortedList) {
             videoModes.put(sortedList.indexOf(videoMode), videoMode);
