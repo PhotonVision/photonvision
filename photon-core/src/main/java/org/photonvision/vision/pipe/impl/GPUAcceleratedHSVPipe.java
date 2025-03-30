@@ -489,8 +489,8 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         gl.glUniform2f(resolutionUniformId, in.width(), in.height());
 
         // Put values in threshold uniforms
-        var lowr = params.getHsvLower().val;
-        var upr = params.getHsvUpper().val;
+        var lowr = params.hsvLower().val;
+        var upr = params.hsvUpper().val;
         gl.glUniform3f(lowerUniformId, (float) lowr[0], (float) lowr[1], (float) lowr[2]);
         gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
 

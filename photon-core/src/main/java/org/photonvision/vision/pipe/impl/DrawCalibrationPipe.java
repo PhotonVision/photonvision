@@ -42,7 +42,7 @@ public class DrawCalibrationPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.drawAllSnapshots) return null;
+        if (!params.drawAllSnapshots()) return null;
 
         var image = in.getFirst();
 
@@ -64,7 +64,8 @@ public class DrawCalibrationPipe
 
                 c =
                         new Point(
-                                c.x / params.divisor.value.doubleValue(), c.y / params.divisor.value.doubleValue());
+                                c.x / params.divisor().value.doubleValue(),
+                                c.y / params.divisor().value.doubleValue());
 
                 var r2 = r / Math.sqrt(2);
                 var color = chessboardColors[i % chessboardColors.length];
@@ -81,13 +82,5 @@ public class DrawCalibrationPipe
         return null;
     }
 
-    public static class DrawCalibrationPipeParams {
-        private final FrameDivisor divisor;
-        public boolean drawAllSnapshots;
-
-        public DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawSnapshots) {
-            this.divisor = divisor;
-            this.drawAllSnapshots = drawSnapshots;
-        }
-    }
+    public static record DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawAllSnapshots) {}
 }
