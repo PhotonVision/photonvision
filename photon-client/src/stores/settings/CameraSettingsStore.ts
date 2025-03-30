@@ -478,7 +478,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
       url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
       url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
-      url.searchParams.set("cameraUniqueName", cameraUniqueName.replace(" ", "").trim().toLowerCase());
+      url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
       return url.href;
     }

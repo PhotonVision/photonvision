@@ -57,6 +57,31 @@ static void ClientLoggerFunc(unsigned int level, const char* file,
              line);
 }
 
+void wpi::tsp::TimeSyncClient::UpdateStatistics(uint64_t pong_local_time,
+                                                wpi::tsp::TspPing ping,
+                                                wpi::tsp::TspPong pong) {
+  // when time = send_time+rtt2/2, server time = server time
+  // server time = local time + offset
+  // offset = (server time - local time) = (server time) - (send_time +
+  // rtt2/2)
+  auto rtt2 = pong_local_time - ping.client_time;
+  int64_t serverTimeOffsetUs = pong.server_time - rtt2 / 2 - ping.client_time;
+
+  auto filtered = m_lastOffsets.Calculate(serverTimeOffsetUs);
+
+  // wpi::println("Ping-ponged! RTT2 {} uS, offset {}/filtered offset {} uS",
+  // rtt2,
+  //              serverTimeOffsetUs, filtered);
+
+  {
+    std::lock_guard lock{m_offsetMutex};
+    m_metadata.offset = filtered;
+    m_metadata.rtt2 = rtt2;
+    m_metadata.pongsReceived++;
+    m_metadata.lastPongTime = pong_local_time;
+  }
+}
+
 void wpi::tsp::TimeSyncClient::Tick() {
   // wpi::println("wpi::tsp::TimeSyncClient::Tick");
   // Regardless of if we've gotten a pong back yet, we'll ping again. this is
@@ -122,28 +147,9 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
     return;
   }
 
-  // when time = send_time+rtt2/2, server time = server time
-  // server time = local time + offset
-  // offset = (server time - local time) = (server time) - (send_time +
-  // rtt2/2)
-  auto rtt2 = pong_local_time - ping.client_time;
-  int64_t serverTimeOffsetUs = pong.server_time - rtt2 / 2 - ping.client_time;
+  UpdateStatistics(pong_local_time, ping, pong);
 
-  auto filtered = m_lastOffsets.Calculate(serverTimeOffsetUs);
-
-  // wpi::println("Ping-ponged! RTT2 {} uS, offset {}/filtered offset {} uS",
-  // rtt2,
-  //              serverTimeOffsetUs, filtered);
-
-  {
-    std::lock_guard lock{m_offsetMutex};
-    m_metadata.offset = filtered;
-    m_metadata.rtt2 = rtt2;
-    m_metadata.pongsReceived++;
-    m_metadata.lastPongTime = pong_local_time;
-  }
-
-  using std::cout;
+  // using std::cout;
   // wpi::println("Ping-ponged! RTT2 {} uS, offset {} uS", rtt2,
   //              serverTimeOffsetUs);
   // wpi::println("Estimated server time {} s",
