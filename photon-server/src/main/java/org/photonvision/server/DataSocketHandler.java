@@ -127,39 +127,30 @@ public class DataSocketHandler {
                     }
 
                     switch (socketMessageType) {
-                        case SMT_DRIVERMODE -> {
-                            // TODO: what is this event?
-                            var data = (Boolean) entryValue;
-                            var dmIsDriverEvent =
-                                    new IncomingWebSocketEvent<Boolean>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "isDriverMode",
-                                            data,
-                                            cameraUniqueName,
-                                            context);
-
-                            dcService.publishEvents(dmIsDriverEvent);
-                        }
-                        case SMT_CHANGECAMERANAME -> {
-                            var ccnEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "cameraNickname",
-                                            (String) entryValue,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(ccnEvent);
-                        }
-                        case SMT_CHANGEPIPELINENAME -> {
-                            var cpnEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "pipelineName",
-                                            (String) entryValue,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(cpnEvent);
-                        }
+                        case SMT_DRIVERMODE -> // TODO: what is this event?
+                                dcService.publishEvents(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "isDriverMode",
+                                                (Boolean) entryValue,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_CHANGECAMERANAME ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "cameraNickname",
+                                                (String) entryValue,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_CHANGEPIPELINENAME ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "pipelineName",
+                                                (String) entryValue,
+                                                cameraUniqueName,
+                                                context));
                         case SMT_ADDNEWPIPELINE -> {
                             // HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
                             // var type = (PipelineType) data.get("pipelineType");
@@ -168,109 +159,90 @@ public class DataSocketHandler {
                             var name = (String) arr.get(0);
                             var type = PipelineType.values()[(Integer) arr.get(1) + 2];
 
-                            var newPipelineEvent =
+                            dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "newPipelineInfo",
                                             Pair.of(name, type),
                                             cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(newPipelineEvent);
+                                            context));
                         }
-                        case SMT_CHANGEBRIGHTNESS -> {
-                            HardwareManager.getInstance()
-                                    .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
-                        }
+                        case SMT_CHANGEBRIGHTNESS ->
+                                HardwareManager.getInstance()
+                                        .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
                         case SMT_DUPLICATEPIPELINE -> {
                             var pipeIndex = (Integer) entryValue;
 
                             logger.info("Duplicating pipe@index" + pipeIndex + " for camera " + cameraUniqueName);
 
-                            var newPipelineEvent =
+                            dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(
                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                             "duplicatePipeline",
                                             pipeIndex,
                                             cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(newPipelineEvent);
+                                            context));
                         }
-                        case SMT_DELETECURRENTPIPELINE -> {
-                            var deleteCurrentPipelineEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "deleteCurrPipeline",
-                                            0,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(deleteCurrentPipelineEvent);
-                        }
-                        case SMT_ROBOTOFFSETPOINT -> {
-                            var robotOffsetPointEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "robotOffsetPoint",
-                                            (Integer) entryValue,
-                                            cameraUniqueName,
-                                            null);
-                            dcService.publishEvent(robotOffsetPointEvent);
-                        }
-                        case SMT_CURRENTCAMERA -> {
-                            var changeCurrentCameraEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_OTHER, "changeUICamera", (Integer) entryValue);
-                            dcService.publishEvent(changeCurrentCameraEvent);
-                        }
-                        case SMT_CURRENTPIPELINE -> {
-                            var changePipelineEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "changePipeline",
-                                            (Integer) entryValue,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(changePipelineEvent);
-                        }
-                        case SMT_STARTPNPCALIBRATION -> {
-                            var changePipelineEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "startCalibration",
-                                            (Map) entryValue,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(changePipelineEvent);
-                        }
-                        case SMT_SAVEINPUTSNAPSHOT -> {
-                            var takeInputSnapshotEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "saveInputSnapshot",
-                                            0,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(takeInputSnapshotEvent);
-                        }
-                        case SMT_SAVEOUTPUTSNAPSHOT -> {
-                            var takeOutputSnapshotEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "saveOutputSnapshot",
-                                            0,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(takeOutputSnapshotEvent);
-                        }
-                        case SMT_TAKECALIBRATIONSNAPSHOT -> {
-                            var takeCalSnapshotEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "takeCalSnapshot",
-                                            0,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(takeCalSnapshotEvent);
-                        }
+                        case SMT_DELETECURRENTPIPELINE ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "deleteCurrPipeline",
+                                                0,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_ROBOTOFFSETPOINT ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "robotOffsetPoint",
+                                                (Integer) entryValue,
+                                                cameraUniqueName,
+                                                null));
+                        case SMT_CURRENTCAMERA ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_OTHER, "changeUICamera", (Integer) entryValue));
+                        case SMT_CURRENTPIPELINE ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "changePipeline",
+                                                (Integer) entryValue,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_STARTPNPCALIBRATION ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "startCalibration",
+                                                (Map) entryValue,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_SAVEINPUTSNAPSHOT ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveInputSnapshot",
+                                                0,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_SAVEOUTPUTSNAPSHOT ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "saveOutputSnapshot",
+                                                0,
+                                                cameraUniqueName,
+                                                context));
+                        case SMT_TAKECALIBRATIONSNAPSHOT ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "takeCalSnapshot",
+                                                0,
+                                                cameraUniqueName,
+                                                context));
                         case SMT_PIPELINESETTINGCHANGE -> {
                             HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
 
@@ -280,29 +252,26 @@ public class DataSocketHandler {
                                     if (dataEntry.getKey().equals("cameraUniqueName")) {
                                         continue;
                                     }
-                                    var pipelineSettingChangeEvent =
+                                    dcService.publishEvent(
                                             new IncomingWebSocketEvent(
                                                     DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
                                                     dataEntry.getKey(),
                                                     dataEntry.getValue(),
                                                     cameraIndex2,
-                                                    context);
-                                    dcService.publishEvent(pipelineSettingChangeEvent);
+                                                    context));
                                 }
                             } else {
                                 logger.warn("Unknown message for PSC: " + data.keySet().iterator().next());
                             }
                         }
-                        case SMT_CHANGEPIPELINETYPE -> {
-                            var changePipelineEvent =
-                                    new IncomingWebSocketEvent<>(
-                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                            "changePipelineType",
-                                            (Integer) entryValue,
-                                            cameraUniqueName,
-                                            context);
-                            dcService.publishEvent(changePipelineEvent);
-                        }
+                        case SMT_CHANGEPIPELINETYPE ->
+                                dcService.publishEvent(
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "changePipelineType",
+                                                (Integer) entryValue,
+                                                cameraUniqueName,
+                                                context));
                     }
                 } catch (Exception e) {
                     logger.error("Failed to parse message!", e);

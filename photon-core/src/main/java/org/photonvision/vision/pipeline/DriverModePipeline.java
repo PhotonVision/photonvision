@@ -47,10 +47,11 @@ public class DriverModePipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
+        draw2dCrosshairPipe.setParams(
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        frameStaticProperties, settings.streamingFrameDivisor, settings.inputImageRotationMode);
-        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
+                        frameStaticProperties,
+                        settings.streamingFrameDivisor,
+                        settings.inputImageRotationMode));
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));

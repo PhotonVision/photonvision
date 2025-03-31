@@ -271,11 +271,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         videoModes = new HashMap<>();
         List<VideoMode> videoModesList = new ArrayList<>();
         try {
-            VideoMode[] modes;
-
-            modes = camera.enumerateVideoModes();
-
-            for (VideoMode videoMode : modes) {
+            for (VideoMode videoMode : camera.enumerateVideoModes()) {
                 // Filter grey modes
                 if (videoMode.pixelFormat == PixelFormat.kGray
                         || videoMode.pixelFormat == PixelFormat.kUnknown) {
