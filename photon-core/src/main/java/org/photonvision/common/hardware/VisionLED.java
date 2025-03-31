@@ -136,10 +136,10 @@ public class VisionLED {
         if (newLedModeRaw != currentLedMode.value) {
             VisionLEDMode newLedMode =
                     switch (newLedModeRaw) {
-                        case -1 -> newLedMode = VisionLEDMode.kDefault;
-                        case 0 -> newLedMode = VisionLEDMode.kOff;
-                        case 1 -> newLedMode = VisionLEDMode.kOn;
-                        case 2 -> newLedMode = VisionLEDMode.kBlink;
+                        case -1 -> VisionLEDMode.kDefault;
+                        case 0 -> VisionLEDMode.kOff;
+                        case 1 -> VisionLEDMode.kOn;
+                        case 2 -> VisionLEDMode.kBlink;
                         default -> {
                             logger.warn("User supplied invalid LED mode, falling back to Default");
                             yield VisionLEDMode.kDefault;

@@ -89,12 +89,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 var newPropValue = change.getNewPropValue();
                 var currentSettings = change.getCurrentSettings();
                 var originContext = change.getOriginContext();
-                boolean handled = true;
                 switch (propName) {
-                    case "pipelineName" -> {
-                        newPipelineNickname((String) newPropValue);
-                        continue;
-                    }
+                    case "pipelineName" -> newPipelineNickname((String) newPropValue);
                     case "newPipelineInfo" -> newPipelineInfo((Pair<String, PipelineType>) newPropValue);
                     case "deleteCurrPipeline" -> deleteCurrPipeline();
                     case "changePipeline" -> changePipeline((Integer) newPropValue);
@@ -120,45 +116,43 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                     }
                     case "isDriverMode" -> parentModule.setDriverMode((Boolean) newPropValue);
-                    default -> handled = false;
-                }
-
-                // special case for camera settables
-                if (propName.startsWith("camera")) {
-                    var propMethodName = "set" + propName.replace("camera", "");
-                    var methods = parentModule.visionSource.getSettables().getClass().getMethods();
-                    for (var method : methods) {
-                        if (method.getName().equalsIgnoreCase(propMethodName)) {
-                            try {
-                                method.invoke(parentModule.visionSource.getSettables(), newPropValue);
-                            } catch (Exception e) {
-                                logger.error("Failed to invoke camera settable method: " + method.getName(), e);
+                    default -> {
+                        // special case for camera settables
+                        if (propName.startsWith("camera")) {
+                            var propMethodName = "set" + propName.replace("camera", "");
+                            var methods = parentModule.visionSource.getSettables().getClass().getMethods();
+                            for (var method : methods) {
+                                if (method.getName().equalsIgnoreCase(propMethodName)) {
+                                    try {
+                                        method.invoke(parentModule.visionSource.getSettables(), newPropValue);
+                                    } catch (Exception e) {
+                                        logger.error("Failed to invoke camera settable method: " + method.getName(), e);
+                                    }
+                                }
                             }
                         }
+
+                        try {
+                            setProperty(currentSettings, propName, newPropValue);
+                            logger.trace("Set prop " + propName + " to value " + newPropValue);
+                        } catch (NoSuchFieldException | IllegalAccessException e) {
+                            logger.error(
+                                    "Could not set prop "
+                                            + propName
+                                            + " with value "
+                                            + newPropValue
+                                            + " on "
+                                            + currentSettings
+                                            + " | "
+                                            + e.getClass().getSimpleName(),
+                                    e);
+                        } catch (Exception e) {
+                            logger.error("Unknown exception when setting PSC prop!", e);
+                        }
+
+                        parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
                     }
                 }
-
-                if (!handled) {
-                    try {
-                        setProperty(currentSettings, propName, newPropValue);
-                        logger.trace("Set prop " + propName + " to value " + newPropValue);
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        logger.error(
-                                "Could not set prop "
-                                        + propName
-                                        + " with value "
-                                        + newPropValue
-                                        + " on "
-                                        + currentSettings
-                                        + " | "
-                                        + e.getClass().getSimpleName(),
-                                e);
-                    } catch (Exception e) {
-                        logger.error("Unknown exception when setting PSC prop!", e);
-                    }
-                }
-
-                parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
             }
             getSettingChanges().clear();
         } finally {
@@ -230,9 +224,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                 switch (offsetOperation) {
                     case CLEAR -> curAdvSettings.offsetSinglePoint = new Point();
                     case TAKE_SINGLE -> curAdvSettings.offsetSinglePoint = newPoint;
-                    case TAKE_FIRST_DUAL, TAKE_SECOND_DUAL -> {
-                        logger.warn("Dual point operation in single point mode");
-                    }
+                    case TAKE_FIRST_DUAL, TAKE_SECOND_DUAL ->
+                            logger.warn("Dual point operation in single point mode");
                 }
             }
             case Dual -> {
@@ -253,14 +246,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         curAdvSettings.offsetDualPointB = newPoint;
                         curAdvSettings.offsetDualPointBArea = latestTarget.getArea();
                     }
-                    case TAKE_SINGLE -> {
-                        logger.warn("Single point operation in dual point mode");
-                    }
+                    case TAKE_SINGLE -> logger.warn("Single point operation in dual point mode");
                 }
             }
-            case None -> {
-                logger.warn("Robot offset point operation requested, but no offset mode set");
-            }
+            case None -> logger.warn("Robot offset point operation requested, but no offset mode set");
         }
     }
 

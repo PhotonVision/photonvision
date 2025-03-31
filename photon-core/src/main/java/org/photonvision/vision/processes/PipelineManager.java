@@ -339,40 +339,22 @@ public class PipelineManager {
     }
 
     private CVPipelineSettings createSettingsForType(PipelineType type, String nickname) {
-        switch (type) {
-            case Reflective -> {
-                var added = new ReflectivePipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
-            case ColoredShape -> {
-                var added = new ColoredShapePipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
-            case AprilTag -> {
-                var added = new AprilTagPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
-            case Aruco -> {
-                var added = new ArucoPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
-            case ObjectDetection -> {
-                var added = new ObjectDetectionPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
-            case Calib3d, DriverMode -> {
-                logger.error("Got invalid pipeline type: " + type);
-                return null;
-            }
+        CVPipelineSettings settings =
+                switch (type) {
+                    case Reflective -> new ReflectivePipelineSettings();
+                    case ColoredShape -> new ColoredShapePipelineSettings();
+                    case AprilTag -> new AprilTagPipelineSettings();
+                    case Aruco -> new ArucoPipelineSettings();
+                    case ObjectDetection -> new ObjectDetectionPipelineSettings();
+                    case Calib3d, DriverMode -> {
+                        logger.error("Got invalid pipeline type: " + type);
+                        yield null;
+                    }
+                };
+        if (settings != null) {
+            settings.pipelineNickname = nickname;
         }
-
-        // This can never happen, this is here to satisfy the compiler.
-        throw new IllegalStateException("Got impossible pipeline type: " + type);
+        return settings;
     }
 
     private void addPipelineInternal(CVPipelineSettings settings) {
