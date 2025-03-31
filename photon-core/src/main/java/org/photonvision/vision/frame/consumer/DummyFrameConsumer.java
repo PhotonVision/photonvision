@@ -17,10 +17,10 @@
 
 package org.photonvision.vision.frame.consumer;
 
+import java.util.function.Consumer;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameConsumer;
 
-public class DummyFrameConsumer implements FrameConsumer {
+public class DummyFrameConsumer implements Consumer<Frame> {
     @Override
     public void accept(Frame frame) {
         frame.release(); // lol ez
