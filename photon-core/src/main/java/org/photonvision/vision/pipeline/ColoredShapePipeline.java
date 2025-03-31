@@ -72,19 +72,15 @@ public class ColoredShapePipeline
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
-                new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
-        speckleRejectPipe.setParams(speckleRejectParams);
+        speckleRejectPipe.setParams(
+                new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage));
 
-        FindContoursPipe.FindContoursParams findContoursParams =
-                new FindContoursPipe.FindContoursParams();
-        findContoursPipe.setParams(findContoursParams);
+        findContoursPipe.setParams(new FindContoursPipe.FindContoursParams());
 
-        FindPolygonPipe.FindPolygonPipeParams findPolygonPipeParams =
-                new FindPolygonPipe.FindPolygonPipeParams(settings.accuracyPercentage);
-        findPolygonPipe.setParams(findPolygonPipeParams);
+        findPolygonPipe.setParams(
+                new FindPolygonPipe.FindPolygonPipeParams(settings.accuracyPercentage));
 
-        FindCirclesPipe.FindCirclePipeParams findCirclePipeParams =
+        findCirclesPipe.setParams(
                 new FindCirclesPipe.FindCirclePipeParams(
                         settings.circleDetectThreshold,
                         settings.contourRadius.getFirst(),
@@ -92,49 +88,45 @@ public class ColoredShapePipeline
                         settings.contourRadius.getSecond(),
                         settings.maxCannyThresh,
                         settings.circleAccuracy,
-                        Math.hypot(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
-        findCirclesPipe.setParams(findCirclePipeParams);
+                        Math.hypot(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight)));
 
-        FilterShapesPipe.FilterShapesPipeParams filterShapesPipeParams =
+        filterShapesPipe.setParams(
                 new FilterShapesPipe.FilterShapesPipeParams(
                         settings.contourShape,
                         settings.contourArea.getFirst(),
                         settings.contourArea.getSecond(),
                         settings.contourPerimeter.getFirst(),
                         settings.contourPerimeter.getSecond(),
-                        frameStaticProperties);
-        filterShapesPipe.setParams(filterShapesPipeParams);
+                        frameStaticProperties));
 
-        SortContoursPipe.SortContoursParams sortContoursParams =
+        sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
-                        frameStaticProperties); // TODO don't hardcode?
-        sortContoursPipe.setParams(sortContoursParams);
+                        settings.outputShowMultipleTargets
+                                ? MAX_MULTI_TARGET_RESULTS // TODO don't hardcode?
+                                : 1,
+                        frameStaticProperties));
 
-        Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
+        collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
                         settings.offsetRobotOffsetMode,
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         settings.contourTargetOffsetPointEdge,
                         settings.contourTargetOrientation,
-                        frameStaticProperties);
-        collect2dTargetsPipe.setParams(collect2dTargetsParams);
+                        frameStaticProperties));
 
-        var params =
+        cornerDetectionPipe.setParams(
                 new CornerDetectionPipe.CornerDetectionPipeParameters(
                         settings.cornerDetectionStrategy,
                         settings.cornerDetectionUseConvexHulls,
                         settings.cornerDetectionExactSideCount,
                         settings.cornerDetectionSideCount,
-                        settings.cornerDetectionAccuracyPercentage);
-        cornerDetectionPipe.setParams(params);
+                        settings.cornerDetectionAccuracyPercentage));
 
-        var solvePNPParams =
+        solvePNPPipe.setParams(
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        frameStaticProperties.cameraCalibration, settings.targetModel);
-        solvePNPPipe.setParams(solvePNPParams);
+                        frameStaticProperties.cameraCalibration, settings.targetModel));
 
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
@@ -146,7 +138,7 @@ public class ColoredShapePipeline
         draw2DTargetsParams.showRotatedBox = false;
         draw2DTargetsPipe.setParams(draw2DTargetsParams);
 
-        Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
+        draw2dCrosshairPipe.setParams(
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
                         settings.offsetRobotOffsetMode,
@@ -154,16 +146,14 @@ public class ColoredShapePipeline
                         dualOffsetValues,
                         frameStaticProperties,
                         settings.streamingFrameDivisor,
-                        settings.inputImageRotationMode);
-        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
+                        settings.inputImageRotationMode));
 
-        var draw3dTargetsParams =
+        draw3dTargetsPipe.setParams(
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
                         settings.targetModel,
-                        settings.streamingFrameDivisor);
-        draw3dTargetsPipe.setParams(draw3dTargetsParams);
+                        settings.streamingFrameDivisor));
     }
 
     @Override

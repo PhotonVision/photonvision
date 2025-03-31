@@ -82,7 +82,7 @@ public class Calibrate3dPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
+        findBoardCornersPipe.setParams(
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         settings.boardHeight,
                         settings.boardWidth,
@@ -91,13 +91,11 @@ public class Calibrate3dPipeline
                         settings.gridSize,
                         settings.markerSize,
                         settings.streamingFrameDivisor,
-                        settings.useOldPattern);
-        findBoardCornersPipe.setParams(findCornersPipeParams);
+                        settings.useOldPattern));
 
-        Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
+        calibrate3dPipe.setParams(
                 new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
-        calibrate3dPipe.setParams(calibratePipeParams);
+                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal));
     }
 
     @Override
@@ -124,9 +122,7 @@ public class Calibrate3dPipeline
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
 
-        FindBoardCornersPipeResult findBoardResult;
-
-        findBoardResult =
+        FindBoardCornersPipeResult findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         if (takeSnapshot) {

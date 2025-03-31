@@ -67,10 +67,8 @@ public class ObjectDetectionPipeline
         if (selectedModel.isEmpty()) {
             selectedModel = Optional.of(NullModel.getInstance());
         }
-        var params =
-                new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get());
-
-        objectDetectorPipe.setParams(params);
+        objectDetectorPipe.setParams(
+                new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get()));
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
@@ -79,30 +77,27 @@ public class ObjectDetectionPipeline
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        SortContoursPipe.SortContoursParams sortContoursParams =
+        sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
                         settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
-                        frameStaticProperties);
-        sortContoursPipe.setParams(sortContoursParams);
+                        frameStaticProperties));
 
-        var filterContoursParams =
+        filterContoursPipe.setParams(
                 new FilterObjectDetectionsPipe.FilterContoursParams(
                         settings.contourArea,
                         settings.contourRatio,
                         frameStaticProperties,
-                        settings.contourTargetOrientation == TargetOrientation.Landscape);
-        filterContoursPipe.setParams(filterContoursParams);
+                        settings.contourTargetOrientation == TargetOrientation.Landscape));
 
-        Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
+        collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
                         settings.offsetRobotOffsetMode,
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         settings.contourTargetOffsetPointEdge,
                         settings.contourTargetOrientation,
-                        frameStaticProperties);
-        collect2dTargetsPipe.setParams(collect2dTargetsParams);
+                        frameStaticProperties));
     }
 
     @Override
