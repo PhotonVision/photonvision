@@ -62,13 +62,12 @@ public class CornerDetectionPipe
 
         // find the bl/br/tr/tl corners
         // first, min by left/right
-        var list_ = Arrays.asList(points);
-        list_.sort(leftRightComparator);
+        Arrays.sort(points, leftRightComparator);
         // of this, we now have left and right
         // sort to get top and bottom
-        var left = new ArrayList<>(List.of(list_.get(0), list_.get(1)));
+        var left = new ArrayList<>(List.of(points[0], points[1]));
         left.sort(verticalComparator);
-        var right = new ArrayList<>(List.of(list_.get(2), list_.get(3)));
+        var right = new ArrayList<>(List.of(points[2], points[3]));
         right.sort(verticalComparator);
 
         var tl = left.get(0);
@@ -160,12 +159,13 @@ public class CornerDetectionPipe
         for (var p : pointList) {
             if (p.y
                     > target.m_mainContour.getBoundingRect().y
-                            + target.m_mainContour.getBoundingRect().height / 2.0)
+                            + target.m_mainContour.getBoundingRect().height / 2.0) {
                 if (p.x < averageXCoordinate) {
                     leftList.add(p);
                 } else {
                     rightList.add(p);
                 }
+            }
         }
         if (leftList.isEmpty() || rightList.isEmpty()) return null;
         leftList.sort(compareCenterDist);

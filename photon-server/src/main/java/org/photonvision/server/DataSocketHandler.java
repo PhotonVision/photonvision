@@ -112,14 +112,13 @@ public class DataSocketHandler {
                     var socketMessageType = DataSocketMessageType.fromEntryKey(entryKey);
 
                     logger.trace(
-                            () ->
-                                    "Got WS message: ["
-                                            + socketMessageType
-                                            + "] ==> ["
-                                            + entryKey
-                                            + "], ["
-                                            + entryValue
-                                            + "]");
+                            "Got WS message: ["
+                                    + socketMessageType
+                                    + "] ==> ["
+                                    + entryKey
+                                    + "], ["
+                                    + entryValue
+                                    + "]");
 
                     if (socketMessageType == null) {
                         logger.warn("Got unknown socket message type: " + entryKey);
