@@ -36,13 +36,13 @@ Following the ideas above should help in getting an accurate calibration.
 
 The Cameras tab of the UI houses PhotonVision's camera calibration tooling. It assists users with calibrating their cameras, as well as allows them to view previously calibrated resolutions. We support both charuco and chessboard calibrations.
 
-### 2. Print out the calibration target.
+### 2. Obtain a calibration target.
 
-In the Camera Calibration tab, we'll print out the calibration target using the "Download" button. This should be printed on 8.5x11 printer paper. This page shows using an 8x8 charuco board (or chessboard depending on the selected calibration type).
+In the Camera Calibration tab, you can download a calibration target using the "Download" button. This page shows using an 8x8 charuco board (or chessboard depending on the selected calibration type).
 
-:::{warning}
-Ensure that there is no scaling applied during printing (it should be at 100%) and that the PDF is printed as is on regular printer paper. Check the square size with calipers or an accurate measuring device after printing to ensure squares are sized properly, and enter the true size of the square in the UI text box. For optimal results, various resources are available online to calibrate your specific printer if needed.
-:::
+An excellent way to get a very flat calibration target without having to buy a dedicated calibration board is to use a laptop screen. Laptop screens are manufactured to be very flat and are very suitable for this task. You can display the calibration target mentioned above on one laptop screen while you take snapshots on another. However, due to display differences, the scaling will almost certainly be off and the sizes will be wrong. You **must** measure the square size with calipers or an accurate measuring device and enter the true size of the squares and markers in the UI text boxes to ensure an accurate calibration.
+
+If you don't have a second laptop screen to display a calibration target or a calibration board, you can instead print the calibration target mentioned above. This should be printed on 8.5x11 printer paper. Ensure that there is no scaling applied during printing (it should be at 100%) and that the PDF is printed as is on regular printer paper. Similarly to the laptop screen, you need to check the square size with calipers or an accurate measuring device after printing to ensure squares are sized properly, and enter the true size of the squares and markers in the UI text boxes. For optimal results, various resources are available online to calibrate your specific printer if needed.
 
 ### 3. Select calibration resolution and fill in appropriate target data.
 
