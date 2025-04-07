@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -62,8 +64,8 @@ public class ReflectivePipelineTest {
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         TestUtils.printTestResults(pipelineResult);
 
-        Assertions.assertTrue(pipelineResult.hasTargets());
-        Assertions.assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
+        assertTrue(pipelineResult.hasTargets());
+        assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
 
         TestUtils.showImage(pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output");
     }
