@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 
 public class PipelineProfilerTest {
@@ -35,7 +37,7 @@ public class PipelineProfilerTest {
 
         System.out.println(validResult);
 
-        Assertions.assertEquals("Invalid data", invalidResult);
-        Assertions.assertTrue(validResult.contains("Total: 45.0ms"));
+        assertEquals("Invalid data", invalidResult);
+        assertTrue(validResult.contains("Total: 45.0ms"));
     }
 }

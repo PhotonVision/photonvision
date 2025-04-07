@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
@@ -324,14 +323,11 @@ public class CalibrationRotationPipeTest {
         System.out.println("Base: " + pose_base);
         System.out.println("rot-unrot: " + pose_unrotated);
 
-        Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
-        Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
-        Assertions.assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.01);
-        Assertions.assertEquals(
-                pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.01);
-        Assertions.assertEquals(
-                pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.01);
-        Assertions.assertEquals(
-                pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.01);
+        assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
+        assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
+        assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.01);
+        assertEquals(pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.01);
+        assertEquals(pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.01);
+        assertEquals(pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.01);
     }
 }

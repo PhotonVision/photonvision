@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -188,7 +188,7 @@ public class VisionModuleManagerTest {
 
         sleep(1500);
 
-        Assertions.assertNotNull(module0DataConsumer.result);
+        assertNotNull(module0DataConsumer.result);
         TestUtils.printTestResults(module0DataConsumer.result);
     }
 
