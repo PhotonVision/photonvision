@@ -59,7 +59,7 @@ public class JsonMatOfDouble implements Releasable {
 
     @JsonIgnore
     public static double[] getDataFromMat(Mat mat) {
-        double[] data = new double[(int) (mat.total() * mat.elemSize())];
+        double[] data = new double[(int) mat.total()];
         mat.get(0, 0, data);
         return data;
     }
