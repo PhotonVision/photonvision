@@ -1,0 +1,23 @@
+name: Website Build
+
+on:
+  push:
+    # For now, run on all commits to main
+    branches: [ main ]
+    # and also all tags starting with v
+    tags:
+      - 'v*'
+
+jobs:
+  rsync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: up9cloud/action-rsync@v1.4
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USERNAME }}
+          KEY: ${{secrets.DEPLOY_SSH_KEY}}
+          PORT: ${{ secrets.SSH_PORT }}
+          SOURCE: ./website/
+          TARGET: /var/www/html/photonvision-website/
