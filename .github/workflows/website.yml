@@ -13,11 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch all history and metadata
-        run: |
-          git fetch --prune --unshallow
-          git checkout -b pr
-          git branch -f main origin/main
       - uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.SSH_HOST }}
