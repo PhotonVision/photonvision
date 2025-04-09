@@ -11,6 +11,12 @@ cppSrcFileInclude {
 
 modifiableFileExclude {
   \.jpg$
+  \.mp4$
+  \.woff$
+  \.woff2$
+  \.eot$
+  \.ttf$
+  \.otf$
   \.jpeg$
   \.png$
   \.gif$
