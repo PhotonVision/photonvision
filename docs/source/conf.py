@@ -87,6 +87,9 @@ pygments_style = "sphinx"
 
 html_theme_options = {
     "sidebar_hide_name": True,
+    "top_of_page_buttons": ["view", "edit"],
+    "source_edit_link": "https://github.com/PhotonVision/photonvision/edit/main/docs/source/{filename}",
+    "source_view_link": "https://github.com/PhotonVision/photonvision/blob/main/docs/source/{filename}",
     "light_logo": "assets/PhotonVision-Header-onWhite.png",
     "dark_logo": "assets/PhotonVision-Header-noBG.png",
     "light_css_variables": {

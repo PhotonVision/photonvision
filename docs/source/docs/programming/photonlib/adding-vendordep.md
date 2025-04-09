@@ -44,5 +44,5 @@ See [The WPILib/RobotPy docs](https://docs.wpilib.org/en/stable/docs/software/py
 
 In cases where you want to test a specific version of PhotonLib, make sure you have finished the steps in Online Install - Java/C++ and then manually change the version string in the PhotonLib vendordep json file(at ``/path/to/your/project/vendordep/photonlib.json``) to your desired version.
 
-```{image} images/photonlib-vendordep-json.png
+```{image} images/photonlib-vendordep-json.jpg
 ```
