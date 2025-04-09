@@ -18,6 +18,5 @@ jobs:
           HOST: ${{ secrets.SSH_HOST }}
           USER: ${{ secrets.SSH_USERNAME }}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
-          PORT: ${{ secrets.SSH_PORT }}
           SOURCE: ./website/
           TARGET: /var/www/html/photonvision-website/
