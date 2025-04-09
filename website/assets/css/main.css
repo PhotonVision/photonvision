@@ -2474,7 +2474,7 @@
         -webkit-transition: border-color 0.2s ease-in-out, color 0.2s ease-in-out;
         -ms-transition: border-color 0.2s ease-in-out, color 0.2s ease-in-out;
         transition: border-color 0.2s ease-in-out, color 0.2s ease-in-out;
-        border-bottom: none; 
+        border-bottom: none;
         color: #ffd843;
         text-decoration: none;
         padding-left: 2em;
@@ -2779,10 +2779,10 @@
 
             border: 1px solid #ddd;
             padding: 0px 18px;
-            -o-transition: background-color .2s ease-in; 
+            -o-transition: background-color .2s ease-in;
             -moz-transition: background-color .2s ease-in;
-            -webkit-transition: background-color .2s ease-in; 
-            transition: background-color .2s ease-in; 
+            -webkit-transition: background-color .2s ease-in;
+            transition: background-color .2s ease-in;
         }
         .special_box:hover
         {
@@ -2790,7 +2790,7 @@
             color: #ffffff !important;
         }
 
-        .special_box:active 
+        .special_box:active
         {
             background-color: rgb(19, 36, 131);
         }
@@ -3105,7 +3105,7 @@
                 background-color: rgba(255, 255, 255, 0.25) !important;
             }
 
-    
+
             .wrapper.style2 input[type="submit"].special,
             .wrapper.style2 input[type="reset"].special,
             .wrapper.style2 input[type="button"].special,
