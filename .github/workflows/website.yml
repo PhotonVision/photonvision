@@ -15,8 +15,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: up9cloud/action-rsync@v1.4
         env:
-          HOST: ${{ secrets.SSH_HOST }}
-          USER: ${{ secrets.SSH_USERNAME }}
-          KEY: ${{secrets.DEPLOY_SSH_KEY}}
+          HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          KEY: ${{secrets.WEBMASTER_SSH_KEY}}
           SOURCE: ./website/
           TARGET: /var/www/html/photonvision-website/
