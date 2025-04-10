@@ -92,7 +92,8 @@ jobs:
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USER }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
+          PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           SOURCE: .
           TARGET: /var/www/html/photonvision-docs/release/
