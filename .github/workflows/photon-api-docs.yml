@@ -106,7 +106,7 @@ jobs:
           name: built-demo
       - run: find .
       - name: Publish demo
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
