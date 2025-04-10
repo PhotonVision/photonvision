@@ -41,7 +41,7 @@ jobs:
           name: built-demo
           path: photon-client/dist/
 
-  run_docs:
+  run_api_docs:
     runs-on: "ubuntu-22.04"
     steps:
     - name: Checkout code
@@ -66,8 +66,8 @@ jobs:
         name: built-docs
         path: photon-docs/build/docs
 
-  publish_docs:
-    needs: [run_docs]
+  publish_api_docs:
+    needs: [run_api_docs]
 
     runs-on: ubuntu-22.04
     steps:
@@ -92,8 +92,7 @@ jobs:
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
-          PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
+          KEY: ${{ secrets.WEBMASTER_SSH_KEY }}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/release/
 
@@ -111,7 +110,6 @@ jobs:
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
-          PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
+          KEY: ${{ secrets.WEBMASTER_SSH_KEY }}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-demo
