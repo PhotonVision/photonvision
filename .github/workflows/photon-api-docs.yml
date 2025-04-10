@@ -108,10 +108,6 @@ jobs:
         with:
           name: built-demo
       - run: find .
-      - name: Add remote host to known_hosts
-        run: |
-          ssh-keyscan -H ${{ secrets.WEBMASTER_SSH_HOST }} >> ~/.ssh/known_hosts
-
       - name: Publish demo
         # if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
