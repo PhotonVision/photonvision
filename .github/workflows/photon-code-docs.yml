@@ -79,13 +79,14 @@ jobs:
       - run: find .
       - name: publish docs to development
         # if: github.ref == 'refs/heads/main'
-        uses: up9cloud/action-rsync@v1.4
-        env:
-          HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USER }}
-          PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
-          SOURCE: .
-          TARGET: /var/www/html/photonvision-docs/development/
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.WEBMASTER_SSH_HOST }}
+          username: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          password: ${{ secrets.WEBMASTER_SSH_KEY }}
+          port: ${{ secrets.WEBMASTER_SSH_PORT }}
+          source: "*"
+          target: /var/www/html/photonvision-docs/development
       - name: publish docs to release
         # if: startsWith(github.ref, 'refs/tags/v')
         uses: up9cloud/action-rsync@v1.4
