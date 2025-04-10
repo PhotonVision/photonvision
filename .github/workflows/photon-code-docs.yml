@@ -3,7 +3,7 @@ name: Photon Code Documentation
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main, docs-test ]
+    branches: [ main ]
     tags:
       - 'v*'
   pull_request:
