@@ -22,7 +22,6 @@ permissions:
 
 jobs:
   build-demo:
-    name: "PhotonClient Demo Build"
     defaults:
       run:
         working-directory: photon-client
@@ -106,9 +105,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: built-demo
-
       - run: find .
-
       - name: Publish demo
         if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
