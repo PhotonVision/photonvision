@@ -95,5 +95,4 @@ jobs:
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
-          SOURCE: .
           TARGET: /var/www/html/photonvision-docs/release/
