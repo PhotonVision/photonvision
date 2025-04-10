@@ -3,7 +3,7 @@ name: Photon Code Documentation
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main, docs-test ]
+    branches: [ main ]
     tags:
       - 'v*'
   pull_request:
@@ -80,7 +80,7 @@ jobs:
 
       - run: find .
       - name: Publish docs to development
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
@@ -89,7 +89,7 @@ jobs:
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/development
       - name: publish docs to release
-        # if: startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
@@ -110,7 +110,7 @@ jobs:
       - run: find .
 
       - name: Publish demo
-        # if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
