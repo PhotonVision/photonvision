@@ -83,7 +83,7 @@ jobs:
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USER }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           KEY: ${{secrets.WEBMASTER_SSH_KEY}}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/development
@@ -93,7 +93,7 @@ jobs:
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USER }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           KEY: ${{ secrets.WEBMASTER_SSH_KEY }}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/release/
@@ -113,7 +113,7 @@ jobs:
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
-          USER: ${{ secrets.WEBMASTER_SSH_USER }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           KEY: ${{ secrets.WEBMASTER_SSH_KEY }}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-demo
