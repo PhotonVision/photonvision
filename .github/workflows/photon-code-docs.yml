@@ -67,7 +67,7 @@ jobs:
         name: built-docs
         path: photon-docs/build/docs
 
-  release:
+  publish_docs:
     needs: [run_docs]
 
     runs-on: ubuntu-22.04
@@ -75,8 +75,8 @@ jobs:
 
       # Download docs artifact
       - uses: actions/download-artifact@v4
-        with:
-          name: built-docs
+        # with:
+        #   name: built-docs
 
       - run: find .
       - name: Publish docs to development
