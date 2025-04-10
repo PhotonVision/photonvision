@@ -19,4 +19,5 @@
 .fa-regular::before,
 .fa-brands::before,
 .fa::before {
-  content: var(--fa); }
+  content: var(--fa);
+}

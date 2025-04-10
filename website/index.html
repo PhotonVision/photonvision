@@ -1,19 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en-US">
   <!-- TODO: We need more images and videos to improve quality of the site- if you can see this and have PhotonVision, take a screenshot of yourself using it and send it to the #media channel in Discord!-->
   <head>
     <title>PhotonVision</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon" />
-    <!-- <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon_16.png">-->
-    <!-- <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon_32.png">--->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="src/css/main.css" />
     <link rel="stylesheet" href="src/css/fontawesome.min.css" />
-    <link rel="stylesheet" href="src/css/regular.min.css" />
+    <link rel="stylesheet" href="src/css/brands.min.css" />
     <link rel="stylesheet" href="src/css/solid.min.css" />
-
-
 
     <meta name="title" content="PhotonVision" />
     <meta
@@ -35,10 +31,7 @@
     />
   </head>
   <body class="home bg-zinc-900 font-light text-white w-screen">
-    <div
-      id="page-wrapper"
-      class="h-screen overflow-y-auto lg:snap-y lg:snap-mandatory scroll-smooth"
-    >
+    <div id="page-wrapper" class="h-screen overflow-y-auto scroll-smooth">
       <!-- Header -->
       <header
         id="header"
@@ -80,7 +73,6 @@
             >
           </div>
         </div>
-        <h1 id="logo"><a href="index.html"></a></h1>
         <nav id="nav" class="hidden md:flex">
           <a href="https://docs.photonvision.org/en/latest/" class="header-btn"
             >Documentation</a
@@ -103,19 +95,17 @@
       </header>
       <!-- One -->
       <section
-        class="flex flex-col h-[calc(100vh_-_56px)] justify-center items-center snap-end p-8 md:p-0 relative"
+        class="flex flex-col h-[calc(100vh_-_56px)] justify-center items-center p-8 md:p-0 relative"
       >
-        <div
-          class="flex justify-center md:justify-end flex-col md:flex-row"
-        >
+        <div class="flex justify-center md:justify-end flex-col md:flex-row">
           <header
             class="flex flex-col gap-4 items-center md:items-end justify-center text-center md:text-end"
           >
             <h2 class="text-4xl">PhotonVision</h2>
             <div class="text-xl max-w-128">
               PhotonVision is the free, fast, and easy-to-use computer vision
-              solution for the FIRST® Robotics Competiton. Teams can download a
-              PhotonVision image for select coprocessors and start tracking
+              solution for the FIRST® Robotics Competition. Teams can download
+              a PhotonVision image for select coprocessors and start tracking
               targets in minutes.
             </div>
             <a
@@ -139,7 +129,7 @@
       <!-- Two -->
       <section
         id="two"
-        class="snap-end h-[calc(100vh_-_56px)] relative justify-center flex items-center"
+        class="h-[calc(100vh_-_56px)] relative justify-center flex items-center"
       >
         <span class="image fit"
           ><img
@@ -155,7 +145,7 @@
       <!-- Three -->
       <section
         id="three"
-        class="snap-end min-h-[calc(100vh_-_56px)] flex flex-col gap-4 items-center justify-center px-4 md:px-14 lg:px-28 relative"
+        class="min-h-[calc(100vh_-_56px)] flex flex-col gap-4 items-center justify-center px-4 md:px-14 lg:px-28 relative"
       >
         <header
           class="flex flex-col gap-4 justify-center items-center text-center"
@@ -227,7 +217,7 @@
       </section>
 
       <!-- Four -->
-      <section id="four" class="snap-end">
+      <section id="four">
         <div class="">
           <video
             src="images/in-action.mp4"
@@ -243,7 +233,7 @@
 
       <section
         id="five"
-        class="snap-end min-h-[calc(100vh_-_56px)] flex items-center flex-col justify-center relative"
+        class="flex flex-col md:flex-row items-center justify-between relative mt-8 py-8 px-28 gap-8 bg-primary"
       >
         <header
           class="flex flex-col gap-4 justify-center items-center text-center"
@@ -252,38 +242,33 @@
           <div class="flex gap-2 mb-4">
             <a
               href="https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p"
-              class="bg-primary py-4 px-8 rounded grow-0"
+              class="bg-brand-blue py-4 px-8 rounded grow-0 text-nowrap"
               >Slide Deck</a
             >
             <a
               href="https://github.com/PhotonVision/champs_2024"
-              class="bg-primary py-4 px-8 rounded grow-0"
+              class="bg-brand-blue py-4 px-8 rounded grow-0 text-nowrap"
               >Code</a
             >
           </div>
         </header>
         <div class="self-stretch contents">
           <iframe
-            width="100%"
-            height="50%"
             src="https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF"
             title="YouTube video player"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen
-            class="grow max-h-64 max-w-256"
+            class="max-w-256 aspect-video"
           ></iframe>
         </div>
-        <a href="#six" class="absolute bottom-0 p-4"
-          ><i class="fa-solid fa-chevron-down"></i
-        ></a>
       </section>
 
       <!-- Eight -->
       <section
         id="six"
-        class="snap-end min-h-[calc(100vh_-_56px)] flex flex-col gap-4 items-center justify-center px-14 lg:px-28"
+        class="min-h-[calc(100vh_-_56px)] flex flex-col gap-4 items-center justify-center px-14 lg:px-28"
       >
         <header
           class="flex flex-col gap-4 justify-center items-center text-center"
@@ -291,12 +276,12 @@
           <h2 class="text-3xl">FOSS</h2>
           <p class="text-2xl">
             PhotonVision is an open-source, community based vision system
-            designed for use within the FIRST® Robotics Competiton that aims to
-            provide easy and inexpensive vision tracking to teams.
+            designed for use within the FIRST® Robotics Competition that aims
+            to provide easy and inexpensive vision tracking to teams.
           </p>
           <hr class="border-brand-yellow border-2 w-64 mb-4" />
         </header>
-        <div >
+        <div>
           <div
             class="grid max-w-xl grid-cols-1 gap-x-8 gap-y-10 lg:max-w-none lg:grid-cols-2 lg:gap-y-16"
           >
@@ -336,7 +321,7 @@
       <!-- Footer -->
       <footer
         id="footer"
-        class="snap-end p-14 bg-zinc-700 flex flex-col items-center gap-8"
+        class="p-14 bg-zinc-700 flex flex-col items-center gap-8"
       >
         <img
           src="images/PhotonVision-Icon-BG.png"
