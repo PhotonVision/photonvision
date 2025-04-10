@@ -84,7 +84,7 @@ jobs:
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
-          KEY: ${{secrets.WEBMASTER_SSH_KEY}}
+          KEY: ${{secrets.WEBMASTER_RSA_SSH_KEY}}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/development
           VERBOSE: TRUE
@@ -94,7 +94,7 @@ jobs:
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
-          KEY: ${{ secrets.WEBMASTER_SSH_KEY }}
+          KEY: ${{ secrets.WEBMASTER_RSA_SSH_KEY }}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/release/
           VERBOSE: TRUE
@@ -111,10 +111,10 @@ jobs:
       - name: Test SSH connection
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.WEBMASTER_SSH_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.WEBMASTER_RSA_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          ssh-keyscan -H ${{ secrets.WEBMASTER_SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.WEBMASTER_RSA_SSH_HOST }} >> ~/.ssh/known_hosts
 
           ssh -i ~/.ssh/id_rsa -p ${{ secrets.WEBMASTER_SSH_PORT }} \
           ${{ secrets.WEBMASTER_SSH_USERNAME }}@${{ secrets.WEBMASTER_SSH_HOST }} \
@@ -126,7 +126,7 @@ jobs:
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
-          KEY: ${{ secrets.WEBMASTER_SSH_KEY }}
+          KEY: ${{ secrets.WEBMASTER_RSA_SSH_KEY }}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-demo
           VERBOSE: TRUE
