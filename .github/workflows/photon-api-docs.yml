@@ -1,4 +1,4 @@
-name: Photon Code Documentation
+name: Photon API Documentation
 
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
