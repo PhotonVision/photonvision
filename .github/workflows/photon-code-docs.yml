@@ -25,7 +25,7 @@ jobs:
     name: "PhotonClient Demo Build"
     defaults:
       run:
-        working-directory: photon-demo
+        working-directory: photon-client
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
