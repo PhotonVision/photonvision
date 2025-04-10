@@ -24,5 +24,5 @@ jobs:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           KEY: ${{secrets.WEBMASTER_SSH_KEY}}
-          SOURCE: "*/website/dist/*"
+          SOURCE: /website/dist/*
           TARGET: /var/www/html/photonvision-website
