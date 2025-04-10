@@ -21,7 +21,7 @@ permissions:
   id-token: write
 
 jobs:
-  build-demo:
+  build_demo:
     defaults:
       run:
         working-directory: photon-client
@@ -96,7 +96,7 @@ jobs:
           TARGET: /var/www/html/photonvision-docs/release/
 
   publish_demo:
-      needs: [build-demo]
+      needs: [build_demo]
 
       runs-on: ubuntu-22.04
       steps:
