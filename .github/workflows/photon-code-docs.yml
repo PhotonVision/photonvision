@@ -115,4 +115,3 @@ jobs:
           PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-demo
-          
