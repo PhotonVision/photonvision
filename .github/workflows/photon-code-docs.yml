@@ -21,11 +21,11 @@ permissions:
   id-token: write
 
 jobs:
-  build-client:
-    name: "PhotonClient Build"
+  build-demo:
+    name: "PhotonClient Demo Build"
     defaults:
       run:
-        working-directory: photon-client
+        working-directory: photon-demo
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +39,8 @@ jobs:
         run: npm run build-demo
       - uses: actions/upload-artifact@v4
         with:
-          name: built-client
-          path: photon-client/dist/
+          name: built-demo
+          path: photon-demo/dist/
 
   run_docs:
     runs-on: "ubuntu-22.04"
@@ -68,16 +68,18 @@ jobs:
         path: photon-docs/build/docs
 
   release:
-    needs: [build-client, run_docs]
+    needs: [run_docs]
 
     runs-on: ubuntu-22.04
     steps:
 
-      # Download literally every single artifact.
+      # Download docs artifact
       - uses: actions/download-artifact@v4
+        with:
+          name: built-docs
 
       - run: find .
-      - name: publish docs to development
+      - name: Publish docs to development
         if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
         env:
@@ -95,3 +97,26 @@ jobs:
           PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
           PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
           TARGET: /var/www/html/photonvision-docs/release/
+
+  publish_demo:
+      needs: [build-demo]
+
+      runs-on: ubuntu-22.04
+      steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: built-demo
+
+      - run: find .
+
+      - name: Publish demo
+        # if: github.ref == 'refs/heads/main'
+        uses: up9cloud/action-rsync@v1.4
+        env:
+          HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          PASSWORD: ${{secrets.WEBMASTER_SSH_KEY}}
+          PORT: ${{ secrets.WEBMASTER_SSH_PORT}}
+          TARGET: /var/www/html/photonvision-demo
+      
+    
