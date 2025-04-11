@@ -201,6 +201,12 @@ public class NetworkTablesManager {
         kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
+    private void broadcastMetrics() {
+        HardwareManager.getInstance()
+                .getMetrics()
+                .forEach((k, v) -> kRootTable.getSubTable("metrics").getEntry(k).setString(v));
+    }
+
     public void setConfig(NetworkConfig config) {
         if (config.runNTServer) {
             setServerMode();
@@ -242,9 +248,9 @@ public class NetworkTablesManager {
 
     // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
     // it'll never connect. This hack works around it by restarting the client/server while the nt
-    // instance
-    // isn't connected, same as clicking the save button in the settings menu (or restarting the
-    // service)
+    // instance isn't connected, same as clicking the save button in the settings menu
+    // (or restarting the service)
+    // It's also used to update the metrics every tick
     private void ntTick() {
         if (!ntInstance.isConnected()
                 && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
@@ -256,6 +262,8 @@ public class NetworkTablesManager {
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
+
+        broadcastMetrics();
     }
 
     public long getTimeSinceLastPong() {
