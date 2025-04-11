@@ -29,7 +29,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
@@ -432,7 +431,7 @@ public class RequestHandler {
             var tempPath2 = Files.createTempFile("photonvision-kernelogs", ".txt");
             // In the command below:
             // dmesg = output all kernel logs since current boot
-            // cat /var/log/kern.log = output all kernal logs since first boot
+            // cat /var/log/kern.log = output all kernel logs since first boot
             shell.executeBashCommand(
                     "journalctl -u photonvision.service > "
                             + tempPath.toAbsolutePath()
@@ -467,8 +466,8 @@ public class RequestHandler {
             }
         } catch (IOException e) {
             ctx.status(500);
-            ctx.result("There was an error while exporting journactl logs");
-            logger.error("There was an error while exporting journactl logs", e);
+            ctx.result("There was an error while exporting journalctl logs");
+            logger.error("There was an error while exporting journalctl logs", e);
         }
     }
 
@@ -573,24 +572,9 @@ public class RequestHandler {
             }
 
             // verify naming convention
-            // this check will need to be modified if different model types are added
 
-            Pattern modelPattern = Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*\\.rknn$");
-
-            Pattern labelsPattern =
-                    Pattern.compile("^[a-zA-Z0-9]+-\\d+-\\d+-yolov[58][a-z]*-labels\\.txt$");
-
-            if (!modelPattern.matcher(modelFile.filename()).matches()
-                    || !labelsPattern.matcher(labelsFile.filename()).matches()
-                    || !(modelFile
-                            .filename()
-                            .substring(0, modelFile.filename().indexOf("-"))
-                            .equals(labelsFile.filename().substring(0, labelsFile.filename().indexOf("-"))))) {
-                ctx.status(400);
-                ctx.result("The uploaded files were not named correctly.");
-                logger.error("The uploaded object detection model files were not named correctly.");
-                return;
-            }
+            // throws IllegalArgumentException if the model name is invalid
+            NeuralNetworkModelManager.verifyRKNNNames(modelFile.filename(), labelsFile.filename());
 
             // TODO move into neural network manager
 

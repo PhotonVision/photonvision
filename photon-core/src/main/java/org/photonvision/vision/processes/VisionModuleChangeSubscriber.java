@@ -206,7 +206,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             parentModule.startCalibration(deserialized);
             parentModule.saveAndBroadcastAll();
         } catch (Exception e) {
-            logger.error("Error deserailizing start-calibration request", e);
+            logger.error("Error deserializing start-calibration request", e);
         }
     }
 

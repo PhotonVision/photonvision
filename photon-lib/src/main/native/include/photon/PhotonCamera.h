@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include <frc/Alert.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
@@ -156,6 +157,14 @@ class PhotonCamera {
    */
   const std::string_view GetCameraName() const;
 
+  /**
+   * Returns whether the camera is connected and actively returning new data.
+   * Connection status is debounced.
+   *
+   * @return True if the camera is actively sending frame data, false otherwise.
+   */
+  bool IsConnected();
+
   using CameraMatrix = Eigen::Matrix<double, 3, 3>;
   using DistortionMatrix = Eigen::Matrix<double, 8, 1>;
 
@@ -203,17 +212,30 @@ class PhotonCamera {
   nt::BooleanPublisher driverModePublisher;
   nt::IntegerSubscriber ledModeSubscriber;
 
+  nt::IntegerSubscriber heartbeatSubscriber;
+
   nt::MultiSubscriber topicNameSubscriber;
 
   std::string path;
   std::string cameraName;
+
+  frc::Alert disconnectAlert;
+  frc::Alert timesyncAlert;
 
  private:
   units::second_t lastVersionCheckTime = 0_s;
   static bool VERSION_CHECK_ENABLED;
   inline static int InstanceCount = 0;
 
+  units::second_t prevTimeSyncWarnTime = 0_s;
+
+  int prevHeartbeatValue = -1;
+  units::second_t prevHeartbeatChangeTime = 0_s;
+
   void VerifyVersion();
+
+  void UpdateDisconnectAlert();
+  void CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result);
 
   std::vector<std::string> tablesThatLookLikePhotonCameras();
 };

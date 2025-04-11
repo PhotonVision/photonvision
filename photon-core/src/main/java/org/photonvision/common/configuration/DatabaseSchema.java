@@ -19,7 +19,7 @@ package org.photonvision.common.configuration;
 
 /**
  * Add migrations by adding the SQL commands for each migration sequentially to this array. DO NOT
- * edit or delete existing SQL commands. That will lead to producing an icompatible database.
+ * edit or delete existing SQL commands. That will lead to producing an incompatible database.
  *
  * <p>You can use multiple SQL statements in one migration step as long as you separate them with a
  * semicolon (;).

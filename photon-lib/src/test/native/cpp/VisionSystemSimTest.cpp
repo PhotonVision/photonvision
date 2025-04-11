@@ -509,6 +509,10 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
 
   auto camResults = camera.GetLatestResult();
   auto targetSpan = camResults.GetTargets();
+
+  // We need to see at least one target
+  ASSERT_GT(targetSpan.size(), static_cast<size_t>(0));
+
   std::vector<photon::PhotonTrackedTarget> targets;
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
