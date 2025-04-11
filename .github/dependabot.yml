@@ -10,11 +10,6 @@ updates:
     schedule:
       interval: "daily"
 
-  - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/photon-client" # Location of package manifests
-    schedule:
-      interval: "daily"
-
   - package-ecosystem: "pip"
 
     directory: "/docs"
