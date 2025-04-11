@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
       - name: Install packages
-        run: cd website | npm ci
+        run: npm ci
         working-directory: /website
       - name: Build project
         run: npm run build
