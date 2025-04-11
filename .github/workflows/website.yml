@@ -15,6 +15,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v4
+      - name: List files in repo
+        run: ls -R
+
       - name: Install packages
         run: npm ci
         working-directory: /website
