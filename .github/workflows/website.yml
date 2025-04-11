@@ -20,7 +20,7 @@ jobs:
 
       - name: Install packages
         run: npm ci
-        working-directory: /website
+        working-directory: website
       - name: Build project
         run: npm run build
         working-directory: website
