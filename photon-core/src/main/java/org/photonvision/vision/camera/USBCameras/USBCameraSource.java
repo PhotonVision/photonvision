@@ -71,12 +71,12 @@ public class USBCameraSource extends VisionSource {
         // yes to me...
         if (getCameraConfiguration().cameraQuirks == null) {
             int vid =
-                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
-                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).vendorId
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo cameraInfo)
+                            ? cameraInfo.vendorId
                             : -1;
             int pid =
-                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
-                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).productId
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo cameraInfo)
+                            ? cameraInfo.productId
                             : -1;
 
             getCameraConfiguration().cameraQuirks =

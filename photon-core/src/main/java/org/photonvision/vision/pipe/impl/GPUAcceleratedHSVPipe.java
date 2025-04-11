@@ -35,54 +35,53 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
-    private static final String k_vertexShader =
-            String.join(
-                    "\n",
-                    "#version 100",
-                    "",
-                    "attribute vec4 position;",
-                    "",
-                    "void main() {",
-                    "  gl_Position = position;",
-                    "}");
-    private static final String k_fragmentShader =
-            String.join(
-                    "\n",
-                    "#version 100",
-                    "",
-                    "precision highp float;",
-                    "precision highp int;",
-                    "",
-                    "uniform vec3 lowerThresh;",
-                    "uniform vec3 upperThresh;",
-                    "uniform vec2 resolution;",
-                    "uniform sampler2D texture0;",
-                    "",
-                    "vec3 rgb2hsv(vec3 c) {",
-                    "  vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);",
-                    "  vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));",
-                    "  vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));",
-                    "",
-                    "  float d = q.x - min(q.w, q.y);",
-                    "  float e = 1.0e-10;",
-                    "  return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);",
-                    "}",
-                    "",
-                    "bool inRange(vec3 hsv) {",
-                    "  bvec3 botBool = greaterThanEqual(hsv, lowerThresh);",
-                    "  bvec3 topBool = lessThanEqual(hsv, upperThresh);",
-                    "  return all(botBool) && all(topBool);",
-                    "}",
-                    "",
-                    "void main() {",
-                    "  vec2 uv = gl_FragCoord.xy/resolution;",
-                    // Important! We do this .bgr swizzle because the image comes in as BGR, but we pretend
-                    // it's RGB for convenience+speed
-                    "  vec3 col = texture2D(texture0, uv).bgr;",
-                    // Only the first value in the vec4 gets used for GL_RED, and only the last value gets
-                    // used for GL_ALPHA
-                    "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
-                    "}");
+    // spotless:off
+    private static final String k_vertexShader = """
+
+            #version 100
+
+            attribute vec4 position;
+
+            void main() {
+              gl_Position = position;
+            }""";
+    private static final String k_fragmentShader = """
+
+            #version 100
+            precision highp float;
+            precision highp int;
+
+            uniform vec3 lowerThresh;
+            uniform vec3 upperThresh;
+            uniform vec2 resolution;
+            uniform sampler2D texture0;
+
+            vec3 rgb2hsv(vec3 c) {
+              vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+              vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+              vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+              float d = q.x - min(q.w, q.y);
+              float e = 1.0e-10;
+              return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+            }
+
+            bool inRange(vec3 hsv) {
+              bvec3 botBool = greaterThanEqual(hsv, lowerThresh);
+              bvec3 topBool = lessThanEqual(hsv, upperThresh);
+              return all(botBool) && all(topBool);
+            }
+
+            void main() {
+              vec2 uv = gl_FragCoord.xy/resolution;
+              // Important! We do this .bgr swizzle because the image comes in as BGR, but we pretend
+              // it's RGB for convenience+speed
+              vec3 col = texture2D(texture0, uv).bgr;
+              // Only the first value in the vec4 gets used for GL_RED, and only the last value gets
+              // used for GL_ALPHA
+              gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);
+            }""";
+    // spotless:on
     private static final int k_startingWidth = 1280, k_startingHeight = 720;
     private static final float[] k_vertexPositions = {
         // Set up a quad that covers the screen
@@ -490,8 +489,8 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         gl.glUniform2f(resolutionUniformId, in.width(), in.height());
 
         // Put values in threshold uniforms
-        var lowr = params.getHsvLower().val;
-        var upr = params.getHsvUpper().val;
+        var lowr = params.hsvLower().val;
+        var upr = params.hsvUpper().val;
         gl.glUniform3f(lowerUniformId, (float) lowr[0], (float) lowr[1], (float) lowr[2]);
         gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
 

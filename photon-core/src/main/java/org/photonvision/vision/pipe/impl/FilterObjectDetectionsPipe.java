@@ -41,49 +41,24 @@ public class FilterObjectDetectionsPipe
     }
 
     private void filterContour(NeuralNetworkPipeResult contour) {
-        var boc = contour.bbox;
+        var boc = contour.bbox();
 
         // Area filtering
-        double areaPercentage = boc.area() / params.getFrameStaticProperties().imageArea * 100.0;
-        double minAreaPercentage = params.getArea().getFirst();
-        double maxAreaPercentage = params.getArea().getSecond();
+        double areaPercentage = boc.area() / params.frameStaticProperties().imageArea * 100.0;
+        double minAreaPercentage = params.area().getFirst();
+        double maxAreaPercentage = params.area().getSecond();
         if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;
 
         // Aspect ratio filtering; much simpler since always axis-aligned
         double aspectRatio = boc.width / boc.height;
-        if (aspectRatio < params.getRatio().getFirst() || aspectRatio > params.getRatio().getSecond())
-            return;
+        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
 
         m_filteredContours.add(contour);
     }
 
-    public static class FilterContoursParams {
-        private final DoubleCouple m_area;
-        private final DoubleCouple m_ratio;
-        private final FrameStaticProperties m_frameStaticProperties;
-        public final boolean isLandscape;
-
-        public FilterContoursParams(
-                DoubleCouple area,
-                DoubleCouple ratio,
-                FrameStaticProperties camProperties,
-                boolean isLandscape) {
-            this.m_area = area;
-            this.m_ratio = ratio;
-            this.m_frameStaticProperties = camProperties;
-            this.isLandscape = isLandscape;
-        }
-
-        public DoubleCouple getArea() {
-            return m_area;
-        }
-
-        public DoubleCouple getRatio() {
-            return m_ratio;
-        }
-
-        public FrameStaticProperties getFrameStaticProperties() {
-            return m_frameStaticProperties;
-        }
-    }
+    public static record FilterContoursParams(
+            DoubleCouple area,
+            DoubleCouple ratio,
+            FrameStaticProperties frameStaticProperties,
+            boolean isLandscape) {}
 }

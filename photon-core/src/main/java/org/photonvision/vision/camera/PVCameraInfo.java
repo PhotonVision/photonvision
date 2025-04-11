@@ -123,10 +123,7 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            return obj instanceof PVCameraInfo info && equals(info);
         }
 
         @Override
@@ -192,10 +189,7 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            return obj instanceof PVCameraInfo info && equals(info);
         }
 
         @Override
@@ -252,10 +246,7 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVFileCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            return obj instanceof PVFileCameraInfo info && equals(info);
         }
 
         @Override

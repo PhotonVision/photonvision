@@ -398,7 +398,7 @@ public class SqlConfigProvider extends ConfigProvider {
                                             }
                                         })
                                 .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
+                                .toList();
                 statement.setString(4, JacksonUtils.serializeToString(settings));
 
                 statement.executeUpdate();

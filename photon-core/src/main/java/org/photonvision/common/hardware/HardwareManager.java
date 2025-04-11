@@ -94,22 +94,22 @@ public class HardwareManager {
         }
 
         statusLED =
-                hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                hardwareConfig.statusRGBPins().size() == 3
+                        ? new StatusLED(hardwareConfig.statusRGBPins())
                         : null;
 
         if (statusLED != null) {
             TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
         }
 
-        var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
+        var hasBrightnessRange = hardwareConfig.ledBrightnessRange().size() == 2;
         visionLED =
-                hardwareConfig.ledPins.isEmpty()
+                hardwareConfig.ledPins().isEmpty()
                         ? null
                         : new VisionLED(
-                                hardwareConfig.ledPins,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                hardwareConfig.ledPins(),
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange().get(0) : 0,
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange().get(1) : 100,
                                 pigpioSocket,
                                 ledModeState::set);
 
@@ -158,7 +158,7 @@ public class HardwareManager {
             }
         }
         try {
-            return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
+            return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand()) == 0;
         } catch (IOException e) {
             logger.error("Could not restart device!", e);
             return false;

@@ -92,8 +92,8 @@ public class CustomGPIO extends GPIOBase {
 
     public static void setConfig(HardwareConfig config) {
         if (Platform.isRaspberryPi()) return;
-        commands.replace("setState", config.ledSetCommand);
-        commands.replace("dim", config.ledDimCommand);
-        commands.replace("blink", config.ledBlinkCommand);
+        commands.replace("setState", config.ledSetCommand());
+        commands.replace("dim", config.ledDimCommand());
+        commands.replace("blink", config.ledBlinkCommand());
     }
 }
