@@ -151,3 +151,6 @@ venv
 .venv/*
 .venv
 networktables.json
+
+website/node_modules
+website/dist
