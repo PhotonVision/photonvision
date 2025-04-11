@@ -76,7 +76,7 @@ const handleKeydown = ({ key }) => {
 }
 </style>
 <style>
-.light-error .error--text {
+.light-error.theme--dark .error--text {
   color: red !important;
   caret-color: red !important;
 }
