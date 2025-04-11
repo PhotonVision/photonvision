@@ -303,7 +303,7 @@ public class Calibrate3dPipe
             Calib3d.solvePnP(
                     o.objectPoints,
                     o.imagePoints,
-                    cameraMatrixMat.getAsMat(),
+                    cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
@@ -314,7 +314,7 @@ public class Calibrate3dPipe
         List<BoardObservation> observations =
                 createObservations(
                         in,
-                        cameraMatrixMat.getAsMat(),
+                        cameraMatrixMat.getAsMatOfDouble(),
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
                         tvecs,

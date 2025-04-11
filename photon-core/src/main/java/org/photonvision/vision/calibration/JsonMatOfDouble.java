@@ -58,18 +58,25 @@ public class JsonMatOfDouble implements Releasable {
     }
 
     @JsonIgnore
-    public static double[] getDataFromMat(Mat mat) {
+    private static double[] getDataFromMat(Mat mat) {
         double[] data = new double[(int) mat.total()];
         mat.get(0, 0, data);
         return data;
     }
 
+    /**
+     * Returns a JsonMatOfDouble by copying the data from a Mat. The Mat type must be {@link
+     * CvType#CV_64FC1}.
+     *
+     * @param mat The Mat.
+     * @return The JsonMatOfDouble
+     */
     public static JsonMatOfDouble fromMat(Mat mat) {
         return new JsonMatOfDouble(mat.rows(), mat.cols(), getDataFromMat(mat));
     }
 
     @JsonIgnore
-    public Mat getAsMat() {
+    private Mat getAsMat() {
         if (this.type != CvType.CV_64FC1) return null;
 
         if (wrappedMat == null) {
@@ -108,9 +115,6 @@ public class JsonMatOfDouble implements Releasable {
 
     @Override
     public void release() {
-        if (wrappedMat != null) {
-            wrappedMat.release();
-        }
         if (wrappedMatOfDouble != null) {
             wrappedMatOfDouble.release();
         }
