@@ -189,7 +189,7 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonIgnore
     public Mat getCameraIntrinsicsMat() {
-        return cameraIntrinsics.getAsMat();
+        return cameraIntrinsics.getAsMatOfDouble();
     }
 
     @JsonIgnore
