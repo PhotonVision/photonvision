@@ -17,8 +17,10 @@ jobs:
         uses: actions/setup-node@v4
       - name: Install packages
         run: cd /website | npm ci
+        working-directory: /website
       - name: Build project
-        run: cd /website | npm run build
+        run: npm run build
+        working-directory: /website
       - uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
