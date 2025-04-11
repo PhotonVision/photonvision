@@ -1,0 +1,28 @@
+name: Website Build
+
+on:
+  push:
+    # For now, run on all commits to main
+    branches: [ main ]
+    # and also all tags starting with v
+    tags:
+      - 'v*'
+
+jobs:
+  rsync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+      - name: Install packages
+        run: npm ci
+      - name: Build project
+        run: npm run build
+      - uses: up9cloud/action-rsync@v1.4
+        env:
+          HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          KEY: ${{secrets.WEBMASTER_SSH_KEY}}
+          SOURCE: /website/dist/*
+          TARGET: /var/www/html/photonvision-website
