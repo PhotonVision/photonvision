@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -171,6 +172,43 @@ public class CalibrationRotationPipeTest {
             assertEquals(rotatedDistortedPoints.get(i).x, distortedRotatedPoints.get(i).x, 1e-6);
             assertEquals(rotatedDistortedPoints.get(i).y, distortedRotatedPoints.get(i).y, 1e-6);
         }
+    }
+
+    @CartesianTest
+    public void testCalibrationDataIsValidWithRotation(@Enum ImageRotationMode rot) {
+        double[] intrinsics = {
+            900, 0, 500,
+            0, 951, 321,
+            0, 0, 1
+        };
+        double[] distCoeffs = {
+            0.25,
+            -1.5,
+            0.0017808248356550637,
+            .00004,
+            2.179764689221826,
+            -0.034952777924711353,
+            0.09625562194891251,
+            -0.1860797479660746
+        };
+        // GIVEN A camera calibration
+        CameraCalibrationCoefficients coeffs =
+                new CameraCalibrationCoefficients(
+                        new Size(1270, 720),
+                        new JsonMatOfDouble(3, 3, intrinsics),
+                        new JsonMatOfDouble(1, 8, distCoeffs),
+                        new double[] {},
+                        List.of(),
+                        new Size(),
+                        1,
+                        CameraLensModel.LENSMODEL_OPENCV);
+        // WHEN A camera calibration is rotated 4 times
+        for (int i = 0; i < 4; i++) {
+            coeffs = coeffs.rotateCoefficients(rot);
+        }
+        // THEN, it should be like it was never rotated at all
+        assertArrayEquals(intrinsics, coeffs.cameraIntrinsics.data);
+        assertArrayEquals(distCoeffs, coeffs.distCoeffs.data);
     }
 
     @Test

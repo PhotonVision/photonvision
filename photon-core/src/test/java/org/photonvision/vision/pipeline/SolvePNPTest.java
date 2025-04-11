@@ -70,16 +70,12 @@ public class SolvePNPTest {
         assertNotNull(cameraCalibration);
         assertEquals(3, cameraCalibration.cameraIntrinsics.rows);
         assertEquals(3, cameraCalibration.cameraIntrinsics.cols);
-        assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMat().rows());
-        assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMat().cols());
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().rows());
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().cols());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().rows());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().cols());
         assertEquals(1, cameraCalibration.distCoeffs.rows);
         assertEquals(5, cameraCalibration.distCoeffs.cols);
-        assertEquals(1, cameraCalibration.distCoeffs.getAsMat().rows());
-        assertEquals(5, cameraCalibration.distCoeffs.getAsMat().cols());
         assertEquals(1, cameraCalibration.distCoeffs.getAsMatOfDouble().rows());
         assertEquals(5, cameraCalibration.distCoeffs.getAsMatOfDouble().cols());
         assertEquals(1, cameraCalibration.getDistCoeffsMat().rows());
