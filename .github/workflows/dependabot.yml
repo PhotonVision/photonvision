@@ -20,4 +20,3 @@ updates:
     directory: "/docs"
     schedule:
       interval: "daily"
-      
