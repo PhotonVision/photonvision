@@ -222,7 +222,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-text>
           <v-row class="align-center pt-6">
             <v-col cols="12" md="6">
-              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span class="white--text"> This will delete all settings, including calibration data. Are you sure? </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
