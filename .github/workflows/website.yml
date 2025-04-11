@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: cd /website
       - name: Setup Node
         uses: actions/setup-node@v4
       - name: Install packages
