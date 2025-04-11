@@ -4,10 +4,13 @@ on:
   push:
     # For now, run on all commits to main
     branches: [ main ]
-    # and also all tags starting with v
     tags:
       - 'v*'
+  pull_request:
+    branches: [ main ]
+  merge_group:
 
+  
 jobs:
   rsync:
     runs-on: ubuntu-latest
@@ -22,6 +25,7 @@ jobs:
         run: npm run build
         working-directory: website
       - uses: up9cloud/action-rsync@v1.4
+        if: github.ref == 'refs/heads/main'
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
