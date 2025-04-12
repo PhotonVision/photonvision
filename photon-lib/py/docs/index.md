@@ -1,3 +1,3 @@
 # PhotonLib Python Docs
 
-For full documentation visit [docs.photonvision.org](https://docs.photonvision.org).
+For the full PhotonVision documentation visit [docs.photonvision.org](https://docs.photonvision.org).
