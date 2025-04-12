@@ -4,16 +4,17 @@ Useful Unix Commands
 SSH
 ---
 
-`SSH (Secure Shell) <https://www.mankier.com/1/ssh>`_ is used to securely connect from a local to a remote system (ex. from a laptop to a coprocessor). Unlike other commands on this page, ssh is not Unix specific and can be done on Windows and MacOS from their respective terminals.
+[SSH (Secure Shell)](https://www.mankier.com/1/ssh) is used to securely connect from a local to a remote system (ex. from a laptop to a coprocessor). Unlike other commands on this page, ssh is not Unix specific and can be done on Windows and MacOS from their respective terminals.
 
-.. note::
+:::{note}
     You may see a warning similar to "The authenticity of host 'xxx' can't be established..." or "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!", in most cases this can be safely ignored if you have confirmed that you are connecting to the correct host over a secure connection. You can read more about it `here <https://superuser.com/questions/421997/what-is-a-ssh-key-fingerprint-and-how-is-it-generated>`_.
+:::
 
 Example:
 
-.. code-block:: bash
-
+:::{code-block}
     ssh username@hostname
+:::
 
 ip
 --
