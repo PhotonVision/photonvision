@@ -18,7 +18,7 @@ The calibration data collected during calibration is specific to each physical c
 
 Accurate camera calibration is required in order to get accurate pose measurements when using AprilTags and 3D mode. The tips below should help ensure success:
 
-01. Ensure your the images you take have the target in different positions and angles, with as big of a difference between angles as possible. It is important to make sure the target overlay still lines up with the board while doing this. Tilt no more than 45 degrees.
+01. Ensure the images you take have the target in different positions and angles, with as big of a difference between angles as possible. It is important to make sure the target overlay still lines up with the board while doing this. Tilt no more than 45 degrees.
 02. Use as big of a calibration target as your printer can print.
 03. Ensure that your printed pattern has enough white border around it.
 04. Ensure your camera stays in one position during the duration of the calibration.
