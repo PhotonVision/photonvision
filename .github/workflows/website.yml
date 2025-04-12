@@ -1,4 +1,4 @@
-name: Website Build
+name: Website
 
 on:
   push:
@@ -12,6 +12,7 @@ on:
 
 jobs:
   rsync:
+    name: Build and Sync Files
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,15 +34,15 @@ jobs:
           TARGET: /var/www/html/photonvision-website
 
   format-check:
-    name: Check formatting
+    name: Check Formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node
         uses: actions/setup-node@v4
-      - name: Install packages
+      - name: Install Packages
         run: npm ci
         working-directory: website
-      - name: Build project
+      - name: Run Formatting Check
         run: npx prettier -c .
         working-directory: website
