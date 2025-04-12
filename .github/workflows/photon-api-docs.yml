@@ -95,7 +95,7 @@ jobs:
 
   publish_api_docs:
     name: Publish API Docs
-    needs: [run_java_cpp_docs]
+    needs: [ run_java_cpp_docs, run_py_docs ]
     runs-on: ubuntu-22.04
     steps:
       # Download docs artifact
