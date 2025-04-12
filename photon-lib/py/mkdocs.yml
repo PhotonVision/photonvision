@@ -1,0 +1,18 @@
+site_name: PhotonVision Python API Docs
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - PhotonCamera: photonCamera.md
+      - EstimatedRobotPose: estimatedRobotPose.md
+      - Packet: packet.md
+      - PhotonPoseEstimator: photonPoseEstimator.md
+
