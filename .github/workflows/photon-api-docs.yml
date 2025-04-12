@@ -39,11 +39,11 @@ jobs:
         run: npm run build-demo
       - uses: actions/upload-artifact@v4
         with:
-          name: built-demo
+          name: demo
           path: photon-client/dist/
 
-  run_api_docs:
-    name: Build API Docs
+  run_java_cpp_docs:
+    name: Build API Docs For Java and C++
     runs-on: "ubuntu-22.04"
     steps:
     - name: Checkout code
@@ -63,18 +63,18 @@ jobs:
         ./gradlew photon-docs:generateJavaDocs photon-docs:doxygen
     - uses: actions/upload-artifact@v4
       with:
-        name: built-docs
+        name: docs-java-cpp
         path: photon-docs/build/docs
 
   publish_api_docs:
     name: Publish API Docs
-    needs: [run_api_docs]
+    needs: [run_java_cpp_docs]
     runs-on: ubuntu-22.04
     steps:
       # Download docs artifact
       - uses: actions/download-artifact@v4
         with:
-          name: built-docs
+          pattern: docs-*
       - run: find .
       - name: Publish Docs To Development
         if: github.ref == 'refs/heads/main'
@@ -100,7 +100,7 @@ jobs:
       steps:
       - uses: actions/download-artifact@v4
         with:
-          name: built-demo
+          name: demo
       - run: find .
       - name: Publish demo
         if: github.ref == 'refs/heads/main'
