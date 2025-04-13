@@ -12,7 +12,7 @@ A vision pipeline represents a series of steps that are used to acquire an image
 
 ### AprilTag / AruCo
 
-This pipeline type is based on detecting AprilTag fiducial markers. More information about AprilTags can be found in the [WPILib documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html). While being more performance intensive than the reflective and colored shape pipeline, it has the benefit of providing easy to use 3D pose information which allows localization.
+This pipeline type is based on detecting AprilTag fiducial markers. More information about AprilTags can be found in the [WPILib documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html). This pipeline provides easy to use 3D pose information which allows localization.
 
 :::{note}
 In order to get 3D Pose data about AprilTags, you are required to {ref}`calibrate your camera<docs/calibration/calibration:Calibrating Your Camera>`.
