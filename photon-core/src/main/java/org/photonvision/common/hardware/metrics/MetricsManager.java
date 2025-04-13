@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.metrics;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -129,27 +128,37 @@ public class MetricsManager {
         return addr;
     }
 
-    public HashMap<String, String> getMetrics() {
-        HashMap<String, String> metrics = new HashMap<String, String>();
+    public record SystemMetrics(
+            String cpuTemp,
+            String cpuUtil,
+            String cpuMem,
+            String cpuThr,
+            String cpuUptime,
+            String gpuMem,
+            String ramUtil,
+            String gpuMemUtil,
+            String diskUtilPct,
+            String npuUsage,
+            String ipAddress) {}
 
-        metrics.put("cpuTemp", this.getTemp());
-        metrics.put("cpuUtil", this.getUtilization());
-        metrics.put("cpuMem", this.getMemory());
-        metrics.put("cpuThr", this.getThrottleReason());
-        metrics.put("cpuUptime", this.getUptime());
-        metrics.put("gpuMem", this.getGPUMemorySplit());
-        metrics.put("ramUtil", this.getUsedRam());
-        metrics.put("gpuMemUtil", this.getMallocedMemory());
-        metrics.put("diskUtilPct", this.getUsedDiskPct());
-        metrics.put("npuUsage", this.getNpuUsage());
-        metrics.put("ipAddress", this.getIpAddress());
-
-        return metrics;
+    public SystemMetrics getMetrics() {
+        return new SystemMetrics(
+                this.getTemp(),
+                this.getUtilization(),
+                this.getMemory(),
+                this.getThrottleReason(),
+                this.getUptime(),
+                this.getGPUMemorySplit(),
+                this.getUsedRam(),
+                this.getMallocedMemory(),
+                this.getUsedDiskPct(),
+                this.getNpuUsage(),
+                this.getIpAddress());
     }
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
-        HashMap<String, String> metrics = getMetrics();
+        var metrics = getMetrics();
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
