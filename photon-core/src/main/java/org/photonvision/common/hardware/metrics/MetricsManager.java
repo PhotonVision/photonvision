@@ -128,19 +128,6 @@ public class MetricsManager {
         return addr;
     }
 
-    public static record DeviceMetrics(
-            String cpuTemp,
-            String cpuUtil,
-            String cpuMem,
-            String cpuThr,
-            String cpuUptime,
-            String gpuMem,
-            String ramUtil,
-            String gpuMemUtil,
-            String diskUtilPct,
-            String npuUsage,
-            String ipAddress) {}
-
     public DeviceMetrics getMetrics() {
         return new DeviceMetrics(
                 this.getTemp(),
