@@ -174,6 +174,65 @@ public class CalibrationRotationPipeTest {
         }
     }
 
+    @Test
+    public void testRotateCoefficients180multiple() {
+        ImageRotationMode rot = ImageRotationMode.DEG_180_CCW;
+
+        // GIVEN A camera calibration
+        var res = new Size(1270, 720);
+        double fx = 900;
+        double fy = 951;
+        double cx = 500;
+        double cy = 321;
+        double[] intrinsics = {
+            fx, 0, cx,
+            0, fy, cy,
+            0, 0, 1
+        };
+        double[] distCoeffs = {
+            0.25,
+            -1.5,
+            0.0017808248356550637,
+            .00004,
+            2.179764689221826,
+            -0.034952777924711353,
+            0.09625562194891251,
+            -0.1860797479660746
+        };
+        CameraCalibrationCoefficients coeffs =
+                new CameraCalibrationCoefficients(
+                        res,
+                        new JsonMatOfDouble(3, 3, intrinsics),
+                        new JsonMatOfDouble(1, 8, distCoeffs),
+                        new double[] {},
+                        List.of(),
+                        new Size(),
+                        1,
+                        CameraLensModel.LENSMODEL_OPENCV);
+
+        // WHEN the camera calibration is rotated 180 degrees
+        var coeffs2 = coeffs.rotateCoefficients(rot);
+
+        // THEN the optical center should be rotated 180 degrees
+        double[] rotatedCamMat = {
+            fx, 0, res.width-cx,
+            0, fy, res.height-cy,
+            0, 0, 1
+        };
+        assertArrayEquals(rotatedCamMat, coeffs2.cameraIntrinsics.data);
+        // AND the image size should be the same
+        assertEquals(res, coeffs2.unrotatedImageSize);
+
+        // WHEN the camera calibration is rotated 180 degrees
+        var coeffs3 = coeffs2.rotateCoefficients(rot);
+
+        // THEN the camera matrix will be the same as the original
+        assertArrayEquals(intrinsics, coeffs3.cameraIntrinsics.data);
+        // AND the image size should be the same
+        assertEquals(res, coeffs2.unrotatedImageSize);
+    }
+    
+
     @CartesianTest
     public void testCalibrationDataIsValidWithRotation(@Enum ImageRotationMode rot) {
         double[] intrinsics = {
