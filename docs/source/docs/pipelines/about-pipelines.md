@@ -57,7 +57,7 @@ AprilTag / AruCo Pipelines have 3 steps:
 2. AprilTag: This step include AprilTag specific tuning parameters, such as decimate, blur, threads, pose iterations, and more.
 3. Output: This is the same as the above.
 
-Object Detection Pipelines have 2 steps:
+Object Detection Pipelines have 3 steps:
 
 1. Input: This is the same as the above.
 2. Object Detection: This step allows you to filter results from the neural network, such as confidence, area, and width/height ratio. The end goal of this step is to filter out any false positives.
