@@ -14,7 +14,6 @@
     * [TargetCornerSerde](reference/generated/TargetCornerSerde.md)
 * networktables
     * [NTTopicSet](reference/networktables/NTTopicSet.md)
-* [packet](reference/packet.md)
 * [photonCamera](reference/photonCamera.md)
 * [photonPoseEstimator](reference/photonPoseEstimator.md)
 * simulation

@@ -18,6 +18,9 @@ plugins:
         - gen_api_docs.py
   - literate-nav
   - section-index
+  - exclude:
+      glob:
+        - "reference/packet.md"
 
 nav:
   - Home: index.md
