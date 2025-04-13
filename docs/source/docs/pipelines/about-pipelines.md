@@ -10,21 +10,21 @@ A vision pipeline represents a series of steps that are used to acquire an image
 
 ## Types of Pipelines
 
-### Reflective
-
-This is the most common pipeline type and it is based on detecting targets with retroreflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
-
-### Colored Shape
-
-This pipeline type is based on detecting different shapes like circles, triangles, quadrilaterals, or a polygon. An example usage would be detecting yellow PowerCells from the 2020 FRC game. You can read more about the specific settings available in the contours page.
-
 ### AprilTag / AruCo
 
-This pipeline type is based on detecting AprilTag fiducial markers. More information about AprilTags can be found in the WPILib documentation. While being more performance intensive than the reflective and colored shape pipeline, it has the benefit of providing easy to use 3D pose information which allows localization.
+This pipeline type is based on detecting AprilTag fiducial markers. More information about AprilTags can be found in the [WPILib documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html). While being more performance intensive than the reflective and colored shape pipeline, it has the benefit of providing easy to use 3D pose information which allows localization.
 
 :::{note}
 In order to get 3D Pose data about AprilTags, you are required to {ref}`calibrate your camera<docs/calibration/calibration:Calibrating Your Camera>`.
 :::
+
+### Reflective
+
+This pipeline type is based on detecting targets with 3m retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
+
+### Colored Shape
+
+This pipeline type is based on detecting different shapes like circles, triangles, quadrilaterals, or a polygon. An example usage would be detecting yellow PowerCells from the 2020 FRC game. You can read more about the specific settings available in the contours page.
 
 ## Note About Multiple Cameras and Pipelines
 
