@@ -128,7 +128,7 @@ public class MetricsManager {
         return addr;
     }
 
-    public record SystemMetrics(
+    public static record DeviceMetrics(
             String cpuTemp,
             String cpuUtil,
             String cpuMem,
@@ -141,8 +141,8 @@ public class MetricsManager {
             String npuUsage,
             String ipAddress) {}
 
-    public SystemMetrics getMetrics() {
-        return new SystemMetrics(
+    public DeviceMetrics getMetrics() {
+        return new DeviceMetrics(
                 this.getTemp(),
                 this.getUtilization(),
                 this.getMemory(),
