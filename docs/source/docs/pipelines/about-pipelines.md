@@ -20,10 +20,10 @@ In order to get 3D Pose data about AprilTags, you are required to {ref}`calibrat
 
 ### Object Detection
 
-This pipeline type is based on detecting objects using a neural network. The object detection pipeline uses a pre-trained model to detect objects in the camera stream. In the object detection tab of this pipeline type, you can configure the confidence threshold and apply filters based on area and width/height ratio.
+This pipeline type is based on detecting objects using a neural network. The object detection pipeline uses a pre-trained model to detect objects in the camera stream.
 
 :::{note}
-This pipeline type is only available on the Orange Pi 5/5+ coprocessors due to its Neural Processing Unit used by PhotonVision to support running ML-based object detection.
+This pipeline type is only supported on the Orange Pi 5/5+ coprocessors due to its Neural Processing Unit used by PhotonVision to support running ML-based object detection.
 :::
 
 ### Colored Shape
@@ -32,7 +32,7 @@ This pipeline type is based on detecting different shapes like circles, triangle
 
 ### Reflective
 
-This pipeline type is based on detecting targets with 3M retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
+This pipeline type is based on detecting targets with reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
 
 :::{note}
 This pipeline type is not used anymore due to FRC's removal of retro-reflective tape from the game. It is still available as a pipeline for legacy purposes.
