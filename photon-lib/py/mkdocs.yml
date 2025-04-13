@@ -9,9 +9,8 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: ["."]
-          setup_commands:
-            - import sys; sys.path.append(".")
+          paths: 
+            - "."
   - gen-files:
       scripts:
         - gen_api_docs.py
