@@ -184,11 +184,7 @@ public class CalibrationRotationPipeTest {
         double fy = 951;
         double cx = 500;
         double cy = 321;
-        double[] intrinsics = {
-            fx, 0, cx,
-            0, fy, cy,
-            0, 0, 1
-        };
+        double[] intrinsics = {fx, 0, cx, 0, fy, cy, 0, 0, 1};
         double[] distCoeffs = {
             0.25,
             -1.5,
@@ -214,11 +210,7 @@ public class CalibrationRotationPipeTest {
         var coeffs2 = coeffs.rotateCoefficients(rot);
 
         // THEN the optical center should be rotated 180 degrees
-        double[] rotatedCamMat = {
-            fx, 0, res.width-cx,
-            0, fy, res.height-cy,
-            0, 0, 1
-        };
+        double[] rotatedCamMat = {fx, 0, res.width - cx, 0, fy, res.height - cy, 0, 0, 1};
         assertArrayEquals(rotatedCamMat, coeffs2.cameraIntrinsics.data);
         // AND the image size should be the same
         assertEquals(res, coeffs2.unrotatedImageSize);
@@ -231,7 +223,6 @@ public class CalibrationRotationPipeTest {
         // AND the image size should be the same
         assertEquals(res, coeffs2.unrotatedImageSize);
     }
-    
 
     @CartesianTest
     public void testCalibrationDataIsValidWithRotation(@Enum ImageRotationMode rot) {

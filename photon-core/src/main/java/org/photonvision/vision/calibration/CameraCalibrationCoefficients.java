@@ -138,7 +138,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, -p1);
 
-                // The rotated image size is the same as the unrotated image size, but the width and height are flipped
+                // The rotated image size is the same as the unrotated image size, but the width and height
+                // are flipped
                 rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
                 break;
             case DEG_180_CCW:
@@ -171,7 +172,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, p1);
 
-                // The rotated image size is the same as the unrotated image size, but the width and height are flipped
+                // The rotated image size is the same as the unrotated image size, but the width and height
+                // are flipped
                 rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
                 break;
         }
@@ -182,7 +184,6 @@ public class CameraCalibrationCoefficients implements Releasable {
 
         rotatedIntrinsics.release();
         rotatedDistCoeffs.release();
-
 
         return new CameraCalibrationCoefficients(
                 rotatedImageSize,
