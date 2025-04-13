@@ -34,6 +34,10 @@ This pipeline type is based on detecting different shapes like circles, triangle
 
 This pipeline type is based on detecting targets with 3M retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
 
+:::{note}
+This pipeline type is not used anymore due to FRC's removal of retro-reflective tape from the game. It is still available as a pipeline for legacy purposes.
+:::
+
 ## Note About Multiple Cameras and Pipelines
 
 When using more than one camera, it is important to keep in mind that all cameras run one pipeline each, all publish to NT, and all send both streams. This will have a noticeable affect on performance and we recommend users limit themselves to 1-2 cameras per coprocessor.
