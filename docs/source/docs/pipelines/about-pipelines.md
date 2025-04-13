@@ -42,25 +42,25 @@ This pipeline type is not used anymore due to FRC's removal of retro-reflective 
 
 When using more than one camera, it is important to keep in mind that all cameras run one pipeline each, all publish to NT, and all send both streams. This will have a noticeable affect on performance and we recommend users limit themselves to 1-2 cameras per coprocessor.
 
-## Pipeline Steps
+## Pipeline Configuration
 
-All pipelines follow a similar structure with an Input and Output step.
+Each pipeline has a set of tabs that are used to configure the pipeline. All pipelines follow a similar structure with an Input and Output tab, as well as a set of tabs that are specific to the pipeline type.
 
 - Input: This tab allows the raw camera image to be modified before it gets processed. Here, you can set exposure, brightness, gain, orientation, and resolution.
 
 - Output: This allows you to manipulate the detected target via the target offset point (for calculating pitch/yaw) and robot (crosshair) offset. In addition, it allows users to send additional (up to 5) outputs through PhotonLib.
 
-Pipielines also have additional steps that are specific to the pipeline type. Listed below are the steps for each pipeline type.
-
-### Reflective and Colored Shape Pipelines
-
-- Threshold: This tabs allows you to filter our specific colors/pixels in your camera stream through HSV tuning. The end goal here is having a black and white image that will only have your target lit up.
-- Contours: After thresholding, contiguous white pixels are grouped together, and described by a curve that outlines the group. This curve is called a "contour" which represent various targets on your screen. Regardless of type, you can filter how the targets are grouped, their intersection, and how the targets are sorted. Other available filters will change based on different pipeline types.
+Pipielines also have additional tabs that are specific to the pipeline type. Listed below are the tabs for each pipeline type.
 
 ### AprilTag / AruCo Pipelines
 
-- AprilTag: This step includes AprilTag specific tuning parameters, such as decimate, blur, threads, pose iterations, and more.
+- AprilTag: This tab includes AprilTag specific tuning parameters, such as decimate, blur, threads, pose iterations, and more.
 
 ### Object Detection Pipelines
 
-- Object Detection: This step allows you to filter results from the neural network, such as confidence, area, and width/height ratio. The end goal of this step is to filter out any false positives.
+- Object Detection: This tab allows you to filter results from the neural network, such as confidence, area, and width/height ratio. The end goal of this tab is to filter out any false positives.
+
+### Reflective and Colored Shape Pipelines
+
+- Threshold: This tab allows you to filter out specific colors/pixels in your camera stream through HSV tuning. The end goal here is having a black and white image that will only have your target lit up.
+- Contours: After thresholding, contiguous white pixels are grouped together, and described by a curve that outlines the group. This curve is called a "contour" which represent various targets on your screen. Regardless of type, you can filter how the targets are grouped, their intersection, and how the targets are sorted. Other available filters will change based on different pipeline types.
