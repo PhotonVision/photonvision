@@ -1,3 +1,0 @@
-# Packet API
-
-::: photonlibpy.packet

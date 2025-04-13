@@ -1,18 +1,24 @@
-site_name: PhotonVision Python API Docs
-
+site_name: PhotonLibPy Docs
 theme:
   name: material
+  favicon: images/favicon.ico  # If you want a favicon
+  logo: images/logo.png        # Optional logo
 
 plugins:
   - search
   - mkdocstrings:
-      default_handler: python
+      handlers:
+        python:
+          paths: ["."]
+          setup_commands:
+            - import sys; sys.path.append(".")
+  - gen-files:
+      scripts:
+        - gen_api_docs.py
+  - literate-nav
+  - section-index
 
 nav:
   - Home: index.md
-  - API Reference:
-      - PhotonCamera: photonCamera.md
-      - EstimatedRobotPose: estimatedRobotPose.md
-      - Packet: packet.md
-      - PhotonPoseEstimator: photonPoseEstimator.md
+  - Reference: reference/SUMMARY.md
 

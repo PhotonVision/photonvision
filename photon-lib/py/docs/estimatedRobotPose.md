@@ -1,3 +1,0 @@
-# EstimatedRobotPose API
-
-::: photonlibpy.estimatedRobotPose

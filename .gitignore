@@ -154,3 +154,6 @@ networktables.json
 
 website/node_modules
 website/dist
+
+photon-lib/py/site
+photon-lib/py/docs/reference

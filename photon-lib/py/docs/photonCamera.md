@@ -1,3 +1,0 @@
-# PhotonCamera API
-
-::: photonlibpy.photonCamera
