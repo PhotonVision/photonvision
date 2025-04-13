@@ -18,9 +18,17 @@ This pipeline type is based on detecting AprilTag fiducial markers. More informa
 In order to get 3D Pose data about AprilTags, you are required to {ref}`calibrate your camera<docs/calibration/calibration:Calibrating Your Camera>`.
 :::
 
+### Object Detection
+
+This pipeline type is based on detecting objects using a neural network. The object detection pipeline uses a pre-trained model to detect objects in the camera stream.
+
+:::{note}
+This pipeline type is only available on the Orange Pi 5/5+ coprocessors due to its Neural Processing Unit used by PhotonVision to support running ML-based object detection.
+:::
+
 ### Reflective
 
-This pipeline type is based on detecting targets with 3m retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
+This pipeline type is based on detecting targets with 3M retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
 
 ### Colored Shape
 
