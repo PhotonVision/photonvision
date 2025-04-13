@@ -18,6 +18,9 @@ plugins:
         - gen_api_docs.py
   - literate-nav
   - section-index
+  # To exclude files, add them under glob using their 
+  # path from photonlibpy prepended by reference/
+  # Additionally, change the extension from .py to .md
   - exclude:
       glob:
         - "reference/packet.md"
