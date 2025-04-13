@@ -24,6 +24,7 @@ plugins:
   - exclude:
       glob:
         - "reference/packet.md"
+        - "reference/generated/*"
 
 nav:
   - Home: index.md

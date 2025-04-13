@@ -5,13 +5,6 @@
     * [rotTrlTransform3d](reference/estimation/rotTrlTransform3d.md)
     * [targetModel](reference/estimation/targetModel.md)
     * [visionEstimation](reference/estimation/visionEstimation.md)
-* generated
-    * [MultiTargetPNPResultSerde](reference/generated/MultiTargetPNPResultSerde.md)
-    * [PhotonPipelineMetadataSerde](reference/generated/PhotonPipelineMetadataSerde.md)
-    * [PhotonPipelineResultSerde](reference/generated/PhotonPipelineResultSerde.md)
-    * [PhotonTrackedTargetSerde](reference/generated/PhotonTrackedTargetSerde.md)
-    * [PnpResultSerde](reference/generated/PnpResultSerde.md)
-    * [TargetCornerSerde](reference/generated/TargetCornerSerde.md)
 * networktables
     * [NTTopicSet](reference/networktables/NTTopicSet.md)
 * [photonCamera](reference/photonCamera.md)
