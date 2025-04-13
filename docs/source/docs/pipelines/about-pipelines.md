@@ -44,21 +44,23 @@ When using more than one camera, it is important to keep in mind that all camera
 
 ## Pipeline Steps
 
-Reflective and Colored Shape Pipelines have 4 steps (represented as 4 tabs):
+All pipelines follow a similar structure with an Input and Output step.
 
-1. Input: This tab allows the raw camera image to be modified before it gets processed. Here, you can set exposure, brightness, gain, orientation, and resolution.
-2. Threshold (Only Reflective and Colored Shape): This tabs allows you to filter our specific colors/pixels in your camera stream through HSV tuning. The end goal here is having a black and white image that will only have your target lit up.
-3. Contours: After thresholding, contiguous white pixels are grouped together, and described by a curve that outlines the group. This curve is called a "contour" which represent various targets on your screen. Regardless of type, you can filter how the targets are grouped, their intersection, and how the targets are sorted. Other available filters will change based on different pipeline types.
-4. Output: Now that you have filtered all of your contours, this allows you to manipulate the detected target via orientation, the offset point, and offset.
+- Input: This tab allows the raw camera image to be modified before it gets processed. Here, you can set exposure, brightness, gain, orientation, and resolution.
 
-AprilTag / AruCo Pipelines have 3 steps:
+- Output: This allows you to manipulate the detected target via the target offset point (for calculating pitch/yaw) and robot (crosshair) offset. In addition, it allows users to send additional (up to 5) outputs through PhotonLib.
 
-1. Input: This is the same as the above.
-2. AprilTag: This step include AprilTag specific tuning parameters, such as decimate, blur, threads, pose iterations, and more.
-3. Output: This is the same as the above.
+Pipielines also have additional steps that are specific to the pipeline type. Listed below are the steps for each pipeline type.
 
-Object Detection Pipelines have 3 steps:
+### Reflective and Colored Shape Pipelines
 
-1. Input: This is the same as the above.
-2. Object Detection: This step allows you to filter results from the neural network, such as confidence, area, and width/height ratio. The end goal of this step is to filter out any false positives.
-3. Output: This is the same as the above.
+- Threshold: This tabs allows you to filter our specific colors/pixels in your camera stream through HSV tuning. The end goal here is having a black and white image that will only have your target lit up.
+- Contours: After thresholding, contiguous white pixels are grouped together, and described by a curve that outlines the group. This curve is called a "contour" which represent various targets on your screen. Regardless of type, you can filter how the targets are grouped, their intersection, and how the targets are sorted. Other available filters will change based on different pipeline types.
+
+### AprilTag / AruCo Pipelines
+
+- AprilTag: This step includes AprilTag specific tuning parameters, such as decimate, blur, threads, pose iterations, and more.
+
+### Object Detection Pipelines
+
+- Object Detection: This step allows you to filter results from the neural network, such as confidence, area, and width/height ratio. The end goal of this step is to filter out any false positives.
