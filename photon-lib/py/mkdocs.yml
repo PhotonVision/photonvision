@@ -9,7 +9,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: 
+          paths:
             - "."
   - gen-files:
       scripts:
@@ -20,4 +20,3 @@ plugins:
 nav:
   - Home: index.md
   - Reference: reference/SUMMARY.md
-
