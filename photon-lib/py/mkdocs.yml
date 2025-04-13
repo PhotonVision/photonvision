@@ -2,7 +2,7 @@ site_name: PhotonLibPy Docs
 theme:
   name: material
   favicon: docs/favicon.ico  # If you want a favicon
-  logo: docs/logo.png        # Optional logo
+  logo: logo.svg        # Optional logo
 
 plugins:
   - search
