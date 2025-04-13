@@ -1,8 +1,8 @@
 site_name: PhotonLibPy Docs
 theme:
   name: material
-  favicon: images/favicon.ico  # If you want a favicon
-  logo: images/logo.png        # Optional logo
+  favicon: docs/favicon.ico  # If you want a favicon
+  logo: docs/logo.png        # Optional logo
 
 plugins:
   - search
