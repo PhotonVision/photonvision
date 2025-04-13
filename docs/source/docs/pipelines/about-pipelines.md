@@ -26,13 +26,13 @@ This pipeline type is based on detecting objects using a neural network. The obj
 This pipeline type is only available on the Orange Pi 5/5+ coprocessors due to its Neural Processing Unit used by PhotonVision to support running ML-based object detection.
 :::
 
-### Reflective
-
-This pipeline type is based on detecting targets with 3M retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
-
 ### Colored Shape
 
 This pipeline type is based on detecting different shapes like circles, triangles, quadrilaterals, or a polygon. An example usage would be detecting yellow PowerCells from the 2020 FRC game. You can read more about the specific settings available in the contours page.
+
+### Reflective
+
+This pipeline type is based on detecting targets with 3M retro-reflective tape. In the contours tab of this pipeline type, you can filter the area, width/height ratio, fullness, degree of speckle rejection.
 
 ## Note About Multiple Cameras and Pipelines
 
