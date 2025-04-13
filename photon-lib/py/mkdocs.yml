@@ -3,6 +3,8 @@ theme:
   name: material
   favicon: docs/favicon.ico  # If you want a favicon
   logo: logo.svg        # Optional logo
+  palette:
+    primary: custom
 
 plugins:
   - search
@@ -20,3 +22,6 @@ plugins:
 nav:
   - Home: index.md
   - Reference: reference/SUMMARY.md
+
+extra_css:
+  - stylesheets/extra.css
