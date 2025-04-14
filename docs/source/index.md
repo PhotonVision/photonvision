@@ -102,6 +102,7 @@ docs/pipelines/index
 docs/apriltag-pipelines/index
 docs/reflectiveAndShape/index
 docs/objectDetection/index
+docs/driver-mode/index
 docs/calibration/calibration
 ```
 
