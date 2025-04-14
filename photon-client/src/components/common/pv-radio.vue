@@ -29,23 +29,27 @@ const localValue = computed({
 </script>
 
 <template>
-  <div>
-    <v-row dense align="center">
-      <v-col :cols="12 - inputCols">
-        <tooltipped-label :tooltip="tooltip" :label="label" />
-      </v-col>
-      <v-col :cols="inputCols">
-        <v-radio-group v-model="localValue" row dark :mandatory="true">
-          <v-radio
-            v-for="(radioName, index) in list"
-            :key="index"
-            color="#ffd843"
-            :label="radioName"
-            :value="index"
-            :disabled="disabled"
-          />
-        </v-radio-group>
-      </v-col>
-    </v-row>
+  <div class="d-flex">
+    <v-col :cols="12 - inputCols" class="d-flex align-center pl-0">
+      <tooltipped-label :tooltip="tooltip" :label="label" />
+    </v-col>
+    <v-col :cols="inputCols" class="d-flex align-center pr-0">
+      <v-radio-group v-model="localValue" row dark :mandatory="true" hide-details="auto">
+        <v-radio
+          v-for="(radioName, index) in list"
+          :key="index"
+          color="#ffd843"
+          :label="radioName"
+          :value="index"
+          :disabled="disabled"
+        />
+      </v-radio-group>
+    </v-col>
   </div>
 </template>
+<style scoped>
+.v-input--radio-group {
+  padding-top: 0;
+  margin-top: 0;
+}
+</style>

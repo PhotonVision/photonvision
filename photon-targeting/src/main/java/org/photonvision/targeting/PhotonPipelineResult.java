@@ -20,52 +20,86 @@ package org.photonvision.targeting;
 import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.common.dataflow.structures.Packet;
+import java.util.Optional;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.struct.PhotonPipelineResultSerde;
 import org.photonvision.targeting.proto.PhotonPipelineResultProto;
+import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 /** Represents a pipeline result from a PhotonCamera. */
-public class PhotonPipelineResult implements ProtobufSerializable {
+public class PhotonPipelineResult
+        implements ProtobufSerializable, PhotonStructSerializable<PhotonPipelineResult> {
     private static boolean HAS_WARNED = false;
 
+    // Frame capture metadata
+    public PhotonPipelineMetadata metadata;
+
     // Targets to store.
-    public final List<PhotonTrackedTarget> targets = new ArrayList<>();
-
-    // Latency in milliseconds.
-    private double latencyMillis;
-
-    // Timestamp in milliseconds.
-    private double timestampSeconds = -1;
+    public List<PhotonTrackedTarget> targets = new ArrayList<>();
 
     // Multi-tag result
-    private MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
+    public Optional<MultiTargetPNPResult> multitagResult;
 
     /** Constructs an empty pipeline result. */
-    public PhotonPipelineResult() {}
-
-    /**
-     * Constructs a pipeline result.
-     *
-     * @param latencyMillis The latency in the pipeline.
-     * @param targets The list of targets identified by the pipeline.
-     */
-    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
-        this.latencyMillis = latencyMillis;
-        this.targets.addAll(targets);
+    public PhotonPipelineResult() {
+        this(new PhotonPipelineMetadata(), List.of(), Optional.empty());
     }
 
     /**
      * Constructs a pipeline result.
      *
-     * @param latencyMillis The latency in the pipeline.
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestampMicros The time, in uS in the coprocessor's timebase, that the
+     *     coprocessor captured the image this result contains the targeting info of
+     * @param publishTimestampMicros The time, in uS in the coprocessor's timebase, that the
+     *     coprocessor published targeting info
+     * @param targets The list of targets identified by the pipeline.
+     */
+    public PhotonPipelineResult(
+            long sequenceID,
+            long captureTimestampMicros,
+            long publishTimestampMicros,
+            long timeSinceLastPong,
+            List<PhotonTrackedTarget> targets) {
+        this(
+                new PhotonPipelineMetadata(
+                        captureTimestampMicros, publishTimestampMicros, sequenceID, timeSinceLastPong),
+                targets,
+                Optional.empty());
+    }
+
+    /**
+     * Constructs a pipeline result.
+     *
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     published targeting info
      * @param targets The list of targets identified by the pipeline.
      * @param result Result from multi-target PNP.
      */
     public PhotonPipelineResult(
-            double latencyMillis, List<PhotonTrackedTarget> targets, MultiTargetPNPResult result) {
-        this.latencyMillis = latencyMillis;
+            long sequenceID,
+            long captureTimestamp,
+            long publishTimestamp,
+            long timeSinceLastPong,
+            List<PhotonTrackedTarget> targets,
+            Optional<MultiTargetPNPResult> result) {
+        this(
+                new PhotonPipelineMetadata(
+                        captureTimestamp, publishTimestamp, sequenceID, timeSinceLastPong),
+                targets,
+                result);
+    }
+
+    public PhotonPipelineResult(
+            PhotonPipelineMetadata metadata,
+            List<PhotonTrackedTarget> targets,
+            Optional<MultiTargetPNPResult> result) {
+        this.metadata = metadata;
         this.targets.addAll(targets);
-        this.multiTagResult = result;
+        this.multitagResult = result;
     }
 
     /**
@@ -74,10 +108,11 @@ public class PhotonPipelineResult implements ProtobufSerializable {
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return Double.BYTES // latency
-                + 1 // target count
-                + targets.size() * PhotonTrackedTarget.serde.getMaxByteSize()
-                + MultiTargetPNPResult.serde.getMaxByteSize();
+        throw new RuntimeException("TODO");
+        // return Double.BYTES // latency
+        //         + 1 // target count
+        //         + targets.size() * PhotonTrackedTarget.serde.getMaxByteSize()
+        //         + MultiTargetPNPResult.serde.getMaxByteSize();
     }
 
     /**
@@ -100,34 +135,6 @@ public class PhotonPipelineResult implements ProtobufSerializable {
     }
 
     /**
-     * Returns the latency in the pipeline.
-     *
-     * @return The latency in the pipeline.
-     */
-    public double getLatencyMillis() {
-        return latencyMillis;
-    }
-
-    /**
-     * Returns the estimated time the frame was taken, This is more accurate than using <code>
-     * getLatencyMillis()</code>
-     *
-     * @return The timestamp in seconds, or -1 if this result has no timestamp set.
-     */
-    public double getTimestampSeconds() {
-        return timestampSeconds;
-    }
-
-    /**
-     * Sets the FPGA timestamp of this result in seconds.
-     *
-     * @param timestampSeconds The timestamp in seconds.
-     */
-    public void setTimestampSeconds(double timestampSeconds) {
-        this.timestampSeconds = timestampSeconds;
-    }
-
-    /**
      * Returns whether the pipeline has targets.
      *
      * @return Whether the pipeline has targets.
@@ -139,6 +146,8 @@ public class PhotonPipelineResult implements ProtobufSerializable {
     /**
      * Returns a copy of the vector of targets.
      *
+     * <p>Returned in the order set by target sort mode.
+     *
      * @return A copy of the vector of targets.
      */
     public List<PhotonTrackedTarget> getTargets() {
@@ -149,21 +158,39 @@ public class PhotonPipelineResult implements ProtobufSerializable {
      * Return the latest multi-target result. Be sure to check
      * getMultiTagResult().estimatedPose.isPresent before using the pose estimate!
      */
-    public MultiTargetPNPResult getMultiTagResult() {
-        return multiTagResult;
+    public Optional<MultiTargetPNPResult> getMultiTagResult() {
+        return multitagResult;
+    }
+
+    /**
+     * Returns the estimated time the frame was taken, in the Time Sync Server's time base (nt::Now).
+     * This is calculated using the estimated offset between Time Sync Server time and local time. The
+     * robot shall run a server, so the offset shall be 0.
+     *
+     * @return The timestamp in seconds
+     */
+    public double getTimestampSeconds() {
+        return metadata.captureTimestampMicros / 1e6;
+    }
+
+    @Override
+    public String toString() {
+        return "PhotonPipelineResult [metadata="
+                + metadata
+                + ", targets="
+                + targets
+                + ", multitagResult="
+                + multitagResult
+                + "]";
     }
 
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + targets.hashCode();
-        long temp;
-        temp = Double.doubleToLongBits(latencyMillis);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(timestampSeconds);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
-        result = prime * result + ((multiTagResult == null) ? 0 : multiTagResult.hashCode());
+        result = prime * result + ((metadata == null) ? 0 : metadata.hashCode());
+        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
+        result = prime * result + ((multitagResult == null) ? 0 : multitagResult.hashCode());
         return result;
     }
 
@@ -173,59 +200,23 @@ public class PhotonPipelineResult implements ProtobufSerializable {
         if (obj == null) return false;
         if (getClass() != obj.getClass()) return false;
         PhotonPipelineResult other = (PhotonPipelineResult) obj;
-        if (!targets.equals(other.targets)) return false;
-        if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
-            return false;
-        if (Double.doubleToLongBits(timestampSeconds)
-                != Double.doubleToLongBits(other.timestampSeconds)) return false;
-        if (multiTagResult == null) {
-            if (other.multiTagResult != null) return false;
-        } else if (!multiTagResult.equals(other.multiTagResult)) return false;
+        if (metadata == null) {
+            if (other.metadata != null) return false;
+        } else if (!metadata.equals(other.metadata)) return false;
+        if (targets == null) {
+            if (other.targets != null) return false;
+        } else if (!targets.equals(other.targets)) return false;
+        if (multitagResult == null) {
+            if (other.multitagResult != null) return false;
+        } else if (!multitagResult.equals(other.multitagResult)) return false;
         return true;
     }
 
-    @Override
-    public String toString() {
-        return "PhotonPipelineResult [targets="
-                + targets
-                + ", latencyMillis="
-                + latencyMillis
-                + ", timestampSeconds="
-                + timestampSeconds
-                + ", multiTagResult="
-                + multiTagResult
-                + "]";
-    }
-
-    public static final class APacketSerde implements PacketSerde<PhotonPipelineResult> {
-        @Override
-        public int getMaxByteSize() {
-            // This uses dynamic packets so it doesn't matter
-            return -1;
-        }
-
-        @Override
-        public void pack(Packet packet, PhotonPipelineResult value) {
-            packet.encode(value.latencyMillis);
-            packet.encode((byte) value.targets.size());
-            for (var target : value.targets) PhotonTrackedTarget.serde.pack(packet, target);
-            MultiTargetPNPResult.serde.pack(packet, value.multiTagResult);
-        }
-
-        @Override
-        public PhotonPipelineResult unpack(Packet packet) {
-            var latency = packet.decodeDouble();
-            var len = packet.decodeByte();
-            var targets = new ArrayList<PhotonTrackedTarget>(len);
-            for (int i = 0; i < len; i++) {
-                targets.add(PhotonTrackedTarget.serde.unpack(packet));
-            }
-            var result = MultiTargetPNPResult.serde.unpack(packet);
-
-            return new PhotonPipelineResult(latency, targets, result);
-        }
-    }
-
-    public static final APacketSerde serde = new APacketSerde();
+    public static final PhotonPipelineResultSerde photonStruct = new PhotonPipelineResultSerde();
     public static final PhotonPipelineResultProto proto = new PhotonPipelineResultProto();
+
+    @Override
+    public PacketSerde<PhotonPipelineResult> getSerde() {
+        return photonStruct;
+    }
 }

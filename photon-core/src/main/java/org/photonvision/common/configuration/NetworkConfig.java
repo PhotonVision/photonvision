@@ -21,13 +21,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.HashMap;
-import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
-import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
     // Can be an integer team number, or an IP address
@@ -42,23 +37,14 @@ public class NetworkConfig {
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
 
-    public String networkManagerIface;
+    public String networkManagerIface = "";
+    // TODO: remove these strings if no longer needed
     public String setStaticCommand =
             "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
     public String setDHCPcommand =
             "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
     public NetworkConfig() {
-        if (Platform.isLinux()) {
-            // Default to the name of the first Ethernet connection. Otherwise, "Wired connection 1" is a
-            // reasonable guess
-            this.networkManagerIface =
-                    NetworkUtils.getAllWiredInterfaces().stream()
-                            .map(it -> it.connName)
-                            .findFirst()
-                            .orElse("Wired connection 1");
-        }
-
         // We can (usually) manage networking on Linux devices, and if we can, we should try to. Command
         // line inhibitions happen at a level above this class
         setShouldManage(deviceCanManageNetwork());
@@ -89,20 +75,23 @@ public class NetworkConfig {
         setShouldManage(shouldManage);
     }
 
-    public Map<String, Object> toHashMap() {
-        try {
-            var ret = new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
-            ret.put("canManage", this.deviceCanManageNetwork());
-            return ret;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new HashMap<>();
-        }
+    public NetworkConfig(NetworkConfig config) {
+        this(
+                config.ntServerAddress,
+                config.connectionType,
+                config.staticIp,
+                config.hostname,
+                config.runNTServer,
+                config.shouldManage,
+                config.shouldPublishProto,
+                config.networkManagerIface,
+                config.setStaticCommand,
+                config.setDHCPcommand);
     }
 
     @JsonIgnore
     public String getPhysicalInterfaceName() {
-        return NetworkUtils.getNMinfoForConnName(this.networkManagerIface).devName;
+        return this.networkManagerIface;
     }
 
     @JsonIgnore
@@ -110,18 +99,12 @@ public class NetworkConfig {
         return "\"" + networkManagerIface + "\"";
     }
 
-    @JsonIgnore
-    public boolean shouldManage() {
-        return this.shouldManage;
-    }
-
-    @JsonIgnore
     public void setShouldManage(boolean shouldManage) {
         this.shouldManage = shouldManage && this.deviceCanManageNetwork();
     }
 
     @JsonIgnore
-    private boolean deviceCanManageNetwork() {
+    protected boolean deviceCanManageNetwork() {
         return Platform.isLinux();
     }
 

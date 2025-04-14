@@ -22,9 +22,19 @@
  * SOFTWARE.
  */
 
+#include <chrono>
+#include <thread>
+#include <tuple>
+#include <vector>
+
+#include <wpi/deprecated.h>
+
 #include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
 #include "photon/simulation/VisionSystemSim.h"
+
+// Ignore GetLatestResult warnings
+WPI_IGNORE_DEPRECATED
 
 class VisionSystemSimTest : public ::testing::Test {
   void SetUp() override {
@@ -220,12 +230,14 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
   visionSysSim.AddVisionTargets({photon::VisionTargetSim{
       targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
 
-  robotPose = frc::Pose2d{frc::Translation2d{10_m, 0_m},
-                          frc::Rotation2d{-1 * GetParam()}};
+  // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
+  robotPose =
+      frc::Pose2d{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{GetParam()}};
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(),
-              camera.GetLatestResult().GetBestTarget().GetYaw(), 0.25);
+
+  const auto result = camera.GetLatestResult();
+  ASSERT_TRUE(result.HasTargets());
+  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetYaw(), 0.25);
 }
 
 TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
@@ -250,9 +262,10 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
           frc::Translation3d{},
           frc::Rotation3d{0_rad, units::degree_t{GetParam()}, 0_rad}});
   visionSysSim.Update(robotPose);
-  ASSERT_TRUE(camera.GetLatestResult().HasTargets());
-  ASSERT_NEAR(GetParam().to<double>(),
-              camera.GetLatestResult().GetBestTarget().GetPitch(), 0.25);
+
+  const auto result = camera.GetLatestResult();
+  ASSERT_TRUE(result.HasTargets());
+  ASSERT_NEAR(GetParam().to<double>(), result.GetBestTarget().GetPitch(), 0.25);
 }
 
 INSTANTIATE_TEST_SUITE_P(AnglesTests, VisionSystemSimTestWithParamsTest,
@@ -417,11 +430,8 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
       {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag16h5, 0}});
   visionSysSim.Update(robotPose);
 
-  Eigen::Matrix<double, 3, 3> camEigen;
-  cv::cv2eigen(camera.GetCameraMatrix().value(), camEigen);
-
-  Eigen::Matrix<double, 5, 1> distEigen;
-  cv::cv2eigen(camera.GetDistCoeffs().value(), distEigen);
+  Eigen::Matrix<double, 3, 3> camEigen = camera.GetCameraMatrix().value();
+  Eigen::Matrix<double, 8, 1> distEigen = camera.GetDistCoeffs().value();
 
   auto camResults = camera.GetLatestResult();
   auto targetSpan = camResults.GetTargets();
@@ -429,9 +439,10 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
   }
-  photon::PNPResult results = photon::VisionEstimation::EstimateCamPosePNP(
+  auto results = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets, layout, photon::kAprilTag16h5);
-  frc::Pose3d pose = frc::Pose3d{} + results.best;
+  ASSERT_TRUE(results);
+  frc::Pose3d pose = frc::Pose3d{} + results->best;
   ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
   ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
@@ -450,12 +461,120 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   for (photon::PhotonTrackedTarget tar : targetSpan2) {
     targets2.push_back(tar);
   }
-  photon::PNPResult results2 = photon::VisionEstimation::EstimateCamPosePNP(
+  auto results2 = photon::VisionEstimation::EstimateCamPosePNP(
       camEigen, distEigen, targets2, layout, photon::kAprilTag16h5);
-  frc::Pose3d pose2 = frc::Pose3d{} + results2.best;
-  ASSERT_NEAR(5, pose2.X().to<double>(), 0.01);
-  ASSERT_NEAR(1, pose2.Y().to<double>(), 0.01);
+  ASSERT_TRUE(results2);
+  frc::Pose3d pose2 = frc::Pose3d{} + results2->best;
+  ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
+  ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
   ASSERT_NEAR(units::degree_t{5}.convert<units::radians>().to<double>(),
               pose2.Rotation().Z().to<double>(), 0.01);
+}
+
+TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
+  frc::Transform3d robotToCamera{frc::Translation3d{6_in, 6_in, 6_in},
+                                 frc::Rotation3d{0_deg, -30_deg, 25.5_deg}};
+
+  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::PhotonCamera camera{"cameraRotated"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, robotToCamera);
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{90_deg});
+  cameraSim.SetMinTargetAreaPixels(20.0);
+
+  std::vector<frc::AprilTag> tagList;
+  tagList.emplace_back(frc::AprilTag{
+      0, frc::Pose3d{12_m, 3_m, 1_m,
+                     frc::Rotation3d{0_rad, 0_rad,
+                                     units::radian_t{std::numbers::pi}}}});
+  tagList.emplace_back(frc::AprilTag{
+      1, frc::Pose3d{12_m, 1_m, -1_m,
+                     frc::Rotation3d{0_rad, 0_rad,
+                                     units::radian_t{std::numbers::pi}}}});
+  tagList.emplace_back(frc::AprilTag{
+      2, frc::Pose3d{11_m, 0_m, 2_m,
+                     frc::Rotation3d{0_rad, 0_rad,
+                                     units::radian_t{std::numbers::pi}}}});
+  units::meter_t fieldLength{54};
+  units::meter_t fieldWidth{27};
+  frc::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
+  frc::Pose2d robotPose{frc::Translation2d{5_m, 1_m}, frc::Rotation2d{-5_deg}};
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag36h11, 0}});
+  visionSysSim.Update(robotPose);
+
+  Eigen::Matrix<double, 3, 3> camEigen = camera.GetCameraMatrix().value();
+  Eigen::Matrix<double, 8, 1> distEigen = camera.GetDistCoeffs().value();
+
+  auto camResults = camera.GetLatestResult();
+  auto targetSpan = camResults.GetTargets();
+
+  // We need to see at least one target
+  ASSERT_GT(targetSpan.size(), static_cast<size_t>(0));
+
+  std::vector<photon::PhotonTrackedTarget> targets;
+  for (photon::PhotonTrackedTarget tar : targetSpan) {
+    targets.push_back(tar);
+  }
+  auto results = photon::VisionEstimation::EstimateCamPosePNP(
+      camEigen, distEigen, targets, layout, photon::kAprilTag36h11);
+  ASSERT_TRUE(results);
+  frc::Pose3d pose = frc::Pose3d{} + results->best;
+  pose = pose.TransformBy(robotToCamera.Inverse());
+  ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
+  ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
+  ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
+  ASSERT_NEAR(units::degree_t{-5}.convert<units::radians>().to<double>(),
+              pose.Rotation().Z().to<double>(), 0.01);
+
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{tagList[1].pose, photon::kAprilTag36h11, 1}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{tagList[2].pose, photon::kAprilTag36h11, 2}});
+  visionSysSim.Update(robotPose);
+
+  auto camResults2 = camera.GetLatestResult();
+  auto targetSpan2 = camResults2.GetTargets();
+  std::vector<photon::PhotonTrackedTarget> targets2;
+  for (photon::PhotonTrackedTarget tar : targetSpan2) {
+    targets2.push_back(tar);
+  }
+  auto results2 = photon::VisionEstimation::EstimateCamPosePNP(
+      camEigen, distEigen, targets2, layout, photon::kAprilTag36h11);
+  ASSERT_TRUE(results2);
+  frc::Pose3d pose2 = frc::Pose3d{} + results2->best;
+  pose2 = pose2.TransformBy(robotToCamera.Inverse());
+  ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
+  ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
+  ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
+  ASSERT_NEAR(units::degree_t{-5}.convert<units::radians>().to<double>(),
+              pose2.Rotation().Z().to<double>(), 0.01);
+}
+
+TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
+  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::PhotonCamera camera{"camera"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
+  cameraSim.SetMinTargetAreaPixels(20.0);
+
+  frc::Pose3d targetPose{
+      frc::Translation3d{2_m, 0_m, 0_m},
+      frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, photon::kAprilTag36h11, 3}});
+
+  frc::Pose2d robotPose{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{0_deg}};
+  visionSysSim.Update(robotPose);
+  double ambiguity =
+      camera.GetLatestResult().GetBestTarget().GetPoseAmbiguity();
+  ASSERT_TRUE(ambiguity > 0.5);
+
+  robotPose =
+      frc::Pose2d{frc::Translation2d{-2_m, -2_m}, frc::Rotation2d{30_deg}};
+  visionSysSim.Update(robotPose);
+  ambiguity = camera.GetLatestResult().GetBestTarget().GetPoseAmbiguity();
+  ASSERT_TRUE(0 < ambiguity && ambiguity < 0.2);
 }

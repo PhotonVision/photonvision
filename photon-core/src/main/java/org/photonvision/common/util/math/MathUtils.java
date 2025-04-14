@@ -25,7 +25,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Core;
@@ -67,6 +67,27 @@ public class MathUtils {
         return micros * 1000;
     }
 
+    public static long nanosToMicros(long nanos) {
+        return nanos / 1000;
+    }
+
+    /**
+     * Constrain a value to only take on certain values. Pick the next-highest allowed value in the
+     * array if in-between.
+     *
+     * @param value value to quantize
+     * @param allowableSteps sorted array of the allowed values
+     * @return quantized value
+     */
+    public static int quantize(int value, int[] allowableSteps) {
+        for (int step : allowableSteps) {
+            if (value <= step) {
+                return step;
+            }
+        }
+        return allowableSteps[allowableSteps.length - 1];
+    }
+
     public static double map(
             double value, double in_min, double in_max, double out_min, double out_max) {
         return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -77,7 +98,7 @@ public class MathUtils {
     }
 
     public static long wpiNanoTime() {
-        return microsToNanos(WPIUtilJNI.now());
+        return microsToNanos(NetworkTablesJNI.now());
     }
 
     /**

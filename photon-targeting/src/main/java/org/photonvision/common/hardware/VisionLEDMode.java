@@ -31,16 +31,11 @@ public enum VisionLEDMode {
 
     @Override
     public String toString() {
-        switch (this) {
-            case kDefault:
-                return "Default";
-            case kOff:
-                return "Off";
-            case kOn:
-                return "On";
-            case kBlink:
-                return "Blink";
-        }
-        return "";
+        return switch (this) {
+            case kDefault -> "Default";
+            case kOff -> "Off";
+            case kOn -> "On";
+            case kBlink -> "Blink";
+        };
     }
 }

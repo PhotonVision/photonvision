@@ -26,7 +26,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include <frc/Alert.h>
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
@@ -37,9 +39,8 @@
 #include <networktables/RawTopic.h>
 #include <networktables/StringTopic.h>
 #include <units/time.h>
-#include <wpi/deprecated.h>
 
-#include "photon/targeting//PhotonPipelineResult.h"
+#include "photon/targeting/PhotonPipelineResult.h"
 
 namespace cv {
 class Mat;
@@ -75,13 +76,20 @@ class PhotonCamera {
 
   PhotonCamera(PhotonCamera&&) = default;
 
-  virtual ~PhotonCamera() = default;
+  ~PhotonCamera() = default;
 
   /**
-   * Returns the latest pipeline result.
-   * @return The latest pipeline result.
+   * The list of pipeline results sent by PhotonVision since the last call to
+   * GetAllUnreadResults(). Calling this function clears the internal FIFO
+   * queue, and multiple calls to GetAllUnreadResults() will return different
+   * (potentially empty) result arrays. Be careful to call this exactly ONCE per
+   * loop of your robot code! FIFO depth is limited to 20 changes, so make sure
+   * to call this frequently enough to avoid old results being discarded, too!
    */
-  virtual PhotonPipelineResult GetLatestResult();
+  std::vector<PhotonPipelineResult> GetAllUnreadResults();
+
+  [[deprecated("Replace with GetAllUnreadResults")]] PhotonPipelineResult
+  GetLatestResult();
 
   /**
    * Toggles driver mode.
@@ -149,30 +157,39 @@ class PhotonCamera {
    */
   const std::string_view GetCameraName() const;
 
-  std::optional<cv::Mat> GetCameraMatrix();
-  std::optional<cv::Mat> GetDistCoeffs();
+  /**
+   * Returns whether the camera is connected and actively returning new data.
+   * Connection status is debounced.
+   *
+   * @return True if the camera is actively sending frame data, false otherwise.
+   */
+  bool IsConnected();
+
+  using CameraMatrix = Eigen::Matrix<double, 3, 3>;
+  using DistortionMatrix = Eigen::Matrix<double, 8, 1>;
 
   /**
-   * Returns whether the latest target result has targets.
-   * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
-   * be used instead.
-   * @deprecated This method should be replaced with {@link
-   * PhotonPipelineResult#HasTargets()}
-   * @return Whether the latest target result has targets.
+   * @brief Get the camera calibration matrix, in standard OpenCV form
+   *
+   * @return std::optional<cv::Mat>
    */
-  WPI_DEPRECATED(
-      "This method should be replaced with PhotonPipelineResult::HasTargets()")
-  bool HasTargets() { return GetLatestResult().HasTargets(); }
+  std::optional<CameraMatrix> GetCameraMatrix();
 
-  inline static void SetVersionCheckEnabled(bool enabled) {
-    PhotonCamera::VERSION_CHECK_ENABLED = enabled;
-  }
+  /**
+   * @brief Get the camera calibration distortion coefficients, in OPENCV8 form.
+   * Higher order terms are set to zero.
+   *
+   * @return std::optional<cv::Mat>
+   */
+  std::optional<DistortionMatrix> GetDistCoeffs();
+
+  static void SetVersionCheckEnabled(bool enabled);
 
   std::shared_ptr<nt::NetworkTable> GetCameraTable() const { return rootTable; }
 
   // For use in tests
   bool test = false;
-  PhotonPipelineResult testResult;
+  std::vector<PhotonPipelineResult> testResult;
 
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
@@ -195,19 +212,32 @@ class PhotonCamera {
   nt::BooleanPublisher driverModePublisher;
   nt::IntegerSubscriber ledModeSubscriber;
 
-  nt::MultiSubscriber m_topicNameSubscriber;
+  nt::IntegerSubscriber heartbeatSubscriber;
+
+  nt::MultiSubscriber topicNameSubscriber;
 
   std::string path;
-  std::string m_cameraName;
+  std::string cameraName;
 
-  mutable Packet packet;
+  frc::Alert disconnectAlert;
+  frc::Alert timesyncAlert;
 
  private:
   units::second_t lastVersionCheckTime = 0_s;
-  inline static bool VERSION_CHECK_ENABLED = true;
+  static bool VERSION_CHECK_ENABLED;
   inline static int InstanceCount = 0;
 
+  units::second_t prevTimeSyncWarnTime = 0_s;
+
+  int prevHeartbeatValue = -1;
+  units::second_t prevHeartbeatChangeTime = 0_s;
+
   void VerifyVersion();
+
+  void UpdateDisconnectAlert();
+  void CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result);
+
+  std::vector<std::string> tablesThatLookLikePhotonCameras();
 };
 
 }  // namespace photon

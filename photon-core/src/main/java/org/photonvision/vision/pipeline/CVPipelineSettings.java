@@ -37,12 +37,14 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 })
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
-    public PipelineType pipelineType = PipelineType.DriverMode;
+    @SuppressSettingCopy public PipelineType pipelineType = PipelineType.DriverMode;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure is false
-    public double cameraExposure = 20;
+    public double cameraExposureRaw = 20;
+    public double cameraMinExposureRaw = 1;
+    public double cameraMaxExposureRaw = 100;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
@@ -56,17 +58,23 @@ public class CVPipelineSettings implements Cloneable {
     public boolean inputShouldShow = false;
     public boolean outputShouldShow = true;
 
+    public boolean cameraAutoWhiteBalance = false;
+    public double cameraWhiteBalanceTemp = 4000;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CVPipelineSettings that = (CVPipelineSettings) o;
         return pipelineIndex == that.pipelineIndex
-                && Double.compare(that.cameraExposure, cameraExposure) == 0
+                && Double.compare(that.cameraExposureRaw, cameraExposureRaw) == 0
+                && Double.compare(that.cameraMinExposureRaw, cameraMinExposureRaw) == 0
+                && Double.compare(that.cameraMaxExposureRaw, cameraMaxExposureRaw) == 0
                 && Double.compare(that.cameraBrightness, cameraBrightness) == 0
                 && Double.compare(that.cameraGain, cameraGain) == 0
                 && Double.compare(that.cameraRedGain, cameraRedGain) == 0
                 && Double.compare(that.cameraBlueGain, cameraBlueGain) == 0
+                && Double.compare(that.cameraWhiteBalanceTemp, cameraWhiteBalanceTemp) == 0
                 && cameraVideoModeIndex == that.cameraVideoModeIndex
                 && ledMode == that.ledMode
                 && pipelineType == that.pipelineType
@@ -84,11 +92,14 @@ public class CVPipelineSettings implements Cloneable {
                 pipelineType,
                 inputImageRotationMode,
                 pipelineNickname,
-                cameraExposure,
+                cameraExposureRaw,
+                cameraMinExposureRaw,
+                cameraMaxExposureRaw,
                 cameraBrightness,
                 cameraGain,
                 cameraRedGain,
                 cameraBlueGain,
+                cameraWhiteBalanceTemp,
                 cameraVideoModeIndex,
                 streamingFrameDivisor,
                 ledMode,
@@ -118,8 +129,8 @@ public class CVPipelineSettings implements Cloneable {
                 + ", pipelineNickname='"
                 + pipelineNickname
                 + '\''
-                + ", cameraExposure="
-                + cameraExposure
+                + ", cameraExposureRaw="
+                + cameraExposureRaw
                 + ", cameraBrightness="
                 + cameraBrightness
                 + ", cameraGain="

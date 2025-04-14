@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.photonvision.targeting.*;
 
@@ -39,7 +40,10 @@ public class PhotonPipelineResultProtoTest {
         // non multitag result
         result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
+                        1024,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -47,6 +51,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -66,6 +72,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -87,7 +95,10 @@ public class PhotonPipelineResultProtoTest {
         // multitag result
         result =
                 new PhotonPipelineResult(
-                        2,
+                        3,
+                        4,
+                        5,
+                        1024,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -95,6 +106,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.0,
                                         4.0,
                                         2,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
@@ -114,6 +127,8 @@ public class PhotonPipelineResultProtoTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        -1,
+                                        -1f,
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
@@ -127,10 +142,11 @@ public class PhotonPipelineResultProtoTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))),
-                        new MultiTargetPNPResult(
-                                new PNPResult(
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                List.of(1, 2, 3)));
+                        Optional.of(
+                                new MultiTargetPNPResult(
+                                        new PnpResult(
+                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                                        List.of((short) 1, (short) 2, (short) 3))));
         serializedResult = PhotonPipelineResult.proto.createMessage();
         PhotonPipelineResult.proto.pack(serializedResult, result);
         unpackedResult = PhotonPipelineResult.proto.unpack(serializedResult);

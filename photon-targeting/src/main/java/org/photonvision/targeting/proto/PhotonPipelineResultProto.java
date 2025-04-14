@@ -18,6 +18,7 @@
 package org.photonvision.targeting.proto;
 
 import edu.wpi.first.util.protobuf.Protobuf;
+import java.util.Optional;
 import org.photonvision.proto.Photon.ProtobufPhotonPipelineResult;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -37,11 +38,6 @@ public class PhotonPipelineResultProto
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {PhotonTrackedTarget.proto, MultiTargetPNPResult.proto};
-    }
-
-    @Override
     public ProtobufPhotonPipelineResult createMessage() {
         return ProtobufPhotonPipelineResult.newInstance();
     }
@@ -49,16 +45,30 @@ public class PhotonPipelineResultProto
     @Override
     public PhotonPipelineResult unpack(ProtobufPhotonPipelineResult msg) {
         return new PhotonPipelineResult(
-                msg.getLatencyMs(),
+                msg.getSequenceId(),
+                msg.getCaptureTimestampMicros(),
+                msg.getNtPublishTimestampMicros(),
+                msg.getTimeSinceLastPongMicros(),
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
-                MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()));
+                msg.hasMultiTargetResult()
+                        ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
+                        : Optional.empty());
     }
 
     @Override
     public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
         PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.getTargets());
-        MultiTargetPNPResult.proto.pack(msg.getMutableMultiTargetResult(), value.getMultiTagResult());
 
-        msg.setLatencyMs(value.getLatencyMillis());
+        if (value.getMultiTagResult().isPresent()) {
+            MultiTargetPNPResult.proto.pack(
+                    msg.getMutableMultiTargetResult(), value.getMultiTagResult().get());
+        } else {
+            msg.clearMultiTargetResult();
+        }
+
+        msg.setSequenceId(value.metadata.getSequenceID());
+        msg.setCaptureTimestampMicros(value.metadata.getCaptureTimestampMicros());
+        msg.setNtPublishTimestampMicros(value.metadata.getPublishTimestampMicros());
+        msg.setTimeSinceLastPongMicros(value.metadata.timeSinceLastPong);
     }
 }

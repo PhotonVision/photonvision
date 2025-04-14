@@ -54,11 +54,6 @@ public class DriverModePipeline
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
-
-        // if (LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-        // LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-        // LibCameraJNI.setShouldCopyColor(true);
-        // }
     }
 
     @Override
@@ -73,10 +68,12 @@ public class DriverModePipeline
         if (!emptyIn) {
             totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
 
-            var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
+            if (settings.crosshair) {
+                var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
-            // calculate elapsed nanoseconds
-            totalNanos += draw2dCrosshairResult.nanosElapsed;
+                // calculate elapsed nanoseconds
+                totalNanos += draw2dCrosshairResult.nanosElapsed;
+            }
         }
 
         var fpsResult = calculateFPSPipe.run(null);
@@ -84,8 +81,20 @@ public class DriverModePipeline
 
         // Flip-flop input and output in the Frame
         return new DriverModePipelineResult(
+                frame.sequenceID,
                 MathUtils.nanosToMillis(totalNanos),
                 fps,
-                new Frame(frame.processedImage, frame.colorImage, frame.type, frame.frameStaticProperties));
+                new Frame(
+                        frame.sequenceID,
+                        frame.processedImage,
+                        frame.colorImage,
+                        frame.type,
+                        frame.frameStaticProperties));
+    }
+
+    @Override
+    public void release() {
+        // we never actually need to give resources up since pipelinemanager only makes
+        // one of us
     }
 }

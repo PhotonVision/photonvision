@@ -1,38 +1,48 @@
 import edu.wpi.first.toolchain.*
 
 plugins {
+    id "cpp"
     id "com.diffplug.spotless" version "6.24.0"
-    id "edu.wpi.first.NativeUtils" version "2024.6.1" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
-    id "edu.wpi.first.GradleRIO" version "2024.2.1"
+    id "edu.wpi.first.GradleRIO" version "2025.3.2"
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
-    id 'com.google.protobuf' version '0.9.4' apply false
+    id 'com.google.protobuf' version '0.9.3' apply false
+    id 'edu.wpi.first.GradleJni' version '1.1.0'
+    id "org.ysb33r.doxygen" version "1.0.4" apply false
+    id 'com.gradleup.shadow' version '8.3.4' apply false
+    id "com.github.node-gradle.node" version "7.0.1" apply false
+    id "org.hidetake.ssh" version "2.11.2" apply false
 }
 
 allprojects {
     repositories {
         mavenCentral()
         mavenLocal()
-        maven { url = "https://maven.photonvision.org/repository/internal/" }
-        maven { url = "https://maven.photonvision.org/repository/snapshots/" }
+        maven { url = "https://maven.photonvision.org/releases" }
+        maven { url = "https://maven.photonvision.org/snapshots" }
+        maven { url = "https://jogamp.org/deployment/maven/" }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
 }
 
+ext.localMavenURL = file("$project.buildDir/outputs/maven")
+ext.allOutputsFolder = file("$project.buildDir/outputs")
+
 // Configure the version number.
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2024.2.1"
+    wpilibVersion = "2025.3.2"
     wpimathVersion = wpilibVersion
-    openCVversion = "4.8.0-2"
-    joglVersion = "2.4.0-rc-20200307"
+    openCVYear = "2025"
+    openCVversion = "4.10.0-3"
+    joglVersion = "2.4.0"
     javalinVersion = "5.6.2"
-    photonGlDriverLibVersion = "dev-v2023.1.0-9-g75fc678"
-    rknnVersion = "dev-v2024.0.0-64-gc0836a6"
-    frcYear = "2024"
-    mrcalVersion = "dev-v2024.0.0-7-gc976aaa";
+    libcameraDriverVersion = "v2025.0.3"
+    rknnVersion = "dev-v2025.0.0-1-g33b6263"
+    frcYear = "2025"
+    mrcalVersion = "v2025.0.0";
 
 
     pubVersion = versionString
@@ -50,13 +60,17 @@ ext {
     println("Building for platform " + jniPlatform + " wpilib: " + wpilibNativeName)
     println("Using Wpilib: " + wpilibVersion)
     println("Using OpenCV: " + openCVversion)
+
+
+    photonMavenURL = 'https://maven.photonvision.org/' + (isDev ? 'snapshots' : 'releases');
+    println("Publishing Photonlib to " + photonMavenURL)
 }
 
 spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', "photon-core\\src\\main\\java\\org\\photonvision\\PhotonVersion.java", "photon-lib\\src\\main\\java\\org\\photonvision\\PhotonVersion.java"
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**'
         }
         toggleOffOn()
         googleJavaFormat()
@@ -76,16 +90,6 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
-    format 'xml', {
-        target fileTree('.') {
-            include '**/*.xml'
-            exclude '**/build/**', '**/build-*/**', "**/.idea/**"
-        }
-        eclipseWtp('xml')
-        trimTrailingWhitespace()
-        indentWithSpaces(2)
-        endWithNewline()
-    }
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
@@ -98,9 +102,23 @@ spotless {
 }
 
 wrapper {
-    gradleVersion '8.4'
+    gradleVersion '8.11'
 }
 
 ext.getCurrentArch = {
     return NativePlatforms.desktop
+}
+
+subprojects {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs.add '-XDstringConcat=inline'
+        options.encoding = 'UTF-8'
+    }
+
+    // Enables UTF-8 support in Javadoc
+    tasks.withType(Javadoc) {
+        options.addStringOption("charset", "utf-8")
+        options.addStringOption("docencoding", "utf-8")
+        options.addStringOption("encoding", "utf-8")
+    }
 }

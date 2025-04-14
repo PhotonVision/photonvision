@@ -17,18 +17,24 @@
 
 package org.photonvision.vision.pipeline;
 
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.vision.objects.Model;
+
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
+    public String model;
 
     public ObjectDetectionPipelineSettings() {
         super();
         this.pipelineType = PipelineType.ObjectDetection; // TODO: FIX this
         this.outputShowMultipleTargets = true;
-        cameraExposure = 20;
+        cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
         confidence = .9;
         nms = .45;
+        model =
+                NeuralNetworkModelManager.getInstance().getDefaultModel().map(Model::getName).orElse("");
     }
 }

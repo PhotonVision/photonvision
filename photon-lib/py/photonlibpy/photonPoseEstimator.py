@@ -1,13 +1,30 @@
+###############################################################################
+## Copyright (C) Photon Vision.
+###############################################################################
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+###############################################################################
+
 import enum
 from typing import Optional
 
 import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
-from wpimath.geometry import Transform3d, Pose3d, Pose2d
+from wpimath.geometry import Pose2d, Pose3d, Transform3d
 
-from .photonPipelineResult import PhotonPipelineResult
-from .photonCamera import PhotonCamera
 from .estimatedRobotPose import EstimatedRobotPose
+from .photonCamera import PhotonCamera
+from .targeting.photonPipelineResult import PhotonPipelineResult
 
 
 class PoseStrategy(enum.Enum):
@@ -207,7 +224,7 @@ class PhotonPoseEstimator:
                 return None
             cameraResult = self._camera.getLatestResult()
 
-        if cameraResult.timestampSec < 0:
+        if cameraResult.getTimestampSeconds() < 0:
             return None
 
         # If the pose cache timestamp was set, and the result is from the same
@@ -215,12 +232,15 @@ class PhotonPoseEstimator:
         # empty result
         if (
             self._poseCacheTimestampSeconds > 0.0
-            and abs(self._poseCacheTimestampSeconds - cameraResult.timestampSec) < 1e-6
+            and abs(
+                self._poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()
+            )
+            < 1e-6
         ):
             return None
 
         # Remember the timestamp of the current result used
-        self._poseCacheTimestampSeconds = cameraResult.timestampSec
+        self._poseCacheTimestampSeconds = cameraResult.getTimestampSeconds()
 
         # If no targets seen, trivial case -- return empty result
         if not cameraResult.targets:
@@ -249,8 +269,8 @@ class PhotonPoseEstimator:
     def _multiTagOnCoprocStrategy(
         self, result: PhotonPipelineResult
     ) -> Optional[EstimatedRobotPose]:
-        if result.multiTagResult.estimatedPose.isPresent:
-            best_tf = result.multiTagResult.estimatedPose.best
+        if result.multitagResult is not None:
+            best_tf = result.multitagResult.estimatedPose.best
             best = (
                 Pose3d()
                 .transformBy(best_tf)  # field-to-camera
@@ -259,7 +279,7 @@ class PhotonPoseEstimator:
             )
             return EstimatedRobotPose(
                 best,
-                result.timestampSec,
+                result.getTimestampSeconds(),
                 result.targets,
                 PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             )
@@ -281,7 +301,6 @@ class PhotonPoseEstimator:
         lowestAmbiguityTarget = None
 
         lowestAmbiguityScore = 10.0
-
         for target in result.targets:
             targetPoseAmbiguity = target.poseAmbiguity
 
@@ -307,7 +326,7 @@ class PhotonPoseEstimator:
             targetPosition.transformBy(
                 lowestAmbiguityTarget.getBestCameraToTarget().inverse()
             ).transformBy(self.robotToCamera.inverse()),
-            result.timestampSec,
+            result.getTimestampSeconds(),
             result.targets,
             PoseStrategy.LOWEST_AMBIGUITY,
         )

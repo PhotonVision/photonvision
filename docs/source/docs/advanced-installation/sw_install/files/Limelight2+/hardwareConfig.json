@@ -1,0 +1,9 @@
+{
+  "deviceName" : "Limelight 2+",
+  "supportURL" : "https://limelightvision.io",
+  "ledPins" : [ 13, 18 ],
+  "ledsCanDim" : true,
+  "ledPWMRange" : [ 0, 100 ],
+  "ledPWMFrequency" : 30000,
+  "vendorFOV" : 75.76079874010732
+}

@@ -1,0 +1,94 @@
+---
+- name: PhotonPipelineMetadata
+  fields:
+  - name: sequenceID
+    type: int64
+  - name: captureTimestampMicros
+    type: int64
+  - name: publishTimestampMicros
+    type: int64
+  - name: timeSinceLastPong
+    type: int64
+
+- name: Transform3d
+  shimmed: True
+  java_decode_shim: PacketUtils.unpackTransform3d
+  java_encode_shim: PacketUtils.packTransform3d
+  cpp_type: frc::Transform3d
+  cpp_include: "<frc/geometry/Transform3d.h>"
+  python_decode_shim: decodeTransform
+  python_encode_shim: encodeTransform
+  java_import: edu.wpi.first.math.geometry.Transform3d
+  # shim since we expect fields to at least exist
+  fields: []
+
+
+- name: TargetCorner
+  fields:
+  - name: x
+    type: float64
+  - name: y
+    type: float64
+
+- name: PhotonTrackedTarget
+  fields:
+  - name: yaw
+    type: float64
+  - name: pitch
+    type: float64
+  - name: area
+    type: float64
+  - name: skew
+    type: float64
+  - name: fiducialId
+    type: int32
+  - name: objDetectId
+    type: int32
+  - name: objDetectConf
+    type: float32
+  - name: bestCameraToTarget
+    type: Transform3d
+  - name: altCameraToTarget
+    type: Transform3d
+  - name: poseAmbiguity
+    type: float64
+  - name: minAreaRectCorners
+    type: TargetCorner
+    vla: True
+  - name: detectedCorners
+    type: TargetCorner
+    vla: True
+
+- name: PnpResult
+  fields:
+  - name: best
+    type: Transform3d
+    comment: "This is a comment"
+  - name: alt
+    type: Transform3d
+  - name: bestReprojErr
+    type: float64
+  - name: altReprojErr
+    type: float64
+  - name: ambiguity
+    type: float64
+
+- name: MultiTargetPNPResult
+  fields:
+  - name: estimatedPose
+    type: PnpResult
+  - name: fiducialIDsUsed
+    type: int16
+    vla: True
+
+
+- name: PhotonPipelineResult
+  fields:
+  - name: metadata
+    type: PhotonPipelineMetadata
+  - name: targets
+    type: PhotonTrackedTarget
+    vla: True
+  - name: multitagResult
+    type: MultiTargetPNPResult
+    optional: True

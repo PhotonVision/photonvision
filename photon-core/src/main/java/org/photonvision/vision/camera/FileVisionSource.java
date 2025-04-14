@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.camera;
 
+import edu.wpi.first.cscore.UsbCameraInfo;
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
@@ -40,16 +41,26 @@ public class FileVisionSource extends VisionSource {
                         : null;
         frameProvider =
                 new FileFrameProvider(
-                        Path.of(cameraConfiguration.path),
+                        // TODO - create new File/replay camera info type
+                        Path.of(cameraConfiguration.getDevicePath()),
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
                         calibration);
+
+        if (getCameraConfiguration().cameraQuirks == null)
+            getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
+
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
-        super(new CameraConfiguration(name, imagePath));
+        // TODO - create new File/replay camera info type
+        super(
+                new CameraConfiguration(
+                        PVCameraInfo.fromUsbCameraInfo(new UsbCameraInfo(0, imagePath, name, null, 0, 0)),
+                        name,
+                        name));
         frameProvider = new FileFrameProvider(imagePath, fov);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
@@ -70,7 +81,23 @@ public class FileVisionSource extends VisionSource {
         return false;
     }
 
-    private static class FileSourceSettables extends VisionSourceSettables {
+    @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be remade.
+        return;
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return false; // Assume USB cameras do not have photonvision-controlled LEDs
+    }
+
+    @Override
+    public void release() {
+        frameProvider.release();
+    }
+
+    public static class FileSourceSettables extends VisionSourceSettables {
         private final VideoMode videoMode;
 
         private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
@@ -89,7 +116,7 @@ public class FileVisionSource extends VisionSource {
         }
 
         @Override
-        public void setExposure(double exposure) {}
+        public void setExposureRaw(double exposureRaw) {}
 
         public void setAutoExposure(boolean cameraAutoExposure) {}
 
@@ -112,6 +139,32 @@ public class FileVisionSource extends VisionSource {
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             return videoModes;
+        }
+
+        @Override
+        public double getMinExposureRaw() {
+            return 1f;
+        }
+
+        @Override
+        public double getMaxExposureRaw() {
+            return 100f;
+        }
+
+        @Override
+        public void setAutoWhiteBalance(boolean autowb) {}
+
+        @Override
+        public void setWhiteBalanceTemp(double temp) {}
+
+        @Override
+        public double getMaxWhiteBalanceTemp() {
+            return 2;
+        }
+
+        @Override
+        public double getMinWhiteBalanceTemp() {
+            return 1;
         }
     }
 }

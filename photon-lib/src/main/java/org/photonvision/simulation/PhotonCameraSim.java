@@ -28,12 +28,15 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,9 +57,9 @@ import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.PnpResult;
 
 /**
  * A handle for simulating {@link PhotonCamera} values. Processing simulated targets through this
@@ -66,8 +69,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class PhotonCameraSim implements AutoCloseable {
     private final PhotonCamera cam;
 
-    NTTopicSet ts = new NTTopicSet();
-    private long heartbeatCounter = 0;
+    protected NTTopicSet ts = new NTTopicSet();
+    private long heartbeatCounter = 1;
 
     /** This simulated camera's {@link SimCameraProperties} */
     public final SimCameraProperties prop;
@@ -79,8 +82,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
 
-    private final AprilTagFieldLayout tagLayout =
-            AprilTagFields.kDefaultField.loadAprilTagLayoutField();
+    private final AprilTagFieldLayout tagLayout;
 
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -93,7 +95,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private boolean videoSimProcEnabled = true;
 
     static {
-        OpenCVHelp.forceLoadOpenCV();
+        OpenCvLoader.forceStaticLoad();
     }
 
     @Override
@@ -128,8 +130,24 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param prop Properties of this camera such as FOV and FPS
      */
     public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
+        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+    }
+
+    /**
+     * Constructs a handle for simulating {@link PhotonCamera} values. Processing simulated targets
+     * through this class will change the associated PhotonCamera's results.
+     *
+     * <p>By default, the minimum target area is 100 pixels and there is no maximum sight range.
+     *
+     * @param camera The camera to be simulated
+     * @param prop Properties of this camera such as FOV and FPS
+     * @param tagLayout The {@link AprilTagFieldLayout} used to solve for tag positions.
+     */
+    public PhotonCameraSim(
+            PhotonCamera camera, SimCameraProperties prop, AprilTagFieldLayout tagLayout) {
         this.cam = camera;
         this.prop = prop;
+        this.tagLayout = tagLayout;
         setMinTargetAreaPixels(kDefaultMinAreaPx);
 
         videoSimRaw =
@@ -161,6 +179,30 @@ public class PhotonCameraSim implements AutoCloseable {
             SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters) {
+        this(camera, prop, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+        this.minTargetAreaPercent = minTargetAreaPercent;
+        this.maxSightRangeMeters = maxSightRangeMeters;
+    }
+
+    /**
+     * Constructs a handle for simulating {@link PhotonCamera} values. Processing simulated targets
+     * through this class will change the associated PhotonCamera's results.
+     *
+     * @param camera The camera to be simulated
+     * @param prop Properties of this camera such as FOV and FPS
+     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     *     the camera's image to be processed. Match this with your contour filtering settings in the
+     *     PhotonVision GUI.
+     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
+     *     Note that minimum target area of the image is separate from this.
+     * @param tagLayout AprilTag field layout to use for multi-tag estimation
+     */
+    public PhotonCameraSim(
+            PhotonCamera camera,
+            SimCameraProperties prop,
+            double minTargetAreaPercent,
+            double maxSightRangeMeters,
+            AprilTagFieldLayout tagLayout) {
         this(camera, prop);
         this.minTargetAreaPercent = minTargetAreaPercent;
         this.maxSightRangeMeters = maxSightRangeMeters;
@@ -419,23 +461,26 @@ public class PhotonCameraSim implements AutoCloseable {
             // projected target can't be detected, skip to next
             if (!(canSeeCorners(noisyTargetCorners) && areaPercent >= minTargetAreaPercent)) continue;
 
-            var pnpSim = new PNPResult();
+            var pnpSim = new PnpResult();
             if (tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
                 pnpSim =
                         OpenCVHelp.solvePNP_SQUARE(
-                                prop.getIntrinsics(),
-                                prop.getDistCoeffs(),
-                                tgt.getModel().vertices,
-                                noisyTargetCorners);
+                                        prop.getIntrinsics(),
+                                        prop.getDistCoeffs(),
+                                        tgt.getModel().vertices,
+                                        noisyTargetCorners)
+                                .get();
             }
 
             detectableTgts.add(
                     new PhotonTrackedTarget(
-                            Math.toDegrees(centerRot.getZ()),
+                            -Math.toDegrees(centerRot.getZ()),
                             -Math.toDegrees(centerRot.getY()),
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
                             tgt.fiducialID,
+                            -1,
+                            -1,
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,
@@ -516,13 +561,13 @@ public class PhotonCameraSim implements AutoCloseable {
         } else videoSimProcessed.setConnectionStrategy(ConnectionStrategy.kForceClose);
 
         // calculate multitag results
-        var multitagResult = new MultiTargetPNPResult();
+        Optional<MultiTargetPNPResult> multitagResult = Optional.empty();
         // TODO: Implement ATFL subscribing in backend
         // var tagLayout = cam.getAprilTagFieldLayout();
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
         if (visibleLayoutTags.size() > 1) {
-            List<Integer> usedIDs =
-                    visibleLayoutTags.stream().map(t -> t.ID).sorted().collect(Collectors.toList());
+            List<Short> usedIDs =
+                    visibleLayoutTags.stream().map(t -> (short) t.ID).sorted().collect(Collectors.toList());
             var pnpResult =
                     VisionEstimation.estimateCamPosePNP(
                             prop.getIntrinsics(),
@@ -530,7 +575,10 @@ public class PhotonCameraSim implements AutoCloseable {
                             detectableTgts,
                             tagLayout,
                             TargetModel.kAprilTag36h11);
-            multitagResult = new MultiTargetPNPResult(pnpResult, usedIDs);
+
+            if (pnpResult.isPresent()) {
+                multitagResult = Optional.of(new MultiTargetPNPResult(pnpResult.get(), usedIDs));
+            }
         }
 
         // sort target order
@@ -539,7 +587,17 @@ public class PhotonCameraSim implements AutoCloseable {
         }
 
         // put this simulated data to NT
-        return new PhotonPipelineResult(latencyMillis, detectableTgts, multitagResult);
+        var now = RobotController.getFPGATime();
+        var ret =
+                new PhotonPipelineResult(
+                        heartbeatCounter,
+                        now - (long) (latencyMillis * 1000),
+                        now,
+                        // Pretend like we heard a pong recently
+                        1000L + (long) ((Math.random() - 0.5) * 50),
+                        detectableTgts,
+                        multitagResult);
+        return ret;
     }
 
     /**
@@ -561,9 +619,10 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param receiveTimestamp The (sim) timestamp when this result was read by NT in microseconds
      */
     public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
-        ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
+        ts.latencyMillisEntry.set(result.metadata.getLatencyMillis(), receiveTimestamp);
 
-        ts.resultPublisher.set(result, result.getPacketSize());
+        // Results are now dynamically sized, so let's guess 1024 bytes is big enough
+        ts.resultPublisher.set(result, 1024);
 
         boolean hasTargets = result.hasTargets();
         ts.hasTargetEntry.set(hasTargets, receiveTimestamp);
@@ -571,7 +630,7 @@ public class PhotonCameraSim implements AutoCloseable {
             ts.targetPitchEntry.set(0.0, receiveTimestamp);
             ts.targetYawEntry.set(0.0, receiveTimestamp);
             ts.targetAreaEntry.set(0.0, receiveTimestamp);
-            ts.targetPoseEntry.set(new double[] {0.0, 0.0, 0.0}, receiveTimestamp);
+            ts.targetPoseEntry.set(new Transform3d(), receiveTimestamp);
             ts.targetSkewEntry.set(0.0, receiveTimestamp);
         } else {
             var bestTarget = result.getBestTarget();
@@ -582,14 +641,13 @@ public class PhotonCameraSim implements AutoCloseable {
             ts.targetSkewEntry.set(bestTarget.getSkew(), receiveTimestamp);
 
             var transform = bestTarget.getBestCameraToTarget();
-            double[] poseData = {
-                transform.getX(), transform.getY(), transform.getRotation().toRotation2d().getDegrees()
-            };
-            ts.targetPoseEntry.set(poseData, receiveTimestamp);
+            ts.targetPoseEntry.set(transform, receiveTimestamp);
         }
 
         ts.cameraIntrinsicsPublisher.set(prop.getIntrinsics().getData(), receiveTimestamp);
         ts.cameraDistortionPublisher.set(prop.getDistCoeffs().getData(), receiveTimestamp);
-        ts.heartbeatPublisher.set(heartbeatCounter++, receiveTimestamp);
+
+        ts.heartbeatPublisher.set(heartbeatCounter, receiveTimestamp);
+        heartbeatCounter += 1;
     }
 }

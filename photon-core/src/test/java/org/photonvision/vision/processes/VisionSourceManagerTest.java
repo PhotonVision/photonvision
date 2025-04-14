@@ -17,248 +17,264 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.cscore.UsbCameraInfo;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.vision.camera.CameraInfo;
-import org.photonvision.vision.camera.CameraType;
+import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.vision.camera.PVCameraInfo;
 
 public class VisionSourceManagerTest {
-    @Test
-    public void visionSourceTest() {
-        var inst = new VisionSourceManager();
-        var cameraInfos = new ArrayList<CameraInfo>();
+    // Test harness that overrides getConnectedCameras, but uses USB cameras for
+    // everything else
+    // when we start testing libcamera stuff we'll need to mock more stuff out
+    private static class TestVsm extends VisionSourceManager {
+        public List<PVCameraInfo> testCameras = new ArrayList<>();
+
+        @Override
+        protected List<PVCameraInfo> getConnectedCameras() {
+            return testCameras;
+        }
+
+        public void teardown() {
+            // release native resources
+            var uniqueNames = getVisionModules().stream().map(VisionModule::uniqueName).toList();
+            for (var name : uniqueNames) {
+                deactivateVisionSource(name);
+            }
+        }
+    }
+
+    @BeforeAll
+    public static void loadLibraries() {
+        TestUtils.loadLibraries();
+        assertDoesNotThrow(PhotonTargetingJniLoader::load);
+        assertTrue(PhotonTargetingJniLoader.isWorking);
+
+        // Broadcast all still calls into configmanager (ew) so set that up here
         ConfigManager.getInstance().load();
+    }
 
-        inst.tryMatchCamImpl(cameraInfos);
+    private TestVsm vsm = null;
 
-        var config3 =
+    @BeforeEach
+    public void createVsm() {
+        ConfigManager.getInstance().clearConfig();
+        vsm = new TestVsm();
+    }
+
+    @AfterEach
+    public void teardownVsm() {
+        vsm.teardown();
+    }
+
+    @Test
+    public void testCameraInfoSerde() throws InterruptedException, IOException {
+        {
+            var usb =
+                    PVCameraInfo.fromUsbCameraInfo(
+                            new UsbCameraInfo(
+                                    2,
+                                    "/dev/video2",
+                                    "Left Camera", // renamed arducam
+                                    new String[] {
+                                        "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Left_Camera_12345-video-index0",
+                                        "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:2:1.0-video-index0"
+                                    },
+                                    7,
+                                    8));
+
+            var str = JacksonUtils.serializeToString(usb);
+            System.out.println(str);
+            System.out.println(JacksonUtils.deserialize(str, PVCameraInfo.class));
+        }
+        {
+            var csi =
+                    PVCameraInfo.fromCSICameraInfo(
+                            "/dev/v4l/by-path/platform-1f00110000.csi-video-index0", "rp1-cfe");
+            var str = JacksonUtils.serializeToString(csi);
+            System.out.println(str);
+            System.out.println(JacksonUtils.deserialize(str, PVCameraInfo.class));
+        }
+    }
+
+    @Test
+    public void testEmpty() {
+        var vsm = new TestVsm();
+
+        List<CameraConfiguration> configs = List.of();
+        vsm.registerLoadedConfigs(configs);
+
+        // And make assertions about the current matching state
+        assertEquals(0, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(0, vsm.vmm.getModules().size());
+    }
+
+    @Test
+    public void testFileVisionSource() throws InterruptedException, IOException {
+        var fileCamera1 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
+
+        vsm.testCameras = List.of(fileCamera1);
+
+        List<CameraConfiguration> configs = List.of();
+        vsm.registerLoadedConfigs(configs);
+
+        vsm.assignUnmatchedCamera(fileCamera1);
+
+        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
+
+        // And make assertions about the current matching state
+        assertEquals(1, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
+    }
+
+    @Test
+    public void testEnabledDisabled() throws InterruptedException {
+        // GIVEN a VSM
+        var vsm = new TestVsm();
+        // AND one enabled camera, and one disabled camera
+        var enabledCam =
                 new CameraConfiguration(
-                        "thirdTestVideo",
-                        "thirdTestVideo",
-                        "thirdTestVideo",
-                        "dev/video1",
-                        new String[] {"by-id/123"});
-        var config4 =
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        0,
+                                        "/dev/video0",
+                                        "Lifecam HD-3000",
+                                        new String[] {"/dev/v4l/by-path/foobar1"},
+                                        5940,
+                                        5940)));
+        enabledCam.deactivated = false;
+        enabledCam.nickname = "Matt's awesome camera 1";
+
+        var disabledCam =
                 new CameraConfiguration(
-                        "fourthTestVideo",
-                        "fourthTestVideo",
-                        "fourthTestVideo",
-                        "dev/video2",
-                        new String[] {"by-id/321"});
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        1,
+                                        "/dev/video1",
+                                        "Lifecam HD-3000",
+                                        new String[] {"/dev/v4l/by-path/foobar2"},
+                                        5940,
+                                        5940)));
+        enabledCam.deactivated = true;
+        enabledCam.nickname = "Matt's awesome camera 2";
 
-        CameraInfo info1 = new CameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+        vsm.testCameras = List.of(enabledCam.matchedCameraInfo, disabledCam.matchedCameraInfo);
 
-        cameraInfos.add(info1);
+        // WHEN cameras are loaded from disk
+        vsm.registerLoadedConfigs(List.of(enabledCam, disabledCam));
 
-        inst.registerLoadedConfigs(config3, config4);
+        // the enabled and disabled cameras will be matched
+        assertEquals(2, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(1, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
 
-        inst.tryMatchCamImpl(cameraInfos);
+        Thread.sleep(2000);
 
-        assertTrue(inst.knownCameras.contains(info1));
-        assertEquals(2, inst.unmatchedLoadedConfigs.size());
+        vsm.teardown();
+    }
 
-        CameraInfo info2 = new CameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 3);
+    @Test
+    public void testOtherPathsOrderChange() throws InterruptedException {
+        // GIVEN a VSM
+        var vsm = new TestVsm();
+        // AND one camera and camera config with flipped otherpaths order
+        var cam =
+                PVCameraInfo.fromUsbCameraInfo(
+                        new UsbCameraInfo(
+                                0,
+                                "/dev/video0",
+                                "Lifecam HD-3000",
+                                new String[] {"/dev/v4l/by-path/usbv2/foobar1", "/dev/v4l/by-path/usb/foobar1"},
+                                5940,
+                                5940));
 
-        cameraInfos.add(info2);
+        var camOtherPaths =
+                PVCameraInfo.fromUsbCameraInfo(
+                        new UsbCameraInfo(
+                                1,
+                                "/dev/video1",
+                                "Lifecam HD-3000",
+                                new String[] {"/dev/v4l/by-path/usb/foobar1", "/dev/v4l/by-path/usbv2/foobar1"},
+                                5940,
+                                5940));
+        CameraConfiguration camOtherPathsConf = new CameraConfiguration(camOtherPaths);
+        camOtherPathsConf.nickname = "TestCamera";
+        camOtherPathsConf.deactivated = false;
 
-        var cams = inst.matchCameras(cameraInfos, inst.unmatchedLoadedConfigs);
+        vsm.registerLoadedConfigs(List.of(camOtherPathsConf));
 
-        // assertEquals("testVideo (1)", cams.get(0).uniqueName); // Proper suffixing
+        vsm.assignUnmatchedCamera(cam);
 
-        inst.tryMatchCamImpl(cameraInfos);
+        assertEquals(0, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
+        assertEquals(cam.uniquePath(), camOtherPaths.uniquePath());
 
-        assertTrue(inst.knownCameras.contains(info2));
-        assertEquals(2, inst.unmatchedLoadedConfigs.size());
+        Thread.sleep(2000);
 
-        CameraInfo info3 =
-                new CameraInfo(0, "dev/video2", "thirdTestVideo", new String[] {"by-id/123"}, 3, 4);
+        vsm.teardown();
+    }
 
-        CameraInfo info4 =
-                new CameraInfo(0, "dev/video3", "fourthTestVideo", new String[] {"by-id/321"}, 5, 6);
+    @Test
+    public void testDuplicate() throws InterruptedException, IOException {
+        var fileCamera1 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
+        CameraConfiguration camConf1 = new CameraConfiguration(fileCamera1);
+        camConf1.deactivated = true;
 
-        cameraInfos.add(info4);
+        var fileCamera2 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kRobots, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
+        CameraConfiguration camConf2 = new CameraConfiguration(fileCamera2);
+        camConf2.nickname = camConf1.nickname + " (1)";
+        camConf2.uniqueName += "owo";
+        camConf2.deactivated = true;
 
-        cams = inst.matchCameras(cameraInfos, inst.unmatchedLoadedConfigs);
+        var fileCamera3 =
+                PVCameraInfo.fromFileInfo(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false)
+                                .toAbsolutePath()
+                                .toString(),
+                        "kTag1_640_480");
 
-        var cam4 =
-                cams.stream()
-                        .filter(
-                                cam -> cam.otherPaths.length > 0 && cam.otherPaths[0].equals(config4.otherPaths[0]))
-                        .findFirst()
-                        .orElse(null);
-        // If this is null, cam4 got matched to config3 instead of config4
+        vsm.testCameras = List.of(fileCamera1, fileCamera2, fileCamera3);
 
-        assertEquals(cam4.nickname, config4.nickname);
+        List<CameraConfiguration> configs = List.of(camConf1, camConf2);
+        vsm.registerLoadedConfigs(configs);
 
-        cameraInfos.add(info3);
+        vsm.assignUnmatchedCamera(fileCamera3);
 
-        cams = inst.matchCameras(cameraInfos, inst.unmatchedLoadedConfigs);
+        System.out.println(JacksonUtils.serializeToString(ConfigManager.getInstance().getConfig()));
 
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info2));
-        assertTrue(inst.knownCameras.contains(info3));
-
-        var cam3 =
-                cams.stream()
-                        .filter(
-                                cam -> cam.otherPaths.length > 0 && cam.otherPaths[0].equals(config3.otherPaths[0]))
-                        .findFirst()
-                        .orElse(null);
-        cam4 =
-                cams.stream()
-                        .filter(
-                                cam -> cam.otherPaths.length > 0 && cam.otherPaths[0].equals(config4.otherPaths[0]))
-                        .findFirst()
-                        .orElse(null);
-
-        assertEquals(cam3.nickname, config3.nickname);
-        assertEquals(cam4.nickname, config4.nickname);
-
-        CameraInfo info5 =
-                new CameraInfo(
-                        2,
-                        "/dev/video2",
-                        "Left Camera",
-                        new String[] {
-                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Left_Camera_12345-video-index0",
-                            "/dev/v4l/by-path/platform-xhci-hcd.0-usb-0:2:1.0-video-index0"
-                        },
-                        7,
-                        8);
-        cameraInfos.add(info5);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info5));
-
-        CameraInfo info6 =
-                new CameraInfo(
-                        3,
-                        "dev/video3",
-                        "Right Camera",
-                        new String[] {
-                            "/dev/v4l/by-id/usb-Arducam_Technology_Co.__Ltd._Right_Camera_123456-video-index0",
-                            "/dev/v4l/by-path/platform-xhci-hcd.1-usb-0:1:1.0-video-index0"
-                        },
-                        9,
-                        10);
-        cameraInfos.add(info6);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info6));
-
-        // RPI 5 CSI Tests
-
-        // CSI CAMERAS SHOULD NOT BE LOADED LIKE THIS THEY SHOULD GO THROUGH LIBCAM.
-        CameraInfo info7 =
-                new CameraInfo(
-                        4,
-                        "dev/video4",
-                        "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[] {"/dev/v4l/by-path/platform-1f00110000.csi-video-index0"},
-                        11,
-                        12);
-        cameraInfos.add(info7);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(!inst.knownCameras.contains(info7)); // This camera should not be recognized/used.
-
-        CameraInfo info8 =
-                new CameraInfo(
-                        5,
-                        "dev/video8",
-                        "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[] {"/dev/v4l/by-path/platform-1f00110000.csi-video-index4"},
-                        13,
-                        14);
-        cameraInfos.add(info8);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(!inst.knownCameras.contains(info8)); // This camera should not be recognized/used.
-
-        CameraInfo info9 =
-                new CameraInfo(
-                        6,
-                        "dev/video9",
-                        "CSICAM-DEV", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[] {"/dev/v4l/by-path/platform-1f00110000.csi-video-index5"},
-                        15,
-                        16);
-        cameraInfos.add(info9);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(!inst.knownCameras.contains(info9)); // This camera should not be recognized/used.
-        assertEquals(6, inst.knownCameras.size());
-        assertEquals(0, inst.unmatchedLoadedConfigs.size());
-
-        // RPI LIBCAMERA CSI CAMERA TESTS
-        CameraInfo info10 =
-                new CameraInfo(
-                        -1,
-                        "/base/soc/i2c0mux/i2c@0/ov9281@60",
-                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[] {},
-                        -1,
-                        -1,
-                        CameraType.ZeroCopyPicam);
-        cameraInfos.add(info10);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info10));
-        assertEquals(7, inst.knownCameras.size());
-        assertEquals(0, inst.unmatchedLoadedConfigs.size());
-
-        CameraInfo info11 =
-                new CameraInfo(
-                        -1,
-                        "/base/soc/i2c0mux/i2c@1/ov9281@60",
-                        "OV9281", // Typically rp1-cfe for unit test changed to CSICAM-DEV
-                        new String[] {},
-                        -1,
-                        -1,
-                        CameraType.ZeroCopyPicam);
-        cameraInfos.add(info11);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info11));
-        assertEquals(8, inst.knownCameras.size());
-        assertEquals(0, inst.unmatchedLoadedConfigs.size());
-
-        CameraInfo info12 =
-                new CameraInfo(
-                        -1,
-                        " /base/axi/pcie@120000/rp1/i2c@80000/ov5647@36",
-                        "Camera Module v1",
-                        new String[] {},
-                        -1,
-                        -1,
-                        CameraType.ZeroCopyPicam);
-        cameraInfos.add(info12);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info12));
-        assertEquals(9, inst.knownCameras.size());
-        assertEquals(0, inst.unmatchedLoadedConfigs.size());
-
-        CameraInfo info13 =
-                new CameraInfo(
-                        -1,
-                        "/base/axi/pcie@120000/rp1/i2c@88000/imx708@1a",
-                        "Camera Module v3",
-                        new String[] {},
-                        -1,
-                        -1,
-                        CameraType.ZeroCopyPicam);
-        cameraInfos.add(info13);
-        inst.tryMatchCamImpl(cameraInfos);
-
-        assertTrue(inst.knownCameras.contains(info13));
-        assertEquals(10, inst.knownCameras.size());
-        assertEquals(0, inst.unmatchedLoadedConfigs.size());
+        // And make assertions about the current matching state
+        assertEquals(3, vsm.getVsmState().allConnectedCameras.size());
+        assertEquals(2, vsm.getVsmState().disabledConfigs.size());
+        assertEquals(1, vsm.vmm.getModules().size());
     }
 }

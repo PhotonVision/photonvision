@@ -23,5 +23,8 @@ public enum LogGroup {
     VisionModule,
     Data,
     General,
-    Config
+    Config,
+    CSCore,
+    NetworkTables,
+    System,
 }

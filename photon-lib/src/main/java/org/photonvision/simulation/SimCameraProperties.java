@@ -41,6 +41,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import org.ejml.data.DMatrix3;
@@ -71,7 +72,7 @@ public class SimCameraProperties {
     private int resWidth;
     private int resHeight;
     private Matrix<N3, N3> camIntrinsics;
-    private Matrix<N5, N1> distCoeffs;
+    private Matrix<N8, N1> distCoeffs;
     private double avgErrorPx;
     private double errorStdDevPx;
     // performance
@@ -132,7 +133,8 @@ public class SimCameraProperties {
                     jsonIntrinsics[j] = jsonIntrinsicsNode.get(j).asDouble();
                 }
                 var jsonDistortNode = calib.get("distCoeffs").get("data");
-                double[] jsonDistortion = new double[jsonDistortNode.size()];
+                double[] jsonDistortion = new double[8];
+                Arrays.fill(jsonDistortion, 0);
                 for (int j = 0; j < jsonDistortNode.size(); j++) {
                     jsonDistortion[j] = jsonDistortNode.get(j).asDouble();
                 }
@@ -148,7 +150,7 @@ public class SimCameraProperties {
                         jsonWidth,
                         jsonHeight,
                         MatBuilder.fill(Nat.N3(), Nat.N3(), jsonIntrinsics),
-                        MatBuilder.fill(Nat.N5(), Nat.N1(), jsonDistortion));
+                        MatBuilder.fill(Nat.N8(), Nat.N1(), jsonDistortion));
                 setCalibError(jsonAvgError, jsonErrorStdDev);
                 success = true;
             }
@@ -158,11 +160,12 @@ public class SimCameraProperties {
         if (!success) throw new IOException("Requested resolution not found in calibration");
     }
 
-    public void setRandomSeed(long seed) {
+    public SimCameraProperties setRandomSeed(long seed) {
         rand.setSeed(seed);
+        return this;
     }
 
-    public void setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
+    public SimCameraProperties setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
         if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
             fovDiag = Rotation2d.fromDegrees(MathUtil.clamp(fovDiag.getDegrees(), 1, 179));
             DriverStation.reportError(
@@ -174,7 +177,7 @@ public class SimCameraProperties {
         var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
 
         // assume no distortion
-        var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0);
+        var distCoeff = VecBuilder.fill(0, 0, 0, 0, 0, 0, 0, 0);
 
         // assume centered principal point (pixels)
         double cx = resWidth / 2.0 - 0.5;
@@ -187,10 +190,12 @@ public class SimCameraProperties {
         // create camera intrinsics matrix
         var camIntrinsics = MatBuilder.fill(Nat.N3(), Nat.N3(), fx, 0, cx, 0, fy, cy, 0, 0, 1);
         setCalibration(resWidth, resHeight, camIntrinsics, distCoeff);
+
+        return this;
     }
 
-    public void setCalibration(
-            int resWidth, int resHeight, Matrix<N3, N3> camIntrinsics, Matrix<N5, N1> distCoeffs) {
+    public SimCameraProperties setCalibration(
+            int resWidth, int resHeight, Matrix<N3, N3> camIntrinsics, Matrix<N8, N1> distCoeffs) {
         this.resWidth = resWidth;
         this.resHeight = resHeight;
         this.camIntrinsics = camIntrinsics;
@@ -220,43 +225,54 @@ public class SimCameraProperties {
             viewplanes.add(
                     new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
         }
+
+        return this;
     }
 
-    public void setCalibError(double avgErrorPx, double errorStdDevPx) {
+    public SimCameraProperties setCalibError(double avgErrorPx, double errorStdDevPx) {
         this.avgErrorPx = avgErrorPx;
         this.errorStdDevPx = errorStdDevPx;
+        return this;
     }
 
     /**
      * @param fps The average frames per second the camera should process at. <b>Exposure time limits
      *     FPS if set!</b>
      */
-    public void setFPS(double fps) {
+    public SimCameraProperties setFPS(double fps) {
         frameSpeedMs = Math.max(1000.0 / fps, exposureTimeMs);
+
+        return this;
     }
 
     /**
      * @param exposureTimeMs The amount of time the "shutter" is open for one frame. Affects motion
      *     blur. <b>Frame speed(from FPS) is limited to this!</b>
      */
-    public void setExposureTimeMs(double exposureTimeMs) {
+    public SimCameraProperties setExposureTimeMs(double exposureTimeMs) {
         this.exposureTimeMs = exposureTimeMs;
         frameSpeedMs = Math.max(frameSpeedMs, exposureTimeMs);
+
+        return this;
     }
 
     /**
      * @param avgLatencyMs The average latency (from image capture to data published) in milliseconds
      *     a frame should have
      */
-    public void setAvgLatencyMs(double avgLatencyMs) {
+    public SimCameraProperties setAvgLatencyMs(double avgLatencyMs) {
         this.avgLatencyMs = avgLatencyMs;
+
+        return this;
     }
 
     /**
      * @param latencyStdDevMs The standard deviation in milliseconds of the latency
      */
-    public void setLatencyStdDevMs(double latencyStdDevMs) {
+    public SimCameraProperties setLatencyStdDevMs(double latencyStdDevMs) {
         this.latencyStdDevMs = latencyStdDevMs;
+
+        return this;
     }
 
     public int getResWidth() {
@@ -280,7 +296,7 @@ public class SimCameraProperties {
         return camIntrinsics.copy();
     }
 
-    public Vector<N5> getDistCoeffs() {
+    public Vector<N8> getDistCoeffs() {
         return new Vector<>(distCoeffs);
     }
 
@@ -616,7 +632,10 @@ public class SimCameraProperties {
                         -0.9166265114485799,
                         0.0019519890627236526,
                         -0.0036071725380870333,
-                        1.5627234622420942));
+                        1.5627234622420942,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.21, 0.0124);
         prop.setFPS(30);
         prop.setAvgLatencyMs(30);
@@ -647,7 +666,10 @@ public class SimCameraProperties {
                         -1.2350335805796528,
                         0.0024990767286192732,
                         -0.0026958287600230705,
-                        2.2951386729115537));
+                        2.2951386729115537,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.26, 0.046);
         prop.setFPS(15);
         prop.setAvgLatencyMs(65);
@@ -677,7 +699,10 @@ public class SimCameraProperties {
                         -0.5142936883324216,
                         0.012461562046896614,
                         0.0014084973492408186,
-                        0.35160648971214437));
+                        0.35160648971214437,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.25, 0.05);
         prop.setFPS(15);
         prop.setAvgLatencyMs(35);
@@ -708,7 +733,10 @@ public class SimCameraProperties {
                         -0.49903003669627627,
                         0.007468423590519429,
                         0.002496885298683693,
-                        0.3443122090208624));
+                        0.3443122090208624,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.35, 0.10);
         prop.setFPS(10);
         prop.setAvgLatencyMs(50);
@@ -739,7 +767,10 @@ public class SimCameraProperties {
                         -0.2904345656989261,
                         8.32475714507539E-4,
                         -3.694397782014239E-4,
-                        0.09487962227027584));
+                        0.09487962227027584,
+                        0,
+                        0,
+                        0));
         prop.setCalibError(0.37, 0.06);
         prop.setFPS(7);
         prop.setAvgLatencyMs(60);

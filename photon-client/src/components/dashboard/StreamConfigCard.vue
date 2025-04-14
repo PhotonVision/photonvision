@@ -34,23 +34,28 @@ const processingMode = computed<number>({
     color="primary"
     style="height: 100%; display: flex; flex-direction: column"
   >
-    <v-row align="center" class="pa-3 pb-0">
-      <v-col>
+    <v-row class="pa-3 pb-0 align-center">
+      <v-col class="pa-4">
         <p style="color: white">Processing Mode</p>
         <v-btn-toggle v-model="processingMode" mandatory dark class="fill">
-          <v-btn color="secondary">
+          <v-btn color="secondary" :disabled="!useCameraSettingsStore().hasConnected">
             <v-icon left>mdi-square-outline</v-icon>
             <span>2D</span>
           </v-btn>
-          <v-btn color="secondary" :disabled="!useCameraSettingsStore().isCurrentVideoFormatCalibrated">
+          <v-btn
+            color="secondary"
+            :disabled="
+              !useCameraSettingsStore().hasConnected || !useCameraSettingsStore().isCurrentVideoFormatCalibrated
+            "
+          >
             <v-icon left>mdi-cube-outline</v-icon>
             <span>3D</span>
           </v-btn>
         </v-btn-toggle>
       </v-col>
     </v-row>
-    <v-row align="center" class="pa-3 pt-0">
-      <v-col>
+    <v-row class="pa-3 pt-0 align-center">
+      <v-col class="pa-4 pt-0">
         <p style="color: white">Stream Display</p>
         <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill">
           <v-btn color="secondary" class="fill">

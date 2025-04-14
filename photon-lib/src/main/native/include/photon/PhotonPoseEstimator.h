@@ -29,17 +29,14 @@
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <opencv2/core/mat.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
-#include "photon/targeting/PNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
-
-namespace cv {
-class Mat;
-}  // namespace cv
+#include "photon/targeting/PnpResult.h"
 
 namespace photon {
 enum PoseStrategy {
@@ -84,28 +81,6 @@ class PhotonPoseEstimator {
  public:
   /**
    * Create a new PhotonPoseEstimator.
-   *
-   * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>();
-   * <p> map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is
-   * at (1.0,2.0,3.0) </code> }
-   *
-   * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
-   * respect to the FIRST field.
-   * @param strategy The strategy it should use to determine the best pose.
-   * @param camera PhotonCameras and
-   * @param robotToCamera Transform3d from the center of the robot to the camera
-   * mount positions (ie, robot ➔ camera).
-   */
-  explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
-                               PoseStrategy strategy, PhotonCamera&& camera,
-                               frc::Transform3d robotToCamera);
-
-  /**
-   * Create a new PhotonPoseEstimator.
-   *
-   * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>();
-   * <p> map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is
-   * at (1.0,2.0,3.0) </code> }
    *
    * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
    * respect to the FIRST field.
@@ -198,32 +173,26 @@ class PhotonPoseEstimator {
   inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
   /**
-   * Update the pose estimator. Internally grabs a new PhotonPipelineResult from
-   * the camera and process it.
-   */
-  std::optional<EstimatedRobotPose> Update();
-
-  /**
-   * Update the pose estimator.
-   */
-  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result);
-
-  /**
-   * Update the pose estimator.
+   * Update the pose estimator. If updating multiple times per loop, you should
+   * call this exactly once per new result, in order of increasing result
+   * timestamp.
+   *
+   * @param result The vision targeting result to process
+   * @param cameraIntrinsics The camera calibration pinhole coefficients matrix.
+   * Only required if doing multitag-on-rio, and may be nullopt otherwise.
+   * @param distCoeffsData The camera calibration distortion coefficients. Only
+   * required if doing multitag-on-rio, and may be nullopt otherwise.
    */
   std::optional<EstimatedRobotPose> Update(
       const PhotonPipelineResult& result,
-      std::optional<cv::Mat> cameraMatrixData,
-      std::optional<cv::Mat> coeffsData);
-
-  inline std::shared_ptr<PhotonCamera> GetCamera() { return camera; }
+      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData = std::nullopt,
+      std::optional<PhotonCamera::DistortionMatrix> coeffsData = std::nullopt);
 
  private:
   frc::AprilTagFieldLayout aprilTags;
   PoseStrategy strategy;
   PoseStrategy multiTagFallbackStrategy = LOWEST_AMBIGUITY;
 
-  std::shared_ptr<PhotonCamera> camera;
   frc::Transform3d m_robotToCamera;
 
   frc::Pose3d lastPose;
@@ -235,9 +204,26 @@ class PhotonPoseEstimator {
 
   inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
+  /**
+   * Internal convenience method for using a fallback strategy for update().
+   * This should only be called after timestamp checks have been done by another
+   * update() overload.
+   *
+   * @param cameraResult The latest pipeline result from the camera
+   * @param strategy The pose strategy to use
+   * @return an EstimatedRobotPose with an estimated pose, timestamp, and
+   * targets used to create the estimate.
+   */
+  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result,
+                                           PoseStrategy strategy) {
+    return Update(result, std::nullopt, std::nullopt, strategy);
+  }
+
   std::optional<EstimatedRobotPose> Update(
-      PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
-      std::optional<cv::Mat> coeffsData, PoseStrategy strategy);
+      const PhotonPipelineResult& result,
+      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
+      std::optional<PhotonCamera::DistortionMatrix> coeffsData,
+      PoseStrategy strategy);
 
   /**
    * Return the estimated position of the robot with the lowest position
@@ -278,8 +264,7 @@ class PhotonPoseEstimator {
    * @return the estimated position of the robot in the FCS
    */
   std::optional<EstimatedRobotPose> MultiTagOnCoprocStrategy(
-      PhotonPipelineResult result, std::optional<cv::Mat> camMat,
-      std::optional<cv::Mat> distCoeffs);
+      PhotonPipelineResult result);
 
   /**
    * Return the pose calculation using all targets in view in the same PNP()
@@ -289,8 +274,9 @@ class PhotonPoseEstimator {
    timestamp of this estimation.
    */
   std::optional<EstimatedRobotPose> MultiTagOnRioStrategy(
-      PhotonPipelineResult result, std::optional<cv::Mat> camMat,
-      std::optional<cv::Mat> distCoeffs);
+      PhotonPipelineResult result,
+      std::optional<PhotonCamera::CameraMatrix> camMat,
+      std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
 
   /**
    * Return the average of the best target poses using ambiguity as weight.

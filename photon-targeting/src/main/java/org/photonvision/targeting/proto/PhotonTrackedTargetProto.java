@@ -40,11 +40,6 @@ public class PhotonTrackedTargetProto
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {Transform3d.proto, TargetCorner.proto};
-    }
-
-    @Override
     public ProtobufPhotonTrackedTarget createMessage() {
         return ProtobufPhotonTrackedTarget.newInstance();
     }
@@ -57,6 +52,8 @@ public class PhotonTrackedTargetProto
                 msg.getArea(),
                 msg.getSkew(),
                 msg.getFiducialId(),
+                msg.getObjDetectionId(),
+                msg.getObjDetectionConf(),
                 Transform3d.proto.unpack(msg.getBestCameraToTarget()),
                 Transform3d.proto.unpack(msg.getAltCameraToTarget()),
                 msg.getPoseAmbiguity(),
@@ -79,7 +76,9 @@ public class PhotonTrackedTargetProto
                 .setSkew(value.getSkew())
                 .setArea(value.getArea())
                 .setFiducialId(value.getFiducialId())
-                .setPoseAmbiguity(value.getPoseAmbiguity());
+                .setPoseAmbiguity(value.getPoseAmbiguity())
+                .setObjDetectionConf(value.getDetectedObjectConfidence())
+                .setObjDetectionId(value.getDetectedObjectClassID());
 
         Transform3d.proto.pack(msg.getMutableBestCameraToTarget(), value.getBestCameraToTarget());
         Transform3d.proto.pack(msg.getMutableAltCameraToTarget(), value.getAlternateCameraToTarget());

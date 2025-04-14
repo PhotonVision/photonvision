@@ -1,0 +1,7 @@
+{
+  "deviceName" : "Limelight 2",
+  "supportURL" : "https://limelightvision.io",
+  "ledPins" : [ 17, 18 ],
+  "ledsCanDim" : false,
+  "vendorFOV" : 75.76079874010732
+}

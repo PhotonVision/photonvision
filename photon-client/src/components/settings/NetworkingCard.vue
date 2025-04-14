@@ -17,10 +17,10 @@ const resetTempSettingsStruct = () => {
 const settingsValid = ref(true);
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
-  // Check if it is a valid team number between 1-9999
-  const teamNumberRegex = /^[1-9][0-9]{0,3}$/;
+  // Check if it is a valid team number between 1-99999 (5 digits)
+  const teamNumberRegex = /^[1-9][0-9]{0,4}$/;
   // Check if it is a team number longer than 5 digits
-  const badTeamNumberRegex = /^[0-9]{5,}$/;
+  const badTeamNumberRegex = /^[0-9]{6,}$/;
 
   if (v === undefined) return false;
   if (teamNumberRegex.test(v)) return true;
@@ -136,9 +136,11 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3 pr-6 pb-3" style="background-color: #006492">
-    <v-card-title>Networking</v-card-title>
-    <div class="ml-5">
+  <v-card dark class="mb-3" style="background-color: #006492">
+    <v-card-title class="pa-6">Global Settings</v-card-title>
+    <div class="pa-6 pt-0">
+      <v-divider class="pb-3" />
+      <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -153,9 +155,9 @@ watchEffect(() => {
           ]"
         />
         <v-banner
-          v-show="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
+          v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded
-          color="red"
+          color="error"
           text-color="white"
           style="margin: 10px 0"
           icon="mdi-alert-circle-outline"
@@ -200,8 +202,8 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="pb-3" />
-        <span style="font-weight: 700">Advanced Networking</span>
+        <v-divider class="mt-3 pb-3" />
+        <v-card-title class="pl-0 pt-3 pb-3">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -209,7 +211,6 @@ watchEffect(() => {
           label="Manage Device Networking"
           tooltip="If enabled, Photon will manage device hostname and network settings."
           :label-cols="4"
-          class="pt-2"
         />
         <pv-select
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -225,14 +226,14 @@ watchEffect(() => {
           :items="useSettingsStore().networkInterfaceNames"
         />
         <v-banner
-          v-show="
+          v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
             useSettingsStore().network.canManage &&
             !useSettingsStore().network.networkingDisabled
           "
           rounded
-          color="red"
+          color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -242,36 +243,36 @@ watchEffect(() => {
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-show="tempSettingsStruct.runNTServer"
+          v-if="tempSettingsStruct.runNTServer"
           rounded
-          color="red"
+          color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
+        <v-divider class="mt-3 pb-3" />
+        <v-card-title class="pl-0 pt-3 pb-3">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
-          class="mt-3 mb-2"
           :label-cols="4"
         />
         <v-banner
-          v-show="tempSettingsStruct.shouldPublishProto"
+          v-if="tempSettingsStruct.shouldPublishProto"
           rounded
-          color="red"
-          class="mb-3"
+          color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
           This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
           this mode.
         </v-banner>
+        <v-divider class="mt-3 mb-6" />
       </v-form>
       <v-btn
         color="accent"

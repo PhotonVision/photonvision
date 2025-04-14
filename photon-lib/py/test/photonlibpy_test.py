@@ -1,64 +1,42 @@
-from photonlibpy.packet import Packet
-from photonlibpy.photonPipelineResult import PhotonPipelineResult
-from data import rawBytes1
-from data import rawBytes2
-from data import rawBytes3
-from data import rawBytes4
-from data import rawBytes5
-from data import rawBytes6
-from data import rawBytes7
-from data import rawBytes8
-from data import rawBytes9
+###############################################################################
+## Copyright (C) Photon Vision.
+###############################################################################
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+###############################################################################
+
+from time import sleep
+
+import ntcore
+from photonlibpy import PhotonCamera
+from photonlibpy.photonCamera import setVersionCheckEnabled
 
 
-def setupCommon(bytesIn):
-    res = PhotonPipelineResult()
-    packet = Packet(bytesIn)
-    res.populateFromPacket(packet)
-    assert packet.outOfBytes is False
-    return res
+def test_roundTrip():
+    ntcore.NetworkTableInstance.getDefault().stopServer()
+    ntcore.NetworkTableInstance.getDefault().setServer("localhost")
+    ntcore.NetworkTableInstance.getDefault().startClient4("meme")
+
+    camera = PhotonCamera("WPI2024")
+
+    setVersionCheckEnabled(False)
+
+    for i in range(5):
+        sleep(0.1)
+        result = camera.getLatestResult()
+        print(result)
+        print(camera._rawBytesEntry.getTopic().getProperties())
 
 
-def test_byteParse1():
-    res = setupCommon(rawBytes1)
-    assert len(res.getTargets()) == 0
-
-
-def test_byteParse2():
-    res = setupCommon(rawBytes2)
-    assert len(res.getTargets()) == 0
-
-
-def test_byteParse3():
-    res = setupCommon(rawBytes3)
-    assert len(res.getTargets()) >= 4
-
-
-def test_byteParse4():
-    res = setupCommon(rawBytes4)
-    assert len(res.getTargets()) == 1
-
-
-def test_byteParse5():
-    res = setupCommon(rawBytes5)
-    assert len(res.getTargets()) == 2
-
-
-def test_byteParse6():
-    res = setupCommon(rawBytes6)
-    # assert len(res.getTargets()) >= 0
-
-
-def test_byteParse7():
-    res = setupCommon(rawBytes7)
-    # assert len(res.getTargets()) >= 0
-
-
-def test_byteParse8():
-    res = setupCommon(rawBytes8)
-    # assert len(res.getTargets()) >= 0
-
-
-def test_byteParse9():
-    res = setupCommon(rawBytes9)
-    # assert len(res.getTargets()) >= 0
+if __name__ == "__main__":
+    test_roundTrip()

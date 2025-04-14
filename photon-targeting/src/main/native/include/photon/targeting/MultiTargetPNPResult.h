@@ -17,21 +17,29 @@
 
 #pragma once
 
+#include <utility>
+
 #include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
-#include "PNPResult.h"
+#include "PnpResult.h"
 #include "photon/dataflow/structures/Packet.h"
+#include "photon/struct/MultiTargetPNPResultStruct.h"
 
 namespace photon {
-class MultiTargetPNPResult {
+class MultiTargetPNPResult : public MultiTargetPNPResult_PhotonStruct {
+  using Base = MultiTargetPNPResult_PhotonStruct;
+
  public:
-  PNPResult result;
-  wpi::SmallVector<int16_t, 32> fiducialIdsUsed;
+  explicit MultiTargetPNPResult(Base&& data) : Base(data) {}
 
-  bool operator==(const MultiTargetPNPResult& other) const;
+  template <typename... Args>
+  explicit MultiTargetPNPResult(Args&&... args)
+      : Base{std::forward<Args>(args)...} {}
 
-  friend Packet& operator<<(Packet& packet, const MultiTargetPNPResult& result);
-  friend Packet& operator>>(Packet& packet, MultiTargetPNPResult& result);
+  friend bool operator==(MultiTargetPNPResult const&,
+                         MultiTargetPNPResult const&) = default;
 };
 }  // namespace photon
+
+#include "photon/serde/MultiTargetPNPResultSerde.h"

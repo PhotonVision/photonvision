@@ -228,6 +228,6 @@ public class ColoredShapePipeline
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

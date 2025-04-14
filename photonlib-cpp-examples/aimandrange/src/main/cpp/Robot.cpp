@@ -26,44 +26,108 @@
 
 #include <photon/PhotonUtils.h>
 
+#include <iostream>
+
+#include <frc/simulation/BatterySim.h>
+#include <frc/simulation/RoboRioSim.h>
+
+void Robot::RobotInit() {}
+
+void Robot::RobotPeriodic() {
+  drivetrain.Periodic();
+  drivetrain.Log();
+}
+
+void Robot::DisabledInit() {}
+
+void Robot::DisabledPeriodic() { drivetrain.Stop(); }
+
+void Robot::DisabledExit() {}
+
+void Robot::AutonomousInit() {}
+
+void Robot::AutonomousPeriodic() {}
+
+void Robot::AutonomousExit() {}
+
+void Robot::TeleopInit() {
+  frc::Pose2d pose{1_m, 1_m, frc::Rotation2d{}};
+  drivetrain.ResetPose(pose, true);
+}
+
 void Robot::TeleopPeriodic() {
-  double forwardSpeed;
-  double rotationSpeed;
+  // Calculate drivetrain commands from Joystick values
+  auto forward =
+      -1.0 * controller.GetLeftY() * constants::Swerve::kMaxLinearSpeed;
+  auto strafe =
+      -1.0 * controller.GetLeftX() * constants::Swerve::kMaxLinearSpeed;
+  auto turn =
+      -1.0 * controller.GetRightX() * constants::Swerve::kMaxAngularSpeed;
 
-  if (xboxController.GetAButton()) {
-    // Vision-alignment mode
-    // Query the latest result from PhotonVision
-    const auto& result = camera.GetLatestResult();
-
+  bool targetVisible = false;
+  units::degree_t targetYaw = 0.0_deg;
+  units::meter_t targetRange = 0.0_m;
+  auto results = camera.GetAllUnreadResults();
+  if (results.size() > 0) {
+    // Camera processed a new frame since last
+    // Get the last one in the list.
+    auto result = results[results.size() - 1];
     if (result.HasTargets()) {
-      // First calculate range
-      units::meter_t range = photon::PhotonUtils::CalculateDistanceToTarget(
-          CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_PITCH,
-          units::degree_t{result.GetBestTarget().GetPitch()});
-
-      // Use this range as the measurement we give to the PID controller.
-      // -1.0 required to ensure positive PID controller effort _increases_
-      // range
-      forwardSpeed = -forwardController.Calculate(range.value(),
-                                                  GOAL_RANGE_METERS.value());
-
-      // Also calculate angular power
-      // -1.0 required to ensure positive PID controller effort _increases_ yaw
-      rotationSpeed =
-          -turnController.Calculate(result.GetBestTarget().GetYaw(), 0);
-    } else {
-      // If we have no targets, stay still.
-      forwardSpeed = 0;
-      rotationSpeed = 0;
+      // At least one AprilTag was seen by the camera
+      for (auto& target : result.GetTargets()) {
+        if (target.GetFiducialId() == 7) {
+          // Found Tag 7, record its information
+          targetYaw = units::degree_t{target.GetYaw()};
+          targetRange = photon::PhotonUtils::CalculateDistanceToTarget(
+              0.5_m,      // Measured with a tape measure, or in CAD
+              1.435_m,    // From 2024 game manual for ID 7
+              -30.0_deg,  // Measured with a protractor, or in CAD
+              units::degree_t{target.GetPitch()});
+          targetVisible = true;
+        }
+      }
     }
-  } else {
-    // Manual Driver Mode
-    forwardSpeed = -xboxController.GetRightY();
-    rotationSpeed = xboxController.GetLeftX();
   }
 
-  // Use our forward/turn speeds to control the drivetrain
-  drive.ArcadeDrive(forwardSpeed, rotationSpeed);
+  // Auto-align when requested
+  if (controller.GetAButton() && targetVisible) {
+    // Driver wants auto-alignment to tag 7
+    // And, tag 7 is in sight, so we can turn toward it.
+    // Override the driver's turn command with an automatic one that turns
+    // toward the tag and gets the range right.
+    turn = (VISION_DES_ANGLE - targetYaw).value() * VISION_TURN_kP *
+           constants::Swerve::kMaxAngularSpeed;
+    forward = (VISION_DES_RANGE - targetRange).value() * VISION_STRAFE_kP *
+              constants::Swerve::kMaxLinearSpeed;
+  }
+
+  // Command drivetrain motors based on target speeds
+  drivetrain.Drive(forward, strafe, turn);
+}
+
+void Robot::TeleopExit() {}
+
+void Robot::TestInit() {}
+
+void Robot::TestPeriodic() {}
+
+void Robot::TestExit() {}
+
+void Robot::SimulationPeriodic() {
+  drivetrain.SimulationPeriodic();
+  vision.SimPeriodic(drivetrain.GetSimPose());
+
+  frc::Field2d& debugField = vision.GetSimDebugField();
+  debugField.GetObject("EstimatedRobot")->SetPose(drivetrain.GetPose());
+  debugField.GetObject("EstimatedRobotModules")
+      ->SetPoses(drivetrain.GetModulePoses());
+
+  units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();
+  units::volt_t loadedBattVolts =
+      frc::sim::BatterySim::Calculate({totalCurrent});
+  // Using max(0.1, voltage) here isn't a *physically correct* solution,
+  // but it avoids problems with battery voltage measuring 0.
+  frc::sim::RoboRioSim::SetVInVoltage(units::math::max(0.1_V, loadedBattVolts));
 }
 
 #ifndef RUNNING_FRC_TESTS

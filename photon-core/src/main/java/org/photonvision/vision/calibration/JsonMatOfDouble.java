@@ -26,7 +26,6 @@ import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
-import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
 /** JSON-serializable image. Data is stored as a raw JSON array. */
@@ -41,6 +40,7 @@ public class JsonMatOfDouble implements Releasable {
     @JsonIgnore private Matrix wpilibMat = null;
 
     @JsonIgnore private MatOfDouble wrappedMatOfDouble;
+    private boolean released = false;
 
     public JsonMatOfDouble(int rows, int cols, double[] data) {
         this(rows, cols, CvType.CV_64FC1, data);
@@ -57,52 +57,46 @@ public class JsonMatOfDouble implements Releasable {
         this.data = data;
     }
 
-    private static boolean isCameraMatrixMat(Mat mat) {
-        return mat.type() == CvType.CV_64FC1 && mat.cols() == 3 && mat.rows() == 3;
-    }
-
-    private static boolean isDistortionCoeffsMat(Mat mat) {
-        return mat.type() == CvType.CV_64FC1 && mat.cols() == 5 && mat.rows() == 1;
-    }
-
-    private static boolean isCalibrationMat(Mat mat) {
-        return isDistortionCoeffsMat(mat) || isCameraMatrixMat(mat);
-    }
-
     @JsonIgnore
-    public static double[] getDataFromMat(Mat mat) {
-        if (!isCalibrationMat(mat)) return null;
-
-        double[] data = new double[(int) (mat.total() * mat.elemSize())];
+    private static double[] getDataFromMat(Mat mat) {
+        double[] data = new double[(int) mat.total()];
         mat.get(0, 0, data);
-
-        int dataLen = -1;
-
-        if (isCameraMatrixMat(mat)) dataLen = 9;
-        if (isDistortionCoeffsMat(mat)) dataLen = 5;
-
-        // truncate Mat data to correct number data points.
-        return Arrays.copyOfRange(data, 0, dataLen);
+        return data;
     }
 
+    /**
+     * Returns a JsonMatOfDouble by copying the data from a Mat. The Mat type must be {@link
+     * CvType#CV_64FC1}.
+     *
+     * @param mat The Mat.
+     * @return The JsonMatOfDouble
+     */
     public static JsonMatOfDouble fromMat(Mat mat) {
-        if (!isCalibrationMat(mat)) return null;
         return new JsonMatOfDouble(mat.rows(), mat.cols(), getDataFromMat(mat));
     }
 
     @JsonIgnore
-    public Mat getAsMat() {
+    private Mat getAsMat() {
         if (this.type != CvType.CV_64FC1) return null;
 
         if (wrappedMat == null) {
             this.wrappedMat = new Mat(this.rows, this.cols, this.type);
             this.wrappedMat.put(0, 0, this.data);
         }
+
+        if (this.released) {
+            throw new RuntimeException("This calibration object was already released");
+        }
+
         return this.wrappedMat;
     }
 
     @JsonIgnore
     public MatOfDouble getAsMatOfDouble() {
+        if (this.released) {
+            throw new RuntimeException("This calibration object was already released");
+        }
+
         if (this.wrappedMatOfDouble == null) {
             this.wrappedMatOfDouble = new MatOfDouble();
             getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
@@ -110,6 +104,7 @@ public class JsonMatOfDouble implements Releasable {
         return this.wrappedMatOfDouble;
     }
 
+    @SuppressWarnings("unchecked")
     @JsonIgnore
     public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
         if (wpilibMat == null) {
@@ -120,12 +115,11 @@ public class JsonMatOfDouble implements Releasable {
 
     @Override
     public void release() {
-        getAsMat().release();
-    }
+        if (wrappedMatOfDouble != null) {
+            wrappedMatOfDouble.release();
+        }
 
-    public Packet populatePacket(Packet packet) {
-        packet.encode(this.data);
-        return packet;
+        this.released = true;
     }
 
     @Override

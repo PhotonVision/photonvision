@@ -21,7 +21,7 @@ import edu.wpi.first.util.protobuf.Protobuf;
 import java.util.ArrayList;
 import org.photonvision.proto.Photon.ProtobufMultiTargetPNPResult;
 import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PNPResult;
+import org.photonvision.targeting.PnpResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedInt;
 
@@ -38,28 +38,23 @@ public class MultiTargetPNPResultProto
     }
 
     @Override
-    public Protobuf<?, ?>[] getNested() {
-        return new Protobuf<?, ?>[] {PNPResult.proto};
-    }
-
-    @Override
     public ProtobufMultiTargetPNPResult createMessage() {
         return ProtobufMultiTargetPNPResult.newInstance();
     }
 
     @Override
     public MultiTargetPNPResult unpack(ProtobufMultiTargetPNPResult msg) {
-        ArrayList<Integer> fidIdsUsed = new ArrayList<>(msg.getFiducialIdsUsed().length());
+        ArrayList<Short> fidIdsUsed = new ArrayList<>(msg.getFiducialIdsUsed().length());
         for (var packedFidId : msg.getFiducialIdsUsed()) {
-            fidIdsUsed.add(packedFidId);
+            fidIdsUsed.add(packedFidId.shortValue());
         }
 
-        return new MultiTargetPNPResult(PNPResult.proto.unpack(msg.getEstimatedPose()), fidIdsUsed);
+        return new MultiTargetPNPResult(PnpResult.proto.unpack(msg.getEstimatedPose()), fidIdsUsed);
     }
 
     @Override
     public void pack(ProtobufMultiTargetPNPResult msg, MultiTargetPNPResult value) {
-        PNPResult.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
+        PnpResult.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
 
         RepeatedInt idsUsed = msg.getMutableFiducialIdsUsed().reserve(value.fiducialIDsUsed.size());
         for (int i = 0; i < value.fiducialIDsUsed.size(); i++) {

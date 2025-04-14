@@ -12,18 +12,6 @@
     "foldername": "aimattarget"
   },
   {
-    "name": "GetInRange",
-    "description": "Get in range of a target",
-    "tags": [],
-    "gradlebase": "java",
-    "language": "java",
-    "commandversion": 1,
-    "mainclass": "Main",
-    "packagetoreplace": null,
-    "dependencies": [],
-    "foldername": "getinrange"
-  },
-  {
     "name": "AimAndRange",
     "description": "Aim at a target while at a desired range",
     "tags": [],
@@ -36,8 +24,8 @@
     "foldername": "aimandrange"
   },
   {
-    "name": "SimAimAndRange",
-    "description": "Adding Simulation Support to the Aim And Range example",
+    "name": "PoseEst",
+    "description": "Integrate 3D vision processing mode results into estimation of robot pose on the field.",
     "tags": [],
     "gradlebase": "java",
     "language": "java",
@@ -45,18 +33,6 @@
     "mainclass": "Main",
     "packagetoreplace": null,
     "dependencies": [],
-    "foldername": "simaimandrange"
-  },
-  {
-    "name": "SimPoseEstimation",
-    "description": "Integrate 3D vision processing mode results into estimation of robot pose on the field. Includes simulation support.",
-    "tags": [],
-    "gradlebase": "java",
-    "language": "java",
-    "commandversion": 1,
-    "mainclass": "Main",
-    "packagetoreplace": null,
-    "dependencies": [],
-    "foldername": "simposeest"
+    "foldername": "poseest"
   }
 ]

@@ -1,0 +1,4 @@
+.code-block-caption>.headerlink, dl dt>.headerlink, h1>.headerlink, h2>.headerlink, h3>.headerlink, h4>.headerlink, h5>.headerlink, h6>.headerlink, p.caption>.headerlink, table>caption>.headerlink {
+    font-family: FontAwesome;
+    font-size: 0.75em;
+}

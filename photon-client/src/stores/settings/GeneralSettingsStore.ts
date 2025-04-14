@@ -10,14 +10,13 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
-import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout: AprilTagFieldLayout;
+  currentFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -28,7 +27,8 @@ export const useSettingsStore = defineStore("settings", {
       hardwareModel: undefined,
       hardwarePlatform: undefined,
       mrCalWorking: true,
-      rknnSupported: false
+      availableModels: {},
+      supportedBackends: []
     },
     network: {
       ntServerAddress: "",
@@ -44,7 +44,8 @@ export const useSettingsStore = defineStore("settings", {
           connName: "Example Wired Connection",
           devName: "eth0"
         }
-      ]
+      ],
+      networkingDisabled: false
     },
     lighting: {
       supported: true,
@@ -60,7 +61,8 @@ export const useSettingsStore = defineStore("settings", {
       cpuThr: undefined,
       cpuUptime: undefined,
       diskUtilPct: undefined,
-      npuUsage: undefined
+      npuUsage: undefined,
+      ipAddress: undefined
     },
     currentFieldLayout: {
       field: {
@@ -75,7 +77,7 @@ export const useSettingsStore = defineStore("settings", {
       return this.general.gpuAcceleration !== undefined;
     },
     networkInterfaceNames(): string[] {
-      return this.network.networkInterfaceNames.map((i) => i.connName);
+      return this.network.networkInterfaceNames.map((i) => i.devName);
     }
   },
   actions: {
@@ -93,7 +95,8 @@ export const useSettingsStore = defineStore("settings", {
         cpuThr: data.cpuThr || undefined,
         cpuUptime: data.cpuUptime || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
-        npuUsage: data.npuUsage || undefined
+        npuUsage: data.npuUsage || undefined,
+        ipAddress: data.ipAddress || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
@@ -103,7 +106,8 @@ export const useSettingsStore = defineStore("settings", {
         hardwarePlatform: data.general.hardwarePlatform || undefined,
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
-        rknnSupported: data.general.rknnSupported
+        availableModels: data.general.availableModels || undefined,
+        supportedBackends: data.general.supportedBackends || []
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;

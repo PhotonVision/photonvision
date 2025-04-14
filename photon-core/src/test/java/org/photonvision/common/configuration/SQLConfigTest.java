@@ -17,8 +17,10 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,8 +32,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.CameraType;
-import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -74,24 +76,18 @@ public class SQLConfigTest {
 
         cfgLoader.load();
 
-        var testcamcfg =
+        var testCamCfg =
                 new CameraConfiguration(
-                        "basename",
-                        "a_unique_name",
-                        "a_nick_name",
-                        69,
-                        "a/path/idk",
-                        CameraType.UsbCamera,
-                        QuirkyCamera.getQuirkyCamera(-1, -1),
-                        List.of(),
-                        0);
-        testcamcfg.pipelineSettings =
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(0, "/dev/videoN", "some_name", new String[0], -1, 01)));
+
+        testCamCfg.pipelineSettings =
                 List.of(
                         new ReflectivePipelineSettings(),
                         new AprilTagPipelineSettings(),
                         new ColoredShapePipelineSettings());
 
-        cfgLoader.getConfig().addCameraConfig(testcamcfg);
+        cfgLoader.getConfig().addCameraConfig(testCamCfg);
         cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
         cfgLoader.saveToDisk();
 
@@ -99,5 +95,27 @@ public class SQLConfigTest {
         System.out.println(cfgLoader.getConfig());
 
         assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
+    }
+
+    @Test
+    public void testLoad2024_3_1() {
+        var cfgLoader =
+                new SqlConfigProvider(
+                        TestUtils.getConfigDirectoriesPath(false)
+                                .resolve("photonvision_config_from_v2024.3.1"));
+
+        assertDoesNotThrow(cfgLoader::load);
+
+        System.out.println(cfgLoader.getConfig());
+        for (var c : CameraQuirk.values()) {
+            assertDoesNotThrow(
+                    () ->
+                            cfgLoader
+                                    .config
+                                    .getCameraConfigurations()
+                                    .get("Microsoft_LifeCam_HD-3000")
+                                    .cameraQuirks
+                                    .hasQuirk(c));
+        }
     }
 }

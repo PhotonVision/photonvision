@@ -30,6 +30,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
@@ -39,7 +40,8 @@ import org.photonvision.vision.target.TargetModel;
 public class ConfigTest {
     private static ConfigManager configMgr;
     private static final CameraConfiguration cameraConfig =
-            new CameraConfiguration("TestCamera", "/dev/video420");
+            new CameraConfiguration(
+                    "TestCamera", PVCameraInfo.fromFileInfo("TestCamera", "/dev/video420"));
     private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
     private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
     private static AprilTagPipelineSettings APRIL_TAG_PIPELINE_SETTINGS;
@@ -139,8 +141,31 @@ public class ConfigTest {
         writer.write(str);
         writer.flush();
         writer.close();
-        Assertions.assertDoesNotThrow(
-                () -> JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class));
+        CameraConfiguration result =
+                JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
+
+        tempFile.delete();
+    }
+
+    @Test
+    public void testJacksonAddUSBVIDPID() throws IOException {
+        var str =
+                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"usbVID\":3, \"usbPID\":4, \"cameraLEDs\":[]}";
+        File tempFile = File.createTempFile("test", ".json");
+        tempFile.deleteOnExit();
+        var writer = new FileWriter(tempFile);
+        writer.write(str);
+        writer.flush();
+        writer.close();
+
+        try {
+            CameraConfiguration result =
+                    JacksonUtils.deserialize(tempFile.toPath(), CameraConfiguration.class);
+            String ser = JacksonUtils.serializeToString(result);
+            System.out.println(ser);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         tempFile.delete();
     }

@@ -19,20 +19,44 @@ package org.photonvision.vision.frame;
 
 import java.util.function.Supplier;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 
-public interface FrameProvider extends Supplier<Frame> {
-    String getName();
+public abstract class FrameProvider implements Supplier<Frame>, Releasable {
+    protected int sequenceID = 0;
+
+    // Escape hatch to allow us to synchronously (from the main vision thread) run
+    // extra
+    // setup/callbacks once cscore connects to our underlying device for the first
+    // time
+    public boolean cameraPropertiesCached = false;
+
+    protected void onCameraConnected() {
+        cameraPropertiesCached = true;
+    }
+
+    public abstract boolean isConnected();
+
+    public abstract boolean checkCameraConnected();
+
+    /**
+     * Returns if the camera has connected at some point. This is not if it is currently connected.
+     */
+    public boolean hasConnected() {
+        return cameraPropertiesCached;
+    }
+
+    public abstract String getName();
 
     /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
-    void requestFrameThresholdType(FrameThresholdType type);
+    public abstract void requestFrameThresholdType(FrameThresholdType type);
 
     /** Ask the camera to rotate frames it outputs */
-    void requestFrameRotation(ImageRotationMode rotationMode);
+    public abstract void requestFrameRotation(ImageRotationMode rotationMode);
 
     /** Ask the camera to provide either the input, output, or both frames. */
-    void requestFrameCopies(boolean copyInput, boolean copyOutput);
+    public abstract void requestFrameCopies(boolean copyInput, boolean copyOutput);
 
     /** Ask the camera to rotate frames it outputs */
-    void requestHsvSettings(HSVPipe.HSVParams params);
+    public abstract void requestHsvSettings(HSVPipe.HSVParams params);
 }

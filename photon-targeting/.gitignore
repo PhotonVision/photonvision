@@ -9,5 +9,3 @@ build
 build/*
 photonvision/*
 photonvision_config/*
-
-src/main/java/org/photonvision/PhotonVersion.java

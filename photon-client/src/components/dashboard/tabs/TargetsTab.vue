@@ -28,7 +28,7 @@ const calculateStdDev = (values: number[]): number => {
 };
 const resetCurrentBuffer = () => {
   // Need to clear the array in place
-  while (useStateStore().currentMultitagBuffer?.length != 0) useStateStore().currentMultitagBuffer?.pop();
+  if (useStateStore().currentMultitagBuffer) useStateStore().currentMultitagBuffer!.length = 0;
 };
 </script>
 
@@ -108,8 +108,8 @@ const resetCurrentBuffer = () => {
                 <td class="text-center">{{ target.area.toFixed(2) }}&deg;</td>
               </template>
               <template v-else>
-                <td class="text-center">{{ target.pose?.x.toFixed(2) }}&nbsp;m</td>
-                <td class="text-center">{{ target.pose?.y.toFixed(2) }}&nbsp;m</td>
+                <td class="text-center">{{ target.pose?.x.toFixed(3) }}&nbsp;m</td>
+                <td class="text-center">{{ target.pose?.y.toFixed(3) }}&nbsp;m</td>
                 <td class="text-center">{{ toDeg(target.pose?.angle_z || 0).toFixed(2) }}&deg;</td>
               </template>
               <template
@@ -157,13 +157,13 @@ const resetCurrentBuffer = () => {
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
                 <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(2) }}&nbsp;m
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(3) }}&nbsp;m
                 </td>
                 <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(2) }}&nbsp;m
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(3) }}&nbsp;m
                 </td>
                 <td class="text-center white--text">
-                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(2) }}&nbsp;m
+                  {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(3) }}&nbsp;m
                 </td>
                 <td class="text-center white--text">
                   {{
