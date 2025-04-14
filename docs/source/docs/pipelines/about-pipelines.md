@@ -28,7 +28,7 @@ This pipeline type is only supported on the Orange Pi 5/5+ coprocessors due to i
 
 ### Driver Mode
 
-Driver Mode is a type of pipeline that doesn't run any vision processing, intended for viewing from a human. For more information about Driver Mode, see the {ref}`Driver Mode documentation<docs/driver-mode/index:Driver Mode>`.
+Driver Mode is a type of pipeline that doesn't run any vision processing, intended for human viewing. For more information about Driver Mode, see the {ref}`Driver Mode documentation<docs/driver-mode/index:Driver Mode>`.
 
 ### Colored Shape
 
