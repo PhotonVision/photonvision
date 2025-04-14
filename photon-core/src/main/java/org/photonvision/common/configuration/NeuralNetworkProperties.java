@@ -20,30 +20,22 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.LinkedList;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
 
 public class NeuralNetworkProperties {
-    /**
-     * The family of the model. This is used to determine which model to load. The only family
-     * currently supported is RKNN.
-     */
-    public enum Family {
-        RKNN,
-        // This is here for null models
-        NONE
-    }
 
     /**
      * The properties of the model. This is used to determine which model to load. The only family
      * currently supported is RKNN. If we add other families, we'll have to determine if we want to
      * expand this modelProperties object, or create separate objects for each family.
      */
-    public class rknnModelProperties {
+    public class RknnModelProperties {
         public String modelPath;
         public String nickname;
         public LinkedList<String> labels;
-        public double resolutionHeight;
         public double resolutionWidth;
+        public double resolutionHeight;
         public Family family;
         public RknnJNI.ModelVersion rknnVersion;
 
@@ -58,12 +50,12 @@ public class NeuralNetworkProperties {
          * @param family
          * @param rknnVersion
          */
-        public rknnModelProperties(
+        public RknnModelProperties(
                 String modelPath,
                 String nickname,
                 LinkedList<String> labels,
-                double resolutionHeight,
                 double resolutionWidth,
+                double resolutionHeight,
                 Family family,
                 RknnJNI.ModelVersion rknnVersion) {
             this.modelPath = modelPath;
@@ -76,13 +68,13 @@ public class NeuralNetworkProperties {
         }
     }
 
-    public LinkedList<rknnModelProperties> modelProperties = new LinkedList<rknnModelProperties>();
+    public LinkedList<RknnModelProperties> modelProperties = new LinkedList<RknnModelProperties>();
 
     public NeuralNetworkProperties() {}
 
     @JsonCreator
     public NeuralNetworkProperties(
-            @JsonProperty("modelPropertiesList") LinkedList<rknnModelProperties> modelPropertiesList) {}
+            @JsonProperty("modelPropertiesList") LinkedList<RknnModelProperties> modelPropertiesList) {}
 
     public NeuralNetworkProperties(NeuralNetworkProperties NNMProperties) {
         this(NNMProperties.modelProperties);

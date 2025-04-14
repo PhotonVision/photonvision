@@ -25,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -33,8 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.photonvision.common.configuration.NeuralNetworkProperties.RknnModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -63,10 +61,10 @@ public class NeuralNetworkModelManager {
      * @return The NeuralNetworkModelManager instance
      */
     private NeuralNetworkModelManager() {
-        ArrayList<NeuralNetworkBackend> backends = new ArrayList<>();
+        ArrayList<Family> backends = new ArrayList<>();
 
         if (Platform.isRK3588()) {
-            backends.add(NeuralNetworkBackend.RKNN);
+            backends.add(Family.RKNN);
         }
 
         supportedBackends = backends;
@@ -87,17 +85,11 @@ public class NeuralNetworkModelManager {
     /** Logger for the NeuralNetworkModelManager */
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
-    public enum NeuralNetworkBackend {
-        RKNN(".rknn");
-
-        private String format;
-
-        private NeuralNetworkBackend(String format) {
-            this.format = format;
-        }
+    public enum Family {
+        RKNN
     }
 
-    private final List<NeuralNetworkBackend> supportedBackends;
+    private final List<Family> supportedBackends;
 
     /**
      * Retrieves the list of supported backends.
@@ -113,7 +105,7 @@ public class NeuralNetworkModelManager {
      *
      * <p>The first model in the list is the default model.
      */
-    private Map<NeuralNetworkBackend, ArrayList<Model>> models;
+    private Map<Family, ArrayList<Model>> models;
 
     /**
      * Retrieves the deep neural network models available, in a format that can be used by the
@@ -153,7 +145,7 @@ public class NeuralNetworkModelManager {
         }
 
         // Check if the model exists in any supported backend
-        for (NeuralNetworkBackend backend : supportedBackends) {
+        for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
                         models.get(backend).stream().filter(m -> m.getName().equals(modelName)).findFirst();
@@ -179,44 +171,37 @@ public class NeuralNetworkModelManager {
         return models.get(supportedBackends.get(0)).stream().findFirst();
     }
 
-    private void loadModel(File model) {
+    // Do checking later on, when we create the rknn model
+    private void loadModel(RknnModelProperties properties) {
         if (models == null) {
             models = new HashMap<>();
         }
 
-        // Get the model extension and check if it is supported
-        String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
-        if (modelExtension.equals(".txt")) {
+        if (!supportedBackends.contains(properties.family)) {
+            logger.warn(
+                    "Model "
+                            + properties.nickname
+                            + " has an unknown extension or is not supported on this hardware.");
             return;
         }
 
-        Optional<NeuralNetworkBackend> backend =
-                Arrays.stream(NeuralNetworkBackend.values())
-                        .filter(b -> b.format.equals(modelExtension))
-                        .findFirst();
-
-        if (!backend.isPresent()) {
-            logger.warn("Model " + model.getName() + " has an unknown extension.");
-            return;
-        }
-
-        String labels = model.getAbsolutePath().replace(backend.get().format, "-labels.txt");
-        if (!models.containsKey(backend.get())) {
-            models.put(backend.get(), new ArrayList<>());
+        if (!models.containsKey(properties.family)) {
+            models.put(properties.family, new ArrayList<>());
         }
 
         try {
-            switch (backend.get()) {
+            switch (properties.family) {
                 case RKNN -> {
-                    models.get(backend.get()).add(new RknnModel(model, labels));
+                    models.get(properties.family).add(new RknnModel(properties));
                     logger.info(
-                            "Loaded model " + model.getName() + " for backend " + backend.get().toString());
+                            "Loaded model "
+                                    + properties.nickname
+                                    + " for backend "
+                                    + properties.family.toString());
                 }
             }
         } catch (IllegalArgumentException e) {
-            logger.error("Failed to load model " + model.getName(), e);
-        } catch (IOException e) {
-            logger.error("Failed to read labels for model " + model.getName(), e);
+            logger.error("Failed to load model " + properties.nickname, e);
         }
     }
 
@@ -235,6 +220,7 @@ public class NeuralNetworkModelManager {
 
         models = new HashMap<>();
 
+        // TODO: figure out how to get the JSON to object for each model
         try {
             Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
@@ -262,6 +248,8 @@ public class NeuralNetworkModelManager {
 
     /**
      * Extracts models from the JAR and copies them to disk.
+     *
+     * <p>// TODO: Ship JSON alongside containing properties
      *
      * @param modelsDirectory the directory on disk to save models
      */
@@ -302,67 +290,5 @@ public class NeuralNetworkModelManager {
         } catch (IOException | URISyntaxException e) {
             logger.error("Error extracting models", e);
         }
-    }
-
-    private static Pattern modelPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
-
-    private static Pattern labelsPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
-
-    /**
-     * Check naming conventions for models and labels.
-     *
-     * <p>This is static as it is not dependent on the state of the class.
-     *
-     * @param modelName the name of the model
-     * @param labelsName the name of the labels file
-     * @throws IllegalArgumentException if the names are invalid
-     */
-    public static void verifyRKNNNames(String modelName, String labelsName) {
-        // check null
-        if (modelName == null || labelsName == null) {
-            throw new IllegalArgumentException("Model name and labels name cannot be null");
-        }
-
-        // These patterns check that the naming convention of
-        // name-widthResolution-heightResolution-modelType is followed
-
-        Matcher modelMatcher = modelPattern.matcher(modelName);
-        Matcher labelsMatcher = labelsPattern.matcher(labelsName);
-
-        if (!modelMatcher.matches() || !labelsMatcher.matches()) {
-            throw new IllegalArgumentException(
-                    "Model name and labels name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn and name-widthResolution-heightResolution-modelType-labels.txt");
-        }
-
-        if (!modelMatcher.group(1).equals(labelsMatcher.group(1))
-                || !modelMatcher.group(2).equals(labelsMatcher.group(2))
-                || !modelMatcher.group(3).equals(labelsMatcher.group(3))
-                || !modelMatcher.group(4).equals(labelsMatcher.group(4))) {
-            throw new IllegalArgumentException("Model name and labels name must be matching.");
-        }
-    }
-
-    /**
-     * Parse RKNN name and return the name, width, height, and model type.
-     *
-     * <p>This is static as it is not dependent on the state of the class.
-     *
-     * @param modelName the name of the model
-     * @throws IllegalArgumentException if the model name does not follow the naming convention
-     * @return an array containing the name, width, height, and model type
-     */
-    public static String[] parseRKNNName(String modelName) {
-        Matcher modelMatcher = modelPattern.matcher(modelName);
-
-        if (!modelMatcher.matches()) {
-            throw new IllegalArgumentException(
-                    "Model name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn");
-        }
-
-        return new String[] {
-            modelMatcher.group(1), modelMatcher.group(2), modelMatcher.group(3), modelMatcher.group(4)
-        };
     }
 }

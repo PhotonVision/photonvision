@@ -68,7 +68,11 @@ public class RknnObjectDetector implements ObjectDetector {
 
         // Create the detector
         objPointer =
-                RknnJNI.create(model.modelFile.getPath(), model.labels.size(), model.version.ordinal(), -1);
+                RknnJNI.create(
+                        model.modelFile.getPath(),
+                        model.properties.labels.size(),
+                        model.properties.rknnVersion.ordinal(),
+                        -1);
         if (objPointer <= 0) {
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
@@ -87,7 +91,7 @@ public class RknnObjectDetector implements ObjectDetector {
      */
     @Override
     public List<String> getClasses() {
-        return model.labels;
+        return model.properties.labels;
     }
 
     /**
