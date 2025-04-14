@@ -1,13 +1,13 @@
 site_name: PhotonLibPy Docs
 theme:
-  name: material
+  name: readthedocs
   favicon: docs/favicon.ico  # If you want a favicon
   logo: logo.svg        # Optional logo
   palette:
     primary: custom
 
 plugins:
-  - search
+  - search:
   - mkdocstrings:
       handlers:
         python:
@@ -32,3 +32,6 @@ nav:
 
 extra_css:
   - stylesheets/extra.css
+
+extra_javascript:
+  - js/exclude-details.js
