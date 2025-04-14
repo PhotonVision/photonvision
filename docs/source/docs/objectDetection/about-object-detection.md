@@ -44,11 +44,11 @@ Before beginning, it is necessary to install the [rknn-toolkit2](https://github.
 ## Uploading Custom Models
 
 :::{warning}
-PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLO11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
+PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
 In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
-should be `name-verticalResolution-horizontalResolution-modelType`. The
+should be `name-verticalResolution-horizontalResolution-yolovXXX`. The
 `name` should only include alphanumeric characters, periods, and underscores. Additionally, the labels
 file ought to have the same name as the RKNN file, with `-labels` appended to the end. For
 example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the labels file should be

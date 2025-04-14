@@ -170,5 +170,13 @@ const interactiveCols = computed(() =>
       :select-cols="interactiveCols"
       @input="(args) => handleStreamResolutionChange(args)"
     />
+    <pv-switch
+      v-if="useCameraSettingsStore().isDriverMode"
+      v-model="useCameraSettingsStore().currentPipelineSettings.crosshair"
+      label="Crosshair"
+      :switch-cols="interactiveCols"
+      tooltip="Enables or disables a crosshair overlay on the camera stream"
+      @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ crosshair: args }, false)"
+    />
   </div>
 </template>

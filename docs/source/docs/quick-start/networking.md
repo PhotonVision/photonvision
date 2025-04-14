@@ -11,7 +11,7 @@ When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physic
 :::{tab-item} New Radio (2025 - present)
 
 ```{danger}
-Ensure that the radio's DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature may electrically destroy your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/getting-started/passive-power-over-ethernet-poe-for-downstream-devices)
+Ensure that the radio's DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature may electrically destroy your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/overview/wiring-your-radio#power-over-ethernet-poe-for-downstream-devices)
 ```
 
 ```{image} images/networking-diagram-vividhosting.png
@@ -66,6 +66,10 @@ you can set the team number to "localhost", and PhotonVision will send data to t
 
 ## Port Forwarding
 
+:::{note}
+If you are using a VH-109 radio (2025 and later, excluding China and Taiwan), you should not use port forwarding. Instead, tether to the dedicated DS ethernet port on the VH-109. The VH-109 does not exhibit the issues found in the OM5P radio with multiple ports, and with a dedicated DS port, it provides more realistic match conditions and removes the need to tether over USB.
+:::
+
 If you would like to access your Ethernet-connected vision device from a computer when tethered to the USB port on the roboRIO, you can use [WPILib's](https://docs.wpilib.org/en/stable/docs/networking/networking-utilities/portforwarding.html) `PortForwarder`.
 
 ```{eval-rst}
@@ -91,3 +95,7 @@ The address in the code above (`photonvision.local`) is the hostname of the copr
 ## Camera Stream Ports
 
 The camera streams start at 1181 with two ports for each camera (ex. 1181 and 1182 for camera one, 1183 and 1184 for camera two, etc.). The easiest way to identify the port of the camera that you want is by double clicking on the stream, which opens it in a separate page. The port will be listed below the stream.
+
+:::{warning}
+If your camera stream isn't sent to the same port as it's originally found on, its stream will not be visible in the UI.
+:::

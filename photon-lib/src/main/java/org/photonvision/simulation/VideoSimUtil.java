@@ -26,6 +26,7 @@ package org.photonvision.simulation;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -62,7 +63,7 @@ public class VideoSimUtil {
     private static double fieldWidth = 8.0137;
 
     static {
-        OpenCVHelp.forceLoadOpenCV();
+        OpenCvLoader.forceStaticLoad();
 
         // create Mats of 10x10 apriltag images
         for (int i = 0; i < VideoSimUtil.kNumTags36h11; i++) {

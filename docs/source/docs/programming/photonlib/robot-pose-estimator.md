@@ -49,21 +49,34 @@ Another necessary argument for creating a `PhotonPoseEstimator` is the `Transfor
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, and `Transform3d`. `PoseStrategy` has six possible values:
+The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has nine possible values:
 
 - MULTI_TAG_PNP_ON_COPROCESSOR
-    - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
-    - Must configure the AprilTagFieldLayout properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
+  - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
+  - Must configure the AprilTagFieldLayout properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
 - LOWEST_AMBIGUITY
-    - Choose the Pose with the lowest ambiguity.
+  - Choose the Pose with the lowest ambiguity.
 - CLOSEST_TO_CAMERA_HEIGHT
-    - Choose the Pose which is closest to the camera height.
+  - Choose the Pose which is closest to the camera height.
 - CLOSEST_TO_REFERENCE_POSE
-    - Choose the Pose which is closest to the pose from setReferencePose().
+  - Choose the Pose which is closest to the pose from setReferencePose().
 - CLOSEST_TO_LAST_POSE
-    - Choose the Pose which is closest to the last pose calculated.
+  - Choose the Pose which is closest to the last pose calculated.
 - AVERAGE_BEST_TARGETS
-    - Choose the Pose which is the average of all the poses from each tag.
+  - Choose the Pose which is the average of all the poses from each tag.
+- MULTI_TAG_PNP_ON_RIO
+  - A slower, older version of MULTI_TAG_PNP_ON_COPROCESSOR, not recommended for use.
+- PNP_DISTANCE_TRIG_SOLVE
+  - Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
+    to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
+    data is up-to-date. Based on a reference implementation by [FRC Team 6328 Mechanical Advantage](https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98).
+- CONSTRAINED_SOLVEPNP
+  - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
+    flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
+    This also requires addHeadingData to be called every frame so heading data is up to date.
+    If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an initial seed to
+    the optimization algorithm -- otherwise, the multi-tag fallback strategy will be used as the
+    seed.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -136,3 +149,7 @@ Update the stored last pose. Useful for setting the initial estimate when using 
 ### `setMultiTagFallbackStrategy(PoseStrategy strategy)`
 
 Determines the fallback strategy for pose estimation. You are strongly encouraged to set this.
+
+### `addHeadingData(double timestampSeconds, Rotation2d heading)`
+
+Adds robot heading data to be stored in buffer. Must be called periodically with a proper timestamp for the PNP_DISTANCE_TRIG_SOLVE and CONSTRAINED_SOLVEPNP strategies

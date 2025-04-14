@@ -25,15 +25,19 @@
 package org.photonvision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
@@ -83,8 +87,44 @@ public class PhotonPoseEstimator {
          * Use all visible tags to compute a single pose estimate. This runs on the RoboRIO, and can
          * take a lot of time.
          */
-        MULTI_TAG_PNP_ON_RIO
+        MULTI_TAG_PNP_ON_RIO,
+
+        /**
+         * Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
+         * to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
+         * data is up-to-date.
+         *
+         * <p>Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
+         *
+         * <p>https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98
+         */
+        PNP_DISTANCE_TRIG_SOLVE,
+
+        /**
+         * Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
+         * flat on the floor. This computation takes place on the RoboRIO, and typically takes not more
+         * than 2ms. See {@link PhotonPoseEstimator.ConstrainedSolvepnpParams} and {@link
+         * org.photonvision.jni.ConstrainedSolvepnpJni} for details and tuning handles this strategy
+         * exposes. This strategy needs addHeadingData called every frame so heading data is up-to-date.
+         * If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an initial seed to
+         * the optimization algorithm -- otherwise, the multi-tag fallback strategy will be used as the
+         * seed.
+         */
+        CONSTRAINED_SOLVEPNP
     }
+
+    /**
+     * Tuning handles we have over the CONSTRAINED_SOLVEPNP {@link PhotonPoseEstimator.PoseStrategy}.
+     * Internally, the cost function is a sum-squared of pixel reprojection error + (optionally)
+     * heading error * heading scale factor.
+     *
+     * @param headingFree If true, heading is completely free to vary. If false, heading excursions
+     *     from the provided heading measurement will be penalized
+     * @param headingScaleFactor If headingFree is false, this weights the cost of changing our robot
+     *     heading estimate against the tag corner reprojection error const.
+     */
+    public static final record ConstrainedSolvepnpParams(
+            boolean headingFree, double headingScaleFactor) {}
 
     private AprilTagFieldLayout fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag36h11;
@@ -96,6 +136,9 @@ public class PhotonPoseEstimator {
     private Pose3d referencePose;
     protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
+
+    private final TimeInterpolatableBuffer<Rotation2d> headingBuffer =
+            TimeInterpolatableBuffer.createBuffer(1.0);
 
     /**
      * Create a new PhotonPoseEstimator.
@@ -116,6 +159,11 @@ public class PhotonPoseEstimator {
         this.fieldTags = fieldTags;
         this.primaryStrategy = strategy;
         this.robotToCamera = robotToCamera;
+
+        if (strategy == PoseStrategy.MULTI_TAG_PNP_ON_RIO
+                || strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
+            OpenCvLoader.forceStaticLoad();
+        }
 
         HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
         InstanceCount++;
@@ -189,6 +237,11 @@ public class PhotonPoseEstimator {
      */
     public void setPrimaryStrategy(PoseStrategy strategy) {
         checkUpdate(this.primaryStrategy, strategy);
+
+        if (strategy == PoseStrategy.MULTI_TAG_PNP_ON_RIO
+                || strategy == PoseStrategy.CONSTRAINED_SOLVEPNP) {
+            OpenCvLoader.forceStaticLoad();
+        }
         this.primaryStrategy = strategy;
     }
 
@@ -260,6 +313,30 @@ public class PhotonPoseEstimator {
     }
 
     /**
+     * Add robot heading data to buffer. Must be called periodically for the
+     * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
+     *
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void addHeadingData(double timestampSeconds, Rotation3d heading) {
+        addHeadingData(timestampSeconds, heading.toRotation2d());
+    }
+
+    /**
+     * Add robot heading data to buffer. Must be called periodically for the
+     * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
+     *
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void addHeadingData(double timestampSeconds, Rotation2d heading) {
+        headingBuffer.addSample(timestampSeconds, heading);
+    }
+
+    /**
      * @return The current transform from the center of the robot to the camera mount position
      */
     public Transform3d getRobotToCameraTransform() {
@@ -304,6 +381,8 @@ public class PhotonPoseEstimator {
      *   <li>The timestamp of the provided pipeline result is the same as in the previous call to
      *       {@code update()}.
      *   <li>No targets were found in the pipeline results.
+     *   <li>The strategy is CONSTRAINED_SOLVEPNP, but no constrainedPnpParams were provided (use the
+     *       other function overload).
      * </ul>
      *
      * @param cameraMatrix Camera calibration data for multi-tag-on-rio strategy - can be empty
@@ -317,6 +396,32 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs) {
+        return update(cameraResult, cameraMatrix, distCoeffs, Optional.empty());
+    }
+
+    /**
+     * Updates the estimated position of the robot. Returns empty if:
+     *
+     * <ul>
+     *   <li>The timestamp of the provided pipeline result is the same as in the previous call to
+     *       {@code update()}.
+     *   <li>No targets were found in the pipeline results.
+     *   <li>The strategy is CONSTRAINED_SOLVEPNP, but the provided constrainedPnpParams are empty.
+     * </ul>
+     *
+     * @param cameraMatrix Camera calibration data for multi-tag-on-rio strategy - can be empty
+     *     otherwise
+     * @param distCoeffs Camera calibration data for multi-tag-on-rio strategy - can be empty
+     *     otherwise
+     * @param constrainedPnpParams Constrained SolvePNP params, if needed.
+     * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
+     *     create the estimate.
+     */
+    public Optional<EstimatedRobotPose> update(
+            PhotonPipelineResult cameraResult,
+            Optional<Matrix<N3, N3>> cameraMatrix,
+            Optional<Matrix<N8, N1>> distCoeffs,
+            Optional<ConstrainedSolvepnpParams> constrainedPnpParams) {
         // Time in the past -- give up, since the following if expects times > 0
         if (cameraResult.getTimestampSeconds() < 0) {
             return Optional.empty();
@@ -338,7 +443,8 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
 
-        return update(cameraResult, cameraMatrix, distCoeffs, this.primaryStrategy);
+        return update(
+                cameraResult, cameraMatrix, distCoeffs, constrainedPnpParams, this.primaryStrategy);
     }
 
     /**
@@ -346,19 +452,20 @@ public class PhotonPoseEstimator {
      * called after timestamp checks have been done by another update() overload.
      *
      * @param cameraResult The latest pipeline result from the camera
-     * @param strategy The pose strategy to use
+     * @param strategy The pose strategy to use. Can't be CONSTRAINED_SOLVEPNP.
      * @return an {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
      *     create the estimate.
      */
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult, PoseStrategy strategy) {
-        return update(cameraResult, Optional.empty(), Optional.empty(), strategy);
+        return update(cameraResult, Optional.empty(), Optional.empty(), Optional.empty(), strategy);
     }
 
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
             Optional<Matrix<N3, N3>> cameraMatrix,
             Optional<Matrix<N8, N1>> distCoeffs,
+            Optional<ConstrainedSolvepnpParams> constrainedPnpParams,
             PoseStrategy strategy) {
         Optional<EstimatedRobotPose> estimatedPose =
                 switch (strategy) {
@@ -374,6 +481,9 @@ public class PhotonPoseEstimator {
                     case MULTI_TAG_PNP_ON_RIO ->
                             multiTagOnRioStrategy(cameraResult, cameraMatrix, distCoeffs);
                     case MULTI_TAG_PNP_ON_COPROCESSOR -> multiTagOnCoprocStrategy(cameraResult);
+                    case PNP_DISTANCE_TRIG_SOLVE -> pnpDistanceTrigSolveStrategy(cameraResult);
+                    case CONSTRAINED_SOLVEPNP ->
+                            constrainedPnpStrategy(cameraResult, cameraMatrix, distCoeffs, constrainedPnpParams);
                 };
 
         if (estimatedPose.isPresent()) {
@@ -383,6 +493,132 @@ public class PhotonPoseEstimator {
         return estimatedPose;
     }
 
+    private Optional<EstimatedRobotPose> pnpDistanceTrigSolveStrategy(PhotonPipelineResult result) {
+        PhotonTrackedTarget bestTarget = result.getBestTarget();
+
+        if (bestTarget == null) return Optional.empty();
+
+        var headingSampleOpt = headingBuffer.getSample(result.getTimestampSeconds());
+        if (headingSampleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        Rotation2d headingSample = headingSampleOpt.get();
+
+        Translation2d camToTagTranslation =
+                new Translation3d(
+                                bestTarget.getBestCameraToTarget().getTranslation().getNorm(),
+                                new Rotation3d(
+                                        0,
+                                        -Math.toRadians(bestTarget.getPitch()),
+                                        -Math.toRadians(bestTarget.getYaw())))
+                        .rotateBy(robotToCamera.getRotation())
+                        .toTranslation2d()
+                        .rotateBy(headingSample);
+
+        var tagPoseOpt = fieldTags.getTagPose(bestTarget.getFiducialId());
+        if (tagPoseOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        var tagPose2d = tagPoseOpt.get().toPose2d();
+
+        Translation2d fieldToCameraTranslation =
+                tagPose2d.getTranslation().plus(camToTagTranslation.unaryMinus());
+
+        Translation2d camToRobotTranslation =
+                robotToCamera.getTranslation().toTranslation2d().unaryMinus().rotateBy(headingSample);
+
+        Pose2d robotPose =
+                new Pose2d(fieldToCameraTranslation.plus(camToRobotTranslation), headingSample);
+
+        return Optional.of(
+                new EstimatedRobotPose(
+                        new Pose3d(robotPose),
+                        result.getTimestampSeconds(),
+                        result.getTargets(),
+                        PoseStrategy.PNP_DISTANCE_TRIG_SOLVE));
+    }
+
+    private Optional<EstimatedRobotPose> constrainedPnpStrategy(
+            PhotonPipelineResult result,
+            Optional<Matrix<N3, N3>> cameraMatrixOpt,
+            Optional<Matrix<N8, N1>> distCoeffsOpt,
+            Optional<ConstrainedSolvepnpParams> constrainedPnpParams) {
+        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+        // cannot run multitagPNP, use fallback strategy
+        if (!hasCalibData) {
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+        }
+
+        if (constrainedPnpParams.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Need heading if heading fixed
+        if (!constrainedPnpParams.get().headingFree
+                && headingBuffer.getSample(result.getTimestampSeconds()).isEmpty()) {
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+        }
+
+        Pose3d fieldToRobotSeed;
+
+        // Attempt to use multi-tag to get a pose estimate seed
+        if (result.getMultiTagResult().isPresent()) {
+            fieldToRobotSeed =
+                    Pose3d.kZero.plus(
+                            result.getMultiTagResult().get().estimatedPose.best.plus(robotToCamera.inverse()));
+        } else {
+            // HACK - use fallback strategy to gimme a seed pose
+            // TODO - make sure nested update doesn't break state
+            var nestedUpdate =
+                    update(
+                            result,
+                            cameraMatrixOpt,
+                            distCoeffsOpt,
+                            Optional.empty(),
+                            this.multiTagFallbackStrategy);
+            if (nestedUpdate.isEmpty()) {
+                // best i can do is bail
+                return Optional.empty();
+            }
+            fieldToRobotSeed = nestedUpdate.get().estimatedPose;
+        }
+
+        if (!constrainedPnpParams.get().headingFree) {
+            // If heading fixed, force rotation component
+            fieldToRobotSeed =
+                    new Pose3d(
+                            fieldToRobotSeed.getTranslation(),
+                            new Rotation3d(headingBuffer.getSample(result.getTimestampSeconds()).get()));
+        }
+
+        var pnpResult =
+                VisionEstimation.estimateRobotPoseConstrainedSolvepnp(
+                        cameraMatrixOpt.get(),
+                        distCoeffsOpt.get(),
+                        result.getTargets(),
+                        robotToCamera,
+                        fieldToRobotSeed,
+                        fieldTags,
+                        tagModel,
+                        constrainedPnpParams.get().headingFree,
+                        headingBuffer.getSample(result.getTimestampSeconds()).get(),
+                        constrainedPnpParams.get().headingScaleFactor);
+        // try fallback strategy if solvePNP fails for some reason
+        if (!pnpResult.isPresent())
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+        var best = Pose3d.kZero.plus(pnpResult.get().best); // field-to-robot
+
+        return Optional.of(
+                new EstimatedRobotPose(
+                        best,
+                        result.getTimestampSeconds(),
+                        result.getTargets(),
+                        PoseStrategy.CONSTRAINED_SOLVEPNP));
+    }
+
     private Optional<EstimatedRobotPose> multiTagOnCoprocStrategy(PhotonPipelineResult result) {
         if (result.getMultiTagResult().isEmpty()) {
             return update(result, this.multiTagFallbackStrategy);
@@ -390,7 +626,7 @@ public class PhotonPoseEstimator {
 
         var best_tf = result.getMultiTagResult().get().estimatedPose.best;
         var best =
-                new Pose3d()
+                Pose3d.kZero
                         .plus(best_tf) // field-to-camera
                         .relativeTo(fieldTags.getOrigin())
                         .plus(robotToCamera.inverse()); // field-to-robot
@@ -421,9 +657,12 @@ public class PhotonPoseEstimator {
                 VisionEstimation.estimateCamPosePNP(
                         cameraMatrixOpt.get(), distCoeffsOpt.get(), result.getTargets(), fieldTags, tagModel);
         // try fallback strategy if solvePNP fails for some reason
-        if (!pnpResult.isPresent()) return update(result, this.multiTagFallbackStrategy);
+        if (!pnpResult.isPresent())
+            return update(
+                    result, cameraMatrixOpt, distCoeffsOpt, Optional.empty(), this.multiTagFallbackStrategy);
+
         var best =
-                new Pose3d()
+                Pose3d.kZero
                         .plus(pnpResult.get().best) // field-to-camera
                         .plus(robotToCamera.inverse()); // field-to-robot
 
