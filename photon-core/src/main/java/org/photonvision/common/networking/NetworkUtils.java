@@ -53,26 +53,16 @@ public class NetworkUtils {
         }
     }
 
-    public static class NMDeviceInfo {
+    /**
+     * Contains data about network devices retrieved from "nmcli device show"
+     *
+     * @param connName The human-readable name used by "nmcli con"
+     * @param devName The underlying device name, used by dhclient
+     * @param nmType The NetworkManager device type
+     */
+    public static record NMDeviceInfo(String connName, String devName, NMType nmType) {
         public NMDeviceInfo(String c, String d, String type) {
-            connName = c;
-            devName = d;
-            nmType = NMType.typeForString(type);
-        }
-
-        public final String connName; // Human-readable name used by "nmcli con"
-        public final String devName; // underlying device, used by dhclient
-        public final NMType nmType;
-
-        @Override
-        public String toString() {
-            return "NMDeviceInfo [connName="
-                    + connName
-                    + ", devName="
-                    + devName
-                    + ", nmType="
-                    + nmType
-                    + "]";
+            this(c, d, NMType.typeForString(type));
         }
     }
 
