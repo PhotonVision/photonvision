@@ -7,10 +7,14 @@
 - Some time before the competition, lock down the version you are using and do not upgrade unless you encounter a critical bug.
 - Have a copy of the installation image for the version you are using on your programming laptop, in case re-imaging (without internet) is needed.
 - Extensively test at your home setup. Practice tuning from scratch under different lighting conditions.
-- Use SmartDashboard / Shuffleboard to view your camera streams during practice.
-- Confirm you have followed all the recommendations under the Networking section in installation (network switch and static IP).
+- Confirm you have followed all the recommendations under the {ref}`Networking<docs/quick-start/networking:Networking>` documentation (network switch and static IP).
 - Only use high quality ethernet cables that have been rigorously tested.
-- Set up RIO USB port forwarding using the guide in the Networking section in installation.
+
+## Camera Streaming
+- All camera streams are published under the NetworkTables table `CameraPublisher`.
+- The only subtable under `CameraPublisher` that will work for viewing a driver mode camera stream is the one that contains `Output` in the name.
+- To view a camera stream in a dashboard, drag the correct subtable from the NetworkTables tree into your dashboard.
+- It is recommended to use the [Elastic](https://frc-elastic.gitbook.io/docs) driver dashboard. Shuffleboard and SmartDashboard are not recommended for use.
 
 ## During the Competition
 
@@ -19,7 +23,7 @@
   - Make sure the field has match-accurate lighting conditions active.
   - Turn on your robot and pull up the dashboard on your driver station.
   - Point your robot at the targets and ensure you get a consistent tracking (you hold one targets consistently, the ceiling lights aren't detected, etc.).
-  - If you have problems with your pipeline, go to the pipeline tuning section and retune the pipeline using the guide there.
+  - If you have problems with your pipeline, retune the pipeline following the {ref}`camera tuning <docs/pipelines/input:Camera Tuning / Input>` documentation.
   - Move the robot close, far, angled, and around the field to ensure no extra targets are found.
   - Monitor camera feeds during a practice match to ensure everything is working correctly.
 - After field calibration, use the "Export Settings" button in the "Settings" page to create a backup.
