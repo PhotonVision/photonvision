@@ -26,6 +26,10 @@ This pipeline type is based on detecting objects using a neural network. The obj
 This pipeline type is only supported on the Orange Pi 5/5+ coprocessors due to its Neural Processing Unit used by PhotonVision to support running ML-based object detection.
 :::
 
+### Driver Mode
+
+This is a special type of pipeline that allows PhotonVision to forward a camera's stream to NetworkTables for driver assistance. For more information about Driver Mode, see the {ref}`Driver Mode documentation<docs/driver-mode/index:Driver Mode>`.
+
 ### Colored Shape
 
 This pipeline type is based on detecting different shapes like circles, triangles, quadrilaterals, or a polygon. An example usage would be detecting yellow PowerCells from the 2020 FRC game. You can read more about the specific settings available in the contours page.
