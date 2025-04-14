@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
@@ -173,8 +173,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     public void newPipelineInfo(Pair<String, PipelineType> typeName) {
-        var type = typeName.getRight();
-        var name = typeName.getLeft();
+        var type = typeName.getSecond();
+        var name = typeName.getFirst();
 
         logger.info("Adding a " + type + " pipeline with name " + name);
 

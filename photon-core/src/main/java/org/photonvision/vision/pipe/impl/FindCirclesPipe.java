@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -54,7 +54,7 @@ public class FindCirclesPipe
         var maxRadius = (int) (params.maxRadius() * diag / 100.0);
 
         Imgproc.HoughCircles(
-                in.getLeft(),
+                in.getFirst(),
                 circles,
                 // Detection method, see #HoughModes. The available methods are #HOUGH_GRADIENT and
                 // #HOUGH_GRADIENT_ALT.
@@ -76,7 +76,7 @@ public class FindCirclesPipe
         // only match against them
         // This does mean that contours closer than allowableThreshold aren't matched to anything if
         // there's a 'better' option
-        var unmatchedContours = in.getRight();
+        var unmatchedContours = in.getSecond();
         for (int x = 0; x < circles.cols(); x++) {
             // Grab the current circle we are looking at
             double[] c = circles.get(0, x);

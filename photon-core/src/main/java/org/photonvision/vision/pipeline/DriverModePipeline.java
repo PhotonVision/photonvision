@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.Pair;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
