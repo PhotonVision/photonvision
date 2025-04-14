@@ -17,8 +17,12 @@
 
 package org.photonvision.vision.objects;
 
+import org.photonvision.common.configuration.NeuralNetworkProperties.Family;
+
 public interface Model {
     public ObjectDetector load();
 
     public String getName();
+
+    public Family getFamily();
 }

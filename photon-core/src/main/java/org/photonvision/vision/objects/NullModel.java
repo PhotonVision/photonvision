@@ -19,6 +19,7 @@ package org.photonvision.vision.objects;
 
 import java.util.List;
 import org.opencv.core.Mat;
+import org.photonvision.common.configuration.NeuralNetworkProperties.Family;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /**
@@ -43,6 +44,11 @@ public class NullModel implements Model, ObjectDetector {
     @Override
     public String getName() {
         return "NullModel";
+    }
+
+    @Override
+    public Family getFamily() {
+        return Family.NONE;
     }
 
     @Override
