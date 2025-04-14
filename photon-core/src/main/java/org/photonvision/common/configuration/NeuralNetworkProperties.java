@@ -24,7 +24,6 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
 
 public class NeuralNetworkProperties {
-
     /**
      * The properties of the model. This is used to determine which model to load. The only family
      * currently supported is RKNN. If we add other families, we'll have to determine if we want to
