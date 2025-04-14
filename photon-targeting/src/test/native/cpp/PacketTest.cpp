@@ -94,6 +94,12 @@ TEST(PacketTest, PhotonPipelineResult) {
   auto b = p.Unpack<decltype(result)>();
   EXPECT_EQ(result, b);
 
+  int x = 10; 
+  int zero = 0;
+
+  int y = x / zero; // This will cause a division by zero error
+  (void)y;
+
   std::vector<PhotonTrackedTarget> targets{
       PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0, 1, -1, -1.0f,
