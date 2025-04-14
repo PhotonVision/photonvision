@@ -14,7 +14,7 @@
 - All camera streams are published under the NetworkTables table `CameraPublisher`.
 - The only subtable under `CameraPublisher` that will work for viewing a driver mode camera stream is the one that contains `Output` in the name.
 - To view a camera stream in a dashboard, drag the correct subtable from the NetworkTables tree into your dashboard.
-- It is recommended to use the [Elastic](https://frc-elastic.gitbook.io/docs) driver dashboard. Shuffleboard and SmartDashboard are not recommended for use.
+- Use the latest driver dashboard recommended by [WPILib](https://docs.wpilib.org/en/stable/docs/software/dashboards/dashboard-intro.html) on your driver station laptop.
 
 ## During the Competition
 
