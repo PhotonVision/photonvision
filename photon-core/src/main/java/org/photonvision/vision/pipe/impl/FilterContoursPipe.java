@@ -67,9 +67,7 @@ public class FilterContoursPipe
             double x = c.getCenterPoint().x;
             double y = c.getCenterPoint().y;
 
-            if (Math.abs(x - meanX) > stdDevX * xTol) {
-                it.remove();
-            } else if (Math.abs(y - meanY) > stdDevY * yTol) {
+            if (Math.abs(x - meanX) > stdDevX * xTol || Math.abs(y - meanY) > stdDevY * yTol) {
                 it.remove();
             }
             // Otherwise we're good! Keep it in

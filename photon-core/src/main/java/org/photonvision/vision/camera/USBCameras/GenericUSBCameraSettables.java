@@ -100,12 +100,6 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // first.
         var autoExpProp = findProperty("exposure_auto", "auto_exposure");
 
-        if (expProp.isPresent()) {
-            exposureAbsProp = expProp.get();
-            this.minExposure = exposureAbsProp.getMin();
-            this.maxExposure = exposureAbsProp.getMax();
-        }
-
         if (autoExpProp.isPresent()) {
             autoExposureProp = autoExpProp.get();
         }
@@ -278,10 +272,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                     continue;
                 }
 
-                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {
-                    if (videoMode.fps > 100) {
-                        continue;
-                    }
+                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100) && videoMode.fps > 100) {
+                    continue;
                 }
 
                 videoModesList.add(videoMode);

@@ -54,7 +54,7 @@ public class FindBoardCornersPipe
     // Since we return results in real-time, we want to ensure it goes as fast as
     // possible
     // and fails as fast as possible.
-    final int findChessboardFlags =
+    static final int findChessboardFlags =
             Calib3d.CALIB_CB_NORMALIZE_IMAGE
                     | Calib3d.CALIB_CB_ADAPTIVE_THRESH
                     | Calib3d.CALIB_CB_FILTER_QUADS
