@@ -1,6 +1,6 @@
 site_name: PhotonLibPy Docs
 theme:
-  name: readthedocs
+  name: material
   favicon: docs/favicon.ico  # If you want a favicon
   logo: logo.svg        # Optional logo
   palette:
@@ -11,6 +11,8 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          options:
+            show_source: false
           paths:
             - "."
   - gen-files:
