@@ -8,7 +8,7 @@ The only subtable under `CameraPublisher` that will work for viewing a driver mo
 
 ## Enabling Driver Mode
 
-To enable Driver Mode, toggle the switch at the top of the Dashboard page for a selected camera. 
+To enable Driver Mode, toggle the switch at the top of the Dashboard page for a selected camera.
 
 ```{image} images/driver-mode-dashboard.png
 :align: center
