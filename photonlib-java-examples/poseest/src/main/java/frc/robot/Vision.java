@@ -48,7 +48,7 @@ public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
     private Matrix<N3, N1> curStdDevs;
-    private EstimateConsumer consumer;
+    private final EstimateConsumer consumer;
 
     // Simulation
     private PhotonCameraSim cameraSim;
