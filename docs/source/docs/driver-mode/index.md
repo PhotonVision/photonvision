@@ -3,7 +3,7 @@
 Driver Mode is a type of pipeline that doesn't run any vision processing, intended for viewing from a human. The stream can be viewed from a driver dashboard, and is accessible under the `CameraPublisher` NT table.
 
 :::{note}
-The only subtable under `CameraPublisher` that will work for viewing a driver mode camera stream is the one that contains `Output` in the name.
+The `CameraPublisher` NT table contains the streams for all active cameras. Make sure to select the camera stream that matches the camera you have set as the driver camera in PhotonVision. Additionally, the only subtable under `CameraPublisher` that will work for viewing a driver mode camera stream is the one that contains `Output` in the name.
 :::
 
 ## Enabling Driver Mode
