@@ -48,14 +48,18 @@ public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
     private Matrix<N3, N1> curStdDevs;
-    private final EstimateConsumer consumer;
+    private final EstimateConsumer estConsumer;
 
     // Simulation
     private PhotonCameraSim cameraSim;
     private VisionSystemSim visionSim;
 
-    public Vision(EstimateConsumer consumer) {
-        this.consumer = consumer;
+    /**
+     * @param estConsumer Lamba that will accept a pose estimate and pass it to your desired {@link
+     *     edu.wpi.first.math.estimator.SwerveDrivePoseEstimator}
+     */
+    public Vision(EstimateConsumer estConsumer) {
+        this.estConsumer = estConsumer;
         camera = new PhotonCamera(kCameraName);
 
         photonEstimator =
@@ -107,7 +111,7 @@ public class Vision {
                         // Change our trust in the measurement based on the tags we can see
                         var estStdDevs = getEstimationStdDevs();
 
-                        consumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+                        estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
                     });
         }
     }

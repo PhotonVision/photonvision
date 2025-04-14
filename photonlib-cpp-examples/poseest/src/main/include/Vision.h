@@ -42,10 +42,14 @@
 
 class Vision {
  public:
+
+    /**
+     * @param estConsumer Lamba that will accept a pose estimate and pass it to your desired SwerveDrivePoseEstimator.
+     */
   Vision(std::function<void(frc::Pose2d, units::second_t,
                             Eigen::Matrix<double, 3, 1>)>
-             visionConsumer)
-      : visionConsumer{visionConsumer} {
+             estConsumer)
+      : estConsumer{estConsumer} {
     photonEstimator.SetMultiTagFallbackStrategy(
         photon::PoseStrategy::LOWEST_AMBIGUITY);
 
@@ -91,7 +95,7 @@ class Vision {
       }
 
       if (visionEst) {
-        visionConsumer(
+        estConsumer(
             visionEst->estimatedPose.ToPose2d(), visionEst->timestamp,
             GetEstimationStdDevs(visionEst->estimatedPose.ToPose2d()));
       }
@@ -156,5 +160,5 @@ class Vision {
   // The most recent result, cached for calculating std devs
   photon::PhotonPipelineResult m_latestResult;
   std::function<void(frc::Pose2d, units::second_t, Eigen::Matrix<double, 3, 1>)>
-      visionConsumer;
+      estConsumer;
 };
