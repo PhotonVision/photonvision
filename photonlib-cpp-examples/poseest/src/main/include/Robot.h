@@ -51,7 +51,10 @@ class Robot : public frc::TimedRobot {
 
  private:
   SwerveDrive drivetrain{};
-  Vision vision{drivetrain::addVisionMeasurement};
+  Vision vision{[=, this](frc::Pose2d pose, units::second_t timestamp,
+                   Eigen::Matrix<double, 3, 1> stddevs) {
+    drivetrain.addVisionMeasurement(pose, timestamp, stddevs);
+  }};
   GamepieceLauncher launcher{};
   frc::XboxController controller{0};
 };
