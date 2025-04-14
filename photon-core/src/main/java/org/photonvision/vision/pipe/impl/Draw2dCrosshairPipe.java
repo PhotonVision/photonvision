@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.awt.*;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -40,7 +40,7 @@ public class Draw2dCrosshairPipe
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!params.shouldDraw()) return null;
 
-        var image = in.getLeft();
+        var image = in.getFirst();
 
         if (params.showCrosshair()) {
             double x = params.frameStaticProperties().centerX;
@@ -57,8 +57,8 @@ public class Draw2dCrosshairPipe
                     }
                 }
                 case Dual -> {
-                    if (!in.getRight().isEmpty()) {
-                        var target = in.getRight().get(0);
+                    if (!in.getSecond().isEmpty()) {
+                        var target = in.getSecond().get(0);
                         if (target != null) {
                             var area = target.getArea();
                             var offsetCrosshair =

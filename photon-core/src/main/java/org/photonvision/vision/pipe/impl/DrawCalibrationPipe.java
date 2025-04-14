@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.awt.Color;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -44,7 +44,7 @@ public class DrawCalibrationPipe
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!params.drawAllSnapshots()) return null;
 
-        var image = in.getLeft();
+        var image = in.getFirst();
 
         var imgSz = image.size();
         var diag = Math.hypot(imgSz.width, imgSz.height);
@@ -55,7 +55,7 @@ public class DrawCalibrationPipe
         int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
 
         int i = 0;
-        for (var target : in.getRight()) {
+        for (var target : in.getSecond()) {
             for (var c : target.getTargetCorners()) {
                 if (c.x < 0 || c.y < 0) {
                     // Skip if the corner is less than zero

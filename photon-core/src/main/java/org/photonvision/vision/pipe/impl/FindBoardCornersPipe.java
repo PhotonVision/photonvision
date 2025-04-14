@@ -17,10 +17,10 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -244,8 +244,8 @@ public class FindBoardCornersPipe
         var objPts = new MatOfPoint3f();
         var outBoardCorners = new MatOfPoint2f();
 
-        var inFrame = in.getLeft();
-        var outFrame = in.getRight();
+        var inFrame = in.getFirst();
+        var outFrame = in.getSecond();
 
         // Convert the inFrame too grayscale to increase contrast
         Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
