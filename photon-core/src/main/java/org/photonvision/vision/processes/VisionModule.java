@@ -571,20 +571,20 @@ public class VisionModule {
         var temp = new HashMap<Integer, HashMap<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
 
-        for (var k : videoModes.keySet()) {
+        for (var k : videoModes.entrySet()) {
             var internalMap = new HashMap<String, Object>();
 
-            internalMap.put("width", videoModes.get(k).width);
-            internalMap.put("height", videoModes.get(k).height);
-            internalMap.put("fps", videoModes.get(k).fps);
+            internalMap.put("width", k.getValue().width);
+            internalMap.put("height", k.getValue().height);
+            internalMap.put("fps", k.getValue().fps);
             internalMap.put(
                     "pixelFormat",
-                    ((videoModes.get(k) instanceof LibcameraGpuSource.FPSRatedVideoMode)
+                    ((k.getValue() instanceof LibcameraGpuSource.FPSRatedVideoMode)
                                     ? "kPicam"
-                                    : videoModes.get(k).pixelFormat.toString())
+                                    : k.getValue().pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
 
-            temp.put(k, internalMap);
+            temp.put(k.getKey(), internalMap);
         }
 
         if (videoModes.size() == 0) {
