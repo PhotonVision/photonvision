@@ -56,6 +56,7 @@ public class SqlConfigProvider extends ConfigProvider {
         static final String HARDWARE_CONFIG = "hardwareConfig";
         static final String HARDWARE_SETTINGS = "hardwareSettings";
         static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
+        static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
 
     private static final String dbName = "photon.sqlite";
@@ -263,6 +264,7 @@ public class SqlConfigProvider extends ConfigProvider {
             HardwareSettings hardwareSettings;
             NetworkConfig networkConfig;
             AprilTagFieldLayout atfl;
+            NeuralNetworkProperties nnProps;
 
             try {
                 hardwareConfig =
@@ -310,6 +312,17 @@ public class SqlConfigProvider extends ConfigProvider {
                 }
             }
 
+            try {
+                nnProps =
+                        JacksonUtils.deserialize(
+                                getOneConfigFile(conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES),
+                                NeuralNetworkProperties.class);
+                config.setNeuralNetworkProperties(nnProps);
+            } catch (IOException e) {
+                logger.error("Could not deserialize neural network properties! Loading defaults", e);
+                nnProps = new NeuralNetworkProperties();
+            }
+
             var cams = loadCameraConfigs(conn);
 
             try {
@@ -319,7 +332,8 @@ public class SqlConfigProvider extends ConfigProvider {
             }
 
             this.config =
-                    new PhotonConfiguration(hardwareConfig, hardwareSettings, networkConfig, atfl, cams);
+                    new PhotonConfiguration(
+                            hardwareConfig, hardwareSettings, networkConfig, atfl, nnProps, cams);
         }
     }
 
@@ -442,6 +456,7 @@ public class SqlConfigProvider extends ConfigProvider {
     private boolean skipSavingHWSet = false;
     private boolean skipSavingNWCfg = false;
     private boolean skipSavingAPRTG = false;
+    private boolean skipSavingNNProps = false;
 
     private void saveGlobal(Connection conn) {
         PreparedStatement statement1 = null;
@@ -479,6 +494,16 @@ public class SqlConfigProvider extends ConfigProvider {
                         statement3,
                         GlobalKeys.HARDWARE_CONFIG,
                         JacksonUtils.serializeToString(config.getHardwareConfig()));
+                statement3.executeUpdate();
+                statement3.close();
+            }
+
+            if (!skipSavingNNProps) {
+                statement3 = conn.prepareStatement(sqlString);
+                addFile(
+                        statement3,
+                        GlobalKeys.NEURAL_NETWORK_PROPERTIES,
+                        JacksonUtils.serializeToString(config.getNeuralNetworkProperties()));
                 statement3.executeUpdate();
                 statement3.close();
             }
@@ -563,6 +588,12 @@ public class SqlConfigProvider extends ConfigProvider {
     public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
         skipSavingAPRTG = true;
         return saveOneFile(GlobalKeys.ATFL_CONFIG_FILE, uploadPath);
+    }
+
+    @Override
+    public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
+        skipSavingNNProps = true;
+        return saveOneFile(GlobalKeys.NEURAL_NETWORK_PROPERTIES, uploadPath);
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {

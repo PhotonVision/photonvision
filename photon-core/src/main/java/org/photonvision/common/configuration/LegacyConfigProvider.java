@@ -214,7 +214,12 @@ class LegacyConfigProvider extends ConfigProvider {
 
         this.config =
                 new PhotonConfiguration(
-                        hardwareConfig, hardwareSettings, networkConfig, atfl, cameraConfigurations);
+                        hardwareConfig,
+                        hardwareSettings,
+                        networkConfig,
+                        atfl,
+                        new NeuralNetworkProperties(),
+                        cameraConfigurations);
     }
 
     @Override
@@ -483,5 +488,12 @@ class LegacyConfigProvider extends ConfigProvider {
 
     public void unloadCameraConfigs() {
         this.config.getCameraConfigurations().clear();
+    }
+
+    @Override
+    public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
+        // TODO I'm not implementing this cause nobody with the legacy config is gonna have one of these
+        throw new UnsupportedOperationException(
+                "Unimplemented method 'saveUploadedNeuralNetworkProperties'");
     }
 }

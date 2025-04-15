@@ -27,6 +27,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +37,7 @@ import org.photonvision.common.configuration.NeuralNetworkProperties.RknnModelPr
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.rknn.RknnJNI.ModelVersion;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
 
@@ -54,6 +56,27 @@ import org.photonvision.vision.objects.RknnModel;
 public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
     private static NeuralNetworkModelManager INSTANCE;
+
+    /**
+     * This function stores the properties of the shipped object detection models. It is stored as a
+     * function so that it can be dynamic, to adjust for the models directory.
+     */
+    private NeuralNetworkProperties getShippedProperties(File modelsDirectory) {
+        NeuralNetworkProperties nnProps = new NeuralNetworkProperties();
+
+        nnProps.addModelProperties(
+                nnProps
+                .new RknnModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "NAMEHERE.rknn"),
+                        "foo",
+                        new LinkedList<String>(),
+                        0,
+                        0,
+                        Family.RKNN,
+                        ModelVersion.YOLO_V8));
+
+        return nnProps;
+    }
 
     /**
      * Private constructor to prevent instantiation
@@ -177,6 +200,12 @@ public class NeuralNetworkModelManager {
             models = new HashMap<>();
         }
 
+        if (properties == null) {
+            logger.error(
+                    "Model properties are null, this could mean the models config was unable to be found in the database");
+            return;
+        }
+
         if (!supportedBackends.contains(properties.family)) {
             logger.warn(
                     "Model "
@@ -208,10 +237,13 @@ public class NeuralNetworkModelManager {
     /**
      * Discovers DNN models from the specified folder.
      *
-     * @param modelsDirectory The folder where the models are stored
+     * <p>This makes the assumption that all of the models have their properties stored in the
+     * database
      */
-    public void discoverModels(File modelsDirectory) {
+    public void discoverModels() {
         logger.info("Supported backends: " + supportedBackends);
+
+        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         if (!modelsDirectory.exists()) {
             logger.error("Models folder " + modelsDirectory.getAbsolutePath() + " does not exist.");
@@ -220,11 +252,17 @@ public class NeuralNetworkModelManager {
 
         models = new HashMap<>();
 
-        // TODO: figure out how to get the JSON to object for each model
+        // TODO: Load neural network properties from json/create new one
         try {
             Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
-                    .forEach(path -> loadModel(path.toFile()));
+                    .forEach(
+                            path ->
+                                    loadModel(
+                                            ConfigManager.getInstance()
+                                                    .getConfig()
+                                                    .getNeuralNetworkProperties()
+                                                    .getModelProperties(path)));
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
@@ -247,13 +285,11 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Extracts models from the JAR and copies them to disk.
-     *
-     * <p>// TODO: Ship JSON alongside containing properties
-     *
-     * @param modelsDirectory the directory on disk to save models
+     * Extracts models from the JAR and copies them to disk. Also copies properties into the database.
      */
-    public void extractModels(File modelsDirectory) {
+    public void extractModels() {
+        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
+
         if (!modelsDirectory.exists() && !modelsDirectory.mkdirs()) {
             throw new RuntimeException("Failed to create directory: " + modelsDirectory);
         }
@@ -290,5 +326,11 @@ public class NeuralNetworkModelManager {
         } catch (IOException | URISyntaxException e) {
             logger.error("Error extracting models", e);
         }
+
+        ConfigManager.getInstance()
+                .getConfig()
+                .setNeuralNetworkProperties(
+                        getShippedProperties(modelsDirectory)
+                                .add(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties()));
     }
 }

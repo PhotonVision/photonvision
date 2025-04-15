@@ -19,6 +19,8 @@ package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.LinkedList;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
@@ -30,7 +32,7 @@ public class NeuralNetworkProperties {
      * expand this modelProperties object, or create separate objects for each family.
      */
     public class RknnModelProperties {
-        public String modelPath;
+        public Path modelPath;
         public String nickname;
         public LinkedList<String> labels;
         public double resolutionWidth;
@@ -50,7 +52,7 @@ public class NeuralNetworkProperties {
          * @param rknnVersion
          */
         public RknnModelProperties(
-                String modelPath,
+                Path modelPath,
                 String nickname,
                 LinkedList<String> labels,
                 double resolutionWidth,
@@ -67,16 +69,18 @@ public class NeuralNetworkProperties {
         }
     }
 
-    public LinkedList<RknnModelProperties> modelProperties = new LinkedList<RknnModelProperties>();
+    protected HashMap<Path, RknnModelProperties> properties =
+            new HashMap<Path, RknnModelProperties>();
 
     public NeuralNetworkProperties() {}
 
     @JsonCreator
     public NeuralNetworkProperties(
-            @JsonProperty("modelPropertiesList") LinkedList<RknnModelProperties> modelPropertiesList) {}
+            @JsonProperty("modelPropertiesList")
+                    HashMap<Path, RknnModelProperties> modelPropertiesList) {}
 
     public NeuralNetworkProperties(NeuralNetworkProperties NNMProperties) {
-        this(NNMProperties.modelProperties);
+        this(NNMProperties.properties);
     }
 
     @Override
@@ -85,8 +89,34 @@ public class NeuralNetworkProperties {
 
         toReturn += "NeuralNetworkProperties [";
 
-        toReturn += modelProperties.toString() + "]";
+        toReturn += properties.toString() + "]";
 
         return toReturn;
+    }
+
+    public void addModelProperties(RknnModelProperties modelProperties) {
+        properties.put(modelProperties.modelPath, modelProperties);
+    }
+
+    /**
+     * Add two Neural Network Properties together.
+     *
+     * <p>Any keys in the object passed in will override those from the other object
+     *
+     * @param nnProps
+     * @return itself, so it can be chained and for adding where you want to pass into a function
+     */
+    public NeuralNetworkProperties add(NeuralNetworkProperties nnProps) {
+        properties.putAll(nnProps.properties);
+
+        return this;
+    }
+
+    public boolean removeModelProperties(Path modelPath) {
+        return properties.remove(modelPath) != null;
+    }
+
+    public RknnModelProperties getModelProperties(Path modelPath) {
+        return properties.get(modelPath);
     }
 }

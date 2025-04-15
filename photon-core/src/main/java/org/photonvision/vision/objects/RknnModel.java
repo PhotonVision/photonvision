@@ -34,7 +34,7 @@ public class RknnModel implements Model {
      * @throws IllegalArgumentException
      */
     public RknnModel(RknnModelProperties properties) throws IllegalArgumentException {
-        modelFile = new File(properties.modelPath);
+        modelFile = new File(properties.modelPath.toString());
         if (!modelFile.exists()) {
             throw new IllegalArgumentException("Model file does not exist: " + modelFile);
         }

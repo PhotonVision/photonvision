@@ -294,6 +294,10 @@ public class ConfigManager {
         return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
     }
 
+    public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
+        return m_provider.saveUploadedNeuralNetworkProperties(uploadPath);
+    }
+
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
