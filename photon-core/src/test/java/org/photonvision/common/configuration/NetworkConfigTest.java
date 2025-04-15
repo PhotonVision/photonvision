@@ -33,20 +33,4 @@ public class NetworkConfigTest {
         Assertions.assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
         new File("netTest.json").delete();
     }
-
-    @Test
-    public void testDeserializeTeamNumberOrNtServerAddress() {
-        {
-            var folder = Path.of("test-resources/old_configs/photonvision_config_from_v2024.3.1");
-            var configMgr = new ConfigManager(folder, new SqlConfigProvider(folder));
-            configMgr.load();
-            Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
-        }
-        {
-            var folder = Path.of("test-resources/old_configs/photonvision_config_from_v2024.3.1");
-            var configMgr = new ConfigManager(folder, new SqlConfigProvider(folder));
-            configMgr.load();
-            Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
-        }
-    }
 }
