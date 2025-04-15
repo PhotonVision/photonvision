@@ -84,8 +84,8 @@ public class VideoSimUtil {
      * Gets the points representing the corners of this image. Because image pixels are accessed
      * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
      * actual top-left corner.
-     * 
-     * Order of corners returned is: [BL, BR, TR, TL]
+     *
+     * <p>Order of corners returned is: [BL, BR, TR, TL]
      *
      * @param size Size of image
      */
