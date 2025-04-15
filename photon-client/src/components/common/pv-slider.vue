@@ -42,7 +42,7 @@ const localValue = computed({
     </v-col>
     <v-col :cols="sliderCols - 1">
       <v-slider
-        v-model="value"
+        v-model="localValue"
         class="align-center"
         :max="max"
         :min="min"
@@ -52,13 +52,13 @@ const localValue = computed({
         :step="step"
         append-icon="mdi-menu-right"
         prepend-icon="mdi-menu-left"
-        @click:append="value += step"
-        @click:prepend="value -= step"
+        @click:append="localValue += step"
+        @click:prepend="localValue -= step"
       />
     </v-col>
     <v-col :cols="1" class="pr-0">
       <v-text-field
-        :model-value="value"
+        :model-value="localValue"
         color="accent"
         :max="max"
         :min="min"
@@ -71,8 +71,8 @@ const localValue = computed({
         style="width: 100%"
         :step="step"
         :hide-spin-buttons="true"
-        @keyup.enter="value = $event.target.value"
-        @blur="value = $event.target.value"
+        @keyup.enter="localValue = $event.target.value"
+        @blur="localValue = $event.target.value"
       />
     </v-col>
   </div>
