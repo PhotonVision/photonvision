@@ -605,7 +605,7 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       std::vector<int16_t>{8});
 
   photon::PhotonPipelineResult result{
-      photon::PhotonPipelineMetadata{10000, 2000, 1, 100}, targets,
+      photon::PhotonPipelineMetadata{1, 10000, 2000, 100}, targets,
       multiTagResult};
 
   cameraOne.test = true;
@@ -620,9 +620,9 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
       photon::CONSTRAINED_SOLVEPNP, kRobotToCam);
 
-  estimator.AddHeadingData(result.GetTimestamp(), frc::Rotation2d());
+  estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(), frc::Rotation2d());
 
-  auto estimatedPose = estimator.Update(result, cameraMat, distortion,
+  auto estimatedPose = estimator.Update(cameraOne.testResult[0], cameraMat, distortion,
     photon::ConstrainedSolvepnpParams{true, 0});
 
   ASSERT_TRUE(estimatedPose.has_value());
