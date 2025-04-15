@@ -68,7 +68,6 @@ const checkNumberRange = (v: string): boolean => {
         :disabled="disabled"
         hide-details
         class="align-center"
-        dark
         :color="inverted ? 'rgba(255, 255, 255, 0.2)' : 'accent'"
         :track-color="inverted ? 'accent' : undefined"
         thumb-color="accent"
@@ -76,8 +75,7 @@ const checkNumberRange = (v: string): boolean => {
       >
         <template #prepend>
           <v-text-field
-            :modelValue="localValue[0]"
-            dark
+            :model-value="localValue[0]"
             color="accent"
             class="mt-0 pt-0"
             hide-details
@@ -93,8 +91,7 @@ const checkNumberRange = (v: string): boolean => {
         </template>
         <template #append>
           <v-text-field
-            :modelValue="localValue[1]"
-            dark
+            :model-value="localValue[1]"
             color="accent"
             class="mt-0 pt-0"
             hide-details

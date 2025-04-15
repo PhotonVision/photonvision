@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-const value = defineModel<number>({required: true});
-const props = withDefaults(
+import { computed } from "vue";
+const value = defineModel<number>({ required: true });
+withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
@@ -19,27 +19,20 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits<{
-  (e: "input", value: number): void;
-}>();
-
 // Debounce function
 function debounce(func: (...args: any[]) => void, wait: number) {
   let timeout: ReturnType<typeof setTimeout>;
   return function (...args: any[]) {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this , args), wait);
+    timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
-/*
-const debouncedEmit = debounce((v: number) => {
-  emit("input", v);
-}, 20);
+
 
 const localValue = computed({
-  get: () => props.value,
-  set: (v) => debouncedEmit(parseFloat(v as unknown as string))
-});*/
+  get: () => value.value,
+  set: (v) => debounce(() => value.value = parseFloat(v as unknown as string), 20)
+});
 </script>
 
 <template>
@@ -50,7 +43,6 @@ const localValue = computed({
     <v-col :cols="sliderCols - 1">
       <v-slider
         v-model="value"
-        dark
         class="align-center"
         :max="max"
         :min="min"
@@ -66,8 +58,7 @@ const localValue = computed({
     </v-col>
     <v-col :cols="1" class="pr-0">
       <v-text-field
-        :modelValue="value"
-        dark
+        :model-value="value"
         color="accent"
         :max="max"
         :min="min"

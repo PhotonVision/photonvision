@@ -3,7 +3,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -14,12 +14,9 @@ import { useDisplay } from "vuetify";
 const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
-const {mdAndDown} = useDisplay();
+const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
-  mdAndDown.value &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 8
-    : 7
+  mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
 </script>
 
@@ -67,7 +64,9 @@ const interactiveCols = computed(() =>
       tooltip="Tags with a 'margin' (decoding quality score) less than this wil be rejected. Increase this to reduce the number of false positive detections"
       :min="0"
       :max="250"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.numIterations"
@@ -76,14 +75,18 @@ const interactiveCols = computed(() =>
       tooltip="Number of iterations the pose estimation algorithm will run, 50-100 is a good starting point"
       :min="0"
       :max="500"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)
+      "
     />
     <pv-switch
       v-model="currentPipelineSettings.refineEdges"
       :switch-cols="interactiveCols"
       label="Refine Edges"
       tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
+      "
     />
   </div>
 </template>

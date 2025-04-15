@@ -71,7 +71,7 @@ const supportedModels = computed(() => {
       <v-row>
         <v-col cols="12 ">
           <v-btn color="secondary" class="justify-center" @click="() => (showImportDialog = true)">
-            <v-icon left class="open-icon"> mdi-import </v-icon>
+            <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import New Model</span>
           </v-btn>
           <v-dialog
@@ -110,7 +110,7 @@ const supportedModels = computed(() => {
                     :disabled="importRKNNFile === null || importLabelsFile === null"
                     @click="handleImport"
                   >
-                    <v-icon left class="open-icon"> mdi-import </v-icon>
+                    <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
                   </v-btn>
                 </v-row>
@@ -121,7 +121,7 @@ const supportedModels = computed(() => {
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-table fixed-header height="100%" dense dark>
+          <v-table fixed-header height="100%" density="compact" dark>
             <thead style="font-size: 1.25rem">
               <tr>
                 <th class="text-left">Available Models</th>

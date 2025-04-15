@@ -40,7 +40,7 @@ const localValue = computed({
           :key="index"
           color="#ffd843"
           :label="radioName"
-          :modelValue="index"
+          :model-value="index"
           :disabled="disabled"
         />
       </v-radio-group>

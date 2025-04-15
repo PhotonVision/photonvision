@@ -24,7 +24,7 @@ const hoverClass = props.hover ? "hover" : "";
 
 <template>
   <div>
-    <v-tooltip :right="right" :bottom="!right" nudge-right="10" :disabled="tooltip === undefined">
+    <v-tooltip :right="right" :location="!right ? 'bottom' : undefined" offset="10" :disabled="tooltip === undefined">
       <template #activator="{ props }">
         <v-icon
           :class="hoverClass"

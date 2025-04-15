@@ -4,7 +4,7 @@ import { computed } from "vue";
 const value = defineModel<number>({
   required: true
 });
-const props = withDefaults(
+withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
@@ -34,7 +34,6 @@ const localValue = computed({
     <v-col class="pr-0">
       <v-text-field
         v-model="localValue"
-        dark
         class="mt-0 pt-0"
         hide-details
         single-line

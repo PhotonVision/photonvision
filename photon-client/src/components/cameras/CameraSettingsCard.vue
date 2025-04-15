@@ -203,30 +203,30 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-card-text>
     <v-card-text class="d-flex pa-6 pt-0">
       <v-col cols="6" class="pa-0 pr-2">
-        <v-btn block small color="secondary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings">
-          <v-icon left> mdi-content-save </v-icon>
+        <v-btn block size="small" color="secondary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings">
+          <v-icon start> mdi-content-save </v-icon>
           Save Changes
         </v-btn>
       </v-col>
       <v-col cols="6" class="pa-0 pl-2">
-        <v-btn block small color="error" @click="() => (showDeleteCamera = true)">
-          <v-icon left> mdi-trash-can-outline </v-icon>
+        <v-btn block size="small" color="error" @click="() => (showDeleteCamera = true)">
+          <v-icon start> mdi-trash-can-outline </v-icon>
           Delete Camera
         </v-btn>
       </v-col>
     </v-card-text>
 
-    <v-dialog v-model="showDeleteCamera"width="800">
+    <v-dialog v-model="showDeleteCamera" width="800">
       <v-card class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ useCameraSettingsStore().currentCameraSettings.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
             <v-col cols="12" md="6">
-              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon left class="open-icon"> mdi-export </v-icon>
+                <v-icon start class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
                   ref="exportSettings"
@@ -257,7 +257,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :loading="deletingCamera"
             @click="deleteThisCamera"
           >
-            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">DELETE (UNRECOVERABLE)</span>
           </v-btn>
         </v-card-text>

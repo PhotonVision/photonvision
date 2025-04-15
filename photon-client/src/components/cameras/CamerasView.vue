@@ -47,7 +47,7 @@ const fpsTooLow = computed<boolean>(() => {
               {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
             </span>
           </v-chip>
-          <v-chip v-else label color="transparent" text-color="red" style="font-size: 1rem; padding: 0; margin: 0">
+          <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
             <span class="pr-1">Camera not connected</span>
           </v-chip>
         </div>
@@ -91,7 +91,7 @@ const fpsTooLow = computed<boolean>(() => {
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+          <v-icon start class="mode-btn-icon">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
@@ -99,7 +99,7 @@ const fpsTooLow = computed<boolean>(() => {
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+          <v-icon start class="mode-btn-icon">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>

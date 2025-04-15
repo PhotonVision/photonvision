@@ -28,7 +28,7 @@ const LightTheme: ThemeDefinition = {
     primary: "#006492",
     surface: "#006492",
     secondary: "#39A4D5",
-    "surface-variant": "#39A4D5",
+    "surface-variant": "#358AB0",
     accent: "#FFD843",
     "surface-light": "#FFD843",
     ...commonColors

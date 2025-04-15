@@ -52,11 +52,11 @@ const processingMode = computed<number>({
         <p style="color: white">Stream Display</p>
         <v-btn-toggle v-model="value" :multiple="true" mandatory base-color="surface-variant" class="fill w-100">
           <v-btn color="secondary" class="fill w-50">
-            <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+            <v-icon start class="mode-btn-icon">mdi-import</v-icon>
             <span class="mode-btn-label">Raw</span>
           </v-btn>
           <v-btn color="secondary" class="fill w-50">
-            <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+            <v-icon start class="mode-btn-icon">mdi-export</v-icon>
             <span class="mode-btn-label">Processed</span>
           </v-btn>
         </v-btn-toggle>

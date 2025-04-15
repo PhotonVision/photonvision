@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
-const value = defineModel<string>({required: true});
+const value = defineModel<string>({ required: true });
 
 const props = withDefaults(
   defineProps<{
@@ -25,7 +24,6 @@ const emit = defineEmits<{
   (e: "onEnter", value: string): void;
   (e: "onEscape"): void;
 }>();
-
 
 const handleKeydown = ({ key }) => {
   switch (key) {
@@ -51,9 +49,7 @@ const handleKeydown = ({ key }) => {
     <v-col :cols="inputCols" class="d-flex align-center pr-0">
       <v-text-field
         v-model="value"
-        dark
         density="compact"
-        dense
         color="accent"
         :placeholder="placeholder"
         :disabled="disabled"

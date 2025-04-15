@@ -95,7 +95,7 @@ const expanded = ref([]);
     <v-card-title>Camera Control</v-card-title>
     <v-card-text>
       <v-btn color="secondary" @click="fetchSnapshots">
-        <v-icon left class="open-icon"> mdi-folder </v-icon>
+        <v-icon start class="open-icon"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>
     </v-card-text>
@@ -110,22 +110,32 @@ const expanded = ref([]);
           <v-data-table
             v-model:expanded="expanded"
             :headers="[
-              { title: 'Snapshot Name', value: 'snapshotShortName', sortable: false },
-              { title: 'Camera Unique Name', value: 'cameraUniqueName' },
-              { title: 'Camera Nickname', value: 'cameraNickname' },
-              { title: 'Stream Type', value: 'streamType' },
-              { title: 'Time Created', value: 'timeCreated' },
-              { title: 'Actions', value: 'actions', sortable: false }
+              { title: 'Snapshot Name', key: 'snapshotShortName', sortable: false },
+              { title: 'Camera Unique Name', key: 'cameraUniqueName' },
+              { title: 'Camera Nickname', key: 'cameraNickname' },
+              { title: 'Stream Type', key: 'streamType' },
+              { title: 'Time Created', key: 'timeCreated' },
+              { title: 'Actions', key: 'actions', sortable: false }
             ]"
             :items="imgData"
-            :group-by="[{key: 'cameraUniqueName'}]"
+            :group-by="[{ key: 'cameraUniqueName' }]"
             class="elevation-0"
-            item-key="index"
+            item-value="index"
             show-expand
-            expand-icon="mdi-eye"
           >
+            <template #item.data-table-expand="{ internalItem, toggleExpand }">
+              <v-btn
+                icon="mdi-eye"
+                class="text-none"
+                color="medium-emphasis"
+                size="small"
+                variant="text"
+                slim
+                @click="toggleExpand(internalItem)"
+              ></v-btn>
+            </template>
 
-            <template #expanded-row="{  item, columns }">
+            <template #expanded-row="{ item, columns }">
               <td :colspan="columns.length">
                 <div style="display: flex; justify-content: center; width: 100%">
                   <img :src="item.snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
@@ -136,7 +146,7 @@ const expanded = ref([]);
             <template #item.actions="{ item }">
               <div style="display: flex; justify-content: center">
                 <a :download="item.snapshotName" :href="item.snapshotSrc">
-                  <v-icon small> mdi-download </v-icon>
+                  <v-icon size="small"> mdi-download </v-icon>
                 </a>
               </div>
             </template>

@@ -71,10 +71,10 @@ if (!is_demo) {
 </template>
 
 <style lang="scss">
-@import "vuetify/settings";
-@import "@/assets/styles/variables.scss";
+@use "vuetify/settings";
+@use "@/assets/styles/variables";
 
-@media #{map-get($display-breakpoints, 'md-and-down')} {
+@media #{map-get(settings.$display-breakpoints, 'md-and-down')} {
   html {
     font-size: 14px !important;
   }
@@ -106,4 +106,5 @@ if (!is_demo) {
 #title {
   color: #ffd843;
 }
+
 </style>

@@ -24,7 +24,7 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
 
 <template>
   <div>
-    <v-table dense :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr v-if="cameraInfoFor(camera).dev !== undefined && cameraInfoFor(camera).dev !== null">
           <td>Device Number:</td>

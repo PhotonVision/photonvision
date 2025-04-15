@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { computed } from "vue";
 
 const value = defineModel<boolean>();
-const props = withDefaults(
+withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;

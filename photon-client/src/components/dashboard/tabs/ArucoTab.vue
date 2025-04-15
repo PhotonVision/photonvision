@@ -5,7 +5,7 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import PvSelect from "@/components/common/pv-select.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useDisplay } from "vuetify";
 
@@ -14,12 +14,9 @@ import { useDisplay } from "vuetify";
 const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
-const {mdAndDown} = useDisplay();
+const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
-  mdAndDown.value &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 8
-    : 7
+  mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
 </script>
 
@@ -40,7 +37,9 @@ const interactiveCols = computed(() =>
       :max="255"
       :slider-cols="interactiveCols"
       :step="2"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshWinSizes: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.threshStepSize"
@@ -50,7 +49,9 @@ const interactiveCols = computed(() =>
       :min="2"
       :max="128"
       :step="1"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshStepSize: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.threshConstant"
@@ -60,21 +61,27 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="128"
       :step="1"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threshConstant: value }, false)
+      "
     />
     <pv-switch
       v-model="currentPipelineSettings.useCornerRefinement"
       label="Refine Corners"
       tooltip="Further refine the initial corners with subpixel accuracy."
       :switch-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useCornerRefinement: value }, false)
+      "
     />
     <pv-switch
       v-model="currentPipelineSettings.debugThreshold"
       label="Debug Threshold"
       tooltip="Display the first threshold step to the color stream."
       :switch-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ debugThreshold: value }, false)
+      "
     />
   </div>
 </template>

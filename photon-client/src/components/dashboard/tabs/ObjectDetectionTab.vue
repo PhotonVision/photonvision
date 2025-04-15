@@ -2,7 +2,7 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ObjectDetectionPipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useDisplay } from "vuetify";
@@ -26,10 +26,7 @@ const contourRatio = computed<[number, number]>({
 const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
-  mdAndDown.value &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+  mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
 );
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
@@ -64,7 +61,9 @@ const selectedModel = computed({
       :min="0"
       :max="1"
       :step="0.01"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)
+      "
     />
     <pv-range-slider
       v-model="contourArea"
@@ -73,7 +72,9 @@ const selectedModel = computed({
       :max="100"
       :slider-cols="interactiveCols"
       :step="0.01"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourArea: value }, false)
+      "
     />
     <pv-range-slider
       v-model="contourRatio"
@@ -83,7 +84,9 @@ const selectedModel = computed({
       :max="100"
       :slider-cols="interactiveCols"
       :step="0.01"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourRatio: value }, false)
+      "
     />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
@@ -101,7 +104,9 @@ const selectedModel = computed({
       tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
       :select-cols="interactiveCols"
       :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
+      "
     />
   </div>
 </template>

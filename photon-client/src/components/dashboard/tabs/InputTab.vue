@@ -3,7 +3,7 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
@@ -66,10 +66,7 @@ const handleStreamResolutionChange = (value: number) => {
 const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
-  mdAndDown.value &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 8
-    : 7
+  mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
 </script>
 
@@ -81,7 +78,9 @@ const interactiveCols = computed(() =>
       label="Auto Exposure"
       :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
+      "
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
@@ -92,7 +91,9 @@ const interactiveCols = computed(() =>
       :max="useCameraSettingsStore().maxExposureRaw"
       :slider-cols="interactiveCols"
       :step="1"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
+      "
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
@@ -100,7 +101,9 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
+      "
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
@@ -120,7 +123,9 @@ const interactiveCols = computed(() =>
       :max="100"
       :slider-cols="interactiveCols"
       tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
+      "
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
@@ -130,14 +135,18 @@ const interactiveCols = computed(() =>
       :max="100"
       :slider-cols="interactiveCols"
       tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
+      "
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       label="Auto White Balance"
       :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)
+      "
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
@@ -146,7 +155,9 @@ const interactiveCols = computed(() =>
       :min="useCameraSettingsStore().minWhiteBalanceTemp"
       :max="useCameraSettingsStore().maxWhiteBalanceTemp"
       :slider-cols="interactiveCols"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)
+      "
     />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
@@ -154,7 +165,9 @@ const interactiveCols = computed(() =>
       tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
       :items="cameraRotations"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)
+      "
     />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex"

@@ -303,7 +303,7 @@ const openExportSettingsPrompt = () => {
           >
           <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
-            <v-table dense>
+            <v-table density="compact">
               <tbody>
                 <tr>
                   <td>Streams:</td>
@@ -373,7 +373,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="deactivatingModule"
@@ -398,7 +398,7 @@ const openExportSettingsPrompt = () => {
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text>
-            <v-table dense>
+            <v-table density="compact">
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -444,7 +444,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="activatingModule"
@@ -486,7 +486,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="assigningCamera"
@@ -518,10 +518,10 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null"flat color="primary">
+      <v-card v-if="viewingCamera[0] !== null" flat color="primary">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
-          <v-btn text @click="setCameraView(null, null)">
+          <v-btn variant="text" @click="setCameraView(null, null)">
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
@@ -542,17 +542,17 @@ const openExportSettingsPrompt = () => {
     </v-dialog>
 
     <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera"width="800">
-      <v-card v-if="cameraToDelete !== null"class="dialog-container pa-3 pb-2" color="primary" flat>
+    <v-dialog v-model="viewingDeleteCamera" width="800">
+      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
             <v-col cols="12" md="6">
-              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon left class="open-icon"> mdi-export </v-icon>
+                <v-icon start class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
                   ref="exportSettings"
@@ -581,7 +581,7 @@ const openExportSettingsPrompt = () => {
             :loading="deletingCamera"
             @click="deleteThisCamera(cameraToDelete.uniqueName)"
           >
-            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">DELETE (UNRECOVERABLE)</span>
           </v-btn>
         </v-card-text>

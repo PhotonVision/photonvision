@@ -97,7 +97,7 @@ const calibrationImageURL = (index: number) =>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
         <v-btn color="secondary" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
-          <v-icon left> mdi-import</v-icon>
+          <v-icon start> mdi-import</v-icon>
           <span>Import</span>
         </v-btn>
         <input
@@ -115,7 +115,7 @@ const calibrationImageURL = (index: number) =>
           style="width: 100%"
           @click="openExportCalibrationPrompt"
         >
-          <v-icon left>mdi-export</v-icon>
+          <v-icon start>mdi-export</v-icon>
           <span>Export</span>
         </v-btn>
         <a
@@ -135,7 +135,7 @@ const calibrationImageURL = (index: number) =>
       </v-banner>
     </v-card-text>
     <v-card-text>
-      <v-table dense style="width: 100%">
+      <v-table density="compact" style="width: 100%">
         <template #default>
           <thead>
             <tr>
@@ -243,20 +243,31 @@ const calibrationImageURL = (index: number) =>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">
       <v-data-table
-        dense
+        density="compact"
         style="width: 100%"
         :headers="[
-          { text: 'Observation Id', value: 'index' },
-          { text: 'Mean Reprojection Error', value: 'mean' },
-          { text: '', value: 'data-table-expand' }
+          { title: 'Observation Id', key: 'index' },
+          { title: 'Mean Reprojection Error', key: 'mean' },
+          { title: '', key: 'data-table-expand' }
         ]"
         :items="getObservationDetails()"
-        item-key="index"
+        item-value="index"
         show-expand
-        expand-icon="mdi-eye"
       >
-        <template #expanded-item="{ headers, item }">
-          <td :colspan="headers.length">
+        <template #item.data-table-expand="{ internalItem, toggleExpand }">
+          <v-btn
+            icon="mdi-eye"
+            class="text-none"
+            color="medium-emphasis"
+            size="small"
+            variant="text"
+            slim
+            @click="toggleExpand(internalItem)"
+          ></v-btn>
+        </template>
+
+        <template #expanded-row="{ columns, item }">
+          <td :colspan="columns.length">
             <div style="display: flex; justify-content: center; width: 100%">
               <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
             </div>

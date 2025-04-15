@@ -218,8 +218,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3" color="primary" dark>
       <v-card-title class="pa-6 pb-3">Camera Calibration</v-card-title>
       <v-card-text v-show="!isCalibrating">
-        <v-card-subtitle class="pt-3 pl-2 pb-4 white--text">Current Calibration</v-card-subtitle>
-        <v-table fixed-header height="100%" dense>
+        <v-card-subtitle class="pt-3 pl-2 pb-4 text-white">Current Calibration</v-card-subtitle>
+        <v-table fixed-header height="100%" density="compact">
           <thead>
             <tr>
               <th>Resolution</th>
@@ -239,10 +239,10 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
               <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
               <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-              <v-tooltip bottom>
+              <v-tooltip location="bottom">
                 <template #activator="{ props }">
                   <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon small class="mr-2">mdi-information</v-icon>
+                    <v-icon size="small" class="mr-2">mdi-information</v-icon>
                   </td>
                 </template>
                 <span>Click for more info on this calibration.</span>
@@ -252,7 +252,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-table>
       </v-card-text>
       <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-6 pt-0">
-        <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 white--text"
+        <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
           >Configure New Calibration</v-card-subtitle
         >
         <v-form ref="form" v-model="settingsValid">
@@ -447,26 +447,26 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       <v-card-text class="d-flex pa-6 pt-0">
         <v-col cols="6" class="pa-0 pr-2">
           <v-btn
-            small
+            size="small"
             block
             color="secondary"
             :disabled="!settingsValid || tooManyPoints"
             @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
           >
-            <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
+            <v-icon start class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
             <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
           </v-btn>
         </v-col>
         <v-col cols="6" class="pa-0 pl-2">
           <v-btn
-            small
+            size="small"
             block
             :color="useStateStore().calibrationData.hasEnoughImages ? 'accent' : 'error'"
             :class="useStateStore().calibrationData.hasEnoughImages ? 'black--text' : 'white---text'"
             :disabled="!isCalibrating || !settingsValid"
             @click="endCalibration"
           >
-            <v-icon left class="calib-btn-icon">
+            <v-icon start class="calib-btn-icon">
               {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
             </v-icon>
             <span class="calib-btn-label">{{
@@ -476,8 +476,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-col>
       </v-card-text>
       <v-card-text class="pa-6 pt-0">
-        <v-btn color="accent" small block outlined :disabled="!settingsValid" @click="downloadCalibBoard">
-          <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
+        <v-btn color="accent" size="small" block variant="outlined" :disabled="!settingsValid" @click="downloadCalibBoard">
+          <v-icon start class="calib-btn-icon"> mdi-download </v-icon>
           <span class="calib-btn-label">Generate Board</span>
         </v-btn>
       </v-card-text>
@@ -523,7 +523,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <v-card-actions>
           <v-spacer />
-          <v-btn v-if="!isCalibrating" color="white" text @click="showCalibEndDialog = false"> OK </v-btn>
+          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="showCalibEndDialog = false"> OK </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

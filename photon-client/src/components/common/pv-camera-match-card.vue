@@ -29,7 +29,7 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
 
 <template>
   <div>
-    <v-table dense :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr>
           <th></th>

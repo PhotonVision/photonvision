@@ -270,7 +270,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :disabled="checkCameraName(currentCameraName) !== true"
             @click="() => saveCameraNameEdit(currentCameraName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelCameraNameEdit" />
+          <pv-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelCameraNameEdit" />
         </div>
         <pv-icon
           v-else
@@ -285,7 +285,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isPipelineNameEdit"
-          :modelValue="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
+          :model-value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
           label="Pipeline"
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="
@@ -314,13 +314,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :disabled="checkPipelineName(currentPipelineName) !== true"
             @click="() => savePipelineNameEdit(currentPipelineName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit" />
+          <pv-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelPipelineNameEdit" />
         </div>
-        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
+        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset="7">
           <template #activator="{ props }">
             <v-icon color="#c5c5c5" v-bind="props" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
           </template>
-          <v-list dense color="primary">
+          <v-list density="compact" color="primary">
             <v-list-item @click="startPipelineNameEdit">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
@@ -333,7 +333,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             </v-list-item>
             <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
-                <pv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
+                <pv-icon color="red-darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="duplicateCurrentPipeline">
@@ -369,7 +369,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         />
       </v-col>
     </v-row>
-    <v-dialog v-model="showPipelineCreationDialog"persistent width="500">
+    <v-dialog v-model="showPipelineCreationDialog" persistent width="500">
       <v-card color="primary">
         <v-card-title> Create New Pipeline </v-card-title>
         <v-card-text>
@@ -394,7 +394,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           <v-spacer />
           <v-btn
             color="#ffd843"
-            class="black--text"
+            class="text-black"
             :disabled="checkPipelineName(newPipelineName) !== true"
             @click="createNewPipeline"
           >
@@ -404,7 +404,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showPipelineDeletionConfirmationDialog"width="500">
+    <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
       <v-card color="primary">
         <v-card-title> Pipeline Deletion Confirmation </v-card-title>
         <v-card-text>
@@ -418,7 +418,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-actions>
           <v-spacer />
           <v-btn color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" class="black--text" @click="showPipelineDeletionConfirmationDialog = false">
+          <v-btn color="#ffd843" class="text-black" @click="showPipelineDeletionConfirmationDialog = false">
             No, take me back
           </v-btn>
         </v-card-actions>
@@ -436,7 +436,9 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-actions>
           <v-spacer />
           <v-btn color="error" variant="elevated" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" variant="elevated" class="black--text" @click="cancelChangePipelineType"> No, take me back </v-btn>
+          <v-btn color="#ffd843" variant="elevated" class="text-black" @click="cancelChangePipelineType">
+            No, take me back
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

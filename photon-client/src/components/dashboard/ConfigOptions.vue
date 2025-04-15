@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, getCurrentInstance, onBeforeUpdate, ref } from "vue";
+import { computed, onBeforeUpdate, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -146,7 +146,7 @@ onBeforeUpdate(() => {
     <template v-if="!useCameraSettingsStore().hasConnected">
       <v-col cols="12">
         <v-card color="error">
-          <v-card-title class="white--text">
+          <v-card-title class="text-white">
             Camera has not connected. Please check your connection and try again.
           </v-card-title>
         </v-card>
@@ -162,8 +162,7 @@ onBeforeUpdate(() => {
           <v-tabs
             v-model="selectedTabs[tabGroupIndex]"
             grow
-            background-color="primary"
-            dark
+            bg-color="primary"
             height="48"
             slider-color="accent"
           >

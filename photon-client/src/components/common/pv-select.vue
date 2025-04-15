@@ -50,8 +50,7 @@ const items = computed<SelectItem[]>(() => {
         :items="items"
         item-title="name"
         item-value="value"
-        item-disabled="disabled"
-        dark
+        item-props.disabled="disabled"
         color="accent"
         item-color="secondary"
         :disabled="disabled"

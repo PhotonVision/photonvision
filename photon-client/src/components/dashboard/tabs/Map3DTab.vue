@@ -11,7 +11,7 @@ const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().currentPip
   <div>
     <v-row style="width: 100%">
       <v-col>
-        <span class="white--text">Target Visualization</span>
+        <span class="text-white">Target Visualization</span>
       </v-col>
     </v-row>
     <v-row style="width: 100%">

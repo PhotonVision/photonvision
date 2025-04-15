@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -17,7 +17,7 @@ const compact = computed<boolean>({
 });
 const { mdAndUp } = useDisplay();
 
-const renderCompact = computed<boolean>(()=> compact.value || !mdAndUp.value);
+const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 
 const needsCamerasConfigured = computed<boolean>(() => {
   return (
@@ -28,12 +28,12 @@ const needsCamerasConfigured = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-navigation-drawer app permanent :rail="renderCompact" color="primary">
+  <v-navigation-drawer permanent :rail="renderCompact" color="primary">
     <v-list nav>
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
-        <template #prepend class="mr-0">
-          <img v-if="!(renderCompact)" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
+        <template #prepend>
+          <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
           <img v-else class="logo" src="@/assets/images/logoSmall.svg" alt="small logo" />
         </template>
       </v-list-item>
@@ -66,8 +66,8 @@ const needsCamerasConfigured = computed<boolean>(() => {
         <v-list-item
           v-if="mdAndUp"
           link
-          @click="() => (compact = !compact)"
           :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
+          @click="() => (compact = !compact)"
         >
           <v-list-item-title>Compact Mode</v-list-item-title>
         </v-list-item>
@@ -82,7 +82,7 @@ const needsCamerasConfigured = computed<boolean>(() => {
         >
           <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
             NetworkTables server running for
-            <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
+            <span class="text-accent">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
           </v-list-item-title>
           <v-list-item-title
             v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
@@ -91,17 +91,22 @@ const needsCamerasConfigured = computed<boolean>(() => {
             style="flex-direction: column; display: flex"
           >
             NetworkTables Server Connected!
-            <span class="accent--text">
+            <span class="text-accent">
               {{ useStateStore().ntConnectionStatus.address }}
             </span>
           </v-list-item-title>
-          <v-list-item-title v-else class="text-wrap" style="flex-direction: column; display: flex" v-show="!renderCompact">
+          <v-list-item-title
+            v-else
+            v-show="!renderCompact"
+            class="text-wrap"
+            style="flex-direction: column; display: flex"
+          >
             Not connected to NetworkTables Server!
           </v-list-item-title>
         </v-list-item>
 
         <v-list-item :prepend-icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'">
-          <v-list-item-title class="text-wrap" v-show="!renderCompact">
+          <v-list-item-title v-show="!renderCompact" class="text-wrap">
             {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
           </v-list-item-title>
         </v-list-item>

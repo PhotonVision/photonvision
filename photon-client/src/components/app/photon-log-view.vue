@@ -81,8 +81,8 @@ document.addEventListener("keydown", (e) => {
           <v-card-title class="pa-0">Program Logs</v-card-title>
         </v-col>
         <v-col class="align-self-center pl-3" style="text-align: right">
-          <v-btn text color="white" @click="handleLogExport">
-            <v-icon left class="menu-icon"> mdi-download </v-icon>
+          <v-btn variant="text" color="white" @click="handleLogExport">
+            <v-icon start class="menu-icon"> mdi-download </v-icon>
             <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -94,12 +94,12 @@ document.addEventListener("keydown", (e) => {
               target="_blank"
             />
           </v-btn>
-          <v-btn text color="white" @click="handleLogClear">
-            <v-icon left class="menu-icon"> mdi-trash-can-outline </v-icon>
+          <v-btn variant="text" color="white" @click="handleLogClear">
+            <v-icon start class="menu-icon"> mdi-trash-can-outline </v-icon>
             <span class="menu-label">Clear Client Logs</span>
           </v-btn>
-          <v-btn text color="white" @click="() => (useStateStore().showLogModal = false)">
-            <v-icon left class="menu-icon"> mdi-close </v-icon>
+          <v-btn variant="text" color="white" @click="() => (useStateStore().showLogModal = false)">
+            <v-icon start class="menu-icon"> mdi-close </v-icon>
             <span class="menu-label">Close</span>
           </v-btn>
         </v-col>
@@ -113,7 +113,6 @@ document.addEventListener("keydown", (e) => {
           <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
               v-model="searchQuery"
-              dark
               density="compact"
               clearable
               hide-details="auto"
@@ -123,7 +122,7 @@ document.addEventListener("keydown", (e) => {
             />
           </v-col>
           <v-col cols="12" md="2" style="display: flex; align-items: center">
-            <input v-model="timeInput" type="time" step="1" class="white--text pl-0 pl-md-8" />
+            <input v-model="timeInput" type="time" step="1" class="text-white pl-0 pl-md-8" />
             <v-btn icon class="ml-3" @click="timeInput = undefined">
               <v-icon>mdi-close-circle-outline</v-icon>
             </v-btn>
@@ -131,7 +130,7 @@ document.addEventListener("keydown", (e) => {
           <v-col cols="12" md="5" class="pr-3">
             <v-row class="no-gutters">
               <v-col v-for="level in [0, 1, 2, 3]" :key="level">
-                <v-row dense align="center">
+                <v-row density="compact" align="center">
                   <v-col cols="6" md="8" style="text-align: right">
                     {{ getLogLevelFromIndex(level) }}
                   </v-col>

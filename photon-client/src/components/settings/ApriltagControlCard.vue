@@ -24,7 +24,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
       <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
 
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-table fixed-header height="100%" dense dark>
+      <v-table fixed-header height="100%" density="compact" dark>
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
