@@ -435,8 +435,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-divider />
         <v-card-actions>
           <v-spacer />
-          <v-btn color="error" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" class="black--text" @click="cancelChangePipelineType"> No, take me back </v-btn>
+          <v-btn color="error" variant="elevated" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
+          <v-btn color="#ffd843" variant="elevated" class="black--text" @click="cancelChangePipelineType"> No, take me back </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
