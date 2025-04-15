@@ -81,11 +81,11 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
     :language: java
-    :lines: 59-60
+    :lines: 65-66
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
     :language: c++
-    :lines: 141-144
+    :lines: 150-153
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
     :language: python
@@ -104,7 +104,7 @@ The final prerequisite to using your `PhotonPoseEstimator` is creating a `Photon
 .. tab-set-code::
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
      :language: java
-     :lines: 57
+     :lines: 63
 
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
      :language: c++
@@ -121,11 +121,11 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
     :language: java
-    :lines: 96-114
+    :lines: 93-116
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
     :language: c++
-    :lines: 71-93
+    :lines: 80-100
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
@@ -138,16 +138,24 @@ You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
     :language: java
-    :lines: 65-73
+    :lines: 49
 
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/cpp/Robot.cpp
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Robot.h
     :language: c++
-    :lines: 38-45
+    :lines: 54-57
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
-     :lines: 53-58
+     :lines: 54-57
 ```
+
+## Complete Examples
+
+The complete examples for the `PhotonPoseEstimator` can be found in the following locations:
+
+- [Java](https://github.com/PhotonVision/photonvision/tree/main/photonlib-java-examples/poseest)
+- [C++](https://github.com/PhotonVision/photonvision/tree/main/photonlib-cpp-examples/poseest)
+- [Python](https://github.com/PhotonVision/photonvision/tree/main/photonlib-python-examples/poseest)
 
 ## Additional `PhotonPoseEstimator` Methods
 
