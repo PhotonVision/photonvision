@@ -23,30 +23,41 @@ Ensure that your camera is calibrated and 3D mode is enabled. Navigate to the Ou
 By default, enabling multi-target will disable calculating camera-to-target transforms for each observed AprilTag target to increase performance; the X/Y/angle numbers shown in the target table of the UI are instead calculated using the tag's expected location (per the field layout JSON) and the field-to-camera transform calculated using MultiTag. If you additionally want the individual camera-to-target transform calculated using SolvePNP for each target, enable "Always Do Single-Target Estimation".
 :::
 
-This multi-target pose estimate can be accessed using PhotonLib. We suggest using {ref}`the PhotonPoseEstimator class <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>` with the `MULTI_TAG_PNP_ON_COPROCESSOR` strategy to simplify code, but the transform can be directly accessed using `getMultiTagResult`/`MultiTagResult()` (Java/C++).
+This multi-target pose estimate can be accessed using PhotonLib. We suggest using {ref}`the PhotonPoseEstimator class <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>` with the `MULTI_TAG_PNP_ON_COPROCESSOR` strategy to simplify code, but the transform can be directly accessed using `getMultiTagResult`/`MultiTagResult()`/`multitagResult` (Java/C++/Python).
 
 ```{eval-rst}
 .. tab-set-code::
 
     .. code-block:: Java
 
-        var result = camera.getLatestResult();
-        if (result.getMultiTagResult().estimatedPose.isPresent) {
-          Transform3d fieldToCamera = result.getMultiTagResult().estimatedPose.best;
+        var results = camera.getAllUnreadResults();
+        for (var result : results) {
+          var multiTagResult = result.getMultiTagResult();
+          if (multiTagResult.isPresent()) {
+            var fieldToCamera = multiTagResult.get().estimatedPose.best;
+          }
         }
 
 
     .. code-block:: C++
 
-        auto result = camera.GetLatestResult();
-        if (result.MultiTagResult().result.isPresent) {
-          frc::Transform3d fieldToCamera = result.MultiTagResult().result.best;
+      auto results = camera.GetAllUnreadResults();
+      for (auto &result : results)
+      {
+        auto multiTagResult = result.MultiTagResult();
+        if (multiTagResult.has_value()) {
+          frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
         }
+      }
+
 
     .. code-block:: Python
 
-        # Coming Soon!
-
+      results = camera.getAllUnreadResults()
+      for result in results:
+          multitagResult = result.multitagResult
+          if multitagResult is not None:
+            fieldToCamera = multitagResult.estimatedPose.best
 ```
 
 :::{note}
