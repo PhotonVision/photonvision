@@ -331,6 +331,6 @@ public class NeuralNetworkModelManager {
                 .getConfig()
                 .setNeuralNetworkProperties(
                         getShippedProperties(modelsDirectory)
-                                .add(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties()));
+                                .sum(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties()));
     }
 }

@@ -106,17 +106,17 @@ public class NeuralNetworkProperties {
      * @param nnProps
      * @return itself, so it can be chained and for adding where you want to pass into a function
      */
-    public NeuralNetworkProperties add(NeuralNetworkProperties nnProps) {
+    public NeuralNetworkProperties sum(NeuralNetworkProperties nnProps) {
         properties.putAll(nnProps.properties);
 
         return this;
     }
 
-    public boolean removeModelProperties(Path modelPath) {
+    public boolean removeModel(Path modelPath) {
         return properties.remove(modelPath) != null;
     }
 
-    public RknnModelProperties getModelProperties(Path modelPath) {
+    public RknnModelProperties getModel(Path modelPath) {
         return properties.get(modelPath);
     }
 
