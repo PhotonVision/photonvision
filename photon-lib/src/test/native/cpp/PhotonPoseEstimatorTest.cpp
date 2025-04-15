@@ -576,6 +576,7 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
 }
 
 TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
   auto distortion = Eigen::VectorXd::Zero(8);
   auto cameraMat = Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
                                    {0, 399.16666666666674, 239.5},
@@ -607,6 +608,10 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       photon::PhotonPipelineMetadata{10000, 2000, 1, 100}, targets,
       multiTagResult};
 
+  cameraOne.test = true;
+  cameraOne.testResult = {result};
+  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
+
   const units::radian_t camPitch = 30_deg;
   const frc::Transform3d kRobotToCam{frc::Translation3d(0.5_m, 0.0_m, 0.5_m),
                                      frc::Rotation3d(0_rad, -camPitch, 0_rad)};
@@ -617,14 +622,8 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
 
   estimator.AddHeadingData(result.GetTimestamp(), frc::Rotation2d());
 
-  std::optional<photon::PhotonCamera::CameraMatrix> cameraMatrixOpt = cameraMat;
-  std::optional<photon::PhotonCamera::DistortionMatrix> distCoeffsOpt =
-      distortion;
-  std::optional<photon::ConstrainedSolvepnpParams> constrainedParamsOpt =
-      photon::ConstrainedSolvepnpParams{true, 0};
-
-  auto estimatedPose = estimator.Update(result, cameraMatrixOpt, distCoeffsOpt,
-                                        constrainedParamsOpt);
+  auto estimatedPose = estimator.Update(result, cameraMat, distortion,
+    photon::ConstrainedSolvepnpParams{true, 0});
 
   ASSERT_TRUE(estimatedPose.has_value());
 
