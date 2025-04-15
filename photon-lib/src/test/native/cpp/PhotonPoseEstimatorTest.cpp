@@ -38,6 +38,8 @@
 #include "photon/PhotonCamera.h"
 #include "photon/PhotonPoseEstimator.h"
 #include "photon/dataflow/structures/Packet.h"
+#include "photon/simulation/SimCameraProperties.h"
+#include "photon/simulation/VisionTargetSim.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
@@ -473,4 +475,200 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
   EXPECT_NEAR(testResult.GetTimestamp().to<double>(),
               test2.GetTimestamp().to<double>(), 0.001);
+}
+
+// TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
+//     // Create a camera simulator to match Java test
+//     photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+//     photon::SimCameraProperties cameraSim = photon::SimCameraProperties::PERFECT_90DEG();
+    
+//     // Create AprilTag vision targets from the field layout
+//     std::vector<photon::VisionTargetSim> simTargets;
+//     for (const auto& tag : aprilTags.GetTags()) {
+//         simTargets.push_back(photon::VisionTargetSim(
+//             tag.pose, photon::kAprilTag36h11, tag.ID));
+//     }
+    
+//     // Compound Rolled + Pitched + Yaw
+//     frc::Transform3d compoundTestTransform(
+//         frc::Translation3d(-12_in, -11_in, 3_m),
+//         frc::Rotation3d(37_deg, 6_deg, 60_deg));
+    
+//     photon::PhotonPoseEstimator estimator(
+//         aprilTags, 
+//         photon::PNP_DISTANCE_TRIG_SOLVE, 
+//         compoundTestTransform);
+    
+//     // This is the real pose of the robot base we test against
+//     frc::Pose3d realPose(7.3_m, 4.42_m, 0_m, frc::Rotation3d(0_rad, 0_rad, 2.197_rad));
+    
+//     // Process the vision targets to generate a pipeline result
+//     // First, create a sample pipeline result with target data
+//     std::vector<photon::PhotonTrackedTarget> targets{
+//         photon::PhotonTrackedTarget{
+//             // Values chosen to simulate the camera seeing the tags at this pose
+//             -20.0, 15.0, 0.0, 0.1, 0, -1, -1.f,
+//             frc::Transform3d(frc::Translation3d(2_m, 1_m, 0.5_m),
+//                              frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+//             frc::Transform3d(frc::Translation3d(2_m, 1_m, 0.5_m),
+//                              frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+//             0.0, corners, detectedCorners}};
+
+//     cameraOne.test = true;
+//     cameraOne.testResult = {photon::PhotonPipelineResult{
+//         photon::PhotonPipelineMetadata{0, 0, 0, 1000}, targets, std::nullopt}};
+//     cameraOne.testResult[0].SetReceiveTimestamp(1_s);
+    
+//     // Add heading data to the estimator
+//     estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(), 
+//                             realPose.Rotation().ToRotation2d());
+    
+//     // Update the estimator with the result
+//     std::optional<photon::EstimatedRobotPose> estimatedPose;
+//     for (const auto& result : cameraOne.GetAllUnreadResults()) {
+//       estimatedPose = estimator.Update(result);
+//     }
+    
+//     ASSERT_TRUE(estimatedPose);
+//     frc::Pose3d pose = estimatedPose.value().estimatedPose;
+    
+//     // Check that the estimated pose matches the real pose
+//     EXPECT_NEAR(units::unit_cast<double>(realPose.X()), units::unit_cast<double>(pose.X()), 0.1);
+//     EXPECT_NEAR(units::unit_cast<double>(realPose.Y()), units::unit_cast<double>(pose.Y()), 0.1);
+//     EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.1);
+    
+//     // Second test with straight-on camera transform
+//     frc::Transform3d straightOnTestTransform(frc::Translation3d(0_m, 0_m, 3_m),
+//                                            frc::Rotation3d(0_rad, 0_rad, 0_rad));
+    
+//     estimator.SetRobotToCameraTransform(straightOnTestTransform);
+    
+//     // Pose to compare with
+//     realPose = frc::Pose3d(4.81_m, 2.38_m, 0_m, frc::Rotation3d(0_rad, 0_rad, 2.818_rad));
+    
+//     // Create new test data for the second test
+//     targets = {
+//         photon::PhotonTrackedTarget{
+//             -15.0, 10.0, 0.0, 0.1, 1, -1, -1.f,
+//             frc::Transform3d(frc::Translation3d(1.5_m, 0.8_m, 0.3_m),
+//                              frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+//             frc::Transform3d(frc::Translation3d(1.5_m, 0.8_m, 0.3_m),
+//                              frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+//             0.0, corners, detectedCorners}};
+
+//     cameraOne.testResult = {photon::PhotonPipelineResult{
+//         photon::PhotonPipelineMetadata{0, 0, 0, 1000}, targets, std::nullopt}};
+//     cameraOne.testResult[0].SetReceiveTimestamp(2_s);
+    
+//     // Add heading data for the second test
+//     estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(),
+//                            realPose.Rotation().ToRotation2d());
+    
+//     // Update the estimator with the second result
+//     for (const auto& result : cameraOne.GetAllUnreadResults()) {
+//       estimatedPose = estimator.Update(result);
+//     }
+    
+//     ASSERT_TRUE(estimatedPose);
+//     pose = estimatedPose.value().estimatedPose;
+    
+//     // Check that the estimated pose matches the real pose for the second test
+//     EXPECT_NEAR(units::unit_cast<double>(realPose.X()), units::unit_cast<double>(pose.X()), 0.1);
+//     EXPECT_NEAR(units::unit_cast<double>(realPose.Y()), units::unit_cast<double>(pose.Y()), 0.1);
+//     EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.1);
+// }
+
+TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
+    photon::PhotonPoseEstimator estimator(
+        frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
+        photon::CONSTRAINED_SOLVEPNP,
+        frc::Transform3d());
+    
+    photon::PhotonPipelineResult result;
+    auto estimate = estimator.Update(result);
+    EXPECT_FALSE(estimate.has_value());
+}
+
+TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
+    auto distortion = Eigen::VectorXd::Zero(8);
+    auto cameraMat = Eigen::Matrix3d{
+        {399.37500000000006, 0, 319.5},
+        {0, 399.16666666666674, 239.5},
+        {0, 0, 1}
+    };
+    
+    // Create corners data matching the Java test
+    std::vector<photon::TargetCorner> corners8{
+        photon::TargetCorner{98.09875447066685, 331.0093220119495},
+        photon::TargetCorner{122.20226758624413, 335.50083894738486},
+        photon::TargetCorner{127.17118732489361, 313.81406314178633},
+        photon::TargetCorner{104.28543773760417, 309.6516557438994}
+    };
+    
+    // Create a pose that should match the known ground truth
+    frc::Transform3d poseTransform(
+        frc::Translation3d(3.1665557336121353_m, 4.430673446050584_m, 0.48678786477534686_m),
+        frc::Rotation3d(
+            frc::Quaternion(
+                0.3132532247418243, 
+                0.24722671090692333, 
+                -0.08413452932300695, 
+                0.9130568172784148)));
+    
+    std::vector<photon::PhotonTrackedTarget> targets{
+        photon::PhotonTrackedTarget{
+            0.0, 0.0, 0.0, 0.0, 8, 0, 0.0f,
+            poseTransform,
+            poseTransform,
+            0.0, corners8, corners8
+        }
+    };
+    
+    auto multiTagResult = std::make_optional<photon::MultiTargetPNPResult>(
+        photon::PnpResult{poseTransform, poseTransform, 0.1, 0.1, 0.0},
+        std::vector<int16_t>{8});
+    
+    photon::PhotonPipelineResult result{
+        photon::PhotonPipelineMetadata{10000, 2000, 1, 100},
+        targets,
+        multiTagResult
+    };
+    
+    const units::radian_t camPitch = 30_deg;
+    const frc::Transform3d kRobotToCam{
+        frc::Translation3d(0.5_m, 0.0_m, 0.5_m), 
+        frc::Rotation3d(0_rad, -camPitch, 0_rad)
+    };
+    
+    photon::PhotonPoseEstimator estimator(
+        frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
+        photon::CONSTRAINED_SOLVEPNP,
+        kRobotToCam);
+    
+    estimator.AddHeadingData(result.GetTimestamp(), frc::Rotation2d());
+    
+    std::optional<photon::PhotonCamera::CameraMatrix> cameraMatrixOpt = cameraMat;
+    std::optional<photon::PhotonCamera::DistortionMatrix> distCoeffsOpt = distortion;
+    std::optional<photon::ConstrainedSolvepnpParams> constrainedParamsOpt = 
+        photon::ConstrainedSolvepnpParams{true, 0};
+    
+    auto estimatedPose = estimator.Update(
+        result,
+        cameraMatrixOpt,
+        distCoeffsOpt,
+        constrainedParamsOpt);
+    
+    ASSERT_TRUE(estimatedPose.has_value());
+    
+    // Add assertions to verify pose
+    frc::Pose3d pose = estimatedPose.value().estimatedPose;
+    
+    // These values are based on expected behavior matching the Java test
+    // Comparing with the ground truth data used in the Java test
+    EXPECT_NEAR(3.1, units::unit_cast<double>(pose.X()), 0.3);
+    EXPECT_NEAR(4.4, units::unit_cast<double>(pose.Y()), 0.3); 
+    EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.5);
+    
+    // Verify the strategy used
+    EXPECT_EQ(photon::CONSTRAINED_SOLVEPNP, estimatedPose.value().strategy);
 }
