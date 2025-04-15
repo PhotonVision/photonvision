@@ -620,18 +620,20 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
       photon::CONSTRAINED_SOLVEPNP, kRobotToCam);
 
-  estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(), frc::Rotation2d());
+  estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(),
+                           frc::Rotation2d());
 
-  auto estimatedPose = estimator.Update(cameraOne.testResult[0], cameraMat, distortion,
-    photon::ConstrainedSolvepnpParams{true, 0});
+  auto estimatedPose =
+      estimator.Update(cameraOne.testResult[0], cameraMat, distortion,
+                       photon::ConstrainedSolvepnpParams{true, 0});
 
   ASSERT_TRUE(estimatedPose.has_value());
 
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(3.1, units::unit_cast<double>(pose.X()), 0.3);
-  EXPECT_NEAR(4.4, units::unit_cast<double>(pose.Y()), 0.3);
-  EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.5);
+  EXPECT_NEAR(3.58, units::unit_cast<double>(pose.X()), 0.01);
+  EXPECT_NEAR(4.13, units::unit_cast<double>(pose.Y()), 0.01);
+  EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.01);
 
   EXPECT_EQ(photon::CONSTRAINED_SOLVEPNP, estimatedPose.value().strategy);
 }
