@@ -42,7 +42,7 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public String getName() {
+    public String getUID() {
         return "NullModel";
     }
 

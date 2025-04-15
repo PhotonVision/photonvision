@@ -22,7 +22,7 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 public interface Model {
     public ObjectDetector load();
 
-    public String getName();
+    public String getUID();
 
     public Family getFamily();
 }

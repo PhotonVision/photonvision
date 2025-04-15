@@ -24,12 +24,16 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
 
 public class NeuralNetworkProperties {
-    /**
-     * The properties of the model. This is used to determine which model to load. The only family
-     * currently supported is RKNN. If we add other families, we'll have to determine if we want to
-     * expand this modelProperties object, or create separate objects for each family.
+    /*
+     * The properties of the model. This is used to determine which model to load.
+     * The only family
+     * currently supported is RKNN. If we add other families, we'll have to
+     * determine if we want to
+     * expand this modelProperties object, or create separate objects for each
+     * family. A suggested solution is to add other version attributes, and the
+     * attribute for an unused version is to be left null.
      */
-    public class RknnModelProperties {
+    public class ModelProperties {
         public Path modelPath;
         public String nickname;
         public LinkedList<String> labels;
@@ -39,17 +43,17 @@ public class NeuralNetworkProperties {
         public RknnJNI.ModelVersion rknnVersion;
 
         /**
-         * Constructor for the rknnModelProperties class.
+         * This object holds the various properties for an object detection model
          *
-         * @param modelPath
-         * @param nickname
-         * @param labels
+         * @param modelPath path to the model on disk
+         * @param nickname name to use in the UI
+         * @param labels labels for the models outputs
          * @param resolutionHeight
          * @param resolutionWidth
-         * @param family
-         * @param rknnVersion
+         * @param family the family of the model [RKNN]
+         * @param rknnVersion the version of the RKNN model [YOLO_V5, YOLO_V8, YOLO_V11]
          */
-        public RknnModelProperties(
+        public ModelProperties(
                 Path modelPath,
                 String nickname,
                 LinkedList<String> labels,
@@ -67,16 +71,25 @@ public class NeuralNetworkProperties {
         }
     }
 
-    protected HashMap<Path, RknnModelProperties> properties =
-            new HashMap<Path, RknnModelProperties>();
+    // The path to the model is used as the key in the map because it is unique to
+    // the model, and should not change
+    protected HashMap<Path, ModelProperties> properties = new HashMap<Path, ModelProperties>();
 
+    /**
+     * Constructor for the NeuralNetworkProperties class.
+     *
+     * <p>This object holds a LinkedList of {@link ModelProperties} objects
+     */
     public NeuralNetworkProperties() {}
 
-    public NeuralNetworkProperties(HashMap<Path, RknnModelProperties> modelPropertiesList) {}
-
-    public NeuralNetworkProperties(NeuralNetworkProperties NNMProperties) {
-        this(NNMProperties.properties);
-    }
+    /**
+     * Constructor for the NeuralNetworkProperties class.
+     *
+     * <p>This object holds a LinkedList of {@link ModelProperties} objects.
+     *
+     * @param modelPropertiesList When the class is constructed, it will hold the provided list
+     */
+    public NeuralNetworkProperties(HashMap<Path, ModelProperties> modelPropertiesList) {}
 
     @Override
     public String toString() {
@@ -89,17 +102,22 @@ public class NeuralNetworkProperties {
         return toReturn;
     }
 
-    public void addModelProperties(RknnModelProperties modelProperties) {
+    /**
+     * Add a model to the list of models.
+     *
+     * @param modelProperties
+     */
+    public void addModelProperties(ModelProperties modelProperties) {
         properties.put(modelProperties.modelPath, modelProperties);
     }
 
     /**
      * Add two Neural Network Properties together.
      *
-     * <p>Any keys in the object passed in will override those from the other object
+     * <p>Any properties that are the same will be overwritten by the second
      *
      * @param nnProps
-     * @return itself, so it can be chained and for adding where you want to pass into a function
+     * @return itself, so it can be chained and used fluently
      */
     public NeuralNetworkProperties sum(NeuralNetworkProperties nnProps) {
         properties.putAll(nnProps.properties);
@@ -107,16 +125,35 @@ public class NeuralNetworkProperties {
         return this;
     }
 
+    /**
+     * Remove a model from the list of models.
+     *
+     * @param modelPath
+     * @return True if the model was removed, false if it was not found
+     */
     public boolean removeModel(Path modelPath) {
         return properties.remove(modelPath) != null;
     }
 
-    public RknnModelProperties getModel(Path modelPath) {
+    /**
+     * Get the model properties for a given model path.
+     *
+     * @param modelPath
+     * @return {@link ModelProperties} object
+     */
+    public ModelProperties getModel(Path modelPath) {
         return properties.get(modelPath);
     }
 
+    /**
+     * Change the nickname of a {@link ModelProperties} object.
+     *
+     * @param modelPath
+     * @param newName
+     * @return True if the model was found and renamed, false if it was not found
+     */
     public boolean renameModel(Path modelPath, String newName) {
-        RknnModelProperties modelProperties = properties.get(modelPath);
+        ModelProperties modelProperties = properties.get(modelPath);
         if (modelProperties != null) {
             modelProperties.nickname = newName;
             return true;

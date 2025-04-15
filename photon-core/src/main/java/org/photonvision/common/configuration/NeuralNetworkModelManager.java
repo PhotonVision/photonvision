@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.photonvision.common.configuration.NeuralNetworkProperties.RknnModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkProperties.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -48,10 +48,8 @@ import org.photonvision.vision.objects.RknnModel;
  * also supports shipping pre-trained models as resources in the JAR. If the model has already been
  * extracted to the filesystem, it will not be extracted again.
  *
- * <p>Each model must have a corresponding <code>labels</code> file. The labels file format is
- * simply a list of string names per label, one label per line. The labels file must have the same
- * name as the model file, but with the suffix <code>-labels.txt</code> instead of <code>.rknn
- * </code>.
+ * <p>Each model must have a corresponding {@link ModelProperties} entry in {@link
+ * NeuralNetworkProperties}.
  */
 public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
@@ -66,7 +64,7 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 nnProps
-                .new RknnModelProperties(
+                .new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "NAMEHERE.rknn"),
                         "foo",
                         new LinkedList<String>(),
@@ -146,7 +144,7 @@ public class NeuralNetworkModelManager {
         models.forEach(
                 (backend, backendModels) -> {
                     ArrayList<String> modelNames = new ArrayList<>();
-                    backendModels.forEach(model -> modelNames.add(model.getName()));
+                    backendModels.forEach(model -> modelNames.add(model.getUID()));
                     modelMap.put(backend.toString(), modelNames);
                 });
 
@@ -159,10 +157,10 @@ public class NeuralNetworkModelManager {
      *
      * <p>If this method returns `Optional.of(..)` then the model should be safe to load.
      *
-     * @param modelName the name of the model to retrieve
+     * @param modelUID the unique identifier of the model to retrieve
      * @return an Optional containing the model if found, or an empty Optional if not found
      */
-    public Optional<Model> getModel(String modelName) {
+    public Optional<Model> getModel(String modelUID) {
         if (models == null) {
             return Optional.empty();
         }
@@ -171,7 +169,7 @@ public class NeuralNetworkModelManager {
         for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getName().equals(modelName)).findFirst();
+                        models.get(backend).stream().filter(m -> m.getUID().equals(modelUID)).findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
@@ -183,11 +181,7 @@ public class NeuralNetworkModelManager {
 
     /** The default model when no model is specified. */
     public Optional<Model> getDefaultModel() {
-        if (models == null) {
-            return Optional.empty();
-        }
-
-        if (supportedBackends.isEmpty()) {
+        if (models == null || supportedBackends.isEmpty()) {
             return Optional.empty();
         }
 
@@ -195,7 +189,7 @@ public class NeuralNetworkModelManager {
     }
 
     // Do checking later on, when we create the rknn model
-    private void loadModel(RknnModelProperties properties) {
+    private void loadModel(ModelProperties properties) {
         if (models == null) {
             models = new HashMap<>();
         }
@@ -252,7 +246,6 @@ public class NeuralNetworkModelManager {
 
         models = new HashMap<>();
 
-        // TODO: Load neural network properties from json/create new one
         try {
             Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
@@ -262,7 +255,7 @@ public class NeuralNetworkModelManager {
                                             ConfigManager.getInstance()
                                                     .getConfig()
                                                     .getNeuralNetworkProperties()
-                                                    .getModelProperties(path)));
+                                                    .getModel(path)));
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
@@ -270,8 +263,7 @@ public class NeuralNetworkModelManager {
         // After loading all of the models, sort them by name to ensure a consistent
         // ordering
         models.forEach(
-                (backend, backendModels) ->
-                        backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
+                (backend, backendModels) -> backendModels.sort((a, b) -> a.getUID().compareTo(b.getUID())));
 
         // Log
         StringBuilder sb = new StringBuilder();
@@ -279,7 +271,7 @@ public class NeuralNetworkModelManager {
         models.forEach(
                 (backend, backendModels) -> {
                     sb.append(backend).append(" [");
-                    backendModels.forEach(model -> sb.append(model.getName()).append(", "));
+                    backendModels.forEach(model -> sb.append(model.getUID()).append(", "));
                     sb.append("] ");
                 });
     }

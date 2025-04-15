@@ -20,12 +20,12 @@ package org.photonvision.vision.objects;
 import java.io.File;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.common.configuration.NeuralNetworkProperties.RknnModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkProperties.ModelProperties;
 import org.photonvision.jni.RknnObjectDetector;
 
 public class RknnModel implements Model {
     public final File modelFile;
-    public final RknnModelProperties properties;
+    public final ModelProperties properties;
 
     /**
      * rknn model constructor.
@@ -33,7 +33,7 @@ public class RknnModel implements Model {
      * @param properties The properties of the model.
      * @throws IllegalArgumentException
      */
-    public RknnModel(RknnModelProperties properties) throws IllegalArgumentException {
+    public RknnModel(ModelProperties properties) throws IllegalArgumentException {
         modelFile = new File(properties.modelPath.toString());
         if (!modelFile.exists()) {
             throw new IllegalArgumentException("Model file does not exist: " + modelFile);
@@ -58,8 +58,9 @@ public class RknnModel implements Model {
         this.properties = properties;
     }
 
-    public String getName() {
-        return properties.nickname;
+    /** Return the unique identifier for the model. In this case, it's the model's path. */
+    public String getUID() {
+        return properties.modelPath.toString();
     }
 
     public Family getFamily() {

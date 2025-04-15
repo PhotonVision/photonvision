@@ -626,7 +626,7 @@ public class RequestHandler {
             var nnProps = ConfigManager.getInstance().getConfig().getNeuralNetworkProperties();
             nnProps.addModelProperties(
                     nnProps
-                    .new RknnModelProperties(
+                    .new ModelProperties(
                             modelPath,
                             modelFile.filename(),
                             labels,
