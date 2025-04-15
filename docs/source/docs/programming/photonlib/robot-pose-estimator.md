@@ -25,12 +25,11 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
     :language: python
     :lines: 46
-
 ```
 
 ## Defining the Robot to Camera `Transform3d`
 
-Another necessary argument for creating a `PhotonPoseEstimator` is the `Transform3d` representing the robot-relative location and orientation of the camera. A `Transform3d` contains a `Translation3d` and a `Rotation3d`. The `Translation3d` is created in meters and the `Rotation3d` is created with degrees.
+Another necessary argument for creating a `PhotonPoseEstimator` is the `Transform3d` representing the robot-relative location and orientation of the camera. A `Transform3d` contains a `Translation3d` and a `Rotation3d`. The `Translation3d` is created in meters and the `Rotation3d` is created with degrees. For more information on the coordinate system, please see the {ref}`Coordinate Systems <docs/apriltag-pipelines/coordinate-systems:Coordinate Systems>` documentation.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -116,7 +115,7 @@ The final prerequisite to using your `PhotonPoseEstimator` is creating a `Photon
      :lines: 44
 ```
 
-Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotPose`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`.
+Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotPose`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -131,25 +130,28 @@ Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotP
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
      :lines: 53
-
 ```
 
-You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`. TODO: add example note
+You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`.
+
+```{eval-rst}
+.. tab-set-code::
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Robot.java
+    :language: java
+    :lines: 65-73
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/cpp/Robot.cpp
+    :language: c++
+    :lines: 38-45
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 53-58
+```
 
 ## Additional `PhotonPoseEstimator` Methods
 
-### `setReferencePose(Pose3d referencePose)`
+For more information on the `PhotonPoseEstimator` class, please see the API documentation.
 
-Updates the stored reference pose when using the CLOSEST_TO_REFERENCE_POSE strategy.
-
-### `setLastPose(Pose3d lastPose)`
-
-Update the stored last pose. Useful for setting the initial estimate when using the CLOSEST_TO_LAST_POSE strategy.
-
-### `setMultiTagFallbackStrategy(PoseStrategy strategy)`
-
-Determines the fallback strategy for pose estimation. You are strongly encouraged to set this.
-
-### `addHeadingData(double timestampSeconds, Rotation2d heading)`
-
-Adds robot heading data to be stored in buffer. Must be called periodically with a proper timestamp for the PNP_DISTANCE_TRIG_SOLVE and CONSTRAINED_SOLVEPNP strategies
+- [Java Documentation](https://javadocs.photonvision.org/release/org/photonvision/PhotonPoseEstimator.html)
+- [C++ Documentation](https://cppdocs.photonvision.org/release/classphoton_1_1_photon_pose_estimator.html)
