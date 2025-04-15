@@ -4,7 +4,7 @@
 For more information on how to methods to get AprilTag data, look {ref}`here <docs/programming/photonlib/getting-target-data:Getting AprilTag Data From A Target>`.
 :::
 
-PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. The `PhotonPoseEstimator` class is designed to be used with one camera per object instance, but more than one instance may be created.
+PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. For each camera, a separate instance of the `PhotonPoseEstimator` class should be created.
 
 ## Creating an `AprilTagFieldLayout`
 
@@ -29,7 +29,7 @@ The API documentation can be found in here: [Java](https://github.wpilib.org/all
 
 ## Defining the Robot to Camera `Transform3d`
 
-Another necessary argument for creating a `PhotonPoseEstimator` is the `Transform3d` representing the robot-relative location and orientation of the camera. A `Transform3d` contains a `Translation3d` and a `Rotation3d`. The `Translation3d` is created in meters and the `Rotation3d` is created with degrees. For more information on the coordinate system, please see the {ref}`Coordinate Systems <docs/apriltag-pipelines/coordinate-systems:Coordinate Systems>` documentation.
+Another necessary argument for creating a `PhotonPoseEstimator` is the `Transform3d` representing the robot-relative location and orientation of the camera. A `Transform3d` contains a `Translation3d` and a `Rotation3d`. The `Translation3d` is created in meters and the `Rotation3d` is created with radians. For more information on the coordinate system, please see the {ref}`Coordinate Systems <docs/apriltag-pipelines/coordinate-systems:Coordinate Systems>` documentation.
 
 ```{eval-rst}
 .. tab-set-code::
