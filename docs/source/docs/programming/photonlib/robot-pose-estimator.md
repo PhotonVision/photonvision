@@ -4,7 +4,7 @@
 For more information on how to methods to get AprilTag data, look {ref}`here <docs/programming/photonlib/getting-target-data:Getting AprilTag Data From A Target>`.
 :::
 
-PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose.
+PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine the pose data from all tags in view in order to get a field relative pose. The `PhotonPoseEstimator` class is designed to be used with one camera per object instance, but more than one instance may be created.
 
 ## Creating an `AprilTagFieldLayout`
 
