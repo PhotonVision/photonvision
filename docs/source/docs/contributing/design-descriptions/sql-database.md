@@ -11,6 +11,7 @@ This design was a carry-over from ChameleonVision, which had used a similar dire
 In summer YEAR????, I found a [Pi forum post](a;sldfja;sdflj) that seemed to indicate there was perhaps some funny business happening with file caching. The Pi OS at the time tried its best to avoid writing updates to the physical SD card (SD cards are not designed to run an OS off of. Don't get me started.), which means that if you don't force flush/sync, changes can be lost on power cycle as they're never written to the SD card. In response we added flushes and [FileDescriptor::syncs](https://docs.oracle.com/javase/8/docs/api/java/io/FileDescriptor.html#sync--) to the code, and called it good.
 
 And yet we kept getting reports of settings being lost. In particular, a Raspberry Pi base OS update that occurred during the summer of 2022 seemed to make this report more frequent. Reports tracked in GitHub included:
+- 22 Febuary 2022: https://www.chiefdelphi.com/t/photon-vision-lost-config-file/403692 -- "After looking at the logs, I found that half of the config files were gone. It lost the configs for the pipelines and one camera."
 - 29 October, 2022: https://github.com/PhotonVision/photonvision/issues/552
 - User reports from CD (todo link)
 - User reports from Discord (todo link)
