@@ -72,6 +72,7 @@ if (!is_demo) {
 
 <style lang="scss">
 @import "vuetify/settings";
+@import "@/assets/styles/variables.scss";
 
 @media #{map-get($display-breakpoints, 'md-and-down')} {
   html {

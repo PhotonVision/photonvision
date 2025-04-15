@@ -6,7 +6,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const value = defineModel<number[]>();
+const value = defineModel<number[]>({ required: true });
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -40,10 +40,9 @@ const fpsTooLow = computed<boolean>(() => {
             v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
             label
             :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
             style="font-size: 1rem; padding: 0; margin: 0"
           >
-            <span class="pr-1">
+            <span class="pr-1" :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }">
               {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
               {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
             </span>

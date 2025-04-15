@@ -226,32 +226,32 @@ const interactiveCols = computed(() =>
 .threshold-modifiers {
   --averageHue: 0;
 }
-#hue-slider >>> .v-slider {
+#hue-slider:deep(.v-slider) {
   background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#sat-slider >>> .v-slider {
+#sat-slider:deep(.v-slider) {
   background: linear-gradient(to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#value-slider >>> .v-slider {
+#value-slider:deep(.v-slider) {
   background: linear-gradient(to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
->>> .v-slider__thumb {
+:deep(.v-slider__thumb) {
   outline: black solid thin;
 }
-.normal-slider >>> .v-slider__track-fill {
+.normal-slider:deep(.v-slider__track-fill) {
   outline: black solid thin;
 }
 
-.inverted-slider >>> .v-slider__track-background {
+.inverted-slider:deep(.v-slider__track-background) {
   outline: black solid thin;
 }
 </style>

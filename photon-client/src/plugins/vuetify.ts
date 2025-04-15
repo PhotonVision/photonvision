@@ -24,10 +24,13 @@ const DarkTheme: ThemeDefinition = {
 const LightTheme: ThemeDefinition = {
   dark: false,
   colors: {
-    primary: "#006492",
-    secondary: "#39A4D5",
-    accent: "#FFD843",
     background: "#232C37",
+    primary: "#006492",
+    surface: "#006492",
+    secondary: "#39A4D5",
+    "surface-variant": "#39A4D5",
+    accent: "#FFD843",
+    "surface-light": "#FFD843",
     ...commonColors
   }
 };

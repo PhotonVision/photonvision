@@ -15,8 +15,9 @@ const compact = computed<boolean>({
     useStateStore().setSidebarFolded(val);
   }
 });
-
 const { mdAndUp } = useDisplay();
+
+const renderCompact = computed<boolean>(()=> compact.value || !mdAndUp.value);
 
 const needsCamerasConfigured = computed<boolean>(() => {
   return (
@@ -27,12 +28,12 @@ const needsCamerasConfigured = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-navigation-drawer app permanent :rail="compact || !mdAndUp" color="primary">
+  <v-navigation-drawer app permanent :rail="renderCompact" color="primary">
     <v-list nav>
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
-      <v-list-item :class="compact || !mdAndUp ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
+      <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
         <template #prepend class="mr-0">
-          <img v-if="!(compact || !mdAndUp)" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
+          <img v-if="!(renderCompact)" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
           <img v-else class="logo" src="@/assets/images/logoSmall.svg" alt="small logo" />
         </template>
       </v-list-item>
@@ -79,12 +80,13 @@ const needsCamerasConfigured = computed<boolean>(() => {
                 : 'mdi-robot-off'
           "
         >
-          <v-list-item-title v-if="useSettingsStore().network.runNTServer" class="text-wrap">
+          <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
             NetworkTables server running for
             <span class="accent--text">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
           </v-list-item-title>
           <v-list-item-title
             v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
+            v-show="!renderCompact"
             class="text-wrap"
             style="flex-direction: column; display: flex"
           >
@@ -93,13 +95,13 @@ const needsCamerasConfigured = computed<boolean>(() => {
               {{ useStateStore().ntConnectionStatus.address }}
             </span>
           </v-list-item-title>
-          <v-list-item-title v-else class="text-wrap" style="flex-direction: column; display: flex">
+          <v-list-item-title v-else class="text-wrap" style="flex-direction: column; display: flex" v-show="!renderCompact">
             Not connected to NetworkTables Server!
           </v-list-item-title>
         </v-list-item>
 
         <v-list-item :prepend-icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'">
-          <v-list-item-title class="text-wrap">
+          <v-list-item-title class="text-wrap" v-show="!renderCompact">
             {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
           </v-list-item-title>
         </v-list-item>

@@ -110,22 +110,23 @@ const expanded = ref([]);
           <v-data-table
             v-model:expanded="expanded"
             :headers="[
-              { text: 'Snapshot Name', value: 'snapshotShortName', sortable: false },
-              { text: 'Camera Unique Name', value: 'cameraUniqueName' },
-              { text: 'Camera Nickname', value: 'cameraNickname' },
-              { text: 'Stream Type', value: 'streamType' },
-              { text: 'Time Created', value: 'timeCreated' },
-              { text: 'Actions', value: 'actions', sortable: false }
+              { title: 'Snapshot Name', value: 'snapshotShortName', sortable: false },
+              { title: 'Camera Unique Name', value: 'cameraUniqueName' },
+              { title: 'Camera Nickname', value: 'cameraNickname' },
+              { title: 'Stream Type', value: 'streamType' },
+              { title: 'Time Created', value: 'timeCreated' },
+              { title: 'Actions', value: 'actions', sortable: false }
             ]"
             :items="imgData"
-            group-by="cameraUniqueName"
+            :group-by="[{key: 'cameraUniqueName'}]"
             class="elevation-0"
             item-key="index"
             show-expand
             expand-icon="mdi-eye"
           >
-            <template #expanded-item="{ headers, item }">
-              <td :colspan="headers.length">
+
+            <template #expanded-row="{  item, columns }">
+              <td :colspan="columns.length">
                 <div style="display: flex; justify-content: center; width: 100%">
                   <img :src="item.snapshotSrc" alt="snapshot-image" class="snapshot-preview pt-2 pb-2" />
                 </div>

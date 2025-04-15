@@ -28,7 +28,7 @@ function debounce(func: (...args: any[]) => void, wait: number) {
   let timeout: ReturnType<typeof setTimeout>;
   return function (...args: any[]) {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
+    timeout = setTimeout(() => func.apply(this , args), wait);
   };
 }
 /*
@@ -73,6 +73,7 @@ const localValue = computed({
         :min="min"
         :disabled="disabled"
         class="mt-0 pt-0"
+        density="compact"
         hide-details
         single-line
         type="number"

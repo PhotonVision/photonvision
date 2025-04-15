@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import { computed } from "vue";
-
+const value = defineModel<number>({
+  required: true
+});
 const props = withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    value: number;
     disabled?: boolean;
     labelCols?: number;
     rules?: ((v: number) => boolean | string)[];
@@ -20,13 +20,9 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits<{
-  (e: "input", value: number): void;
-}>();
-
 const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", parseFloat(v as unknown as string))
+  get: () => value.value,
+  set: (v) => (value.value = parseFloat(v as unknown as string))
 });
 </script>
 

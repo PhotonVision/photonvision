@@ -114,7 +114,7 @@ document.addEventListener("keydown", (e) => {
             <v-text-field
               v-model="searchQuery"
               dark
-              dense
+              density="compact"
               clearable
               hide-details="auto"
               prepend-icon="mdi-magnify"

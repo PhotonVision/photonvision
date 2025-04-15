@@ -52,6 +52,7 @@ const handleKeydown = ({ key }) => {
       <v-text-field
         v-model="value"
         dark
+        density="compact"
         dense
         color="accent"
         :placeholder="placeholder"
