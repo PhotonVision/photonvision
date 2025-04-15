@@ -8,7 +8,7 @@ This design was a carry-over from ChameleonVision, which had used a similar dire
 
 "NTFS is a journalizing filesystem", we said. "It'll be so much more robust". 
 
-In summer YEAR????, I found a [Pi forum post](a;sldfja;sdflj) that seemed to indicate there was perhaps some funny business happening with file caching. The Pi OS at the time tried its best to avoid writing updates to the physical SD card (SD cards are not designed to run an OS off of. Don't get me started.), which means that if you don't force flush/sync, changes can be lost on power cycle as they're never written to the SD card. In response we added flushes and [FileDescriptor::syncs](https://docs.oracle.com/javase/8/docs/api/java/io/FileDescriptor.html#sync--) to the code, and called it good.
+In summer YEAR????, I found a Pi forum post that seemed to indicate there was perhaps some funny business happening with file caching. The Pi OS at the time tried its best to avoid writing updates to the physical SD card (SD cards are not designed to run an OS off of. Don't get me started.), which means that if you don't force flush/sync, changes can be lost on power cycle as they're never written to the SD card. In response we added flushes and [FileDescriptor::syncs](https://docs.oracle.com/javase/8/docs/api/java/io/FileDescriptor.html#sync--) to the code, and called it good.
 
 So in summary:
 - Every time we saved to disk, we had to delete a directory recursively, then re-create its contents. We do this whenever settings are changed, as well as [immediately on startup](https://github.com/PhotonVision/photonvision/blob/f81304846251b82a128013ce0800a2cc1b71e744/photon-server/src/main/java/org/photonvision/Main.java#L348). Hopefully you don't turn off your robot at the wrong time.
