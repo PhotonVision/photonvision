@@ -48,12 +48,18 @@ public class Vision {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator;
     private Matrix<N3, N1> curStdDevs;
+    private final EstimateConsumer estConsumer;
 
     // Simulation
     private PhotonCameraSim cameraSim;
     private VisionSystemSim visionSim;
 
-    public Vision() {
+    /**
+     * @param estConsumer Lamba that will accept a pose estimate and pass it to your desired {@link
+     *     edu.wpi.first.math.estimator.SwerveDrivePoseEstimator}
+     */
+    public Vision(EstimateConsumer estConsumer) {
+        this.estConsumer = estConsumer;
         camera = new PhotonCamera(kCameraName);
 
         photonEstimator =
@@ -83,17 +89,7 @@ public class Vision {
         }
     }
 
-    /**
-     * The latest estimated robot pose on the field from vision data. This may be empty. This should
-     * only be called once per loop.
-     *
-     * <p>Also includes updates for the standard deviations, which can (optionally) be retrieved with
-     * {@link getEstimationStdDevs}
-     *
-     * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
-     *     used for estimation.
-     */
-    public Optional<EstimatedRobotPose> getEstimatedGlobalPose() {
+    public void periodic() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
         for (var change : camera.getAllUnreadResults()) {
             visionEst = photonEstimator.update(change);
@@ -109,8 +105,15 @@ public class Vision {
                             getSimDebugField().getObject("VisionEstimation").setPoses();
                         });
             }
+
+            visionEst.ifPresent(
+                    est -> {
+                        // Change our trust in the measurement based on the tags we can see
+                        var estStdDevs = getEstimationStdDevs();
+
+                        estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
+                    });
         }
-        return visionEst;
     }
 
     /**
@@ -187,5 +190,10 @@ public class Vision {
     public Field2d getSimDebugField() {
         if (!Robot.isSimulation()) return null;
         return visionSim.getDebugField();
+    }
+
+    @FunctionalInterface
+    public static interface EstimateConsumer {
+        public void accept(Pose2d pose, double timestamp, Matrix<N3, N1> estimationStdDevs);
     }
 }

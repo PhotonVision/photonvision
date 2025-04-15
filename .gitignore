@@ -7,8 +7,7 @@ __pycache__/
 backend/settings/
 .vscode/
 # Docs
-source/_build
-source/docs/_build
+_build
 # Compiled class file
 *.class
 

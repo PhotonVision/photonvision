@@ -12,7 +12,7 @@ If you haven't yet, please refer to {ref}`the Pi CSI Camera Configuration page <
 
 If the driver isn't loaded, you may be using a non-official Pi image, or an image not new enough. Try updating to the most recent image available (one released for 2023) -- if that doesn't resolve the problem, {ref}`contact us<index:Contact Us>` with your settings ZIP file and Pi version/camera version/config.txt file used.
 
-If the camera is not detected, the most likely cause is either a config.txt file incorrectly set-up, or a ribbon cable attached backwards. Review the {ref}`picam configuration page <docs/hardware/picamconfig:pi camera configuration>`, and verify the ribbon cable is properly oriented at both ends, and that it is \_fully\_ inserted into the FFC connector. Then, {ref}`contact us<index:Contact Us>` with your settings ZIP file and Pi version/camera version/config.txt file used.
+If the camera is not detected, the most likely cause is either a config.txt file incorrectly set-up, or a ribbon cable attached backwards. Review the {ref}`picam configuration page <docs/hardware/picamconfig:pi camera configuration>`, and verify the ribbon cable is properly oriented at both ends, and that it is _fully_ inserted into the FFC connector. Then, {ref}`contact us<index:Contact Us>` with your settings ZIP file and Pi version/camera version/config.txt file used.
 
 ## USB cameras
 
