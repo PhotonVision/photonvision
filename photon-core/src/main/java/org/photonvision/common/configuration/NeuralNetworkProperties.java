@@ -62,8 +62,8 @@ public class NeuralNetworkProperties {
             this.modelPath = modelPath;
             this.nickname = nickname;
             this.labels = labels;
-            this.resolutionHeight = resolutionHeight;
             this.resolutionWidth = resolutionWidth;
+            this.resolutionHeight = resolutionHeight;
             this.family = family;
             this.rknnVersion = rknnVersion;
         }
@@ -118,5 +118,18 @@ public class NeuralNetworkProperties {
 
     public RknnModelProperties getModelProperties(Path modelPath) {
         return properties.get(modelPath);
+    }
+
+    public boolean renameModel(Path modelPath, String newName) {
+        RknnModelProperties modelProperties = properties.get(modelPath);
+        if (modelProperties != null) {
+            modelProperties.nickname = newName;
+            return true;
+        }
+        return false;
+    }
+
+    public void export() {
+        // TODO: this should return a json file or smth of all the various properties
     }
 }

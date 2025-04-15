@@ -27,7 +27,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
@@ -53,6 +55,7 @@ import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.photonvision.rknn.RknnJNI.ModelVersion;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -551,9 +554,34 @@ public class RequestHandler {
         try {
             // Retrieve the uploaded files
             var modelFile = ctx.uploadedFile("rknn");
-            var labelsFile = ctx.uploadedFile("labels");
 
-            if (modelFile == null || labelsFile == null) {
+            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+
+            if (data == null) {
+                ctx.status(400);
+                ctx.result("The provided model data was malformed");
+                logger.error("The provided model data was malformed");
+                return;
+            }
+
+            LinkedList<String> labels =
+                    new LinkedList<>(Arrays.asList(data.get("labels").asText().split(",")));
+            double width = data.get("width").asDouble();
+            double height = data.get("height").asDouble();
+            ModelVersion version =
+                    switch (data.get("version").asText()) {
+                        case "YOLOV5" -> ModelVersion.YOLO_V5;
+                        case "YOLOV8" -> ModelVersion.YOLO_V8;
+                        case "YOLO11" -> ModelVersion.YOLO_V11;
+                        default -> {
+                            ctx.status(400);
+                            ctx.result("The provided version was not valid");
+                            logger.error("The provided version was not valid");
+                            yield null;
+                        }
+                    };
+
+            if (modelFile == null) {
                 ctx.status(400);
                 ctx.result(
                         "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
@@ -562,31 +590,50 @@ public class RequestHandler {
                 return;
             }
 
-            if (!modelFile.extension().contains("rknn") || !labelsFile.extension().contains("txt")) {
+            if (labels == null || labels.isEmpty()) {
                 ctx.status(400);
-                ctx.result(
-                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
-                logger.error(
-                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                ctx.result("The provided labels were malformed");
+                logger.error("The provided labels were malformed");
                 return;
             }
 
-            // TODO move into neural network manager
+            if (width < 0 || height < 0 || width != Math.floor(width) || height != Math.floor(height)) {
+                ctx.status(400);
+                ctx.result(
+                        "The provided width and height were malformed. They must be integers greater than one.");
+                logger.error(
+                        "The provided width and height were malformed.  They must be integers greater than one.");
+                return;
+            }
+
+            if (!modelFile.extension().contains("rknn")) {
+                ctx.status(400);
+                ctx.result(
+                        "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+                logger.error(
+                        "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+                return;
+            }
 
             var modelPath =
                     Paths.get(
                             ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
-            var labelsPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
 
             try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
                 modelFile.content().transferTo(out);
             }
 
-            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
-                labelsFile.content().transferTo(out);
-            }
+            var nnProps = ConfigManager.getInstance().getConfig().getNeuralNetworkProperties();
+            nnProps.addModelProperties(
+                    nnProps
+                    .new RknnModelProperties(
+                            modelPath,
+                            modelFile.filename(),
+                            labels,
+                            width,
+                            height,
+                            NeuralNetworkModelManager.Family.RKNN,
+                            version));
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -600,6 +647,18 @@ public class RequestHandler {
                         new OutgoingUIEvent<>(
                                 "fullsettings",
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+    }
+
+    public static void onExportObjectDetectionModelRequest(Context ctx) {
+        // TODO: implement this
+    }
+
+    public static void onDeleteObjectDetectionModelRequest(Context ctx) {
+        // TODO: implement this
+    }
+
+    public static void onRenameObjectDetectionModelRequest(Context ctx) {
+        // TODO: implement this
     }
 
     public static void onDeviceRestartRequest(Context ctx) {

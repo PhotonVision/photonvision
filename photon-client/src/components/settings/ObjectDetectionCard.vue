@@ -23,7 +23,7 @@ const handleImport = async () => {
   });
 
   axios
-    .post("/utils/importObjectDetectionModel", formData, {
+    .post("/objectdetection/import", formData, {
       headers: { "Content-Type": "multipart/form-data" }
     })
     .then((response) => {
