@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +42,6 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculationsTest {
-
     private static Size imageSize = new Size(1280, 720);
     private static Point imageCenterPoint =
             new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
