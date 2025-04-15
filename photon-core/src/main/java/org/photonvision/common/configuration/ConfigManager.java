@@ -51,19 +51,19 @@ public class ConfigManager {
     private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
-    // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
+    // special case flag to disable flushing settings to disk at shutdown. Avoids
+    // the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
     private boolean allowWriteTask = true;
 
     enum ConfigSaveStrategy {
         SQL,
-        LEGACY,
+        
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we want to switch
-    // back to the legacy config manager, change this constant
+    // This logic decides which kind of ConfigManager we load as the default. Legacy used to be an option, but it was removed on Apr 15 2025.
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
@@ -71,8 +71,6 @@ public class ConfigManager {
             Path rootFolder = PathManager.getInstance().getRootFolder();
             switch (m_saveStrat) {
                 case SQL -> INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
-                case LEGACY ->
-                        INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
                 case ATOMIC_ZIP -> {
                     // TODO: Not done yet
                 }
@@ -82,55 +80,6 @@ public class ConfigManager {
     }
 
     private static final Logger logger = new Logger(ConfigManager.class, LogGroup.Config);
-
-    private void translateLegacyIfPresent(Path folderPath) {
-        if (!(m_provider instanceof SqlConfigProvider)) {
-            // Cannot import into SQL if we aren't in SQL mode rn
-            return;
-        }
-
-        var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
-        var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
-
-        if (maybeCams.exists() && maybeCams.isDirectory()) {
-            logger.info("Translating settings zip!");
-            var legacy = new LegacyConfigProvider(folderPath);
-            legacy.load();
-            var loadedConfig = legacy.getConfig();
-
-            // yeet our current cameras directory, not needed anymore
-            if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
-            if (!maybeCams.canWrite()) {
-                maybeCams.setWritable(true);
-            }
-
-            try {
-                Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException e) {
-                logger.error("Exception moving cameras to cameras_bak!", e);
-
-                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
-                // do that
-                try {
-                    org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
-                } catch (IOException e1) {
-                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
-                    // up here on preserving the old folder
-                    logger.error("Exception while backup-copying cameras to cameras_bak!", e);
-                    e1.printStackTrace();
-                }
-
-                // Delete the directory because we were successfully able to load the config but were unable
-                // to save or copy the folder.
-                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
-            }
-
-            // Save the same config out using SQL loader
-            var sql = new SqlConfigProvider(getRootFolder());
-            sql.setConfig(loadedConfig);
-            sql.saveToDisk();
-        }
-    }
 
     public static boolean nukeConfigDirectory() {
         return FileUtils.deleteDirectory(getRootFolder());
@@ -147,28 +96,16 @@ public class ConfigManager {
             return false;
         }
 
-        // If there's a cameras folder in the upload, we know we need to import from the
-        // old style
-        var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
-        if (maybeCams.exists() && maybeCams.isDirectory()) {
-            var legacy = new LegacyConfigProvider(folderPath.toPath());
-            legacy.load();
-            var loadedConfig = legacy.getConfig();
-
-            var sql = new SqlConfigProvider(getRootFolder());
-            sql.setConfig(loadedConfig);
-            return sql.saveToDisk();
-        } else {
-            // new structure -- just copy and save like we used to
-            try {
-                org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
-                logger.info("Copied settings successfully!");
-                return true;
-            } catch (IOException e) {
-                logger.error("Exception copying uploaded settings!", e);
-                return false;
-            }
+        // new structure -- just copy and save like we used to
+        try {
+            org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+            logger.info("Copied settings successfully!");
+            return true;
+        } catch (IOException e) {
+            logger.error("Exception copying uploaded settings!", e);
+            return false;
         }
+
     }
 
     public PhotonConfiguration getConfig() {
@@ -188,7 +125,6 @@ public class ConfigManager {
     }
 
     public void load() {
-        translateLegacyIfPresent(this.configDirectoryFile.toPath());
         m_provider.load();
     }
 
@@ -248,33 +184,35 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists())
+            logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePath(String uniqueCameraName) {
-        var imgFilePath =
-                Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        var imgFilePath = Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
-        var imgFilePath =
-                Path.of(
-                                configDirectoryFile.toString(),
-                                "calibration",
-                                uniqueCameraName,
-                                "imgs",
-                                frameSize.toString())
-                        .toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        var imgFilePath = Path.of(
+                configDirectoryFile.toString(),
+                "calibration",
+                uniqueCameraName,
+                "imgs",
+                frameSize.toString())
+                .toFile();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
@@ -335,13 +273,16 @@ public class ConfigManager {
     /** Get (and create if not present) the subfolder where ML models are stored */
     public File getModelsDirectory() {
         var ret = new File(configDirectoryFile, "models");
-        if (!ret.exists()) ret.mkdirs();
+        if (!ret.exists())
+            ret.mkdirs();
         return ret;
     }
 
     /**
-     * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
-     * settings from getting its new configs overwritten at program exit and before they're all
+     * Disable flushing settings to disk as part of our JVM exit hook. Used to
+     * prevent uploading all
+     * settings from getting its new configs overwritten at program exit and before
+     * they're all
      * loaded.
      */
     public void disableFlushOnShutdown() {

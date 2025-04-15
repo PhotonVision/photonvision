@@ -31,7 +31,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
 import org.photonvision.common.configuration.DatabaseSchema.Tables;
 import org.photonvision.common.logging.LogGroup;
@@ -595,22 +594,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 var configStr = result.getString(Columns.CAM_CONFIG_JSON);
                 CameraConfiguration config = JacksonUtils.deserialize(configStr, CameraConfiguration.class);
 
-                if (config.matchedCameraInfo == null) {
-                    logger.info("Legacy CameraConfiguration detected - upgrading");
-
-                    // manually create the matchedCameraInfo ourselves. Need to upgrade:
-                    // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
-                    config.matchedCameraInfo =
-                            JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class).matchedCameraInfo;
-
-                    // Except that otherPaths used to be its own column. so hack that in here as well
-                    var otherPaths =
-                            JacksonUtils.deserialize(
-                                    result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
-                    if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
-                        usbInfo.otherPaths = otherPaths;
-                    }
-                }
+                
 
                 var driverMode =
                         JacksonUtils.deserialize(

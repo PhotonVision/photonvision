@@ -115,33 +115,7 @@ public class CameraConfiguration {
         this(UUID.randomUUID().toString(), camInfo);
     }
 
-    public static class LegacyCameraConfigStruct {
-        PVCameraInfo matchedCameraInfo;
-
-        /** Legacy constructor for compat with 2024.3.1 */
-        @JsonCreator
-        public LegacyCameraConfigStruct(
-                @JsonProperty("baseName") String baseName,
-                @JsonProperty("path") String path,
-                @JsonProperty("otherPaths") String[] otherPaths,
-                @JsonProperty("cameraType") CameraType cameraType,
-                @JsonProperty("usbVID") int usbVID,
-                @JsonProperty("usbPID") int usbPID) {
-            if (cameraType == CameraType.UsbCamera) {
-                this.matchedCameraInfo =
-                        PVCameraInfo.fromUsbCameraInfo(
-                                new UsbCameraInfo(-1, path, baseName, otherPaths, usbVID, usbPID));
-            } else if (cameraType == CameraType.ZeroCopyPicam) {
-                this.matchedCameraInfo = PVCameraInfo.fromCSICameraInfo(path, baseName);
-            } else {
-                // wtf
-                logger.error("Camera type is invalid");
-                this.matchedCameraInfo = null;
-                return;
-            }
-        }
-    }
-
+    
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
         for (var setting : settings) {
             addPipelineSetting(setting);
