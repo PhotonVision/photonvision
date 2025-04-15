@@ -4,15 +4,15 @@ Once upon a time, PhotonVision saved settings in a directory full of nested JSON
 
 <img style="display: block; margin: auto; width:400px" src="images/configDir.png">
 
-This design was a carry-over from ChameleonVision, which had used a similar directory structure since config management was added in v2. These config files used to be stored on the FAT partition of your Raspberry Pi's SD card, but after reports of settings loss (the symptom usually just being a generic "my settings went poof" report), we moved the directory over to the root filesystem, which for our supported devices was NTFS.
+This design was a carry-over from ChameleonVision, which had used a similar directory structure since config management was added in v2. These config files used to be stored on the FAT partition of your Raspberry Pi's SD card, but after reports of settings loss (the symptom usually just being a generic "my settings went poof" report), we moved the directory over to the root filesystem, which for our supported devices was EXT4. (I think).
 
-"NTFS is a journalizing filesystem", we said. "It'll be so much more robust". 
+"EXT4 is a journalizing filesystem", we said. "It'll be so much more robust". 
 
 In summer YEAR????, I found a Pi forum post that seemed to indicate there was perhaps some funny business happening with file caching. The Pi OS at the time tried its best to avoid writing updates to the physical SD card (SD cards are not designed to run an OS off of. Don't get me started.), which means that if you don't force flush/sync, changes can be lost on power cycle as they're never written to the SD card. In response we added flushes and [FileDescriptor::syncs](https://docs.oracle.com/javase/8/docs/api/java/io/FileDescriptor.html#sync--) to the code, and called it good.
 
 So in summary:
 - Every time we saved to disk, we had to delete a directory recursively, then re-create its contents. We do this whenever settings are changed, as well as [immediately on startup](https://github.com/PhotonVision/photonvision/blob/f81304846251b82a128013ce0800a2cc1b71e744/photon-server/src/main/java/org/photonvision/Main.java#L348). Hopefully you don't turn off your robot at the wrong time.
-- Even on the Pi's NTFS filesystem, even syncing the world on every write, we were still getting reports of settings being lost
+- On the Pi's filesystem, even syncing the world on every write, we were still getting reports of settings being lost
     - In retrospect, some of these could be attributed to poor multi-camera matching code behavior (TODO link this GH issue), which was [updated in Summer 2024](camera-matching.md)
 
 ## Timeline
@@ -34,8 +34,10 @@ And yet we kept getting reports of settings being lost. In particular, a Raspber
         fileOutputStream.close();
     }
 ```
-- 22 Febuary 2022: https://www.chiefdelphi.com/t/photon-vision-lost-config-file/403692 -- "After looking at the logs, I found that half of the config files were gone. It lost the configs for the pipelines and one camera."
-- 29 October, 2022: https://github.com/PhotonVision/photonvision/issues/552
+- 22 February 2022: https://www.chiefdelphi.com/t/photon-vision-lost-config-file/403692 -- "After looking at the logs, I found that half of the config files were gone. It lost the configs for the pipelines and one camera."
+- 28 February 2022: We discovered [RoboRIO finder made PhotonVision hang only when connected to FMS](https://www.chiefdelphi.com/t/photonvision-2022-official-release/400536/29?u=thatmattguy), so Matt moved [config saving to a dedicated thread](https://github.com/PhotonVision/photonvision/pull/438/files) to ""Fix"" this. The long-term fix was to disable RoboRIO finder.
+- 10 January 2023: https://www.chiefdelphi.com/t/co-processor-for-upcoming-season-for-vision/415153/234?u=thatmattguy -- "While the situation may be better with journaling filesystems, it does appear there is a real hardware issue that has a (low) risk of corrupting things beyond what journaling can handle."
+- 29 October 2022: https://github.com/PhotonVision/photonvision/issues/552
 - 3 March 2023 -- @mdurrani834 [creates "PSA for PhotonVision Teams (Settings Loss Bug)""](https://www.chiefdelphi.com/t/psa-for-photonvision-teams-settings-loss-bug/428823)
   - Matt: "The failure mode shows up as Photon being unable to parse a specific camera’s config JSON file (not malformed, just straight up missing based on logs)"
 - 13 April 2023: https://www.chiefdelphi.com/t/photon-vision-resets-configuration-to-default/434259 -- ""
