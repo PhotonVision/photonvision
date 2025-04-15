@@ -123,8 +123,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     return std::nullopt;
   }
 
-  return Update(result, cameraMatrixData, cameraDistCoeffs, constrainedPnpParams,
-                this->strategy);
+  return Update(result, cameraMatrixData, cameraDistCoeffs,
+                constrainedPnpParams, this->strategy);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
