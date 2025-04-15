@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = withDefaults(
+withDefaults(
   defineProps<{
     iconName: string;
     disabled?: boolean;
@@ -19,7 +19,6 @@ defineEmits<{
   (e: "click"): void;
 }>();
 
-const hoverClass = props.hover ? "hover" : "";
 </script>
 
 <template>
@@ -27,7 +26,7 @@ const hoverClass = props.hover ? "hover" : "";
     <v-tooltip :right="right" :location="!right ? 'bottom' : undefined" offset="10" :disabled="tooltip === undefined">
       <template #activator="{ props }">
         <v-icon
-          :class="hoverClass"
+          :class="hover ? 'hover' : ''"
           :color="color"
           v-bind="props"
           :disabled="disabled"
