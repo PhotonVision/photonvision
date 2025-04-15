@@ -20,7 +20,6 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -115,7 +114,6 @@ public class CameraConfiguration {
         this(UUID.randomUUID().toString(), camInfo);
     }
 
-    
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
         for (var setting : settings) {
             addPipelineSetting(setting);

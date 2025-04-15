@@ -19,7 +19,6 @@ package org.photonvision.common.configuration;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -593,8 +592,6 @@ public class SqlConfigProvider extends ConfigProvider {
                 // We -really- need to delete this -stupid- otherpaths column. I hate it.
                 var configStr = result.getString(Columns.CAM_CONFIG_JSON);
                 CameraConfiguration config = JacksonUtils.deserialize(configStr, CameraConfiguration.class);
-
-                
 
                 var driverMode =
                         JacksonUtils.deserialize(

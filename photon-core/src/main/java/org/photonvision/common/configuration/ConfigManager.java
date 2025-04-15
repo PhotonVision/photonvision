@@ -19,9 +19,7 @@ package org.photonvision.common.configuration;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -59,11 +57,12 @@ public class ConfigManager {
 
     enum ConfigSaveStrategy {
         SQL,
-        
+
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. Legacy used to be an option, but it was removed on Apr 15 2025.
+    // This logic decides which kind of ConfigManager we load as the default. Legacy used to be an
+    // option, but it was removed on Apr 15 2025.
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
@@ -105,7 +104,6 @@ public class ConfigManager {
             logger.error("Exception copying uploaded settings!", e);
             return false;
         }
-
     }
 
     public PhotonConfiguration getConfig() {
@@ -184,35 +182,33 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists())
-            logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists())
-            imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePath(String uniqueCameraName) {
-        var imgFilePath = Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
-        if (!imgFilePath.exists())
-            imgFilePath.mkdirs();
+        var imgFilePath =
+                Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
-        var imgFilePath = Path.of(
-                configDirectoryFile.toString(),
-                "calibration",
-                uniqueCameraName,
-                "imgs",
-                frameSize.toString())
-                .toFile();
-        if (!imgFilePath.exists())
-            imgFilePath.mkdirs();
+        var imgFilePath =
+                Path.of(
+                                configDirectoryFile.toString(),
+                                "calibration",
+                                uniqueCameraName,
+                                "imgs",
+                                frameSize.toString())
+                        .toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
@@ -273,16 +269,13 @@ public class ConfigManager {
     /** Get (and create if not present) the subfolder where ML models are stored */
     public File getModelsDirectory() {
         var ret = new File(configDirectoryFile, "models");
-        if (!ret.exists())
-            ret.mkdirs();
+        if (!ret.exists()) ret.mkdirs();
         return ret;
     }
 
     /**
-     * Disable flushing settings to disk as part of our JVM exit hook. Used to
-     * prevent uploading all
-     * settings from getting its new configs overwritten at program exit and before
-     * they're all
+     * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
+     * settings from getting its new configs overwritten at program exit and before they're all
      * loaded.
      */
     public void disableFlushOnShutdown() {
