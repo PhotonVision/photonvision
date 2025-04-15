@@ -17,12 +17,14 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class NetworkConfigTest {
     @Test
@@ -37,13 +39,13 @@ public class NetworkConfigTest {
     @Test
     public void testDeserializeTeamNumberOrNtServerAddress() {
         {
-            var folder = Path.of("test-resources/network-old-team-number");
+            var folder = Path.of("test-resources/old_configs/photonvision_config_from_v2024.3.1");
             var configMgr = new ConfigManager(folder, new SqlConfigProvider(folder));
             configMgr.load();
             Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
         {
-            var folder = Path.of("test-resources/network-new-team-number");
+            var folder = Path.of("test-resources/old_configs/photonvision_config_from_v2024.3.1");
             var configMgr = new ConfigManager(folder, new SqlConfigProvider(folder));
             configMgr.load();
             Assertions.assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
