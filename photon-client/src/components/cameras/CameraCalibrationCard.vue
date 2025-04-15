@@ -219,7 +219,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       <v-card-title class="pa-6 pb-3">Camera Calibration</v-card-title>
       <v-card-text v-show="!isCalibrating">
         <v-card-subtitle class="pt-3 pl-2 pb-4 white--text">Current Calibration</v-card-subtitle>
-        <v-simple-table fixed-header height="100%" dense>
+        <v-table fixed-header height="100%" dense>
           <thead>
             <tr>
               <th>Resolution</th>
@@ -240,8 +240,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
               <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
               <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <td v-bind="attrs" v-on="on" @click="setSelectedVideoFormat(value)">
+                <template #activator="{ props }">
+                  <td v-bind="props" @click="setSelectedVideoFormat(value)">
                     <v-icon small class="mr-2">mdi-information</v-icon>
                   </td>
                 </template>
@@ -249,7 +249,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               </v-tooltip>
             </tr>
           </tbody>
-        </v-simple-table>
+        </v-table>
       </v-card-text>
       <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-6 pt-0">
         <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 white--text"
@@ -272,7 +272,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
             :items="calibrationDivisors"
             :select-cols="8"
-            @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: +v }, false)"
+            @update:modelValue="
+              (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: +v }, false)
+            "
           />
           <pv-select
             v-model="boardType"
@@ -353,14 +355,18 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           label="Draw Collected Corners"
           :switch-cols="8"
           tooltip="Draw all snapshots"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: args }, false)
+          "
         />
         <pv-switch
           v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
           label="Auto Exposure"
           :label-cols="4"
           tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
+          "
         />
         <pv-slider
           v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
@@ -371,7 +377,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           :max="useCameraSettingsStore().maxExposureRaw"
           :slider-cols="7"
           :step="1"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
+          "
         />
         <pv-slider
           v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
@@ -379,7 +387,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           :min="0"
           :max="100"
           :slider-cols="7"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
+          "
         />
         <pv-slider
           v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
@@ -389,7 +399,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           :min="0"
           :max="100"
           :slider-cols="7"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)
+          "
         />
         <pv-slider
           v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
@@ -399,7 +411,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           :max="100"
           :slider-cols="7"
           tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
+          "
         />
         <pv-slider
           v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
@@ -409,7 +423,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           :max="100"
           :slider-cols="7"
           tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
+          "
         />
         <v-banner
           v-if="tooManyPoints"
@@ -518,7 +534,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
 </template>
 
 <style scoped lang="scss">
-.v-data-table {
+.v-table {
   text-align: center;
   width: 100%;
 

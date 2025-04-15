@@ -278,7 +278,7 @@ const openExportSettingsPrompt = () => {
 </script>
 
 <template>
-  <div class="pa-5">
+  <div class="pa-3">
     <v-row>
       <!-- Active modules -->
       <v-col
@@ -288,7 +288,7 @@ const openExportSettingsPrompt = () => {
         sm="6"
         lg="4"
       >
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="pb-2"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
@@ -303,7 +303,7 @@ const openExportSettingsPrompt = () => {
           >
           <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dark dense>
+            <v-table dense>
               <tbody>
                 <tr>
                   <td>Streams:</td>
@@ -341,7 +341,7 @@ const openExportSettingsPrompt = () => {
                   </td>
                 </tr>
               </tbody>
-            </v-simple-table>
+            </v-table>
             <div
               v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
@@ -394,11 +394,11 @@ const openExportSettingsPrompt = () => {
 
       <!-- Disabled modules -->
       <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dense>
+            <v-table dense>
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -424,7 +424,7 @@ const openExportSettingsPrompt = () => {
                   </td>
                 </tr>
               </tbody>
-            </v-simple-table>
+            </v-table>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
@@ -465,7 +465,7 @@ const openExportSettingsPrompt = () => {
 
       <!-- Unassigned cameras -->
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title class="pb-2">
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
@@ -518,7 +518,7 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" dark flat color="primary">
+      <v-card v-if="viewingCamera[0] !== null"flat color="primary">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
           <v-btn text @click="setCameraView(null, null)">
@@ -542,8 +542,8 @@ const openExportSettingsPrompt = () => {
     </v-dialog>
 
     <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera" dark width="800">
-      <v-card v-if="cameraToDelete !== null" dark class="dialog-container pa-3 pb-2" color="primary" flat>
+    <v-dialog v-model="viewingDeleteCamera"width="800">
+      <v-card v-if="cameraToDelete !== null"class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
@@ -591,7 +591,7 @@ const openExportSettingsPrompt = () => {
 </template>
 
 <style scoped>
-.v-data-table {
+.v-table {
   background-color: #006492 !important;
 }
 

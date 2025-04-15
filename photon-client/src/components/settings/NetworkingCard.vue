@@ -136,7 +136,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" style="background-color: #006492">
     <v-card-title class="pa-6">Global Settings</v-card-title>
     <div class="pa-6 pt-0">
       <v-divider class="pb-3" />

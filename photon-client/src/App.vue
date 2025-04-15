@@ -58,9 +58,9 @@ if (!is_demo) {
     <v-main>
       <v-container class="main-container" fluid fill-height>
         <v-layout>
-          <v-flex>
+          <v-container class="align-start pa-0 ma-0" fluid>
             <router-view />
-          </v-flex>
+          </v-container>
         </v-layout>
       </v-container>
     </v-main>
@@ -71,7 +71,7 @@ if (!is_demo) {
 </template>
 
 <style lang="scss">
-@import "vuetify/src/styles/settings/_variables";
+@import "vuetify/settings";
 
 @media #{map-get($display-breakpoints, 'md-and-down')} {
   html {

@@ -14,6 +14,7 @@ import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import { useDisplay } from "vuetify/lib/composables/display";
 
 interface ConfigOption {
   tabName: string;
@@ -64,15 +65,12 @@ const allTabs = Object.freeze({
 });
 
 const selectedTabs = ref([0, 0, 0, 0]);
-const getTabGroups = (): ConfigOption[][] => {
-  const smAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false;
-  const mdAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false;
-  const lgAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.lgAndDown || false;
-  const xl = getCurrentInstance()?.proxy.$vuetify.breakpoint.xl || false;
+const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
 
-  if (smAndDown || useCameraSettingsStore().isDriverMode || (mdAndDown && !useStateStore().sidebarFolded)) {
+const getTabGroups = (): ConfigOption[][] => {
+  if (smAndDown.value || useCameraSettingsStore().isDriverMode || (mdAndDown.value && !useStateStore().sidebarFolded)) {
     return [Object.values(allTabs)];
-  } else if (mdAndDown || !useStateStore().sidebarFolded) {
+  } else if (mdAndDown.value || !useStateStore().sidebarFolded) {
     return [
       [
         allTabs.inputTab,
@@ -85,7 +83,7 @@ const getTabGroups = (): ConfigOption[][] => {
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
-  } else if (lgAndDown) {
+  } else if (lgAndDown.value) {
     return [
       [allTabs.inputTab],
       [
@@ -98,7 +96,7 @@ const getTabGroups = (): ConfigOption[][] => {
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
-  } else if (xl) {
+  } else if (xl.value) {
     return [
       [allTabs.inputTab],
       [allTabs.thresholdTab],

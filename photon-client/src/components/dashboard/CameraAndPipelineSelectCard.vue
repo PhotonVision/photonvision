@@ -249,7 +249,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
           :items="wrappedCameras"
-          @input="changeCurrentCameraUniqueName"
+          @update:modelValue="changeCurrentCameraUniqueName"
         />
         <pv-input
           v-else
@@ -285,7 +285,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isPipelineNameEdit"
-          :value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
+          :modelValue="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
           label="Pipeline"
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="
@@ -294,7 +294,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineNamesWrapper"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
+          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
         <pv-input
           v-else
@@ -317,10 +317,10 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit" />
         </div>
         <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
-          <template #activator="{ on }">
-            <v-icon color="#c5c5c5" v-on="on" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
+          <template #activator="{ props }">
+            <v-icon color="#c5c5c5" v-bind="props" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
           </template>
-          <v-list dark dense color="primary">
+          <v-list dense color="primary">
             <v-list-item @click="startPipelineNameEdit">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
@@ -365,12 +365,12 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineTypesWrapper"
-          @input="showPipelineTypeChangeDialog = true"
+          @update:modelValue="showPipelineTypeChangeDialog = true"
         />
       </v-col>
     </v-row>
-    <v-dialog v-model="showPipelineCreationDialog" dark persistent width="500">
-      <v-card dark color="primary">
+    <v-dialog v-model="showPipelineCreationDialog"persistent width="500">
+      <v-card color="primary">
         <v-card-title> Create New Pipeline </v-card-title>
         <v-card-text>
           <pv-input
@@ -404,8 +404,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showPipelineDeletionConfirmationDialog" dark width="500">
-      <v-card dark color="primary">
+    <v-dialog v-model="showPipelineDeletionConfirmationDialog"width="500">
+      <v-card color="primary">
         <v-card-title> Pipeline Deletion Confirmation </v-card-title>
         <v-card-text>
           Are you sure you want to delete the pipeline

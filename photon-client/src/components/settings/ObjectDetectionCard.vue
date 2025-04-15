@@ -65,7 +65,7 @@ const supportedModels = computed(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" style="background-color: #006492">
     <v-card-title class="pa-6">Object Detection</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
@@ -77,7 +77,7 @@ const supportedModels = computed(() => {
           <v-dialog
             v-model="showImportDialog"
             width="600"
-            @input="
+            @update:modelValue="
               () => {
                 importRKNNFile = null;
                 importLabelsFile = null;
@@ -121,7 +121,7 @@ const supportedModels = computed(() => {
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-simple-table fixed-header height="100%" dense dark>
+          <v-table fixed-header height="100%" dense dark>
             <thead style="font-size: 1.25rem">
               <tr>
                 <th class="text-left">Available Models</th>
@@ -132,7 +132,7 @@ const supportedModels = computed(() => {
                 <td>{{ model }}</td>
               </tr>
             </tbody>
-          </v-simple-table>
+          </v-table>
         </v-col>
       </v-row>
     </div>
@@ -151,7 +151,7 @@ const supportedModels = computed(() => {
     display: none;
   }
 }
-.v-data-table {
+.v-table {
   width: 100%;
   height: 100%;
   text-align: center;

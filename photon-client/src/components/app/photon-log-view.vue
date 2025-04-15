@@ -3,7 +3,7 @@ import { computed, inject, ref, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
-import VirtualList from "vue-virtual-scroll-list";
+import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
 
@@ -74,7 +74,7 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card dark class="dialog-container pa-6" color="primary" flat>
+    <v-card class="dialog-container pa-6" color="primary" flat>
       <!-- Logs header -->
       <v-row class="no-gutters pb-3">
         <v-col cols="4">
@@ -136,7 +136,7 @@ document.addEventListener("keydown", (e) => {
                     {{ getLogLevelFromIndex(level) }}
                   </v-col>
                   <v-col cols="6" md="4">
-                    <v-switch v-model="selectedLogLevels[level]" dark color="#ffd843" />
+                    <v-switch v-model="selectedLogLevels[level]" color="#ffd843" />
                   </v-col>
                 </v-row>
               </v-col>

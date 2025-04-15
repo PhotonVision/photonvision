@@ -1,18 +1,18 @@
 import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig } from "vite";
-import Vue2 from "@vitejs/plugin-vue2";
+import Vue from "@vitejs/plugin-vue";
 import Components from "unplugin-vue-components/vite";
-import { VuetifyResolver } from "unplugin-vue-components/resolvers";
+import { Vuetify3Resolver } from "unplugin-vue-components/resolvers";
 
 export default defineConfig({
   base: "./",
   plugins: [
-    Vue2(),
+    Vue(),
     Components({
-      resolvers: [VuetifyResolver()],
+      resolvers: [Vuetify3Resolver()],
       dts: true,
-      transformer: "vue2",
+      transformer: "vue3",
       types: [
         {
           from: "vue-router",
@@ -25,7 +25,7 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       sass: {
-        additionalData: ["@import \"@/assets/styles/variables.scss\"", ""].join("\n")
+        additionalData: ['@import "@/assets/styles/variables.scss"', ""].join("\n")
       }
     }
   },

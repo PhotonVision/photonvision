@@ -5,6 +5,7 @@ import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
+import { useDisplay } from "vuetify";
 
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
@@ -123,9 +124,10 @@ onBeforeUnmount(() => {
 
   cameraStream.removeEventListener("click", handleStreamClick);
 });
+const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
-  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
+  mdAndDown.value &&
   (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
     ? 9
     : 8
@@ -144,7 +146,7 @@ const interactiveCols = computed(() =>
       :max="180"
       :slider-cols="interactiveCols"
       :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
     />
     <pv-range-slider
       id="sat-slider"
@@ -155,7 +157,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)"
     />
     <pv-range-slider
       id="value-slider"
@@ -166,14 +168,14 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       label="Invert Hue"
       :switch-cols="interactiveCols"
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)"
     />
     <div>
       <div class="white--text pt-3">Color Picker</div>

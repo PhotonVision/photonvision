@@ -6,19 +6,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const props = defineProps<{
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[];
-}>();
-
-const emit = defineEmits<{
-  (e: "input", value: number[]): void;
-}>();
-
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
+const value = defineModel<number[]>();
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -98,7 +86,7 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-text>
     <v-card-text class="pt-0">
-      <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
+      <v-btn-toggle v-model="value" :multiple="true" mandatoryclass="fill" style="width: 100%">
         <v-btn
           color="secondary"
           class="fill"

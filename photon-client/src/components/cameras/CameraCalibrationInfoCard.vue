@@ -135,7 +135,7 @@ const calibrationImageURL = (index: number) =>
       </v-banner>
     </v-card-text>
     <v-card-text>
-      <v-simple-table dense style="width: 100%">
+      <v-table dense style="width: 100%">
         <template #default>
           <thead>
             <tr>
@@ -238,7 +238,7 @@ const calibrationImageURL = (index: number) =>
             </tr>
           </tbody>
         </template>
-      </v-simple-table>
+      </v-table>
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">

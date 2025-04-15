@@ -34,13 +34,13 @@ const localValue = computed({
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
     <v-col :cols="inputCols" class="d-flex align-center pr-0">
-      <v-radio-group v-model="localValue" row dark :mandatory="true" hide-details="auto">
+      <v-radio-group v-model="localValue" row:mandatory="true" hide-details="auto">
         <v-radio
           v-for="(radioName, index) in list"
           :key="index"
           color="#ffd843"
           :label="radioName"
-          :value="index"
+          :modelValue="index"
           :disabled="disabled"
         />
       </v-radio-group>

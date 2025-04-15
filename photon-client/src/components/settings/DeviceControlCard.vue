@@ -237,7 +237,7 @@ const nukePhotonConfigDirectory = () => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" style="background-color: #006492">
     <v-card-title class="pa-6">Device Control</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
@@ -271,7 +271,7 @@ const nukePhotonConfigDirectory = () => {
           <v-dialog
             v-model="showImportDialog"
             width="600"
-            @input="
+            @update:modelValue="
               () => {
                 importType = -1;
                 importFile = null;
@@ -362,7 +362,7 @@ const nukePhotonConfigDirectory = () => {
             <v-icon left class="open-icon"> mdi-skull-crossbones </v-icon>
             <span class="open-icon">
               {{
-                $vuetify.breakpoint.mdAndUp
+                $vuetify.display.mdAndUp
                   ? "Factory Reset PhotonVision and delete EVERYTHING"
                   : "Factory Reset PhotonVision"
               }}
@@ -373,7 +373,7 @@ const nukePhotonConfigDirectory = () => {
     </div>
 
     <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card dark color="primary" class="pa-3" flat>
+      <v-card color="primary" class="pa-3" flat>
         <v-card-title style="justify-content: center" class="pb-6">
           <span class="open-label">
             <v-icon right color="error" class="open-icon ma-1">mdi-nuke</v-icon>
@@ -418,7 +418,7 @@ const nukePhotonConfigDirectory = () => {
             <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">
               {{
-                $vuetify.breakpoint.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything"
+                $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything"
               }}
             </span>
           </v-btn>

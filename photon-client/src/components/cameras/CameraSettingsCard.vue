@@ -216,8 +216,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       </v-col>
     </v-card-text>
 
-    <v-dialog v-model="showDeleteCamera" dark width="800">
-      <v-card dark class="dialog-container pa-3 pb-2" color="primary" flat>
+    <v-dialog v-model="showDeleteCamera"width="800">
+      <v-card class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ useCameraSettingsStore().currentCameraSettings.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">

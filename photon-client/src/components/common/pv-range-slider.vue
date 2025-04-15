@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 
+const value = defineModel<[number, number] | WebsocketNumberPair>({
+  required: true
+});
 const props = withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    // value: [number, number] | WebsocketNumberPair, // Vue doesnt like Union types for the value prop for some reason.
-    value: [number, number];
     min: number;
     max: number;
     step?: number;
@@ -24,19 +25,16 @@ const props = withDefaults(
   }
 );
 
-const emit = defineEmits<{
-  (e: "input", value: [number, number]): void;
-}>();
 
 const localValue = computed<[number, number]>({
   get: (): [number, number] => {
-    return Object.values(props.value) as [number, number];
+    return Object.values(value.value) as [number, number];
   },
   set: (v) => {
     for (let i = 0; i < v.length; i++) {
       v[i] = parseFloat(v[i] as unknown as string);
     }
-    emit("input", v);
+    value.value = v;
   }
 });
 
@@ -78,7 +76,7 @@ const checkNumberRange = (v: string): boolean => {
       >
         <template #prepend>
           <v-text-field
-            :value="localValue[0]"
+            :modelValue="localValue[0]"
             dark
             color="accent"
             class="mt-0 pt-0"
@@ -90,12 +88,12 @@ const checkNumberRange = (v: string): boolean => {
             :rules="[checkNumberRange]"
             type="number"
             style="width: 60px"
-            @input="(v) => changeFromSlot(v, 0)"
+            @update:modelValue="(v) => changeFromSlot(v, 0)"
           />
         </template>
         <template #append>
           <v-text-field
-            :value="localValue[1]"
+            :modelValue="localValue[1]"
             dark
             color="accent"
             class="mt-0 pt-0"
@@ -107,7 +105,7 @@ const checkNumberRange = (v: string): boolean => {
             :rules="[checkNumberRange]"
             type="number"
             style="width: 60px"
-            @input="(v) => changeFromSlot(v, 1)"
+            @update:modelValue="(v) => changeFromSlot(v, 1)"
           />
         </template>
       </v-range-slider>

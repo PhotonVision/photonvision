@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-
+const value = defineModel<number>({required: true});
 const props = withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    value: number;
     min: number;
     max: number;
     step?: number;
@@ -33,7 +31,7 @@ function debounce(func: (...args: any[]) => void, wait: number) {
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
-
+/*
 const debouncedEmit = debounce((v: number) => {
   emit("input", v);
 }, 20);
@@ -41,7 +39,7 @@ const debouncedEmit = debounce((v: number) => {
 const localValue = computed({
   get: () => props.value,
   set: (v) => debouncedEmit(parseFloat(v as unknown as string))
-});
+});*/
 </script>
 
 <template>
@@ -51,7 +49,7 @@ const localValue = computed({
     </v-col>
     <v-col :cols="sliderCols - 1">
       <v-slider
-        v-model="localValue"
+        v-model="value"
         dark
         class="align-center"
         :max="max"
@@ -62,13 +60,13 @@ const localValue = computed({
         :step="step"
         append-icon="mdi-menu-right"
         prepend-icon="mdi-menu-left"
-        @click:append="localValue += step"
-        @click:prepend="localValue -= step"
+        @click:append="value += step"
+        @click:prepend="value -= step"
       />
     </v-col>
     <v-col :cols="1" class="pr-0">
       <v-text-field
-        :value="localValue"
+        :modelValue="value"
         dark
         color="accent"
         :max="max"
@@ -81,8 +79,8 @@ const localValue = computed({
         style="width: 100%"
         :step="step"
         :hide-spin-buttons="true"
-        @keyup.enter="localValue = $event.target.value"
-        @blur="localValue = $event.target.value"
+        @keyup.enter="value = $event.target.value"
+        @blur="value = $event.target.value"
       />
     </v-col>
   </div>

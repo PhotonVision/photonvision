@@ -88,7 +88,7 @@ const arducamWarningShown = computed<boolean>(() => {
 
     <!-- TODO - not sure this belongs here -->
     <v-dialog v-if="warningShown" v-model="warningShown" :persistent="false" max-width="800" dark>
-      <v-card dark flat color="primary">
+      <v-card flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>
           No cameras activated - head to the <a href="#/cameraConfigs">Camera matching tab</a> to set some up!

@@ -2,12 +2,12 @@
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
+const value = defineModel<string>({required: true});
+
 const props = withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    value: string;
     disabled?: boolean;
     errorMessage?: string;
     placeholder?: string;
@@ -22,23 +22,18 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  (e: "input", value: string): void;
   (e: "onEnter", value: string): void;
   (e: "onEscape"): void;
 }>();
 
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
 
 const handleKeydown = ({ key }) => {
   switch (key) {
     case "Enter":
       // Explicitly check that all rule props return true
-      if (!props.rules?.every((rule) => rule(localValue.value) === true)) return;
+      if (!props.rules?.every((rule) => rule(value.value) === true)) return;
 
-      emit("onEnter", localValue.value);
+      emit("onEnter", value.value);
       break;
     case "Escape":
       emit("onEscape");
@@ -55,7 +50,7 @@ const handleKeydown = ({ key }) => {
 
     <v-col :cols="inputCols" class="d-flex align-center pr-0">
       <v-text-field
-        v-model="localValue"
+        v-model="value"
         dark
         dense
         color="accent"

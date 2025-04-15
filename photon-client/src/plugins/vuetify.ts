@@ -1,41 +1,46 @@
-import Vue from "vue";
-import Vuetify from "vuetify";
 import "vuetify/dist/vuetify.min.css";
 import "@mdi/font/css/materialdesignicons.css";
-import type { VuetifyThemeVariant } from "vuetify/types/services/theme";
+import type { ThemeDefinition } from "vuetify/lib/composables/theme";
+import { createVuetify } from "vuetify";
 
-Vue.use(Vuetify);
-
-const darkTheme: VuetifyThemeVariant = Object.freeze({
-  primary: "#006492",
-  secondary: "#39A4D5",
-  accent: "#FFD843",
-  background: "#232C37",
+const commonColors = {
   error: "#b80000",
   info: "#2196F3",
   success: "#4CAF50",
   warning: "#FFC107"
-});
+};
 
-const lightTheme: VuetifyThemeVariant = Object.freeze({
-  primary: "#006492",
-  secondary: "#39A4D5",
-  accent: "#FFD843",
-  background: "#232C37",
-  error: "#b80000",
-  info: "#2196F3",
-  success: "#4CAF50",
-  warning: "#FFC107"
-});
+const DarkTheme: ThemeDefinition = {
+  dark: true,
+  colors: {
+    primary: "#006492",
+    secondary: "#39A4D5",
+    accent: "#FFD843",
+    background: "#232C37",
+    ...commonColors
+  }
+};
 
-export default new Vuetify({
+const LightTheme: ThemeDefinition = {
+  dark: false,
+  colors: {
+    primary: "#006492",
+    secondary: "#39A4D5",
+    accent: "#FFD843",
+    background: "#232C37",
+    ...commonColors
+  }
+};
+
+export default createVuetify({
   theme: {
+    defaultTheme: "LightTheme",
     themes: {
-      light: lightTheme,
-      dark: darkTheme
+      LightTheme: LightTheme,
+      DarkTheme: DarkTheme
     }
   },
-  breakpoint: {
+  display: {
     thresholds: {
       md: 1460,
       lg: 2000

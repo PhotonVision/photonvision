@@ -6,10 +6,8 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
-defineProps<{
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[];
-}>();
+const value = defineModel<number[]>();
+
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -69,7 +67,7 @@ const performanceRecommendation = computed<string>(() => {
     </v-card-title>
     <v-divider class="ml-3 mr-3" />
     <v-row class="stream-viewer-container pa-3 align-center">
-      <v-col v-if="value.includes(0)" class="stream-view">
+      <v-col v-if="value?.includes(0)" class="stream-view">
         <photon-camera-stream
           id="input-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
@@ -77,7 +75,7 @@ const performanceRecommendation = computed<string>(() => {
           style="width: 100%; height: auto"
         />
       </v-col>
-      <v-col v-if="value.includes(1)" class="stream-view">
+      <v-col v-if="value?.includes(1)" class="stream-view">
         <photon-camera-stream
           id="output-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"

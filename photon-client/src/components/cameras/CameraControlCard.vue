@@ -91,7 +91,7 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card dark style="background-color: #006492">
+  <v-card style="background-color: #006492">
     <v-card-title>Camera Control</v-card-title>
     <v-card-text>
       <v-btn color="secondary" @click="fetchSnapshots">
@@ -100,7 +100,7 @@ const expanded = ref([]);
       </v-btn>
     </v-card-text>
     <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card dark class="pt-3 pl-5 pr-5" color="primary" flat>
+      <v-card class="pt-3 pl-5 pr-5" color="primary" flat>
         <v-card-title> View Saved Frame Snapshots </v-card-title>
         <v-divider />
         <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
@@ -157,7 +157,7 @@ const expanded = ref([]);
 .v-btn {
   width: 100%;
 }
-.v-data-table {
+.v-table {
   text-align: center;
   background-color: #006492 !important;
 
