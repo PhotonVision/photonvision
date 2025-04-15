@@ -17,8 +17,6 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -74,10 +72,7 @@ public class NeuralNetworkProperties {
 
     public NeuralNetworkProperties() {}
 
-    @JsonCreator
-    public NeuralNetworkProperties(
-            @JsonProperty("modelPropertiesList")
-                    HashMap<Path, RknnModelProperties> modelPropertiesList) {}
+    public NeuralNetworkProperties(HashMap<Path, RknnModelProperties> modelPropertiesList) {}
 
     public NeuralNetworkProperties(NeuralNetworkProperties NNMProperties) {
         this(NNMProperties.properties);
