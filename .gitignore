@@ -1,19 +1,14 @@
-Python/__pycache__/WebSiteHandler\.cpython-37\.pyc
-
 \.idea/
 
 *.pyc
-
-Python/app/__pycache__/
-
-Python/app/handlers/__pycache__/
-
-\.vscode/
+__pycache__/
 
 /.vs
-
 backend/settings/
-/.vscode/
+.vscode/
+# Docs
+source/_build
+source/docs/_build
 # Compiled class file
 *.class
 
@@ -109,7 +104,6 @@ fabric.properties
 
 # Temporary build files
 **/.gradle
-**/target
 **/src/main/java/META-INF
 **/.settings
 **/.classpath
@@ -124,8 +118,6 @@ compile_commands.json
 .clang
 .clangd/
 .cache/
-
-New client/photon-client/*
 
 *.prefs
 *.jfr
@@ -146,11 +138,12 @@ photonlib-cpp-examples/*/vendordeps/*
 photonlib-cpp-examples/*/networktables.json.bck
 photonlib-java-examples/*/networktables.json.bck
 *.sqlite
-photon-server/src/main/resources/web/*
 venv
 .venv/*
 .venv
 networktables.json
-
-website/node_modules
-website/dist
+# Web stuff
+photon-server/src/main/resources/web/*
+node_modules
+dist
+components.d.ts
