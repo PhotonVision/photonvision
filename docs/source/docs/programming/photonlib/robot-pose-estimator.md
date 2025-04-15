@@ -10,7 +10,7 @@ PhotonLib includes a `PhotonPoseEstimator` class, which allows you to combine th
 
 `AprilTagFieldLayout` is used to represent a layout of AprilTags within a space (field, shop at home, classroom, etc.). WPILib provides a JSON that describes the layout of AprilTags on the field which you can then use in the AprilTagFieldLayout constructor. You can also specify a custom layout.
 
-The API documentation can be found in here: [Java](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/apriltag/AprilTagFieldLayout.html) and [C++](https://github.wpilib.org/allwpilib/docs/release/cpp/classfrc_1_1_april_tag_field_layout.html).
+The API documentation can be found in here: [Java](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/apriltag/AprilTagFieldLayout.html), [C++](https://github.wpilib.org/allwpilib/docs/release/cpp/classfrc_1_1_april_tag_field_layout.html), and [Python](https://robotpy.readthedocs.io/projects/apriltag/en/stable/robotpy_apriltag/AprilTagFieldLayout.html#robotpy_apriltag.AprilTagFieldLayout).
 
 ```{eval-rst}
 .. tab-set-code::
@@ -155,3 +155,4 @@ For more information on the `PhotonPoseEstimator` class, please see the API docu
 
 - [Java Documentation](https://javadocs.photonvision.org/release/org/photonvision/PhotonPoseEstimator.html)
 - [C++ Documentation](https://cppdocs.photonvision.org/release/classphoton_1_1_photon_pose_estimator.html)
+- [Python Documentation](https://pydocs.photonvision.org/release/reference/photonPoseEstimator/)
