@@ -42,6 +42,18 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
+    /**
+     * The settings for an Aruco pipeline
+     *<p>
+     * This includes the following:
+     * - PipelineType
+     * - outputShowMultipleTargets
+     * - TargetModel
+     * - cameraExposureRaw
+     * - cameraAutoExposure
+     * - ledMode
+     * 
+     */
     public ArucoPipelineSettings() {
         super();
         pipelineType = PipelineType.Aruco;

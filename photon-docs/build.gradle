@@ -128,6 +128,7 @@ task generateJavaDocs(type: Javadoc) {
     options.links "https://docs.oracle.com/en/java/javase/17/docs/api/", "https://github.wpilib.org/allwpilib/docs/release/java/"
     options.addStringOption("tag", "pre:a:Pre-Condition")
     options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
+    // options.addBooleanOption("Xwerror", true)
     options.addBooleanOption('html5', true)
     options.linkSource(true)
     failOnError = true
