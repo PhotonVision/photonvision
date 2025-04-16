@@ -249,10 +249,20 @@ public class TrackedTarget implements Releasable {
         }
     }
 
+    /**
+     * Set the fiducial ID of the target. This is used to identify the target in the pipeline.
+     * 
+     * @param id
+     */
     public void setFiducialId(int id) {
         m_fiducialId = id;
     }
 
+    /**
+     * Get the fiducial ID of the target. This is used to identify the target in the pipeline.
+     * 
+     * @return The fiducial ID of the target.
+     */
     public int getFiducialId() {
         return m_fiducialId;
     }

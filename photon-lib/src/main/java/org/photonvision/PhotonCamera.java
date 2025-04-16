@@ -59,8 +59,11 @@ import org.photonvision.timesync.TimeSyncSingleton;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
+    /** The number of PhotonCamera instances that have been created. */
     private static int InstanceCount = 0;
+    /** The name of the NetworkTable that PhotonVision uses. */
     public static final String kTableName = "photonvision";
+    /** The name of the alert group. */
     private static final String PHOTON_ALERT_GROUP = "PhotonAlerts";
 
     private final NetworkTable cameraTable;
@@ -256,6 +259,8 @@ public class PhotonCamera implements AutoCloseable {
      * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
      * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
      * make sure to call this frequently enough to avoid old results being discarded, too!
+     * 
+     * @return List of all the {@link PhotonPipelineResult}s that have been sent since the last call to this function
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
         verifyVersion();
@@ -281,6 +286,8 @@ public class PhotonCamera implements AutoCloseable {
      *
      * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
      * results, or provide duplicate ones!
+     * 
+     * @return The latest {@link PhotonPipelineResult} received from the camera
      */
     @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
@@ -453,7 +460,8 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
+     * 
+     * @return The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
      * to 0
      */
     public Optional<Matrix<N8, N1>> getDistCoeffs() {
@@ -471,6 +479,8 @@ public class PhotonCamera implements AutoCloseable {
     /**
      * Gets the NetworkTable representing this camera's subtable. You probably don't ever need to call
      * this.
+     * 
+     * @return The NetworkTable representing this camera's subtable.
      */
     public final NetworkTable getCameraTable() {
         return cameraTable;
