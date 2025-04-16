@@ -30,6 +30,13 @@ public class ArucoDetectionResult {
 
     private final int id;
 
+    /**
+     * Creates a new detection result
+     * 
+     * @param xCorners
+     * @param yCorners
+     * @param id
+     */
     public ArucoDetectionResult(double[] xCorners, double[] yCorners, int id) {
         this.xCorners = xCorners;
         this.yCorners = yCorners;
@@ -37,26 +44,52 @@ public class ArucoDetectionResult {
         // logger.debug("Creating a new detection result: " + this.toString());
     }
 
+    /**
+     * Get the x corners of the detected Aruco marker
+     * 
+     * @return
+     */
     public double[] getXCorners() {
         return xCorners;
     }
 
+    /**
+     * Get the y corners of the detected Aruco marker
+     * 
+     * @return
+     */
     public double[] getYCorners() {
         return yCorners;
     }
 
+    /**
+     * Get the id of the detected Aruco marker
+     * 
+     * @return
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Get the x coordinate of the center of the detected Aruco marker
+     * 
+     * @return
+     */
     public double getCenterX() {
         return (xCorners[0] + xCorners[1] + xCorners[2] + xCorners[3]) / 4.0;
     }
 
+    /**
+     * Get the y coordinate of the center of the detected Aruco marker
+     * 
+     * @return
+     */
     public double getCenterY() {
         return (yCorners[0] + yCorners[1] + yCorners[2] + yCorners[3]) / 4.0;
     }
 
+    
     @Override
     public String toString() {
         return "ArucoDetectionResult{"
