@@ -493,7 +493,8 @@ class LegacyConfigProvider extends ConfigProvider {
     @Override
     public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
         // TODO I'm not implementing this cause nobody with the legacy config is gonna have one of these
-        throw new UnsupportedOperationException(
-                "Unimplemented method 'saveUploadedNeuralNetworkProperties'");
+        
+                System.exit(1);
+                return false;
     }
 }
