@@ -121,7 +121,6 @@ task generateJavaDocs(type: Javadoc) {
 
     source exportedProjects.collect { project(it).sourceSets.main.allJava }
     classpath = files(exportedProjects.collect { project(it).sourceSets.main.compileClasspath })
-    dependsOn project(':photon-core').writeCurrentVersion
 
     options.links "https://docs.oracle.com/en/java/javase/17/docs/api/", "https://github.wpilib.org/allwpilib/docs/release/java/"
     options.addStringOption("tag", "pre:a:Pre-Condition")
