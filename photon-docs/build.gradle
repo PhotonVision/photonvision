@@ -115,8 +115,6 @@ ext {
 
 task generateJavaDocs(type: Javadoc) {
     def exportedProjects = [
-        ':photon-core',
-        ':photon-server',
         ':photon-targeting',
         ':photon-lib'
     ]
