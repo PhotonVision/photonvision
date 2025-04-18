@@ -23,6 +23,7 @@ Windows may report "There is a problem with this drive". This should be ignored.
 Locate `config.txt` in the folder, and open it with your favorite text editor.
 
 ```{image} images/bootConfigTxt.png
+
 ```
 
 Within the file, find this block of text:
