@@ -17,10 +17,13 @@
 
 package org.photonvision.common.dataflow.networktables;
 
+import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StringSubscriber;
+
 import java.util.EnumSet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -43,12 +46,26 @@ public class NTDriverStation {
     }
 
     private IntegerSubscriber ntControlWord;
+    
+    private StringSubscriber eventName;
+    private IntegerSubscriber matchNumber;
+    private IntegerSubscriber replayNumber;
+    private IntegerSubscriber matchType;
+    private BooleanSubscriber isRedAlliance;
+    private IntegerSubscriber stationNumber;
 
     NtControlWord lastControlWord = new NtControlWord();
 
     public NTDriverStation(NetworkTableInstance inst) {
         NetworkTable fmsTable = inst.getTable("FMSInfo");
         this.ntControlWord = fmsTable.getIntegerTopic("FMSControlData").subscribe(0);
+        this.eventName = fmsTable.getStringTopic("EventName").subscribe("");
+        this.matchType = fmsTable.getIntegerTopic("MatchType").subscribe(0);
+        this.matchNumber = fmsTable.getIntegerTopic("MatchNumber").subscribe(0);
+        this.replayNumber = fmsTable.getIntegerTopic("ReplayNumber").subscribe(0);
+        
+        this.isRedAlliance = fmsTable.getBooleanTopic("isRedAlliance").subscribe(true);
+        this.stationNumber = fmsTable.getIntegerTopic("StationNumber").subscribe(0);
 
         fmsTable.addListener(
                 "FMSControlData",
@@ -59,6 +76,7 @@ public class NTDriverStation {
                         var word = NTDriverStation.getControlWord(event.valueData.value.getInteger());
 
                         printTransition(this.lastControlWord, word);
+                        printMatchData();
                         this.lastControlWord = word;
                     }
                 });
@@ -67,11 +85,34 @@ public class NTDriverStation {
         NtControlWord word = NTDriverStation.getControlWord(this.ntControlWord.get());
 
         printTransition(this.lastControlWord, word);
+        printMatchData();
         this.lastControlWord = word;
     }
 
     private void printTransition(NtControlWord old, NtControlWord newWord) {
         logger.info("ROBOT TRANSITIONED MODES! From " + old.toString() + " to " + newWord.toString());
+    }
+
+    private void printMatchData() {
+        // this information seems to be published at the same time
+        String event = eventName.get();
+        if (event.isBlank()) {
+            //nothing to log
+            return;
+        }
+        String type = switch ((int) matchType.get()) {
+            case 1 -> "P";
+            case 2 -> "Q";
+            case 3 -> "E";
+            default -> "";
+        };
+        var match = String.valueOf(matchNumber.get());
+        var replay = replayNumber.get();
+
+        var station = (isRedAlliance.get() ? "RED" : "BLUE") + stationNumber.get();
+
+        var message = "Event: " + event + ", Match: " + type + match + ", Replay: " + replay + ", Station: " + station;
+        logger.info(message);
     }
 
     // Copied from
