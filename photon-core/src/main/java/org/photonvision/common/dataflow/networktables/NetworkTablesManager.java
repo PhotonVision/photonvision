@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
@@ -58,6 +59,8 @@ public class NetworkTablesManager {
 
     private final TimeSyncManager m_timeSync = new TimeSyncManager(kRootTable);
 
+    NTDriverStation ntDriverStation;
+
     private NetworkTablesManager() {
         ntInstance.addLogger(
                 LogMessage.kInfo, LogMessage.kCritical, this::logNtMessage); // to hide error messages
@@ -65,6 +68,8 @@ public class NetworkTablesManager {
 
         ntInstance.addListener(
                 m_fieldLayoutSubscriber, EnumSet.of(Kind.kValueAll), this::onFieldLayoutChanged);
+
+        ntDriverStation = new NTDriverStation(this.getNTInst());
 
         // Get the UI state in sync with the backend. NT should fire a callback when it first connects
         // to the robot
