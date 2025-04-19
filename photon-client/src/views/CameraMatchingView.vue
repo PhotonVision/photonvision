@@ -167,7 +167,7 @@ const openExportSettingsPrompt = () => {
           <v-card-subtitle
             v-else-if="
               cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-              camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
+              camerasMatch(getMatchedDevice(useStateStore().vsmState.allConnectedCameras, module.matchedCameraInfo), module.matchedCameraInfo)
             "
             class="pb-2"
             >Status: <span class="active-status">Active</span></v-card-subtitle

@@ -41,7 +41,7 @@ export const cameraInfoFor = (
 /**
  * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
  */
-export const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
+export const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
       PVFileCameraInfo: undefined,
@@ -50,9 +50,7 @@ export const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo =
     };
   }
   return (
-    useStateStore().vsmState.allConnectedCameras.find(
-      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
-    ) || {
+    allDevices.find((it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined

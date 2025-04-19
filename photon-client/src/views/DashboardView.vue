@@ -63,7 +63,7 @@ const arducamWarningShown = computed<boolean>(() => {
 const cameraMismatchWarningShown = computed<boolean>(() => {
   return Object.values(useCameraSettingsStore().cameras).some((camera) => 
   !camerasMatch(
-    getMatchedDevice(camera.matchedCameraInfo),
+    getMatchedDevice(useStateStore().vsmState.allConnectedCameras, camera.matchedCameraInfo),
     camera.matchedCameraInfo
   ));
 });
