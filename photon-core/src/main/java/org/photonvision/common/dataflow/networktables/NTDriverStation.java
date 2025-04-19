@@ -23,7 +23,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringSubscriber;
-
 import java.util.EnumSet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -46,7 +45,7 @@ public class NTDriverStation {
     }
 
     private IntegerSubscriber ntControlWord;
-    
+
     private StringSubscriber eventName;
     private IntegerSubscriber matchNumber;
     private IntegerSubscriber replayNumber;
@@ -63,7 +62,7 @@ public class NTDriverStation {
         this.matchType = fmsTable.getIntegerTopic("MatchType").subscribe(0);
         this.matchNumber = fmsTable.getIntegerTopic("MatchNumber").subscribe(0);
         this.replayNumber = fmsTable.getIntegerTopic("ReplayNumber").subscribe(0);
-        
+
         this.isRedAlliance = fmsTable.getBooleanTopic("isRedAlliance").subscribe(true);
         this.stationNumber = fmsTable.getIntegerTopic("StationNumber").subscribe(0);
 
@@ -97,21 +96,31 @@ public class NTDriverStation {
         // this information seems to be published at the same time
         String event = eventName.get();
         if (event.isBlank()) {
-            //nothing to log
+            // nothing to log
             return;
         }
-        String type = switch ((int) matchType.get()) {
-            case 1 -> "P";
-            case 2 -> "Q";
-            case 3 -> "E";
-            default -> "";
-        };
+        String type =
+                switch ((int) matchType.get()) {
+                    case 1 -> "P";
+                    case 2 -> "Q";
+                    case 3 -> "E";
+                    default -> "";
+                };
         var match = String.valueOf(matchNumber.get());
         var replay = replayNumber.get();
 
         var station = (isRedAlliance.get() ? "RED" : "BLUE") + stationNumber.get();
 
-        var message = "Event: " + event + ", Match: " + type + match + ", Replay: " + replay + ", Station: " + station;
+        var message =
+                "Event: "
+                        + event
+                        + ", Match: "
+                        + type
+                        + match
+                        + ", Replay: "
+                        + replay
+                        + ", Station: "
+                        + station;
         logger.info(message);
     }
 
