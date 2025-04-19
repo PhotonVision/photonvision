@@ -1,6 +1,11 @@
-import { useStateStore } from "@/stores/StateStore";
 import { PVCameraInfo, type PVCSICameraInfo, type PVFileCameraInfo, type PVUsbCameraInfo } from "@/types/SettingTypes";
 
+/**
+ * Check if two cameras match by comparing properties.
+ * For USB cameras, it checks the name, vendorId, productId, and uniquePath.
+ * For CSI cameras, it checks the uniquePath and baseName.
+ * For file cameras, it checks the uniquePath and name.
+ */
 export const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
   if (camera1.PVUsbCameraInfo && camera2.PVUsbCameraInfo)
     return (
@@ -22,6 +27,9 @@ export const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
   else return false;
 };
 
+/**
+ * Get the connection-type-specific camera info from the given PVCameraInfo object.
+ */
 export const cameraInfoFor = (
   camera: PVCameraInfo | null
 ): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
@@ -39,7 +47,7 @@ export const cameraInfoFor = (
 };
 
 /**
- * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
+ * Find the PVCameraInfo currently occupying the same uniquePath as the the given module
  */
 export const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
