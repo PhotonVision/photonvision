@@ -24,7 +24,7 @@ Once a camera is activated, it will be listed as "Active" in the camera list. Yo
 
 If you want to remove a camera from the list, you can press the delete button. This will clear all settings for that particular camera, including the calibration data and any other settings you have configured. It is recommended to make a backup of the camera's settings before deleting it, as this action cannot be undone.
 
-## Camera Matching
+## Matching Cameras
 
 When you plug in a camera, PhotonVision will attempt to match it to a previously configured camera based on the physical USB port it is connected to. If you plug another camera into that port, the cameras will have a "Camera Mismatch" status, indicating that the camera is not recognized as the one that was previously configured.
 
