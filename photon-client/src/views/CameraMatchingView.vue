@@ -2,11 +2,7 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import {
-  PlaceholderCameraSettings,
-  PVCameraInfo,
-  type UiCameraConfiguration
-} from "@/types/SettingTypes";
+import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
@@ -167,7 +163,10 @@ const openExportSettingsPrompt = () => {
           <v-card-subtitle
             v-else-if="
               cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-              camerasMatch(getMatchedDevice(useStateStore().vsmState.allConnectedCameras, module.matchedCameraInfo), module.matchedCameraInfo)
+              camerasMatch(
+                getMatchedDevice(useStateStore().vsmState.allConnectedCameras, module.matchedCameraInfo),
+                module.matchedCameraInfo
+              )
             "
             class="pb-2"
             >Status: <span class="active-status">Active</span></v-card-subtitle

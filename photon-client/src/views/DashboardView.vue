@@ -61,11 +61,13 @@ const arducamWarningShown = computed<boolean>(() => {
 });
 
 const cameraMismatchWarningShown = computed<boolean>(() => {
-  return Object.values(useCameraSettingsStore().cameras).some((camera) => 
-  !camerasMatch(
-    getMatchedDevice(useStateStore().vsmState.allConnectedCameras, camera.matchedCameraInfo),
-    camera.matchedCameraInfo
-  ));
+  return Object.values(useCameraSettingsStore().cameras).some(
+    (camera) =>
+      !camerasMatch(
+        getMatchedDevice(useStateStore().vsmState.allConnectedCameras, camera.matchedCameraInfo),
+        camera.matchedCameraInfo
+      )
+  );
 });
 </script>
 
@@ -94,7 +96,8 @@ const cameraMismatchWarningShown = computed<boolean>(() => {
       icon="mdi-alert-circle-outline"
     >
       <span
-        >Camera Mismatch Detected! Please ensure cameras are plugged in correctly. Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        >Camera Mismatch Detected! Please ensure cameras are plugged in correctly. Visit the
+        <a href="#/cameraConfigs">Camera Matching</a> page for more information.
       </span>
     </v-banner>
     <v-row no-gutters align="center" justify="center">
