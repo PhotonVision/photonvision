@@ -20,3 +20,21 @@ Logs are stored inside the {code}`photonvision_config/logs` directory. Exporting
     Your browser does not support the video tag.
 </video>
 ```
+
+Robot mode transitions are also recorded in program logs. These transition messages look something like the two shown below, and show the contents of the [HAL Control Word](https://github.wpilib.org/allwpilib/docs/release/java/edu/wpi/first/hal/ControlWord.html) that the robot was in previously, and what it is now in. This includes:
+- Enabled state
+- Robot state (autonomous vs teleoperated)
+- If the robot e-stop is active
+
+If the robot is connected to the FMS at an event, we will additionally print out:
+- Event name
+- Match type
+- Driver station position
+
+
+```
+[2025-04-19 19:52:08] [NetworkTables - NTDriverStation] [INFO] ROBOT TRANSITIONED MODES! From NtControlWord[m_enabled=true, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=true, m_dsAttached=true] to NtControlWord[m_enabled=true, m_autonomous=false, m_test=true, m_emergencyStop=false, m_fmsAttached=true, m_dsAttached=true]
+
+[2025-04-19 19:52:09] [NetworkTables - NTDriverStation] [INFO] ROBOT TRANSITIONED MODES! From NtControlWord[m_enabled=true, m_autonomous=false, m_test=true, m_emergencyStop=false, m_fmsAttached=true, m_dsAttached=true] to NtControlWord[m_enabled=false, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=false, m_dsAttached=false]
+[2025-04-19 19:52:19] [NetworkTables - NTDriverStation] [INFO] ROBOT TRANSITIONED MODES! From NtControlWord[m_enabled=false, m_autonomous=false, m_test=false, m_emergencyStop=false, m_fmsAttached=false, m_dsAttached=false] to NtControlWord[m_enabled=true, m_autonomous=true, m_test=false, m_emergencyStop=false, m_fmsAttached=true, m_dsAttached=true]
+```
