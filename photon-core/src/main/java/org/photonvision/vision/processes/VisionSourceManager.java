@@ -340,11 +340,9 @@ public class VisionSourceManager {
                                                 module.getCameraConfiguration().matchedCameraInfo, cameraInfo)) {
                                             logger.error("Camera mismatch error!");
                                             logger.error(
-                                                    "Camera config mismatch for "
-                                                            + module.getCameraConfiguration().nickname
-                                                            + ":\n"
-                                                            + getCameraInfoDiff(
-                                                                    module.getCameraConfiguration().matchedCameraInfo, cameraInfo));
+                                                    "Camera config mismatch for " + module.getCameraConfiguration().nickname);
+                                            logCameraInfoDiff(
+                                                    module.getCameraConfiguration().matchedCameraInfo, cameraInfo);
                                         }
                                     });
                 });
@@ -378,25 +376,46 @@ public class VisionSourceManager {
         }
     }
 
-    /** Get a string representation of the differences between two PVCameraInfo objects. */
-    private static String getCameraInfoDiff(PVCameraInfo saved, PVCameraInfo current) {
-        String result = "Camera Info Diff:\n";
-        result += "Name: " + saved.name() + " -> " + current.name() + "\n";
+    /** Log the differences between two PVCameraInfo objects. */
+    private static void logCameraInfoDiff(PVCameraInfo saved, PVCameraInfo current) {
+        String expected = "Expected: Name: " + saved.name();
+        String actual = "Actual: Name: " + current.name();
         if (saved instanceof PVCameraInfo.PVCSICameraInfo savedCsi
                 && current instanceof PVCameraInfo.PVCSICameraInfo currentCsi) {
-            result += "Base Name: " + savedCsi.baseName + " -> " + currentCsi.baseName + "\n";
+            expected += " Base Name: " + savedCsi.baseName;
+            actual += " Base Name: " + currentCsi.baseName;
         }
-        result += "Type: " + saved.type().toString() + " -> " + current.type().toString() + "\n";
+
+        expected += " Type: " + saved.type().toString();
+        actual += " Type: " + current.type().toString();
+
         if (saved instanceof PVCameraInfo.PVUsbCameraInfo savedUsb
                 && current instanceof PVCameraInfo.PVUsbCameraInfo currentUsb) {
-            result += "Device Number: " + savedUsb.dev + " -> " + currentUsb.dev + "\n";
-            result += "Vendor ID: " + savedUsb.vendorId + " -> " + currentUsb.vendorId + "\n";
-            result += "Product ID: " + savedUsb.productId + " -> " + currentUsb.productId + "\n";
+            expected +=
+                    " Device Number: "
+                            + savedUsb.dev
+                            + " Vendor ID: "
+                            + savedUsb.vendorId
+                            + " Product ID: "
+                            + savedUsb.productId;
+            actual +=
+                    " Device Number: "
+                            + currentUsb.dev
+                            + " Vendor ID: "
+                            + currentUsb.vendorId
+                            + " Product ID: "
+                            + currentUsb.productId;
         }
-        result += "Path: " + saved.path() + " -> " + current.path() + "\n";
-        result += "Unique Path: " + saved.uniquePath() + " -> " + current.uniquePath() + "\n";
 
-        return result;
+        expected += " Path: " + saved.path();
+        actual += " Path: " + current.path();
+        expected += " Unique Path: " + saved.uniquePath();
+        actual += " Unique Path: " + current.uniquePath();
+        expected += " Other Paths: " + Arrays.toString(saved.otherPaths());
+        actual += " Other Paths: " + Arrays.toString(current.otherPaths());
+
+        logger.error(expected);
+        logger.error(actual);
     }
 
     private static List<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices) {
