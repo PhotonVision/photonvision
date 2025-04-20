@@ -97,7 +97,8 @@ public class VisionSourceManager {
 
         final HashMap<String, CameraConfiguration> deserializedConfigs = new HashMap<>();
 
-        // 1. Verify all camera unique names are unique and paths/types are unique for paranoia. This
+        // 1. Verify all camera unique names are unique and paths/types are unique for
+        // paranoia. This
         // seems redundant, consider deleting
         for (var config : configs) {
             Predicate<PVCameraInfo> checkDuplicateCamera =
@@ -118,7 +119,8 @@ public class VisionSourceManager {
             }
         }
 
-        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care about if
+        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't
+        // care about if
         // the underlying device is currently connected or not.
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
@@ -144,10 +146,9 @@ public class VisionSourceManager {
                                                     .equals(config.matchedCameraInfo.uniquePath()))
                             .forEach(
                                     module -> {
-                                        if (!module
-                                                .getCameraConfiguration()
-                                                .matchedCameraInfo
-                                                .equals(config.matchedCameraInfo)) {
+                                        if (!camerasMatch(
+                                                module.getCameraConfiguration().matchedCameraInfo,
+                                                config.matchedCameraInfo)) {
                                             logger.error("Camera mismatch error!");
                                             logger.error(
                                                     "Camera config mismatch for "
@@ -166,6 +167,26 @@ public class VisionSourceManager {
                         + " active VisionModules, with "
                         + deserializedConfigs.size()
                         + " disabled VisionModules");
+    }
+
+    private static boolean camerasMatch(PVCameraInfo camera1, PVCameraInfo camera2) {
+        if (camera1 instanceof PVCameraInfo.PVUsbCameraInfo usbCamera1
+                && camera2 instanceof PVCameraInfo.PVUsbCameraInfo usbCamera2) {
+            return usbCamera1.name().equals(usbCamera2.name())
+                    && usbCamera1.vendorId == usbCamera2.vendorId
+                    && usbCamera1.productId == usbCamera2.productId
+                    && usbCamera1.uniquePath().equals(usbCamera2.uniquePath());
+        } else if (camera1 instanceof PVCameraInfo.PVCSICameraInfo csiCamera1
+                && camera2 instanceof PVCameraInfo.PVCSICameraInfo csiCamera2) {
+            return csiCamera1.uniquePath().equals(csiCamera2.uniquePath())
+                    && csiCamera1.baseName.equals(csiCamera2.baseName);
+        } else if (camera1 instanceof PVCameraInfo.PVFileCameraInfo fileCamera1
+                && camera2 instanceof PVCameraInfo.PVFileCameraInfo fileCamera2) {
+            return fileCamera1.uniquePath().equals(fileCamera2.uniquePath())
+                    && fileCamera1.name().equals(fileCamera2.name());
+        } else {
+            return false;
+        }
     }
 
     private static String getCameraInfoDiff(PVCameraInfo saved, PVCameraInfo current) {
@@ -360,7 +381,8 @@ public class VisionSourceManager {
                     .forEach(cameraInfos::add);
         }
 
-        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but i still want my
+        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but
+        // i still want my
         // UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
@@ -421,7 +443,8 @@ public class VisionSourceManager {
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
         logger.debug("Creating VisionSource for " + configuration.toShortString());
 
-        // First, make sure that nickname is globally unique since we use the nickname in NetworkTables.
+        // First, make sure that nickname is globally unique since we use the nickname
+        // in NetworkTables.
         // "Just one more source of truth bro it'll real this time I promise"
         var currentNicknames = new ArrayList<String>();
         this.disabledCameraConfigs.values().stream()
