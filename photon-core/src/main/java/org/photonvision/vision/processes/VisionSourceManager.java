@@ -136,11 +136,17 @@ public class VisionSourceManager {
                 config -> {
                     allModules.stream()
                             .filter(
-                                    module -> module.getCameraConfiguration().matchedCameraInfo.uniquePath()
-                                            .equals(config.matchedCameraInfo.uniquePath()))
+                                    module ->
+                                            module
+                                                    .getCameraConfiguration()
+                                                    .matchedCameraInfo
+                                                    .uniquePath()
+                                                    .equals(config.matchedCameraInfo.uniquePath()))
                             .forEach(
                                     module -> {
-                                        if (!module.getCameraConfiguration().matchedCameraInfo
+                                        if (!module
+                                                .getCameraConfiguration()
+                                                .matchedCameraInfo
                                                 .equals(config.matchedCameraInfo)) {
                                             logger.error("Camera mismatch error!");
                                             logger.error(
@@ -162,8 +168,7 @@ public class VisionSourceManager {
                         + " disabled VisionModules");
     }
 
-    private static String getCameraInfoDiff(
-            PVCameraInfo saved, PVCameraInfo current) {
+    private static String getCameraInfoDiff(PVCameraInfo saved, PVCameraInfo current) {
         String result = "Camera Info Diff:\n";
         result += "Name: " + saved.name() + " -> " + current.name() + "\n";
         if (saved instanceof PVCameraInfo.PVCSICameraInfo savedCsi
