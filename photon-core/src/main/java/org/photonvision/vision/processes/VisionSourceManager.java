@@ -131,12 +131,56 @@ public class VisionSourceManager {
                 .filter(it -> it.getValue().deactivated)
                 .forEach(it -> this.disabledCameraConfigs.put(it.getKey(), it.getValue()));
 
+        var allModules = this.vmm.getModules();
+        configs.forEach(
+                config -> {
+                    allModules.stream()
+                            .filter(
+                                    module -> module.getCameraConfiguration().matchedCameraInfo.uniquePath()
+                                            .equals(config.matchedCameraInfo.uniquePath()))
+                            .forEach(
+                                    module -> {
+                                        if (!module.getCameraConfiguration().matchedCameraInfo
+                                                .equals(config.matchedCameraInfo)) {
+                                            logger.error("Camera mismatch error!");
+                                            logger.error(
+                                                    "Camera config mismatch for "
+                                                            + module.getCameraConfiguration().nickname
+                                                            + ":\n"
+                                                            + getCameraInfoDiff(
+                                                                    module.getCameraConfiguration().matchedCameraInfo,
+                                                                    config.matchedCameraInfo));
+                                        }
+                                    });
+                });
+
         logger.info(
                 "Finished registering loaded camera configs! Started "
                         + vmm.getModules().size()
                         + " active VisionModules, with "
                         + deserializedConfigs.size()
                         + " disabled VisionModules");
+    }
+
+    private static String getCameraInfoDiff(
+            PVCameraInfo saved, PVCameraInfo current) {
+        String result = "Camera Info Diff:\n";
+        result += "Name: " + saved.name() + " -> " + current.name() + "\n";
+        if (saved instanceof PVCameraInfo.PVCSICameraInfo savedCsi
+                && current instanceof PVCameraInfo.PVCSICameraInfo currentCsi) {
+            result += "Base Name: " + savedCsi.baseName + " -> " + currentCsi.baseName + "\n";
+        }
+        result += "Type: " + saved.type().toString() + " -> " + current.type().toString() + "\n";
+        if (saved instanceof PVCameraInfo.PVUsbCameraInfo savedUsb
+                && current instanceof PVCameraInfo.PVUsbCameraInfo currentUsb) {
+            result += "Device Number: " + savedUsb.dev + " -> " + currentUsb.dev + "\n";
+            result += "Vendor ID: " + savedUsb.vendorId + " -> " + currentUsb.vendorId + "\n";
+            result += "Product ID: " + savedUsb.productId + " -> " + currentUsb.productId + "\n";
+        }
+        result += "Path: " + saved.path() + " -> " + current.path() + "\n";
+        result += "Unique Path: " + saved.uniquePath() + " -> " + current.uniquePath() + "\n";
+
+        return result;
     }
 
     /**
