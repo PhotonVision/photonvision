@@ -5,6 +5,7 @@ import { PVCameraInfo, type PVCSICameraInfo, type PVFileCameraInfo, type PVUsbCa
  * For USB cameras, it checks the name, vendorId, productId, and uniquePath.
  * For CSI cameras, it checks the uniquePath and baseName.
  * For file cameras, it checks the uniquePath and name.
+ * Note: When changing this function, change the equivalent function within photon-core's VisionSourceManager class
  */
 export const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
   if (camera1.PVUsbCameraInfo && camera2.PVUsbCameraInfo)
