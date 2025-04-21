@@ -394,13 +394,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           <v-spacer />
           <v-btn
             color="#ffd843"
-            class="text-black"
             :disabled="checkPipelineName(newPipelineName) !== true"
             @click="createNewPipeline"
+            variant="tonal"
           >
             Save
           </v-btn>
-          <v-btn color="error" @click="cancelPipelineCreation"> Cancel </v-btn>
+          <v-btn color="error" @click="cancelPipelineCreation" variant="elevated"> Cancel </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

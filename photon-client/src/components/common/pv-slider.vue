@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import { computed } from "vue";
-const value = defineModel<number>({ required: true });
-withDefaults(
+
+const props = withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
+    modelValue: number;
     min: number;
     max: number;
     step?: number;
@@ -18,6 +19,9 @@ withDefaults(
     sliderCols: 8
   }
 );
+const emit = defineEmits<{
+  (e: "update:modelValue", value: number): void;
+}>();
 
 // Debounce function
 function debounce(func: (...args: any[]) => void, wait: number) {
@@ -28,10 +32,13 @@ function debounce(func: (...args: any[]) => void, wait: number) {
   };
 }
 
+const debouncedEmit = debounce((v: number) => {
+  emit("update:modelValue", v);
+}, 20);
 
 const localValue = computed({
-  get: () => value.value,
-  set: (v) => debounce(() => value.value = parseFloat(v as unknown as string), 20)
+  get: () => props.modelValue,
+  set: (v) => debouncedEmit(parseFloat(v as unknown as string))
 });
 </script>
 

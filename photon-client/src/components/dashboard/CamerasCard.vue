@@ -41,7 +41,7 @@ const performanceRecommendation = computed<string>(() => {
 
 <template>
   <v-card color="primary" height="100%" class="d-flex flex-column" dark>
-    <v-card-title class="justify-space-between align-center pt-3 pb-3 d-flex">
+    <v-card-title class="justify-space-between align-center pt-1 pb-1 d-flex">
       <span>Cameras</span>
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"

@@ -78,6 +78,7 @@ const checkNumberRange = (v: string): boolean => {
             :model-value="localValue[0]"
             color="accent"
             class="mt-0 pt-0"
+            density="compact"
             hide-details
             single-line
             :max="max"
@@ -94,6 +95,7 @@ const checkNumberRange = (v: string): boolean => {
             :model-value="localValue[1]"
             color="accent"
             class="mt-0 pt-0"
+            density="compact"
             hide-details
             single-line
             :max="max"

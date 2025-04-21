@@ -35,6 +35,7 @@ const localValue = computed({
       <v-text-field
         v-model="localValue"
         class="mt-0 pt-0"
+        density="compact"
         hide-details
         single-line
         color="accent"

@@ -85,7 +85,7 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-text>
     <v-card-text class="pt-0">
-      <v-btn-toggle v-model="value" :multiple="true" mandatoryclass="fill" style="width: 100%">
+      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%" base-color="surface-variant">
         <v-btn
           color="secondary"
           class="fill"
@@ -110,7 +110,6 @@ const fpsTooLow = computed<boolean>(() => {
 <style scoped>
 .v-btn-toggle.fill {
   width: 100%;
-  height: 100%;
 }
 .v-btn-toggle.fill > .v-btn {
   width: 50%;

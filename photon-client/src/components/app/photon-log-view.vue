@@ -123,20 +123,17 @@ document.addEventListener("keydown", (e) => {
           </v-col>
           <v-col cols="12" md="2" style="display: flex; align-items: center">
             <input v-model="timeInput" type="time" step="1" class="text-white pl-0 pl-md-8" />
-            <v-btn icon class="ml-3" @click="timeInput = undefined">
+            <v-btn icon class="ml-3" @click="timeInput = undefined" variant="flat">
               <v-icon>mdi-close-circle-outline</v-icon>
             </v-btn>
           </v-col>
           <v-col cols="12" md="5" class="pr-3">
             <v-row class="no-gutters">
               <v-col v-for="level in [0, 1, 2, 3]" :key="level">
-                <v-row density="compact" align="center">
-                  <v-col cols="6" md="8" style="text-align: right">
-                    {{ getLogLevelFromIndex(level) }}
-                  </v-col>
-                  <v-col cols="6" md="4">
-                    <v-switch v-model="selectedLogLevels[level]" color="#ffd843" />
-                  </v-col>
+                <v-row align="center">
+                  <v-col class="d-flex justify-center">
+                    <v-switch v-model="selectedLogLevels[level]" color="#ffd843" :label="getLogLevelFromIndex(level)"
+                  /></v-col>
                 </v-row>
               </v-col>
             </v-row>
