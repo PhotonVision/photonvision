@@ -327,12 +327,13 @@ public class VisionSourceManager {
 
         // from the listed physical camera infos, match them to the camera configs and
         // check for mismatches
-        var allModules = vmm.getModules();
-        cameraInfos.stream()
+        var allModulesCopy = new ArrayList<>(vmm.getModules());
+        var cameraInfosCopy = new ArrayList<>(cameraInfos);
+        cameraInfosCopy.stream()
                 .filter(cameraInfo -> !warnedMismatchCameras.contains(cameraInfo.toString()))
                 .forEach(
                         cameraInfo -> {
-                            allModules.stream()
+                            allModulesCopy.stream()
                                     .filter(
                                             module ->
                                                     module
