@@ -28,6 +28,8 @@ import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class TestUtils {
     public static boolean loadLibraries() {
@@ -50,7 +52,7 @@ public class TestUtils {
         kRocketPanelAngleDark48in(1.2192),
         kRocketPanelAngleDark60in(1.524);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -88,7 +90,7 @@ public class TestUtils {
         kRedLoading_084in(2.1336),
         kRedLoading_108in(2.7432);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -108,7 +110,7 @@ public class TestUtils {
         kBackAmpZone_117in,
         kSpeakerCenter_143in;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Path path;
 
@@ -127,7 +129,7 @@ public class TestUtils {
         k162_36_Straight,
         k383_60_Angle2;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Translation2d approxPose;
         public final Path path;
@@ -154,7 +156,7 @@ public class TestUtils {
         kTerminal12ft6in(Units.feetToMeters(12.5)),
         kTerminal22ft6in(Units.feetToMeters(22.5));
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -370,6 +372,20 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static void printTestResults(CVPipelineResult pipelineResult) {
+        double fps = 1000 / pipelineResult.getLatencyMillis();
+        System.out.print(
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
+        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+    }
+
+    public static void printTestResultsWithLocation(CVPipelineResult pipelineResult) {
+        printTestResults(pipelineResult);
+        System.out.println(
+                "Found targets at "
+                        + pipelineResult.targets.stream().map(TrackedTarget::getBestCameraToTarget3d).toList());
     }
 
     public static Path getTestMode2023ImagePath() {

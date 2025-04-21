@@ -38,7 +38,7 @@ public class FilterContoursPipe
         }
 
         // we need the whole list for outlier rejection
-        rejectOutliers(m_filteredContours, params.xTol, params.yTol);
+        rejectOutliers(m_filteredContours, params.xTol(), params.yTol());
 
         return m_filteredContours;
     }
@@ -67,9 +67,7 @@ public class FilterContoursPipe
             double x = c.getCenterPoint().x;
             double y = c.getCenterPoint().y;
 
-            if (Math.abs(x - meanX) > stdDevX * xTol) {
-                it.remove();
-            } else if (Math.abs(y - meanY) > stdDevY * yTol) {
+            if (Math.abs(x - meanX) > stdDevX * xTol || Math.abs(y - meanY) > stdDevY * yTol) {
                 it.remove();
             }
             // Otherwise we're good! Keep it in
@@ -81,66 +79,31 @@ public class FilterContoursPipe
 
         // Area Filtering.
         double areaPercentage =
-                minAreaRect.size.area() / params.getFrameStaticProperties().imageArea * 100.0;
-        double minAreaPercentage = params.getArea().getFirst();
-        double maxAreaPercentage = params.getArea().getSecond();
+                minAreaRect.size.area() / params.frameStaticProperties().imageArea * 100.0;
+        double minAreaPercentage = params.area().getFirst();
+        double maxAreaPercentage = params.area().getSecond();
         if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;
 
         // Fullness Filtering.
         double contourArea = contour.getArea();
-        double minFullness = params.getFullness().getFirst() * minAreaRect.size.area() / 100.0;
-        double maxFullness = params.getFullness().getSecond() * minAreaRect.size.area() / 100.0;
+        double minFullness = params.fullness().getFirst() * minAreaRect.size.area() / 100.0;
+        double maxFullness = params.fullness().getSecond() * minAreaRect.size.area() / 100.0;
         if (contourArea <= minFullness || contourArea >= maxFullness) return;
 
         // Aspect Ratio Filtering.
         double aspectRatio =
-                TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape);
-        if (aspectRatio < params.getRatio().getFirst() || aspectRatio > params.getRatio().getSecond())
-            return;
+                TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape());
+        if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
 
         m_filteredContours.add(contour);
     }
 
-    public static class FilterContoursParams {
-        private final DoubleCouple m_area;
-        private final DoubleCouple m_ratio;
-        private final DoubleCouple m_fullness;
-        private final FrameStaticProperties m_frameStaticProperties;
-        private final double xTol; // IQR tolerance for x
-        private final double yTol; // IQR tolerance for x
-        public final boolean isLandscape;
-
-        public FilterContoursParams(
-                DoubleCouple area,
-                DoubleCouple ratio,
-                DoubleCouple extent,
-                FrameStaticProperties camProperties,
-                double xTol,
-                double yTol,
-                boolean isLandscape) {
-            this.m_area = area;
-            this.m_ratio = ratio;
-            this.m_fullness = extent;
-            this.m_frameStaticProperties = camProperties;
-            this.xTol = xTol;
-            this.yTol = yTol;
-            this.isLandscape = isLandscape;
-        }
-
-        public DoubleCouple getArea() {
-            return m_area;
-        }
-
-        public DoubleCouple getRatio() {
-            return m_ratio;
-        }
-
-        public DoubleCouple getFullness() {
-            return m_fullness;
-        }
-
-        public FrameStaticProperties getFrameStaticProperties() {
-            return m_frameStaticProperties;
-        }
-    }
+    public static record FilterContoursParams(
+            DoubleCouple area,
+            DoubleCouple ratio,
+            DoubleCouple fullness,
+            FrameStaticProperties frameStaticProperties,
+            double xTol, // IQR tolerance for x
+            double yTol, // IQR tolerance for y
+            boolean isLandscape) {}
 }
