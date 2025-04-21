@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -78,6 +79,9 @@ public class VisionSourceManager {
 
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
     protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
+
+    // Set of cameras that where a camera mismatch error was logged
+    protected final Set<String> warnedMismatchCameras = Set.of();
 
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
@@ -324,28 +328,32 @@ public class VisionSourceManager {
         // from the listed physical camera infos, match them to the camera configs and
         // check for mismatches
         var allModules = vmm.getModules();
-        cameraInfos.forEach(
-                cameraInfo -> {
-                    allModules.stream()
-                            .filter(
-                                    module ->
-                                            module
-                                                    .getCameraConfiguration()
-                                                    .matchedCameraInfo
-                                                    .uniquePath()
-                                                    .equals(cameraInfo.uniquePath()))
-                            .forEach(
-                                    module -> {
-                                        if (!camerasMatch(
-                                                module.getCameraConfiguration().matchedCameraInfo, cameraInfo)) {
-                                            logger.error("Camera mismatch error!");
-                                            logger.error(
-                                                    "Camera config mismatch for " + module.getCameraConfiguration().nickname);
-                                            logCameraInfoDiff(
-                                                    module.getCameraConfiguration().matchedCameraInfo, cameraInfo);
-                                        }
-                                    });
-                });
+        cameraInfos.stream()
+                .filter(cameraInfo -> !warnedMismatchCameras.contains(cameraInfo.toString()))
+                .forEach(
+                        cameraInfo -> {
+                            allModules.stream()
+                                    .filter(
+                                            module ->
+                                                    module
+                                                            .getCameraConfiguration()
+                                                            .matchedCameraInfo
+                                                            .uniquePath()
+                                                            .equals(cameraInfo.uniquePath()))
+                                    .forEach(
+                                            module -> {
+                                                if (!camerasMatch(
+                                                        module.getCameraConfiguration().matchedCameraInfo, cameraInfo)) {
+                                                    logger.error("Camera mismatch error!");
+                                                    logger.error(
+                                                            "Camera config mismatch for "
+                                                                    + module.getCameraConfiguration().nickname);
+                                                    logCameraInfoDiff(
+                                                            module.getCameraConfiguration().matchedCameraInfo, cameraInfo);
+                                                    warnedMismatchCameras.add(cameraInfo.toString());
+                                                }
+                                            });
+                        });
 
         return cameraInfos;
     }
