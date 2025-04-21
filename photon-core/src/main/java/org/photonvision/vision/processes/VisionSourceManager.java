@@ -343,8 +343,7 @@ public class VisionSourceManager {
                                                             .equals(cameraInfo.uniquePath()))
                                     .forEach(
                                             module -> {
-                                                if (!camerasMatch(
-                                                        module.getCameraConfiguration().matchedCameraInfo, cameraInfo)) {
+                                                if (!module.getCameraConfiguration().matchedCameraInfo.equals(cameraInfo)) {
                                                     logger.error("Camera mismatch error!");
                                                     logger.error(
                                                             "Camera config mismatch for "
@@ -357,32 +356,6 @@ public class VisionSourceManager {
                         });
 
         return cameraInfos;
-    }
-
-    /**
-     * Check if two cameras match by comparing properties. For USB cameras, it checks the name,
-     * vendorId, productId, and uniquePath. For CSI cameras, it checks the uniquePath and baseName.
-     * For file cameras, it checks the uniquePath and name. Note: When changing this function, change
-     * the equivalent function within photon-client's lib/MatchingUtils.ts file
-     */
-    private static boolean camerasMatch(PVCameraInfo camera1, PVCameraInfo camera2) {
-        if (camera1 instanceof PVCameraInfo.PVUsbCameraInfo usbCamera1
-                && camera2 instanceof PVCameraInfo.PVUsbCameraInfo usbCamera2) {
-            return usbCamera1.name().equals(usbCamera2.name())
-                    && usbCamera1.vendorId == usbCamera2.vendorId
-                    && usbCamera1.productId == usbCamera2.productId
-                    && usbCamera1.uniquePath().equals(usbCamera2.uniquePath());
-        } else if (camera1 instanceof PVCameraInfo.PVCSICameraInfo csiCamera1
-                && camera2 instanceof PVCameraInfo.PVCSICameraInfo csiCamera2) {
-            return csiCamera1.uniquePath().equals(csiCamera2.uniquePath())
-                    && csiCamera1.baseName.equals(csiCamera2.baseName);
-        } else if (camera1 instanceof PVCameraInfo.PVFileCameraInfo fileCamera1
-                && camera2 instanceof PVCameraInfo.PVFileCameraInfo fileCamera2) {
-            return fileCamera1.uniquePath().equals(fileCamera2.uniquePath())
-                    && fileCamera1.name().equals(fileCamera2.name());
-        } else {
-            return false;
-        }
     }
 
     /** Log the differences between two PVCameraInfo objects. */
