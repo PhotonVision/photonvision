@@ -47,6 +47,10 @@ Before beginning, it is necessary to install the [rknn-toolkit2](https://github.
 PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
+:::{warning}
+Non-quantized models are not supported! If you have the option, make sure quantization is enabled when exporting to .rknn format. This will represent the weights and activations of the model as 8-bit integers, instead of 32-bit floats which PhotonVision doesn't support. Quantized models are also much faster.
+:::
+
 In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
 should be `name-verticalResolution-horizontalResolution-yolovXXX`. The
 `name` should only include alphanumeric characters, periods, and underscores. Additionally, the labels
