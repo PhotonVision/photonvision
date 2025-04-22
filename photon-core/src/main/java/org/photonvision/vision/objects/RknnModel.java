@@ -51,7 +51,7 @@ public class RknnModel implements Model {
             throw new IllegalArgumentException("Model family must be RKNN");
         }
 
-        if (properties.rknnVersion == null) {
+        if (properties.rknnVersion.isEmpty()) {
             throw new IllegalArgumentException("Model version must be provided");
         }
 

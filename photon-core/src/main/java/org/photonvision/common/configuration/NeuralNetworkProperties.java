@@ -20,6 +20,8 @@ package org.photonvision.common.configuration;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Optional;
+
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
 
@@ -27,11 +29,7 @@ public class NeuralNetworkProperties {
     /*
      * The properties of the model. This is used to determine which model to load.
      * The only family
-     * currently supported is RKNN. If we add other families, we'll have to
-     * determine if we want to
-     * expand this modelProperties object, or create separate objects for each
-     * family. A suggested solution is to add other version attributes, and the
-     * attribute for an unused version is to be left null.
+     * currently supported is RKNN.
      */
     public class ModelProperties {
         public Path modelPath;
@@ -40,7 +38,7 @@ public class NeuralNetworkProperties {
         public double resolutionWidth;
         public double resolutionHeight;
         public Family family;
-        public RknnJNI.ModelVersion rknnVersion;
+        public Optional<RknnJNI.ModelVersion> rknnVersion;
 
         /**
          * This object holds the various properties for an object detection model
@@ -51,7 +49,7 @@ public class NeuralNetworkProperties {
          * @param resolutionHeight
          * @param resolutionWidth
          * @param family the family of the model [RKNN]
-         * @param rknnVersion the version of the RKNN model [YOLO_V5, YOLO_V8, YOLO_V11]
+         * @param rknnVersion (OPTIONAL) the version of the RKNN model [YOLO_V5, YOLO_V8, YOLO_V11]
          */
         public ModelProperties(
                 Path modelPath,
@@ -67,8 +65,29 @@ public class NeuralNetworkProperties {
             this.resolutionWidth = resolutionWidth;
             this.resolutionHeight = resolutionHeight;
             this.family = family;
-            this.rknnVersion = rknnVersion;
+            this.rknnVersion = Optional.of(rknnVersion);
         }
+
+        /**
+         * This object holds the various properties for an object detection model
+         *
+         * @param modelPath path to the model on disk
+         * @param nickname name to use in the UI
+         * @param labels labels for the models outputs
+         * @param resolutionHeight
+         * @param resolutionWidth
+         * @param family the family of the model [RKNN]
+         */
+        public ModelProperties(
+                Path modelPath,
+                String nickname,
+                LinkedList<String> labels,
+                double resolutionWidth,
+                double resolutionHeight,
+                Family family) {
+            this(modelPath, nickname, labels, resolutionWidth, resolutionHeight, family, null);
+        }
+
     }
 
     // The path to the model is used as the key in the map because it is unique to
