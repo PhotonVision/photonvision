@@ -28,7 +28,7 @@ Robot mode transitions are also recorded in program logs. These transition messa
 
 If the robot is connected to the FMS at an event, we will additionally print out:
 - Event name
-- Match type
+- Match type and number
 - Driver station position
 
 
