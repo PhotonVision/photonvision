@@ -25,68 +25,21 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
 
 public class NeuralNetworkProperties {
+    // ModelVersion {}
+
     /*
      * The properties of the model. This is used to determine which model to load.
      * The only family
      * currently supported is RKNN.
      */
-    public class ModelProperties {
-        public Path modelPath;
-        public String nickname;
-        public LinkedList<String> labels;
-        public double resolutionWidth;
-        public double resolutionHeight;
-        public Family family;
-        public Optional<RknnJNI.ModelVersion> rknnVersion;
-
-        /**
-         * This object holds the various properties for an object detection model
-         *
-         * @param modelPath path to the model on disk
-         * @param nickname name to use in the UI
-         * @param labels labels for the models outputs
-         * @param resolutionHeight
-         * @param resolutionWidth
-         * @param family the family of the model [RKNN]
-         * @param rknnVersion (OPTIONAL) the version of the RKNN model [YOLO_V5, YOLO_V8, YOLO_V11]
-         */
-        public ModelProperties(
-                Path modelPath,
-                String nickname,
-                LinkedList<String> labels,
-                double resolutionWidth,
-                double resolutionHeight,
-                Family family,
-                RknnJNI.ModelVersion rknnVersion) {
-            this.modelPath = modelPath;
-            this.nickname = nickname;
-            this.labels = labels;
-            this.resolutionWidth = resolutionWidth;
-            this.resolutionHeight = resolutionHeight;
-            this.family = family;
-            this.rknnVersion = Optional.of(rknnVersion);
-        }
-
-        /**
-         * This object holds the various properties for an object detection model
-         *
-         * @param modelPath path to the model on disk
-         * @param nickname name to use in the UI
-         * @param labels labels for the models outputs
-         * @param resolutionHeight
-         * @param resolutionWidth
-         * @param family the family of the model [RKNN]
-         */
-        public ModelProperties(
-                Path modelPath,
-                String nickname,
-                LinkedList<String> labels,
-                double resolutionWidth,
-                double resolutionHeight,
-                Family family) {
-            this(modelPath, nickname, labels, resolutionWidth, resolutionHeight, family, null);
-        }
-    }
+    public record ModelProperties(
+            Path modelPath,
+            String nickname,
+            LinkedList<String> labels,
+            double resolutionWidth,
+            double resolutionHeight,
+            Family family,
+            Optional<RknnJNI.ModelVersion> rknnVersion) {}
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
@@ -170,10 +123,19 @@ public class NeuralNetworkProperties {
      * @return True if the model was found and renamed, false if it was not found
      */
     public boolean renameModel(Path modelPath, String newName) {
-        ModelProperties modelProperties = properties.get(modelPath);
-        if (modelProperties != null) {
-            modelProperties.nickname = newName;
-            return true;
+        ModelProperties temp = properties.get(modelPath);
+        if (temp != null) {
+            properties.remove(modelPath);
+            properties.put(
+                    modelPath,
+                    new ModelProperties(
+                            temp.modelPath,
+                            newName,
+                            temp.labels,
+                            temp.resolutionWidth,
+                            temp.resolutionHeight,
+                            temp.family,
+                            temp.rknnVersion));
         }
         return false;
     }

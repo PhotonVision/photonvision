@@ -63,15 +63,14 @@ public class NeuralNetworkModelManager {
         NeuralNetworkProperties nnProps = new NeuralNetworkProperties();
 
         nnProps.addModelProperties(
-                nnProps
-                .new ModelProperties(
+                new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "NAMEHERE.rknn"),
                         "foo",
                         new LinkedList<String>(),
                         0,
                         0,
                         Family.RKNN,
-                        ModelVersion.YOLO_V8));
+                        Optional.of(ModelVersion.YOLO_V11)));
 
         return nnProps;
     }
@@ -200,31 +199,31 @@ public class NeuralNetworkModelManager {
             return;
         }
 
-        if (!supportedBackends.contains(properties.family)) {
+        if (!supportedBackends.contains(properties.family())) {
             logger.warn(
                     "Model "
-                            + properties.nickname
+                            + properties.nickname()
                             + " has an unknown extension or is not supported on this hardware.");
             return;
         }
 
-        if (!models.containsKey(properties.family)) {
-            models.put(properties.family, new ArrayList<>());
+        if (!models.containsKey(properties.family())) {
+            models.put(properties.family(), new ArrayList<>());
         }
 
         try {
-            switch (properties.family) {
+            switch (properties.family()) {
                 case RKNN -> {
-                    models.get(properties.family).add(new RknnModel(properties));
+                    models.get(properties.family()).add(new RknnModel(properties));
                     logger.info(
                             "Loaded model "
-                                    + properties.nickname
+                                    + properties.nickname()
                                     + " for backend "
-                                    + properties.family.toString());
+                                    + properties.family().toString());
                 }
             }
         } catch (IllegalArgumentException e) {
-            logger.error("Failed to load model " + properties.nickname, e);
+            logger.error("Failed to load model " + properties.nickname(), e);
         }
     }
 

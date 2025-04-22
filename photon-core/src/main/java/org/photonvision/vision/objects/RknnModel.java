@@ -34,24 +34,24 @@ public class RknnModel implements Model {
      * @throws IllegalArgumentException
      */
     public RknnModel(ModelProperties properties) throws IllegalArgumentException {
-        modelFile = new File(properties.modelPath.toString());
+        modelFile = new File(properties.modelPath().toString());
         if (!modelFile.exists()) {
             throw new IllegalArgumentException("Model file does not exist: " + modelFile);
         }
 
-        if (properties.labels == null || properties.labels.isEmpty()) {
+        if (properties.labels() == null || properties.labels().isEmpty()) {
             throw new IllegalArgumentException("Labels must be provided");
         }
 
-        if (properties.resolutionWidth <= 0 || properties.resolutionHeight <= 0) {
+        if (properties.resolutionWidth() <= 0 || properties.resolutionHeight() <= 0) {
             throw new IllegalArgumentException("Resolution must be greater than 0");
         }
 
-        if (properties.family != Family.RKNN) {
+        if (properties.family() != Family.RKNN) {
             throw new IllegalArgumentException("Model family must be RKNN");
         }
 
-        if (properties.rknnVersion.isEmpty()) {
+        if (properties.rknnVersion().isEmpty()) {
             throw new IllegalArgumentException("Model version must be provided");
         }
 
@@ -60,15 +60,15 @@ public class RknnModel implements Model {
 
     /** Return the unique identifier for the model. In this case, it's the model's path. */
     public String getUID() {
-        return properties.modelPath.toString();
+        return properties.modelPath().toString();
     }
 
     public Family getFamily() {
-        return properties.family;
+        return properties.family();
     }
 
     public ObjectDetector load() {
         return new RknnObjectDetector(
-                this, new Size(properties.resolutionWidth, properties.resolutionHeight));
+                this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
     }
 }
