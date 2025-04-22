@@ -106,5 +106,4 @@ if (!is_demo) {
 #title {
   color: #ffd843;
 }
-
 </style>

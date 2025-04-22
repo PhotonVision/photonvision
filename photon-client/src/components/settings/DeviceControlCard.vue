@@ -417,9 +417,7 @@ const nukePhotonConfigDirectory = () => {
           >
             <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">
-              {{
-                $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything"
-              }}
+              {{ $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything" }}
             </span>
           </v-btn>
         </v-card-text>

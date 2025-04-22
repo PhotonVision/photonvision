@@ -476,7 +476,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-col>
       </v-card-text>
       <v-card-text class="pa-6 pt-0">
-        <v-btn color="accent" size="small" block variant="outlined" :disabled="!settingsValid" @click="downloadCalibBoard">
+        <v-btn
+          color="accent"
+          size="small"
+          block
+          variant="outlined"
+          :disabled="!settingsValid"
+          @click="downloadCalibBoard"
+        >
           <v-icon start class="calib-btn-icon"> mdi-download </v-icon>
           <span class="calib-btn-label">Generate Board</span>
         </v-btn>

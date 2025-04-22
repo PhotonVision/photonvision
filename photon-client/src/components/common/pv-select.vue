@@ -23,7 +23,6 @@ const props = withDefaults(
   }
 );
 
-
 // Computed in case items changes
 const items = computed<SelectItem[]>(() => {
   // Trivial case for empty list; we have no data

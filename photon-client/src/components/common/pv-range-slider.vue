@@ -25,7 +25,6 @@ const props = withDefaults(
   }
 );
 
-
 const localValue = computed<[number, number]>({
   get: (): [number, number] => {
     return Object.values(value.value) as [number, number];

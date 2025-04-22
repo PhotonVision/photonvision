@@ -276,7 +276,7 @@ watchEffect(() => {
       </v-form>
       <v-btn
         color="accent"
-        :variant="!settingsValid || !settingsHaveChanged() ? 'tonal': 'elevated'""
+        :variant="!settingsValid || !settingsHaveChanged() ? 'tonal' : 'elevated'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"

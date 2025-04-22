@@ -159,13 +159,7 @@ onBeforeUpdate(() => {
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
       >
         <v-card color="primary" height="100%" class="pr-4 pl-4">
-          <v-tabs
-            v-model="selectedTabs[tabGroupIndex]"
-            grow
-            bg-color="primary"
-            height="48"
-            slider-color="accent"
-          >
+          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="primary" height="48" slider-color="accent">
             <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
               {{ tabConfig.tabName }}
             </v-tab>

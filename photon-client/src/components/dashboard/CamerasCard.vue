@@ -8,7 +8,6 @@ import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
 const value = defineModel<number[]>();
 
-
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
   set: (v) => useCameraSettingsStore().setDriverMode(v)
@@ -49,14 +48,13 @@ const performanceRecommendation = computed<string>(() => {
         :color="fpsTooLow ? 'error' : ''"
         style="font-size: 1rem; padding: 0; margin: 0"
         :variant="fpsTooLow ? 'tonal' : 'text'"
-        :style="{color:fpsTooLow ? '#C7EA46' : '#ff4d00'}"
+        :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }"
       >
-        <span class="pr-1"         
-
+        <span class="pr-1"
           >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
         ><span>{{ performanceRecommendation }}</span>
       </v-chip>
-      <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0;">
+      <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
         <span class="pr-1"> Camera not connected </span>
       </v-chip>
       <v-switch

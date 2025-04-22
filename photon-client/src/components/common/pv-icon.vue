@@ -18,7 +18,6 @@ withDefaults(
 defineEmits<{
   (e: "click"): void;
 }>();
-
 </script>
 
 <template>
