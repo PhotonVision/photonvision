@@ -55,5 +55,5 @@ example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the l
 named `Algae_1.03.2025-640-640-yolov5s-labels.txt`.
 
 :::{note}
-Currently there is no way to delete custom models in the GUI, though this is a planned feature. To do this, you have to SSH into the coprocessor and delete the files manually.
+Currently there is no way to delete custom models in the GUI, though this is a planned feature. To do this, you have to SSH into the coprocessor and delete the files manually from `/opt/photonvision/photonvision_config/models`.
 :::
