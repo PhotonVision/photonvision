@@ -24,12 +24,19 @@ import org.photonvision.vision.pipe.CVPipe;
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
     private final LinearFilter fpsFilter = LinearFilter.movingAverage(20);
-    private final Timer timer = new Timer();
+
+    // roll my own Timer, since this is so trivial
+    double lastTime = -1;
 
     @Override
     protected Integer process(Void in) {
-        var dtSeconds = timer.get();
-        timer.reset();
+        if (lastTime < 0) {
+            lastTime = Timer.getFPGATimestamp();
+        }
+
+        var now = Timer.getFPGATimestamp();
+        var dtSeconds = now - lastTime;
+        lastTime = now;
 
         // If < 1 uS between ticks, something is probably wrong
         int fps;
