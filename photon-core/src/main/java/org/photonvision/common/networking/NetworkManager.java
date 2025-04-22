@@ -73,6 +73,12 @@ public class NetworkManager {
             return;
         }
 
+        if (!NetworkUtils.nmcliIsInstalled()) {
+            logger.error("Cannot manage network without nmcli!");
+            this.networkingIsDisabled = true;
+            return;
+        }
+
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
@@ -204,7 +210,7 @@ public class NetworkManager {
         }
     }
 
-    private void setConnectionStatic(NetworkConfig config) {
+    void setConnectionStatic(NetworkConfig config) {
         String connName = "static-" + config.networkManagerIface;
 
         if (config.staticIp.isBlank()) {
