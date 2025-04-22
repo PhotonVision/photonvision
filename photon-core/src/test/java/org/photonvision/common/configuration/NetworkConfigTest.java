@@ -17,11 +17,13 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class NetworkConfigTest {
@@ -30,7 +32,7 @@ public class NetworkConfigTest {
         var mapper = new ObjectMapper();
         var path = Path.of("netTest.json");
         mapper.writeValue(path.toFile(), new NetworkConfig());
-        Assertions.assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
+        assertDoesNotThrow(() -> mapper.readValue(path.toFile(), NetworkConfig.class));
         new File("netTest.json").delete();
     }
 }

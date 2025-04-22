@@ -2,7 +2,7 @@
 
 ## Pi Cameras
 
-If you haven't yet, please refer to {ref}`the Pi CSI Camera Configuration page <docs/hardware/picamconfig:Pi Camera Configuration>` for information on updating {code}`config.txt` for your use case. If you've tried that, and things still aren't working, restart PhotonVision using the restart button in the settings tab, and press tilde (\`) in the web UI once connection is restored. This should show the most recent boot log.
+If you haven't yet, please refer to {ref}`the Pi CSI Camera Configuration page <docs/camera-specific-configuration/picamconfig:Pi Camera Configuration>` for information on updating {code}`config.txt` for your use case. If you've tried that, and things still aren't working, restart PhotonVision using the restart button in the settings tab, and press tilde (\`) in the web UI once connection is restored. This should show the most recent boot log.
 
 |                                 | Expected output                                       | Bad                                |
 | ------------------------------- | ----------------------------------------------------- | ---------------------------------- |
@@ -12,7 +12,7 @@ If you haven't yet, please refer to {ref}`the Pi CSI Camera Configuration page <
 
 If the driver isn't loaded, you may be using a non-official Pi image, or an image not new enough. Try updating to the most recent image available (one released for 2023) -- if that doesn't resolve the problem, {ref}`contact us<index:Contact Us>` with your settings ZIP file and Pi version/camera version/config.txt file used.
 
-If the camera is not detected, the most likely cause is either a config.txt file incorrectly set-up, or a ribbon cable attached backwards. Review the {ref}`picam configuration page <docs/hardware/picamconfig:pi camera configuration>`, and verify the ribbon cable is properly oriented at both ends, and that it is \_fully\_ inserted into the FFC connector. Then, {ref}`contact us<index:Contact Us>` with your settings ZIP file and Pi version/camera version/config.txt file used.
+If the camera is not detected, the most likely cause is either a config.txt file incorrectly set-up, or a ribbon cable attached backwards. Review the {ref}`picam configuration page <docs/camera-specific-configuration/picamconfig:pi camera configuration>`, and verify the ribbon cable is properly oriented at both ends, and that it is _fully_ inserted into the FFC connector. Then, {ref}`contact us<index:Contact Us>` with your settings ZIP file and Pi version/camera version/config.txt file used.
 
 ## USB cameras
 
@@ -27,7 +27,7 @@ USB cameras supported by CSCore require no libcamera driver initialization to wo
 
 On Linux devices (including Raspberry Pi), PhotonVision uses WPILib's CSCore to interact with video devices, which internally uses Video4Linux (v4l2). CSCore, and therefore Photon, requires that cameras attached have good v4l drivers for proper functionality. These should be built into the Linux kernel, and do not need to be installed manually. Valid picamera setup (from /boot/config.txt) can also be determined using these steps. The list-devices command will show all valid video devices detected, and list-formats the list of "video modes" each camera can be in.
 
-- For picams: edit the config.txt file as described in the {ref}`picam configuration page <docs/hardware/picamconfig:pi camera configuration>`
+- For picams: edit the config.txt file as described in the {ref}`picam configuration page <docs/camera-specific-configuration/picamconfig:pi camera configuration>`
 - SSH into your Pi: {code}`ssh pi@photonvision.local` and enter the username "pi" & password "raspberry"
 - run {code}`v4l2-ctl --list-devices` and {code}`v4l2-ctl --list-formats`
 
