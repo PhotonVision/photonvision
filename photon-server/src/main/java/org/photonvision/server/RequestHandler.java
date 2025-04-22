@@ -40,6 +40,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkProperties.ModelProperties;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -623,17 +624,18 @@ public class RequestHandler {
                 modelFile.content().transferTo(out);
             }
 
-            var nnProps = ConfigManager.getInstance().getConfig().getNeuralNetworkProperties();
-            nnProps.addModelProperties(
-                    nnProps
-                    .new ModelProperties(
-                            modelPath,
-                            modelFile.filename(),
-                            labels,
-                            width,
-                            height,
-                            NeuralNetworkModelManager.Family.RKNN,
-                            version));
+            ConfigManager.getInstance()
+                    .getConfig()
+                    .getNeuralNetworkProperties()
+                    .addModelProperties(
+                            new ModelProperties(
+                                    modelPath,
+                                    modelFile.filename(),
+                                    labels,
+                                    width,
+                                    height,
+                                    NeuralNetworkModelManager.Family.RKNN,
+                                    Optional.of(version)));
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -682,8 +684,10 @@ public class RequestHandler {
                 return;
             }
 
-            var nnProps = ConfigManager.getInstance().getConfig().getNeuralNetworkProperties();
-            if (!nnProps.removeModel(modelPath)) {
+            if (!ConfigManager.getInstance()
+                    .getConfig()
+                    .getNeuralNetworkProperties()
+                    .removeModel(modelPath)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
@@ -735,8 +739,10 @@ public class RequestHandler {
                 return;
             }
 
-            var nnProps = ConfigManager.getInstance().getConfig().getNeuralNetworkProperties();
-            if (!nnProps.renameModel(modelPath, newName)) {
+            if (!ConfigManager.getInstance()
+                    .getConfig()
+                    .getNeuralNetworkProperties()
+                    .renameModel(modelPath, newName)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
