@@ -66,7 +66,7 @@ public class RknnObjectDetector implements ObjectDetector {
         this.model = model;
         this.inputSize = inputSize;
 
-        if(model.properties.rknnVersion.isEmpty()) {
+        if (model.properties.rknnVersion.isEmpty()) {
             throw new RuntimeException(
                     "Rknn model version is not set! Please set the model version, and ensure that you are using the correct family for this model");
         }

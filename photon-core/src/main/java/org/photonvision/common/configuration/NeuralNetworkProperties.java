@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
-
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.rknn.RknnJNI;
 
@@ -87,7 +86,6 @@ public class NeuralNetworkProperties {
                 Family family) {
             this(modelPath, nickname, labels, resolutionWidth, resolutionHeight, family, null);
         }
-
     }
 
     // The path to the model is used as the key in the map because it is unique to
