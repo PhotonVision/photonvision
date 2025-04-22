@@ -32,7 +32,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -285,9 +284,7 @@ class LegacyConfigProvider extends ConfigProvider {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
         try {
             var subdirectories =
-                    Files.list(camerasFolder.toPath())
-                            .filter(f -> f.toFile().isDirectory())
-                            .collect(Collectors.toList());
+                    Files.list(camerasFolder.toPath()).filter(f -> f.toFile().isDirectory()).toList();
 
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
@@ -353,7 +350,7 @@ class LegacyConfigProvider extends ConfigProvider {
                                                     return null;
                                                 })
                                         .filter(Objects::nonNull)
-                                        .collect(Collectors.toList())
+                                        .toList()
                                 : Collections.emptyList();
 
                 loadedConfig.driveModeSettings = driverMode;

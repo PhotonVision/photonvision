@@ -24,7 +24,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -316,9 +315,9 @@ public class TargetCalculationsTest {
         Point crosshairPointOutside =
                 TargetCalculations.calculateDualOffsetCrosshair(dualOffsetValues, 1);
 
-        Assertions.assertEquals(expectedHalfway.x, crosshairPointHalfway.x);
-        Assertions.assertEquals(expectedHalfway.y, crosshairPointHalfway.y);
-        Assertions.assertEquals(expectedOutside.x, crosshairPointOutside.x);
-        Assertions.assertEquals(expectedOutside.y, crosshairPointOutside.y);
+        assertEquals(expectedHalfway.x, crosshairPointHalfway.x);
+        assertEquals(expectedHalfway.y, crosshairPointHalfway.y);
+        assertEquals(expectedOutside.x, crosshairPointOutside.x);
+        assertEquals(expectedOutside.y, crosshairPointOutside.y);
     }
 }

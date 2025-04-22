@@ -786,7 +786,7 @@ public class RequestHandler {
     }
 
     public static void onCalibrationSnapshotRequest(Context ctx) {
-        logger.info(ctx.queryString().toString());
+        logger.info(ctx.queryString());
 
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
@@ -840,7 +840,7 @@ public class RequestHandler {
     }
 
     public static void onCalibrationExportRequest(Context ctx) {
-        logger.info(ctx.queryString().toString());
+        logger.info(ctx.queryString());
 
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
@@ -1045,7 +1045,7 @@ public class RequestHandler {
     }
 
     public static void onActivateMatchedCameraRequest(Context ctx) {
-        logger.info(ctx.queryString().toString());
+        logger.info(ctx.queryString());
 
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
 
@@ -1059,7 +1059,7 @@ public class RequestHandler {
     }
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
-        logger.info(ctx.queryString().toString());
+        logger.info(ctx.queryString());
 
         PVCameraInfo camera;
         try {
@@ -1079,7 +1079,7 @@ public class RequestHandler {
     }
 
     public static void onUnassignCameraRequest(Context ctx) {
-        logger.info(ctx.queryString().toString());
+        logger.info(ctx.queryString());
 
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
 

@@ -134,17 +134,16 @@ public class TargetCalculations {
             Point camCenterPoint,
             DualOffsetValues dualOffsetValues,
             RobotOffsetPointMode offsetMode) {
-        switch (offsetMode) {
-            case None:
-            default:
-                return camCenterPoint;
-            case Single:
+        return switch (offsetMode) {
+            case None -> camCenterPoint;
+            case Single -> {
                 if (offsetPoint.x == 0 && offsetPoint.y == 0) {
-                    return camCenterPoint;
+                    yield camCenterPoint;
                 } else {
-                    return offsetPoint;
+                    yield offsetPoint;
                 }
-            case Dual:
+            }
+            case Dual -> {
                 var resultPoint = new Point();
                 var lineValues = dualOffsetValues.getLineValues();
                 var offsetSlope = lineValues.getFirst();
@@ -152,8 +151,9 @@ public class TargetCalculations {
 
                 resultPoint.x = (offsetPoint.x - offsetIntercept) / offsetSlope;
                 resultPoint.y = (offsetPoint.y * offsetSlope) + offsetIntercept;
-                return resultPoint;
-        }
+                yield resultPoint;
+            }
+        };
     }
 
     public static double getAspectRatio(RotatedRect rect, boolean isLandscape) {
