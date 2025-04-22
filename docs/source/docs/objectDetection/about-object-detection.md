@@ -53,3 +53,7 @@ should be `name-verticalResolution-horizontalResolution-yolovXXX`. The
 file ought to have the same name as the RKNN file, with `-labels` appended to the end. For
 example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the labels file should be
 named `Algae_1.03.2025-640-640-yolov5s-labels.txt`.
+
+:::{note}
+Currently there is no way to delete custom models in the GUI, though this is a planned feature. To do this, you have to SSH into the coprocessor and delete the files manually.
+:::
