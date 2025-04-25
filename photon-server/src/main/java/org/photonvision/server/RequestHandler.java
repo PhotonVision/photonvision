@@ -554,7 +554,7 @@ public class RequestHandler {
     public static void onImportObjectDetectionModelRequest(Context ctx) {
         try {
             // Retrieve the uploaded files
-            var modelFile = ctx.uploadedFile("rknn");
+            var modelFile = ctx.uploadedFile("model");
 
             var data = kObjectMapper.readTree(ctx.bodyInputStream());
 
@@ -574,6 +574,7 @@ public class RequestHandler {
                         case "YOLOV5" -> ModelVersion.YOLO_V5;
                         case "YOLOV8" -> ModelVersion.YOLO_V8;
                         case "YOLO11" -> ModelVersion.YOLO_V11;
+                            // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);
                             ctx.result("The provided version was not valid");
@@ -607,6 +608,7 @@ public class RequestHandler {
                 return;
             }
 
+            // If adding additional platforms, check platform matches
             if (!modelFile.extension().contains("rknn")) {
                 ctx.status(400);
                 ctx.result(
@@ -634,7 +636,9 @@ public class RequestHandler {
                                     labels,
                                     width,
                                     height,
-                                    NeuralNetworkModelManager.Family.RKNN,
+                                    NeuralNetworkModelManager.Family
+                                            .RKNN, // This can be determined by platform if additional platforms are
+                                    // supported
                                     Optional.of(version)));
 
             NeuralNetworkModelManager.getInstance().discoverModels();
