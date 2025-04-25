@@ -1,4 +1,4 @@
-# Quick Configure
+# Configuration
 
 ## Settings to configure
 

@@ -1,4 +1,4 @@
-# Quick Install
+# Installation
 
 ## Install the latest image of photonvision for your coprocessor
 

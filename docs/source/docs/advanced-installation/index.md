@@ -13,6 +13,6 @@ You only need to install PhotonVision on the coprocessor/device that is being us
 ```{toctree}
 :maxdepth: 3
 
-sw_install/index
 prerelease-software
+other-operating-systems/index
 ```

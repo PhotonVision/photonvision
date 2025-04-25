@@ -10,7 +10,7 @@ Welcome to the official documentation of PhotonVision! PhotonVision is the free,
 .. grid:: 2
 
     .. grid-item-card::  Quick Start
-        :link: docs/quick-start/index
+        :link: docs/getting-started/hardware-setups
         :link-type: doc
 
         Quick start to using Photonvision.
@@ -88,10 +88,13 @@ PhotonVision is licensed under the [GNU GPL v3](https://www.gnu.org/licenses/gpl
 :maxdepth: 0
 
 docs/description
-docs/quick-start/index
-docs/hardware/index
-docs/advanced-installation/index
-docs/camera-specific-configuration/index
+docs/getting-started/hardware-setups
+docs/getting-started/installation
+docs/getting-started/wiring
+docs/getting-started/networking
+docs/getting-started/camera-matching
+docs/getting-started/camera-calibration
+docs/getting-started/configuration
 ```
 
 ```{toctree}
@@ -116,6 +119,16 @@ docs/programming/photonlib/index
 docs/simulation/index
 docs/integration/index
 docs/examples/index
+```
+
+```{toctree}
+:caption: Advanced Setup
+:hidden: true
+:maxdepth: 0
+
+docs/hardware/index
+docs/advanced-installation/index
+docs/camera-specific-configuration/index
 ```
 
 ```{toctree}

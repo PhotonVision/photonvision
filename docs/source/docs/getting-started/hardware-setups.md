@@ -1,4 +1,4 @@
-# Common Hardware Setups
+# Hardware Setups
 
 PhotonVision requires dedicated hardware, above and beyond a roboRIO. This page lists hardware that is frequently used with PhotonVision.
 
@@ -26,9 +26,11 @@ Industrial grade SD cards from major manufacturers are recommended for robotics 
 Innomaker and Arducam are common manufacturers of hardware designed specifically for vision processing.
 
 - AprilTag Detection
+
   - OV9281
 
 - Object Detection
+
   - OV9782
 
 - Driver Camera

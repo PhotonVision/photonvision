@@ -1,4 +1,4 @@
-# Software Installation
+# Other Operating Systems
 
 ## Desktop Environments
 
