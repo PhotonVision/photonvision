@@ -337,6 +337,14 @@ public class PhotonPoseEstimator {
     }
 
     /**
+     * Clear all heading data in the buffer. Useful for preventing estimates from utilizing
+     * heading data provided prior to a pose or rotation reset.
+     */
+    public void clearHeadingData() {
+        headingBuffer.clear();
+    }
+
+    /**
      * @return The current transform from the center of the robot to the camera mount position
      */
     public Transform3d getRobotToCameraTransform() {
