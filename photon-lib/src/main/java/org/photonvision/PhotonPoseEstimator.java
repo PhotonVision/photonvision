@@ -337,8 +337,8 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Clear all heading data in the buffer. Useful for preventing estimates from utilizing
-     * heading data provided prior to a pose or rotation reset.
+     * Clear all heading data in the buffer. Useful for preventing estimates from utilizing heading
+     * data provided prior to a pose or rotation reset.
      */
     public void clearHeadingData() {
         headingBuffer.clear();
