@@ -98,8 +98,9 @@ const cameraMismatchWarningShown = computed<boolean>(() => {
       icon="mdi-alert-circle-outline"
     >
       <span
-        >Camera Mismatch Detected! Please ensure cameras are plugged in correctly. Visit the
-        <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
+        activated.
       </span>
     </v-banner>
     <v-row no-gutters align="center" justify="center">
