@@ -7,8 +7,6 @@
   - Orange Pi 5
   - Limelight
 
-For installing on non-supported devices {ref}`see. <docs/advanced-installation/sw_install/index:Software Installation>`
-
 [Download the latest preconfigured image of photonvision for your coprocessor](https://github.com/PhotonVision/photonvision/releases/latest)
 
 | Coprocessor          | Image filename                                       | Jar                                   |

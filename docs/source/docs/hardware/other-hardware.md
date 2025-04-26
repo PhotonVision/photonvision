@@ -1,7 +1,7 @@
 # Other Hardware
 
 :::{note}
-See the {ref}`quick start guide<docs/quick-start/common-setups:Common Hardware Setups>`, for latest, specific recommendations on hardware to use for PhotonVision.
+See the {ref}`quick start guide<docs/getting-started/hardware-setups:Hardware Setups>`, for latest, specific recommendations on hardware to use for PhotonVision.
 :::
 
 In order to use PhotonVision, you need a coprocessor and a camera. This page discusses the specifics of why that hardware is recommended.

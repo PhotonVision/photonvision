@@ -23,7 +23,7 @@ $ sudo reboot now
 Your co-processor will require an Internet connection for this process to work correctly.
 :::
 
-For installation on any other co-processors, we recommend reading the {ref}`advanced command line documentation <docs/advanced-installation/sw_install/advanced-cmd:Advanced Command Line Usage>`.
+For installation on any other co-processors, we recommend reading the {ref}`advanced command line documentation <docs/advanced-installation/other-operating-systems/advanced-cmd:Advanced Command Line Usage>`.
 
 ## Updating PhotonVision
 

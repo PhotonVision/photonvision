@@ -33,7 +33,7 @@ When using an Orange Pi 5 with an Arducam OV9281 teams will usually change the f
 
 #### AprilTags and Motion Blur and Rolling Shutter
 
-When detecting AprilTags, it's important to minimize 'motion blur' as much as possible. Motion blur appears as visual streaking or smearing in the camera feed, resulting from the movement of either the camera or the object in focus. Reducing this effect is essential, as the robot is often in motion, and a clearer image allows for detecting as many tags as possible. This is not to be confused with {ref}`rolling shutter<docs/hardware/selecting-hardware:Cameras Attributes>`.
+When detecting AprilTags, it's important to minimize 'motion blur' as much as possible. Motion blur appears as visual streaking or smearing in the camera feed, resulting from the movement of either the camera or the object in focus. Reducing this effect is essential, as the robot is often in motion, and a clearer image allows for detecting as many tags as possible. This is not to be confused with rolling shutterx.
 
 - Fixes
   - Lower your exposure as low as possible. Using gain and brightness to account for lack of brightness.

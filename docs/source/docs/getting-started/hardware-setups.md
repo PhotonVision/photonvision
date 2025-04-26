@@ -45,4 +45,4 @@ Feel free to get started with any color webcam you have sitting around.
 - Pololu S13V30F5 Regulator
 - Redux Robotics Zinc-V Regulator
 
-See {ref}`(Selecting Hardware)<docs/hardware/selecting-hardware:Selecting Hardware>` for info on why these are recommended.
+For more advanced users, refer to the {ref}`(Other Hardware)<docs/hardware/other-hardware:Other Hardware>` page for recommended specs.
