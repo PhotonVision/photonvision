@@ -7,10 +7,11 @@
 - Some time before the competition, lock down the version you are using and do not upgrade unless you encounter a critical bug.
 - Have a copy of the installation image for the version you are using on your programming laptop, in case re-imaging (without internet) is needed.
 - Extensively test at your home setup. Practice tuning from scratch under different lighting conditions.
-- Confirm you have followed all the recommendations under the {ref}`Networking<docs/quick-start/networking:Networking>` documentation (network switch and static IP).
+- Confirm you have followed all the recommendations under the {ref}`Networking<docs/getting-started/networking:Networking>` documentation (network switch and static IP).
 - Only use high quality ethernet cables that have been rigorously tested.
 
 ## Camera Streaming
+
 - All camera streams are published under the NetworkTables table `CameraPublisher`.
 - The only subtable under `CameraPublisher` that will work for viewing a driver mode camera stream is the one that contains `Output` in the name.
 - To view a camera stream in a dashboard, drag the correct subtable from the NetworkTables tree into your dashboard.
