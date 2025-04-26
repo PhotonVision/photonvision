@@ -63,7 +63,8 @@ const arducamWarningShown = computed<boolean>(() => {
 const cameraMismatchWarningShown = computed<boolean>(() => {
   return Object.values(useCameraSettingsStore().cameras).some(
     (camera) =>
-      camera.uniqueName !== "Placeholder Name" &&
+      camera.nickname !== "Placeholder Camera" &&
+      camera.isConnected &&
       !camerasMatch(
         getMatchedDevice(useStateStore().vsmState.allConnectedCameras, camera.matchedCameraInfo),
         camera.matchedCameraInfo

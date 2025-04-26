@@ -398,15 +398,27 @@ const openExportSettingsPrompt = () => {
         <v-card-text v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
-        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0]), viewingCamera[0])">
+        <v-card-text
+          v-else-if="
+            !camerasMatch(
+              getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0]),
+              viewingCamera[0]
+            )
+          "
+        >
           <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
             It looks like a different camera may have been connected to this device! Compare the following information
             carefully.
           </v-banner>
-          <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])" />
+          <PvCameraMatchCard
+            :saved="viewingCamera[0]"
+            :current="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])"
+          />
         </v-card-text>
         <v-card-text v-else>
-          <PvCameraInfoCard :camera="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])" />
+          <PvCameraInfoCard
+            :camera="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])"
+          />
         </v-card-text>
       </v-card>
     </v-dialog>
