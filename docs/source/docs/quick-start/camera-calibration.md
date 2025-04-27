@@ -32,14 +32,14 @@ If you’re not using cameras in 3D mode, calibration is optional, but it can st
   - Cover the entire cameras fov.
   - Avoid images with the board facing straight towards the camera.
 
-## Interactive Camera Transformation Demo
+## Interactive Camera Transformation
 
 Below is an interactive demo to visualize multiple cameras' positions and orientations relative to the robot chassis. Use the table to adjust each camera's transformation parameters (position and rotation).
 
-<div id="camera-demo" style="width: 100%; height: 400px; border: 1px solid #ccc; margin: auto;"></div>
+<div id="camera-demo" style="width: 800px; height: 400px; border: 1px solid #ccc; margin: auto;"></div>
 <table id="camera-table" style="table-layout: fixed; width: 100%;">
   <thead>
-    <tr style="height: 50px;"> <!-- Set consistent height for header row -->
+    <tr style="height: 35px;">
       <th>Camera</th>
       <th>Position X</th>
       <th>Position Y</th>
@@ -50,35 +50,32 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
     </tr>
   </thead>
   <tbody>
-    <tr id="camera-row-0" style="height: 50px;"> <!-- Set consistent height for body rows -->
-      <td>Camera 0</td>
-      <td><input id="posX-0" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="posY-0" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="posZ-0" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="roll-0" type="number" min="-180" max="180" step="0.5" value="0"></td>
-      <td><input id="pitch-0" type="number" min="-180" max="180" step="0.5" value="0"></td>
-      <td><input id="yaw-0" type="number" min="-180" max="180" step="0.5" value="0"></td>
-    </tr>
   </tbody>
 </table>
 <button id="add-camera" style="margin-top: 10px;">Add Camera</button>
 
-<div style="margin-top: 10px;">
-  <!-- Removed bumper input fields and button -->
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script>
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 1000); // Aspect ratio set to 1 for square view
+  const aspect = 800 / 400; // Aspect ratio based on the renderer size
+  const orthoSize = 1.5; // Size of the orthographic view
+  const camera = new THREE.OrthographicCamera(
+    -orthoSize * aspect, // Left
+    orthoSize * aspect,  // Right
+    orthoSize,           // Top
+    -orthoSize,          // Bottom
+    0.01,                // Near
+    2000                 // Far
+  );
   const renderer = new THREE.WebGLRenderer();
-  renderer.setSize(400, 400); // Fixed size to ensure proper rendering
+  renderer.setSize(800, 400); // Fixed size to ensure proper rendering
   renderer.setPixelRatio(window.devicePixelRatio); // Ensure proper scaling on high-DPI displays
   document.getElementById('camera-demo').appendChild(renderer.domElement);
 
-  // Update grid to align with the XY axis
-  const gridHelper = new THREE.GridHelper(20, 20);
+  // Update grid to align with the XY axis and increase its size
+  const gridHelper = new THREE.GridHelper(40, 40); // Increase size to 40x40
   gridHelper.rotation.x = -Math.PI / 2; // Rotate to align with the XY plane
+  gridHelper.position.set(0, 0, 0); // Align grid with the bottom of the camera's frustum
   scene.add(gridHelper);
 
   // Replace axes helper with custom origin marker
@@ -111,30 +108,30 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
   const thickOriginMarker = createThickOriginMarker(0.5, 0.02); // Size of 0.5 units, thickness of 0.02
   scene.add(thickOriginMarker);
 
-  // Add lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // Soft ambient light
-  scene.add(ambientLight);
-
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Strong directional light
-  directionalLight.position.set(0, 10, 10); // Position the light above the scene
-  directionalLight.castShadow = true; // Enable shadows
-  directionalLight.shadow.mapSize.width = 1024; // Shadow map resolution
-  directionalLight.shadow.mapSize.height = 1024;
-  directionalLight.shadow.camera.near = 0.5;
-  directionalLight.shadow.camera.far = 50;
-  scene.add(directionalLight);
-
-  // Enable shadows in the renderer
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Use soft shadows
-
-  // Enable shadow casting and receiving for objects
-  thickOriginMarker.castShadow = true; // Ensure the origin marker casts shadows
-
   const cameras = [];
   const fovs = [];
 
   function createCamera(index) {
+
+    const table = document.getElementById('camera-table').getElementsByTagName('tbody')[0];
+    const row = document.createElement('tr');
+    row.id = `camera-row-${index}`;
+    row.style = "height: 35px;";
+    row.innerHTML = `
+      <td>Camera ${index}</td>
+      <td><input id="posX-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
+      <td><input id="posY-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
+      <td><input id="posZ-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
+      <td><input id="roll-${index}" type="number" min="-180" max="180" step="0.5" value="0"></td>
+      <td><input id="pitch-${index}" type="number" min="-180" max="180" step="0.5" value="0"></td>
+      <td><input id="yaw-${index}" type="number" min="-180" max="180" step="0.5" value="0"></td>
+    `;
+    table.appendChild(row);
+
+    ['posX', 'posY', 'posZ', 'roll', 'pitch', 'yaw'].forEach(param => {
+      document.getElementById(`${param}-${index}`).addEventListener('input', () => updateTransformation(index));
+    });
+
     const geometry = new THREE.BoxGeometry(0.04445, 0.04445, 0.0254);
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
     const cameraCube = new THREE.Mesh(geometry, material);
@@ -240,33 +237,10 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
 
   document.getElementById('add-camera').addEventListener('click', () => {
     const index = cameras.length;
-    const table = document.getElementById('camera-table').getElementsByTagName('tbody')[0];
-    const row = document.createElement('tr');
-    row.id = `camera-row-${index}`;
-    row.innerHTML = `
-      <td>Camera ${index}</td>
-      <td><input id="posX-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="posY-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="posZ-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="roll-${index}" type="number" min="-180" max="180" step="0.01" value="0"></td>
-      <td><input id="pitch-${index}" type="number" min="-180" max="180" step="0.01" value="0"></td>
-      <td><input id="yaw-${index}" type="number" min="-180" max="180" step="0.01" value="0"></td>
-    `;
-    table.appendChild(row);
-
-    ['posX', 'posY', 'posZ', 'roll', 'pitch', 'yaw'].forEach(param => {
-      document.getElementById(`${param}-${index}`).addEventListener('input', () => updateTransformation(index));
-    });
-
     createCamera(index);
   });
 
   createCamera(0);
-
-  // Attach event listeners to Camera 0's input fields
-  ['posX', 'posY', 'posZ', 'roll', 'pitch', 'yaw'].forEach(param => {
-    document.getElementById(`${param}-0`).addEventListener('input', () => updateTransformation(0));
-  });
 
   // Add buttons for camera views below the 3D view
   const viewButtons = document.createElement('div');
@@ -285,7 +259,7 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
 
   // Function to set camera views
   function setCameraView(view) {
-    const distance = 2; // Distance from the origin
+    const distance = 1.5; // Distance from the origin
     switch (view) {
       case 'front':
         camera.position.set(distance, 0, 0); // Positive X-axis
@@ -312,18 +286,14 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
         camera.up.set(1, 0, 0); // X+ is up
         break;
       case 'isometric':
-        camera.position.set(-2, -2, 2); // Same as the default view
+        camera.position.set(-1.5, -1.5, 1.5); // Same as the default view
         camera.up.set(0, 0, 1); // Z+ is up
         break;
     }
     camera.lookAt(0, 0, 0); // Look at the origin
-    controls.update(); // Update controls
   }
 
-  // Set initial camera position and orientation for the desired view
-  camera.position.set(-2, -2, 2); // Upper-right position
-  camera.up.set(0, 0, 1); // Z+ is up
-  camera.lookAt(0, 0, 0); // Look at the origin
+  setCameraView('isometric');
 
   // Draw the fixed bumpers once
   drawFixedRobotBumpers();
