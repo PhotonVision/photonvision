@@ -47,6 +47,7 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
       <th>Roll (deg)</th>
       <th>Pitch (deg)</th>
       <th>Yaw (deg)</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -112,21 +113,23 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
   const fovs = [];
 
   function createCamera(index) {
-
     const table = document.getElementById('camera-table').getElementsByTagName('tbody')[0];
     const row = document.createElement('tr');
     row.id = `camera-row-${index}`;
     row.style = "height: 35px;";
     row.innerHTML = `
-      <td>Camera ${index}</td>
-      <td><input id="posX-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="posY-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="posZ-${index}" type="number" min="-10" max="10" step="0.01" value="0"></td>
-      <td><input id="roll-${index}" type="number" min="-180" max="180" step="0.5" value="0"></td>
-      <td><input id="pitch-${index}" type="number" min="-180" max="180" step="0.5" value="0"></td>
-      <td><input id="yaw-${index}" type="number" min="-180" max="180" step="0.5" value="0"></td>
+      <td style="text-align: center;">Camera ${index}</td>
+      <td style="text-align: center;"><input id="posX-${index}" type="number" min="-10" max="10" step="0.01" value="0" style="width: 60px;"></td>
+      <td style="text-align: center;"><input id="posY-${index}" type="number" min="-10" max="10" step="0.01" value="0" style="width: 60px;"></td>
+      <td style="text-align: center;"><input id="posZ-${index}" type="number" min="-10" max="10" step="0.01" value="0" style="width: 60px;"></td>
+      <td style="text-align: center;"><input id="roll-${index}" type="number" min="-180" max="180" step="0.5" value="0" style="width: 60px;"></td>
+      <td style="text-align: center;"><input id="pitch-${index}" type="number" min="-180" max="180" step="0.5" value="0" style="width: 60px;"></td>
+      <td style="text-align: center;"><input id="yaw-${index}" type="number" min="-180" max="180" step="0.5" value="0" style="width: 60px;"></td>
+      <td style="text-align: center;"><button id="remove-${index}" style="color: red;">Remove</button></td>
     `;
     table.appendChild(row);
+
+    document.getElementById(`remove-${index}`).addEventListener('click', () => removeCamera(index));
 
     ['posX', 'posY', 'posZ', 'roll', 'pitch', 'yaw'].forEach(param => {
       document.getElementById(`${param}-${index}`).addEventListener('input', () => updateTransformation(index));
@@ -146,6 +149,20 @@ Below is an interactive demo to visualize multiple cameras' positions and orient
     fovs.push(fov);
 
     updateFOV(index);
+  }
+
+  function removeCamera(index) {
+    // Remove camera from the scene
+    scene.remove(cameras[index]);
+    scene.remove(fovs[index]);
+
+    // Remove camera from arrays
+    cameras[index] = null;
+    fovs[index] = null;
+
+    // Remove row from the table
+    const row = document.getElementById(`camera-row-${index}`);
+    if (row) row.remove();
   }
 
   function updateFOV(index) {
