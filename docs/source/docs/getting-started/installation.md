@@ -1,6 +1,6 @@
 # Installation
 
-## Install the latest image of photonvision for your coprocessor
+## Install the latest image of PhotonVision for your coprocessor
 
 - For the supported coprocessors
   - RPI 3,4,5
