@@ -29,3 +29,5 @@ Unless otherwise noted in release notes or if updating from the prior years vers
 :::{note}
 Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
 :::
+
+For installation on other coprocessors, refer to the {ref}`docs/advanced-installation/index:Advanced Installation` page.
