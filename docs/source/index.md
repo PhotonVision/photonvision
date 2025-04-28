@@ -92,6 +92,7 @@ docs/getting-started/hardware-setups
 docs/getting-started/installation
 docs/getting-started/wiring
 docs/getting-started/networking
+docs/camera-specific-configuration/index
 docs/getting-started/camera-matching
 docs/getting-started/camera-calibration
 docs/getting-started/configuration
@@ -128,7 +129,6 @@ docs/examples/index
 
 docs/hardware/index
 docs/advanced-installation/index
-docs/camera-specific-configuration/index
 ```
 
 ```{toctree}
