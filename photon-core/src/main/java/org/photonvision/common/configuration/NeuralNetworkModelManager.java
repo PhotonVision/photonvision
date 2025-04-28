@@ -233,7 +233,8 @@ public class NeuralNetworkModelManager {
                                     "Successfully loaded model: " + model.getName() + " for backend " + backendName);
                         } catch (IOException | IllegalArgumentException e) {
                             logger.error(
-                                    "Failed to load model from path " + path + " using model manager " + backendName, e);
+                                    "Failed to load model from path " + path + " using model manager " + backendName,
+                                    e);
                         }
                     }
                 }

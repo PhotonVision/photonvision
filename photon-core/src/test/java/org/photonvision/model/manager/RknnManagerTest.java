@@ -23,7 +23,6 @@ import org.junit.jupiter.params.provider.Arguments;
 
 /** Tests for the RknnManager implementation. */
 public class RknnManagerTest extends ModelManagerTest {
-
     private static final RknnManager manager = new RknnManager();
 
     private static LinkedList<String[]> passNames =

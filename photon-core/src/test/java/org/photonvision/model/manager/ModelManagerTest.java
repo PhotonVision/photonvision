@@ -30,7 +30,6 @@ import org.junit.jupiter.params.provider.MethodSource;
  * Base test class for model manager implementations. Provides common test utilities and methods.
  */
 public abstract class ModelManagerTest {
-
     /**
      * Get the model manager implementation to test.
      *

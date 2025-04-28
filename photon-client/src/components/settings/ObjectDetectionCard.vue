@@ -103,13 +103,12 @@ const supportedModels = computed(() => {
                 <br /><br />
                 Naming convention should be
                 <code>name-verticalResolution-horizontalResolution-yolovXXX.backend_extension</code>, where
-                <code>backend_extension</code> is typically <code>.rknn</code>. The
-                <code>name</code> should only include alphanumeric characters, periods, and underscores. <br /><br />
+                <code>backend_extension</code> is typically <code>.rknn</code>. The <code>name</code> should only
+                include alphanumeric characters, periods, and underscores. <br /><br />
                 The labels file ought to have the same name as the model file, with
                 <code>-labels.txt</code> appended to the end. For example, if the model file is
                 <code>note-640-640-yolov5s.rknn</code>, the labels file should be named
-                <code>note-640-640-yolov5s-labels.txt</code>.
-                Note that:
+                <code>note-640-640-yolov5s-labels.txt</code>. Note that:
                 <ul>
                   <li>
                     For RKNN: ONLY 640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format

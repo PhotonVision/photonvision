@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.model.manager;
 
 import io.javalin.http.UploadedFile;
@@ -14,7 +31,6 @@ import org.photonvision.model.vision.Model;
  * saving models of a particular type (e.g., RKNN files).
  */
 public interface ModelManager {
-
     public static class ParsedModelInfo {
         public final String baseName;
         public final int width;
@@ -35,8 +51,8 @@ public interface ModelManager {
     public static record Info(String name, String uploadAcceptType) {}
 
     /**
-     * Gets the unique identifier name for this backend model manager. This name is used internally and
-     * potentially in configuration/logging. Example: "RKNN"
+     * Gets the unique identifier name for this backend model manager. This name is used internally
+     * and potentially in configuration/logging. Example: "RKNN"
      *
      * @return The backend name string.
      */
@@ -57,8 +73,8 @@ public interface ModelManager {
     Class<? extends Model> getModelClass();
 
     /**
-     * Checks if the given filesystem path (file or directory) is potentially supported by this
-     * model manager. Used during model discovery.
+     * Checks if the given filesystem path (file or directory) is potentially supported by this model
+     * manager. Used during model discovery.
      *
      * @param path The path to check.
      * @return true if the path might be handled by this model manager, false otherwise.
