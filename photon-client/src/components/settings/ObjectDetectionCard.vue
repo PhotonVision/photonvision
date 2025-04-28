@@ -81,10 +81,6 @@ const handleImport = async () => {
 
 const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = settingsStore.general;
-
-  console.log("availableModels", availableModels);
-  console.log("supportedBackends", supportedBackends);
-
   return supportedBackends.flatMap((backend) => availableModels[backend.name] || []);
 });
 </script>
