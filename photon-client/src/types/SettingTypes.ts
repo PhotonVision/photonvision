@@ -9,7 +9,7 @@ export interface GeneralSettings {
   hardwarePlatform?: string;
   mrCalWorking: boolean;
   availableModels: Record<string, string[]>;
-  supportedBackends: string[];
+  supportedBackends: NeuralNetworkBackendInfo[];
 }
 
 export interface MetricData {
@@ -24,6 +24,11 @@ export interface MetricData {
   diskUtilPct?: string;
   npuUsage?: string;
   ipAddress?: string;
+}
+
+export interface NeuralNetworkBackendInfo {
+  name: string;
+  uploadAcceptType: string;
 }
 
 export enum NetworkConnectionType {

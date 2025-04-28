@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import io.javalin.http.UploadedFile;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +26,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -33,13 +35,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.objects.Model;
-import org.photonvision.vision.objects.RknnModel;
+import org.photonvision.model.manager.ModelManager;
+import org.photonvision.model.manager.RknnManager;
+import org.photonvision.model.vision.Model;
 
 /**
  * Manages the loading of neural network models.
@@ -63,13 +65,16 @@ public class NeuralNetworkModelManager {
      * @return The NeuralNetworkModelManager instance
      */
     private NeuralNetworkModelManager() {
-        ArrayList<NeuralNetworkBackend> backends = new ArrayList<>();
+        // Initialize the list of format handlers based on platform
+        List<ModelManager> handlers = new ArrayList<>();
 
         if (Platform.isRK3588()) {
-            backends.add(NeuralNetworkBackend.RKNN);
+            handlers.add(new RknnManager());
         }
 
-        supportedBackends = backends;
+        // Add other handlers here conditionally or unconditionally
+
+        this.formatHandlers = Collections.unmodifiableList(handlers);
     }
 
     /**
@@ -87,25 +92,16 @@ public class NeuralNetworkModelManager {
     /** Logger for the NeuralNetworkModelManager */
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
-    public enum NeuralNetworkBackend {
-        RKNN(".rknn");
-
-        private String format;
-
-        private NeuralNetworkBackend(String format) {
-            this.format = format;
-        }
-    }
-
-    private final List<NeuralNetworkBackend> supportedBackends;
+    // Use a list of handlers instead of the enum
+    private final List<ModelManager> formatHandlers;
 
     /**
-     * Retrieves the list of supported backends.
+     * Retrieves the list of supported backend format information.
      *
-     * @return the list
+     * @return the list of backend info objects
      */
-    public List<String> getSupportedBackends() {
-        return supportedBackends.stream().map(Enum::toString).toList();
+    public List<ModelManager.Info> getSupportedBackends() {
+        return formatHandlers.stream().map(ModelManager::getInfo).toList();
     }
 
     /**
@@ -113,14 +109,14 @@ public class NeuralNetworkModelManager {
      *
      * <p>The first model in the list is the default model.
      */
-    private Map<NeuralNetworkBackend, ArrayList<Model>> models;
+    private Map<String, ArrayList<Model>> models;
 
     /**
      * Retrieves the deep neural network models available, in a format that can be used by the
      * frontend.
      *
-     * @return A map containing the available models, where the key is the backend and the value is a
-     *     list of model names.
+     * @return A map containing the available models, where the key is the backend name and the value
+     *     is a list of model names.
      */
     public HashMap<String, ArrayList<String>> getModels() {
         HashMap<String, ArrayList<String>> modelMap = new HashMap<>();
@@ -128,11 +124,12 @@ public class NeuralNetworkModelManager {
             return modelMap;
         }
 
+        // Use handler backend name as the key
         models.forEach(
-                (backend, backendModels) -> {
+                (backendName, backendModels) -> {
                     ArrayList<String> modelNames = new ArrayList<>();
                     backendModels.forEach(model -> modelNames.add(model.getName()));
-                    modelMap.put(backend.toString(), modelNames);
+                    modelMap.put(backendName, modelNames);
                 });
 
         return modelMap;
@@ -152,14 +149,12 @@ public class NeuralNetworkModelManager {
             return Optional.empty();
         }
 
-        // Check if the model exists in any supported backend
-        for (NeuralNetworkBackend backend : supportedBackends) {
-            if (models.containsKey(backend)) {
-                Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getName().equals(modelName)).findFirst();
-                if (model.isPresent()) {
-                    return model;
-                }
+        // Iterate through all backend lists in the map
+        for (List<Model> backendModels : models.values()) {
+            Optional<Model> model =
+                    backendModels.stream().filter(m -> m.getName().equals(modelName)).findFirst();
+            if (model.isPresent()) {
+                return model;
             }
         }
 
@@ -168,56 +163,27 @@ public class NeuralNetworkModelManager {
 
     /** The default model when no model is specified. */
     public Optional<Model> getDefaultModel() {
-        if (models == null) {
+        if (models == null || formatHandlers.isEmpty() || models.isEmpty()) {
             return Optional.empty();
         }
 
-        if (supportedBackends.isEmpty()) {
-            return Optional.empty();
-        }
+        ModelManager defaultHandler = formatHandlers.get(0);
+        List<Model> backendModels = models.get(defaultHandler.getBackendName());
 
-        return models.get(supportedBackends.get(0)).stream().findFirst();
-    }
-
-    private void loadModel(File model) {
-        if (models == null) {
-            models = new HashMap<>();
-        }
-
-        // Get the model extension and check if it is supported
-        String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
-        if (modelExtension.equals(".txt")) {
-            return;
-        }
-
-        Optional<NeuralNetworkBackend> backend =
-                Arrays.stream(NeuralNetworkBackend.values())
-                        .filter(b -> b.format.equals(modelExtension))
-                        .findFirst();
-
-        if (!backend.isPresent()) {
-            logger.warn("Model " + model.getName() + " has an unknown extension.");
-            return;
-        }
-
-        String labels = model.getAbsolutePath().replace(backend.get().format, "-labels.txt");
-        if (!models.containsKey(backend.get())) {
-            models.put(backend.get(), new ArrayList<>());
-        }
-
-        try {
-            switch (backend.get()) {
-                case RKNN -> {
-                    models.get(backend.get()).add(new RknnModel(model, labels));
-                    logger.info(
-                            "Loaded model " + model.getName() + " for backend " + backend.get().toString());
-                }
+        if (backendModels == null || backendModels.isEmpty()) {
+            Optional<List<Model>> firstList =
+                    models.values().stream()
+                            .filter(list -> !list.isEmpty())
+                            .map(list -> (List<Model>) list)
+                            .findFirst();
+            if (firstList.isPresent()) {
+                backendModels = firstList.get();
+            } else {
+                return Optional.empty();
             }
-        } catch (IllegalArgumentException e) {
-            logger.error("Failed to load model " + model.getName(), e);
-        } catch (IOException e) {
-            logger.error("Failed to read labels for model " + model.getName(), e);
         }
+
+        return backendModels.stream().findFirst();
     }
 
     /**
@@ -226,38 +192,83 @@ public class NeuralNetworkModelManager {
      * @param modelsDirectory The folder where the models are stored
      */
     public void discoverModels(File modelsDirectory) {
-        logger.info("Supported backends: " + supportedBackends);
+        logger.info("Discovering models in: " + modelsDirectory.getAbsolutePath());
+        // Log handlers instead of backends
+        logger.info(
+                "Using format handlers: "
+                        + formatHandlers.stream()
+                                .map(ModelManager::getBackendName)
+                                .collect(Collectors.joining(", ")));
 
         if (!modelsDirectory.exists()) {
             logger.error("Models folder " + modelsDirectory.getAbsolutePath() + " does not exist.");
+            this.models = new HashMap<>(); // Ensure models map is initialized
             return;
         }
 
-        models = new HashMap<>();
+        Map<String, ArrayList<Model>> discoveredModels = new HashMap<>();
+        List<Path> processedPaths = new ArrayList<>();
 
         try {
-            Files.walk(modelsDirectory.toPath())
-                    .filter(Files::isRegularFile)
-                    .forEach(path -> loadModel(path.toFile()));
+            List<Path> allPaths =
+                    Files.walk(modelsDirectory.toPath())
+                            .filter(path -> !path.equals(modelsDirectory.toPath()))
+                            .collect(Collectors.toList());
+
+            // 2. Process paths with each handler in order of preference
+            for (ModelManager handler : formatHandlers) {
+                String backendName = handler.getBackendName();
+
+                for (Path path : allPaths) {
+                    if (processedPaths.contains(path)) {
+                        continue;
+                    }
+
+                    if (handler.supportsPath(path)) {
+                        logger.info("Path " + path + " supported by handler " + backendName);
+                        try {
+                            Model model = handler.loadFromPath(path, modelsDirectory);
+                            discoveredModels.computeIfAbsent(backendName, k -> new ArrayList<>()).add(model);
+                            processedPaths.add(path);
+
+                            logger.info(
+                                    "Successfully loaded model: " + model.getName() + " for backend " + backendName);
+                        } catch (IOException | IllegalArgumentException e) {
+                            logger.error(
+                                    "Failed to load model from path " + path + " using handler " + backendName, e);
+                        }
+                    }
+                }
+            }
         } catch (IOException e) {
-            logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
+            logger.error("Failed to walk models directory: " + modelsDirectory.getAbsolutePath(), e);
         }
 
-        // After loading all of the models, sort them by name to ensure a consistent
-        // ordering
-        models.forEach(
-                (backend, backendModels) ->
-                        backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
+        discoveredModels.forEach(
+                (backendName, backendModels) -> backendModels.sort(Comparator.comparing(Model::getName)));
 
-        // Log
+        this.models = discoveredModels;
+
         StringBuilder sb = new StringBuilder();
         sb.append("Discovered models: ");
-        models.forEach(
-                (backend, backendModels) -> {
-                    sb.append(backend).append(" [");
-                    backendModels.forEach(model -> sb.append(model.getName()).append(", "));
-                    sb.append("] ");
-                });
+        if (this.models.isEmpty()) {
+            sb.append("None");
+        } else {
+            this.models.forEach(
+                    (backendName, backendModels) -> {
+                        sb.append(backendName).append(" [");
+                        if (backendModels.isEmpty()) {
+                            sb.append("None");
+                        } else {
+                            backendModels.forEach(model -> sb.append(model.getName()).append(", "));
+                            if (!backendModels.isEmpty()) {
+                                sb.setLength(sb.length() - 2);
+                            }
+                        }
+                        sb.append("] ");
+                    });
+        }
+        logger.info(sb.toString());
     }
 
     /**
@@ -304,65 +315,61 @@ public class NeuralNetworkModelManager {
         }
     }
 
-    private static Pattern modelPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
-
-    private static Pattern labelsPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
-
     /**
-     * Check naming conventions for models and labels.
+     * Handles the uploaded model and labels files: validates them, saves them, and re-discovers
+     * models.
      *
-     * <p>This is static as it is not dependent on the state of the class.
-     *
-     * @param modelName the name of the model
-     * @param labelsName the name of the labels file
-     * @throws IllegalArgumentException if the names are invalid
+     * @param modelFile The uploaded model file (.rknn).
+     * @param labelsFile The uploaded labels file (.txt).
+     * @param modelsDirectory The directory where models should be saved.
+     * @throws IllegalArgumentException If filenames are invalid or don't match conventions.
+     * @throws IOException If file validation fails, saving fails, or no suitable backend is found.
      */
-    public static void verifyRKNNNames(String modelName, String labelsName) {
-        // check null
-        if (modelName == null || labelsName == null) {
-            throw new IllegalArgumentException("Model name and labels name cannot be null");
+    public void handleUpload(UploadedFile modelFile, UploadedFile labelsFile, File modelsDirectory)
+            throws IllegalArgumentException, IOException {
+        ModelManager handler = null;
+        // Iterate through handlers
+        for (ModelManager backendHandler : formatHandlers) {
+            if (backendHandler.supportsUpload(modelFile.filename(), labelsFile.filename())) {
+                handler = backendHandler;
+                break;
+            }
         }
 
-        // These patterns check that the naming convention of
-        // name-widthResolution-heightResolution-modelType is followed
-
-        Matcher modelMatcher = modelPattern.matcher(modelName);
-        Matcher labelsMatcher = labelsPattern.matcher(labelsName);
-
-        if (!modelMatcher.matches() || !labelsMatcher.matches()) {
-            throw new IllegalArgumentException(
-                    "Model name and labels name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn and name-widthResolution-heightResolution-modelType-labels.txt");
+        if (handler == null) {
+            String supportedUploadTypes =
+                    formatHandlers.stream()
+                            .map(ModelManager::getUploadAcceptType)
+                            .distinct()
+                            .collect(Collectors.joining(", "));
+            throw new IOException(
+                    "Unsupported file pair based on names/extensions. Model: "
+                            + modelFile.filename()
+                            + ", Labels: "
+                            + labelsFile.filename()
+                            + ". Expected model types: "
+                            + supportedUploadTypes
+                            + " with matching -labels.txt");
         }
 
-        if (!modelMatcher.group(1).equals(labelsMatcher.group(1))
-                || !modelMatcher.group(2).equals(labelsMatcher.group(2))
-                || !modelMatcher.group(3).equals(labelsMatcher.group(3))
-                || !modelMatcher.group(4).equals(labelsMatcher.group(4))) {
-            throw new IllegalArgumentException("Model name and labels name must be matching.");
-        }
-    }
+        logger.info("Handling upload with backend: " + handler.getBackendName());
 
-    /**
-     * Parse RKNN name and return the name, width, height, and model type.
-     *
-     * <p>This is static as it is not dependent on the state of the class.
-     *
-     * @param modelName the name of the model
-     * @throws IllegalArgumentException if the model name does not follow the naming convention
-     * @return an array containing the name, width, height, and model type
-     */
-    public static String[] parseRKNNName(String modelName) {
-        Matcher modelMatcher = modelPattern.matcher(modelName);
-
-        if (!modelMatcher.matches()) {
-            throw new IllegalArgumentException(
-                    "Model name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn");
+        // 1. Validate Upload (basic file type check)
+        Optional<String> validationError = handler.validateUpload(modelFile, labelsFile);
+        if (validationError.isPresent()) {
+            throw new IOException("File validation failed: " + validationError.get());
         }
 
-        return new String[] {
-            modelMatcher.group(1), modelMatcher.group(2), modelMatcher.group(3), modelMatcher.group(4)
-        };
+        // 2. Verify Names (strict naming convention check)
+        handler.verifyNames(modelFile.filename(), labelsFile.filename());
+        logger.info("Filename verification passed for " + modelFile.filename());
+
+        // 3. Save Uploaded Files (copy or unzip)
+        handler.saveUploadedFiles(modelFile, labelsFile, modelsDirectory);
+        logger.info("Successfully saved files for " + modelFile.filename());
+
+        // 4. Re-discover models after successful upload
+        logger.info("Re-discovering models after upload...");
+        discoverModels(modelsDirectory);
     }
 }

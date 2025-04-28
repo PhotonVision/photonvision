@@ -15,19 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
-
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+package org.photonvision.model.manager;
 
 import java.util.LinkedList;
 import java.util.stream.Stream;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.photonvision.common.configuration.NeuralNetworkModelManager;
 
-public class ObjectDetectionTest {
+/** Tests for the RknnManager implementation. */
+public class RknnManagerTest extends ModelManagerTest {
+
+    private static final RknnManager manager = new RknnManager();
+
     private static LinkedList<String[]> passNames =
             new LinkedList<String[]>(
                     java.util.Arrays.asList(
@@ -59,6 +57,7 @@ public class ObjectDetectionTest {
                             new String[] {
                                 "z_y_test.model-640-640-yolov8n.rknn", "z_y_test.model-640-640-yolov8n-labels.txt"
                             }));
+
     private static LinkedList<String[]> parsedPassNames =
             new LinkedList<String[]>(
                     java.util.Arrays.asList(
@@ -76,6 +75,7 @@ public class ObjectDetectionTest {
                             new String[] {"case1_test", "640", "640", "yolov8m"},
                             new String[] {"A123", "640", "640", "yolov5x"},
                             new String[] {"z_y_test.model", "640", "640", "yolov8n"}));
+
     private static LinkedList<String[]> failNames =
             new LinkedList<String[]>(
                     java.util.Arrays.asList(
@@ -94,40 +94,39 @@ public class ObjectDetectionTest {
                             new String[] {"A123-640-640.rknn", "different-labels.txt"},
                             new String[] {"z_y_test.model", ""}));
 
-    // Test the model name validation for names that ought to pass
-    @ParameterizedTest
-    @MethodSource("verifyPassNameProvider")
-    public void testRKNNVerificationPass(String[] names) {
-        NeuralNetworkModelManager.verifyRKNNNames(names[0], names[1]);
+    @Override
+    protected ModelManager getModelManager() {
+        return manager;
     }
 
-    // // Test the model name validation for names that ought to fail
-    @ParameterizedTest
-    @MethodSource("verifyFailNameProvider")
-    public void testRNNVerificationFail(String[] names) {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> NeuralNetworkModelManager.verifyRKNNNames(names[0], names[1]));
+    @Override
+    protected LinkedList<String[]> getValidNamePairs() {
+        return passNames;
     }
 
-    // Test the model name parsing
-    @ParameterizedTest
-    @MethodSource("parseNameProvider")
-    public void testRKNNNameParsing(String[] expected, String name) {
-        String[] parsed = NeuralNetworkModelManager.parseRKNNName(name);
-        assertArrayEquals(expected, parsed);
+    @Override
+    protected LinkedList<String[]> getInvalidNamePairs() {
+        return failNames;
     }
 
+    @Override
+    protected LinkedList<String[]> getParsedValidNames() {
+        return parsedPassNames;
+    }
+
+    /** Provides the valid name pairs for testing name validation. */
     static Stream<Arguments> verifyPassNameProvider() {
         return passNames.stream().map(array -> Arguments.of((Object) array));
     }
 
+    /** Provides the invalid name pairs for testing name validation failures. */
     static Stream<Arguments> verifyFailNameProvider() {
         return failNames.stream().map(array -> Arguments.of((Object) array));
     }
 
+    /** Provides the test cases for name parsing verification. */
     static Stream<Arguments> parseNameProvider() {
-        // return a stream of parsed pass names, and the first element of each pass name
+        // Return a stream of parsed pass names, and the first element of each pass name
         return passNames.stream()
                 .map(name -> Arguments.of(parsedPassNames.get(passNames.indexOf(name)), name[0]));
     }

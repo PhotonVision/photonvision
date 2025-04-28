@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
-import org.photonvision.vision.objects.Model;
-import org.photonvision.vision.objects.NullModel;
-import org.photonvision.vision.objects.ObjectDetector;
+import org.photonvision.model.vision.Model;
+import org.photonvision.model.vision.NullModel;
+import org.photonvision.model.vision.object.ObjectDetector;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
@@ -36,7 +36,7 @@ public class ObjectDetectionPipe
 
     public ObjectDetectionPipe() {
         Optional<Model> defaultModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
-        detector = defaultModel.map(Model::load).orElse(NullModel.getInstance());
+        detector = defaultModel.map(Model::loadToObjectDetector).orElse(NullModel.getInstance());
     }
 
     @Override
@@ -44,7 +44,7 @@ public class ObjectDetectionPipe
         // Check if the model has changed
         if (detector.getModel() != params.model()) {
             detector.release();
-            detector = params.model().load();
+            detector = params.model().loadToObjectDetector();
         }
 
         Mat frame = in.getMat();

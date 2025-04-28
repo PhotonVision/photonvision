@@ -548,64 +548,45 @@ public class RequestHandler {
     }
 
     public static void onImportObjectDetectionModelRequest(Context ctx) {
-        try {
-            // Retrieve the uploaded files
-            var modelFile = ctx.uploadedFile("rknn");
-            var labelsFile = ctx.uploadedFile("labels");
+        var modelFile = ctx.uploadedFile("model");
+        var labelsFile = ctx.uploadedFile("labels");
 
-            if (modelFile == null || labelsFile == null) {
-                ctx.status(400);
-                ctx.result(
-                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
-                logger.error(
-                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
-                return;
-            }
-
-            if (!modelFile.extension().contains("rknn") || !labelsFile.extension().contains("txt")) {
-                ctx.status(400);
-                ctx.result(
-                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
-                logger.error(
-                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
-                return;
-            }
-
-            // verify naming convention
-
-            // throws IllegalArgumentException if the model name is invalid
-            NeuralNetworkModelManager.verifyRKNNNames(modelFile.filename(), labelsFile.filename());
-
-            // TODO move into neural network manager
-
-            var modelPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
-            var labelsPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
-
-            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
-                modelFile.content().transferTo(out);
-            }
-
-            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
-                labelsFile.content().transferTo(out);
-            }
-
-            NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
-
-            ctx.status(200).result("Successfully uploaded object detection model");
-        } catch (Exception e) {
-            ctx.status(500).result("Error processing files: " + e.getMessage());
+        if (modelFile == null || labelsFile == null) {
+            ctx.status(400);
+            ctx.result(
+                    "Missing files. Make sure 'model' and 'labels' files are included in the request.");
+            logger.error(
+                    "Missing files. Make sure 'model' and 'labels' files are included in the request.");
+            return;
         }
 
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+        try {
+            NeuralNetworkModelManager.getInstance()
+                    .handleUpload(modelFile, labelsFile, ConfigManager.getInstance().getModelsDirectory());
+
+            // If handleUpload succeeds, it also calls discoverModels internally
+            ctx.status(200).result("Successfully uploaded and processed object detection model.");
+            logger.info("Successfully handled model upload: " + modelFile.filename());
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
+        } catch (IllegalArgumentException e) {
+            // Handle errors related to naming conventions or mismatches
+            logger.error("Invalid model/labels filenames: " + e.getMessage(), e);
+            ctx.status(400).result("Invalid model/labels filenames: " + e.getMessage());
+        } catch (IOException e) {
+            // Handle errors related to file validation, saving, unzipping, or finding a backend
+            logger.error("Error processing uploaded files: " + e.getMessage(), e);
+            ctx.status(500).result("Error processing uploaded files: " + e.getMessage());
+        } catch (Exception e) {
+            // Catch any other unexpected errors
+            logger.error("Unexpected error during model upload: " + e.getMessage(), e);
+            ctx.status(500).result("Unexpected error during model upload: " + e.getMessage());
+        }
     }
 
     public static void onDeviceRestartRequest(Context ctx) {

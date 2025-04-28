@@ -15,10 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.objects;
+package org.photonvision.model.vision;
 
 import java.util.List;
 import org.opencv.core.Mat;
+import org.photonvision.model.vision.object.ObjectDetector;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /**
@@ -36,7 +37,7 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public ObjectDetector load() {
+    public ObjectDetector loadToObjectDetector() {
         return this;
     }
 

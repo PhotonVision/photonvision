@@ -15,11 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.objects;
+package org.photonvision.model.vision.object;
 
 import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.model.vision.Model;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
@@ -30,7 +31,7 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
  *   <li>{@link Model}s are discovered by {@link NeuralNetworkModelManager}
  *   <li>{@link Model} is selected as a parameter of {@link
  *       org.photonvision.vision.pipe.impl.ObjectDetectionPipe ObjectDetectionPipe}
- *   <li>{@link Model#load()} is called to create a ObjectDetector instance
+ *   <li>{@link Model#loadToObjectDetector()} is called to create a ObjectDetector instance
  *   <li>{@link ObjectDetector#detect(Mat, double, double)} is called to perform object detection
  *   <li>{@link ObjectDetector#release()} is called to release resources
  * </ol>

@@ -15,10 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.objects;
+package org.photonvision.model.vision;
+
+import org.photonvision.model.vision.object.ObjectDetector;
 
 public interface Model {
-    public ObjectDetector load();
+    public ObjectDetector loadToObjectDetector();
 
     public String getName();
 }

@@ -20,10 +20,10 @@ package org.photonvision.vision.pipeline;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.model.vision.Model;
+import org.photonvision.model.vision.NullModel;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.objects.Model;
-import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
@@ -106,9 +106,8 @@ public class ObjectDetectionPipeline
 
         // ***************** change based on backend ***********************
 
-        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
-                objectDetectorPipe.run(frame.colorImage);
-        sumPipeNanosElapsed += rknnResult.nanosElapsed;
+        CVPipeResult<List<NeuralNetworkPipeResult>> nnResult = objectDetectorPipe.run(frame.colorImage);
+        sumPipeNanosElapsed += nnResult.nanosElapsed;
 
         var names = objectDetectorPipe.getClassNames();
 
@@ -116,7 +115,7 @@ public class ObjectDetectionPipeline
 
         // ***************** change based on backend ***********************
 
-        var filterContoursResult = filterContoursPipe.run(rknnResult.output);
+        var filterContoursResult = filterContoursPipe.run(nnResult.output);
         sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =

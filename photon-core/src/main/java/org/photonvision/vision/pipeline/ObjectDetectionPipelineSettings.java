@@ -18,7 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
-import org.photonvision.vision.objects.Model;
+import org.photonvision.model.vision.Model;
 
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;

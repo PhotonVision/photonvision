@@ -15,11 +15,15 @@ const currentPipelineSettings = computed<ObjectDetectionPipelineSettings>(
 // TODO fix pv-range-slider so that store access doesn't need to be deferred
 const contourArea = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourArea) as [number, number],
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourArea = v)
+  set: (v) => {
+    useCameraSettingsStore().currentPipelineSettings.contourArea = v;
+  }
 });
 const contourRatio = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.contourRatio) as [number, number],
-  set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourRatio = v)
+  set: (v) => {
+    useCameraSettingsStore().currentPipelineSettings.contourRatio = v;
+  }
 });
 
 const interactiveCols = computed(() =>
@@ -32,7 +36,7 @@ const interactiveCols = computed(() =>
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+  return supportedBackends.flatMap((backend) => availableModels[backend.name] || []);
 });
 
 const selectedModel = computed({

@@ -15,11 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.jni;
+package org.photonvision.model.jni;
 
 import java.io.IOException;
 import java.util.List;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.jni.PhotonJNICommon;
 
 public class RknnDetectorJNI extends PhotonJNICommon {
     private boolean isLoaded;
