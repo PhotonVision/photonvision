@@ -13,6 +13,13 @@ dependencies {
 
     // Needed for Javalin Runtime Logging
     implementation "org.slf4j:slf4j-simple:2.0.7"
+
+    implementation("org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64") {
+        transitive = false
+    }
+    implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
+        transitive = false
+    }
 }
 
 group 'org.photonvision'
