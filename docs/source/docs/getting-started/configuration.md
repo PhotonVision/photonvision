@@ -2,13 +2,17 @@
 
 ## Settings to configure
 
-### Team number
+### Team Number
 
-In order for photonvision to connect to NetworkTables it needs to know your team number.
+In order for PhotonVision to connect to NetworkTables it needs to know your team number. You can configure this in the Settings page.
+
+```{image} images/editTeamNumber.png
+:align: center
+```
 
 ### Camera Nickname
 
-You **must** set the nickname of your cameras in PhotonVision to ensure that every camera has a unique name. This is how you will identify cameras in robot code. The camera can be nicknamed using the edit button next to the camera name in the upper right of the Dashboard tab.
+You **must** set the nickname of your cameras in PhotonVision to ensure that every camera has a unique name. This is how you will identify cameras in robot code. The camera can be nicknamed using the edit button next to the camera name in the upper right of the Dashboard page.
 
 ```{image} images/editCameraName.png
 :align: center
