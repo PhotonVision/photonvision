@@ -555,21 +555,12 @@ public class RequestHandler {
             // Retrieve the uploaded files
             var modelFile = ctx.uploadedFile("model");
 
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            if (data == null) {
-                ctx.status(400);
-                ctx.result("The provided model data was malformed");
-                logger.error("The provided model data was malformed");
-                return;
-            }
-
             LinkedList<String> labels =
-                    new LinkedList<>(Arrays.asList(data.get("labels").asText().split(",")));
-            double width = data.get("width").asDouble();
-            double height = data.get("height").asDouble();
+                    new LinkedList<>(Arrays.asList(ctx.queryParam("labels").split(",")));
+            double width = Double.parseDouble(ctx.queryParam("width"));
+            double height = Double.parseDouble(ctx.queryParam("height"));
             NeuralNetworkModelManager.Version version =
-                    switch (data.get("version").asText()) {
+                    switch (ctx.queryParam("version")) {
                         case "YOLOV5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOV8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
@@ -664,7 +655,7 @@ public class RequestHandler {
         Path modelPath;
 
         try {
-            modelPath = Path.of(kObjectMapper.readTree(ctx.bodyInputStream()).get("modelPath").asText());
+            modelPath = Path.of(ctx.queryParam("modelPath"));
 
             if (modelPath == null) {
                 ctx.status(400);
@@ -716,10 +707,8 @@ public class RequestHandler {
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            Path modelPath = Path.of(data.get("modelPath").asText());
-            String newName = data.get("newName").asText();
+            Path modelPath = Path.of(ctx.queryParam("modelPath"));
+            String newName = ctx.queryParam("newName");
 
             if (modelPath == null) {
                 ctx.status(400);
