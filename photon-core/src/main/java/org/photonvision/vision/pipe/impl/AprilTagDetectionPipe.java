@@ -20,14 +20,15 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
+import java.util.Random;
+
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<
-                CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
+        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
         implements Releasable {
     private AprilTagDetector m_detector = new AprilTagDetector();
 
@@ -48,13 +49,22 @@ public class AprilTagDetectionPipe
             throw new RuntimeException("Apriltag detector was released!");
         }
 
-        var ret = m_detector.detect(in.getMat());
+        AprilTagDetection[] ret = m_detector.detect(in.getMat());
 
         if (ret == null) {
             return List.of();
         }
 
-        return List.of(ret);
+        var lret = List.of(ret);
+        Random rand = new Random();
+        if (rand.nextInt(3) == 0) {
+            if (ret.length > 1) {
+                // Can just delete the first one
+                lret = List.of(lret.get(0));
+            }
+        }
+
+        return lret;
     }
 
     @Override
@@ -79,5 +89,6 @@ public class AprilTagDetectionPipe
     public static record AprilTagDetectionPipeParams(
             AprilTagFamily family,
             AprilTagDetector.Config detectorParams,
-            AprilTagDetector.QuadThresholdParameters quadParams) {}
+            AprilTagDetector.QuadThresholdParameters quadParams) {
+    }
 }
