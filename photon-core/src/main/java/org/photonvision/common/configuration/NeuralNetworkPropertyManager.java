@@ -137,8 +137,4 @@ public class NeuralNetworkPropertyManager {
         }
         return false;
     }
-
-    public void export() {
-        // TODO: this should return a json file or smth of all the various properties
-    }
 }
