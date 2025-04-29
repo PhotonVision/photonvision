@@ -24,7 +24,6 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
 public class NeuralNetworkPropertyManager {
-
     /*
      * The properties of the model. This is used to determine which model to load.
      * The only family
@@ -41,7 +40,8 @@ public class NeuralNetworkPropertyManager {
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
-    protected HashMap<Path, ModelProperties> modelPathToProperties = new HashMap<Path, ModelProperties>();
+    protected HashMap<Path, ModelProperties> modelPathToProperties =
+            new HashMap<Path, ModelProperties>();
 
     /**
      * Constructor for the NeuralNetworkProperties class.

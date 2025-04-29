@@ -56,7 +56,6 @@ import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
-import org.photonvision.rknn.RknnJNI.ModelVersion;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -569,11 +568,11 @@ public class RequestHandler {
                     new LinkedList<>(Arrays.asList(data.get("labels").asText().split(",")));
             double width = data.get("width").asDouble();
             double height = data.get("height").asDouble();
-            ModelVersion version =
+            NeuralNetworkModelManager.Version version =
                     switch (data.get("version").asText()) {
-                        case "YOLOV5" -> ModelVersion.YOLO_V5;
-                        case "YOLOV8" -> ModelVersion.YOLO_V8;
-                        case "YOLO11" -> ModelVersion.YOLO_V11;
+                        case "YOLOV5" -> NeuralNetworkModelManager.Version.YOLOV5;
+                        case "YOLOV8" -> NeuralNetworkModelManager.Version.YOLOV8;
+                        case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
                             // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);
@@ -639,7 +638,7 @@ public class RequestHandler {
                                     NeuralNetworkModelManager.Family
                                             .RKNN, // This can be determined by platform if additional platforms are
                                     // supported
-                                    Optional.of(version)));
+                                    version));
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
