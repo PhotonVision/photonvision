@@ -20,9 +20,8 @@ package org.photonvision.common.configuration;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Optional;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.rknn.RknnJNI;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
 public class NeuralNetworkProperties {
     // ModelVersion {}
@@ -39,7 +38,7 @@ public class NeuralNetworkProperties {
             double resolutionWidth,
             double resolutionHeight,
             Family family,
-            Optional<RknnJNI.ModelVersion> rknnVersion) {}
+            Version version) {}
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
@@ -135,7 +134,7 @@ public class NeuralNetworkProperties {
                             temp.resolutionWidth,
                             temp.resolutionHeight,
                             temp.family,
-                            temp.rknnVersion));
+                            temp.version));
         }
         return false;
     }

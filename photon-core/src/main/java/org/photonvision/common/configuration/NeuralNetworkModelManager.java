@@ -37,7 +37,6 @@ import org.photonvision.common.configuration.NeuralNetworkProperties.ModelProper
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.rknn.RknnJNI.ModelVersion;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
 
@@ -70,7 +69,7 @@ public class NeuralNetworkModelManager {
                         0,
                         0,
                         Family.RKNN,
-                        Optional.of(ModelVersion.YOLO_V11)));
+                        Version.YOLOV8));
 
         return nnProps;
     }
@@ -107,6 +106,12 @@ public class NeuralNetworkModelManager {
 
     public enum Family {
         RKNN
+    }
+
+    public enum Version {
+        YOLOV5,
+        YOLOV8,
+        YOLOV11
     }
 
     private final List<Family> supportedBackends;
