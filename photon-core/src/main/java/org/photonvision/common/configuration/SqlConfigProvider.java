@@ -264,7 +264,7 @@ public class SqlConfigProvider extends ConfigProvider {
             HardwareSettings hardwareSettings;
             NetworkConfig networkConfig;
             AprilTagFieldLayout atfl;
-            NeuralNetworkProperties nnProps;
+            NeuralNetworkPropertyManager nnProps;
 
             try {
                 hardwareConfig =
@@ -316,11 +316,11 @@ public class SqlConfigProvider extends ConfigProvider {
                 nnProps =
                         JacksonUtils.deserialize(
                                 getOneConfigFile(conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES),
-                                NeuralNetworkProperties.class);
+                                NeuralNetworkPropertyManager.class);
                 config.setNeuralNetworkProperties(nnProps);
             } catch (IOException e) {
                 logger.error("Could not deserialize neural network properties! Loading defaults", e);
-                nnProps = new NeuralNetworkProperties();
+                nnProps = new NeuralNetworkPropertyManager();
             }
 
             var cams = loadCameraConfigs(conn);

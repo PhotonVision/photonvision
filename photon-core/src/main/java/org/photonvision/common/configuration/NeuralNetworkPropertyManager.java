@@ -23,8 +23,7 @@ import java.util.LinkedList;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
-public class NeuralNetworkProperties {
-    // ModelVersion {}
+public class NeuralNetworkPropertyManager {
 
     /*
      * The properties of the model. This is used to determine which model to load.
@@ -42,14 +41,14 @@ public class NeuralNetworkProperties {
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
-    protected HashMap<Path, ModelProperties> properties = new HashMap<Path, ModelProperties>();
+    protected HashMap<Path, ModelProperties> modelPathToProperties = new HashMap<Path, ModelProperties>();
 
     /**
      * Constructor for the NeuralNetworkProperties class.
      *
      * <p>This object holds a LinkedList of {@link ModelProperties} objects
      */
-    public NeuralNetworkProperties() {}
+    public NeuralNetworkPropertyManager() {}
 
     /**
      * Constructor for the NeuralNetworkProperties class.
@@ -58,7 +57,7 @@ public class NeuralNetworkProperties {
      *
      * @param modelPropertiesList When the class is constructed, it will hold the provided list
      */
-    public NeuralNetworkProperties(HashMap<Path, ModelProperties> modelPropertiesList) {}
+    public NeuralNetworkPropertyManager(HashMap<Path, ModelProperties> modelPropertiesList) {}
 
     @Override
     public String toString() {
@@ -66,7 +65,7 @@ public class NeuralNetworkProperties {
 
         toReturn += "NeuralNetworkProperties [";
 
-        toReturn += properties.toString() + "]";
+        toReturn += modelPathToProperties.toString() + "]";
 
         return toReturn;
     }
@@ -77,7 +76,7 @@ public class NeuralNetworkProperties {
      * @param modelProperties
      */
     public void addModelProperties(ModelProperties modelProperties) {
-        properties.put(modelProperties.modelPath, modelProperties);
+        modelPathToProperties.put(modelProperties.modelPath, modelProperties);
     }
 
     /**
@@ -88,8 +87,8 @@ public class NeuralNetworkProperties {
      * @param nnProps
      * @return itself, so it can be chained and used fluently
      */
-    public NeuralNetworkProperties sum(NeuralNetworkProperties nnProps) {
-        properties.putAll(nnProps.properties);
+    public NeuralNetworkPropertyManager sum(NeuralNetworkPropertyManager nnProps) {
+        modelPathToProperties.putAll(nnProps.modelPathToProperties);
 
         return this;
     }
@@ -101,7 +100,7 @@ public class NeuralNetworkProperties {
      * @return True if the model was removed, false if it was not found
      */
     public boolean removeModel(Path modelPath) {
-        return properties.remove(modelPath) != null;
+        return modelPathToProperties.remove(modelPath) != null;
     }
 
     /**
@@ -111,7 +110,7 @@ public class NeuralNetworkProperties {
      * @return {@link ModelProperties} object
      */
     public ModelProperties getModel(Path modelPath) {
-        return properties.get(modelPath);
+        return modelPathToProperties.get(modelPath);
     }
 
     /**
@@ -122,10 +121,10 @@ public class NeuralNetworkProperties {
      * @return True if the model was found and renamed, false if it was not found
      */
     public boolean renameModel(Path modelPath, String newName) {
-        ModelProperties temp = properties.get(modelPath);
+        ModelProperties temp = modelPathToProperties.get(modelPath);
         if (temp != null) {
-            properties.remove(modelPath);
-            properties.put(
+            modelPathToProperties.remove(modelPath);
+            modelPathToProperties.put(
                     modelPath,
                     new ModelProperties(
                             temp.modelPath,

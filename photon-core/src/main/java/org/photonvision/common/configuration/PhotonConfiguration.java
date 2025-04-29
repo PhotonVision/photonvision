@@ -28,7 +28,7 @@ public class PhotonConfiguration {
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
     private AprilTagFieldLayout atfl;
-    private NeuralNetworkProperties neuralNetworkProperties;
+    private NeuralNetworkPropertyManager neuralNetworkProperties;
     private HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
@@ -36,7 +36,7 @@ public class PhotonConfiguration {
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
-            NeuralNetworkProperties neuralNetworkProperties) {
+            NeuralNetworkPropertyManager neuralNetworkProperties) {
         this(
                 hardwareConfig,
                 hardwareSettings,
@@ -51,7 +51,7 @@ public class PhotonConfiguration {
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
-            NeuralNetworkProperties neuralNetworkProperties,
+            NeuralNetworkPropertyManager neuralNetworkProperties,
             HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
@@ -67,7 +67,7 @@ public class PhotonConfiguration {
                 new HardwareSettings(),
                 new NetworkConfig(),
                 new AprilTagFieldLayout(List.of(), 0, 0),
-                new NeuralNetworkProperties());
+                new NeuralNetworkPropertyManager());
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -86,7 +86,7 @@ public class PhotonConfiguration {
         return atfl;
     }
 
-    public NeuralNetworkProperties getNeuralNetworkProperties() {
+    public NeuralNetworkPropertyManager getNeuralNetworkProperties() {
         return neuralNetworkProperties;
     }
 
@@ -98,7 +98,7 @@ public class PhotonConfiguration {
         this.networkConfig = networkConfig;
     }
 
-    public void setNeuralNetworkProperties(NeuralNetworkProperties neuralNetworkProperties) {
+    public void setNeuralNetworkProperties(NeuralNetworkPropertyManager neuralNetworkProperties) {
         this.neuralNetworkProperties = neuralNetworkProperties;
     }
 

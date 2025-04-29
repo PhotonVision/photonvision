@@ -217,7 +217,7 @@ class LegacyConfigProvider extends ConfigProvider {
                         hardwareSettings,
                         networkConfig,
                         atfl,
-                        new NeuralNetworkProperties(),
+                        new NeuralNetworkPropertyManager(),
                         cameraConfigurations);
     }
 

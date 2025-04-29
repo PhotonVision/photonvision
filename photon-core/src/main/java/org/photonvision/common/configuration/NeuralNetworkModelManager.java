@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import org.photonvision.common.configuration.NeuralNetworkProperties.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -48,7 +48,7 @@ import org.photonvision.vision.objects.RknnModel;
  * extracted to the filesystem, it will not be extracted again.
  *
  * <p>Each model must have a corresponding {@link ModelProperties} entry in {@link
- * NeuralNetworkProperties}.
+ * NeuralNetworkPropertyManager}.
  */
 public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
@@ -58,8 +58,8 @@ public class NeuralNetworkModelManager {
      * This function stores the properties of the shipped object detection models. It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
      */
-    private NeuralNetworkProperties getShippedProperties(File modelsDirectory) {
-        NeuralNetworkProperties nnProps = new NeuralNetworkProperties();
+    private NeuralNetworkPropertyManager getShippedProperties(File modelsDirectory) {
+        NeuralNetworkPropertyManager nnProps = new NeuralNetworkPropertyManager();
 
         nnProps.addModelProperties(
                 new ModelProperties(
