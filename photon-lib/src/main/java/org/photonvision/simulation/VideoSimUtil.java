@@ -84,14 +84,16 @@ public class VideoSimUtil {
      * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
      * actual top-left corner.
      *
+     * <p>Order of corners returned is: [BL, BR, TR, TL]
+     *
      * @param size Size of image
      */
     public static Point[] getImageCorners(Size size) {
         return new Point[] {
-            new Point(-0.5, -0.5),
-            new Point(size.width - 0.5, -0.5),
+            new Point(-0.5, size.height - 0.5),
             new Point(size.width - 0.5, size.height - 0.5),
-            new Point(-0.5, size.height - 0.5)
+            new Point(size.width - 0.5, -0.5),
+            new Point(-0.5, -0.5)
         };
     }
 
