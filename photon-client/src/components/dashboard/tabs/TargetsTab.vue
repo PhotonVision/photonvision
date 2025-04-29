@@ -35,7 +35,7 @@ const resetCurrentBuffer = () => {
 <template>
   <div>
     <v-row align="start" class="pb-4">
-      <v-simple-table dense class="pt-2 pb-12 fixed-width-table">
+      <v-simple-table dense class="pt-2 pb-12 fixed-width-table" fixed-header height="16em" style="overflow-y: scroll">
         <template #default>
           <thead>
             <tr>
@@ -141,7 +141,7 @@ const resetCurrentBuffer = () => {
         <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px"
           >Multi-tag pose, field-to-camera</v-card-subtitle
         >
-        <v-simple-table dense class="fixed-width-table">
+        <v-simple-table dense fixed-header class="fixed-width-table" height="12em">
           <template #default>
             <thead>
               <tr class="white--text">
@@ -208,7 +208,7 @@ const resetCurrentBuffer = () => {
         <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" depressed @click="resetCurrentBuffer"
           >Reset Samples</v-btn
         >
-        <v-simple-table dense class="fixed-width-table">
+        <v-simple-table dense fixed-header class="fixed-width-table" height="12em">
           <template #default>
             <thead>
               <tr>
@@ -284,6 +284,7 @@ const resetCurrentBuffer = () => {
       th {
         font-size: 1rem !important;
         color: white !important;
+        background-color: #006492 !important;
       }
     }
   }
