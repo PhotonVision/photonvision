@@ -67,6 +67,9 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
+    // TODO: rewrite queryParam() using a record
+    // TODO: implement a common cameraUniqueName record
+
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
