@@ -17,14 +17,13 @@
 
 package org.photonvision.common.configuration;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class NeuralNetworkPropertyManager {
     /*

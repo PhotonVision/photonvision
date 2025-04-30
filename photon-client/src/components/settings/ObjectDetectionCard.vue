@@ -5,6 +5,9 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showImportDialog = ref(false);
+const confirmDeleteDialog = ref({ show: false, model: "" });
+const showRenameDialog = ref({ show: false, model: "", newName: "" });
+
 const importModelFile = ref<File | null>(null);
 const importLabels = ref<String | null>(null);
 const importHeight = ref<number | null>(null);
@@ -80,6 +83,81 @@ const handleImport = async () => {
 
 // TODO: write this
 const handleExport = async () => {};
+
+const deleteModel = async (model: string) => {
+  useStateStore().showSnackbarMessage({
+    message: "Deleting Object Detection Model...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  axios
+    .post("/objectdetection/delete", {
+      modelPath: model
+    })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+};
+
+const renameModel = async (model: string, newName: string) => {
+  useStateStore().showSnackbarMessage({
+    message: "Renaming Object Detection Model...",
+    color: "secondary",
+    timeout: -1
+  });
+
+  axios
+    .post("/objectdetection/rename", {
+      modelPath: model,
+      newName: newName
+    })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+};
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
@@ -169,9 +247,60 @@ const supportedModels = computed(() => {
             <tbody>
               <tr v-for="model in supportedModels" :key="model">
                 <td>{{ model }}</td>
+                <td class="text-right">
+                  <v-btn
+                    icon
+                    small
+                    color="error"
+                    @click="() => (confirmDeleteDialog = { show: true, model })"
+                    title="Delete Model"
+                  >
+                    <v-icon>mdi-delete</v-icon>
+                  </v-btn>
+                </td>
+                <td class="text-right">
+                  <v-btn
+                    icon
+                    small
+                    color="primary"
+                    @click="() => (showRenameDialog = { show: true, model, newName: '' })"
+                    title="Rename Model"
+                  >
+                    <v-icon>mdi-pencil</v-icon>
+                  </v-btn>
+                </td>
               </tr>
             </tbody>
           </v-simple-table>
+          <v-dialog v-model="confirmDeleteDialog.show" width="600">
+            <v-card color="primary" dark>
+              <v-card-title>Delete Object Detection Model</v-card-title>
+              <v-card-text> Are you sure you want to delete the model {{ confirmDeleteDialog.model }}? </v-card-text>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
+                <v-btn text color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="showRenameDialog.show" width="600">
+            <v-card color="primary" dark>
+              <v-card-title>Rename Object Detection Model</v-card-title>
+              <v-card-text>
+                Enter a new name for the model {{ showRenameDialog.model }}:
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-text-field v-model="showRenameDialog.newName" label="New Name" />
+                </v-row>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn text @click="showRenameDialog.show = false">Cancel</v-btn>
+                <v-btn text color="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
+                  >Rename</v-btn
+                >
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-col>
       </v-row>
     </div>
