@@ -23,12 +23,33 @@ const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
-  const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
-  url.searchParams.set("cameraUniqueName", moduleUniqueName);
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (activatingModule.value = false));
+  axios
+    .post("/utils/activateMatchedCamera", {cameraUniqueName: moduleUniqueName})
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Camera activated successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to activate this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    }).finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
@@ -47,12 +68,33 @@ const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  const url = new URL(`http://${host}/api/utils/unassignCamera`);
-  url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (deactivatingModule.value = false));
+  axios
+    .post("/utils/unassignCamera", {cameraUniqueName: cameraUniqueName})
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Camera deactivated successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to deactivate this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    }).finally(() => (deactivatingModule.value = false));
 };
 
 const deletingCamera = ref(false);

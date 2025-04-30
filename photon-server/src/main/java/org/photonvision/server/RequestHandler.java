@@ -68,9 +68,10 @@ public class RequestHandler {
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
     // TODO: rewrite queryParam() using a record
+    // TODO: figure out a way to do this stuff with files too
 
-    public record CommonCameraUniqueName(String cameraUniqueName) {}
-    
+    public record CommonCameraUniqueName(String cameraUniqueName) {
+    }
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -334,8 +335,7 @@ public class RequestHandler {
         }
 
         try {
-            Path filePath =
-                    Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+            Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
             File targetFile = new File(filePath.toString());
             var stream = new FileOutputStream(targetFile);
 
@@ -384,23 +384,15 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
-    // public static class UICameraSettingsRequest {
-    //     @JsonProperty("fov")
-    //     double fov;
-
-    //     @JsonProperty("quirksToChange")
-    //     HashMap<CameraQuirk, Boolean> quirksToChange;
-    // }
-
     public record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
+            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {
+    }
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
             // Deserialize the request body directly into UICameraSettingsRequest
 
-            CameraSettingsRequest request =
-                    kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
+            CameraSettingsRequest request = kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
             // Extract the settings from the request
             double fov = request.fov;
             HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
@@ -463,7 +455,7 @@ public class RequestHandler {
                 var out = Files.createTempFile("photonvision-logs", "zip").toFile();
 
                 try {
-                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                    ZipUtil.packEntries(new File[] { tempPath.toFile(), tempPath2.toFile() }, out);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -492,12 +484,10 @@ public class RequestHandler {
         String cameraUniqueName;
 
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
             cameraUniqueName = request.cameraUniqueName;
 
-            var calData =
-                    VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
+            var calData = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
@@ -526,22 +516,22 @@ public class RequestHandler {
     }
 
     public record DataCalibrationImportRequest(
-            String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
+            String cameraUniqueName, CameraCalibrationCoefficients calibration) {
+    }
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            DataCalibrationImportRequest request =
-                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+            DataCalibrationImportRequest request = kObjectMapper.readValue(ctx.body(),
+                    DataCalibrationImportRequest.class);
             String cameraUniqueName = request.cameraUniqueName;
             CameraCalibrationCoefficients coeffs = request.calibration;
 
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            coeffs,
-                            cameraUniqueName,
-                            null);
+            var uploadCalibrationEvent = new IncomingWebSocketEvent<>(
+                    DataChangeDestination.DCD_ACTIVEMODULE,
+                    "calibrationUploaded",
+                    coeffs,
+                    cameraUniqueName,
+                    null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
             ctx.status(200);
@@ -596,12 +586,10 @@ public class RequestHandler {
 
             // TODO move into neural network manager
 
-            var modelPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
-            var labelsPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
+            var modelPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+            var labelsPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
 
             try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
                 modelFile.content().transferTo(out);
@@ -630,13 +618,15 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
-    public record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+    public record CameraNicknameChangeRequest(String name, String cameraUniqueName) {
+    }
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            // Deserialize the request body directly into a CameraNicknameChangeRequest record
-            CameraNicknameChangeRequest request =
-                    kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
+            // Deserialize the request body directly into a CameraNicknameChangeRequest
+            // record
+            CameraNicknameChangeRequest request = kObjectMapper.readValue(ctx.body(),
+                    CameraNicknameChangeRequest.class);
 
             String name = request.name();
             String cameraUniqueName = request.cameraUniqueName();
@@ -659,89 +649,103 @@ public class RequestHandler {
         ctx.status(204);
     }
 
+    public record CalibrationSnapshotRequest(
+            String cameraUniqueName, int width, int height, int snapshotIdx) {
+    }
+
     public static void onCalibrationSnapshotRequest(Context ctx) {
         logger.info(ctx.queryString());
-
-        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
-        var width = Integer.parseInt(ctx.queryParam("width"));
-        var height = Integer.parseInt(ctx.queryParam("height"));
-        var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
-
-        CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance()
-                        .vmm
-                        .getModule(cameraUniqueName)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
-
-        if (calList == null || calList.observations.size() < observationIdx) {
-            ctx.status(404);
-            return;
-        }
-
-        // encode as jpeg to save even more space. reduces size of a 1280p image from
-        // 300k to 25k
-        var jpegBytes = new MatOfByte();
-        Mat img = null;
         try {
-            img =
-                    Imgcodecs.imread(
-                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
+            CalibrationSnapshotRequest request = kObjectMapper.readValue(ctx.body(), CalibrationSnapshotRequest.class);
+
+            String cameraUniqueName = request.cameraUniqueName;
+            var width = request.width;
+            var height = request.height;
+            var observationIdx = request.snapshotIdx;
+
+            CameraCalibrationCoefficients calList = VisionSourceManager.getInstance().vmm
+                    .getModule(cameraUniqueName)
+                    .getStateAsCameraConfig().calibrations
+                    .stream()
+                    .filter(
+                            it -> Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                    && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                    .findFirst()
+                    .orElse(null);
+
+            if (calList == null || calList.observations.size() < observationIdx) {
+                ctx.status(404);
+                return;
+            }
+
+            // encode as jpeg to save even more space. reduces size of a 1280p image from
+            // 300k to 25k
+            var jpegBytes = new MatOfByte();
+            Mat img = null;
+
+            img = Imgcodecs.imread(
+                    calList.observations.get(observationIdx).snapshotDataLocation.toString());
+
+            if (img == null || img.empty()) {
+                ctx.status(500);
+                ctx.result("Unable to read calibration image");
+                return;
+            }
+
+            Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+
+            ctx.result(jpegBytes.toArray());
+            jpegBytes.release();
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Unable to read calibration image");
             return;
         }
-        if (img == null || img.empty()) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-
-        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
-
-        ctx.result(jpegBytes.toArray());
-        jpegBytes.release();
 
         ctx.status(200);
     }
 
+    public record CalibrationExportRequest(
+            String cameraUniqueName, int width, int height, int snapshotIdx) {
+    }
+
     public static void onCalibrationExportRequest(Context ctx) {
         logger.info(ctx.queryString());
+        try {
 
-        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
-        var width = Integer.parseInt(ctx.queryParam("width"));
-        var height = Integer.parseInt(ctx.queryParam("height"));
+            CalibrationExportRequest request = kObjectMapper.readValue(ctx.body(), CalibrationExportRequest.class);
 
-        var cc =
-                VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
+            String cameraUniqueName = request.cameraUniqueName;
+            int width = request.width;
+            int height = request.height;
 
-        CameraCalibrationCoefficients calList =
-                cc.calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+            var cc = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
 
-        if (calList == null) {
-            ctx.status(404);
-            return;
+            CameraCalibrationCoefficients calList = cc.calibrations.stream()
+                    .filter(
+                            it -> Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                    && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                    .findFirst()
+                    .orElse(null);
+
+            if (calList == null) {
+                ctx.status(404);
+                return;
+            }
+
+            var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
+            ctx.contentType("application/zip");
+            ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+            ctx.json(calList);
+        } catch (NumberFormatException e) {
+            ctx.status(400);
+            ctx.result("Width and height must be integers");
+            logger.error("Width and height must be integers", e);
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("Unable to read calibration image");
+            logger.error("Unable to read calibration image", e);
         }
-
-        var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
-        ctx.contentType("application/zip");
-        ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        ctx.json(calList);
-
         ctx.status(200);
     }
 
@@ -753,7 +757,8 @@ public class RequestHandler {
             try {
                 for (File cameraDir : cameraDirs) {
                     var cameraSnapshots = cameraDir.listFiles();
-                    if (cameraSnapshots == null) continue;
+                    if (cameraSnapshots == null)
+                        continue;
 
                     String cameraUniqueName = cameraDir.getName();
 
@@ -784,18 +789,19 @@ public class RequestHandler {
 
     public static void onCameraCalibImagesRequest(Context ctx) {
         try {
-            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
-                    new HashMap<>();
+            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots = new HashMap<>();
 
             var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
             if (cameraDirs != null) {
                 var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
                     var resolutionDirs = cameraDir.listFiles();
-                    if (resolutionDirs == null) continue;
+                    if (resolutionDirs == null)
+                        continue;
                     for (var resolutionDir : resolutionDirs) {
                         var calibImages = resolutionDir.listFiles();
-                        if (calibImages == null) continue;
+                        if (calibImages == null)
+                            continue;
                         var resolutionImages = new ArrayList<HashMap<String, Object>>();
                         for (var calibImg : calibImages) {
                             var snapshotData = new HashMap<String, Object>();
@@ -833,8 +839,7 @@ public class RequestHandler {
      * @return Temporary file. Empty if the temporary file was unable to be created.
      */
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
-        var tempFilePath =
-                new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
+        var tempFilePath = new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
         if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
@@ -861,7 +866,8 @@ public class RequestHandler {
     }
 
     /**
-     * Restart the running program. Note that this doesn't actually restart the program itself,
+     * Restart the running program. Note that this doesn't actually restart the
+     * program itself,
      * instead, it relies on systemd or an equivalent.
      */
     private static void restartProgram() {
@@ -899,8 +905,7 @@ public class RequestHandler {
 
     public static void onNukeOneCamera(Context ctx) {
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
             String name = request.cameraUniqueName;
 
             logger.warn("Deleting camera name " + name);
@@ -922,16 +927,18 @@ public class RequestHandler {
 
     public static void onActivateMatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
+        try {
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            String cameraUniqueName = request.cameraUniqueName;
 
-        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
-
-        if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(cameraUniqueName)) {
-            ctx.status(200);
-        } else {
-            ctx.status(403);
+            if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(cameraUniqueName)) {
+                ctx.status(200);
+            } else {
+                ctx.status(403);
+            }
+        } catch (IOException e) {
+            ctx.status(401);
         }
-
-        ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
     }
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
@@ -956,17 +963,17 @@ public class RequestHandler {
 
     public static void onUnassignCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
+        try {
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
-        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
-
-        if (VisionSourceManager.getInstance().deactivateVisionSource(cameraUniqueName)) {
-            ctx.status(200);
-        } else {
-            ctx.status(403);
+            if (VisionSourceManager.getInstance().deactivateVisionSource(request.cameraUniqueName)) {
+                ctx.status(200);
+            } else {
+                ctx.status(403);
+            }
+        } catch (IOException e) {
+            ctx.status(401);
+            return;
         }
-
-        ctx.status(200);
-
-        ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
     }
 }
