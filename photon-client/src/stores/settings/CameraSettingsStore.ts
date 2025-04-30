@@ -465,21 +465,25 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       idx: number,
       cameraUniqueName = useStateStore().currentCameraUniqueName
     ) {
-      const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
-      url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
-      url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
-      url.searchParams.set("snapshotIdx", Math.round(idx).toFixed(0));
-      url.searchParams.set("cameraUniqueName", cameraUniqueName.replace(" ", "").trim().toLowerCase());
 
-      return url.href;
+      const payload = {
+        cameraUniqueName: cameraUniqueName,
+        width: Math.round(resolution.width).toFixed(0),
+        height: Math.round(resolution.height).toFixed(0),
+        snapshotIdx: Math.round(idx).toFixed(0)
+      };
+
+      return axios.post("/calibration/getCalSnapshot", payload);
     },
     getCalJSONUrl(host: string, resolution: Resolution, cameraUniqueName = useStateStore().currentCameraUniqueName) {
-      const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
-      url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
-      url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
-      url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
-      return url.href;
+      const payload = {
+        cameraUniqueName: cameraUniqueName,
+        width: Math.round(resolution.width).toFixed(0),
+        height: Math.round(resolution.height).toFixed(0)
+      };
+
+      return axios.post("/calibration/getCalibrationJSON", payload);
     }
   }
 });

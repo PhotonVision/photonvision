@@ -67,9 +67,8 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    // TODO: rewrite queryParam() using a record
+    // TODO: rewrite queryParam() using a record (mostly done assignUnmatchedCamera is left)
     // TODO: figure out a way to do this stuff with files too
-    // TODO: figure out assignUnmatchedCamera
 
     public record CommonCameraUniqueName(String cameraUniqueName) {}
 
@@ -388,7 +387,6 @@ public class RequestHandler {
     public record CameraSettingsRequest(
             double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
-    // TODO: rewrite frontend
     public static void onCameraSettingsRequest(Context ctx) {
         try {
             // Deserialize the request body directly into UICameraSettingsRequest
@@ -480,7 +478,6 @@ public class RequestHandler {
         }
     }
 
-    // TODO: rewrite frontend
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
@@ -523,7 +520,6 @@ public class RequestHandler {
     public record DataCalibrationImportRequest(
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
 
-    // TODO: rewrite frontend
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
             DataCalibrationImportRequest request =
@@ -628,7 +624,6 @@ public class RequestHandler {
 
     public record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
 
-    // TODO: rewrite frontend
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
             // Deserialize the request body directly into a CameraNicknameChangeRequest
@@ -660,7 +655,6 @@ public class RequestHandler {
     public record CalibrationSnapshotRequest(
             String cameraUniqueName, int width, int height, int snapshotIdx) {}
 
-    // TODO: rewrite frontend
     public static void onCalibrationSnapshotRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {
@@ -722,7 +716,6 @@ public class RequestHandler {
     public record CalibrationExportRequest(
             String cameraUniqueName, int width, int height, int snapshotIdx) {}
 
-    // TODO: rewrite frontend
     public static void onCalibrationExportRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {
