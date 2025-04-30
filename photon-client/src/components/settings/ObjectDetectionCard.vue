@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, inject } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
@@ -7,6 +7,8 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 const showImportDialog = ref(false);
 const confirmDeleteDialog = ref({ show: false, model: { UID: "", name: "" } });
 const showRenameDialog = ref({ show: false, model: { UID: "", name: "" }, newName: "" });
+
+const address = inject<string>("backendHost");
 
 const importModelFile = ref<File | null>(null);
 const importLabels = ref<String | null>(null);
@@ -164,6 +166,11 @@ const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
 });
+
+const exportModels = ref();
+const openExportPrompt = () => {
+  exportModels.value.click();
+};
 </script>
 
 <template>
@@ -229,6 +236,19 @@ const supportedModels = computed(() => {
             </v-card>
           </v-dialog>
         </v-col>
+        <v-col cols="12" sm="6">
+          <v-btn color="secondary" @click="openExportPrompt">
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Export</span>
+          </v-btn>
+          <a
+            ref="exportModels"
+            style="color: black; text-decoration: none; display: none"
+            :href="`http://${address}/api/objectdetection/export`"
+            download="photonvision-object-detection-models.zip"
+            target="_blank"
+          />
+        </v-col>
         <v-col cols="12 ">
           <v-btn color="secondary" class="justify-center" @click="handleExport()">
             <v-icon left class="open-icon"> mdi-export </v-icon>
@@ -245,7 +265,7 @@ const supportedModels = computed(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="model in supportedModels" key:model.UID>
+              <tr v-for="model in supportedModels" :key="model.UID">
                 <td>{{ model.name }}</td>
                 <td class="text-right">
                   <v-btn

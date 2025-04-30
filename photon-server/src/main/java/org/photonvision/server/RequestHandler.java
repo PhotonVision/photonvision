@@ -651,7 +651,24 @@ public class RequestHandler {
     }
 
     public static void onExportObjectDetectionModelRequest(Context ctx) {
-        // TODO: implement this
+        logger.info("Exporting Settings to ZIP Archive");
+
+        try {
+            var zip = ConfigManager.getInstance().getSettingsFolderAsZip();
+            var stream = new FileInputStream(zip);
+            logger.info("Uploading settings with size " + stream.available());
+
+            ctx.contentType("application/zip");
+            ctx.header(
+                    "Content-Disposition", "attachment; filename=\"photonvision-settings-export.zip\"");
+
+            ctx.result(stream);
+            ctx.status(200);
+        } catch (IOException e) {
+            logger.error("Unable to export settings archive, bad recode from zip to byte");
+            ctx.status(500);
+            ctx.result("There was an error while exporting the settings archive");
+        }
     }
 
     public static void onBulkImportObjectDetectionModelRequest(Context ctx) {

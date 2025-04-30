@@ -217,6 +217,19 @@ public class ConfigManager {
         return out;
     }
 
+    public File getObjectDetectionExportAsZip() {
+        File out =
+                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
+                        .toFile();
+        try {
+            ZipUtil.pack(getModelsDirectory(), out);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
     public void setNetworkSettings(NetworkConfig networkConfig) {
         getConfig().setNetworkConfig(networkConfig);
         requestSave();
