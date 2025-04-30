@@ -722,7 +722,6 @@ public class RequestHandler {
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
-
             RenameObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
 

@@ -23,6 +23,9 @@ import java.util.LinkedList;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class NeuralNetworkPropertyManager {
     /*
      * The properties of the model. This is used to determine which model to load.
@@ -30,17 +33,23 @@ public class NeuralNetworkPropertyManager {
      * currently supported is RKNN.
      */
     public record ModelProperties(
-            Path modelPath,
-            String nickname,
-            LinkedList<String> labels,
-            double resolutionWidth,
-            double resolutionHeight,
-            Family family,
-            Version version) {}
+            @JsonProperty("modelPath") Path modelPath,
+            @JsonProperty("nickname") String nickname,
+            @JsonProperty("labels") LinkedList<String> labels,
+            @JsonProperty("resolutionWidth") double resolutionWidth,
+            @JsonProperty("resolutionHeight") double resolutionHeight,
+            @JsonProperty("family") Family family,
+            @JsonProperty("version") Version version) {
+        @JsonCreator
+        public ModelProperties {
+            // Record constructor is automatically annotated with @JsonCreator
+        }
+    }
 
     // The path to the model is used as the key in the map because it is unique to
     // the model, and should not change
-    protected HashMap<Path, ModelProperties> modelPathToProperties =
+    @JsonProperty("modelPathToProperties")
+    private HashMap<Path, ModelProperties> modelPathToProperties =
             new HashMap<Path, ModelProperties>();
 
     /**
