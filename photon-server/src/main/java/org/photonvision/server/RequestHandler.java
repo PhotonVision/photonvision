@@ -385,7 +385,6 @@ public class RequestHandler {
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            // Deserialize the request body directly into UICameraSettingsRequest
 
             CameraSettingsRequest request =
                     kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
