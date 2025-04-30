@@ -50,7 +50,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -67,7 +66,6 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    // TODO: rewrite queryParam() using a record (mostly done assignUnmatchedCamera is left)
     // TODO: figure out a way to do this stuff with files too
 
     public record CommonCameraUniqueName(String cameraUniqueName) {}
@@ -931,9 +929,10 @@ public class RequestHandler {
 
             ctx.status(200);
         } catch (IOException e) {
-            // todo
-            logger.error("asdf", e);
+            logger.error("Failed to delete camera", e);
             ctx.status(500);
+            ctx.result("Failed to delete camera");
+            return;
         }
     }
 
@@ -951,27 +950,42 @@ public class RequestHandler {
             }
         } catch (IOException e) {
             ctx.status(401);
+            logger.error("Failed to process activate matched camera request", e);
+            ctx.result("Failed to process activate matched camera request");
+            return;
         }
     }
+
+    public record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
 
-        PVCameraInfo camera;
         try {
-            camera = JacksonUtils.deserialize(ctx.queryParam("cameraInfo"), PVCameraInfo.class);
+            AssignUnmatchedCamera request =
+                    kObjectMapper.readValue(ctx.body(), AssignUnmatchedCamera.class);
+            PVCameraInfo camera = request.cameraInfo;
+
+            if (camera == null) {
+                ctx.status(400);
+                ctx.result("cameraInfo is required");
+                logger.error("cameraInfo is missing in the request");
+                return;
+            }
+
+            if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
+                ctx.status(200);
+            } else {
+                ctx.status(404);
+            }
+
+            ctx.result("Successfully assigned camera: " + camera);
         } catch (IOException e) {
             ctx.status(401);
+            logger.error("Failed to process assign unmatched camera request", e);
+            ctx.result("Failed to process assign unmatched camera request");
             return;
         }
-
-        if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
-            ctx.status(200);
-        } else {
-            ctx.status(404);
-        }
-
-        ctx.result("Successfully assigned camera: " + camera);
     }
 
     public static void onUnassignCameraRequest(Context ctx) {
@@ -987,6 +1001,8 @@ public class RequestHandler {
             }
         } catch (IOException e) {
             ctx.status(401);
+            logger.error("Failed to process unassign camera request", e);
+            ctx.result("Failed to process unassign camera request");
             return;
         }
     }

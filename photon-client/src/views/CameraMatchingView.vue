@@ -57,12 +57,38 @@ const assigningCamera = ref(false);
 const assignCamera = (cameraInfo: PVCameraInfo) => {
   if (assigningCamera.value) return;
   assigningCamera.value = true;
-  const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
-  url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (assigningCamera.value = false));
+  const payload = {
+    cameraInfo: cameraInfo
+  };
+
+  axios
+    .post("/utils/assignUnmatchedCamera", payload)
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Unmatched camera assigned successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to assign this unmatched camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (assigningCamera.value = false));
 };
 
 const deactivatingModule = ref(false);
