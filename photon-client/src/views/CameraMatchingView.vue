@@ -25,7 +25,7 @@ const activateModule = (moduleUniqueName: string) => {
   activatingModule.value = true;
 
   axios
-    .post("/utils/activateMatchedCamera", {cameraUniqueName: moduleUniqueName})
+    .post("/utils/activateMatchedCamera", { cameraUniqueName: moduleUniqueName })
     .then(() => {
       useStateStore().showSnackbarMessage({
         message: "Camera activated successfully",
@@ -49,7 +49,8 @@ const activateModule = (moduleUniqueName: string) => {
           color: "error"
         });
       }
-    }).finally(() => (activatingModule.value = false));
+    })
+    .finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
@@ -70,7 +71,7 @@ const deactivateModule = (cameraUniqueName: string) => {
   deactivatingModule.value = true;
 
   axios
-    .post("/utils/unassignCamera", {cameraUniqueName: cameraUniqueName})
+    .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
     .then(() => {
       useStateStore().showSnackbarMessage({
         message: "Camera deactivated successfully",
@@ -94,7 +95,8 @@ const deactivateModule = (cameraUniqueName: string) => {
           color: "error"
         });
       }
-    }).finally(() => (deactivatingModule.value = false));
+    })
+    .finally(() => (deactivatingModule.value = false));
 };
 
 const deletingCamera = ref(false);

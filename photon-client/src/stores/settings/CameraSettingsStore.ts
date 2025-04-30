@@ -465,7 +465,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       idx: number,
       cameraUniqueName = useStateStore().currentCameraUniqueName
     ) {
-
       const payload = {
         cameraUniqueName: cameraUniqueName,
         width: Math.round(resolution.width).toFixed(0),
@@ -476,7 +475,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return axios.post("/calibration/getCalSnapshot", payload);
     },
     getCalJSONUrl(host: string, resolution: Resolution, cameraUniqueName = useStateStore().currentCameraUniqueName) {
-
       const payload = {
         cameraUniqueName: cameraUniqueName,
         width: Math.round(resolution.width).toFixed(0),
