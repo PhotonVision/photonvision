@@ -631,8 +631,8 @@ public class RequestHandler {
                                     labels,
                                     width,
                                     height,
-                                    NeuralNetworkModelManager.Family
-                                            .RKNN, // This can be determined by platform if additional platforms are
+                                    NeuralNetworkModelManager.Family.RKNN, // This can be determined by platform if
+                                    // additional platforms are
                                     // supported
                                     version));
 
@@ -651,28 +651,104 @@ public class RequestHandler {
     }
 
     public static void onExportObjectDetectionModelRequest(Context ctx) {
-        logger.info("Exporting Settings to ZIP Archive");
+        logger.info("Exporting Object Detection Models to ZIP Archive");
 
         try {
-            var zip = ConfigManager.getInstance().getSettingsFolderAsZip();
+            var zip = ConfigManager.getInstance().getObjectDetectionExportAsZip();
             var stream = new FileInputStream(zip);
-            logger.info("Uploading settings with size " + stream.available());
+            logger.info("Uploading object detection models with size " + stream.available());
 
             ctx.contentType("application/zip");
             ctx.header(
-                    "Content-Disposition", "attachment; filename=\"photonvision-settings-export.zip\"");
+                    "Content-Disposition",
+                    "attachment; filename=\"photonvision-object-detection-models-export.zip\"");
 
             ctx.result(stream);
             ctx.status(200);
         } catch (IOException e) {
-            logger.error("Unable to export settings archive, bad recode from zip to byte");
+            logger.error("Unable to export object detection models archive, bad recode from zip to byte");
             ctx.status(500);
-            ctx.result("There was an error while exporting the settings archive");
+            ctx.result("There was an error while exporting the object detection models archive");
         }
     }
 
     public static void onBulkImportObjectDetectionModelRequest(Context ctx) {
-        // TODO: implement this
+        var file = ctx.uploadedFile("data");
+
+        if (file == null) {
+            ctx.status(400);
+            ctx.result(
+                    "No File was sent with the request. Make sure that the object detection zip is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the object detection zip file is sent at the key 'data'");
+            return;
+        }
+
+        if (!file.extension().contains("zip")) {
+            ctx.status(400);
+            ctx.result(
+                    "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            logger.error(
+                    "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            return;
+        }
+
+        // Create a temp file
+        var tempFilePath = handleTempFileCreation(file);
+
+        if (tempFilePath.isEmpty()) {
+            ctx.status(500);
+            ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
+            return;
+        }
+
+        Path tempDir = null;
+        // Extract .rknn files from zip and move to models directory
+        try {
+            tempDir = Files.createTempDirectory("photonvision-od-models");
+            ZipUtil.unpack(tempFilePath.get(), tempDir.toFile());
+
+            Path sourceModelsDir = Path.of(tempDir.toString(), "models");
+            if (Files.exists(sourceModelsDir) && Files.isDirectory(sourceModelsDir)) {
+                Path targetModelsDir = ConfigManager.getInstance().getModelsDirectory().toPath();
+
+                // Copy all files from the source models directory to the target models
+                // directory
+                try (var stream = Files.list(sourceModelsDir)) {
+                    for (Path modelFile : stream.toList()) {
+                        if (Files.isRegularFile(modelFile)) {
+                            Files.copy(
+                                    modelFile,
+                                    Path.of(targetModelsDir.toString(), modelFile.getFileName().toString()));
+                        }
+                    }
+                }
+                logger.info(
+                        "Successfully copied models from " + sourceModelsDir + " to " + targetModelsDir);
+            } else {
+                logger.warn("Models directory not found in the uploaded zip at " + sourceModelsDir);
+            }
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("There was an error while extracting and coyping the object detection models");
+            logger.error(
+                    "There was an error while extracting and copying the object detection models", e);
+            return;
+        }
+
+        if (ConfigManager.getInstance()
+                .saveUploadedNeuralNetworkProperties(
+                        Path.of(tempDir.toString(), "NeuralNetworkPropertiesManager.json"))) {
+            ctx.status(200);
+            ctx.result("Successfully saved the uploaded object detection models, rebooting...");
+            logger.info("Successfully saved the uploaded object detection models, rebooting...");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while saving the uploaded object detection models");
+            logger.error("There was an error while saving the uploaded object detection models");
+        }
     }
 
     private record DeleteObjectDetectionModelRequest(String modelPath) {}

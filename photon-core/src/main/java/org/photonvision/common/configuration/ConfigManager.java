@@ -34,6 +34,7 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -221,9 +222,14 @@ public class ConfigManager {
         File out =
                 Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
                         .toFile();
+        File tempProperties =
+                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.json")
+                        .toFile();
         try {
             ZipUtil.pack(getModelsDirectory(), out);
-
+            JacksonUtils.serialize(
+                    tempProperties.toPath(), this.getConfig().getNeuralNetworkProperties());
+            ZipUtil.pack(tempProperties, out);
         } catch (Exception e) {
             e.printStackTrace();
         }
