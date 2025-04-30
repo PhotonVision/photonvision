@@ -66,7 +66,7 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    public record CommonCameraUniqueName(String cameraUniqueName) {}
+    private record CommonCameraUniqueName(String cameraUniqueName) {}
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -380,7 +380,7 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
-    public record CameraSettingsRequest(
+    private record CameraSettingsRequest(
             double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
@@ -512,7 +512,7 @@ public class RequestHandler {
         }
     }
 
-    public record DataCalibrationImportRequest(
+    private record DataCalibrationImportRequest(
             String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
 
     public static void onDataCalibrationImportRequest(Context ctx) {
@@ -617,12 +617,11 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
-    public record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            // Deserialize the request body directly into a CameraNicknameChangeRequest
-            // record
+           
             CameraNicknameChangeRequest request =
                     kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
 
@@ -647,7 +646,7 @@ public class RequestHandler {
         ctx.status(204);
     }
 
-    public record CalibrationSnapshotRequest(
+    private record CalibrationSnapshotRequest(
             String cameraUniqueName, int width, int height, int snapshotIdx) {}
 
     public static void onCalibrationSnapshotRequest(Context ctx) {
@@ -708,7 +707,7 @@ public class RequestHandler {
         ctx.status(200);
     }
 
-    public record CalibrationExportRequest(
+    private record CalibrationExportRequest(
             String cameraUniqueName, int width, int height, int snapshotIdx) {}
 
     public static void onCalibrationExportRequest(Context ctx) {
@@ -953,7 +952,7 @@ public class RequestHandler {
         }
     }
 
-    public record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
+    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
