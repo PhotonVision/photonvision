@@ -68,7 +68,9 @@ public class RequestHandler {
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
     // TODO: rewrite queryParam() using a record
-    // TODO: implement a common cameraUniqueName record
+
+    public record CommonCameraUniqueName(String cameraUniqueName) {}
+    
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -484,17 +486,14 @@ public class RequestHandler {
         }
     }
 
-    public record CalibrationEndRequest(String cameraUniqueName) {}
-    ;
-
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
         String cameraUniqueName;
 
         try {
-            CalibrationEndRequest request =
-                    kObjectMapper.readValue(ctx.body(), CalibrationEndRequest.class);
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
             cameraUniqueName = request.cameraUniqueName;
 
             var calData =
@@ -898,12 +897,10 @@ public class RequestHandler {
         }
     }
 
-    public record NukeOneCameraRequest(String cameraUniqueName) {}
-
     public static void onNukeOneCamera(Context ctx) {
         try {
-            NukeOneCameraRequest request =
-                    kObjectMapper.readValue(ctx.body(), NukeOneCameraRequest.class);
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
             String name = request.cameraUniqueName;
 
             logger.warn("Deleting camera name " + name);
