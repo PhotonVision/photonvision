@@ -550,17 +550,22 @@ public class RequestHandler {
         restartProgram();
     }
 
+    public record ImportObjectDetectionModelRequest(
+            String labels, double width, double height, String version) {}
+
     public static void onImportObjectDetectionModelRequest(Context ctx) {
         try {
             // Retrieve the uploaded files
             var modelFile = ctx.uploadedFile("model");
 
-            LinkedList<String> labels =
-                    new LinkedList<>(Arrays.asList(ctx.queryParam("labels").split(",")));
-            double width = Double.parseDouble(ctx.queryParam("width"));
-            double height = Double.parseDouble(ctx.queryParam("height"));
+            ImportObjectDetectionModelRequest request =
+                    JacksonUtils.deserialize(ctx.body(), ImportObjectDetectionModelRequest.class);
+
+            LinkedList<String> labels = new LinkedList<>(Arrays.asList(request.labels.split(",")));
+            double width = request.width;
+            double height = request.height;
             NeuralNetworkModelManager.Version version =
-                    switch (ctx.queryParam("version")) {
+                    switch (request.version) {
                         case "YOLOV5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOV8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
@@ -649,13 +654,17 @@ public class RequestHandler {
         // TODO: implement this
     }
 
+    public record DeleteObjectDetectionModelRequest(String modelPath) {}
+
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
-        // TODO: implement this
         logger.info("Deleting object detection model");
         Path modelPath;
 
         try {
-            modelPath = Path.of(ctx.queryParam("modelPath"));
+            DeleteObjectDetectionModelRequest request =
+                    JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
+
+            modelPath = Path.of(request.modelPath);
 
             if (modelPath == null) {
                 ctx.status(400);
@@ -705,10 +714,16 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
+    public record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
-            Path modelPath = Path.of(ctx.queryParam("modelPath"));
-            String newName = ctx.queryParam("newName");
+
+            RenameObjectDetectionModelRequest request =
+                    JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
+
+            Path modelPath = Path.of(request.modelPath);
+            String newName = request.newName;
 
             if (modelPath == null) {
                 ctx.status(400);
