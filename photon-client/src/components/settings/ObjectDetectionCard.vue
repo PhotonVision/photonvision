@@ -245,7 +245,7 @@ const supportedModels = computed(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="model in supportedModels">
+              <tr v-for="model in supportedModels" key:model.UID>
                 <td>{{ model.name }}</td>
                 <td class="text-right">
                   <v-btn
