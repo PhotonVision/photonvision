@@ -137,7 +137,8 @@ enum ImportType {
   HardwareConfig,
   HardwareSettings,
   NetworkConfig,
-  ApriltagFieldLayout
+  ApriltagFieldLayout,
+  ObjectDetectionModels
 }
 const showImportDialog = ref(false);
 const importType = ref<ImportType | number>(-1);
@@ -161,6 +162,9 @@ const handleSettingsImport = () => {
       break;
     case ImportType.ApriltagFieldLayout:
       settingsEndpoint = "/aprilTagFieldLayout";
+      break;
+    case ImportType.ObjectDetectionModels:
+      settingsEndpoint = "/bulkObjectDetection";
       break;
     default:
     case ImportType.AllSettings:

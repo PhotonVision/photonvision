@@ -550,7 +550,7 @@ public class RequestHandler {
         restartProgram();
     }
 
-    public record ImportObjectDetectionModelRequest(
+    private record ImportObjectDetectionModelRequest(
             String labels, double width, double height, String version) {}
 
     public static void onImportObjectDetectionModelRequest(Context ctx) {
@@ -566,8 +566,8 @@ public class RequestHandler {
             double height = request.height;
             NeuralNetworkModelManager.Version version =
                     switch (request.version) {
-                        case "YOLOV5" -> NeuralNetworkModelManager.Version.YOLOV5;
-                        case "YOLOV8" -> NeuralNetworkModelManager.Version.YOLOV8;
+                        case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
+                        case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
                             // Add more versions as necessary for new models
                         default -> {
@@ -654,7 +654,11 @@ public class RequestHandler {
         // TODO: implement this
     }
 
-    public record DeleteObjectDetectionModelRequest(String modelPath) {}
+    public static void onBulkImportObjectDetectionModelRequest(Context ctx) {
+        // TODO: implement this
+    }
+
+    private record DeleteObjectDetectionModelRequest(String modelPath) {}
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
@@ -714,7 +718,7 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    public record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {

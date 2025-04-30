@@ -5,16 +5,34 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showImportDialog = ref(false);
-const importRKNNFile = ref<File | null>(null);
-const importLabelsFile = ref<File | null>(null);
+const importModelFile = ref<File | null>(null);
+const importLabels = ref<String | null>(null);
+const importHeight = ref<number | null>(null);
+const importWidth = ref<number | null>(null);
+const importVersion = ref<String | null>(null);
 
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
-  if (importRKNNFile.value === null || importLabelsFile.value === null) return;
+  if (importModelFile.value === null) return;
 
   const formData = new FormData();
-  formData.append("rknn", importRKNNFile.value);
-  formData.append("labels", importLabelsFile.value);
+
+  // Create JSON metadata
+  const metadata = {
+    version: importVersion.value,
+    height: importHeight.value,
+    width: importWidth.value,
+    labels: importLabels.value
+  };
+
+  // Add JSON metadata as a separate part in the FormData
+  formData.append(
+    "metadata",
+    new Blob([JSON.stringify(metadata)], {
+      type: "application/json"
+    })
+  );
+  formData.append("modelFile", importModelFile.value);
 
   useStateStore().showSnackbarMessage({
     message: "Importing Object Detection Model...",
@@ -53,9 +71,15 @@ const handleImport = async () => {
 
   showImportDialog.value = false;
 
-  importRKNNFile.value = null;
-  importLabelsFile.value = null;
+  importModelFile.value = null;
+  importLabels.value = null;
+  importHeight.value = null;
+  importWidth.value = null;
+  importVersion.value = null;
 };
+
+// TODO: write this
+const handleExport = async () => {};
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
@@ -72,44 +96,53 @@ const supportedModels = computed(() => {
         <v-col cols="12 ">
           <v-btn color="secondary" class="justify-center" @click="() => (showImportDialog = true)">
             <v-icon left class="open-icon"> mdi-import </v-icon>
-            <span class="open-label">Import New Model</span>
+            <span class="open-label">Import Model</span>
           </v-btn>
           <v-dialog
             v-model="showImportDialog"
             width="600"
             @input="
               () => {
-                importRKNNFile = null;
-                importLabelsFile = null;
+                importModelFile = null;
+                importLabels = null;
+                importHeight = null;
+                importWidth = null;
+                importVersion = null;
               }
             "
           >
             <v-card color="primary" dark>
               <v-card-title>Import New Object Detection Model</v-card-title>
               <v-card-text>
-                Upload a new object detection model to this device that can be used in a pipeline. Naming convention
-                should be <code>name-verticalResolution-horizontalResolution-yolovXXX</code>. The
-                <code>name</code> should only include alphanumeric characters, periods, and underscores. Additionally,
-                the labels file ought to have the same name as the RKNN file, with <code>-labels</code> appended to the
-                end. For example, if the RKNN file is named <code>note-640-640-yolov5s.rknn</code>, the labels file
-                should be named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5, YOLOv8, and
-                YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are currently supported!
+                Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
+                640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are
+                currently supported!
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input v-model="importRKNNFile" label="RKNN File" accept=".rknn" />
+                  <v-file-input v-model="importModelFile" label="Model File" accept=".rknn" />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input v-model="importLabelsFile" label="Labels File" accept=".txt" />
+                  <v-text-field
+                    v-model="importLabels"
+                    label="Labels"
+                    placeholder="Comma separated labels, no spaces"
+                    type="text"
+                  />
+                </v-row>
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-text-field v-model="importHeight" label="Height" type="number" />
+                </v-row>
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-text-field v-model="importWidth" label="Width" type="number" />
+                </v-row>
+                <v-row class="mt-6 ml-4 mr-8">
+                  <v-select v-model="importVersion" label="Model Version" :items="['YOLOv5', 'YOLOv8', 'YOLO11']" />
                 </v-row>
                 <v-row
                   class="mt-12 ml-8 mr-8 mb-1"
                   style="display: flex; align-items: center; justify-content: center"
                   align="center"
                 >
-                  <v-btn
-                    color="secondary"
-                    :disabled="importRKNNFile === null || importLabelsFile === null"
-                    @click="handleImport"
-                  >
+                  <v-btn color="secondary" :disabled="importModelFile === null" @click="handleImport()">
                     <v-icon left class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
                   </v-btn>
@@ -117,6 +150,12 @@ const supportedModels = computed(() => {
               </v-card-text>
             </v-card>
           </v-dialog>
+        </v-col>
+        <v-col cols="12 ">
+          <v-btn color="secondary" class="justify-center" @click="handleExport()">
+            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Export Object Detection Models</span>
+          </v-btn>
         </v-col>
       </v-row>
       <v-row>

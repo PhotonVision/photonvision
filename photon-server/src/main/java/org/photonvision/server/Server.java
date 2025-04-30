@@ -120,6 +120,9 @@ public class Server {
         app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
         app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
         app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
+        app.post(
+                "/api/settings/bulkObjectDetection",
+                RequestHandler::onBulkImportObjectDetectionModelRequest);
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
@@ -146,6 +149,8 @@ public class Server {
 
         // Object detection
         app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/importBulk", RequestHandler::onBulkImportObjectDetectionModelRequest);
         app.post("/api/objectdetection/export", RequestHandler::onExportObjectDetectionModelRequest);
         app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
