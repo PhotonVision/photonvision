@@ -47,6 +47,11 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
+    public String getNickname() {
+        return "NullModel";
+    }
+
+    @Override
     public Family getFamily() {
         return null;
     }

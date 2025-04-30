@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class UIGeneralSettings {
             String version,
             String gpuAcceleration,
             boolean mrCalWorking,
-            Map<String, ArrayList<String>> availableModels,
+            Map<String, ArrayList<SimpleEntry<String, String>>> availableModels,
             List<String> supportedBackends,
             String hardwareModel,
             String hardwarePlatform) {
@@ -42,7 +43,7 @@ public class UIGeneralSettings {
     public String version;
     public String gpuAcceleration;
     public boolean mrCalWorking;
-    public Map<String, ArrayList<String>> availableModels;
+    public Map<String, ArrayList<SimpleEntry<String, String>>> availableModels;
     public List<String> supportedBackends;
     public String hardwareModel;
     public String hardwarePlatform;

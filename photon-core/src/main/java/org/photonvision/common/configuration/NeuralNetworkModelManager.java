@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -137,18 +138,19 @@ public class NeuralNetworkModelManager {
      * frontend.
      *
      * @return A map containing the available models, where the key is the backend and the value is a
-     *     list of model names.
+     *     simple entry containing the UID and nickname
      */
-    public HashMap<String, ArrayList<String>> getModels() {
-        HashMap<String, ArrayList<String>> modelMap = new HashMap<>();
+    public HashMap<String, ArrayList<SimpleEntry<String, String>>> getModels() {
+        HashMap<String, ArrayList<SimpleEntry<String, String>>> modelMap = new HashMap<>();
         if (models == null) {
             return modelMap;
         }
 
         models.forEach(
                 (backend, backendModels) -> {
-                    ArrayList<String> modelNames = new ArrayList<>();
-                    backendModels.forEach(model -> modelNames.add(model.getUID()));
+                    ArrayList<SimpleEntry<String, String>> modelNames = new ArrayList<>();
+                    backendModels.forEach(
+                            model -> modelNames.add(new SimpleEntry<>(model.getUID(), model.getNickname())));
                     modelMap.put(backend.toString(), modelNames);
                 });
 

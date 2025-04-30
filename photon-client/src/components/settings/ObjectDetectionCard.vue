@@ -5,8 +5,8 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showImportDialog = ref(false);
-const confirmDeleteDialog = ref({ show: false, model: "" });
-const showRenameDialog = ref({ show: false, model: "", newName: "" });
+const confirmDeleteDialog = ref({ show: false, model: { UID: "", name: "" } });
+const showRenameDialog = ref({ show: false, model: { UID: "", name: "" }, newName: "" });
 
 const importModelFile = ref<File | null>(null);
 const importLabels = ref<String | null>(null);
@@ -245,8 +245,8 @@ const supportedModels = computed(() => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="model in supportedModels" :key="model">
-                <td>{{ model }}</td>
+              <tr v-for="model in supportedModels">
+                <td>{{ model.name }}</td>
                 <td class="text-right">
                   <v-btn
                     icon
@@ -275,11 +275,13 @@ const supportedModels = computed(() => {
           <v-dialog v-model="confirmDeleteDialog.show" width="600">
             <v-card color="primary" dark>
               <v-card-title>Delete Object Detection Model</v-card-title>
-              <v-card-text> Are you sure you want to delete the model {{ confirmDeleteDialog.model }}? </v-card-text>
+              <v-card-text>
+                Are you sure you want to delete the model {{ confirmDeleteDialog.model.name }}?
+              </v-card-text>
               <v-card-actions>
                 <v-spacer />
                 <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
-                <v-btn text color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
+                <v-btn text color="error" @click="deleteModel(confirmDeleteDialog.model.UID)">Delete</v-btn>
               </v-card-actions>
             </v-card>
           </v-dialog>
@@ -295,7 +297,7 @@ const supportedModels = computed(() => {
               <v-card-actions>
                 <v-spacer />
                 <v-btn text @click="showRenameDialog.show = false">Cancel</v-btn>
-                <v-btn text color="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
+                <v-btn text color="primary" @click="renameModel(showRenameDialog.model.UID, showRenameDialog.newName)"
                   >Rename</v-btn
                 >
               </v-card-actions>

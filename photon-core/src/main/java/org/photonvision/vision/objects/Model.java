@@ -24,5 +24,7 @@ public interface Model {
 
     public String getUID();
 
+    public String getNickname();
+
     public Family getFamily();
 }

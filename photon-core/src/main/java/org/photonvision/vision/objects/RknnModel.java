@@ -66,6 +66,10 @@ public class RknnModel implements Model {
         return properties.modelPath().toString();
     }
 
+    public String getNickname() {
+        return properties.nickname();
+    }
+
     public Family getFamily() {
         return properties.family();
     }

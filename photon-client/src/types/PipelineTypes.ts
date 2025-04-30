@@ -296,7 +296,7 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   confidence: number;
   nms: number;
   box_thresh: number;
-  model: string;
+  model: { UID: string; name: string };
 }
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
@@ -313,7 +313,7 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   confidence: 0.9,
   nms: 0.45,
   box_thresh: 0.25,
-  model: ""
+  model: { UID: "", name: "None" }
 };
 
 export interface Calibration3dPipelineSettings extends PipelineSettings {

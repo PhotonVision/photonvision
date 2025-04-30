@@ -8,7 +8,7 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
-  availableModels: Record<string, string[]>;
+  availableModels: Record<string, Array<{ UID: string; name: string }>>;
   supportedBackends: string[];
 }
 
