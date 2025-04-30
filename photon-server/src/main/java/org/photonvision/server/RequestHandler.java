@@ -385,7 +385,6 @@ public class RequestHandler {
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-
             CameraSettingsRequest request =
                     kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
             // Extract the settings from the request
@@ -401,15 +400,13 @@ public class RequestHandler {
 
             logger.info("Changing camera FOV to: " + fov);
 
-            // Process the quirksToChange if needed
-            if (quirksToChange != null) {
-                quirksToChange.forEach(
-                        (quirk, value) -> {
-                            logger.info("Setting quirk " + quirk + " to " + value);
-                        });
-            }
+            logger.info("Changing quirks to: " + quirksToChange.toString());
 
-            // Add logic to update the camera settings here
+            var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+
+            module.setFov(fov);
+            module.changeCameraQuirks(quirksToChange);
+            module.saveModule();
 
             ctx.status(200).result("Camera settings updated successfully");
         } catch (Exception e) {
@@ -621,7 +618,6 @@ public class RequestHandler {
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-           
             CameraNicknameChangeRequest request =
                     kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
 
