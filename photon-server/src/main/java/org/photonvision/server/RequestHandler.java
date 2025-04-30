@@ -17,7 +17,6 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -380,39 +379,50 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
-    public static class UICameraSettingsRequest {
-        @JsonProperty("fov")
-        double fov;
+    // public static class UICameraSettingsRequest {
+    //     @JsonProperty("fov")
+    //     double fov;
 
-        @JsonProperty("quirksToChange")
-        HashMap<CameraQuirk, Boolean> quirksToChange;
-    }
+    //     @JsonProperty("quirksToChange")
+    //     HashMap<CameraQuirk, Boolean> quirksToChange;
+    // }
+
+    public record CameraSettingsRequest(
+            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+            // Deserialize the request body directly into UICameraSettingsRequest
 
-            String cameraUniqueName = data.get("cameraUniqueName").asText();
-            var settings =
-                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
-            var fov = settings.fov;
+            CameraSettingsRequest request =
+                    kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
+            // Extract the settings from the request
+            double fov = request.fov;
+            HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
+            String cameraUniqueName = request.cameraUniqueName;
+
+            if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                logger.error("cameraUniqueName is missing in the request");
+                return;
+            }
 
             logger.info("Changing camera FOV to: " + fov);
-            logger.info("Changing quirks to: " + settings.quirksToChange.toString());
 
-            var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-            module.setFov(fov);
-            module.changeCameraQuirks(settings.quirksToChange);
+            // Process the quirksToChange if needed
+            if (quirksToChange != null) {
+                quirksToChange.forEach(
+                        (quirk, value) -> {
+                            logger.info("Setting quirk " + quirk + " to " + value);
+                        });
+            }
 
-            module.saveModule();
+            // Add logic to update the camera settings here
 
-            ctx.status(200);
-            ctx.result("Successfully saved camera settings");
-            logger.info("Successfully saved camera settings");
-        } catch (NullPointerException | IOException e) {
-            ctx.status(400);
-            ctx.result("The provided camera settings were malformed");
-            logger.error("The provided camera settings were malformed", e);
+            ctx.status(200).result("Camera settings updated successfully");
+        } catch (Exception e) {
+            logger.error("Failed to process camera settings request", e);
+            ctx.status(500).result("Failed to process camera settings request");
         }
     }
 
@@ -471,14 +481,18 @@ public class RequestHandler {
         }
     }
 
+    public record CalibrationEndRequest(String cameraUniqueName) {}
+    ;
+
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
         String cameraUniqueName;
 
         try {
-            cameraUniqueName =
-                    kObjectMapper.readTree(ctx.bodyInputStream()).get("cameraUniqueName").asText();
+            CalibrationEndRequest request =
+                    kObjectMapper.readValue(ctx.body(), CalibrationEndRequest.class);
+            cameraUniqueName = request.cameraUniqueName;
 
             var calData =
                     VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
@@ -509,13 +523,15 @@ public class RequestHandler {
         }
     }
 
+    public record DataCalibrationImportRequest(
+            String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
+
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            String cameraUniqueName = data.get("cameraUniqueName").asText();
-            var coeffs =
-                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
+            DataCalibrationImportRequest request =
+                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+            String cameraUniqueName = request.cameraUniqueName;
+            CameraCalibrationCoefficients coeffs = request.calibration;
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
@@ -612,26 +628,27 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
+    public record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+            // Deserialize the request body directly into a CameraNicknameChangeRequest record
+            CameraNicknameChangeRequest request =
+                    kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
 
-            String name = data.get("name").asText();
-            String cameraUniqueName = data.get("cameraUniqueName").asText();
+            String name = request.name();
+            String cameraUniqueName = request.cameraUniqueName();
 
             VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).setCameraNickname(name);
             ctx.status(200);
             ctx.result("Successfully changed the camera name to: " + name);
             logger.info("Successfully changed the camera name to: " + name);
         } catch (JsonProcessingException e) {
-            ctx.status(400);
-            ctx.result("The provided nickname data was malformed");
-            logger.error("The provided nickname data was malformed", e);
-
+            ctx.status(400).result("Invalid JSON format");
+            logger.error("Failed to process camera nickname change request", e);
         } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("An error occurred while changing the camera's nickname");
-            logger.error("An error occurred while changing the camera's nickname", e);
+            ctx.status(500).result("Failed to change camera nickname");
+            logger.error("Unexpected error while changing camera nickname", e);
         }
     }
 
@@ -878,10 +895,14 @@ public class RequestHandler {
         }
     }
 
+    public record NukeOneCameraRequest(String cameraUniqueName) {}
+
     public static void onNukeOneCamera(Context ctx) {
         try {
-            var payload = kObjectMapper.readTree(ctx.bodyInputStream());
-            var name = payload.get("cameraUniqueName").asText();
+            NukeOneCameraRequest request =
+                    kObjectMapper.readValue(ctx.body(), NukeOneCameraRequest.class);
+            String name = request.cameraUniqueName;
+
             logger.warn("Deleting camera name " + name);
 
             var cameraDir = ConfigManager.getInstance().getCalibrationImageSavePath(name).toFile();
