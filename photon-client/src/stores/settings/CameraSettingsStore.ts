@@ -464,7 +464,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       resolution: Resolution,
       idx: number,
       cameraUniqueName = useStateStore().currentCameraUniqueName
-     ) {
+    ) {
       const url = new URL(`http://${host}/api/utils/getCalSnapshot`);
       url.searchParams.set("width", Math.round(resolution.width).toFixed(0));
       url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
