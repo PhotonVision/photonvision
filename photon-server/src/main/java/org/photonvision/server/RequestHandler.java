@@ -642,113 +642,85 @@ public class RequestHandler {
         ctx.status(204);
     }
 
-    private record CalibrationSnapshotRequest(
-            String cameraUniqueName, int width, int height, int snapshotIdx) {}
-
     public static void onCalibrationSnapshotRequest(Context ctx) {
-        logger.info(ctx.queryString());
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+        var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
+
+        CameraCalibrationCoefficients calList =
+                VisionSourceManager.getInstance()
+                        .vmm
+                        .getModule(cameraUniqueName)
+                        .getStateAsCameraConfig()
+                        .calibrations
+                        .stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null || calList.observations.size() < observationIdx) {
+            ctx.status(404);
+            return;
+        }
+
+        // encode as jpeg to save even more space. reduces size of a 1280p image from
+        // 300k to 25k
+        var jpegBytes = new MatOfByte();
+        Mat img = null;
         try {
-            CalibrationSnapshotRequest request =
-                    kObjectMapper.readValue(ctx.body(), CalibrationSnapshotRequest.class);
-
-            String cameraUniqueName = request.cameraUniqueName;
-            var width = request.width;
-            var height = request.height;
-            var observationIdx = request.snapshotIdx;
-
-            CameraCalibrationCoefficients calList =
-                    VisionSourceManager.getInstance()
-                            .vmm
-                            .getModule(cameraUniqueName)
-                            .getStateAsCameraConfig()
-                            .calibrations
-                            .stream()
-                            .filter(
-                                    it ->
-                                            Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                    && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                            .findFirst()
-                            .orElse(null);
-
-            if (calList == null || calList.observations.size() < observationIdx) {
-                ctx.status(404);
-                return;
-            }
-
-            // encode as jpeg to save even more space. reduces size of a 1280p image from
-            // 300k to 25k
-            var jpegBytes = new MatOfByte();
-            Mat img = null;
-
             img =
                     Imgcodecs.imread(
                             calList.observations.get(observationIdx).snapshotDataLocation.toString());
-
-            if (img == null || img.empty()) {
-                ctx.status(500);
-                ctx.result("Unable to read calibration image");
-                return;
-            }
-
-            Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
-
-            ctx.result(jpegBytes.toArray());
-            jpegBytes.release();
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Unable to read calibration image");
             return;
         }
+        if (img == null || img.empty()) {
+            ctx.status(500);
+            ctx.result("Unable to read calibration image");
+            return;
+        }
+
+        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+
+        ctx.result(jpegBytes.toArray());
+        jpegBytes.release();
 
         ctx.status(200);
     }
 
-    private record CalibrationExportRequest(
-            String cameraUniqueName, int width, int height, int snapshotIdx) {}
-
     public static void onCalibrationExportRequest(Context ctx) {
-        logger.info(ctx.queryString());
-        try {
-            CalibrationExportRequest request =
-                    kObjectMapper.readValue(ctx.body(), CalibrationExportRequest.class);
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
 
-            String cameraUniqueName = request.cameraUniqueName;
-            int width = request.width;
-            int height = request.height;
+        var cc =
+                VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
 
-            var cc =
-                    VisionSourceManager.getInstance()
-                            .vmm
-                            .getModule(cameraUniqueName)
-                            .getStateAsCameraConfig();
+        CameraCalibrationCoefficients calList =
+                cc.calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
 
-            CameraCalibrationCoefficients calList =
-                    cc.calibrations.stream()
-                            .filter(
-                                    it ->
-                                            Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                    && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                            .findFirst()
-                            .orElse(null);
-
-            if (calList == null) {
-                ctx.status(404);
-                return;
-            }
-
-            var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
-            ctx.contentType("application/zip");
-            ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-            ctx.json(calList);
-        } catch (NumberFormatException e) {
-            ctx.status(400);
-            ctx.result("Width and height must be integers");
-            logger.error("Width and height must be integers", e);
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            logger.error("Unable to read calibration image", e);
+        if (calList == null) {
+            ctx.status(404);
+            return;
         }
+
+        var filename = "photon_calibration_" + cc.uniqueName + "_" + width + "x" + height + ".json";
+        ctx.contentType("application/zip");
+        ctx.header("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        ctx.json(calList);
+
         ctx.status(200);
     }
 
