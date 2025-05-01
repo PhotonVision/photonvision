@@ -471,7 +471,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       url.searchParams.set("snapshotIdx", Math.round(idx).toFixed(0));
       url.searchParams.set("cameraUniqueName", cameraUniqueName.replace(" ", "").trim().toLowerCase());
 
-      return url.href;  
+      return url.href;
     },
     getCalJSONUrl(host: string, resolution: Resolution, cameraUniqueName = useStateStore().currentCameraUniqueName) {
       const url = new URL(`http://${host}/api/utils/getCalibrationJSON`);
@@ -479,7 +479,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       url.searchParams.set("height", Math.round(resolution.height).toFixed(0));
       url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
-      return url.href;  
+      return url.href;
     }
   }
 });
