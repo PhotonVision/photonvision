@@ -113,7 +113,9 @@ test {
     testLogging {
         events "failed"
         exceptionFormat "full"
+        showStandardStreams = true
     }
+    forkEvery = 1
     finalizedBy jacocoTestReport
 }
 
