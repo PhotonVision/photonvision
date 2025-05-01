@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -67,7 +66,6 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-// See #1574 - flakey on windows and also linux, so commenting out until we bump wpilib
 class VisionSystemSimTest {
     private static final double kRotDeltaDeg = 0.25;
 
@@ -85,9 +83,6 @@ class VisionSystemSimTest {
         }
 
         OpenCvLoader.forceStaticLoad();
-
-        // See #1574 - test flakey, disabled until we address this
-        assumeTrue(false);
     }
 
     @BeforeEach
