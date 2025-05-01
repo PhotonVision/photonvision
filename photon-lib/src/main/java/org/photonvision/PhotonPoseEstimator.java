@@ -337,6 +337,19 @@ public class PhotonPoseEstimator {
     }
 
     /**
+     * Clears all heading data in the buffer, and adds a new seed. Useful for preventing estimates
+     * from utilizing heading data provided prior to a pose or rotation reset.
+     *
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void resetHeadingData(double timestampSeconds, Rotation2d heading) {
+        headingBuffer.clear();
+        addHeadingData(timestampSeconds, heading);
+    }
+
+    /**
      * @return The current transform from the center of the robot to the camera mount position
      */
     public Transform3d getRobotToCameraTransform() {
