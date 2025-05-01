@@ -550,22 +550,18 @@ public class RequestHandler {
         restartProgram();
     }
 
-    private record ImportObjectDetectionModelRequest(
-            String labels, double width, double height, String version) {}
-
     public static void onImportObjectDetectionModelRequest(Context ctx) {
         try {
             // Retrieve the uploaded files
-            var modelFile = ctx.uploadedFile("model");
+            var modelFile = ctx.uploadedFile("modelFile");
+            logger.debug("I'm trying my best");
 
-            ImportObjectDetectionModelRequest request =
-                    JacksonUtils.deserialize(ctx.body(), ImportObjectDetectionModelRequest.class);
-
-            LinkedList<String> labels = new LinkedList<>(Arrays.asList(request.labels.split(",")));
-            double width = request.width;
-            double height = request.height;
+            LinkedList<String> labels =
+                    new LinkedList<>(Arrays.asList(ctx.formParam("labels").split(",")));
+            double width = Double.parseDouble(ctx.formParam("width"));
+            double height = Double.parseDouble(ctx.formParam("height"));
             NeuralNetworkModelManager.Version version =
-                    switch (request.version) {
+                    switch (ctx.formParam("version").toString()) {
                         case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
@@ -578,12 +574,22 @@ public class RequestHandler {
                         }
                     };
 
+            logger.debug(
+                    "Labels: "
+                            + labels
+                            + " Width: "
+                            + width
+                            + " Height: "
+                            + height
+                            + " Version: "
+                            + version.toString());
+
             if (modelFile == null) {
                 ctx.status(400);
                 ctx.result(
-                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                        "No File was sent with the request. Make sure that the model file is sent at the key 'modelFile'");
                 logger.error(
-                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                        "No File was sent with the request. Make sure that the model file is sent at the key 'modelFile'");
                 return;
             }
 
@@ -627,7 +633,7 @@ public class RequestHandler {
                     .addModelProperties(
                             new ModelProperties(
                                     modelPath,
-                                    modelFile.filename(),
+                                    modelFile.filename().split(".")[0],
                                     labels,
                                     width,
                                     height,
@@ -635,6 +641,8 @@ public class RequestHandler {
                                     // additional platforms are
                                     // supported
                                     version));
+
+            logger.debug(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties().toString());
 
             NeuralNetworkModelManager.getInstance().discoverModels();
 
@@ -760,6 +768,8 @@ public class RequestHandler {
         try {
             DeleteObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
+
+            logger.debug("Here's what I got: " + request.modelPath);
 
             modelPath = Path.of(request.modelPath);
 

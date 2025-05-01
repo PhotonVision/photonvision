@@ -296,7 +296,8 @@ const nukePhotonConfigDirectory = () => {
                       'Hardware Config',
                       'Hardware Settings',
                       'Network Config',
-                      'Apriltag Layout'
+                      'Apriltag Layout',
+                      'Object Detection Models'
                     ]"
                     :select-cols="10"
                     style="width: 100%"

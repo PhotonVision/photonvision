@@ -35,6 +35,9 @@ const supportedModels = computed(() => {
   return supportedBackends.flatMap((backend) => availableModels[backend] || []);
 });
 
+// Get model names for display in the select component
+const modelNames = computed(() => supportedModels.value.map((model) => model.name || String(model)));
+
 const selectedModel = computed({
   get: () => supportedModels.value.indexOf(currentPipelineSettings.value.model),
   set: (v) => {
@@ -50,7 +53,7 @@ const selectedModel = computed({
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
-      :items="supportedModels"
+      :items="modelNames"
     />
     <pv-slider
       v-model="currentPipelineSettings.confidence"

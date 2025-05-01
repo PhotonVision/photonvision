@@ -22,22 +22,11 @@ const handleImport = async () => {
 
   const formData = new FormData();
 
-  // Create JSON metadata
-  const metadata = {
-    version: importVersion.value,
-    height: importHeight.value,
-    width: importWidth.value,
-    labels: importLabels.value
-  };
-
-  // Add JSON metadata as a separate part in the FormData
-  formData.append(
-    "metadata",
-    new Blob([JSON.stringify(metadata)], {
-      type: "application/json"
-    })
-  );
   formData.append("modelFile", importModelFile.value);
+  formData.append("labels", importLabels.value?.toString() || "");
+  formData.append("height", importHeight.value?.toString() || "");
+  formData.append("width", importWidth.value?.toString() || "");
+  formData.append("version", importVersion.value?.toString() || "");
 
   useStateStore().showSnackbarMessage({
     message: "Importing Object Detection Model...",
@@ -82,9 +71,6 @@ const handleImport = async () => {
   importWidth.value = null;
   importVersion.value = null;
 };
-
-// TODO: write this
-const handleExport = async () => {};
 
 const deleteModel = async (model: string) => {
   useStateStore().showSnackbarMessage({
@@ -178,7 +164,7 @@ const openExportPrompt = () => {
     <v-card-title class="pa-6">Object Detection</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
-        <v-col cols="12 ">
+        <v-col cols="12" sm="6">
           <v-btn color="secondary" class="justify-center" @click="() => (showImportDialog = true)">
             <v-icon left class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Model</span>
@@ -214,10 +200,10 @@ const openExportPrompt = () => {
                   />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-text-field v-model="importHeight" label="Height" type="number" />
+                  <v-text-field v-model="importWidth" label="Width" type="number" />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
-                  <v-text-field v-model="importWidth" label="Width" type="number" />
+                  <v-text-field v-model="importHeight" label="Height" type="number" />
                 </v-row>
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-select v-model="importVersion" label="Model Version" :items="['YOLOv5', 'YOLOv8', 'YOLO11']" />
@@ -227,7 +213,17 @@ const openExportPrompt = () => {
                   style="display: flex; align-items: center; justify-content: center"
                   align="center"
                 >
-                  <v-btn color="secondary" :disabled="importModelFile === null" @click="handleImport()">
+                  <v-btn
+                    color="secondary"
+                    :disabled="
+                      importModelFile === null ||
+                      importLabels === null ||
+                      importWidth === null ||
+                      importHeight === null ||
+                      importVersion === null
+                    "
+                    @click="handleImport()"
+                  >
                     <v-icon left class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
                   </v-btn>
@@ -239,7 +235,7 @@ const openExportPrompt = () => {
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportPrompt">
             <v-icon left class="open-icon"> mdi-export </v-icon>
-            <span class="open-label">Export</span>
+            <span class="open-label">Export Models</span>
           </v-btn>
           <a
             ref="exportModels"
@@ -248,12 +244,6 @@ const openExportPrompt = () => {
             download="photonvision-object-detection-models.zip"
             target="_blank"
           />
-        </v-col>
-        <v-col cols="12 ">
-          <v-btn color="secondary" class="justify-center" @click="handleExport()">
-            <v-icon left class="open-icon"> mdi-export </v-icon>
-            <span class="open-label">Export Object Detection Models</span>
-          </v-btn>
         </v-col>
       </v-row>
       <v-row>
@@ -296,13 +286,12 @@ const openExportPrompt = () => {
             <v-card color="primary" dark>
               <v-card-title>Delete Object Detection Model</v-card-title>
               <v-card-text>
-                Are you sure you want to delete the model {{ confirmDeleteDialog.model.name }}?
+                Are you sure you want to delete the model {{ confirmDeleteDialog.model.UID }}?
+                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
+                  <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
+                  <v-btn color="error" @click="deleteModel(confirmDeleteDialog.model.UID)">Delete</v-btn>
+                </v-row>
               </v-card-text>
-              <v-card-actions>
-                <v-spacer />
-                <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
-                <v-btn text color="error" @click="deleteModel(confirmDeleteDialog.model.UID)">Delete</v-btn>
-              </v-card-actions>
             </v-card>
           </v-dialog>
           <v-dialog v-model="showRenameDialog.show" width="600">
@@ -313,14 +302,13 @@ const openExportPrompt = () => {
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-text-field v-model="showRenameDialog.newName" label="New Name" />
                 </v-row>
+                <v-row>
+                  <v-btn text @click="showRenameDialog.show = false">Cancel</v-btn>
+                  <v-btn text color="primary" @click="renameModel(showRenameDialog.model.UID, showRenameDialog.newName)"
+                    >Rename</v-btn
+                  >
+                </v-row>
               </v-card-text>
-              <v-card-actions>
-                <v-spacer />
-                <v-btn text @click="showRenameDialog.show = false">Cancel</v-btn>
-                <v-btn text color="primary" @click="renameModel(showRenameDialog.model.UID, showRenameDialog.newName)"
-                  >Rename</v-btn
-                >
-              </v-card-actions>
             </v-card>
           </v-dialog>
         </v-col>

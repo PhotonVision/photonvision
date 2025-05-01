@@ -64,11 +64,11 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
-                        Path.of(modelsDirectory.getAbsolutePath(), "NAMEHERE.rknn"),
+                        Path.of(modelsDirectory.getAbsolutePath(), "algaeV1-640-640-yolov8n.rknn"),
                         "foo",
-                        new LinkedList<String>(),
-                        0,
-                        0,
+                        new LinkedList<String>(List.of("Algae")),
+                        640,
+                        480,
                         Family.RKNN,
                         Version.YOLOV8));
 
