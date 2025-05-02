@@ -829,7 +829,6 @@ public class RequestHandler {
                     JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
 
             Path modelPath = Path.of(request.modelPath);
-            String newName = request.newName;
 
             if (modelPath == null) {
                 ctx.status(400);
@@ -845,7 +844,7 @@ public class RequestHandler {
                 return;
             }
 
-            if (newName == null || newName.isEmpty()) {
+            if (request.newName == null || request.newName.isEmpty()) {
                 ctx.status(400);
                 ctx.result("The provided new name was malformed");
                 logger.error("The provided new name was malformed");
@@ -855,7 +854,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .getNeuralNetworkProperties()
-                    .renameModel(modelPath, newName)) {
+                    .renameModel(modelPath, request.newName)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
