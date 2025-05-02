@@ -473,21 +473,21 @@ public class RequestHandler {
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
-        String cameraUniqueName;
-
         try {
             CommonCameraUniqueName request =
                     kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
-            cameraUniqueName = request.cameraUniqueName;
 
             var calData =
-                    VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
+                    VisionSourceManager.getInstance()
+                            .vmm
+                            .getModule(request.cameraUniqueName)
+                            .endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
                 logger.error(
                         "The calibration process failed. Calibration data for module at cameraUniqueName ("
-                                + cameraUniqueName
+                                + request.cameraUniqueName
                                 + ") was null");
                 return;
             }
@@ -516,15 +516,13 @@ public class RequestHandler {
         try {
             DataCalibrationImportRequest request =
                     kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
-            String cameraUniqueName = request.cameraUniqueName;
-            CameraCalibrationCoefficients coeffs = request.calibration;
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
                             DataChangeDestination.DCD_ACTIVEMODULE,
                             "calibrationUploaded",
-                            coeffs,
-                            cameraUniqueName,
+                            request.calibration,
+                            request.cameraUniqueName,
                             null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
@@ -621,13 +619,13 @@ public class RequestHandler {
             CameraNicknameChangeRequest request =
                     kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
 
-            String name = request.name();
-            String cameraUniqueName = request.cameraUniqueName();
-
-            VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).setCameraNickname(name);
+            VisionSourceManager.getInstance()
+                    .vmm
+                    .getModule(request.cameraUniqueName)
+                    .setCameraNickname(request.name);
             ctx.status(200);
-            ctx.result("Successfully changed the camera name to: " + name);
-            logger.info("Successfully changed the camera name to: " + name);
+            ctx.result("Successfully changed the camera name to: " + request.name);
+            logger.info("Successfully changed the camera name to: " + request.name);
         } catch (JsonProcessingException e) {
             ctx.status(400).result("Invalid JSON format");
             logger.error("Failed to process camera nickname change request", e);
@@ -646,7 +644,7 @@ public class RequestHandler {
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
-        var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
+        Integer observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
         CameraCalibrationCoefficients calList =
                 VisionSourceManager.getInstance()
@@ -880,16 +878,18 @@ public class RequestHandler {
         try {
             CommonCameraUniqueName request =
                     kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
-            String name = request.cameraUniqueName;
 
-            logger.warn("Deleting camera name " + name);
+            logger.warn("Deleting camera name " + request.cameraUniqueName);
 
-            var cameraDir = ConfigManager.getInstance().getCalibrationImageSavePath(name).toFile();
+            var cameraDir =
+                    ConfigManager.getInstance()
+                            .getCalibrationImageSavePath(request.cameraUniqueName)
+                            .toFile();
             if (cameraDir.exists()) {
                 FileUtils.deleteDirectory(cameraDir);
             }
 
-            VisionSourceManager.getInstance().deleteVisionSource(name);
+            VisionSourceManager.getInstance().deleteVisionSource(request.cameraUniqueName);
 
             ctx.status(200);
         } catch (IOException e) {
@@ -905,9 +905,9 @@ public class RequestHandler {
         try {
             CommonCameraUniqueName request =
                     kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
-            String cameraUniqueName = request.cameraUniqueName;
 
-            if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(cameraUniqueName)) {
+            if (VisionSourceManager.getInstance()
+                    .reactivateDisabledCameraConfig(request.cameraUniqueName)) {
                 ctx.status(200);
             } else {
                 ctx.status(403);
@@ -928,22 +928,21 @@ public class RequestHandler {
         try {
             AssignUnmatchedCamera request =
                     kObjectMapper.readValue(ctx.body(), AssignUnmatchedCamera.class);
-            PVCameraInfo camera = request.cameraInfo;
 
-            if (camera == null) {
+            if (request.cameraInfo == null) {
                 ctx.status(400);
                 ctx.result("cameraInfo is required");
                 logger.error("cameraInfo is missing in the request");
                 return;
             }
 
-            if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
+            if (VisionSourceManager.getInstance().assignUnmatchedCamera(request.cameraInfo)) {
                 ctx.status(200);
             } else {
                 ctx.status(404);
             }
 
-            ctx.result("Successfully assigned camera: " + camera);
+            ctx.result("Successfully assigned camera: " + request.cameraInfo);
         } catch (IOException e) {
             ctx.status(401);
             logger.error("Failed to process assign unmatched camera request", e);
