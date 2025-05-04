@@ -47,7 +47,7 @@ const localValue = computed({
     <v-col :cols="12 - sliderCols" class="pl-0 d-flex align-center">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col :cols="sliderCols - 1">
+    <v-col :cols="sliderCols - 1" class="pl-0">
       <v-slider
         v-model="localValue"
         class="align-center"
