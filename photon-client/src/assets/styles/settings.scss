@@ -1,6 +1,4 @@
-@forward 'vuetify/settings' with (
+@forward "vuetify/settings" with (
   $button-colored-disabled: false,
-  $button-disabled-opacity: 1,
-  $button-icon-font-size: 2rem,
-  $button-height: 90px
+  $button-disabled-opacity: 0.4
 );

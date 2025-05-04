@@ -66,8 +66,8 @@ const processingMode = computed<number>({
 </template>
 
 <style scoped>
-.v-btn-toggle.fill > .v-btn {
-  width: 50%;
+.v-btn--disabled {
+  background-color: #191919 !important; 
 }
 
 th {

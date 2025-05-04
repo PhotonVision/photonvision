@@ -103,6 +103,10 @@ if (!is_demo) {
   padding: 0 !important;
 }
 
+.v-overlay__scrim {
+  background-color: #202020;
+}
+
 #title {
   color: #ffd843;
 }

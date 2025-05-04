@@ -53,9 +53,9 @@ const needsCamerasConfigured = computed<boolean>(() => {
         :class="{ cameraicon: needsCamerasConfigured && useRoute().path !== '/cameraConfigs' }"
       >
         <template #prepend>
-          <v-icon :class="{ 'red--text': needsCamerasConfigured }">mdi-swap-horizontal-bold</v-icon>
+          <v-icon :class="{ 'text-red': needsCamerasConfigured }">mdi-swap-horizontal-bold</v-icon>
         </template>
-        <v-list-item-title :class="{ 'red--text': needsCamerasConfigured }">Camera Matching</v-list-item-title>
+        <v-list-item-title :class="{ 'text-red': needsCamerasConfigured }">Camera Matching</v-list-item-title>
       </v-list-item>
       <v-list-item link to="/docs" prepend-icon="mdi-bookshelf">
         <v-list-item-title>Documentation</v-list-item-title>

@@ -45,15 +45,11 @@ const items = computed<SelectItem[]>(() => {
     </v-col>
     <v-col :cols="selectCols" class="d-flex align-center pr-0">
       <v-select
-        glow
         v-model="value"
         :items="items"
         item-title="name"
         item-value="value"
         item-props.disabled="disabled"
-        color="accent"
-        item-color="secondary"
-        icon-color="accent"
         :disabled="disabled"
         hide-details="auto"
         variant="underlined"

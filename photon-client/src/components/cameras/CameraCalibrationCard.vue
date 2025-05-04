@@ -439,7 +439,11 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </v-banner>
       </v-card-text>
       <v-card-text v-if="isCalibrating" class="d-flex justify-center align-center pa-6 pt-0">
-        <v-chip label :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'gray'">
+        <v-chip
+          variant="flat"
+          label
+          :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'grey-darken-2'"
+        >
           Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
           {{ useStateStore().calibrationData.minimumImageCount }}
         </v-chip>
@@ -462,7 +466,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             size="small"
             block
             :color="useStateStore().calibrationData.hasEnoughImages ? 'accent' : 'error'"
-            :class="useStateStore().calibrationData.hasEnoughImages ? 'black--text' : 'white---text'"
             :disabled="!isCalibrating || !settingsValid"
             @click="endCalibration"
           >

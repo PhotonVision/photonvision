@@ -68,9 +68,3 @@ const handleKeydown = ({ key }) => {
   margin-top: 0px;
 }
 </style>
-<style>
-.light-error .error--text {
-  color: red !important;
-  caret-color: red !important;
-}
-</style>
