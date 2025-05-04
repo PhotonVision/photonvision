@@ -57,6 +57,7 @@ const handleKeydown = ({ key }) => {
         :rules="rules"
         hide-details="auto"
         class="light-error"
+        variant="underlined"
         @keydown="handleKeydown"
       />
     </v-col>

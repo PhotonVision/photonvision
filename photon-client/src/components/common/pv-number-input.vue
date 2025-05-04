@@ -40,6 +40,7 @@ const localValue = computed({
         single-line
         color="accent"
         type="number"
+        variant="underlined"
         style="width: 70px"
         :step="step"
         :disabled="disabled"

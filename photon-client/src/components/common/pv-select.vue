@@ -54,6 +54,7 @@ const items = computed<SelectItem[]>(() => {
         item-color="secondary"
         :disabled="disabled"
         hide-details="auto"
+        variant="underlined"
         density="compact"
       />
     </v-col>

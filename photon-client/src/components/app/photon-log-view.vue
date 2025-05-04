@@ -119,6 +119,7 @@ document.addEventListener("keydown", (e) => {
               prepend-icon="mdi-magnify"
               color="accent"
               label="Search"
+              variant="underlined"
             />
           </v-col>
           <v-col cols="12" md="2" style="display: flex; align-items: center">

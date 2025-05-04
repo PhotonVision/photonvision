@@ -75,6 +75,7 @@ const localValue = computed({
         hide-details
         single-line
         type="number"
+        variant="underlined"
         style="width: 100%"
         :step="step"
         :hide-spin-buttons="true"

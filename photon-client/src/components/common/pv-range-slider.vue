@@ -80,6 +80,7 @@ const checkNumberRange = (v: string): boolean => {
             density="compact"
             hide-details
             single-line
+            variant="underlined"
             :max="max"
             :min="min"
             :step="step"
@@ -97,6 +98,7 @@ const checkNumberRange = (v: string): boolean => {
             density="compact"
             hide-details
             single-line
+            variant="underlined"
             :max="max"
             :min="min"
             :step="step"
