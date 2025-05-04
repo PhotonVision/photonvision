@@ -76,7 +76,7 @@ document.addEventListener("keydown", (e) => {
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
     <v-card class="dialog-container pa-6" color="primary" flat>
       <!-- Logs header -->
-      <v-row class="no-gutters pb-3">
+      <v-row class="pb-3">
         <v-col cols="4">
           <v-card-title class="pa-0">Program Logs</v-card-title>
         </v-col>
@@ -109,7 +109,7 @@ document.addEventListener("keydown", (e) => {
 
       <div class="dialog-data">
         <!-- Log view options -->
-        <v-row class="pt-4 pt-md-0 no-gutters">
+        <v-row class="pt-4 pt-md-0">
           <v-col cols="12" md="5" class="align-self-center">
             <v-text-field
               v-model="searchQuery"
@@ -129,11 +129,12 @@ document.addEventListener("keydown", (e) => {
             </v-btn>
           </v-col>
           <v-col cols="12" md="5" class="pr-3">
-            <v-row class="no-gutters">
+            <v-row>
               <v-col v-for="level in [0, 1, 2, 3]" :key="level">
-                <v-row align="center">
-                  <v-col class="d-flex justify-center">
-                    <v-switch v-model="selectedLogLevels[level]" color="#ffd843" :label="getLogLevelFromIndex(level)"
+                <v-row>
+                  <v-col class="d-flex align-center"
+                    >{{ getLogLevelFromIndex(level)
+                    }}<v-switch class="pl-2" hide-details v-model="selectedLogLevels[level]" color="#ffd843"
                   /></v-col>
                 </v-row>
               </v-col>
