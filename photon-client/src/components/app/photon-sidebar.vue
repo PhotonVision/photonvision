@@ -116,6 +116,10 @@ const needsCamerasConfigured = computed<boolean>(() => {
 </template>
 
 <style scoped>
+.v-list-item-title {
+  font-size: 1rem !important;
+}
+
 .logo {
   width: 100%;
   height: 70px;
