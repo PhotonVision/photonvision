@@ -32,6 +32,9 @@ const LightTheme: ThemeDefinition = {
     accent: "#FFD843",
     "surface-light": "#FFD843",
     ...commonColors
+  },
+  variables: {
+    "high-emphasis-opacity": 1
   }
 };
 
