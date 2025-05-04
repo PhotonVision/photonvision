@@ -34,6 +34,7 @@ const LightTheme: ThemeDefinition = {
     ...commonColors
   },
   variables: {
+    "medium-emphasis-opacity": 1,
     "high-emphasis-opacity": 1
   }
 };
