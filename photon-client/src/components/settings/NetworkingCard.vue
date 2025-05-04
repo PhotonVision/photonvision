@@ -157,7 +157,7 @@ watchEffect(() => {
         <v-banner
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           style="margin: 10px 0"
           icon="mdi-alert-circle-outline"
@@ -233,7 +233,7 @@ watchEffect(() => {
             !useSettingsStore().network.networkingDisabled
           "
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -248,7 +248,7 @@ watchEffect(() => {
         <v-banner
           v-if="tempSettingsStruct.runNTServer"
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -265,7 +265,7 @@ watchEffect(() => {
         <v-banner
           v-if="tempSettingsStruct.shouldPublishProto"
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
