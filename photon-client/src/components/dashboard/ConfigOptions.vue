@@ -68,7 +68,7 @@ const selectedTabs = ref([0, 0, 0, 0]);
 const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
 
 const getTabGroups = (): ConfigOption[][] => {
-  if (smAndDown.value || useCameraSettingsStore().isDriverMode || (mdAndDown.value && !useStateStore().sidebarFolded)) {
+  if (smAndDown.value || useCameraSettingsStore().isDriverMode) {
     return [Object.values(allTabs)];
   } else if (mdAndDown.value || !useStateStore().sidebarFolded) {
     return [
