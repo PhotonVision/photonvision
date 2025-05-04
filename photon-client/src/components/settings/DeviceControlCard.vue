@@ -140,10 +140,10 @@ enum ImportType {
   ApriltagFieldLayout
 }
 const showImportDialog = ref(false);
-const importType = ref<ImportType | number>(-1);
+const importType = ref<ImportType | undefined>(undefined);
 const importFile = ref<File | null>(null);
 const handleSettingsImport = () => {
-  if (importType.value === -1 || importFile.value === null) return;
+  if (importType.value === undefined || importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
@@ -198,7 +198,7 @@ const handleSettingsImport = () => {
     });
 
   showImportDialog.value = false;
-  importType.value = -1;
+  importType.value = undefined;
   importFile.value = null;
 };
 
@@ -273,7 +273,7 @@ const nukePhotonConfigDirectory = () => {
             width="600"
             @update:modelValue="
               () => {
-                importType = -1;
+                importType = undefined;
                 importFile = null;
               }
             "
@@ -301,8 +301,8 @@ const nukePhotonConfigDirectory = () => {
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input
                     v-model="importFile"
-                    :disabled="importType === -1"
-                    :error-messages="importType === -1 ? 'Settings type not selected' : ''"
+                    :disabled="importType === undefined"
+                    :error-messages="importType === undefined ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
                 </v-row>

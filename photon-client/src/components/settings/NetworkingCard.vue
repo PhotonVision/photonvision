@@ -124,9 +124,12 @@ const saveGeneralSettings = () => {
     });
 };
 
-const currentNetworkInterfaceIndex = computed<number>({
-  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
-  set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+const currentNetworkInterfaceIndex = computed<number | undefined>({
+  get: () => {
+    const index = useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || "");
+    return (index === -1) ? undefined : index;
+  },
+  set: (v) => v && (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });
 
 watchEffect(() => {

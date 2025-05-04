@@ -7,7 +7,7 @@ export interface SelectItem {
   value: string | number;
   disabled?: boolean;
 }
-const value = defineModel<string | number>({ required: true });
+const value = defineModel<string | number | undefined>({ required: true });
 
 const props = withDefaults(
   defineProps<{
