@@ -1,4 +1,4 @@
-import "vuetify/dist/vuetify.min.css";
+import "vuetify/styles";
 import "@mdi/font/css/materialdesignicons.css";
 import type { ThemeDefinition } from "vuetify/lib/composables/theme";
 import { createVuetify } from "vuetify";

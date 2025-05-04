@@ -71,7 +71,7 @@ if (!is_demo) {
 </template>
 
 <style lang="scss">
-@use "./settings";
+@use "@/assets/styles/settings";
 @use "@/assets/styles/variables";
 
 @media #{map-get(settings.$display-breakpoints, 'md-and-down')} {
