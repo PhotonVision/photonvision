@@ -111,6 +111,6 @@ if (!is_demo) {
   color: #ffd843;
 }
 div.v-layout {
-  overflow: unset!important;
+  overflow: unset !important;
 }
 </style>
