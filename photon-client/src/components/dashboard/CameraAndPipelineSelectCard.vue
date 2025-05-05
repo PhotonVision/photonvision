@@ -241,7 +241,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 </script>
 
 <template>
-  <v-card color="primary" class="fill-height">
+  <v-card color="primary">
     <v-row style="padding: 20px 12px 0 30px">
       <v-col cols="10" class="pa-0">
         <pv-select

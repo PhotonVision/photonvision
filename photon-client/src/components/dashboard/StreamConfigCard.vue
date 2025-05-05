@@ -20,7 +20,7 @@ const processingMode = computed<number>({
     :disabled="useCameraSettingsStore().isDriverMode || useStateStore().colorPickingMode"
     class="mt-3"
     color="primary"
-    style="height: 100%; display: flex; flex-direction: column"
+    style="flex-grow: 1; display: flex; flex-direction: column"
   >
     <v-row class="pa-3 pb-0 align-center">
       <v-col class="pa-4">
