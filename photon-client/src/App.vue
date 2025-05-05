@@ -110,4 +110,7 @@ if (!is_demo) {
 #title {
   color: #ffd843;
 }
+div.v-layout {
+  overflow: unset!important;
+}
 </style>
