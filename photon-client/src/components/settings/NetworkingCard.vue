@@ -126,8 +126,10 @@ const saveGeneralSettings = () => {
 
 const currentNetworkInterfaceIndex = computed<number | undefined>({
   get: () => {
-    const index = useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || "");
-    return (index === -1) ? undefined : index;
+    const index = useSettingsStore().networkInterfaceNames.indexOf(
+      useSettingsStore().network.networkManagerIface || ""
+    );
+    return index === -1 ? undefined : index;
   },
   set: (v) => v && (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });

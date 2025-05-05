@@ -10,15 +10,13 @@ export default defineConfig({
     vue(),
     vuetify({
       styles: {
-        configFile: 'src/assets/styles/settings.scss',
-      },
-    }),
+        configFile: "src/assets/styles/settings.scss"
+      }
+    })
   ],
   css: {
     preprocessorOptions: {
-      sass: {
-
-      }
+      sass: {}
     }
   },
   resolve: {

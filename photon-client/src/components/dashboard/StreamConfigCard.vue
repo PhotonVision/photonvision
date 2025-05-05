@@ -67,7 +67,7 @@ const processingMode = computed<number>({
 
 <style scoped>
 .v-btn--disabled {
-  background-color: #191919 !important; 
+  background-color: #191919 !important;
 }
 
 th {

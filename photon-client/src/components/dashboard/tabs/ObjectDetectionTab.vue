@@ -39,7 +39,7 @@ const supportedModels = computed(() => {
 
 const selectedModel = computed({
   get: () => {
-    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model)
+    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
     return index === -1 ? undefined : index;
   },
   set: (v) => {

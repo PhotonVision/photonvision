@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 const value = defineModel<number>({
   required: true

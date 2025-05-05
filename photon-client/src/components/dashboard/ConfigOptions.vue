@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, onBeforeUpdate, ref } from "vue";
+import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -133,7 +133,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
     .filter((it) => it.length); // Remove empty tab groups
 });
 
-const onBeforeTabUpdate = ()=>{
+const onBeforeTabUpdate = () => {
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
     selectedTabs.value[0] = 0;
