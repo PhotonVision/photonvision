@@ -66,7 +66,7 @@ const checkNumberRange = (v: string): boolean => {
         :min="min"
         :disabled="disabled"
         hide-details
-        class="align-center"
+        class="align-center ml-0 mr-0"
         :color="inverted ? 'rgba(255, 255, 255, 0.2)' : 'accent'"
         :track-color="inverted ? 'accent' : undefined"
         thumb-color="accent"
