@@ -28,6 +28,7 @@ withDefaults(
       <v-radio-group v-model="value" row:mandatory="true" hide-details="auto">
         <v-radio
           v-for="(radioName, index) in list"
+          :key="index"
           :value="index"
           color="#ffd843"
           :label="radioName"
