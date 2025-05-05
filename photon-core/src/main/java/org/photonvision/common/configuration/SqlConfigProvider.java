@@ -503,7 +503,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 addFile(
                         statement3,
                         GlobalKeys.NEURAL_NETWORK_PROPERTIES,
-                        JacksonUtils.serializeToString(config.getNeuralNetworkProperties()));
+                        JacksonUtils.serializeToString(config.neuralNetworkPropertyManager()));
                 statement3.executeUpdate();
                 statement3.close();
             }

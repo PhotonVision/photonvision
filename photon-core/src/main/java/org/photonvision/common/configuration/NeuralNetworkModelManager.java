@@ -260,7 +260,7 @@ public class NeuralNetworkModelManager {
                                     loadModel(
                                             ConfigManager.getInstance()
                                                     .getConfig()
-                                                    .getNeuralNetworkProperties()
+                                                    .neuralNetworkPropertyManager()
                                                     .getModel(path)));
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
@@ -329,6 +329,6 @@ public class NeuralNetworkModelManager {
                 .getConfig()
                 .setNeuralNetworkProperties(
                         getShippedProperties(modelsDirectory)
-                                .sum(ConfigManager.getInstance().getConfig().getNeuralNetworkProperties()));
+                                .sum(ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
     }
 }

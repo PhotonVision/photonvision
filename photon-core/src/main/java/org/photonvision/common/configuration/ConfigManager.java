@@ -228,7 +228,7 @@ public class ConfigManager {
         try {
             ZipUtil.pack(getModelsDirectory(), out);
             JacksonUtils.serialize(
-                    tempProperties.toPath(), this.getConfig().getNeuralNetworkProperties());
+                    tempProperties.toPath(), this.getConfig().neuralNetworkPropertyManager());
             ZipUtil.pack(tempProperties, out);
         } catch (Exception e) {
             e.printStackTrace();

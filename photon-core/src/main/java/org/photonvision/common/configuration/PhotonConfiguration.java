@@ -86,7 +86,7 @@ public class PhotonConfiguration {
         return atfl;
     }
 
-    public NeuralNetworkPropertyManager getNeuralNetworkProperties() {
+    public NeuralNetworkPropertyManager neuralNetworkPropertyManager() {
         return neuralNetworkProperties;
     }
 
