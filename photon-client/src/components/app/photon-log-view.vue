@@ -110,7 +110,7 @@ document.addEventListener("keydown", (e) => {
       <div class="dialog-data">
         <!-- Log view options -->
         <v-row class="pt-4 pt-md-0">
-          <v-col cols="12" md="5" class="align-self-center">
+          <v-col cols="12" md="7" style="display: flex; align-items: center;">
             <v-text-field
               v-model="searchQuery"
               density="compact"
@@ -121,10 +121,8 @@ document.addEventListener("keydown", (e) => {
               label="Search"
               variant="underlined"
             />
-          </v-col>
-          <v-col cols="12" md="2" style="display: flex; align-items: center">
-            <input v-model="timeInput" type="time" step="1" class="text-white pl-0 pl-md-8" />
-            <v-btn icon class="ml-3" @click="timeInput = undefined" variant="flat">
+            <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
+            <v-btn icon @click="timeInput = undefined" variant="flat">
               <v-icon>mdi-close-circle-outline</v-icon>
             </v-btn>
           </v-col>
