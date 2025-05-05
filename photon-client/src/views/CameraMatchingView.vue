@@ -591,6 +591,10 @@ const openExportSettingsPrompt = () => {
 </template>
 
 <style scoped>
+.v-card-title {
+  text-wrap-mode: wrap !important;
+}
+
 .v-table {
   background-color: #006492 !important;
 }
