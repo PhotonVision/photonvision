@@ -557,7 +557,8 @@ jobs:
           rm: true
           files: |
             **/*.xz
-            **/*.jar
+            **/*linux*.jar
+            **/*win*.jar
             **/photonlib*.json
             **/photonlib*.zip
         if: github.event_name == 'push'
