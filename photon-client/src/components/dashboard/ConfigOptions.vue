@@ -133,12 +133,12 @@ const tabGroups = computed<ConfigOption[][]>(() => {
     .filter((it) => it.length); // Remove empty tab groups
 });
 
-onBeforeUpdate(() => {
+const onBeforeTabUpdate = ()=>{
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
     selectedTabs.value[0] = 0;
   }
-});
+};
 </script>
 
 <template>
@@ -157,6 +157,7 @@ onBeforeUpdate(() => {
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
+        @vue:before-update="onBeforeTabUpdate"
       >
         <v-card color="primary" height="100%" class="pr-4 pl-4">
           <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="primary" height="48" slider-color="accent">
