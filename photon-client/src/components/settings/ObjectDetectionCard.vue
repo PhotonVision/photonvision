@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, inject } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
@@ -7,6 +7,28 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 const showImportDialog = ref(false);
 const importRKNNFile = ref<File | null>(null);
 const importLabelsFile = ref<File | null>(null);
+
+const host = inject<string>("backendHost");
+
+const areValidFileNames = (weights: string | null, labels: string | null) => {
+  const weightsRegex = /^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$/;
+  const labelsRegex = /^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$/;
+
+  if (weights && labels) {
+    const weightsMatch = weights.match(weightsRegex);
+    const labelsMatch = labels.match(labelsRegex);
+
+    if (weightsMatch && labelsMatch) {
+      return (
+        weightsMatch[1] === labelsMatch[1] &&
+        weightsMatch[2] === labelsMatch[2] &&
+        weightsMatch[3] === labelsMatch[3] &&
+        weightsMatch[4] === labelsMatch[4]
+      );
+    }
+  }
+  return false;
+};
 
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
@@ -87,13 +109,11 @@ const supportedModels = computed(() => {
             <v-card color="primary" dark>
               <v-card-title>Import New Object Detection Model</v-card-title>
               <v-card-text>
-                Upload a new object detection model to this device that can be used in a pipeline. Naming convention
-                should be <code>name-verticalResolution-horizontalResolution-yolovXXX</code>. The
-                <code>name</code> should only include alphanumeric characters, periods, and underscores. Additionally,
-                the labels file ought to have the same name as the RKNN file, with <code>-labels</code> appended to the
-                end. For example, if the RKNN file is named <code>note-640-640-yolov5s.rknn</code>, the labels file
-                should be named <code>note-640-640-yolov5s-labels.txt</code>. Note that ONLY 640x640 YOLOv5, YOLOv8, and
-                YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are currently supported!
+                Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
+                640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are
+                currently supported! See [the documentation]({{
+                  host
+                }}/docs/objectDetection/about-object-detection.html) for more details.
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input v-model="importRKNNFile" label="RKNN File" accept=".rknn" />
                 </v-row>
@@ -107,7 +127,11 @@ const supportedModels = computed(() => {
                 >
                   <v-btn
                     color="secondary"
-                    :disabled="importRKNNFile === null || importLabelsFile === null"
+                    :disabled="
+                      importRKNNFile === null ||
+                      importLabelsFile === null ||
+                      !areValidFileNames(importRKNNFile.name, importLabelsFile.name)
+                    "
                     @click="handleImport"
                   >
                     <v-icon start class="open-icon"> mdi-import </v-icon>
