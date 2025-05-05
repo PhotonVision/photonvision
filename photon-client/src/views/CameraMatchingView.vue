@@ -11,6 +11,8 @@ import {
   type UiCameraConfiguration
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
+import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";

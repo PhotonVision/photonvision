@@ -2,6 +2,7 @@
 import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import axios from "axios";
 
 const restartProgram = () => {

@@ -2,6 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ObjectDetectionPipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
+import PvSelect from "@/components/common/pv-select.vue";
+import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";

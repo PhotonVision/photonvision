@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
