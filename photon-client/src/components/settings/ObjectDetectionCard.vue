@@ -11,8 +11,8 @@ const importLabelsFile = ref<File | null>(null);
 const host = inject<string>("backendHost");
 
 const areValidFileNames = (weights: string | null, labels: string | null) => {
-  const weightsRegex = /^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$/;
-  const labelsRegex = /^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$/;
+  const weightsRegex = /^([a-zA-Z0-9._]+)-(\d+)-(\d+)-(yolov(?:5|8|11)[nsmlx]*)\.rknn$/;
+  const labelsRegex = /^([a-zA-Z0-9._]+)-(\d+)-(\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\.txt$/;
 
   if (weights && labels) {
     const weightsMatch = weights.match(weightsRegex);
