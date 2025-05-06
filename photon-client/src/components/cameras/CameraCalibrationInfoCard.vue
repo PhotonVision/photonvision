@@ -126,15 +126,23 @@ const calibrationImageURL = (index: number) =>
         />
       </v-col>
     </div>
-    <v-card-title class="pt-0 pb-3"
+    <v-card-title class="pl-6 pt-0 pb-0"
       >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
     >
     <v-card-text v-if="!currentCalibrationCoeffs">
-      <v-banner rounded color="secondary" text-color="white" class="mt-3" icon="mdi-alert-circle-outline">
+      <v-banner
+        rounded
+        bg-color="secondary"
+        color="secondary"
+        text-color="white"
+        class="pt-3 pb-3 mt-3"
+        density="compact"
+        icon="mdi-alert-circle-outline"
+      >
         The selected video format has not been calibrated.
       </v-banner>
     </v-card-text>
-    <v-card-text>
+    <v-card-text class="pt-0">
       <v-table density="compact" style="width: 100%">
         <template #default>
           <thead>
