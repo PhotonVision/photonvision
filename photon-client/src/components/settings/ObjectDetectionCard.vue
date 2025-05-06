@@ -120,11 +120,7 @@ const supportedModels = computed(() => {
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input v-model="importLabelsFile" label="Labels File" accept=".txt" />
                 </v-row>
-                <v-row
-                  class="mt-12 ml-8 mr-8 mb-1"
-                  style="display: flex; align-items: center; justify-content: center"
-                  align="center"
-                >
+                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
                   <v-btn
                     color="secondary"
                     :disabled="

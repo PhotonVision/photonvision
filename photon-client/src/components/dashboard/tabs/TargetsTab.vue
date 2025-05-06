@@ -34,8 +34,8 @@ const resetCurrentBuffer = () => {
 
 <template>
   <div>
-    <v-row align="start" class="pb-4">
-      <v-table density="compact" class="pt-2 pb-12">
+    <v-row class="pb-4">
+      <v-table density="compact" class="pt-2 pb-12 pl-3 pr-3">
         <template #default>
           <thead>
             <tr>
@@ -129,6 +129,7 @@ const resetCurrentBuffer = () => {
       </v-table>
     </v-row>
     <v-container
+    class="pl-3 pr-3"
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&

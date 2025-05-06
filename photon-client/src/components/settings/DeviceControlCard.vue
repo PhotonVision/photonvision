@@ -307,11 +307,7 @@ const nukePhotonConfigDirectory = () => {
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
                 </v-row>
-                <v-row
-                  class="mt-12 ml-8 mr-8 mb-1"
-                  style="display: flex; align-items: center; justify-content: center"
-                  align="center"
-                >
+                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
                   <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
