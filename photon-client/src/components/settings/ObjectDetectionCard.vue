@@ -16,6 +16,28 @@ const importHeight = ref<number | null>(null);
 const importWidth = ref<number | null>(null);
 const importVersion = ref<String | null>(null);
 
+const host = inject<string>("backendHost");
+
+const areValidFileNames = (weights: string | null, labels: string | null) => {
+  const weightsRegex = /^([a-zA-Z0-9._]+)-(\d+)-(\d+)-(yolov(?:5|8|11)[nsmlx]*)\.rknn$/;
+  const labelsRegex = /^([a-zA-Z0-9._]+)-(\d+)-(\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\.txt$/;
+
+  if (weights && labels) {
+    const weightsMatch = weights.match(weightsRegex);
+    const labelsMatch = labels.match(labelsRegex);
+
+    if (weightsMatch && labelsMatch) {
+      return (
+        weightsMatch[1] === labelsMatch[1] &&
+        weightsMatch[2] === labelsMatch[2] &&
+        weightsMatch[3] === labelsMatch[3] &&
+        weightsMatch[4] === labelsMatch[4]
+      );
+    }
+  }
+  return false;
+};
+
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
   if (importModelFile.value === null) return;
@@ -160,7 +182,7 @@ const openExportPrompt = () => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" style="background-color: #006492">
     <v-card-title class="pa-6">Object Detection</v-card-title>
     <div class="pa-6 pt-0">
       <v-row>
@@ -172,7 +194,7 @@ const openExportPrompt = () => {
           <v-dialog
             v-model="showImportDialog"
             width="600"
-            @input="
+            @update:modelValue="
               () => {
                 importModelFile = null;
                 importLabels = null;
@@ -208,11 +230,7 @@ const openExportPrompt = () => {
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-select v-model="importVersion" label="Model Version" :items="['YOLOv5', 'YOLOv8', 'YOLO11']" />
                 </v-row>
-                <v-row
-                  class="mt-12 ml-8 mr-8 mb-1"
-                  style="display: flex; align-items: center; justify-content: center"
-                  align="center"
-                >
+                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
                   <v-btn
                     color="secondary"
                     :disabled="
@@ -224,7 +242,7 @@ const openExportPrompt = () => {
                     "
                     @click="handleImport()"
                   >
-                    <v-icon left class="open-icon"> mdi-import </v-icon>
+                    <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
                   </v-btn>
                 </v-row>
@@ -248,7 +266,7 @@ const openExportPrompt = () => {
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-simple-table fixed-header height="100%" dense dark>
+          <v-table fixed-header height="100%" density="compact" dark>
             <thead style="font-size: 1.25rem">
               <tr>
                 <th class="text-left">Available Models</th>
@@ -329,7 +347,7 @@ const openExportPrompt = () => {
     display: none;
   }
 }
-.v-data-table {
+.v-table {
   width: 100%;
   height: 100%;
   text-align: center;
