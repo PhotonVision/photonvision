@@ -129,7 +129,6 @@ const resetCurrentBuffer = () => {
       </v-table>
     </v-row>
     <v-container
-    class="pl-3 pr-3"
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
@@ -137,6 +136,7 @@ const resetCurrentBuffer = () => {
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
+      class="pl-3 pr-3"
     >
       <v-row class="pb-4 text-white">
         <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px"

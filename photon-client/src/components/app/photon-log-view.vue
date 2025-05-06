@@ -122,14 +122,14 @@ document.addEventListener("keydown", (e) => {
               variant="underlined"
             />
             <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
-            <v-btn icon @click="timeInput = undefined" variant="flat">
+            <v-btn icon variant="flat" @click="timeInput = undefined">
               <v-icon>mdi-close-circle-outline</v-icon>
             </v-btn>
           </v-col>
-          <v-col class="pr-3" v-for="level in [0, 1, 2, 3]" :key="level">
+          <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
             <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
               {{ getLogLevelFromIndex(level)
-              }}<v-switch class="pl-2" hide-details v-model="selectedLogLevels[level]" color="#ffd843"></v-switch>
+              }}<v-switch v-model="selectedLogLevels[level]" class="pl-2" hide-details color="#ffd843"></v-switch>
             </div>
           </v-col>
         </v-row>
