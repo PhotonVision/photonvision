@@ -101,9 +101,8 @@ const downloadCalibBoard = () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-       
       const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
-       
+
       const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
