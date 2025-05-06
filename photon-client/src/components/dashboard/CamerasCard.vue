@@ -6,10 +6,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
-defineProps<{
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[];
-}>();
+const value = defineModel<number[]>();
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -43,20 +40,21 @@ const performanceRecommendation = computed<string>(() => {
 
 <template>
   <v-card color="primary" height="100%" class="d-flex flex-column" dark>
-    <v-card-title class="justify-space-between align-center pt-3 pb-3">
+    <v-card-title class="justify-space-between align-center pt-1 pb-1 d-flex">
       <span>Cameras</span>
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
-        :color="fpsTooLow ? 'error' : 'transparent'"
-        :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+        :color="fpsTooLow ? 'error' : ''"
         style="font-size: 1rem; padding: 0; margin: 0"
+        :variant="fpsTooLow ? 'tonal' : 'text'"
+        :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }"
       >
         <span class="pr-1"
           >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
         ><span>{{ performanceRecommendation }}</span>
       </v-chip>
-      <v-chip v-else label color="transparent" text-color="red" style="font-size: 1rem; padding: 0; margin: 0">
+      <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
         <span class="pr-1"> Camera not connected </span>
       </v-chip>
       <v-switch
@@ -69,7 +67,7 @@ const performanceRecommendation = computed<string>(() => {
     </v-card-title>
     <v-divider class="ml-3 mr-3" />
     <v-row class="stream-viewer-container pa-3 align-center">
-      <v-col v-if="value.includes(0)" class="stream-view">
+      <v-col v-if="value?.includes(0)" class="stream-view">
         <photon-camera-stream
           id="input-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
@@ -77,7 +75,7 @@ const performanceRecommendation = computed<string>(() => {
           style="width: 100%; height: auto"
         />
       </v-col>
-      <v-col v-if="value.includes(1)" class="stream-view">
+      <v-col v-if="value?.includes(1)" class="stream-view">
         <photon-camera-stream
           id="output-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"

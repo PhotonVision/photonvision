@@ -58,9 +58,9 @@ if (!is_demo) {
     <v-main>
       <v-container class="main-container" fluid fill-height>
         <v-layout>
-          <v-flex>
+          <v-container class="align-start pa-0 ma-0" fluid>
             <router-view />
-          </v-flex>
+          </v-container>
         </v-layout>
       </v-container>
     </v-main>
@@ -71,9 +71,10 @@ if (!is_demo) {
 </template>
 
 <style lang="scss">
-@import "vuetify/src/styles/settings/_variables";
+@use "@/assets/styles/settings";
+@use "@/assets/styles/variables";
 
-@media #{map-get($display-breakpoints, 'md-and-down')} {
+@media #{map-get(settings.$display-breakpoints, 'md-and-down')} {
   html {
     font-size: 14px !important;
   }
@@ -102,7 +103,14 @@ if (!is_demo) {
   padding: 0 !important;
 }
 
+.v-overlay__scrim {
+  background-color: #202020;
+}
+
 #title {
   color: #ffd843;
+}
+div.v-layout {
+  overflow: unset !important;
 }
 </style>
