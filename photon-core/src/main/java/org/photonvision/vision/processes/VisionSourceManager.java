@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -79,6 +80,9 @@ public class VisionSourceManager {
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
     protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
 
+    // Set of cameras that where a camera mismatch error was logged
+    protected final Set<String> warnedMismatchCameras = Set.of();
+
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
 
@@ -97,7 +101,8 @@ public class VisionSourceManager {
 
         final HashMap<String, CameraConfiguration> deserializedConfigs = new HashMap<>();
 
-        // 1. Verify all camera unique names are unique and paths/types are unique for paranoia. This
+        // 1. Verify all camera unique names are unique and paths/types are unique for
+        // paranoia. This
         // seems redundant, consider deleting
         for (var config : configs) {
             Predicate<PVCameraInfo> checkDuplicateCamera =
@@ -118,7 +123,8 @@ public class VisionSourceManager {
             }
         }
 
-        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care about if
+        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't
+        // care about if
         // the underlying device is currently connected or not.
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
@@ -311,14 +317,87 @@ public class VisionSourceManager {
                     .forEach(cameraInfos::add);
         }
 
-        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but i still want my
+        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but
+        // i still want my
         // UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
+        // from the listed physical camera infos, match them to the camera configs and
+        // check for mismatches
+        var allModulesCopy = new ArrayList<>(vmm.getModules());
+        var cameraInfosCopy = new ArrayList<>(cameraInfos);
+        cameraInfosCopy.stream()
+                .filter(cameraInfo -> !warnedMismatchCameras.contains(cameraInfo.toString()))
+                .forEach(
+                        cameraInfo -> {
+                            allModulesCopy.stream()
+                                    .filter(
+                                            module ->
+                                                    module
+                                                            .getCameraConfiguration()
+                                                            .matchedCameraInfo
+                                                            .uniquePath()
+                                                            .equals(cameraInfo.uniquePath()))
+                                    .forEach(
+                                            module -> {
+                                                if (!module.getCameraConfiguration().matchedCameraInfo.equals(cameraInfo)) {
+                                                    logger.error("Camera mismatch error!");
+                                                    logger.error(
+                                                            "Camera config mismatch for "
+                                                                    + module.getCameraConfiguration().nickname);
+                                                    logCameraInfoDiff(
+                                                            module.getCameraConfiguration().matchedCameraInfo, cameraInfo);
+                                                    warnedMismatchCameras.add(cameraInfo.toString());
+                                                }
+                                            });
+                        });
+
         return cameraInfos;
+    }
+
+    /** Log the differences between two PVCameraInfo objects. */
+    private static void logCameraInfoDiff(PVCameraInfo saved, PVCameraInfo current) {
+        String expected = "Expected: Name: " + saved.name();
+        String actual = "Actual: Name: " + current.name();
+        if (saved instanceof PVCameraInfo.PVCSICameraInfo savedCsi
+                && current instanceof PVCameraInfo.PVCSICameraInfo currentCsi) {
+            expected += " Base Name: " + savedCsi.baseName;
+            actual += " Base Name: " + currentCsi.baseName;
+        }
+
+        expected += " Type: " + saved.type().toString();
+        actual += " Type: " + current.type().toString();
+
+        if (saved instanceof PVCameraInfo.PVUsbCameraInfo savedUsb
+                && current instanceof PVCameraInfo.PVUsbCameraInfo currentUsb) {
+            expected +=
+                    " Device Number: "
+                            + savedUsb.dev
+                            + " Vendor ID: "
+                            + savedUsb.vendorId
+                            + " Product ID: "
+                            + savedUsb.productId;
+            actual +=
+                    " Device Number: "
+                            + currentUsb.dev
+                            + " Vendor ID: "
+                            + currentUsb.vendorId
+                            + " Product ID: "
+                            + currentUsb.productId;
+        }
+
+        expected += " Path: " + saved.path();
+        actual += " Path: " + current.path();
+        expected += " Unique Path: " + saved.uniquePath();
+        actual += " Unique Path: " + current.uniquePath();
+        expected += " Other Paths: " + Arrays.toString(saved.otherPaths());
+        actual += " Other Paths: " + Arrays.toString(current.otherPaths());
+
+        logger.error(expected);
+        logger.error(actual);
     }
 
     private static List<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices) {
@@ -372,7 +451,8 @@ public class VisionSourceManager {
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
         logger.debug("Creating VisionSource for " + configuration.toShortString());
 
-        // First, make sure that nickname is globally unique since we use the nickname in NetworkTables.
+        // First, make sure that nickname is globally unique since we use the nickname
+        // in NetworkTables.
         // "Just one more source of truth bro it'll real this time I promise"
         var currentNicknames = new ArrayList<String>();
         this.disabledCameraConfigs.values().stream()

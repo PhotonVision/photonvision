@@ -7,6 +7,7 @@ import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { camerasMatch, getMatchedDevice } from "@/lib/MatchingUtils";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -58,6 +59,18 @@ const arducamWarningShown = computed<boolean>(() => {
       )
   );
 });
+
+const cameraMismatchWarningShown = computed<boolean>(() => {
+  return Object.values(useCameraSettingsStore().cameras).some(
+    (camera) =>
+      camera.nickname !== "Placeholder Camera" &&
+      camera.isConnected &&
+      !camerasMatch(
+        getMatchedDevice(useStateStore().vsmState.allConnectedCameras, camera.matchedCameraInfo),
+        camera.matchedCameraInfo
+      )
+  );
+});
 </script>
 
 <template>
@@ -73,6 +86,21 @@ const arducamWarningShown = computed<boolean>(() => {
     >
       <span
         >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+      </span>
+    </v-banner>
+    <v-banner
+      v-if="cameraMismatchWarningShown"
+      v-model="cameraMismatchWarningShown"
+      rounded
+      color="error"
+      dark
+      class="mb-3"
+      icon="mdi-alert-circle-outline"
+    >
+      <span
+        >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
+        activated.
       </span>
     </v-banner>
     <v-row no-gutters align="center" justify="center">
