@@ -74,7 +74,6 @@ const interactiveCols = computed(() =>
   <div>
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
-      class="pt-2"
       label="Auto Exposure"
       :switch-cols="interactiveCols"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
