@@ -6,7 +6,11 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const showImportDialog = ref(false);
 const confirmDeleteDialog = ref({ show: false, model: { UID: "", name: "" } });
-const showRenameDialog = ref({ show: false, model: { UID: "", name: "" }, newName: "" });
+const showRenameDialog = ref({
+  show: false,
+  model: { UID: "", name: "" },
+  newName: ""
+});
 
 const address = inject<string>("backendHost");
 
@@ -14,29 +18,7 @@ const importModelFile = ref<File | null>(null);
 const importLabels = ref<String | null>(null);
 const importHeight = ref<number | null>(null);
 const importWidth = ref<number | null>(null);
-const importVersion = ref<String | null>(null);
-
-const host = inject<string>("backendHost");
-
-const areValidFileNames = (weights: string | null, labels: string | null) => {
-  const weightsRegex = /^([a-zA-Z0-9._]+)-(\d+)-(\d+)-(yolov(?:5|8|11)[nsmlx]*)\.rknn$/;
-  const labelsRegex = /^([a-zA-Z0-9._]+)-(\d+)-(\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\.txt$/;
-
-  if (weights && labels) {
-    const weightsMatch = weights.match(weightsRegex);
-    const labelsMatch = labels.match(labelsRegex);
-
-    if (weightsMatch && labelsMatch) {
-      return (
-        weightsMatch[1] === labelsMatch[1] &&
-        weightsMatch[2] === labelsMatch[2] &&
-        weightsMatch[3] === labelsMatch[3] &&
-        weightsMatch[4] === labelsMatch[4]
-      );
-    }
-  }
-  return false;
-};
+const importVersion = ref<string | null>(null);
 
 // TODO gray out the button when model is uploading
 const handleImport = async () => {
@@ -266,7 +248,7 @@ const openExportPrompt = () => {
       </v-row>
       <v-row>
         <v-col cols="12">
-          <v-table fixed-header height="100%" density="compact" dark>
+          <v-simple-table fixed-header height="100%" density="compact" dark>
             <thead style="font-size: 1.25rem">
               <tr>
                 <th class="text-left">Available Models</th>
@@ -304,7 +286,8 @@ const openExportPrompt = () => {
             <v-card color="primary" dark>
               <v-card-title>Delete Object Detection Model</v-card-title>
               <v-card-text>
-                Are you sure you want to delete the model {{ confirmDeleteDialog.model.UID }}?
+                Are you sure you want to delete the model
+                {{ confirmDeleteDialog.model.UID }}?
                 <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
                   <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
                   <v-btn color="error" @click="deleteModel(confirmDeleteDialog.model.UID)">Delete</v-btn>
