@@ -24,9 +24,9 @@ Your output might look something like this:
 
 :::{code-block}
 2: end1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
-link/ether de:9a:8f:7d:31:aa brd ff:ff:ff:ff:ff:ff
-inet 10.88.47.12/24 brd 10.88.47.255 scope global dynamic noprefixroute end1
-valid_lft 27367sec preferred_lft 27367sec
+    link/ether de:9a:8f:7d:31:aa brd ff:ff:ff:ff:ff:ff
+    inet 10.88.47.12/24 brd 10.88.47.255 scope global dynamic noprefixroute end1
+        valid_lft 27367sec preferred_lft 27367sec
 
 :::
 
