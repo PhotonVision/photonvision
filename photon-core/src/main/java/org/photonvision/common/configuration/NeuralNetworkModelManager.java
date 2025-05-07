@@ -65,7 +65,7 @@ public class NeuralNetworkModelManager {
         nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "algaeV1-640-640-yolov8n.rknn"),
-                        "foo",
+                        "Algae v8n",
                         new LinkedList<String>(List.of("Algae")),
                         640,
                         480,
