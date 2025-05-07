@@ -334,7 +334,7 @@ const openExportPrompt = () => {
                 <p>Model Family: {{ showInfo.model.family }}</p>
                 <p>Model Version: {{ showInfo.model.version }}</p>
                 <p>Model Labels: {{ showInfo.model.labels.join(", ") }}</p>
-                <p>Model Resolution: {{ showInfo.model.resolutionWidth + " x " showInfo.model.resolutionHeight}}</p>
+                <p>Model Resolution: {{ (showInfo.model.resolutionWidth, " x ", showInfo.model.resolutionHeight) }}</p>
               </v-card-text>
             </v-card>
           </v-dialog>
