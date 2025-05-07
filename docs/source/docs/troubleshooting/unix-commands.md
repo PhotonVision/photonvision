@@ -39,7 +39,7 @@ In this example, the numbers following `inet` (10.88.47.12) are your IP address.
 
 ## File Transfer
 
-All files under `/opt/photonvision` are owned by the root user. This means that if you want to modify them, the commands to do so must be ran as sudo. 
+All files under `/opt/photonvision` are owned by the root user. This means that if you want to modify them, the commands to do so must be ran as sudo.
 
 ### SCP
 
