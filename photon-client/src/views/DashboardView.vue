@@ -75,7 +75,7 @@ const arducamWarningShown = computed<boolean>(() => {
         >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
       </span>
     </v-banner>
-    <v-row no-gutters align="center" justify="center">
+    <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
       </v-col>
@@ -88,7 +88,7 @@ const arducamWarningShown = computed<boolean>(() => {
 
     <!-- TODO - not sure this belongs here -->
     <v-dialog v-if="warningShown" v-model="warningShown" :persistent="false" max-width="800" dark>
-      <v-card dark flat color="primary">
+      <v-card flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>
           No cameras activated - head to the <a href="#/cameraConfigs">Camera matching tab</a> to set some up!

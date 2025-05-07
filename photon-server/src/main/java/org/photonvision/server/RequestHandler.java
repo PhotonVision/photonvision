@@ -17,7 +17,6 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -51,7 +50,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -67,6 +65,8 @@ public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
+
+    private record CommonCameraUniqueName(String cameraUniqueName) {}
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -380,39 +380,38 @@ public class RequestHandler {
         NetworkTablesManager.getInstance().setConfig(config);
     }
 
-    public static class UICameraSettingsRequest {
-        @JsonProperty("fov")
-        double fov;
-
-        @JsonProperty("quirksToChange")
-        HashMap<CameraQuirk, Boolean> quirksToChange;
-    }
+    private record CameraSettingsRequest(
+            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+            CameraSettingsRequest request =
+                    kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
+            // Extract the settings from the request
+            double fov = request.fov;
+            HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
+            String cameraUniqueName = request.cameraUniqueName;
 
-            String cameraUniqueName = data.get("cameraUniqueName").asText();
-            var settings =
-                    JacksonUtils.deserialize(data.get("settings").toString(), UICameraSettingsRequest.class);
-            var fov = settings.fov;
+            if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                logger.error("cameraUniqueName is missing in the request");
+                return;
+            }
 
             logger.info("Changing camera FOV to: " + fov);
-            logger.info("Changing quirks to: " + settings.quirksToChange.toString());
+
+            logger.info("Changing quirks to: " + quirksToChange.toString());
 
             var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
-            module.setFov(fov);
-            module.changeCameraQuirks(settings.quirksToChange);
 
+            module.setFov(fov);
+            module.changeCameraQuirks(quirksToChange);
             module.saveModule();
 
-            ctx.status(200);
-            ctx.result("Successfully saved camera settings");
-            logger.info("Successfully saved camera settings");
-        } catch (NullPointerException | IOException e) {
-            ctx.status(400);
-            ctx.result("The provided camera settings were malformed");
-            logger.error("The provided camera settings were malformed", e);
+            ctx.status(200).result("Camera settings updated successfully");
+        } catch (Exception e) {
+            logger.error("Failed to process camera settings request", e);
+            ctx.status(500).result("Failed to process camera settings request");
         }
     }
 
@@ -474,20 +473,21 @@ public class RequestHandler {
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
-        String cameraUniqueName;
-
         try {
-            cameraUniqueName =
-                    kObjectMapper.readTree(ctx.bodyInputStream()).get("cameraUniqueName").asText();
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
             var calData =
-                    VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).endCalibration();
+                    VisionSourceManager.getInstance()
+                            .vmm
+                            .getModule(request.cameraUniqueName)
+                            .endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
                 logger.error(
                         "The calibration process failed. Calibration data for module at cameraUniqueName ("
-                                + cameraUniqueName
+                                + request.cameraUniqueName
                                 + ") was null");
                 return;
             }
@@ -509,20 +509,20 @@ public class RequestHandler {
         }
     }
 
+    private record DataCalibrationImportRequest(
+            String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
+
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
-
-            String cameraUniqueName = data.get("cameraUniqueName").asText();
-            var coeffs =
-                    kObjectMapper.convertValue(data.get("calibration"), CameraCalibrationCoefficients.class);
+            DataCalibrationImportRequest request =
+                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
                             DataChangeDestination.DCD_ACTIVEMODULE,
                             "calibrationUploaded",
-                            coeffs,
-                            cameraUniqueName,
+                            request.calibration,
+                            request.cameraUniqueName,
                             null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
@@ -612,26 +612,26 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
+    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            var data = kObjectMapper.readTree(ctx.bodyInputStream());
+            CameraNicknameChangeRequest request =
+                    kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
 
-            String name = data.get("name").asText();
-            String cameraUniqueName = data.get("cameraUniqueName").asText();
-
-            VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).setCameraNickname(name);
+            VisionSourceManager.getInstance()
+                    .vmm
+                    .getModule(request.cameraUniqueName)
+                    .setCameraNickname(request.name);
             ctx.status(200);
-            ctx.result("Successfully changed the camera name to: " + name);
-            logger.info("Successfully changed the camera name to: " + name);
+            ctx.result("Successfully changed the camera name to: " + request.name);
+            logger.info("Successfully changed the camera name to: " + request.name);
         } catch (JsonProcessingException e) {
-            ctx.status(400);
-            ctx.result("The provided nickname data was malformed");
-            logger.error("The provided nickname data was malformed", e);
-
+            ctx.status(400).result("Invalid JSON format");
+            logger.error("Failed to process camera nickname change request", e);
         } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("An error occurred while changing the camera's nickname");
-            logger.error("An error occurred while changing the camera's nickname", e);
+            ctx.status(500).result("Failed to change camera nickname");
+            logger.error("Unexpected error while changing camera nickname", e);
         }
     }
 
@@ -641,12 +641,10 @@ public class RequestHandler {
     }
 
     public static void onCalibrationSnapshotRequest(Context ctx) {
-        logger.info(ctx.queryString());
-
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
-        var observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
+        Integer observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
         CameraCalibrationCoefficients calList =
                 VisionSourceManager.getInstance()
@@ -695,8 +693,6 @@ public class RequestHandler {
     }
 
     public static void onCalibrationExportRequest(Context ctx) {
-        logger.info(ctx.queryString());
-
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
@@ -880,72 +876,97 @@ public class RequestHandler {
 
     public static void onNukeOneCamera(Context ctx) {
         try {
-            var payload = kObjectMapper.readTree(ctx.bodyInputStream());
-            var name = payload.get("cameraUniqueName").asText();
-            logger.warn("Deleting camera name " + name);
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
-            var cameraDir = ConfigManager.getInstance().getCalibrationImageSavePath(name).toFile();
+            logger.warn("Deleting camera name " + request.cameraUniqueName);
+
+            var cameraDir =
+                    ConfigManager.getInstance()
+                            .getCalibrationImageSavePath(request.cameraUniqueName)
+                            .toFile();
             if (cameraDir.exists()) {
                 FileUtils.deleteDirectory(cameraDir);
             }
 
-            VisionSourceManager.getInstance().deleteVisionSource(name);
+            VisionSourceManager.getInstance().deleteVisionSource(request.cameraUniqueName);
 
             ctx.status(200);
         } catch (IOException e) {
-            // todo
-            logger.error("asdf", e);
+            logger.error("Failed to delete camera", e);
             ctx.status(500);
+            ctx.result("Failed to delete camera");
+            return;
         }
     }
 
     public static void onActivateMatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
+        try {
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
-        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
-
-        if (VisionSourceManager.getInstance().reactivateDisabledCameraConfig(cameraUniqueName)) {
-            ctx.status(200);
-        } else {
-            ctx.status(403);
+            if (VisionSourceManager.getInstance()
+                    .reactivateDisabledCameraConfig(request.cameraUniqueName)) {
+                ctx.status(200);
+            } else {
+                ctx.status(403);
+            }
+        } catch (IOException e) {
+            ctx.status(401);
+            logger.error("Failed to process activate matched camera request", e);
+            ctx.result("Failed to process activate matched camera request");
+            return;
         }
-
-        ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
     }
+
+    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
 
-        PVCameraInfo camera;
         try {
-            camera = JacksonUtils.deserialize(ctx.queryParam("cameraInfo"), PVCameraInfo.class);
+            AssignUnmatchedCamera request =
+                    kObjectMapper.readValue(ctx.body(), AssignUnmatchedCamera.class);
+
+            if (request.cameraInfo == null) {
+                ctx.status(400);
+                ctx.result("cameraInfo is required");
+                logger.error("cameraInfo is missing in the request");
+                return;
+            }
+
+            if (VisionSourceManager.getInstance().assignUnmatchedCamera(request.cameraInfo)) {
+                ctx.status(200);
+            } else {
+                ctx.status(404);
+            }
+
+            ctx.result("Successfully assigned camera: " + request.cameraInfo);
         } catch (IOException e) {
             ctx.status(401);
+            logger.error("Failed to process assign unmatched camera request", e);
+            ctx.result("Failed to process assign unmatched camera request");
             return;
         }
-
-        if (VisionSourceManager.getInstance().assignUnmatchedCamera(camera)) {
-            ctx.status(200);
-        } else {
-            ctx.status(404);
-        }
-
-        ctx.result("Successfully assigned camera: " + camera);
     }
 
     public static void onUnassignCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
+        try {
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
-        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
-
-        if (VisionSourceManager.getInstance().deactivateVisionSource(cameraUniqueName)) {
-            ctx.status(200);
-        } else {
-            ctx.status(403);
+            if (VisionSourceManager.getInstance().deactivateVisionSource(request.cameraUniqueName)) {
+                ctx.status(200);
+            } else {
+                ctx.status(403);
+            }
+        } catch (IOException e) {
+            ctx.status(401);
+            logger.error("Failed to process unassign camera request", e);
+            ctx.result("Failed to process unassign camera request");
+            return;
         }
-
-        ctx.status(200);
-
-        ctx.result("Successfully assigned camera with unique name: " + cameraUniqueName);
     }
 }
