@@ -39,6 +39,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
+import org.zeroturnaround.zip.ZipUtil;
 
 /**
  * Manages the loading of neural network models.
@@ -330,5 +331,43 @@ public class NeuralNetworkModelManager {
 
         // Delete model info
         return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().nuke();
+    }
+
+    public File zipModel(String modelPath) {
+        File modelFile = new File(modelPath);
+        if (!modelFile.exists()) {
+            logger.error("Model file does not exist: " + modelFile.getAbsolutePath());
+            return null;
+        }
+
+        ModelProperties properties =
+                ConfigManager.getInstance()
+                        .getConfig()
+                        .neuralNetworkPropertyManager()
+                        .getModel(Path.of(modelPath));
+
+        String fileName = "";
+        if (properties != null) {
+            fileName =
+                    String.format(
+                            "%s-%s-%s-%dx%d",
+                            properties.nickname().replace(" ", ""),
+                            properties.family(),
+                            properties.version(),
+                            properties.resolutionWidth(),
+                            properties.resolutionHeight());
+        } else {
+            fileName = new File(modelPath).getName();
+        }
+
+        try {
+            var out = Files.createTempFile(fileName, ".zip");
+            ZipUtil.pack(new File(modelPath), out.toFile());
+            return out.toFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Failed to zip model file: " + modelFile.getAbsolutePath(), e);
+            return null;
+        }
     }
 }

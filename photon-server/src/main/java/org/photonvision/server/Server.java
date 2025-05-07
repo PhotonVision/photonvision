@@ -150,6 +150,9 @@ public class Server {
         // Object detection
         app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
         app.post("/api/objectdetection/export", RequestHandler::onExportObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/exportindividual",
+                RequestHandler::onExportIndividualObjectDetectionModelRequest);
         app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);

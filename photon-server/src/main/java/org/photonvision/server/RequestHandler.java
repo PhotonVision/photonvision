@@ -682,6 +682,37 @@ public class RequestHandler {
         }
     }
 
+    public static void onExportIndividualObjectDetectionModelRequest(Context ctx) {
+        logger.info("Exporting Object Detection Model to ZIP Archive");
+
+        try {
+            var modelPath = ctx.formParam("modelPath");
+
+            if (modelPath == null || modelPath.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided model path was malformed");
+                logger.error("The provided model path was malformed");
+                return;
+            }
+
+            var zip = NeuralNetworkModelManager.getInstance().zipModel(modelPath);
+
+            var stream = new FileInputStream(zip);
+            logger.info("Uploading object detection model with size " + stream.available());
+
+            ctx.contentType("application/zip");
+            ctx.header("Content-Disposition", "attachment; filename=" + zip.getName());
+
+            ctx.result(stream);
+            ctx.status(200);
+        } catch (IOException e) {
+            logger.error(
+                    "Unable to export object detection model archive, bad recode from zip to byte, " + e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the object detection model archive");
+        }
+    }
+
     public static void onBulkImportObjectDetectionModelRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 

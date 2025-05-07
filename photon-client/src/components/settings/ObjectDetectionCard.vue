@@ -170,6 +170,11 @@ const openExportPrompt = () => {
   exportModels.value.click();
 };
 
+const exportIndividualModel = ref();
+const openExportIndividualModelPrompt = () => {
+  exportIndividualModel.value.click();
+};
+
 const showNukeDialog = ref(false);
 const expected = "Delete Models";
 const yesDeleteMyModelsText = ref("");
@@ -367,6 +372,17 @@ const nukeModels = () => {
           <v-dialog v-model="showInfo.show" width="600">
             <v-card color="primary" dark>
               <v-card-title>Object Detection Model Info</v-card-title>
+              <v-btn color="secondary" @click="openExportIndividualModelPrompt">
+                <v-icon left class="open-icon"> mdi-export </v-icon>
+                <span class="open-label">Export Models</span>
+              </v-btn>
+              <a
+                ref="exportIndividualModel"
+                style="color: black; text-decoration: none; display: none"
+                :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath}`"
+                :download="`${showInfo.model.nickname}-${showInfo.model.family}-${showInfo.model.version}-${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}.zip`"
+                target="_blank"
+              />
               <v-card-text>
                 <p>Model Path: {{ showInfo.model.modelPath }}</p>
                 <p>Model Nickname: {{ showInfo.model.nickname }}</p>
