@@ -1,20 +1,19 @@
 <script setup lang="ts">
-import { PVCameraInfo, type PVCSICameraInfo, type PVFileCameraInfo, type PVUsbCameraInfo } from "@/types/SettingTypes";
+import { PVCameraInfo } from "@/types/SettingTypes";
 
-export const isEqual = <T>(a: T, b: T): boolean => {
+function isEqual<T>(a: T, b: T): boolean {
   if (a === b) {
     return true;
   }
 
-  const bothAreObjects =
-    a && b && typeof a === "object" && typeof b === "object";
+  const bothAreObjects = a && b && typeof a === "object" && typeof b === "object";
 
-  return Boolean(
+  return (
     bothAreObjects &&
-      Object.keys(a).length === Object.keys(b).length &&
-      Object.entries(a).every(([k, v]) => isEqual(v, b[k as keyof T]))
+    Object.keys(a).length === Object.keys(b).length &&
+    Object.entries(a).every(([k, v]) => isEqual(v, b[k as keyof T]))
   );
-};
+}
 
 const { saved, current } = defineProps({
   saved: {
@@ -119,9 +118,7 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
         </tr>
         <tr
           v-if="cameraInfoFor(saved).otherPaths !== undefined && cameraInfoFor(saved).otherPaths !== null"
-          :class="
-            !isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? 'mismatch' : ''
-          "
+          :class="isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? '' : 'mismatch'"
         >
           <td>Other Paths:</td>
           <td>{{ cameraInfoFor(saved).otherPaths }}</td>
