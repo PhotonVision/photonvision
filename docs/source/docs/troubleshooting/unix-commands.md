@@ -1,45 +1,56 @@
-Useful Unix Commands
-====================
+# Useful Unix Commands
 
-SSH
----
+## SSH
 
 [SSH (Secure Shell)](https://www.mankier.com/1/ssh) is used to securely connect from a local to a remote system (ex. from a laptop to a coprocessor). Unlike other commands on this page, ssh is not Unix specific and can be done on Windows and MacOS from their respective terminals.
 
 :::{note}
-You may see a warning similar to `The authenticity of host 'xxx' can't be established...` or `WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!`, in most cases this can be safely ignored if you have confirmed that you are connecting to the correct host over a secure connection, and the fingerprint will change when your operating system is reinstalled or PhotonVision's coprocessor image is re-flashed. You can read more about it [here](https://superuser.com/questions/421997/what-is-a-ssh-key-fingerprint-and-how-is-it-generated)
+You may see a warning similar to `The authenticity of host 'xxx' can't be established...` or `WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!`, in most cases this can be safely ignored if you have confirmed that you are connecting to the correct host over a secure connection, and the fingerprint will change when your operating system is reinstalled or PhotonVision's coprocessor image is re-flashed. This can also occur if you have multiple coprocessors with the same hostname on your network. You can read more about it [here](https://superuser.com/questions/421997/what-is-a-ssh-key-fingerprint-and-how-is-it-generated)
 :::
 
 Example:
 
 :::{code-block}
-ssh username@hostname
+ssh pi@hostname
 :::
 
-ip
----
+For PhotonVision, the username will be `pi` and the password will be `raspberry`.
+
+## ip
 
 Run [ip address](https://www.mankier.com/8/ip) with your coprocessor connected to a monitor in order to see its IP address and other network configuration information.
 
+Your output might look something like this:
 
-SCP
----
+:::{code-block}
+2: end1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether de:9a:8f:7d:31:aa brd ff:ff:ff:ff:ff:ff
+    inet 10.88.47.12/24 brd 10.88.47.255 scope global dynamic noprefixroute end1
+       valid_lft 27367sec preferred_lft 27367sec
+
+:::
+
+In this example, the numbers following `inet` (10.88.47.12) are your IP address.
+
+## SCP
 
 [SCP (Secure Copy)](https://www.mankier.com/1/scp) is used to securely transfer files between local and remote systems.
 
 Example:
 
 :::{code-block}
-scp [file] username@hostname:/path/to/destination
+scp [file] pi@hostname:/path/to/destination
 :::
 
-SFTP
----
+## SFTP
 
 [SFTP (SSH File Transfer Protocol)](https://www.mankier.com/1/sftp#) is another option for transferring files between local and remote systems.
 
-v4l2-ctl
----
+## Filezilla
+
+[Filezilla](https://filezilla-project.org/) is a GUI alternative to SCP and SFTP. It is available for Windows, MacOS, and Linux.
+
+## v4l2-ctl
 
 [v4l2-ctl](https://www.mankier.com/1/v4l2-ctl) is a command-line tool for controlling video devices.
 
@@ -65,8 +76,7 @@ v4l2-ctl --list-ctrls --device path/to/video_device
 This command is especially useful in helping to debug when certain camera controls, like exposure, aren't behaving as expected. If you see an error in the logs similar to `WARNING 30: failed to set property [property name] (UsbCameraImpl.cpp:646)`, that means that PhotonVision is trying to use a control that doesn't exist or has a different name on your hardware. If you encounter this issue, please [file an issue](https://github.com/PhotonVision/photonvision/issues) with the necessary logs and output of the `v4l2-ctl --list-ctrls` command.
 :::
 
-systemctl
----
+## systemctl
 
 [systemctl](https://www.mankier.com/1/systemctl) is a command that controls the `systemd` system and service manager.
 
@@ -88,8 +98,13 @@ Restart PhotonVision:
 systemctl restart photonvision
 :::
 
-journalctl
----
+Check the status of PhotonVision:
+
+:::{code-block}
+systemctl status photonvision
+:::
+
+## journalctl
 
 [journalctl](https://www.mankier.com/1/journalctl) is a command that queries the systemd journal, which is a logging system used by many Linux distributions.
 
