@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
@@ -127,8 +126,8 @@ public class NeuralNetworkPropertyManager {
      *
      * @return A list of all models
      */
-    public List<ModelProperties> getModels() {
-        return new LinkedList<>(modelPathToProperties.values());
+    public ModelProperties[] getModels() {
+        return modelPathToProperties.values().toArray(new ModelProperties[0]);
     }
 
     /**

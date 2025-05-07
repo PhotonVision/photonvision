@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -132,30 +131,6 @@ public class NeuralNetworkModelManager {
      * <p>The first model in the list is the default model.
      */
     private Map<Family, ArrayList<Model>> models;
-
-    /**
-     * Retrieves the deep neural network models available, in a format that can be used by the
-     * frontend.
-     *
-     * @return A map containing the available models, where the key is the backend and the value is a
-     *     simple entry containing the UID and nickname
-     */
-    public HashMap<String, ArrayList<SimpleEntry<String, String>>> getModels() {
-        HashMap<String, ArrayList<SimpleEntry<String, String>>> modelMap = new HashMap<>();
-        if (models == null) {
-            return modelMap;
-        }
-
-        models.forEach(
-                (backend, backendModels) -> {
-                    ArrayList<SimpleEntry<String, String>> modelNames = new ArrayList<>();
-                    backendModels.forEach(
-                            model -> modelNames.add(new SimpleEntry<>(model.getUID(), model.getNickname())));
-                    modelMap.put(backend.toString(), modelNames);
-                });
-
-        return modelMap;
-    }
 
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported

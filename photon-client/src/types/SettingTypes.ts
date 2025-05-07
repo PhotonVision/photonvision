@@ -8,8 +8,18 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
-  availableModels: Record<string, Array<{ UID: string; name: string }>>;
+  availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
+}
+
+export interface ObjectDetectionModelProperties {
+  nickname: string;
+  modelPath: string;
+  family: string;
+  version: string;
+  resolutionWidth: number;
+  resolutionHeight: number;
+  labels: string[];
 }
 
 export interface MetricData {

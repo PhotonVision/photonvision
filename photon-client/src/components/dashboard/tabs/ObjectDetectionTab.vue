@@ -8,6 +8,7 @@ import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useDisplay } from "vuetify";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -32,21 +33,36 @@ const interactiveCols = computed(() =>
 );
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
+const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+  const isSupported = (model: ObjectDetectionModelProperties) => {
+    // Check if model's family is in the list of supported backends
+    return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
+  };
+
+  // Filter models where the family is supported and flatten the list
+  return availableModels.filter(isSupported);
 });
 
 // Get model names for display in the select component
-const modelNames = computed(() => supportedModels.value.map((model) => model.name || String(model)));
+const modelNames = computed(() => {
+  return supportedModels.value.map((model) => {
+    const modelName = model.nickname;
+    return `${modelName}`;
+  });
+});
 
 const selectedModel = computed({
   get: () => {
-    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
-    return index === -1 ? undefined : index;
+    const index = supportedModels.value.findIndex((model) => {
+      return model === currentPipelineSettings.value.model;
+    });
+    return index;
   },
   set: (v) => {
-    v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false);
+    if (v !== undefined && v !== null) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false);
+    }
   }
 });
 </script>
@@ -103,7 +119,11 @@ const selectedModel = computed({
       :items="['Portrait', 'Landscape']"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting(
+            { contourTargetOrientation: typeof value === 'string' ? Number(value) : value },
+            false
+          )
       "
     />
     <pv-select
@@ -113,7 +133,11 @@ const selectedModel = computed({
       :select-cols="interactiveCols"
       :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting(
+            { contourSortMode: typeof value === 'string' ? Number(value) : value },
+            false
+          )
       "
     />
   </div>

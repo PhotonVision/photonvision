@@ -3,12 +3,14 @@ import { ref, computed, inject } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 const showImportDialog = ref(false);
-const confirmDeleteDialog = ref({ show: false, model: { UID: "", name: "" } });
+const showInfo = ref({ show: false, model: {} as ObjectDetectionModelProperties });
+const confirmDeleteDialog = ref({ show: false, model: {} as ObjectDetectionModelProperties });
 const showRenameDialog = ref({
   show: false,
-  model: { UID: "", name: "" },
+  model: {} as ObjectDetectionModelProperties,
   newName: ""
 });
 
@@ -76,7 +78,7 @@ const handleImport = async () => {
   importVersion.value = null;
 };
 
-const deleteModel = async (model: string) => {
+const deleteModel = async (model: ObjectDetectionModelProperties) => {
   useStateStore().showSnackbarMessage({
     message: "Deleting Object Detection Model...",
     color: "secondary",
@@ -85,7 +87,7 @@ const deleteModel = async (model: string) => {
 
   axios
     .post("/objectdetection/delete", {
-      modelPath: model
+      modelPath: model.modelPath
     })
     .then((response) => {
       useStateStore().showSnackbarMessage({
@@ -113,7 +115,7 @@ const deleteModel = async (model: string) => {
     });
 };
 
-const renameModel = async (model: string, newName: string) => {
+const renameModel = async (model: ObjectDetectionModelProperties, newName: string) => {
   useStateStore().showSnackbarMessage({
     message: "Renaming Object Detection Model...",
     color: "secondary",
@@ -122,7 +124,7 @@ const renameModel = async (model: string, newName: string) => {
 
   axios
     .post("/objectdetection/rename", {
-      modelPath: model,
+      modelPath: model.modelPath,
       newName: newName
     })
     .then((response) => {
@@ -154,7 +156,13 @@ const renameModel = async (model: string, newName: string) => {
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+  const isSupported = (model: any) => {
+    // Check if model's family is in the list of supported backends
+    return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
+  };
+
+  // Filter models where the family is supported and flatten the list
+  return availableModels.filter(isSupported);
 });
 
 const exportModels = ref();
@@ -255,8 +263,8 @@ const openExportPrompt = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="model in supportedModels" :key="model.UID">
-                <td>{{ model.name }}</td>
+              <tr v-for="model in supportedModels" :key="model.modelPath">
+                <td>{{ model.nickname }}</td>
                 <td class="text-right">
                   <v-btn
                     icon
@@ -279,6 +287,11 @@ const openExportPrompt = () => {
                     <v-icon>mdi-pencil</v-icon>
                   </v-btn>
                 </td>
+                <td class="text-right">
+                  <v-btn icon small color="info" @click="() => (showInfo = { show: true, model })">
+                    <v-icon>mdi-information</v-icon>
+                  </v-btn>
+                </td>
               </tr>
             </tbody>
           </v-simple-table>
@@ -287,10 +300,10 @@ const openExportPrompt = () => {
               <v-card-title>Delete Object Detection Model</v-card-title>
               <v-card-text>
                 Are you sure you want to delete the model
-                {{ confirmDeleteDialog.model.UID }}?
+                {{ confirmDeleteDialog.model.nickname }}?
                 <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
                   <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
-                  <v-btn color="error" @click="deleteModel(confirmDeleteDialog.model.UID)">Delete</v-btn>
+                  <v-btn color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
                 </v-row>
               </v-card-text>
             </v-card>
@@ -305,10 +318,23 @@ const openExportPrompt = () => {
                 </v-row>
                 <v-row>
                   <v-btn text @click="showRenameDialog.show = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click="renameModel(showRenameDialog.model.UID, showRenameDialog.newName)"
+                  <v-btn text color="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</v-btn
                   >
                 </v-row>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+          <v-dialog v-model="showInfo.show" width="600">
+            <v-card color="primary" dark>
+              <v-card-title>Object Detection Model Info</v-card-title>
+              <v-card-text>
+                <p>Model Path: {{ showInfo.model.modelPath }}</p>
+                <p>Model Nickname: {{ showInfo.model.nickname }}</p>
+                <p>Model Family: {{ showInfo.model.family }}</p>
+                <p>Model Version: {{ showInfo.model.version }}</p>
+                <p>Model Labels: {{ showInfo.model.labels.join(", ") }}</p>
+                <p>Model Resolution: {{ showInfo.model.resolutionWidth + " x " showInfo.model.resolutionHeight}}</p>
               </v-card-text>
             </v-card>
           </v-dialog>

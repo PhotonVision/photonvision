@@ -1,4 +1,5 @@
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 export enum PipelineType {
   DriverMode = 1,
@@ -296,8 +297,9 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   confidence: number;
   nms: number;
   box_thresh: number;
-  model: { UID: string; name: string };
+  model: ObjectDetectionModelProperties;
 }
+
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
 > &
@@ -313,7 +315,7 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   confidence: 0.9,
   nms: 0.45,
   box_thresh: 0.25,
-  model: { UID: "", name: "None" }
+  model: {} as ObjectDetectionModelProperties
 };
 
 export interface Calibration3dPipelineSettings extends PipelineSettings {
