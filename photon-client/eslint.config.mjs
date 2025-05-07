@@ -8,6 +8,9 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
   skipFormattingConfig,
   {
+    ignores: ["**/dist/**"]
+  },
+  {
     //extends: ["js/recommended"],
     rules: {
       quotes: ["error", "double"],
