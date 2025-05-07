@@ -33,8 +33,13 @@ Example:
 scp [file] username@hostname:/path/to/destination
 :::
 
+SFTP
+---
+
+[SFTP (SSH File Transfer Protocol)](https://www.mankier.com/1/sftp#) is another option for transferring files between local and remote systems.
+
 v4l2-ctl
---------
+---
 
 [v4l2-ctl](https://www.mankier.com/1/v4l2-ctl) is a command-line tool for controlling video devices.
 
@@ -58,4 +63,44 @@ v4l2-ctl --list-ctrls --device path/to/video_device
 
 :::{note}
 This command is especially useful in helping to debug when certain camera controls, like exposure, aren't behaving as expected. If you see an error in the logs similar to `WARNING 30: failed to set property [property name] (UsbCameraImpl.cpp:646)`, that means that PhotonVision is trying to use a control that doesn't exist or has a different name on your hardware. If you encounter this issue, please [file an issue](https://github.com/PhotonVision/photonvision/issues) with the necessary logs and output of the `v4l2-ctl --list-ctrls` command.
+:::
+
+systemctl
+---
+
+[systemctl](https://www.mankier.com/1/systemctl) is a command that controls the `systemd` system and service manager.
+
+Start PhotonVision:
+
+:::{code-block}
+systemctl start photonvision
+:::
+
+Stop PhotonVision:
+
+:::{code-block}
+systemctl stop photonvision
+:::
+
+Restart PhotonVision:
+
+:::{code-block}
+systemctl restart photonvision
+:::
+
+journalctl
+---
+
+[journalctl](https://www.mankier.com/1/journalctl) is a command that queries the systemd journal, which is a logging system used by many Linux distributions.
+
+View the PhotonVision logs:
+
+:::{code-block}
+journalctl -u photonvision
+:::
+
+View the PhotonVision logs in real-time:
+
+:::{code-block}
+journalctl -u photonvision -f
 :::
