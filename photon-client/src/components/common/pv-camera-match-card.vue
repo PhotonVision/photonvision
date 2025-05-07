@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PVCameraInfo } from "@/types/SettingTypes";
-import _ from "lodash";
+import { isDeepStrictEqual } from "util";
 
 const { saved, current } = defineProps({
   saved: {
@@ -105,7 +105,9 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
         </tr>
         <tr
           v-if="cameraInfoFor(saved).otherPaths !== undefined && cameraInfoFor(saved).otherPaths !== null"
-          :class="!_.isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? 'mismatch' : ''"
+          :class="
+            !isDeepStrictEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? 'mismatch' : ''
+          "
         >
           <td>Other Paths:</td>
           <td>{{ cameraInfoFor(saved).otherPaths }}</td>
