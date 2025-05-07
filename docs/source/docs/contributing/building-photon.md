@@ -12,17 +12,7 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 18.20.4 to Node 20.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
-
-```bash
-nvm install 20
-```
-
-so that it instead reads
-
-```javascript
-nvm install 18.20.4
-```
+ The UI is written in Node JS. To compile the UI, Node 22.15.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
 
 ## Compiling Instructions
 
@@ -283,3 +273,9 @@ Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from 
 ```
 ~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```
+
+#### MacOS Builds
+
+MacOS builds are not published to releases as MacOS is not an officially
+supported platform. However, MacOS builds are still available from the MacOS
+build action, which can be found [here](https://github.com/PhotonVision/photonvision/actions/workflows/build.yml).

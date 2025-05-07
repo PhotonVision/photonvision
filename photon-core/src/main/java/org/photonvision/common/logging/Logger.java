@@ -17,14 +17,13 @@
 
 package org.photonvision.common.logging;
 
+import edu.wpi.first.math.Pair;
 import java.io.*;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Supplier;
-import org.apache.commons.lang3.tuple.Pair;
-// import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -194,7 +193,7 @@ public class Logger {
         connected = true;
         synchronized (uiBacklog) {
             for (var message : uiBacklog) {
-                uiLogAppender.log(message.getLeft(), message.getRight());
+                uiLogAppender.log(message.getFirst(), message.getSecond());
             }
             uiBacklog.clear();
         }

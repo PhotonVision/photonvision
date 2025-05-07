@@ -155,17 +155,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Update the configurable camera settings.
      *
      * @param data camera settings to save.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     updateCameraSettings(
       data: CameraSettingsChangeRequest,
-      cameraUniqueName: String = useStateStore().currentCameraUniqueName
+      cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
       const payload = {
-        settings: {
-          ...data
-        },
+        fov: data.fov,
+        quirksToChange: data.quirksToChange,
         cameraUniqueName: cameraUniqueName
       };
       return axios.post("/settings/camera", payload);
@@ -175,12 +174,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newPipelineName the name of the new pipeline.
      * @param pipelineType the type of the new pipeline. Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     createNewPipeline(
       newPipelineName: string,
       pipelineType: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
-      cameraUniqueName: String = useStateStore().currentCameraUniqueName
+      cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       const payload = {
         addNewPipeline: [newPipelineName, pipelineType],
@@ -193,7 +192,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param settings settings to modify. The type of the settings should match the currently selected pipeline type.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     changeCurrentPipelineSetting(
       settings: ActiveConfigurablePipelineSettings,
@@ -224,7 +223,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newName the new nickname for the camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     changeCurrentPipelineNickname(
       newName: string,
@@ -244,7 +243,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Modify the Pipeline type of the currently selected pipeline of the provided camera. This overwrites the current pipeline's settings when the backend resets the current pipeline settings.
      *
      * @param type the pipeline type to set.  Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     changeCurrentPipelineType(
       type: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
@@ -261,7 +260,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param index pipeline index to set.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     changeCurrentPipelineIndex(
       index: number,
@@ -293,7 +292,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     /**
      * Change the currently selected pipeline of the provided camera.
      *
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     deleteCurrentPipeline(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
       const payload = {
@@ -306,7 +305,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Duplicate the pipeline at the provided index.
      *
      * @param pipelineIndex index of the pipeline to duplicate.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     duplicatePipeline(pipelineIndex: number, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
       const payload = {
@@ -335,7 +334,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      *
      * @param newName the new nickname of the camera.
      * @param updateStore whether or not to update the store. This is useful if the input field already models the store reference.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      * @return HTTP request promise to the backend
      */
     changeCameraNickname(
@@ -356,7 +355,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Start the 3D calibration process for the provided camera.
      *
      * @param calibrationInitData initialization calibration data.
-     * @param cameraUniqueNamendex the unique name of the camera.
+     * @param cameraUniqueName the unique name of the camera.
      */
     startPnPCalibration(
       calibrationInitData: {

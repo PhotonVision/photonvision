@@ -54,13 +54,13 @@ Only use a static IP when connected to the **robot radio**, and never when testi
 5. Change your IP to Static.
 6. Set your coprocessor's IP address to “10.TE.AM.11”. More information on IP format can be found [here](https://docs.wpilib.org/en/stable/docs/networking/networking-introduction/ip-configurations.html#on-the-field-static-configuration).
 7. Click the “Save” button.
-8. Set your roboRIO to the following static IP address: “10.TE.AM.2”. This can be done via the [roboRIO web dashboard](https://docs.wpilib.org/en/stable/docs/software/roborio-info/roborio-web-dashboard.html#roborio-web-dashboard).
 
 Power-cycle your robot and then you will now be access the PhotonVision dashboard at `10.TE.AM.11:5800`.
 
 ```{image} images/static.png
 :alt: Correctly set static IP
 ```
+
 The "team number" field will accept (in addition to a team number) an IP address or hostname. This is useful for testing PhotonVision on the same computer as a simulated robot program;
 you can set the team number to "localhost", and PhotonVision will send data to the network tables in the simulated robot.
 

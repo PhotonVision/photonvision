@@ -7,9 +7,9 @@ defineProps<{
 
 <template>
   <div>
-    <v-tooltip :disabled="tooltip === undefined" right open-delay="300">
-      <template #activator="{ on, attrs }">
-        <span style="cursor: text !important" class="white--text" v-bind="attrs" v-on="on">{{ label }}</span>
+    <v-tooltip :disabled="tooltip === undefined" location="right" open-delay="300">
+      <template #activator="{ props }">
+        <span style="cursor: text !important" class="text-white" v-bind="props">{{ label }}</span>
       </template>
       <span>{{ tooltip }}</span>
     </v-tooltip>
