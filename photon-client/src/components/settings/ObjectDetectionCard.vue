@@ -169,6 +169,39 @@ const exportModels = ref();
 const openExportPrompt = () => {
   exportModels.value.click();
 };
+
+const showNukeDialog = ref(false);
+const expected = "Delete Models";
+const yesDeleteMyModelsText = ref("");
+const nukeModels = () => {
+  axios
+    .post("/objectdetection/nuke")
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Successfully dispatched the clear models command.",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to clear the models.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    });
+  showNukeDialog.value = false;
+};
 </script>
 
 <template>
@@ -252,6 +285,12 @@ const openExportPrompt = () => {
             download="photonvision-object-detection-models.zip"
             target="_blank"
           />
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-btn color="error" @click="showNukeDialog">
+            <v-icon left class="open-icon"> mdi-trash </v-icon>
+            <span class="open-label">Clear and reset models</span>
+          </v-btn>
         </v-col>
       </v-row>
       <v-row>
@@ -341,6 +380,58 @@ const openExportPrompt = () => {
         </v-col>
       </v-row>
     </div>
+
+    <v-dialog v-model="showNukeDialog" width="800" dark>
+      <v-card color="primary" class="pa-3" flat>
+        <v-card-title style="justify-content: center" class="pb-6">
+          <span class="open-label">
+            <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+            Clear and Reset Object Detection Models
+            <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+          </span>
+        </v-card-title>
+        <v-card-text class="pt-3">
+          <v-row class="align-center text-white">
+            <v-col cols="12" md="6">
+              <span class="mt-3"> This will delete ALL OF YOUR MODELS and re-extract the default models. </span>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-btn color="secondary" style="float: right" @click="openExportPrompt">
+                <v-icon start class="open-icon"> mdi-export </v-icon>
+                <span class="open-label">Backup Models</span>
+                <a
+                  ref="exportModels"
+                  style="color: black; text-decoration: none; display: none"
+                  :href="`http://${address}/api/objectdetection/export`"
+                  download="photonvision-object-detection-models.zip"
+                  target="_blank"
+                />
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-text>
+          <pv-input
+            v-model="yesDeleteMyModelsText"
+            :label="'Type &quot;' + expected + '&quot;:'"
+            :label-cols="6"
+            :input-cols="6"
+          />
+        </v-card-text>
+        <v-card-text>
+          <v-btn
+            color="error"
+            :disabled="yesDeleteMyModelsText.toLowerCase() !== expected.toLowerCase()"
+            @click="nukeModels"
+          >
+            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
+            <span class="open-label">
+              {{ $vuetify.display.mdAndUp ? "Delete models, I have backed up what I need" : "Delete Models" }}
+            </span>
+          </v-btn>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 

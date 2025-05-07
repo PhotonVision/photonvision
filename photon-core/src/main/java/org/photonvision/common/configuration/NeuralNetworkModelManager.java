@@ -306,4 +306,29 @@ public class NeuralNetworkModelManager {
                         getShippedProperties(modelsDirectory)
                                 .sum(ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
     }
+
+    public boolean nukeModels() {
+        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
+
+        if (modelsDirectory.exists()) {
+            try {
+                Files.walk(modelsDirectory.toPath())
+                        .sorted((a, b) -> b.compareTo(a))
+                        .forEach(
+                                path -> {
+                                    try {
+                                        Files.delete(path);
+                                    } catch (IOException e) {
+                                        logger.error("Failed to delete file: " + path, e);
+                                    }
+                                });
+            } catch (IOException e) {
+                logger.error("Failed to delete models directory", e);
+                return false;
+            }
+        }
+
+        // Delete model info
+        return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().nuke();
+    }
 }

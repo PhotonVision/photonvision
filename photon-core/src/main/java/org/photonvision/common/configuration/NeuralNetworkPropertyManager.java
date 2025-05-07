@@ -154,4 +154,9 @@ public class NeuralNetworkPropertyManager {
         }
         return false;
     }
+
+    public boolean nuke() {
+        modelPathToProperties.clear();
+        return true;
+    }
 }

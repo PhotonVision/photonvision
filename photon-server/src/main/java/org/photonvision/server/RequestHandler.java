@@ -873,6 +873,19 @@ public class RequestHandler {
         }
     }
 
+    public static void onNukeObjectDetectionModelsRequest(Context ctx) {
+        logger.info("Attempting to clear object detection models");
+        try {
+            NeuralNetworkModelManager.getInstance().nukeModels();
+            NeuralNetworkModelManager.getInstance().extractModels();
+            ctx.status(200).result("Successfully cleared and reset object detection models");
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("Error clearing object detection models: " + e.getMessage());
+            logger.error("Error clearing object detection models", e);
+        }
+    }
+
     public static void onDeviceRestartRequest(Context ctx) {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
