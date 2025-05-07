@@ -31,7 +31,6 @@
     "vuetify": "^3.8.3"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.11.0",
     "@types/node": "^22.15.14",
     "@types/three": "^0.176.0",
     "@vue/eslint-config-prettier": "^10.2.0",
