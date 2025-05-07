@@ -10,9 +10,9 @@ You may see a warning similar to `The authenticity of host 'xxx' can't be establ
 
 Example:
 
-:::{code-block}
+```
 ssh pi@hostname
-:::
+```
 
 For PhotonVision, the username will be `pi` and the password will be `raspberry`.
 
@@ -22,13 +22,12 @@ Run [ip address](https://www.mankier.com/8/ip) with your coprocessor connected t
 
 Your output might look something like this:
 
-:::{code-block}
+```
 2: end1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
     link/ether de:9a:8f:7d:31:aa brd ff:ff:ff:ff:ff:ff
     inet 10.88.47.12/24 brd 10.88.47.255 scope global dynamic noprefixroute end1
         valid_lft 27367sec preferred_lft 27367sec
-
-:::
+```
 
 In this example, the numbers following `inet` (10.88.47.12) are your IP address.
 
@@ -42,9 +41,9 @@ In this example, the numbers following `inet` (10.88.47.12) are your IP address.
 
 Example:
 
-:::{code-block}
+```
 scp [file] pi@hostname:/path/to/destination
-:::
+```
 
 ## SFTP
 
@@ -60,21 +59,21 @@ scp [file] pi@hostname:/path/to/destination
 
 List available video devices (used to verify the device recognized a connected camera):
 
-:::{code-block}
+```
 v4l2-ctl --list-devices
-:::
+```
 
 List supported formats and resolutions for a specific video device:
 
-:::{code-block}
+```
 v4l2-ctl --list-formats-ext --device /path/to/video_device
-:::
+```
 
 List all video device's controls and their values:
 
-:::{code-block}
+```
 v4l2-ctl --list-ctrls --device path/to/video_device
-:::
+```
 
 :::{note}
 This command is especially useful in helping to debug when certain camera controls, like exposure, aren't behaving as expected. If you see an error in the logs similar to `WARNING 30: failed to set property [property name] (UsbCameraImpl.cpp:646)`, that means that PhotonVision is trying to use a control that doesn't exist or has a different name on your hardware. If you encounter this issue, please [file an issue](https://github.com/PhotonVision/photonvision/issues) with the necessary logs and output of the `v4l2-ctl --list-ctrls` command.
@@ -86,27 +85,27 @@ This command is especially useful in helping to debug when certain camera contro
 
 Start PhotonVision:
 
-:::{code-block}
+```
 systemctl start photonvision
-:::
+```
 
 Stop PhotonVision:
 
-:::{code-block}
+```
 systemctl stop photonvision
-:::
+```
 
 Restart PhotonVision:
 
-:::{code-block}
+```
 systemctl restart photonvision
-:::
+```
 
 Check the status of PhotonVision:
 
-:::{code-block}
+```
 systemctl status photonvision
-:::
+```
 
 ## journalctl
 
@@ -114,12 +113,12 @@ systemctl status photonvision
 
 View the PhotonVision logs:
 
-:::{code-block}
+```
 journalctl -u photonvision
-:::
+```
 
 View the PhotonVision logs in real-time:
 
-:::{code-block}
+```
 journalctl -u photonvision -f
-:::
+```
