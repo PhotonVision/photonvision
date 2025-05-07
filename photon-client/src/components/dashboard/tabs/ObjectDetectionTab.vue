@@ -43,7 +43,10 @@ const selectedModel = computed({
     return index === -1 ? undefined : index;
   },
   set: (v) => {
-    v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false);
+    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
+      const newModel = supportedModels.value[v];
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
+    }
   }
 });
 </script>
