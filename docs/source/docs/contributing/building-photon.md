@@ -283,3 +283,9 @@ Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from 
 ```
 ~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```
+
+#### MacOS Builds
+
+MacOS builds are not published to releases as MacOS is not an officially
+supported platform. However, MacOS builds are still available from the MacOS
+build action, which can be found [here](https://github.com/PhotonVision/photonvision/actions/workflows/build.yml).
