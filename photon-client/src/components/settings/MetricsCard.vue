@@ -121,8 +121,8 @@ onBeforeMount(() => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pl-6" style="display: flex; justify-content: space-between">
-      <span class="pt-2 pb-2">Stats</span>
+    <v-card-title class="pl-6 pa-6" style="display: flex; justify-content: space-between">
+      <span>Stats</span>
       <v-btn variant="text" @click="fetchMetrics">
         <v-icon start class="open-icon">mdi-reload</v-icon>
         Last Fetched: {{ metricsLastFetched }}
