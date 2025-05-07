@@ -101,9 +101,8 @@ const downloadCalibBoard = () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      // eslint-disable-next-line no-case-declarations
       const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
-      // eslint-disable-next-line no-case-declarations
+
       const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
@@ -203,10 +202,10 @@ const endCalibration = () => {
     });
 };
 
-let drawAllSnapshots = ref(true);
+const drawAllSnapshots = ref(true);
 
-let showCalDialog = ref(false);
-let selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
+const showCalDialog = ref(false);
+const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
 const setSelectedVideoFormat = (format: VideoFormat) => {
   selectedVideoFormat.value = format;
   showCalDialog.value = true;
