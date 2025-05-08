@@ -29,12 +29,19 @@
 #include <utility>
 #include <vector>
 
+#include <frc/apriltag/AprilTagFieldLayout.h>
+#include <frc/apriltag/AprilTagFields.h>
+
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
-    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG()) {}
+    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
+                      frc::AprilTagFieldLayout::LoadField(
+                          frc::AprilTagField::kDefaultField)) {}
+
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
-                                 const SimCameraProperties& props)
-    : prop(props), cam(camera) {
+                                 const SimCameraProperties& props,
+                                 const frc::AprilTagFieldLayout& tagLayout)
+    : prop{props}, cam{camera}, tagLayout{tagLayout} {
   SetMinTargetAreaPixels(kDefaultMinAreaPx);
   videoSimRaw =
       frc::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
@@ -46,6 +53,7 @@ PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
   ts.subTable = cam->GetCameraTable();
   ts.UpdateEntries();
 }
+
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
                                  const SimCameraProperties& props,
                                  double minTargetAreaPercent,
@@ -203,7 +211,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
     std::optional<photon::PnpResult> pnpSim = std::nullopt;
     if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
-      pnpSim = OpenCVHelp::SolvePNP_SQPNP(
+      pnpSim = OpenCVHelp::SolvePNP_Square(
           prop.GetIntrinsics(), prop.GetDistCoeffs(),
           tgt.GetModel().GetVertices(), noisyTargetCorners);
     }
@@ -327,10 +335,10 @@ PhotonPipelineResult PhotonCameraSim::Process(
     }
   }
 
-  heartbeatCounter++;
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
-                             units::microsecond_t{latency}.to<int64_t>()},
+                             units::microsecond_t{latency}.to<int64_t>(),
+                             1000000},
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
@@ -353,8 +361,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
     ts.targetPitchEntry.Set(0.0, ReceiveTimestamp);
     ts.targetYawEntry.Set(0.0, ReceiveTimestamp);
     ts.targetAreaEntry.Set(0.0, ReceiveTimestamp);
-    std::array<double, 3> poseData{0.0, 0.0, 0.0};
-    ts.targetPoseEntry.Set(poseData, ReceiveTimestamp);
+    ts.targetPoseEntry.Set(frc::Transform3d{}, ReceiveTimestamp);
     ts.targetSkewEntry.Set(0.0, ReceiveTimestamp);
   } else {
     PhotonTrackedTarget bestTarget = result.GetBestTarget();
@@ -364,11 +371,8 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
     ts.targetAreaEntry.Set(bestTarget.GetArea(), ReceiveTimestamp);
     ts.targetSkewEntry.Set(bestTarget.GetSkew(), ReceiveTimestamp);
 
-    frc::Transform3d transform = bestTarget.GetBestCameraToTarget();
-    std::array<double, 4> poseData{
-        transform.X().to<double>(), transform.Y().to<double>(),
-        transform.Rotation().ToRotation2d().Degrees().to<double>()};
-    ts.targetPoseEntry.Set(poseData, ReceiveTimestamp);
+    ts.targetPoseEntry.Set(bestTarget.GetBestCameraToTarget(),
+                           ReceiveTimestamp);
   }
 
   Eigen::Matrix<double, 3, 3, Eigen::RowMajor> intrinsics =
@@ -383,6 +387,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
   ts.cameraDistortionPublisher.Set(distortionView, ReceiveTimestamp);
 
   ts.heartbeatPublisher.Set(heartbeatCounter, ReceiveTimestamp);
+  heartbeatCounter++;
 
   ts.subTable->GetInstance().Flush();
 }

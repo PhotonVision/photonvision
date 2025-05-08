@@ -4,8 +4,8 @@ apply plugin: 'jacoco'
 apply plugin: 'com.google.protobuf'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 def baseArtifactId = nativeName
@@ -13,25 +13,36 @@ def artifactGroupId = 'org.photonvision'
 def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactId}-java_CLS"
 
 def outputsFolder = file("$buildDir/outputs")
+def licenseFile = ext.licenseFile
 
 javadoc {
-    options.encoding = 'UTF-8'
+    options {
+        encoding = 'UTF-8'
+        links "https://github.wpilib.org/allwpilib/docs/release/java/"
+    }
+}
+
+jar {
+    from licenseFile
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
+    from licenseFile
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
+    from licenseFile
 }
 
 task outputJar(type: Jar, dependsOn: classes) {
     archiveBaseName = javaBaseName
     destinationDirectory = outputsFolder
     from sourceSets.main.output
+    from licenseFile
 }
 
 task outputSourcesJar(type: Jar, dependsOn: classes) {
@@ -39,6 +50,7 @@ task outputSourcesJar(type: Jar, dependsOn: classes) {
     destinationDirectory = outputsFolder
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
+    from licenseFile
 }
 
 task outputJavadocJar(type: Jar, dependsOn: javadoc) {
@@ -46,6 +58,7 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
     destinationDirectory = outputsFolder
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
+    from licenseFile
 }
 
 artifacts {
@@ -121,7 +134,7 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
     implementation wpilibTools.deps.wpilibJava("wpiunits")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + wpi.frcYear.get(), wpi.versions.opencvVersion.get())
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, wpi.versions.opencvVersion.get())
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
@@ -146,6 +159,7 @@ jacocoTestReport {
     }
 }
 
+
 protobuf {
     protoc {
         artifact = 'com.google.protobuf:protoc:3.21.12'
@@ -158,7 +172,8 @@ protobuf {
     generateProtoTasks {
         all().configureEach { task ->
             task.builtins {
-                cpp {}
+                // cpp {}
+                // The protobuf-java code is bad -- use quickbuf
                 remove java
             }
             task.plugins {

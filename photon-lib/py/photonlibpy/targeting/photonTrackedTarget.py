@@ -1,7 +1,13 @@
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, ClassVar
+
 from wpimath.geometry import Transform3d
+
 from ..packet import Packet
 from .TargetCorner import TargetCorner
+
+if TYPE_CHECKING:
+    from ..generated.PhotonTrackedTargetSerde import PhotonTrackedTargetSerde
 
 
 @dataclass
@@ -13,9 +19,11 @@ class PhotonTrackedTarget:
     fiducialId: int = -1
     bestCameraToTarget: Transform3d = field(default_factory=Transform3d)
     altCameraToTarget: Transform3d = field(default_factory=Transform3d)
-    minAreaRectCorners: list[TargetCorner] | None = None
-    detectedCorners: list[TargetCorner] | None = None
+    minAreaRectCorners: list[TargetCorner] = field(default_factory=list[TargetCorner])
+    detectedCorners: list[TargetCorner] = field(default_factory=list[TargetCorner])
     poseAmbiguity: float = 0.0
+    objDetectId: int = -1
+    objDetectConf: float = 0.0
 
     def getYaw(self) -> float:
         return self.yaw
@@ -35,10 +43,10 @@ class PhotonTrackedTarget:
     def getPoseAmbiguity(self) -> float:
         return self.poseAmbiguity
 
-    def getMinAreaRectCorners(self) -> list[TargetCorner] | None:
+    def getMinAreaRectCorners(self) -> list[TargetCorner]:
         return self.minAreaRectCorners
 
-    def getDetectedCorners(self) -> list[TargetCorner] | None:
+    def getDetectedCorners(self) -> list[TargetCorner]:
         return self.detectedCorners
 
     def getBestCameraToTarget(self) -> Transform3d:
@@ -55,4 +63,4 @@ class PhotonTrackedTarget:
             retList.append(TargetCorner(cx, cy))
         return retList
 
-    photonStruct: "PhotonTrackedTargetSerde" = None
+    photonStruct: ClassVar["PhotonTrackedTargetSerde"]

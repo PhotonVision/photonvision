@@ -17,45 +17,38 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.HAL;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.OsImageVersion;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.KernelLogLogger;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.camera.FileVisionSource;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.ContourGroupingMode;
-import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
-import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
-import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionModuleManager;
-import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
@@ -81,11 +74,6 @@ public class Main {
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
         options.addOption("p", "path", true, "Point test mode to a specific folder");
-        options.addOption(
-                "i",
-                "ignore-cameras",
-                true,
-                "Ignore cameras that match a regex. Uses camera name as provided by cscore.");
         options.addOption("n", "disable-networking", false, "Disables control device network settings");
         options.addOption(
                 "c",
@@ -122,11 +110,6 @@ public class Main {
                 }
             }
 
-            if (cmd.hasOption("ignore-cameras")) {
-                VisionSourceManager.getInstance()
-                        .setIgnoredCamerasRegex(cmd.getOptionValue("ignore-cameras"));
-            }
-
             if (cmd.hasOption("disable-networking")) {
                 NetworkManager.getInstance().networkingIsDisabled = true;
             }
@@ -142,156 +125,27 @@ public class Main {
         return true;
     }
 
-    private static void addTestModeFromFolder() {
-        ConfigManager.getInstance().load();
-
-        try {
-            List<VisionSource> collectedSources =
-                    Files.list(testModeFolder)
-                            .filter(p -> p.toFile().isFile())
-                            .map(
-                                    p -> {
-                                        try {
-                                            CameraConfiguration camConf =
-                                                    new CameraConfiguration(
-                                                            p.getFileName().toString(), p.toAbsolutePath().toString());
-                                            camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
-                                            camConf.addCalibration(TestUtils.get2020LifeCamCoeffs(false));
-
-                                            var pipeSettings = new AprilTagPipelineSettings();
-                                            pipeSettings.pipelineNickname = p.getFileName().toString();
-                                            pipeSettings.outputShowMultipleTargets = true;
-                                            pipeSettings.inputShouldShow = true;
-                                            pipeSettings.outputShouldShow = false;
-                                            pipeSettings.solvePNPEnabled = true;
-
-                                            var aprilTag = new AprilTagPipelineSettings();
-                                            var psList = new ArrayList<CVPipelineSettings>();
-                                            psList.add(aprilTag);
-                                            camConf.pipelineSettings = psList;
-
-                                            return new FileVisionSource(camConf);
-                                        } catch (Exception e) {
-                                            logger.error("Couldn't load image " + p.getFileName().toString(), e);
-                                            return null;
-                                        }
-                                    })
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toList());
-
-            ConfigManager.getInstance().unloadCameraConfigs();
-            VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
-            ConfigManager.getInstance().addCameraConfigurations(collectedSources);
-        } catch (IOException e) {
-            logger.error("Path does not exist!");
-            System.exit(1);
-        }
-    }
-
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
-        var camConf2019 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2019");
-        if (camConf2019 == null) {
-            camConf2019 =
-                    new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
-            camConf2019.FOV = TestUtils.WPI2019Image.FOV;
-            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
-
-            var pipeline2019 = new ReflectivePipelineSettings();
-            pipeline2019.pipelineNickname = "CargoShip";
-            pipeline2019.targetModel = TargetModel.k2019DualTarget;
-            pipeline2019.outputShowMultipleTargets = true;
-            pipeline2019.contourGroupingMode = ContourGroupingMode.Dual;
-            pipeline2019.inputShouldShow = true;
-
-            var psList2019 = new ArrayList<CVPipelineSettings>();
-            psList2019.add(pipeline2019);
-            camConf2019.pipelineSettings = psList2019;
-        }
-
-        var camConf2020 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2020");
-        if (camConf2020 == null) {
-            camConf2020 =
-                    new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
-            camConf2020.FOV = TestUtils.WPI2020Image.FOV;
-            camConf2020.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
-
-            var pipeline2020 = new ReflectivePipelineSettings();
-            pipeline2020.pipelineNickname = "OuterPort";
-            pipeline2020.targetModel = TargetModel.k2020HighGoalOuter;
-            camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
-            pipeline2020.inputShouldShow = true;
-
-            var psList2020 = new ArrayList<CVPipelineSettings>();
-            psList2020.add(pipeline2020);
-            camConf2020.pipelineSettings = psList2020;
-        }
-
-        var camConf2022 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2022");
-        if (camConf2022 == null) {
-            camConf2022 =
-                    new CameraConfiguration("WPI2022", TestUtils.getTestMode2022ImagePath().toString());
-            camConf2022.FOV = TestUtils.WPI2022Image.FOV;
-            camConf2022.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
-
-            var pipeline2022 = new ReflectivePipelineSettings();
-            pipeline2022.pipelineNickname = "OuterPort";
-            pipeline2022.targetModel = TargetModel.k2020HighGoalOuter;
-            pipeline2022.inputShouldShow = true;
-            //        camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
-
-            var psList2022 = new ArrayList<CVPipelineSettings>();
-            psList2022.add(pipeline2022);
-            camConf2022.pipelineSettings = psList2022;
-        }
-
-        CameraConfiguration camConf2023 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2023");
-        if (camConf2023 == null) {
-            camConf2023 =
-                    new CameraConfiguration(
-                            "WPI2023",
-                            TestUtils.getResourcesFolderPath(true)
-                                    .resolve("testimages")
-                                    .resolve(TestUtils.WPI2023Apriltags.k383_60_Angle2.path)
-                                    .toString());
-
-            camConf2023.FOV = TestUtils.WPI2023Apriltags.FOV;
-            camConf2023.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
-
-            var pipeline2023 = new AprilTagPipelineSettings();
-            var path_split = Path.of(camConf2023.path).getFileName().toString();
-            pipeline2023.pipelineNickname = path_split.replace(".png", "");
-            pipeline2023.targetModel = TargetModel.kAprilTag6in_16h5;
-            pipeline2023.inputShouldShow = true;
-            pipeline2023.solvePNPEnabled = true;
-
-            var psList2023 = new ArrayList<CVPipelineSettings>();
-            psList2023.add(pipeline2023);
-            camConf2023.pipelineSettings = psList2023;
-        }
-
         CameraConfiguration camConf2024 =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
-        if (camConf2024 == null) {
+        if (camConf2024 == null || true) {
             camConf2024 =
                     new CameraConfiguration(
-                            "WPI2024",
-                            TestUtils.getResourcesFolderPath(true)
-                                    .resolve("testimages")
-                                    .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
-                                    .toString());
+                            PVCameraInfo.fromFileInfo(
+                                    TestUtils.getResourcesFolderPath(true)
+                                            .resolve("testimages")
+                                            .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
+                                            .toString(),
+                                    "WPI2024"));
 
             camConf2024.FOV = TestUtils.WPI2024Images.FOV;
             // same camera as 2023
             camConf2024.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
 
             var pipeline2024 = new AprilTagPipelineSettings();
-            var path_split = Path.of(camConf2024.path).getFileName().toString();
+            var path_split = Path.of(camConf2024.matchedCameraInfo.path()).getFileName().toString();
             pipeline2024.pipelineNickname = path_split.replace(".jpg", "");
             pipeline2024.targetModel = TargetModel.kAprilTag6p5in_36h11;
             pipeline2024.tagFamily = AprilTagFamily.kTag36h11;
@@ -303,56 +157,24 @@ public class Main {
             camConf2024.pipelineSettings = psList2024;
         }
 
-        // Colored shape testing
-        var camConfShape =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("Shape");
-
-        // If we haven't saved shape settings, create a new one
-        if (camConfShape == null) {
-            camConfShape =
-                    new CameraConfiguration(
-                            "Shape",
-                            TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true)
-                                    .toString());
-            var settings = new ColoredShapePipelineSettings();
-            settings.hsvHue = new IntegerCouple(0, 35);
-            settings.hsvSaturation = new IntegerCouple(82, 255);
-            settings.hsvValue = new IntegerCouple(62, 255);
-            settings.contourShape = ContourShape.Triangle;
-            settings.outputShowMultipleTargets = true;
-            settings.circleAccuracy = 15;
-            settings.inputShouldShow = true;
-            camConfShape.addPipelineSetting(settings);
-        }
-
-        var collectedSources = new ArrayList<VisionSource>();
-
-        var fvsShape = new FileVisionSource(camConfShape);
-        var fvs2019 = new FileVisionSource(camConf2019);
-        var fvs2020 = new FileVisionSource(camConf2020);
-        var fvs2022 = new FileVisionSource(camConf2022);
-        var fvs2023 = new FileVisionSource(camConf2023);
-        var fvs2024 = new FileVisionSource(camConf2024);
-
-        collectedSources.add(fvs2024);
-        // collectedSources.add(fvs2023);
-        // collectedSources.add(fvs2022);
-        // collectedSources.add(fvsShape);
-        // collectedSources.add(fvs2020);
-        // collectedSources.add(fvs2019);
+        var cameraConfigs = List.of(camConf2024);
 
         ConfigManager.getInstance().unloadCameraConfigs();
-        VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
-        ConfigManager.getInstance().addCameraConfigurations(collectedSources);
+        cameraConfigs.stream().forEach(ConfigManager.getInstance()::addCameraConfiguration);
+        VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
     public static void main(String[] args) {
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
-                        + " on "
+                        + " on platform "
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+
+        if (OsImageVersion.IMAGE_VERSION.isPresent()) {
+            logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
+        }
 
         try {
             if (!handleArgs(args)) {
@@ -379,7 +201,25 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("Native libraries loaded.");
+        logger.info("WPI JNI libraries loaded.");
+
+        try {
+            boolean success = PhotonTargetingJniLoader.load();
+
+            if (!success) {
+                logger.error("Failed to load native libraries! Giving up :(");
+                System.exit(1);
+            }
+        } catch (Exception e) {
+            logger.error("Failed to load photon-targeting JNI!", e);
+            System.exit(1);
+        }
+        logger.info("photon-targeting JNI libraries loaded.");
+
+        if (!HAL.initialize(500, 0)) {
+            logger.error("Failed to initialize the HAL! Giving up :(");
+            System.exit(1);
+        }
 
         try {
             if (Platform.isRaspberryPi()) {
@@ -417,6 +257,10 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
+        // Add Linux kernel log->Photon logger
+        KernelLogLogger.getInstance();
+
+        // Add CSCore->Photon logger
         PvCSCoreLogger.getInstance();
 
         logger.debug("Loading ConfigManager...");
@@ -438,26 +282,27 @@ public class Main {
         logger.debug("Loading NetworkTablesManager...");
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+        NetworkTablesManager.getInstance().registerTimedTasks();
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
             System.exit(0);
         }
 
+        // todo - should test mode just add test mode sources, but still allow local usb cameras to be
+        // added?
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
             VisionSourceManager.getInstance()
                     .registerLoadedConfigs(
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
-
-            VisionSourceManager.getInstance().registerTimedTask();
         } else {
             if (testModeFolder == null) {
                 addTestModeSources();
-            } else {
-                addTestModeFromFolder();
             }
         }
+
+        VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");
         HardwareManager.getInstance().setRunning(true);

@@ -19,6 +19,7 @@
 #include <vector>
 
 #include <units/angle.h>
+#include <wpi/print.h>
 
 #include "gtest/gtest.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -85,7 +86,7 @@ TEST(PacketTest, PnpResult) {
 // }
 
 TEST(PacketTest, PhotonPipelineResult) {
-  PhotonPipelineResult result(PhotonPipelineMetadata(0, 0, 1),
+  PhotonPipelineResult result(PhotonPipelineMetadata(0, 0, 1, 2),
                               std::vector<PhotonTrackedTarget>{}, std::nullopt);
 
   Packet p;
@@ -130,7 +131,7 @@ TEST(PacketTest, PhotonPipelineResult) {
                 17.0, 22.33, 2.54},
       std::vector<int16_t>{8, 7, 11, 22, 59, 40}};
 
-  PhotonPipelineResult result2(PhotonPipelineMetadata{0, 0, 1}, targets,
+  PhotonPipelineResult result2(PhotonPipelineMetadata{0, 0, 1, 1}, targets,
                                mtResult);
 
   Packet p2;
@@ -141,7 +142,7 @@ TEST(PacketTest, PhotonPipelineResult) {
   auto t3 = std::chrono::steady_clock::now();
   EXPECT_EQ(result2, b2);
 
-  fmt::println(
+  wpi::println(
       "Pack {} unpack {} packet length {}",
       std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count(),
       std::chrono::duration_cast<std::chrono::nanoseconds>(t3 - t2).count(),

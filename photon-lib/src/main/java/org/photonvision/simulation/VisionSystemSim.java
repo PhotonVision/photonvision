@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.photonvision.PhotonCamera;
 import org.photonvision.estimation.TargetModel;
 
@@ -357,10 +356,7 @@ public class VisionSystemSim {
                 entry ->
                         dbgField
                                 .getObject(entry.getKey())
-                                .setPoses(
-                                        entry.getValue().stream()
-                                                .map(t -> t.getPose().toPose2d())
-                                                .collect(Collectors.toList())));
+                                .setPoses(entry.getValue().stream().map(t -> t.getPose().toPose2d()).toList()));
 
         if (robotPoseMeters == null) return;
 

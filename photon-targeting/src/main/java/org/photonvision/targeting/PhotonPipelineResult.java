@@ -40,9 +40,6 @@ public class PhotonPipelineResult
     // Multi-tag result
     public Optional<MultiTargetPNPResult> multitagResult;
 
-    // HACK: Since we don't trust NT time sync, keep track of when we got this packet into robot code
-    public long ntReceiveTimestampMicros = -1;
-
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {
         this(new PhotonPipelineMetadata(), List.of(), Optional.empty());
@@ -52,19 +49,21 @@ public class PhotonPipelineResult
      * Constructs a pipeline result.
      *
      * @param sequenceID The number of frames processed by this camera since boot
-     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
-     *     captured the image this result contains the targeting info of
-     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
-     *     published targeting info
+     * @param captureTimestampMicros The time, in uS in the coprocessor's timebase, that the
+     *     coprocessor captured the image this result contains the targeting info of
+     * @param publishTimestampMicros The time, in uS in the coprocessor's timebase, that the
+     *     coprocessor published targeting info
      * @param targets The list of targets identified by the pipeline.
      */
     public PhotonPipelineResult(
             long sequenceID,
-            long captureTimestamp,
-            long publishTimestamp,
+            long captureTimestampMicros,
+            long publishTimestampMicros,
+            long timeSinceLastPong,
             List<PhotonTrackedTarget> targets) {
         this(
-                new PhotonPipelineMetadata(captureTimestamp, publishTimestamp, sequenceID),
+                new PhotonPipelineMetadata(
+                        captureTimestampMicros, publishTimestampMicros, sequenceID, timeSinceLastPong),
                 targets,
                 Optional.empty());
     }
@@ -84,10 +83,12 @@ public class PhotonPipelineResult
             long sequenceID,
             long captureTimestamp,
             long publishTimestamp,
+            long timeSinceLastPong,
             List<PhotonTrackedTarget> targets,
             Optional<MultiTargetPNPResult> result) {
         this(
-                new PhotonPipelineMetadata(captureTimestamp, publishTimestamp, sequenceID),
+                new PhotonPipelineMetadata(
+                        captureTimestamp, publishTimestamp, sequenceID, timeSinceLastPong),
                 targets,
                 result);
     }
@@ -162,26 +163,14 @@ public class PhotonPipelineResult
     }
 
     /**
-     * Returns the estimated time the frame was taken, in the Received system's time base. This is
-     * calculated as (NT Receive time (robot base) - (publish timestamp, coproc timebase - capture
-     * timestamp, coproc timebase))
+     * Returns the estimated time the frame was taken, in the Time Sync Server's time base (nt::Now).
+     * This is calculated using the estimated offset between Time Sync Server time and local time. The
+     * robot shall run a server, so the offset shall be 0.
      *
      * @return The timestamp in seconds
      */
     public double getTimestampSeconds() {
-        return (ntReceiveTimestampMicros
-                        - (metadata.publishTimestampMicros - metadata.captureTimestampMicros))
-                / 1e6;
-    }
-
-    /** The time that the robot Received this result, in the FPGA timebase. */
-    public long getNtReceiveTimestampMicros() {
-        return ntReceiveTimestampMicros;
-    }
-
-    /** Sets the FPGA timestamp this result was Received by robot code */
-    public void setReceiveTimestampMicros(long timestampMicros) {
-        this.ntReceiveTimestampMicros = timestampMicros;
+        return metadata.captureTimestampMicros / 1e6;
     }
 
     @Override
@@ -192,8 +181,6 @@ public class PhotonPipelineResult
                 + targets
                 + ", multitagResult="
                 + multitagResult
-                + ", ntReceiveTimestampMicros="
-                + ntReceiveTimestampMicros
                 + "]";
     }
 
@@ -204,7 +191,6 @@ public class PhotonPipelineResult
         result = prime * result + ((metadata == null) ? 0 : metadata.hashCode());
         result = prime * result + ((targets == null) ? 0 : targets.hashCode());
         result = prime * result + ((multitagResult == null) ? 0 : multitagResult.hashCode());
-        result = prime * result + (int) (ntReceiveTimestampMicros ^ (ntReceiveTimestampMicros >>> 32));
         return result;
     }
 
@@ -223,7 +209,6 @@ public class PhotonPipelineResult
         if (multitagResult == null) {
             if (other.multitagResult != null) return false;
         } else if (!multitagResult.equals(other.multitagResult)) return false;
-        if (ntReceiveTimestampMicros != other.ntReceiveTimestampMicros) return false;
         return true;
     }
 

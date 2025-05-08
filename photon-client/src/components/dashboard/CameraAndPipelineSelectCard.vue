@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
@@ -9,10 +9,10 @@ import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const changeCurrentCameraIndex = (index: number) => {
-  useCameraSettingsStore().setCurrentCameraIndex(index, true);
+const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
+  useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
 
-  switch (useCameraSettingsStore().cameras[index].pipelineSettings.pipelineType) {
+  switch (useCameraSettingsStore().cameras[cameraUniqueName].pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
       pipelineType.value = WebsocketPipelineType.Reflective;
       break;
@@ -86,7 +86,7 @@ const cancelCameraNameEdit = () => {
 };
 
 // Pipeline Name Edit
-const pipelineNamesWrapper = computed<{ name: string; value: number }[]>(() => {
+const pipelineNamesWrapper = computed<SelectItem[]>(() => {
   const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({ name: name, value: index }));
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -212,7 +212,7 @@ const duplicateCurrentPipeline = () => {
 
 // Change Props whenever the pipeline settings are changed
 useCameraSettingsStore().$subscribe((mutation, state) => {
-  const currentCameraSettings = state.cameras[useStateStore().currentCameraIndex];
+  const currentCameraSettings = state.cameras[useStateStore().currentCameraUniqueName];
 
   switch (currentCameraSettings.pipelineSettings.pipelineType) {
     case PipelineType.Reflective:
@@ -232,18 +232,24 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
   }
 });
+const wrappedCameras = computed<SelectItem[]>(() =>
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
+    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
+    value: cameraUniqueName
+  }))
+);
 </script>
 
 <template>
   <v-card color="primary">
-    <v-row style="padding: 12px 12px 0 24px">
+    <v-row style="padding: 20px 12px 0 30px">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isCameraNameEdit"
-          v-model="useStateStore().currentCameraIndex"
+          v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
-          :items="useCameraSettingsStore().cameraNames"
-          @input="changeCurrentCameraIndex"
+          :items="wrappedCameras"
+          @update:modelValue="changeCurrentCameraUniqueName"
         />
         <pv-input
           v-else
@@ -264,7 +270,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             :disabled="checkCameraName(currentCameraName) !== true"
             @click="() => saveCameraNameEdit(currentCameraName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelCameraNameEdit" />
+          <pv-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelCameraNameEdit" />
         </div>
         <pv-icon
           v-else
@@ -275,16 +281,20 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         />
       </v-col>
     </v-row>
-    <v-row style="padding: 0 12px 0 24px">
+    <v-row style="padding: 0 12px 0 30px">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isPipelineNameEdit"
-          :value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
+          :model-value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
           label="Pipeline"
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            !useCameraSettingsStore().hasConnected
+          "
           :items="pipelineNamesWrapper"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
+          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
         <pv-input
           v-else
@@ -304,13 +314,13 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             :disabled="checkPipelineName(currentPipelineName) !== true"
             @click="() => savePipelineNameEdit(currentPipelineName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit" />
+          <pv-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelPipelineNameEdit" />
         </div>
-        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
-          <template #activator="{ on }">
-            <v-icon color="#c5c5c5" v-on="on" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
+        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset="7">
+          <template #activator="{ props }">
+            <v-icon color="#c5c5c5" v-bind="props" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
           </template>
-          <v-list dark dense color="primary">
+          <v-list density="compact" color="primary">
             <v-list-item @click="startPipelineNameEdit">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
@@ -323,7 +333,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
             </v-list-item>
             <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
-                <pv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
+                <pv-icon color="red-darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="duplicateCurrentPipeline">
@@ -343,20 +353,24 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         />
       </v-col>
     </v-row>
-    <v-row style="padding: 0 12px 12px 24px">
+    <v-row style="padding: 0 12px 24px 30px">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-model="currentPipelineType"
           label="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            !useCameraSettingsStore().hasConnected
+          "
           :items="pipelineTypesWrapper"
-          @input="showPipelineTypeChangeDialog = true"
+          @update:modelValue="showPipelineTypeChangeDialog = true"
         />
       </v-col>
     </v-row>
-    <v-dialog v-model="showPipelineCreationDialog" dark persistent width="500">
-      <v-card dark color="primary">
+    <v-dialog v-model="showPipelineCreationDialog" persistent width="500">
+      <v-card color="primary">
         <v-card-title> Create New Pipeline </v-card-title>
         <v-card-text>
           <pv-input
@@ -378,15 +392,20 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         <v-divider />
         <v-card-actions>
           <v-spacer />
-          <v-btn color="#ffd843" :disabled="checkPipelineName(newPipelineName) !== true" @click="createNewPipeline">
+          <v-btn
+            color="#ffd843"
+            :disabled="checkPipelineName(newPipelineName) !== true"
+            variant="flat"
+            @click="createNewPipeline"
+          >
             Save
           </v-btn>
-          <v-btn color="error" @click="cancelPipelineCreation"> Cancel </v-btn>
+          <v-btn color="error" variant="elevated" @click="cancelPipelineCreation"> Cancel </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showPipelineDeletionConfirmationDialog" dark width="500">
-      <v-card dark color="primary">
+    <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
+      <v-card color="primary">
         <v-card-title> Pipeline Deletion Confirmation </v-card-title>
         <v-card-text>
           Are you sure you want to delete the pipeline
@@ -398,8 +417,15 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         <v-divider />
         <v-card-actions>
           <v-spacer />
-          <v-btn color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" @click="showPipelineDeletionConfirmationDialog = false"> No, take me back </v-btn>
+          <v-btn variant="flat" color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
+          <v-btn
+            variant="flat"
+            color="#ffd843"
+            class="text-black"
+            @click="showPipelineDeletionConfirmationDialog = false"
+          >
+            No, take me back
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -414,8 +440,10 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
         <v-divider />
         <v-card-actions>
           <v-spacer />
-          <v-btn color="error" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" @click="cancelChangePipelineType"> No, take me back </v-btn>
+          <v-btn color="error" variant="elevated" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
+          <v-btn color="#ffd843" variant="elevated" class="text-black" @click="cancelChangePipelineType">
+            No, take me back
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

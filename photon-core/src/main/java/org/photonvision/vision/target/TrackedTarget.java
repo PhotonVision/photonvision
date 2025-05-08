@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
@@ -121,11 +122,9 @@ public class TrackedTarget implements Releasable {
             tvec.put(
                     0,
                     0,
-                    new double[] {
-                        bestPose.getTranslation().getX(),
-                        bestPose.getTranslation().getY(),
-                        bestPose.getTranslation().getZ()
-                    });
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ());
             setCameraRelativeTvec(tvec);
 
             // Opencv expects a 3d vector with norm = angle and direction = axis
@@ -135,13 +134,12 @@ public class TrackedTarget implements Releasable {
         }
 
         double[] corners = tagDetection.getCorners();
-        Point[] cornerPoints =
-                new Point[] {
-                    new Point(corners[0], corners[1]),
-                    new Point(corners[2], corners[3]),
-                    new Point(corners[4], corners[5]),
-                    new Point(corners[6], corners[7])
-                };
+        Point[] cornerPoints = {
+            new Point(corners[0], corners[1]),
+            new Point(corners[2], corners[3]),
+            new Point(corners[4], corners[5]),
+            new Point(corners[6], corners[7])
+        };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
         m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
@@ -197,13 +195,12 @@ public class TrackedTarget implements Releasable {
         double[] xCorners = result.getXCorners();
         double[] yCorners = result.getYCorners();
 
-        Point[] cornerPoints =
-                new Point[] {
-                    new Point(xCorners[0], yCorners[0]),
-                    new Point(xCorners[1], yCorners[1]),
-                    new Point(xCorners[2], yCorners[2]),
-                    new Point(xCorners[3], yCorners[3])
-                };
+        Point[] cornerPoints = {
+            new Point(xCorners[0], yCorners[0]),
+            new Point(xCorners[1], yCorners[1]),
+            new Point(xCorners[2], yCorners[2]),
+            new Point(xCorners[3], yCorners[3])
+        };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
         m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
@@ -235,11 +232,9 @@ public class TrackedTarget implements Releasable {
             tvec.put(
                     0,
                     0,
-                    new double[] {
-                        bestPose.getTranslation().getX(),
-                        bestPose.getTranslation().getY(),
-                        bestPose.getTranslation().getZ()
-                    });
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ());
             setCameraRelativeTvec(tvec);
 
             var rvec = new Mat(3, 1, CvType.CV_64FC1);
@@ -441,8 +436,10 @@ public class TrackedTarget implements Releasable {
             }
             {
                 var points = t.getTargetCorners();
-                for (Point point : points) {
-                    detectedCorners.add(new TargetCorner(point.x, point.y));
+                if (points != null) {
+                    for (Point point : points) {
+                        detectedCorners.add(new TargetCorner(point.x, point.y));
+                    }
                 }
             }
 
@@ -500,7 +497,6 @@ public class TrackedTarget implements Releasable {
                 double verticalFocalLength,
                 double imageArea,
                 CameraCalibrationCoefficients cal) {
-
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
             this.robotOffsetPointMode = robotOffsetPointMode;
@@ -520,7 +516,6 @@ public class TrackedTarget implements Releasable {
                 Point robotOffsetSinglePoint,
                 DualOffsetValues dualOffsetValues,
                 FrameStaticProperties frameStaticProperties) {
-
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
             this.robotOffsetPointMode = robotOffsetPointMode;

@@ -27,12 +27,13 @@ import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("resolution")
-    public final Size resolution;
+    public final Size unrotatedImageSize;
 
     @JsonProperty("cameraIntrinsics")
     public final JsonMatOfDouble cameraIntrinsics;
@@ -55,9 +56,6 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonProperty("lensmodel")
     public final CameraLensModel lensmodel;
-
-    @JsonIgnore private final double[] intrinsicsArr = new double[9];
-    @JsonIgnore private final double[] distCoeffsArr = new double[5];
 
     /**
      * Contains all camera calibration data for a particular resolution of a camera. Designed for use
@@ -87,7 +85,7 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("calobjectSize") Size calobjectSize,
             @JsonProperty("calobjectSpacing") double calobjectSpacing,
             @JsonProperty("lensmodel") CameraLensModel lensmodel) {
-        this.resolution = resolution;
+        this.unrotatedImageSize = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.calobjectWarp = calobjectWarp;
@@ -100,15 +98,107 @@ public class CameraCalibrationCoefficients implements Releasable {
             observations = List.of();
         }
         this.observations = observations;
+    }
 
-        // do this once so gets are quick
-        getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
-        getDistCoeffsMat().get(0, 0, distCoeffsArr);
+    public CameraCalibrationCoefficients rotateCoefficients(ImageRotationMode rotation) {
+        if (rotation == ImageRotationMode.DEG_0) {
+            return this;
+        }
+        Mat rotatedIntrinsics = getCameraIntrinsicsMat().clone();
+        Mat rotatedDistCoeffs = getDistCoeffsMat().clone();
+        double cx = getCameraIntrinsicsMat().get(0, 2)[0];
+        double cy = getCameraIntrinsicsMat().get(1, 2)[0];
+        double fx = getCameraIntrinsicsMat().get(0, 0)[0];
+        double fy = getCameraIntrinsicsMat().get(1, 1)[0];
+
+        // only adjust p1 and p2 the rest are radial distortion coefficients
+
+        double p1 = getDistCoeffsMat().get(0, 2)[0];
+        double p2 = getDistCoeffsMat().get(0, 3)[0];
+
+        Size rotatedImageSize = null;
+
+        // A bunch of horrifying opaque rotation black magic. See image-rotation.md for more details.
+        switch (rotation) {
+            case DEG_0:
+                break;
+            case DEG_270_CCW:
+                // FX
+                rotatedIntrinsics.put(0, 0, fy);
+                // FY
+                rotatedIntrinsics.put(1, 1, fx);
+
+                // CX
+                rotatedIntrinsics.put(0, 2, unrotatedImageSize.height - cy);
+                // CY
+                rotatedIntrinsics.put(1, 2, cx);
+
+                // P1
+                rotatedDistCoeffs.put(0, 2, p2);
+                // P2
+                rotatedDistCoeffs.put(0, 3, -p1);
+
+                // The rotated image size is the same as the unrotated image size, but the width and height
+                // are flipped
+                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+                break;
+            case DEG_180_CCW:
+                // CX
+                rotatedIntrinsics.put(0, 2, unrotatedImageSize.width - cx);
+                // CY
+                rotatedIntrinsics.put(1, 2, unrotatedImageSize.height - cy);
+
+                // P1
+                rotatedDistCoeffs.put(0, 2, -p1);
+                // P2
+                rotatedDistCoeffs.put(0, 3, -p2);
+
+                // The rotated image size is the same as the unrotated image size
+                rotatedImageSize = unrotatedImageSize;
+                break;
+            case DEG_90_CCW:
+                // FX
+                rotatedIntrinsics.put(0, 0, fy);
+                // FY
+                rotatedIntrinsics.put(1, 1, fx);
+
+                // CX
+                rotatedIntrinsics.put(0, 2, cy);
+                // CY
+                rotatedIntrinsics.put(1, 2, unrotatedImageSize.width - cx);
+
+                // P1
+                rotatedDistCoeffs.put(0, 2, -p2);
+                // P2
+                rotatedDistCoeffs.put(0, 3, p1);
+
+                // The rotated image size is the same as the unrotated image size, but the width and height
+                // are flipped
+                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
+                break;
+        }
+
+        JsonMatOfDouble newIntrinsics = JsonMatOfDouble.fromMat(rotatedIntrinsics);
+
+        JsonMatOfDouble newDistCoeffs = JsonMatOfDouble.fromMat(rotatedDistCoeffs);
+
+        rotatedIntrinsics.release();
+        rotatedDistCoeffs.release();
+
+        return new CameraCalibrationCoefficients(
+                rotatedImageSize,
+                newIntrinsics,
+                newDistCoeffs,
+                calobjectWarp,
+                observations,
+                calobjectSize,
+                calobjectSpacing,
+                lensmodel);
     }
 
     @JsonIgnore
     public Mat getCameraIntrinsicsMat() {
-        return cameraIntrinsics.getAsMat();
+        return cameraIntrinsics.getAsMatOfDouble();
     }
 
     @JsonIgnore
@@ -118,12 +208,12 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonIgnore
     public double[] getIntrinsicsArr() {
-        return intrinsicsArr;
+        return cameraIntrinsics.data;
     }
 
     @JsonIgnore
     public double[] getDistCoeffsArr() {
-        return distCoeffsArr;
+        return distCoeffs.data;
     }
 
     @JsonIgnore
@@ -140,7 +230,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     @Override
     public String toString() {
         return "CameraCalibrationCoefficients [resolution="
-                + resolution
+                + unrotatedImageSize
                 + ", cameraIntrinsics="
                 + cameraIntrinsics
                 + ", distCoeffs="
@@ -149,16 +239,12 @@ public class CameraCalibrationCoefficients implements Releasable {
                 + observations.size()
                 + ", calobjectWarp="
                 + Arrays.toString(calobjectWarp)
-                + ", intrinsicsArr="
-                + Arrays.toString(intrinsicsArr)
-                + ", distCoeffsArr="
-                + Arrays.toString(distCoeffsArr)
                 + "]";
     }
 
     public UICameraCalibrationCoefficients cloneWithoutObservations() {
         return new UICameraCalibrationCoefficients(
-                resolution,
+                unrotatedImageSize,
                 cameraIntrinsics,
                 distCoeffs,
                 calobjectWarp,

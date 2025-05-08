@@ -20,6 +20,7 @@ const settingsValid = ref(true);
 
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
+  if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
     const contains = index != -1;
@@ -81,15 +82,11 @@ const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
-const useMrCalRef = ref(true);
-const useMrCal = computed<boolean>({
-  get() {
-    return useMrCalRef.value && useSettingsStore().general.mrCalWorking;
-  },
-  set(value) {
-    useMrCalRef.value = value && useSettingsStore().general.mrCalWorking;
-  }
-});
+
+// Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
+const tooManyPoints = computed(
+  () => useStateStore().calibrationData.imageCount * patternWidth.value * patternHeight.value > 700000
+);
 
 const downloadCalibBoard = () => {
   const doc = new JsPDF({ unit: "in", format: "letter" });
@@ -104,9 +101,8 @@ const downloadCalibBoard = () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      // eslint-disable-next-line no-case-declarations
       const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
-      // eslint-disable-next-line no-case-declarations
+
       const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
@@ -161,7 +157,10 @@ const downloadCalibBoard = () => {
   doc.save(`calibrationTarget-${CalibrationBoardTypes[boardType.value]}.pdf`);
 };
 
-const isCalibrating = ref(false);
+const isCalibrating = computed(
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
+);
+
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
     squareSizeIn: squareSizeIn.value,
@@ -169,19 +168,20 @@ const startCalibration = () => {
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
-    useMrCal: useMrCal.value,
     useOldPattern: useOldPattern.value,
     tagFamily: tagFamily.value
   });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
-  isCalibrating.value = true;
+  // isCalibrating.value = true;
   calibCanceled.value = false;
 };
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const endCalibration = () => {
+  calibSuccess.value = undefined;
+
   if (!useStateStore().calibrationData.hasEnoughImages) {
     calibCanceled.value = true;
   }
@@ -197,12 +197,15 @@ const endCalibration = () => {
       calibSuccess.value = false;
     })
     .finally(() => {
-      isCalibrating.value = false;
+      // isCalibrating.value = false;
+      // backend deals with this for us
     });
 };
 
-let showCalDialog = ref(false);
-let selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
+const drawAllSnapshots = ref(true);
+
+const showCalDialog = ref(false);
+const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
 const setSelectedVideoFormat = (format: VideoFormat) => {
   selectedVideoFormat.value = format;
   showCalDialog.value = true;
@@ -211,259 +214,282 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
 
 <template>
   <div>
-    <v-card class="mb-3 pr-6 pb-3" color="primary" dark>
-      <v-card-title>Camera Calibration</v-card-title>
-      <div class="ml-5">
-        <v-row v-show="!isCalibrating" class="pb-12">
-          <v-card-subtitle class="pb-0 mb-0 pl-3">Complete Calibrations</v-card-subtitle>
-          <v-simple-table fixed-header height="100%" dense class="mt-2">
-            <thead>
-              <tr>
-                <th>Resolution</th>
-                <th>Mean Error</th>
-                <th>Horizontal FOV</th>
-                <th>Vertical FOV</th>
-                <th>Diagonal FOV</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in getUniqueVideoFormatsByResolution()"
-                :key="index"
-                title="Click to get calibration specific information"
-                @click="setSelectedVideoFormat(value)"
-              >
-                <td>{{ getResolutionString(value.resolution) }}</td>
-                <td>
-                  {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
-                </td>
-                <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-                <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-                <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-              </tr>
-            </tbody>
-          </v-simple-table>
-        </v-row>
-        <v-divider />
-        <v-row style="display: flex; flex-direction: column" class="mt-4">
-          <v-card-subtitle v-show="!isCalibrating" class="pl-3 pa-0 ma-0"> Configure New Calibration</v-card-subtitle>
-          <v-form ref="form" v-model="settingsValid" class="pl-4 mb-10 pr-5">
-            <pv-select
-              v-model="useStateStore().calibrationData.videoFormatIndex"
-              label="Resolution"
-              :select-cols="7"
-              :disabled="isCalibrating"
-              tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
-              :items="getUniqueVideoResolutionStrings()"
-            />
-            <pv-select
-              v-show="isCalibrating && boardType != CalibrationBoardTypes.Charuco"
-              v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
-              label="Decimation"
-              tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
-              :items="calibrationDivisors"
-              :select-cols="7"
-              @input="(v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: v }, false)"
-            />
-            <pv-select
-              v-model="boardType"
-              label="Board Type"
-              tooltip="Calibration board pattern to use"
-              :select-cols="7"
-              :items="['Chessboard', 'Charuco']"
-              :disabled="isCalibrating"
-            />
-            <pv-select
-              v-show="boardType == CalibrationBoardTypes.Charuco"
-              v-model="tagFamily"
-              label="Tag Family"
-              tooltip="Dictionary of aruco markers on the charuco board"
-              :select-cols="7"
-              :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
-              :disabled="isCalibrating"
-            />
-            <pv-number-input
-              v-model="squareSizeIn"
-              label="Pattern Spacing (in)"
-              tooltip="Spacing between pattern features in inches"
-              :disabled="isCalibrating"
-              :rules="[(v) => v > 0 || 'Size must be positive']"
-              :label-cols="5"
-            />
-            <pv-number-input
-              v-show="boardType == CalibrationBoardTypes.Charuco"
-              v-model="markerSizeIn"
-              label="Marker Size (in)"
-              tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
-              :disabled="isCalibrating"
-              :rules="[(v) => v > 0 || 'Size must be positive']"
-              :label-cols="5"
-            />
-            <pv-number-input
-              v-model="patternWidth"
-              label="Board Width (squares)"
-              tooltip="Width of the board in dots or chessboard squares"
-              :disabled="isCalibrating"
-              :rules="[(v) => v >= 4 || 'Width must be at least 4']"
-              :label-cols="5"
-            />
-            <pv-number-input
-              v-model="patternHeight"
-              label="Board Height (squares)"
-              tooltip="Height of the board in dots or chessboard squares"
-              :disabled="isCalibrating"
-              :rules="[(v) => v >= 4 || 'Height must be at least 4']"
-              :label-cols="5"
-            />
-            <pv-switch
-              v-show="boardType == CalibrationBoardTypes.Charuco"
-              v-model="useOldPattern"
-              label="Old OpenCV Pattern"
-              :disabled="isCalibrating"
-              tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
-              :label-cols="5"
-            />
-            <pv-switch
-              v-model="useMrCal"
-              label="Try using MrCal over OpenCV"
-              :disabled="!useSettingsStore().general.mrCalWorking || isCalibrating"
-              tooltip="If enabled, Photon will (try to) use MrCal instead of OpenCV for camera calibration."
-              :label-cols="5"
-            />
-            <v-banner
-              v-show="!useSettingsStore().general.mrCalWorking"
-              rounded
-              color="red"
-              text-color="white"
-              class="mt-3"
-              icon="mdi-alert-circle-outline"
-            >
-              MrCal JNI could not be loaded! Consult journalctl logs for additional details.
-            </v-banner>
-          </v-form>
-          <v-row justify="center">
-            <v-chip
-              v-show="isCalibrating"
-              label
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'gray'"
-              class="mb-6"
-            >
-              Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
-              {{ useStateStore().calibrationData.minimumImageCount }}
-            </v-chip>
-          </v-row>
-        </v-row>
-        <v-row v-if="isCalibrating">
-          <v-col cols="12" class="pt-0">
-            <pv-slider
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
-              :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
-              label="Exposure"
-              tooltip="Directly controls how long the camera shutter remains open. Units are dependant on the underlying driver."
-              :min="useCameraSettingsStore().minExposureRaw"
-              :max="useCameraSettingsStore().maxExposureRaw"
-              :slider-cols="8"
-              :step="1"
-              @input="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
-              "
-            />
-            <pv-slider
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
-              label="Brightness"
-              :min="0"
-              :max="100"
-              :slider-cols="8"
-              @input="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
-              "
-            />
-            <pv-switch
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
-              class="pt-2"
-              label="Auto Exposure"
-              :label-cols="4"
-              tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-              @input="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
-              "
-            />
-            <pv-slider
-              v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
-              label="Camera Gain"
-              tooltip="Controls camera gain, similar to brightness"
-              :min="0"
-              :max="100"
-              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
-            />
-            <pv-slider
-              v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
-              label="Red AWB Gain"
-              :min="0"
-              :max="100"
-              tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
-              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)"
-            />
-            <pv-slider
-              v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
-              v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
-              label="Blue AWB Gain"
-              :min="0"
-              :max="100"
-              tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
-              @input="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)"
-            />
-          </v-col>
-        </v-row>
-        <v-row>
-          <v-col :cols="6">
-            <v-btn
-              small
-              color="secondary"
-              style="width: 100%"
-              :disabled="!settingsValid"
-              @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
-            >
-              <v-icon left class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
-              <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
-            </v-btn>
-          </v-col>
-          <v-col :cols="6">
-            <v-btn
-              small
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'accent' : 'red'"
-              :class="useStateStore().calibrationData.hasEnoughImages ? 'black--text' : 'white---text'"
-              style="width: 100%"
-              :disabled="!isCalibrating || !settingsValid"
-              @click="endCalibration"
-            >
-              <v-icon left class="calib-btn-icon">
-                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
-              </v-icon>
-              <span class="calib-btn-label">{{
-                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
-              }}</span>
-            </v-btn>
-          </v-col>
-        </v-row>
-        <v-row justify="center">
-          <v-col cols="12">
-            <v-btn
-              color="accent"
-              small
-              outlined
-              style="width: 100%"
-              :disabled="!settingsValid"
-              @click="downloadCalibBoard"
-            >
-              <v-icon left class="calib-btn-icon"> mdi-download </v-icon>
-              <span class="calib-btn-label">Generate Board</span>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </div>
+    <v-card class="mb-3" color="primary" dark>
+      <v-card-title class="pa-6 pb-3">Camera Calibration</v-card-title>
+      <v-card-text v-show="!isCalibrating">
+        <v-card-subtitle class="pt-3 pl-2 pb-4 text-white">Current Calibration</v-card-subtitle>
+        <v-table fixed-header height="100%" density="compact">
+          <thead>
+            <tr>
+              <th>Resolution</th>
+              <th>Mean Error</th>
+              <th>Horizontal FOV</th>
+              <th>Vertical FOV</th>
+              <th>Diagonal FOV</th>
+              <th>Info</th>
+            </tr>
+          </thead>
+          <tbody style="cursor: pointer">
+            <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
+              <td>{{ getResolutionString(value.resolution) }}</td>
+              <td>
+                {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
+              </td>
+              <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+              <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+              <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+              <v-tooltip location="bottom">
+                <template #activator="{ props }">
+                  <td v-bind="props" @click="setSelectedVideoFormat(value)">
+                    <v-icon size="small" class="mr-2">mdi-information</v-icon>
+                  </td>
+                </template>
+                <span>Click for more info on this calibration.</span>
+              </v-tooltip>
+            </tr>
+          </tbody>
+        </v-table>
+      </v-card-text>
+      <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-6 pt-0">
+        <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
+          >Configure New Calibration</v-card-subtitle
+        >
+        <v-form ref="form" v-model="settingsValid">
+          <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
+          <pv-select
+            v-model="useStateStore().calibrationData.videoFormatIndex"
+            label="Resolution"
+            :select-cols="8"
+            :disabled="isCalibrating"
+            tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+            :items="getUniqueVideoResolutionStrings()"
+          />
+          <pv-select
+            v-show="isCalibrating && boardType != CalibrationBoardTypes.Charuco"
+            v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
+            label="Decimation"
+            tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
+            :items="calibrationDivisors"
+            :select-cols="8"
+            @update:modelValue="
+              (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: +v }, false)
+            "
+          />
+          <pv-select
+            v-model="boardType"
+            label="Board Type"
+            tooltip="Calibration board pattern to use"
+            :select-cols="8"
+            :items="['Chessboard', 'Charuco']"
+            :disabled="isCalibrating"
+          />
+          <pv-select
+            v-show="boardType == CalibrationBoardTypes.Charuco"
+            v-model="tagFamily"
+            label="Tag Family"
+            tooltip="Dictionary of aruco markers on the charuco board"
+            :select-cols="8"
+            :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
+            :disabled="isCalibrating"
+          />
+          <pv-number-input
+            v-model="squareSizeIn"
+            label="Pattern Spacing (in)"
+            tooltip="Spacing between pattern features in inches"
+            :disabled="isCalibrating"
+            :rules="[(v) => v > 0 || 'Size must be positive']"
+            :label-cols="4"
+          />
+          <pv-number-input
+            v-show="boardType == CalibrationBoardTypes.Charuco"
+            v-model="markerSizeIn"
+            label="Marker Size (in)"
+            tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
+            :disabled="isCalibrating"
+            :rules="[(v) => v > 0 || 'Size must be positive']"
+            :label-cols="4"
+          />
+          <pv-number-input
+            v-model="patternWidth"
+            label="Board Width (squares)"
+            tooltip="Width of the board in dots or chessboard squares"
+            :disabled="isCalibrating"
+            :rules="[(v) => v >= 4 || 'Width must be at least 4']"
+            :label-cols="4"
+          />
+          <pv-number-input
+            v-model="patternHeight"
+            label="Board Height (squares)"
+            tooltip="Height of the board in dots or chessboard squares"
+            :disabled="isCalibrating"
+            :rules="[(v) => v >= 4 || 'Height must be at least 4']"
+            :label-cols="4"
+          />
+          <pv-switch
+            v-show="boardType == CalibrationBoardTypes.Charuco"
+            v-model="useOldPattern"
+            label="Old OpenCV Pattern"
+            :disabled="isCalibrating"
+            tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
+            :label-cols="4"
+          />
+          <v-banner
+            v-if="useSettingsStore().general.mrCalWorking"
+            rounded
+            color="secondary"
+            text-color="white"
+            class="mt-3"
+            icon="mdi-alert-circle-outline"
+          >
+            Mrcal was successfully loaded and will be used!
+          </v-banner>
+          <v-banner v-else rounded color="error" text-color="white" class="mt-3" icon="mdi-alert-circle-outline">
+            MrCal JNI could not be loaded! Consult journalctl logs for additional details.
+          </v-banner>
+        </v-form>
+      </v-card-text>
+      <v-card-text v-if="isCalibrating" class="pa-6 pt-0">
+        <pv-switch
+          v-model="drawAllSnapshots"
+          label="Draw Collected Corners"
+          :switch-cols="8"
+          tooltip="Draw all snapshots"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: args }, false)
+          "
+        />
+        <pv-switch
+          v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
+          label="Auto Exposure"
+          :label-cols="4"
+          tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
+          "
+        />
+        <pv-slider
+          v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
+          :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
+          label="Exposure"
+          tooltip="Directly controls how long the camera shutter remains open. Units are dependant on the underlying driver."
+          :min="useCameraSettingsStore().minExposureRaw"
+          :max="useCameraSettingsStore().maxExposureRaw"
+          :slider-cols="7"
+          :step="1"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
+          "
+        />
+        <pv-slider
+          v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
+          label="Brightness"
+          :min="0"
+          :max="100"
+          :slider-cols="7"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
+          "
+        />
+        <pv-slider
+          v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
+          v-model="useCameraSettingsStore().currentPipelineSettings.cameraGain"
+          label="Camera Gain"
+          tooltip="Controls camera gain, similar to brightness"
+          :min="0"
+          :max="100"
+          :slider-cols="7"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)
+          "
+        />
+        <pv-slider
+          v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
+          v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
+          label="Red AWB Gain"
+          :min="0"
+          :max="100"
+          :slider-cols="7"
+          tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
+          "
+        />
+        <pv-slider
+          v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
+          v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
+          label="Blue AWB Gain"
+          :min="0"
+          :max="100"
+          :slider-cols="7"
+          tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
+          @update:modelValue="
+            (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
+          "
+        />
+        <v-banner
+          v-if="tooManyPoints"
+          rounded
+          class="mt-3"
+          color="error"
+          text-color="white"
+          icon="mdi-alert-circle-outline"
+        >
+          Too many corners. Finish calibration now!
+        </v-banner>
+      </v-card-text>
+      <v-card-text v-if="isCalibrating" class="d-flex justify-center align-center pa-6 pt-0">
+        <v-chip
+          variant="flat"
+          label
+          :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'grey-darken-2'"
+        >
+          Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
+          {{ useStateStore().calibrationData.minimumImageCount }}
+        </v-chip>
+      </v-card-text>
+      <v-card-text class="d-flex pa-6 pt-0">
+        <v-col cols="6" class="pa-0 pr-2">
+          <v-btn
+            size="small"
+            block
+            color="secondary"
+            :disabled="!settingsValid || tooManyPoints"
+            @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
+          >
+            <v-icon start class="calib-btn-icon"> {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }} </v-icon>
+            <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
+          </v-btn>
+        </v-col>
+        <v-col cols="6" class="pa-0 pl-2">
+          <v-btn
+            size="small"
+            block
+            :color="useStateStore().calibrationData.hasEnoughImages ? 'accent' : 'error'"
+            :disabled="!isCalibrating || !settingsValid"
+            @click="endCalibration"
+          >
+            <v-icon start class="calib-btn-icon">
+              {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+            </v-icon>
+            <span class="calib-btn-label">{{
+              useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+            }}</span>
+          </v-btn>
+        </v-col>
+      </v-card-text>
+      <v-card-text class="pa-6 pt-0">
+        <v-btn
+          color="accent"
+          size="small"
+          block
+          variant="outlined"
+          :disabled="!settingsValid"
+          @click="downloadCalibBoard"
+        >
+          <v-icon start class="calib-btn-icon"> mdi-download </v-icon>
+          <span class="calib-btn-label">Generate Board</span>
+        </v-btn>
+      </v-card-text>
     </v-card>
     <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
       <v-card color="primary" dark>
@@ -477,10 +503,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 process.</v-card-text
               >
             </template>
-            <template v-else-if="isCalibrating">
+            <!-- No result reported yet -->
+            <template v-else-if="calibSuccess === undefined">
               <v-progress-circular indeterminate :size="70" :width="8" color="accent" />
               <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>
             </template>
+            <!-- Got positive result -->
             <template v-else-if="calibSuccess">
               <v-icon color="green" size="70"> mdi-check-bold </v-icon>
               <v-card-text>
@@ -504,7 +532,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <v-card-actions>
           <v-spacer />
-          <v-btn v-if="!isCalibrating" color="white" text @click="showCalibEndDialog = false"> OK </v-btn>
+          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="showCalibEndDialog = false"> OK </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -515,7 +543,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
 </template>
 
 <style scoped lang="scss">
-.v-data-table {
+.v-table {
   text-align: center;
   width: 100%;
 

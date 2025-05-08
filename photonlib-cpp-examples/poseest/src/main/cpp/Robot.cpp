@@ -34,15 +34,7 @@ void Robot::RobotInit() {}
 void Robot::RobotPeriodic() {
   launcher.periodic();
   drivetrain.Periodic();
-
-  auto visionEst = vision.GetEstimatedGlobalPose();
-  if (visionEst.has_value()) {
-    auto est = visionEst.value();
-    auto estPose = est.estimatedPose.ToPose2d();
-    auto estStdDevs = vision.GetEstimationStdDevs(estPose);
-    drivetrain.AddVisionMeasurement(est.estimatedPose.ToPose2d(), est.timestamp,
-                                    estStdDevs);
-  }
+  vision.Periodic();
 
   drivetrain.Log();
 }
@@ -105,7 +97,10 @@ void Robot::SimulationPeriodic() {
   units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();
   units::volt_t loadedBattVolts =
       frc::sim::BatterySim::Calculate({totalCurrent});
-  frc::sim::RoboRioSim::SetVInVoltage(loadedBattVolts);
+
+  // Using max(0.1, voltage) here isn't a *physically correct* solution,
+  // but it avoids problems with battery voltage measuring 0.
+  frc::sim::RoboRioSim::SetVInVoltage(units::math::max(0.1_V, loadedBattVolts));
 }
 
 #ifndef RUNNING_FRC_TESTS

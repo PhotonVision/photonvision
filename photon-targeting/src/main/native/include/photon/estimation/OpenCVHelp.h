@@ -201,9 +201,8 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   cv::Mat wrapped{rvecInput.rows, rvecInput.cols, CV_32F};
   rvecInput.convertTo(wrapped, CV_32F);
   data = wrapped.at<cv::Vec3f>(cv::Point{0, 0});
-  return RotationEDNToNWU(frc::Rotation3d{units::radian_t{data[0]},
-                                          units::radian_t{data[1]},
-                                          units::radian_t{data[2]}});
+  return RotationEDNToNWU(
+      frc::Rotation3d{Eigen::Vector3d{data[0], data[1], data[2]}});
 }
 
 [[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_Square(

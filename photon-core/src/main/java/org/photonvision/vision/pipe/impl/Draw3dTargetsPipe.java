@@ -17,10 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -28,6 +27,7 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
@@ -47,7 +47,7 @@ public class Draw3dTargetsPipe
             return null;
         }
 
-        for (var target : in.getRight()) {
+        for (var target : in.getSecond()) {
             // draw convex hull
             if (params.shouldDrawHull(target)) {
                 var pointMat = new MatOfPoint();
@@ -59,14 +59,14 @@ public class Draw3dTargetsPipe
                     continue;
                 }
                 Imgproc.drawContours(
-                        in.getLeft(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.green), 1);
+                        in.getFirst(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.green), 1);
 
                 // draw approximate polygon
                 var poly = target.getApproximateBoundingPolygon();
                 if (poly != null) {
                     divideMat2f(poly, pointMat);
                     Imgproc.drawContours(
-                            in.getLeft(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                            in.getFirst(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
                 }
                 pointMat.release();
             }
@@ -92,7 +92,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    distortPoints(tempMat, tempMat);
+                    tempMat.fromList(
+                            OpenCVHelp.distortPoints(
+                                    tempMat.toList(),
+                                    params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
                 }
 
                 var bottomPoints = tempMat.toList();
@@ -108,7 +112,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points, so they match the image they're being overlaid on
-                    distortPoints(tempMat, tempMat);
+                    tempMat.fromList(
+                            OpenCVHelp.distortPoints(
+                                    tempMat.toList(),
+                                    params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                                    params.cameraCalibrationCoefficients.getDistCoeffsMat()));
                 }
                 var topPoints = tempMat.toList();
 
@@ -118,7 +126,7 @@ public class Draw3dTargetsPipe
                 // floor, then pillars, then top
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             bottomPoints.get(i),
                             bottomPoints.get((i + 1) % (bottomPoints.size())),
                             ColorHelper.colorToScalar(Color.green),
@@ -159,21 +167,21 @@ public class Draw3dTargetsPipe
                 // XYZ is RGB
                 // y-axis = green
                 Imgproc.line(
-                        in.getLeft(),
+                        in.getFirst(),
                         axisPoints.get(0),
                         axisPoints.get(2),
                         ColorHelper.colorToScalar(Color.GREEN),
                         3);
                 // z-axis = blue
                 Imgproc.line(
-                        in.getLeft(),
+                        in.getFirst(),
                         axisPoints.get(0),
                         axisPoints.get(3),
                         ColorHelper.colorToScalar(Color.BLUE),
                         3);
                 // x-axis = red
                 Imgproc.line(
-                        in.getLeft(),
+                        in.getFirst(),
                         axisPoints.get(0),
                         axisPoints.get(1),
                         ColorHelper.colorToScalar(Color.RED),
@@ -182,7 +190,7 @@ public class Draw3dTargetsPipe
                 // box edges perpendicular to tag
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             bottomPoints.get(i),
                             topPoints.get(i),
                             ColorHelper.colorToScalar(Color.blue),
@@ -191,7 +199,7 @@ public class Draw3dTargetsPipe
                 // box edges parallel to tag
                 for (int i = 0; i < topPoints.size(); i++) {
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             topPoints.get(i),
                             topPoints.get((i + 1) % (bottomPoints.size())),
                             ColorHelper.colorToScalar(Color.orange),
@@ -211,7 +219,7 @@ public class Draw3dTargetsPipe
                     var y = corner.y / (double) params.divisor.value;
 
                     Imgproc.circle(
-                            in.getLeft(),
+                            in.getFirst(),
                             new Point(x, y),
                             params.radius,
                             ColorHelper.colorToScalar(params.color),
@@ -221,45 +229,6 @@ public class Draw3dTargetsPipe
         }
 
         return null;
-    }
-
-    private void distortPoints(MatOfPoint2f src, MatOfPoint2f dst) {
-        var pointsList = src.toList();
-        var dstList = new ArrayList<Point>();
-        final Mat cameraMatrix = params.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
-        // k1, k2, p1, p2, k3
-        final Mat distCoeffs = params.cameraCalibrationCoefficients.getDistCoeffsMat();
-        var cx = cameraMatrix.get(0, 2)[0];
-        var cy = cameraMatrix.get(1, 2)[0];
-        var fx = cameraMatrix.get(0, 0)[0];
-        var fy = cameraMatrix.get(1, 1)[0];
-        var k1 = distCoeffs.get(0, 0)[0];
-        var k2 = distCoeffs.get(0, 1)[0];
-        var k3 = distCoeffs.get(0, 4)[0];
-        var p1 = distCoeffs.get(0, 2)[0];
-        var p2 = distCoeffs.get(0, 3)[0];
-
-        for (Point point : pointsList) {
-            // To relative coordinates <- this is the step you are missing.
-            double x = (point.x - cx) / fx; // cx, cy is the center of distortion
-            double y = (point.y - cy) / fy;
-
-            double r2 = x * x + y * y; // square of the radius from center
-
-            // Radial distortion
-            double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-            double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-
-            // Tangential distortion
-            xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));
-            yDistort = yDistort + (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
-
-            // Back to absolute coordinates.
-            xDistort = xDistort * fx + cx;
-            yDistort = yDistort * fy + cy;
-            dstList.add(new Point(xDistort, yDistort));
-        }
-        dst.fromList(dstList);
     }
 
     private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {

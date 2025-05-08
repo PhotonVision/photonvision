@@ -23,12 +23,13 @@
 ###################################################################################
 
 import math
+
 import wpilib
 import wpilib.simulation
-import wpimath.kinematics
+import wpimath.controller
 import wpimath.filter
 import wpimath.geometry
-import wpimath.controller
+import wpimath.kinematics
 import wpimath.trajectory
 import wpimath.units
 
@@ -140,25 +141,23 @@ class SwerveModule:
         encoderRotation = wpimath.geometry.Rotation2d(self.turningEncoder.getDistance())
 
         # Optimize the reference state to avoid spinning further than 90 degrees
-        state = wpimath.kinematics.SwerveModuleState.optimize(
-            self.desiredState, encoderRotation
-        )
+        self.desiredState.optimize(encoderRotation)
 
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
-        state.speed *= (state.angle - encoderRotation).cos()
+        self.desiredState.speed *= (self.desiredState.angle - encoderRotation).cos()
 
         # Calculate the drive output from the drive PID controller.
         driveOutput = self.drivePIDController.calculate(
-            self.driveEncoder.getRate(), state.speed
+            self.driveEncoder.getRate(), self.desiredState.speed
         )
 
-        driveFeedforward = self.driveFeedforward.calculate(state.speed)
+        driveFeedforward = self.driveFeedforward.calculate(self.desiredState.speed)
 
         # Calculate the turning motor output from the turning PID controller.
         turnOutput = self.turningPIDController.calculate(
-            self.turningEncoder.getDistance(), state.angle.radians()
+            self.turningEncoder.getDistance(), self.desiredState.angle.radians()
         )
 
         self.driveMotor.setVoltage(driveOutput + driveFeedforward)

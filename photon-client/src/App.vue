@@ -34,11 +34,14 @@ if (!is_demo) {
       if (data.updatePipelineResult !== undefined) {
         useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
       }
-      if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+      if (data.mutatePipelineSettings !== undefined && data.cameraUniqueName !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraUniqueName);
       }
       if (data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      }
+      if (data.visionSourceManager !== undefined) {
+        useStateStore().updateDiscoveredCameras(data.visionSourceManager);
       }
     },
     () => {
@@ -55,9 +58,9 @@ if (!is_demo) {
     <v-main>
       <v-container class="main-container" fluid fill-height>
         <v-layout>
-          <v-flex>
+          <v-container class="align-start pa-0 ma-0" fluid>
             <router-view />
-          </v-flex>
+          </v-container>
         </v-layout>
       </v-container>
     </v-main>
@@ -68,12 +71,31 @@ if (!is_demo) {
 </template>
 
 <style lang="scss">
-@import "vuetify/src/styles/settings/_variables";
+@use "@/assets/styles/settings";
+@use "@/assets/styles/variables";
 
-@media #{map-get($display-breakpoints, 'md-and-down')} {
+@media #{map-get(settings.$display-breakpoints, 'md-and-down')} {
   html {
     font-size: 14px !important;
   }
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #232c37;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #ffd843;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #e4c33c;
 }
 
 .main-container {
@@ -81,7 +103,14 @@ if (!is_demo) {
   padding: 0 !important;
 }
 
+.v-overlay__scrim {
+  background-color: #202020;
+}
+
 #title {
   color: #ffd843;
+}
+div.v-layout {
+  overflow: unset !important;
 }
 </style>

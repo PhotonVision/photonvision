@@ -102,7 +102,7 @@ public class Server {
                                     });
                         });
 
-        /*Web Socket Events for Data Exchange */
+        /* Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
@@ -112,7 +112,7 @@ public class Server {
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 
-        /*API Events*/
+        /* API Events */
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
@@ -127,6 +127,9 @@ public class Server {
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
+        app.post(
+                "/api/utils/importObjectDetectionModel",
+                RequestHandler::onImportObjectDetectionModelRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
@@ -134,6 +137,11 @@ public class Server {
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
+        app.post("/api/utils/nukeConfigDirectory", RequestHandler::onNukeConfigDirectory);
+        app.post("/api/utils/nukeOneCamera", RequestHandler::onNukeOneCamera);
+        app.post("/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
+        app.post("/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
+        app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);

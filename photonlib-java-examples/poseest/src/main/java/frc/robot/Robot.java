@@ -46,7 +46,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         drivetrain = new SwerveDrive();
-        vision = new Vision();
+        vision = new Vision(drivetrain::addVisionMeasurement);
 
         controller = new XboxController(0);
 
@@ -61,16 +61,8 @@ public class Robot extends TimedRobot {
         // Update drivetrain subsystem
         drivetrain.periodic();
 
-        // Correct pose estimate with vision measurements
-        var visionEst = vision.getEstimatedGlobalPose();
-        visionEst.ifPresent(
-                est -> {
-                    // Change our trust in the measurement based on the tags we can see
-                    var estStdDevs = vision.getEstimationStdDevs();
-
-                    drivetrain.addVisionMeasurement(
-                            est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-                });
+        // Update vision
+        vision.periodic();
 
         // Test/Example only!
         // Apply an offset to pose estimator to test vision correction
@@ -127,8 +119,12 @@ public class Robot extends TimedRobot {
         gpLauncher.simulationPeriodic();
 
         // Calculate battery voltage sag due to current draw
-        RoboRioSim.setVInVoltage(
-                BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw()));
+        var batteryVoltage =
+                BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw());
+
+        // Using max(0.1, voltage) here isn't a *physically correct* solution,
+        // but it avoids problems with battery voltage measuring 0.
+        RoboRioSim.setVInVoltage(Math.max(0.1, batteryVoltage));
     }
 
     public void resetPose() {

@@ -27,7 +27,7 @@ public class RK3588Cmds extends LinuxCmds {
         // CPU Temperature
         /* The RK3588 chip has 7 thermal zones that can be accessed via:
          *       /sys/class/thermal/thermal_zoneX/temp
-         * where X is an interger from 0 to 6.
+         * where X is an integer from 0 to 6.
          *
          * || Zone || Location    || Comments                                                ||
          * |    0  |  soc         |  soc thermal (near the center of the chip)                |

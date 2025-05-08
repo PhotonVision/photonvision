@@ -1,9 +1,7 @@
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2024.3.2"
-
-    id "com.dorongold.task-tree" version "2.1.0"
+    id "edu.wpi.first.GradleRIO" version "2025.3.2"
 }
 
 repositories {
@@ -11,11 +9,10 @@ repositories {
     jcenter()
 }
 
-wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2024.3.2"
-wpi.versions.wpimathVersion = "2024.3.2"
-
-apply from: "${rootDir}/../shared/examples_common.gradle"
+wpi.maven.useLocal = false
+wpi.maven.useDevelopment = false
+wpi.versions.wpilibVersion = "2025.3.2"
+wpi.versions.wpimathVersion = "2025.3.2"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.

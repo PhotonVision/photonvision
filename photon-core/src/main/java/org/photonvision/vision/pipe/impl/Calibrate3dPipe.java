@@ -17,12 +17,16 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -32,7 +36,6 @@ import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
-import org.photonvision.vision.calibration.JsonImageMat;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.pipe.CVPipe;
@@ -46,11 +49,15 @@ public class Calibrate3dPipe
     public static class CalibrationInput {
         final List<FindBoardCornersPipe.FindBoardCornersPipeResult> observations;
         final FrameStaticProperties imageProps;
+        final Path imageSavePath;
 
         public CalibrationInput(
-                List<FindBoardCornersPipeResult> observations, FrameStaticProperties imageProps) {
+                List<FindBoardCornersPipeResult> observations,
+                FrameStaticProperties imageProps,
+                Path imageSavePath) {
             this.observations = observations;
             this.imageProps = imageProps;
+            this.imageSavePath = imageSavePath;
         }
     }
 
@@ -82,20 +89,27 @@ public class Calibrate3dPipe
                                                 && it.imagePoints != null
                                                 && it.objectPoints != null
                                                 && it.size != null)
-                        .collect(Collectors.toList());
+                        .toList();
 
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
+
         if (MrCalJNILoader.getInstance().isLoaded() && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             ret =
                     calibrateMrcal(
-                            filteredIn, in.imageProps.horizontalFocalLength, in.imageProps.verticalFocalLength);
+                            filteredIn,
+                            in.imageProps.horizontalFocalLength,
+                            in.imageProps.verticalFocalLength,
+                            in.imageSavePath);
         } else {
             logger.debug("Calibrating with opencv!");
             ret =
                     calibrateOpenCV(
-                            filteredIn, in.imageProps.horizontalFocalLength, in.imageProps.verticalFocalLength);
+                            filteredIn,
+                            in.imageProps.horizontalFocalLength,
+                            in.imageProps.verticalFocalLength,
+                            in.imageSavePath);
         }
         var dt = System.nanoTime() - start;
 
@@ -116,12 +130,13 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateOpenCV(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
-        List<MatOfPoint3f> objPointsIn =
-                in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
-        List<MatOfPoint2f> imgPointsIn =
-                in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
-        List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).collect(Collectors.toList());
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            double fxGuess,
+            double fyGuess,
+            Path imageSavePath) {
+        List<MatOfPoint3f> objPointsIn = in.stream().map(it -> it.objectPoints).toList();
+        List<MatOfPoint2f> imgPointsIn = in.stream().map(it -> it.imagePoints).toList();
+        List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).toList();
 
         if (objPointsIn.size() != imgPointsIn.size() || objPointsIn.size() != levelsArr.size()) {
             logger.error("objpts.size != imgpts.size");
@@ -179,7 +194,8 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
         var observations =
-                createObservations(in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null);
+                createObservations(
+                        in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null, imageSavePath);
 
         cameraMatrix.release();
         distortionCoefficients.release();
@@ -200,12 +216,14 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in, double fxGuess, double fyGuess) {
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            double fxGuess,
+            double fyGuess,
+            Path imageSavePath) {
         List<MatOfPoint2f> corner_locations =
-                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
+                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).toList();
 
-        List<MatOfFloat> levels =
-                in.stream().map(it -> it.levels).map(MatOfFloat::new).collect(Collectors.toList());
+        List<MatOfFloat> levels = in.stream().map(it -> it.levels).map(MatOfFloat::new).toList();
 
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
@@ -282,7 +300,7 @@ public class Calibrate3dPipe
             Calib3d.solvePnP(
                     o.objectPoints,
                     o.imagePoints,
-                    cameraMatrixMat.getAsMat(),
+                    cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
@@ -293,11 +311,12 @@ public class Calibrate3dPipe
         List<BoardObservation> observations =
                 createObservations(
                         in,
-                        cameraMatrixMat.getAsMat(),
+                        cameraMatrixMat.getAsMatOfDouble(),
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
                         tvecs,
-                        new double[] {result.warp_x, result.warp_y});
+                        new double[] {result.warp_x, result.warp_y},
+                        imageSavePath);
 
         rvecs.forEach(Mat::release);
         tvecs.forEach(Mat::release);
@@ -319,9 +338,18 @@ public class Calibrate3dPipe
             MatOfDouble distortionCoefficients_,
             List<Mat> rvecs,
             List<Mat> tvecs,
-            double[] calobject_warp) {
+            double[] calobject_warp,
+            Path imageSavePath) {
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
         List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
+
+        // Clear the calibration image folder of any old images before we save the new ones.
+
+        try {
+            FileUtils.cleanDirectory(imageSavePath.toFile());
+        } catch (Exception e) {
+            logger.error("Failed to clean calibration image directory", e);
+        }
 
         // For each observation, calc reprojection error
         Mat jac_temp = new Mat();
@@ -383,14 +411,17 @@ public class Calibrate3dPipe
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
 
-            JsonImageMat image = null;
             var inputImage = in.get(i).inputImage;
+            Path image_path = null;
+            String snapshotName = "img" + i + ".png";
             if (inputImage != null) {
-                image = new JsonImageMat(inputImage);
+                image_path = Paths.get(imageSavePath.toString(), snapshotName);
+                Imgcodecs.imwrite(image_path.toString(), inputImage);
             }
+
             observations.add(
                     new BoardObservation(
-                            i_objPts, i_imgPts, reprojectionError, camToBoard, true, "img" + i + ".png", image));
+                            i_objPts, i_imgPts, reprojectionError, camToBoard, true, snapshotName, image_path));
         }
         jac_temp.release();
 

@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.util.Units;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -69,11 +69,11 @@ public class Calibrate3dPipeline
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public Calibrate3dPipeline(String uniqueName) {
-        this(12, uniqueName);
+    public Calibrate3dPipeline() {
+        this(12);
     }
 
-    public Calibrate3dPipeline(int minSnapshots, String uniqueName) {
+    public Calibrate3dPipeline(int minSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
@@ -82,7 +82,7 @@ public class Calibrate3dPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
+        findBoardCornersPipe.setParams(
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         settings.boardHeight,
                         settings.boardWidth,
@@ -91,13 +91,11 @@ public class Calibrate3dPipeline
                         settings.gridSize,
                         settings.markerSize,
                         settings.streamingFrameDivisor,
-                        settings.useOldPattern);
-        findBoardCornersPipe.setParams(findCornersPipeParams);
+                        settings.useOldPattern));
 
-        Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
+        calibrate3dPipe.setParams(
                 new Calibrate3dPipe.CalibratePipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal);
-        calibrate3dPipe.setParams(calibratePipeParams);
+                        settings.boardHeight, settings.boardWidth, settings.gridSize, settings.useMrCal));
     }
 
     @Override
@@ -124,9 +122,7 @@ public class Calibrate3dPipeline
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
 
-        FindBoardCornersPipeResult findBoardResult;
-
-        findBoardResult =
+        FindBoardCornersPipeResult findBoardResult =
                 findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         if (takeSnapshot) {
@@ -165,16 +161,14 @@ public class Calibrate3dPipeline
     }
 
     List<List<Point>> getCornersList() {
-        return foundCornersList.stream()
-                .map(it -> it.imagePoints.toList())
-                .collect(Collectors.toList());
+        return foundCornersList.stream().map(it -> it.imagePoints.toList()).toList();
     }
 
     public boolean hasEnough() {
         return foundCornersList.size() >= minSnapshots;
     }
 
-    public CameraCalibrationCoefficients tryCalibration() {
+    public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
         if (!hasEnough()) {
             logger.info(
                     "Not enough snapshots! Only got "
@@ -193,7 +187,8 @@ public class Calibrate3dPipeline
          * and returns the corresponding image and object points
          */
         calibrationOutput =
-                calibrate3dPipe.run(new CalibrationInput(foundCornersList, frameStaticProperties));
+                calibrate3dPipe.run(
+                        new CalibrationInput(foundCornersList, frameStaticProperties, imageSavePath));
 
         this.calibrating = false;
 
@@ -228,7 +223,6 @@ public class Calibrate3dPipeline
                                 settings.boardWidth,
                                 settings.boardHeight,
                                 settings.boardType,
-                                settings.useMrCal,
                                 settings.useOldPattern,
                                 settings.tagFamily));
 
