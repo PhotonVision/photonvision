@@ -42,9 +42,7 @@ const selectedModel = computed({
     const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
     return index === -1 ? undefined : index;
   },
-  set: (v) => {
-    v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false);
-  }
+  set: (v) => v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false)
 });
 </script>
 
