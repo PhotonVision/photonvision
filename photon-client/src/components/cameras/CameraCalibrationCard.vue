@@ -241,7 +241,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
                   <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon size="small" class="mr-2">mdi-information</v-icon>
+                    <v-icon size="small">mdi-information</v-icon>
                   </td>
                 </template>
                 <span>Click for more info on this calibration.</span>
@@ -543,6 +543,11 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
 </template>
 
 <style scoped lang="scss">
+th {
+  text-align: center !important;
+  padding: 0 8px !important;
+}
+
 .v-table {
   text-align: center;
   width: 100%;
