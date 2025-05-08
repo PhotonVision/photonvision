@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -95,7 +94,7 @@ class PhotonCameraTest {
 
     @Test
     public void testEmpty() {
-        Assertions.assertDoesNotThrow(
+        assertDoesNotThrow(
                 () -> {
                     var packet = new Packet(1);
                     var ret = new PhotonPipelineResult();

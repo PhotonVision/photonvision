@@ -34,8 +34,8 @@ const resetCurrentBuffer = () => {
 
 <template>
   <div>
-    <v-row align="start" class="pb-4">
-      <v-simple-table dense class="pt-2 pb-12">
+    <v-row class="pb-4">
+      <v-table density="compact" class="pt-2 pb-12 pl-3 pr-3">
         <template #default>
           <thead>
             <tr>
@@ -44,24 +44,24 @@ const resetCurrentBuffer = () => {
                   currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
                   currentPipelineSettings.pipelineType === PipelineType.Aruco
                 "
-                class="text-center white--text"
+                class="text-center text-white"
               >
                 Fiducial ID
               </th>
               <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
-                <th class="text-center white--text">Class</th>
-                <th class="text-center white--text">Confidence</th>
+                <th class="text-center text-white">Class</th>
+                <th class="text-center text-white">Confidence</th>
               </template>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
-                <th class="text-center white--text">Pitch &theta;&deg;</th>
-                <th class="text-center white--text">Yaw &theta;&deg;</th>
-                <th class="text-center white--text">Skew &theta;&deg;</th>
-                <th class="text-center white--text">Area %</th>
+                <th class="text-center text-white">Pitch &theta;&deg;</th>
+                <th class="text-center text-white">Yaw &theta;&deg;</th>
+                <th class="text-center text-white">Skew &theta;&deg;</th>
+                <th class="text-center text-white">Area %</th>
               </template>
               <template v-else>
-                <th class="text-center white--text">X meters</th>
-                <th class="text-center white--text">Y meters</th>
-                <th class="text-center white--text">Z Angle &theta;&deg;</th>
+                <th class="text-center text-white">X meters</th>
+                <th class="text-center text-white">Y meters</th>
+                <th class="text-center text-white">Z Angle &theta;&deg;</th>
               </template>
               <template
                 v-if="
@@ -70,7 +70,7 @@ const resetCurrentBuffer = () => {
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
-                <th class="text-center white--text">Ambiguity Ratio</th>
+                <th class="text-center text-white">Ambiguity Ratio</th>
               </template>
             </tr>
           </thead>
@@ -78,7 +78,7 @@ const resetCurrentBuffer = () => {
             <tr
               v-for="(target, index) in useStateStore().currentPipelineResults?.targets"
               :key="index"
-              class="white--text"
+              class="text-white"
             >
               <td
                 v-if="
@@ -91,13 +91,13 @@ const resetCurrentBuffer = () => {
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-center white--text"
+                class="text-center text-white"
               >
                 {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
               </td>
               <td
                 v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
-                class="text-center white--text"
+                class="text-center text-white"
               >
                 {{ target.confidence.toFixed(2) }}
               </td>
@@ -126,7 +126,7 @@ const resetCurrentBuffer = () => {
             </tr>
           </tbody>
         </template>
-      </v-simple-table>
+      </v-table>
     </v-row>
     <v-container
       v-if="
@@ -136,122 +136,123 @@ const resetCurrentBuffer = () => {
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
+      class="pl-3 pr-3"
     >
-      <v-row class="pb-4 white--text">
+      <v-row class="pb-4 text-white">
         <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px"
           >Multi-tag pose, field-to-camera</v-card-subtitle
         >
-        <v-simple-table dense>
+        <v-table density="compact">
           <template #default>
             <thead>
-              <tr class="white--text">
-                <th class="text-center white--text">X meters</th>
-                <th class="text-center white--text">Y meters</th>
-                <th class="text-center white--text">Z meters</th>
-                <th class="text-center white--text">X Angle &theta;&deg;</th>
-                <th class="text-center white--text">Y Angle &theta;&deg;</th>
-                <th class="text-center white--text">Z Angle &theta;&deg;</th>
-                <th class="text-center white--text">Tags</th>
+              <tr class="text-white">
+                <th class="text-center text-white">X meters</th>
+                <th class="text-center text-white">Y meters</th>
+                <th class="text-center text-white">Z meters</th>
+                <th class="text-center text-white">X Angle &theta;&deg;</th>
+                <th class="text-center text-white">Y Angle &theta;&deg;</th>
+                <th class="text-center text-white">Z Angle &theta;&deg;</th>
+                <th class="text-center text-white">Tags</th>
               </tr>
             </thead>
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.x.toFixed(3) }}&nbsp;m
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.y.toFixed(3) }}&nbsp;m
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.bestTransform.z.toFixed(3) }}&nbsp;m
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_x || 0).toFixed(
                       2
                     )
                   }}&deg;
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_y || 0).toFixed(
                       2
                     )
                   }}&deg;
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     toDeg(useStateStore().currentPipelineResults?.multitagResult?.bestTransform.angle_z || 0).toFixed(
                       2
                     )
                   }}&deg;
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{ useStateStore().currentPipelineResults?.multitagResult?.fiducialIDsUsed }}
                 </td>
               </tr>
             </tbody>
           </template>
-        </v-simple-table>
+        </v-table>
       </v-row>
-      <v-row class="pb-4 white--text" style="display: flex; flex-direction: column">
+      <v-row class="pb-4 text-white" style="display: flex; flex-direction: column">
         <v-card-subtitle class="ma-0 pa-0 pb-4 pr-4" style="font-size: 16px"
           >Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </v-card-subtitle>
-        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" depressed @click="resetCurrentBuffer"
+        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" variant="flat" @click="resetCurrentBuffer"
           >Reset Samples</v-btn
         >
-        <v-simple-table dense>
+        <v-table density="compact">
           <template #default>
             <thead>
               <tr>
-                <th class="text-center white--text">X meters</th>
-                <th class="text-center white--text">Y meters</th>
-                <th class="text-center white--text">Z meters</th>
-                <th class="text-center white--text">X Angle &theta;&deg;</th>
-                <th class="text-center white--text">Y Angle &theta;&deg;</th>
-                <th class="text-center white--text">Z Angle &theta;&deg;</th>
+                <th class="text-center text-white">X meters</th>
+                <th class="text-center text-white">Y meters</th>
+                <th class="text-center text-white">Z meters</th>
+                <th class="text-center text-white">X Angle &theta;&deg;</th>
+                <th class="text-center text-white">Y Angle &theta;&deg;</th>
+                <th class="text-center text-white">Z Angle &theta;&deg;</th>
               </tr>
             </thead>
             <tbody v-show="useStateStore().currentPipelineResults?.multitagResult">
               <tr>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.x) || []).toFixed(
                       5
                     )
                   }}&nbsp;m
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.y) || []).toFixed(
                       5
                     )
                   }}&nbsp;m
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     calculateStdDev(useStateStore().currentMultitagBuffer?.map((v) => v.bestTransform.z) || []).toFixed(
                       5
                     )
                   }}&nbsp;m
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     calculateStdDev(
                       useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_x)) || []
                     ).toFixed(5)
                   }}&deg;
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     calculateStdDev(
                       useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_y)) || []
                     ).toFixed(5)
                   }}&deg;
                 </td>
-                <td class="text-center white--text">
+                <td class="text-center text-white">
                   {{
                     calculateStdDev(
                       useStateStore().currentMultitagBuffer?.map((v) => toDeg(v.bestTransform.angle_z)) || []
@@ -261,14 +262,14 @@ const resetCurrentBuffer = () => {
               </tr>
             </tbody>
           </template>
-        </v-simple-table>
+        </v-table>
       </v-row>
     </v-container>
   </div>
 </template>
 
 <style scoped lang="scss">
-.v-data-table {
+.v-table {
   background-color: #006492 !important;
   width: 100%;
   font-size: 1rem !important;
