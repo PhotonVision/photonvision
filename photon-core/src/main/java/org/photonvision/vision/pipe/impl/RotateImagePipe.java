@@ -40,21 +40,15 @@ public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateIma
      */
     @Override
     protected Void process(Mat in) {
-        Core.rotate(in, in, params.rotation.value);
+        Core.rotate(in, in, params.rotation().value);
         return null;
     }
 
-    public static class RotateImageParams {
+    public static record RotateImageParams(ImageRotationMode rotation) {
         public static RotateImageParams DEFAULT = new RotateImageParams(ImageRotationMode.DEG_0);
 
-        public ImageRotationMode rotation;
-
         public RotateImageParams() {
-            rotation = DEFAULT.rotation;
-        }
-
-        public RotateImageParams(ImageRotationMode rotation) {
-            this.rotation = rotation;
+            this(DEFAULT.rotation);
         }
     }
 }

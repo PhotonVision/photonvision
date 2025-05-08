@@ -32,22 +32,12 @@ public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeIma
      */
     @Override
     protected Void process(Mat in) {
-        int width = in.cols() / params.getDivisor().value;
-        int height = in.rows() / params.getDivisor().value;
+        int width = in.cols() / params.divisor().value;
+        int height = in.rows() / params.divisor().value;
         Imgproc.resize(in, in, new Size(width, height));
 
         return null;
     }
 
-    public static class ResizeImageParams {
-        private final FrameDivisor divisor;
-
-        public ResizeImageParams(FrameDivisor divisor) {
-            this.divisor = divisor;
-        }
-
-        public FrameDivisor getDivisor() {
-            return divisor;
-        }
-    }
+    public static record ResizeImageParams(FrameDivisor divisor) {}
 }

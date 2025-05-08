@@ -110,7 +110,7 @@ public class JsonMatOfDouble implements Releasable {
         if (wpilibMat == null) {
             wpilibMat = new Matrix<R, C>(new SimpleMatrix(rows, cols, true, data));
         }
-        return (Matrix<R, C>) wpilibMat;
+        return wpilibMat;
     }
 
     @Override

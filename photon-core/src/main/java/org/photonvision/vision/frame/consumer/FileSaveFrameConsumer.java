@@ -103,19 +103,17 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                             + matchData;
 
             // Check if the Unique Camera directory exists and create it if it doesn't
-            String cameraPath = FILE_PATH + File.separator + this.cameraUniqueName;
-            var cameraDir = new File(cameraPath);
+            var cameraDir = new File(FILE_PATH, this.cameraUniqueName);
             if (!cameraDir.exists()) {
                 cameraDir.mkdir();
             }
-
-            String saveFilePath = cameraPath + File.separator + fileName + FILE_EXTENSION;
+            var saveFilePath = cameraDir.toPath().resolve(fileName + FILE_EXTENSION);
 
             logger.info("Saving image to: " + saveFilePath);
             if (image == null || image.getMat() == null || image.getMat().empty()) {
-                Imgcodecs.imwrite(saveFilePath, StaticFrames.LOST_MAT);
+                Imgcodecs.imwrite(saveFilePath.toString(), StaticFrames.LOST_MAT);
             } else {
-                Imgcodecs.imwrite(saveFilePath, image.getMat());
+                Imgcodecs.imwrite(saveFilePath.toString(), image.getMat());
             }
 
             savedImagesCount++;
@@ -178,6 +176,9 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     public void close() {
-        // troododfa;lkjadsf;lkfdsaj otgooadflsk;j
+        saveFrameEntry.close();
+        ntEventName.close();
+        ntMatchNum.close();
+        ntMatchType.close();
     }
 }
