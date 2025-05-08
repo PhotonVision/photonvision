@@ -121,13 +121,13 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     public void requestHsvSettings(HSVParams params) {
         LibCameraJNI.setThresholds(
                 settables.r_ptr,
-                params.getHsvLower().val[0] / 180.0,
-                params.getHsvLower().val[1] / 255.0,
-                params.getHsvLower().val[2] / 255.0,
-                params.getHsvUpper().val[0] / 180.0,
-                params.getHsvUpper().val[1] / 255.0,
-                params.getHsvUpper().val[2] / 255.0,
-                params.getHueInverted());
+                params.hsvLower().val[0] / 180.0,
+                params.hsvLower().val[1] / 255.0,
+                params.hsvLower().val[2] / 255.0,
+                params.hsvUpper().val[0] / 180.0,
+                params.hsvUpper().val[1] / 255.0,
+                params.hsvUpper().val[2] / 255.0,
+                params.hueInverted());
     }
 
     @Override

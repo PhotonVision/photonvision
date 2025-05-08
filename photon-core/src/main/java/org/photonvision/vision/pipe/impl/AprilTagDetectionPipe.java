@@ -20,12 +20,14 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams>
+        extends CVPipe<
+                CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
         implements Releasable {
     private AprilTagDetector m_detector = new AprilTagDetector();
 
@@ -58,11 +60,11 @@ public class AprilTagDetectionPipe
     @Override
     public void setParams(AprilTagDetectionPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
-            m_detector.setConfig(newParams.detectorParams);
-            m_detector.setQuadThresholdParameters(newParams.quadParams);
+            m_detector.setConfig(newParams.detectorParams());
+            m_detector.setQuadThresholdParameters(newParams.quadParams());
 
             m_detector.clearFamilies();
-            m_detector.addFamily(newParams.family.getNativeName());
+            m_detector.addFamily(newParams.family().getNativeName());
         }
 
         super.setParams(newParams);
@@ -73,4 +75,9 @@ public class AprilTagDetectionPipe
         m_detector.close();
         m_detector = null;
     }
+
+    public static record AprilTagDetectionPipeParams(
+            AprilTagFamily family,
+            AprilTagDetector.Config detectorParams,
+            AprilTagDetector.QuadThresholdParameters quadParams) {}
 }

@@ -160,17 +160,18 @@ public class SimCameraProperties {
         if (!success) throw new IOException("Requested resolution not found in calibration");
     }
 
-    public void setRandomSeed(long seed) {
+    public SimCameraProperties setRandomSeed(long seed) {
         rand.setSeed(seed);
+        return this;
     }
 
-    public void setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
+    public SimCameraProperties setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
         if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
             fovDiag = Rotation2d.fromDegrees(MathUtil.clamp(fovDiag.getDegrees(), 1, 179));
             DriverStation.reportError(
                     "Requested invalid FOV! Clamping between (1, 179) degrees...", false);
         }
-        double resDiag = Math.sqrt(resWidth * resWidth + resHeight * resHeight);
+        double resDiag = Math.hypot(resWidth, resHeight);
         double diagRatio = Math.tan(fovDiag.getRadians() / 2);
         var fovWidth = new Rotation2d(Math.atan(diagRatio * (resWidth / resDiag)) * 2);
         var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
@@ -189,9 +190,11 @@ public class SimCameraProperties {
         // create camera intrinsics matrix
         var camIntrinsics = MatBuilder.fill(Nat.N3(), Nat.N3(), fx, 0, cx, 0, fy, cy, 0, 0, 1);
         setCalibration(resWidth, resHeight, camIntrinsics, distCoeff);
+
+        return this;
     }
 
-    public void setCalibration(
+    public SimCameraProperties setCalibration(
             int resWidth, int resHeight, Matrix<N3, N3> camIntrinsics, Matrix<N8, N1> distCoeffs) {
         this.resWidth = resWidth;
         this.resHeight = resHeight;
@@ -199,66 +202,73 @@ public class SimCameraProperties {
         this.distCoeffs = distCoeffs;
 
         // left, right, up, and down view planes
-        var p =
-                new Translation3d[] {
-                    new Translation3d(
-                            1,
-                            new Rotation3d(0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI / 2)).getRadians())),
-                    new Translation3d(
-                            1,
-                            new Rotation3d(
-                                    0, 0, getPixelYaw(resWidth).plus(new Rotation2d(Math.PI / 2)).getRadians())),
-                    new Translation3d(
-                            1,
-                            new Rotation3d(
-                                    0, getPixelPitch(0).plus(new Rotation2d(Math.PI / 2)).getRadians(), 0)),
-                    new Translation3d(
-                            1,
-                            new Rotation3d(
-                                    0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
-                };
+        Translation3d[] p = {
+            new Translation3d(
+                    1, new Rotation3d(0, 0, getPixelYaw(0).plus(new Rotation2d(-Math.PI / 2)).getRadians())),
+            new Translation3d(
+                    1,
+                    new Rotation3d(
+                            0, 0, getPixelYaw(resWidth).plus(new Rotation2d(Math.PI / 2)).getRadians())),
+            new Translation3d(
+                    1, new Rotation3d(0, getPixelPitch(0).plus(new Rotation2d(Math.PI / 2)).getRadians(), 0)),
+            new Translation3d(
+                    1,
+                    new Rotation3d(
+                            0, getPixelPitch(resHeight).plus(new Rotation2d(-Math.PI / 2)).getRadians(), 0))
+        };
         viewplanes.clear();
         for (Translation3d translation3d : p) {
             viewplanes.add(
                     new DMatrix3(translation3d.getX(), translation3d.getY(), translation3d.getZ()));
         }
+
+        return this;
     }
 
-    public void setCalibError(double avgErrorPx, double errorStdDevPx) {
+    public SimCameraProperties setCalibError(double avgErrorPx, double errorStdDevPx) {
         this.avgErrorPx = avgErrorPx;
         this.errorStdDevPx = errorStdDevPx;
+        return this;
     }
 
     /**
      * @param fps The average frames per second the camera should process at. <b>Exposure time limits
      *     FPS if set!</b>
      */
-    public void setFPS(double fps) {
+    public SimCameraProperties setFPS(double fps) {
         frameSpeedMs = Math.max(1000.0 / fps, exposureTimeMs);
+
+        return this;
     }
 
     /**
      * @param exposureTimeMs The amount of time the "shutter" is open for one frame. Affects motion
      *     blur. <b>Frame speed(from FPS) is limited to this!</b>
      */
-    public void setExposureTimeMs(double exposureTimeMs) {
+    public SimCameraProperties setExposureTimeMs(double exposureTimeMs) {
         this.exposureTimeMs = exposureTimeMs;
         frameSpeedMs = Math.max(frameSpeedMs, exposureTimeMs);
+
+        return this;
     }
 
     /**
      * @param avgLatencyMs The average latency (from image capture to data published) in milliseconds
      *     a frame should have
      */
-    public void setAvgLatencyMs(double avgLatencyMs) {
+    public SimCameraProperties setAvgLatencyMs(double avgLatencyMs) {
         this.avgLatencyMs = avgLatencyMs;
+
+        return this;
     }
 
     /**
      * @param latencyStdDevMs The standard deviation in milliseconds of the latency
      */
-    public void setLatencyStdDevMs(double latencyStdDevMs) {
+    public SimCameraProperties setLatencyStdDevMs(double latencyStdDevMs) {
         this.latencyStdDevMs = latencyStdDevMs;
+
+        return this;
     }
 
     public int getResWidth() {

@@ -19,6 +19,7 @@ package org.photonvision.vision.camera;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -27,6 +28,7 @@ import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
@@ -123,10 +125,7 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            return obj instanceof PVCameraInfo info && equals(info);
         }
 
         @Override
@@ -192,10 +191,7 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            return obj instanceof PVCameraInfo info && equals(info);
         }
 
         @Override
@@ -252,10 +248,7 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVFileCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            return obj instanceof PVFileCameraInfo info && equals(info);
         }
 
         @Override

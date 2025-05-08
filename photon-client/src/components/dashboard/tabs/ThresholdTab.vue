@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, getCurrentInstance, onBeforeUnmount, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted } from "vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
+import { useDisplay } from "vuetify";
 
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
@@ -123,12 +124,10 @@ onBeforeUnmount(() => {
 
   cameraStream.removeEventListener("click", handleStreamClick);
 });
+const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
-  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+  mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
 );
 </script>
 
@@ -144,7 +143,7 @@ const interactiveCols = computed(() =>
       :max="180"
       :slider-cols="interactiveCols"
       :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
     />
     <pv-range-slider
       id="sat-slider"
@@ -155,7 +154,9 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)
+      "
     />
     <pv-range-slider
       id="value-slider"
@@ -166,53 +167,55 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
       label="Invert Hue"
       :switch-cols="interactiveCols"
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)
+      "
     />
     <div>
-      <div class="white--text pt-3">Color Picker</div>
+      <div class="text-white pt-3">Color Picker</div>
       <div class="d-flex pt-3">
         <template v-if="!useStateStore().colorPickingMode">
           <v-col cols="4" class="pl-0 pr-2">
             <v-btn
-              small
+              size="small"
               block
               color="accent"
-              class="black--text"
+              class="text-black"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
             >
-              <v-icon left> mdi-minus </v-icon>
+              <v-icon start> mdi-minus </v-icon>
               Shrink Range
             </v-btn>
           </v-col>
           <v-col cols="4" class="pl-0 pr-0">
-            <v-btn color="accent" class="black--text" small block @click="enableColorPicking(1)">
-              <v-icon left> mdi-plus-minus </v-icon>
+            <v-btn color="accent" class="text-black" size="small" block @click="enableColorPicking(1)">
+              <v-icon start> mdi-plus-minus </v-icon>
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
             </v-btn>
           </v-col>
           <v-col cols="4" class="pl-2 pr-0">
             <v-btn
-              small
+              size="small"
               block
               color="accent"
-              class="black--text"
+              class="text-black"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
             >
-              <v-icon left> mdi-plus </v-icon>
+              <v-icon start> mdi-plus </v-icon>
               Expand Range
             </v-btn>
           </v-col>
         </template>
         <template v-else>
           <v-card-text class="pa-0 pt-3 pb-3">
-            <v-btn block color="accent" class="black--text" small @click="disableColorPicking"> Cancel </v-btn>
+            <v-btn block color="accent" class="text-black" size="small" @click="disableColorPicking"> Cancel </v-btn>
           </v-card-text>
         </template>
       </div>
@@ -224,32 +227,32 @@ const interactiveCols = computed(() =>
 .threshold-modifiers {
   --averageHue: 0;
 }
-#hue-slider >>> .v-slider {
+#hue-slider:deep(.v-slider__container) {
   background: linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#sat-slider >>> .v-slider {
+#sat-slider:deep(.v-slider__container) {
   background: linear-gradient(to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
-#value-slider >>> .v-slider {
+#value-slider:deep(.v-slider__container) {
   background: linear-gradient(to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100%);
   border-radius: 10px;
   /* prettier-ignore */
   box-shadow: 0 0 5px #333, inset 0 0 3px #333;
 }
->>> .v-slider__thumb {
+:deep(.v-slider__thumb) {
   outline: black solid thin;
 }
-.normal-slider >>> .v-slider__track-fill {
+.normal-slider:deep(.v-slider__track-fill) {
   outline: black solid thin;
 }
 
-.inverted-slider >>> .v-slider__track-background {
+.inverted-slider:deep(.v-slider__track-background) {
   outline: black solid thin;
 }
 </style>

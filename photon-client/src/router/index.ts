@@ -1,5 +1,4 @@
-import Vue from "vue";
-import VueRouter from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 
 import DashboardView from "@/views/DashboardView.vue";
 import CameraSettingsView from "@/views/CameraSettingsView.vue";
@@ -8,12 +7,10 @@ import DocsView from "@/views/DocsView.vue";
 import NotFoundView from "@/views/NotFoundView.vue";
 import CameraMatchingView from "@/views/CameraMatchingView.vue";
 
-Vue.use(VueRouter);
-
-const router = new VueRouter({
+const router = createRouter({
   // Using HTML5 History Mode is problematic with Javalin because each route is treated as a server endpoint which causes Javalin to return a 404 error before being redirected to the UI.
   // mode: "history",
-  base: import.meta.env.BASE_URL,
+  history: createWebHashHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
@@ -45,7 +42,7 @@ const router = new VueRouter({
       component: DocsView
     },
     {
-      path: "*",
+      path: "/:pathMatch(.*)",
       name: "NotFound",
       component: NotFoundView
     }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package wpiutil_extras;
+package jni;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;

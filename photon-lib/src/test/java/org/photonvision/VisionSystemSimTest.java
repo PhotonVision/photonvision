@@ -24,6 +24,7 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -33,6 +34,7 @@ import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -49,7 +51,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +58,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.jni.PhotonTargetingJniLoader;
@@ -84,7 +84,7 @@ class VisionSystemSimTest {
             fail(e);
         }
 
-        OpenCVHelp.forceLoadOpenCV();
+        OpenCvLoader.forceStaticLoad();
 
         // See #1574 - test flakey, disabled until we address this
         assumeTrue(false);
@@ -111,7 +111,7 @@ class VisionSystemSimTest {
 
     @Test
     public void testEmpty() {
-        Assertions.assertDoesNotThrow(
+        assertDoesNotThrow(
                 () -> {
                     var sysUnderTest = new VisionSystemSim("Test");
                     sysUnderTest.addVisionTargets(

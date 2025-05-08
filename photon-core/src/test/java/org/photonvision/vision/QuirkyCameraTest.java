@@ -17,8 +17,9 @@
 
 package org.photonvision.vision;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.HashMap;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -35,7 +36,7 @@ public class QuirkyCameraTest {
         }
 
         QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x1415, 0x2000);
-        Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
+        assertEquals(psEye.quirks, ps3EyeQuirks);
     }
 
     @Test
@@ -46,6 +47,6 @@ public class QuirkyCameraTest {
         }
 
         QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
-        Assertions.assertEquals(quirkless.quirks, noQuirks);
+        assertEquals(quirkless.quirks, noQuirks);
     }
 }

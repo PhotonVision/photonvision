@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { computed, inject, onMounted, ref } from "vue";
+import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import {
   PlaceholderCameraSettings,
@@ -11,6 +11,8 @@ import {
   type UiCameraConfiguration
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
+import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
@@ -23,42 +25,106 @@ const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
-  const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
-  url.searchParams.set("cameraUniqueName", moduleUniqueName);
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => {
-    activatingModule.value = false;
-    setTimeout(() => enforceStreamHeight(), 1000);
-  });
+  axios
+    .post("/utils/activateMatchedCamera", { cameraUniqueName: moduleUniqueName })
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Camera activated successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to activate this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
 const assignCamera = (cameraInfo: PVCameraInfo) => {
   if (assigningCamera.value) return;
   assigningCamera.value = true;
-  const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
-  url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => {
-    assigningCamera.value = false;
-    setTimeout(() => enforceStreamHeight(), 1000);
-  });
+  const payload = {
+    cameraInfo: cameraInfo
+  };
+
+  axios
+    .post("/utils/assignUnmatchedCamera", payload)
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Unmatched camera assigned successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to assign this unmatched camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (assigningCamera.value = false));
 };
 
 const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  const url = new URL(`http://${host}/api/utils/unassignCamera`);
-  url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (deactivatingModule.value = false));
+  axios
+    .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Camera deactivated successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to deactivate this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (deactivatingModule.value = false));
 };
 
 const deletingCamera = ref(false);
@@ -122,7 +188,8 @@ const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
   else return false;
 };
 
-const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+  if (!camera) return null;
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
   }
@@ -135,76 +202,67 @@ const cameraInfoFor = (camera: PVCameraInfo): PVUsbCameraInfo | PVCSICameraInfo 
   return {};
 };
 
-const uniquePathForCamera = (info: PVCameraInfo) => {
-  if (info.PVUsbCameraInfo) {
-    return info.PVUsbCameraInfo.uniquePath;
-  }
-  if (info.PVCSICameraInfo) {
-    return info.PVCSICameraInfo.uniquePath;
-  }
-  if (info.PVFileCameraInfo) {
-    return info.PVFileCameraInfo.uniquePath;
-  }
-
-  // TODO - wut
-  return "";
-};
-
 /**
  * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
  */
 const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
-      PVFileCameraInfo: {
-        name: "!",
-        path: "!",
-        uniquePath: "!"
-      },
+      PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined
     };
   }
   return (
     useStateStore().vsmState.allConnectedCameras.find(
-      (it) => uniquePathForCamera(it) === uniquePathForCamera(info)
+      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
     ) || {
-      PVFileCameraInfo: {
-        name: "!",
-        path: "!",
-        uniquePath: "!"
-      },
+      PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined
     }
   );
 };
 
-const unmatchedCameras = computed(() => {
-  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map((it) =>
-    uniquePathForCamera(it.matchedCameraInfo)
+const cameraCononected = (uniquePath: string): boolean => {
+  return (
+    useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
   );
-  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map((it) =>
-    uniquePathForCamera(it.matchedCameraInfo)
+};
+
+const unmatchedCameras = computed(() => {
+  const activeVmPaths = Object.values(useCameraSettingsStore().cameras).map(
+    (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath
+  );
+  const disabledVmPaths = useStateStore().vsmState.disabledConfigs.map(
+    (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath
   );
 
   return useStateStore().vsmState.allConnectedCameras.filter(
-    (it) => !activeVmPaths.includes(uniquePathForCamera(it)) && !disabledVmPaths.includes(uniquePathForCamera(it))
+    (it) =>
+      !activeVmPaths.includes(cameraInfoFor(it).uniquePath) && !disabledVmPaths.includes(cameraInfoFor(it).uniquePath)
   );
 });
 
 const activeVisionModules = computed(() =>
-  Object.values(useCameraSettingsStore().cameras).filter(
-    (camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings)
-  )
+  Object.values(useCameraSettingsStore().cameras)
+    // Ignore placeholder camera
+    .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+    // Display connected cameras first
+    .sort(
+      (first, second) =>
+        (cameraCononected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
+        (cameraCononected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
+    )
 );
+
 const disabledVisionModules = computed(() => useStateStore().vsmState.disabledConfigs);
 
 const viewingDetails = ref(false);
-const viewingCamera = ref<PVCameraInfo | null>(null);
-const setCameraView = (camera: PVCameraInfo | null) => {
-  viewingDetails.value = camera !== null;
-  viewingCamera.value = camera;
+const viewingCamera = ref<[PVCameraInfo | null, boolean | null]>([null, null]);
+const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null) => {
+  viewingDetails.value = camera !== null && isConnected !== null;
+  viewingCamera.value = [camera, isConnected];
 };
 
 const viewingDeleteCamera = ref(false);
@@ -219,34 +277,10 @@ const exportSettings = ref();
 const openExportSettingsPrompt = () => {
   exportSettings.value.click();
 };
-
-const enforceStreamHeight = () => {
-  const streamWidth = document.getElementById("stream-container-0")?.offsetWidth ?? 0;
-  if (streamWidth === 0) return;
-
-  Object.values(useCameraSettingsStore().cameras)
-    .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
-    .forEach((element, index) => {
-      let stream = document.getElementById(`outer-output-camera-stream-${index}`);
-      if (!stream) return;
-
-      stream?.classList.remove("tall-stream", "wide-stream", "d-none");
-      let streamRes = element.validVideoFormats[0].resolution.width / element.validVideoFormats[0].resolution.height;
-      let containerRes = streamWidth / 250.0;
-      if (element.pipelineSettings.inputImageRotationMode % 2 == 1) streamRes = 1 / streamRes;
-      if (streamRes > containerRes) stream?.classList.add("wide-stream");
-      else stream?.classList.add("tall-stream");
-    });
-};
-
-onMounted(() => {
-  setTimeout(() => enforceStreamHeight(), 1000);
-  window.addEventListener("resize", enforceStreamHeight);
-});
 </script>
 
 <template>
-  <div class="pa-5">
+  <div class="pa-3">
     <v-row>
       <!-- Active modules -->
       <v-col
@@ -256,32 +290,34 @@ onMounted(() => {
         sm="6"
         lg="4"
       >
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle v-if="camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)"
+          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="pb-2"
+            >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
+          >
+          <v-card-subtitle
+            v-else-if="
+              cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+              camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
+            "
+            class="pb-2"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
-          <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
+          <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dark dense class="mb-3">
+            <v-table density="compact">
               <tbody>
                 <tr>
                   <td>Streams:</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input Stream </a>
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
                     /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link">
-                      Output Stream
-                    </a>
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
                   </td>
                 </tr>
                 <tr>
                   <td>Pipelines</td>
                   <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr>
-                  <td>Connected</td>
-                  <td>{{ module.isConnected }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>
@@ -292,8 +328,13 @@ onMounted(() => {
                     }}
                   </td>
                 </tr>
-                <tr v-if="module.isConnected && useStateStore().backendResults[module.uniqueName]">
-                  <td>Frames Processed</td>
+                <tr
+                  v-if="
+                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+                    useStateStore().backendResults[module.uniqueName]
+                  "
+                >
+                  <td style="width: 50%">Frames Processed</td>
                   <td>
                     {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
                       useStateStore().backendResults[module.uniqueName].fps
@@ -302,31 +343,39 @@ onMounted(() => {
                   </td>
                 </tr>
               </tbody>
-            </v-simple-table>
+            </v-table>
             <div
+              v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
-              class="d-flex flex-column justify-center align-center"
+              class="d-flex flex-column justify-center align-center mt-3"
               style="height: 250px"
             >
               <photon-camera-stream
                 :id="`output-camera-stream-${index}`"
                 :camera-settings="module"
                 stream-type="Processed"
-                :outer-id="`outer-output-camera-stream-${index}`"
-                class="d-none"
               />
             </div>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" style="width: 100%" @click="setCameraView(module.matchedCameraInfo)">
+                <v-btn
+                  color="secondary"
+                  style="width: 100%"
+                  @click="
+                    setCameraView(
+                      module.matchedCameraInfo,
+                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                    )
+                  "
+                >
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="deactivatingModule"
@@ -347,11 +396,11 @@ onMounted(() => {
 
       <!-- Disabled modules -->
       <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
-          <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
+          <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dense>
+            <v-table density="compact">
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -365,7 +414,7 @@ onMounted(() => {
                 </tr>
                 <tr>
                   <td>Connected</td>
-                  <td>{{ module.isConnected }}</td>
+                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>
@@ -377,18 +426,27 @@ onMounted(() => {
                   </td>
                 </tr>
               </tbody>
-            </v-simple-table>
+            </v-table>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn color="secondary" style="width: 100%" @click="setCameraView(module.matchedCameraInfo)">
+                <v-btn
+                  color="secondary"
+                  style="width: 100%"
+                  @click="
+                    setCameraView(
+                      module.matchedCameraInfo,
+                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                    )
+                  "
+                >
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="activatingModule"
@@ -409,8 +467,8 @@ onMounted(() => {
 
       <!-- Unassigned cameras -->
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
-        <v-card dark color="primary">
-          <v-card-title>
+        <v-card color="primary">
+          <v-card-title class="pb-2">
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
@@ -424,13 +482,13 @@ onMounted(() => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera)">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera, false)">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="assigningCamera"
@@ -462,38 +520,41 @@ onMounted(() => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera !== null" dark flat color="primary">
+      <v-card v-if="viewingCamera[0] !== null" flat color="primary">
         <v-card-title class="d-flex justify-space-between">
-          <span>{{ cameraInfoFor(viewingCamera)?.name ?? cameraInfoFor(viewingCamera)?.baseName }}</span>
-          <v-btn text @click="setCameraView(null)">
+          <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
+          <v-btn variant="text" @click="setCameraView(null, null)">
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text v-if="!camerasMatch(getMatchedDevice(viewingCamera), viewingCamera)">
+        <v-card-text v-if="!viewingCamera[1]">
+          <PvCameraInfoCard :camera="viewingCamera[0]" />
+        </v-card-text>
+        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
           <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
             It looks like a different camera may have been connected to this device! Compare the following information
             carefully.
           </v-banner>
-          <PvCameraMatchCard :saved="viewingCamera" :current="getMatchedDevice(viewingCamera)" />
+          <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
         <v-card-text v-else>
-          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera)" />
+          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
       </v-card>
     </v-dialog>
 
     <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera" dark width="800">
-      <v-card v-if="cameraToDelete !== null" dark class="dialog-container pa-3 pb-2" color="primary" flat>
+    <v-dialog v-model="viewingDeleteCamera" width="800">
+      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
             <v-col cols="12" md="6">
-              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon left class="open-icon"> mdi-export </v-icon>
+                <v-icon start class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
                   ref="exportSettings"
@@ -522,7 +583,7 @@ onMounted(() => {
             :loading="deletingCamera"
             @click="deleteThisCamera(cameraToDelete.uniqueName)"
           >
-            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">DELETE (UNRECOVERABLE)</span>
           </v-btn>
         </v-card-text>
@@ -532,7 +593,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.v-data-table {
+.v-card-title {
+  text-wrap-mode: wrap !important;
+}
+
+.v-table {
   background-color: #006492 !important;
 }
 
@@ -560,15 +625,5 @@ a:active,
   color: yellow;
   background-color: transparent;
   text-decoration: none;
-}
-
-.wide-stream {
-  width: 100%;
-  height: auto;
-}
-
-.tall-stream {
-  height: 100%;
-  width: auto;
 }
 </style>

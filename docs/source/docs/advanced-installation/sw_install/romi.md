@@ -15,12 +15,12 @@ SSH into the Raspberry Pi (using Windows command line, or a tool like [Putty](ht
 :::{attention}
 The version of WPILibPi for the Romi is 2023.2.1, which is not compatible with the current version of PhotonVision. **If you are using WPILibPi 2023.2.1 on your Romi, you must install PhotonVision v2023.4.2 or earlier!**
 
-To install a compatible version of PhotonVision, enter these commands in the SSH terminal connected to the Raspberry Pi. This will download and run the install script, which will intall PhotonVision on your Raspberry Pi and configure it to run at startup.
+To install a compatible version of PhotonVision, enter these commands in the SSH terminal connected to the Raspberry Pi. This will download and run the install script, which will install PhotonVision on your Raspberry Pi and configure it to run at startup.
 
 ```bash
 $ wget https://git.io/JJrEP -O install.sh
 $ sudo chmod +x install.sh
-$ sudo ./install.sh -v 2023.4.2
+$ sudo ./install.sh -v v2023.4.2
 ```
 The install script requires an internet connection, so connecting the Raspberry Pi to an internet-connected router via an Ethernet cable will be the easiest solution. The pi must remain writable while you are following these steps!
 :::

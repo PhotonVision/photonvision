@@ -17,14 +17,14 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
 </script>
 
 <template>
-  <v-card dark style="background-color: #006492">
+  <v-card style="background-color: #006492">
     <v-card-title class="pa-6">AprilTag Field Layout</v-card-title>
     <v-card-text class="pa-6 pt-0">
       <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
       <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
 
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-simple-table fixed-header height="100%" dense dark>
+      <v-table fixed-header height="100%" density="compact" dark>
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
@@ -47,13 +47,13 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
             </tr>
           </tbody>
         </template>
-      </v-simple-table>
+      </v-table>
     </v-card-text>
   </v-card>
 </template>
 
 <style scoped lang="scss">
-.v-data-table {
+.v-table {
   width: 100%;
   height: 100%;
   text-align: center;

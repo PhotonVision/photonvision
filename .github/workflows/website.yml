@@ -1,0 +1,48 @@
+name: Website
+
+on:
+  push:
+    # For now, run on all commits to main
+    branches: [ main ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main ]
+  merge_group:
+
+jobs:
+  rsync:
+    name: Build and Sync Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+      - name: Install packages
+        run: npm ci
+        working-directory: website
+      - name: Build project
+        run: npm run build
+        working-directory: website
+      - uses: up9cloud/action-rsync@v1.4
+        if: github.ref == 'refs/heads/main'
+        env:
+          HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          KEY: ${{secrets.WEBMASTER_SSH_KEY}}
+          SOURCE: website/dist/*
+          TARGET: /var/www/html/photonvision-website
+
+  format-check:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+      - name: Install Packages
+        run: npm ci
+        working-directory: website
+      - name: Run Formatting Check
+        run: npx prettier -c .
+        working-directory: website

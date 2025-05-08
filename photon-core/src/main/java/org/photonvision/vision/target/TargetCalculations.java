@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import org.opencv.calib3d.Calib3d;
@@ -27,7 +28,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
-
     /**
      * Calculates the yaw and pitch of a point in the image. Yaw and pitch must be calculated together
      * to account for perspective distortion. Yaw is positive right, and pitch is positive up.
@@ -49,7 +49,6 @@ public class TargetCalculations {
             double targetCenterY,
             double verticalFocalLength,
             CameraCalibrationCoefficients cameraCal) {
-
         if (cameraCal != null) {
             // undistort
             MatOfPoint2f temp = new MatOfPoint2f(new Point(targetCenterX, targetCenterY));
@@ -135,17 +134,16 @@ public class TargetCalculations {
             Point camCenterPoint,
             DualOffsetValues dualOffsetValues,
             RobotOffsetPointMode offsetMode) {
-        switch (offsetMode) {
-            case None:
-            default:
-                return camCenterPoint;
-            case Single:
+        return switch (offsetMode) {
+            case None -> camCenterPoint;
+            case Single -> {
                 if (offsetPoint.x == 0 && offsetPoint.y == 0) {
-                    return camCenterPoint;
+                    yield camCenterPoint;
                 } else {
-                    return offsetPoint;
+                    yield offsetPoint;
                 }
-            case Dual:
+            }
+            case Dual -> {
                 var resultPoint = new Point();
                 var lineValues = dualOffsetValues.getLineValues();
                 var offsetSlope = lineValues.getFirst();
@@ -153,8 +151,9 @@ public class TargetCalculations {
 
                 resultPoint.x = (offsetPoint.x - offsetIntercept) / offsetSlope;
                 resultPoint.y = (offsetPoint.y * offsetSlope) + offsetIntercept;
-                return resultPoint;
-        }
+                yield resultPoint;
+            }
+        };
     }
 
     public static double getAspectRatio(RotatedRect rect, boolean isLandscape) {

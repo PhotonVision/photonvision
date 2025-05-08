@@ -76,10 +76,10 @@ static std::unordered_map<int, cv::Mat> LoadAprilTagImages() {
 
 static std::vector<cv::Point2f> GetImageCorners(const cv::Size& size) {
   std::vector<cv::Point2f> retVal{};
-  retVal.emplace_back(cv::Point2f{-0.5f, -0.5f});
-  retVal.emplace_back(cv::Point2f{size.width - 0.5f, -0.5f});
-  retVal.emplace_back(cv::Point2f{size.width - 0.5f, size.height - 0.5f});
   retVal.emplace_back(cv::Point2f{-0.5f, size.height - 0.5f});
+  retVal.emplace_back(cv::Point2f{size.width - 0.5f, size.height - 0.5f});
+  retVal.emplace_back(cv::Point2f{size.width - 0.5f, -0.5f});
+  retVal.emplace_back(cv::Point2f{-0.5f, -0.5f});
   return retVal;
 }
 

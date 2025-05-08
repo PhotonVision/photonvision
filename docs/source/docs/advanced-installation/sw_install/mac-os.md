@@ -23,7 +23,7 @@ Using a JDK other than JDK17 will cause issues when running PhotonVision and is 
 Go to the [GitHub releases page](https://github.com/PhotonVision/photonvision/releases) and download the relevant .jar file for your coprocessor.
 
 :::{note}
-If you have an M1/M2 Mac, download the macarm64.jar file.
+If you have an M Series Mac, download the macarm64.jar file.
 
 If you have an Intel based Mac, download the macx64.jar file.
 :::

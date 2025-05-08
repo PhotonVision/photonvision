@@ -71,12 +71,12 @@ public class USBCameraSource extends VisionSource {
         // yes to me...
         if (getCameraConfiguration().cameraQuirks == null) {
             int vid =
-                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
-                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).vendorId
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo cameraInfo)
+                            ? cameraInfo.vendorId
                             : -1;
             int pid =
-                    (config.matchedCameraInfo instanceof PVUsbCameraInfo)
-                            ? ((PVUsbCameraInfo) config.matchedCameraInfo).productId
+                    (config.matchedCameraInfo instanceof PVUsbCameraInfo cameraInfo)
+                            ? cameraInfo.productId
                             : -1;
 
             getCameraConfiguration().cameraQuirks =
@@ -180,7 +180,7 @@ public class USBCameraSource extends VisionSource {
         // And update the settables' FrameStaticProps
         settables.setVideoMode(oldVideoMode);
 
-        // Propogate our updated settables over to the frame provider
+        // Propagate our updated settables over to the frame provider
         ((USBFrameProvider) this.usbFrameProvider).updateSettables(this.settables);
     }
 

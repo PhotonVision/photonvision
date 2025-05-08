@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.awt.*;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -39,15 +39,15 @@ public class Draw2dTargetsPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        var imRows = in.getLeft().rows();
-        var imCols = in.getLeft().cols();
+        var imRows = in.getFirst().rows();
+        var imCols = in.getFirst().cols();
         var imageSize = Math.sqrt(imRows * imCols);
         var textSize = params.kPixelsToText * imageSize;
         var thickness = params.kPixelsToThickness * imageSize;
 
         if (!params.shouldDraw) return null;
 
-        if (!in.getRight().isEmpty()
+        if (!in.getSecond().isEmpty()
                 && (params.showCentroid
                         || params.showMaximumBox
                         || params.showRotatedBox
@@ -58,7 +58,7 @@ public class Draw2dTargetsPipe
             var circleColor = ColorHelper.colorToScalar(params.circleColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
-            for (int i = 0; i < (params.showMultipleTargets ? in.getRight().size() : 1); i++) {
+            for (int i = 0; i < (params.showMultipleTargets ? in.getSecond().size() : 1); i++) {
                 Point[] vertices = new Point[4];
                 MatOfPoint contour = new MatOfPoint();
 
@@ -66,7 +66,7 @@ public class Draw2dTargetsPipe
                     break;
                 }
 
-                TrackedTarget target = in.getRight().get(i);
+                TrackedTarget target = in.getSecond().get(i);
                 RotatedRect r = target.getMinAreaRect();
 
                 if (r == null) continue;
@@ -77,14 +77,14 @@ public class Draw2dTargetsPipe
 
                 if (params.shouldShowRotatedBox(target.getShape())) {
                     Imgproc.drawContours(
-                            in.getLeft(),
+                            in.getFirst(),
                             List.of(contour),
                             0,
                             rotatedBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 } else if (params.shouldShowCircle(target.getShape())) {
                     Imgproc.circle(
-                            in.getLeft(),
+                            in.getFirst(),
                             target.getShape().center,
                             (int) target.getShape().radius,
                             circleColor,
@@ -101,7 +101,7 @@ public class Draw2dTargetsPipe
                         mat.fromArray(poly.toArray());
                         divideMat(mat, mat);
                         Imgproc.drawContours(
-                                in.getLeft(),
+                                in.getFirst(),
                                 List.of(mat),
                                 -1,
                                 ColorHelper.colorToScalar(params.rotatedBoxColor),
@@ -113,7 +113,7 @@ public class Draw2dTargetsPipe
                 if (params.showMaximumBox) {
                     Rect box = Imgproc.boundingRect(contour);
                     Imgproc.rectangle(
-                            in.getLeft(),
+                            in.getFirst(),
                             new Point(box.x, box.y),
                             new Point(box.x + box.width, box.y + box.height),
                             maximumBoxColour,
@@ -123,7 +123,7 @@ public class Draw2dTargetsPipe
                 if (params.showShape) {
                     divideMat(target.m_mainContour.mat, tempMat);
                     Imgproc.drawContours(
-                            in.getLeft(),
+                            in.getFirst(),
                             List.of(tempMat),
                             -1,
                             shapeColour,
@@ -142,7 +142,7 @@ public class Draw2dTargetsPipe
                     var contourNumber = String.valueOf(id == -1 ? i : id);
 
                     Imgproc.putText(
-                            in.getLeft(),
+                            in.getFirst(),
                             contourNumber,
                             textPos,
                             0,
@@ -163,13 +163,13 @@ public class Draw2dTargetsPipe
                     Point yMin = new Point(x, y - crosshairRadius);
 
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             xMax,
                             xMin,
                             centroidColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             yMax,
                             yMin,
                             centroidColour,

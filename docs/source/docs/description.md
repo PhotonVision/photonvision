@@ -11,7 +11,7 @@ PhotonVision has a myriad of advantages over similar solutions, including:
 
 ### Affordable
 
-Compared to alternatives, PhotonVision is much cheaper to use (at the cost of your coprocessor and camera) compared to alternatives that cost \$400. This allows your team to save money while still being competitive.
+PhotonVision offers a more affordable solution to vision, with costs being from your coprocessor(s) and camera(s). Teams may choose to run multiple cameras from one coprocessor. This makes it a great solution for teams with limited budgets.
 
 ### Easy to Use User Interface
 
@@ -27,7 +27,7 @@ Using PhotonVision allows the user to calibrate for their specific camera, which
 
 ### Low Latency, High FPS Processing
 
-PhotonVision exposes specalized hardware on select coprocessors to maximize processing speed. This allows for lower-latency detection of targets to ensure you aren't losing out on any performance.
+PhotonVision exposes specialized hardware on select coprocessors to maximize processing speed. This allows for lower-latency detection of targets to ensure you aren't losing out on any performance.
 
 ### Fully Open Source and Active Developer Community
 

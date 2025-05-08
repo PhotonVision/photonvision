@@ -366,7 +366,7 @@ public class VisionSourceManager {
      * CameraConfiguration}'s matchedCameraInfo. We depend on the underlying {@link VisionSource} to
      * be robust to disconnected sources at boot
      *
-     * <p>Verify that nickname is unique within the set of desesrialized camera configurations, adding
+     * <p>Verify that nickname is unique within the set of deserialized camera configurations, adding
      * random characters if this isn't the case
      */
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {

@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.awt.*;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -47,7 +47,7 @@ public class Draw3dTargetsPipe
             return null;
         }
 
-        for (var target : in.getRight()) {
+        for (var target : in.getSecond()) {
             // draw convex hull
             if (params.shouldDrawHull(target)) {
                 var pointMat = new MatOfPoint();
@@ -59,14 +59,14 @@ public class Draw3dTargetsPipe
                     continue;
                 }
                 Imgproc.drawContours(
-                        in.getLeft(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.green), 1);
+                        in.getFirst(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.green), 1);
 
                 // draw approximate polygon
                 var poly = target.getApproximateBoundingPolygon();
                 if (poly != null) {
                     divideMat2f(poly, pointMat);
                     Imgproc.drawContours(
-                            in.getLeft(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                            in.getFirst(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
                 }
                 pointMat.release();
             }
@@ -126,7 +126,7 @@ public class Draw3dTargetsPipe
                 // floor, then pillars, then top
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             bottomPoints.get(i),
                             bottomPoints.get((i + 1) % (bottomPoints.size())),
                             ColorHelper.colorToScalar(Color.green),
@@ -167,21 +167,21 @@ public class Draw3dTargetsPipe
                 // XYZ is RGB
                 // y-axis = green
                 Imgproc.line(
-                        in.getLeft(),
+                        in.getFirst(),
                         axisPoints.get(0),
                         axisPoints.get(2),
                         ColorHelper.colorToScalar(Color.GREEN),
                         3);
                 // z-axis = blue
                 Imgproc.line(
-                        in.getLeft(),
+                        in.getFirst(),
                         axisPoints.get(0),
                         axisPoints.get(3),
                         ColorHelper.colorToScalar(Color.BLUE),
                         3);
                 // x-axis = red
                 Imgproc.line(
-                        in.getLeft(),
+                        in.getFirst(),
                         axisPoints.get(0),
                         axisPoints.get(1),
                         ColorHelper.colorToScalar(Color.RED),
@@ -190,7 +190,7 @@ public class Draw3dTargetsPipe
                 // box edges perpendicular to tag
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             bottomPoints.get(i),
                             topPoints.get(i),
                             ColorHelper.colorToScalar(Color.blue),
@@ -199,7 +199,7 @@ public class Draw3dTargetsPipe
                 // box edges parallel to tag
                 for (int i = 0; i < topPoints.size(); i++) {
                     Imgproc.line(
-                            in.getLeft(),
+                            in.getFirst(),
                             topPoints.get(i),
                             topPoints.get((i + 1) % (bottomPoints.size())),
                             ColorHelper.colorToScalar(Color.orange),
@@ -219,7 +219,7 @@ public class Draw3dTargetsPipe
                     var y = corner.y / (double) params.divisor.value;
 
                     Imgproc.circle(
-                            in.getLeft(),
+                            in.getFirst(),
                             new Point(x, y),
                             params.radius,
                             ColorHelper.colorToScalar(params.color),

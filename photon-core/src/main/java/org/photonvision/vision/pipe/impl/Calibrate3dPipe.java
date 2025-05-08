@@ -89,7 +89,7 @@ public class Calibrate3dPipe
                                                 && it.imagePoints != null
                                                 && it.objectPoints != null
                                                 && it.size != null)
-                        .collect(Collectors.toList());
+                        .toList();
 
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
@@ -134,11 +134,9 @@ public class Calibrate3dPipe
             double fxGuess,
             double fyGuess,
             Path imageSavePath) {
-        List<MatOfPoint3f> objPointsIn =
-                in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
-        List<MatOfPoint2f> imgPointsIn =
-                in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
-        List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).collect(Collectors.toList());
+        List<MatOfPoint3f> objPointsIn = in.stream().map(it -> it.objectPoints).toList();
+        List<MatOfPoint2f> imgPointsIn = in.stream().map(it -> it.imagePoints).toList();
+        List<MatOfFloat> levelsArr = in.stream().map(it -> it.levels).toList();
 
         if (objPointsIn.size() != imgPointsIn.size() || objPointsIn.size() != levelsArr.size()) {
             logger.error("objpts.size != imgpts.size");
@@ -223,10 +221,9 @@ public class Calibrate3dPipe
             double fyGuess,
             Path imageSavePath) {
         List<MatOfPoint2f> corner_locations =
-                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).collect(Collectors.toList());
+                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).toList();
 
-        List<MatOfFloat> levels =
-                in.stream().map(it -> it.levels).map(MatOfFloat::new).collect(Collectors.toList());
+        List<MatOfFloat> levels = in.stream().map(it -> it.levels).map(MatOfFloat::new).toList();
 
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
@@ -303,7 +300,7 @@ public class Calibrate3dPipe
             Calib3d.solvePnP(
                     o.objectPoints,
                     o.imagePoints,
-                    cameraMatrixMat.getAsMat(),
+                    cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
@@ -314,7 +311,7 @@ public class Calibrate3dPipe
         List<BoardObservation> observations =
                 createObservations(
                         in,
-                        cameraMatrixMat.getAsMat(),
+                        cameraMatrixMat.getAsMatOfDouble(),
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
                         tvecs,

@@ -124,9 +124,14 @@ const saveGeneralSettings = () => {
     });
 };
 
-const currentNetworkInterfaceIndex = computed<number>({
-  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
-  set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+const currentNetworkInterfaceIndex = computed<number | undefined>({
+  get: () => {
+    const index = useSettingsStore().networkInterfaceNames.indexOf(
+      useSettingsStore().network.networkManagerIface || ""
+    );
+    return index === -1 ? undefined : index;
+  },
+  set: (v) => v && (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });
 
 watchEffect(() => {
@@ -136,7 +141,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" style="background-color: #006492">
     <v-card-title class="pa-6">Global Settings</v-card-title>
     <div class="pa-6 pt-0">
       <v-divider class="pb-3" />
@@ -157,7 +162,7 @@ watchEffect(() => {
         <v-banner
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           style="margin: 10px 0"
           icon="mdi-alert-circle-outline"
@@ -233,7 +238,7 @@ watchEffect(() => {
             !useSettingsStore().network.networkingDisabled
           "
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -248,7 +253,7 @@ watchEffect(() => {
         <v-banner
           v-if="tempSettingsStruct.runNTServer"
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -265,7 +270,7 @@ watchEffect(() => {
         <v-banner
           v-if="tempSettingsStruct.shouldPublishProto"
           rounded
-          color="error"
+          bg-color="error"
           text-color="white"
           icon="mdi-information-outline"
         >
@@ -276,6 +281,7 @@ watchEffect(() => {
       </v-form>
       <v-btn
         color="accent"
+        :variant="!settingsValid || !settingsHaveChanged() ? 'tonal' : 'elevated'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"

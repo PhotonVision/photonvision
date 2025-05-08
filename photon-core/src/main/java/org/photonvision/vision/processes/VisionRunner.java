@@ -92,7 +92,7 @@ public class VisionRunner {
         }
     }
 
-    public Future<Void> runSyncronously(Runnable runnable) {
+    public Future<Void> runSynchronously(Runnable runnable) {
         CompletableFuture<Void> future = new CompletableFuture<>();
 
         synchronized (runnableList) {
@@ -109,7 +109,7 @@ public class VisionRunner {
         return future;
     }
 
-    public <T> Future<T> runSyncronously(Callable<T> callable) {
+    public <T> Future<T> runSynchronously(Callable<T> callable) {
         CompletableFuture<T> future = new CompletableFuture<>();
 
         synchronized (runnableList) {

@@ -17,13 +17,12 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
@@ -122,7 +121,7 @@ public class CalibrationRotationPipeTest {
                                     0.09625562194891251,
                                     -0.1860797479660746
                                 }),
-                        new double[] {},
+                        new double[0],
                         List.of(),
                         new Size(),
                         1,
@@ -139,7 +138,7 @@ public class CalibrationRotationPipeTest {
 
         Point[] originalPoints = {new Point(100, 100), new Point(200, 200), new Point(300, 100)};
 
-        // Distort the origonal points
+        // Distort the original points
         var distortedOriginalPoints =
                 OpenCVHelp.distortPoints(
                         List.of(originalPoints),
@@ -150,13 +149,13 @@ public class CalibrationRotationPipeTest {
         var rotatedDistortedPoints =
                 distortedOriginalPoints.stream()
                         .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
-                        .collect(Collectors.toList());
+                        .toList();
 
         // Now let's instead rotate then distort
         var rotatedOriginalPoints =
                 Arrays.stream(originalPoints)
                         .map(it -> rot.rotatePoint(it, frameProps.imageWidth, frameProps.imageHeight))
-                        .collect(Collectors.toList());
+                        .toList();
 
         var distortedRotatedPoints =
                 OpenCVHelp.distortPoints(
@@ -171,6 +170,93 @@ public class CalibrationRotationPipeTest {
             assertEquals(rotatedDistortedPoints.get(i).x, distortedRotatedPoints.get(i).x, 1e-6);
             assertEquals(rotatedDistortedPoints.get(i).y, distortedRotatedPoints.get(i).y, 1e-6);
         }
+    }
+
+    @Test
+    public void testRotateCoefficients180multiple() {
+        ImageRotationMode rot = ImageRotationMode.DEG_180_CCW;
+
+        // GIVEN A camera calibration
+        var res = new Size(1270, 720);
+        double fx = 900;
+        double fy = 951;
+        double cx = 500;
+        double cy = 321;
+        double[] intrinsics = {fx, 0, cx, 0, fy, cy, 0, 0, 1};
+        double[] distCoeffs = {
+            0.25,
+            -1.5,
+            0.0017808248356550637,
+            .00004,
+            2.179764689221826,
+            -0.034952777924711353,
+            0.09625562194891251,
+            -0.1860797479660746
+        };
+        CameraCalibrationCoefficients coeffs =
+                new CameraCalibrationCoefficients(
+                        res,
+                        new JsonMatOfDouble(3, 3, intrinsics),
+                        new JsonMatOfDouble(1, 8, distCoeffs),
+                        new double[] {},
+                        List.of(),
+                        new Size(),
+                        1,
+                        CameraLensModel.LENSMODEL_OPENCV);
+
+        // WHEN the camera calibration is rotated 180 degrees
+        var coeffs2 = coeffs.rotateCoefficients(rot);
+
+        // THEN the optical center should be rotated 180 degrees
+        double[] rotatedCamMat = {fx, 0, res.width - cx, 0, fy, res.height - cy, 0, 0, 1};
+        assertArrayEquals(rotatedCamMat, coeffs2.cameraIntrinsics.data);
+        // AND the image size should be the same
+        assertEquals(res, coeffs2.unrotatedImageSize);
+
+        // WHEN the camera calibration is rotated 180 degrees
+        var coeffs3 = coeffs2.rotateCoefficients(rot);
+
+        // THEN the camera matrix will be the same as the original
+        assertArrayEquals(intrinsics, coeffs3.cameraIntrinsics.data);
+        // AND the image size should be the same
+        assertEquals(res, coeffs2.unrotatedImageSize);
+    }
+
+    @CartesianTest
+    public void testCalibrationDataIsValidWithRotation(@Enum ImageRotationMode rot) {
+        double[] intrinsics = {
+            900, 0, 500,
+            0, 951, 321,
+            0, 0, 1
+        };
+        double[] distCoeffs = {
+            0.25,
+            -1.5,
+            0.0017808248356550637,
+            .00004,
+            2.179764689221826,
+            -0.034952777924711353,
+            0.09625562194891251,
+            -0.1860797479660746
+        };
+        // GIVEN A camera calibration
+        CameraCalibrationCoefficients coeffs =
+                new CameraCalibrationCoefficients(
+                        new Size(1270, 720),
+                        new JsonMatOfDouble(3, 3, intrinsics),
+                        new JsonMatOfDouble(1, 8, distCoeffs),
+                        new double[] {},
+                        List.of(),
+                        new Size(),
+                        1,
+                        CameraLensModel.LENSMODEL_OPENCV);
+        // WHEN A camera calibration is rotated 4 times
+        for (int i = 0; i < 4; i++) {
+            coeffs = coeffs.rotateCoefficients(rot);
+        }
+        // THEN, it should be like it was never rotated at all
+        assertArrayEquals(intrinsics, coeffs.cameraIntrinsics.data);
+        assertArrayEquals(distCoeffs, coeffs.distCoeffs.data);
     }
 
     @Test
@@ -200,7 +286,7 @@ public class CalibrationRotationPipeTest {
                                     0.04625562194891251,
                                     -0.0860797479660746
                                 }),
-                        new double[] {},
+                        new double[0],
                         List.of(),
                         new Size(),
                         1,
@@ -222,9 +308,7 @@ public class CalibrationRotationPipeTest {
         // rotate and try again
         var rotAngle = ImageRotationMode.DEG_90_CCW;
         var rotatedDistortedPoints =
-                distortedCorners.stream()
-                        .map(it -> rotAngle.rotatePoint(it, 1280, 720))
-                        .collect(Collectors.toList());
+                distortedCorners.stream().map(it -> rotAngle.rotatePoint(it, 1280, 720)).toList();
         pipe.setParams(
                 new SolvePNPPipeParams(
                         coeffs.rotateCoefficients(rotAngle), TargetModel.kAprilTag6p5in_36h11));
@@ -239,14 +323,11 @@ public class CalibrationRotationPipeTest {
         System.out.println("Base: " + pose_base);
         System.out.println("rot-unrot: " + pose_unrotated);
 
-        Assertions.assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
-        Assertions.assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
-        Assertions.assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.01);
-        Assertions.assertEquals(
-                pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.01);
-        Assertions.assertEquals(
-                pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.01);
-        Assertions.assertEquals(
-                pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.01);
+        assertEquals(pose_base.getX(), pose_unrotated.getX(), 0.01);
+        assertEquals(pose_base.getY(), pose_unrotated.getY(), 0.01);
+        assertEquals(pose_base.getZ(), pose_unrotated.getZ(), 0.01);
+        assertEquals(pose_base.getRotation().getX(), pose_unrotated.getRotation().getX(), 0.01);
+        assertEquals(pose_base.getRotation().getY(), pose_unrotated.getRotation().getY(), 0.01);
+        assertEquals(pose_base.getRotation().getZ(), pose_unrotated.getRotation().getZ(), 0.01);
     }
 }

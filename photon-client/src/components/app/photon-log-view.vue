@@ -3,7 +3,7 @@ import { computed, inject, ref, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
-import VirtualList from "vue-virtual-scroll-list";
+import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
 
@@ -74,15 +74,15 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card dark class="dialog-container pa-6" color="primary" flat>
+    <v-card class="dialog-container pa-6" color="primary" flat>
       <!-- Logs header -->
-      <v-row class="no-gutters pb-3">
+      <v-row class="pb-3">
         <v-col cols="4">
           <v-card-title class="pa-0">Program Logs</v-card-title>
         </v-col>
         <v-col class="align-self-center pl-3" style="text-align: right">
-          <v-btn text color="white" @click="handleLogExport">
-            <v-icon left class="menu-icon"> mdi-download </v-icon>
+          <v-btn variant="text" color="white" @click="handleLogExport">
+            <v-icon start class="menu-icon"> mdi-download </v-icon>
             <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -94,12 +94,12 @@ document.addEventListener("keydown", (e) => {
               target="_blank"
             />
           </v-btn>
-          <v-btn text color="white" @click="handleLogClear">
-            <v-icon left class="menu-icon"> mdi-trash-can-outline </v-icon>
+          <v-btn variant="text" color="white" @click="handleLogClear">
+            <v-icon start class="menu-icon"> mdi-trash-can-outline </v-icon>
             <span class="menu-label">Clear Client Logs</span>
           </v-btn>
-          <v-btn text color="white" @click="() => (useStateStore().showLogModal = false)">
-            <v-icon left class="menu-icon"> mdi-close </v-icon>
+          <v-btn variant="text" color="white" @click="() => (useStateStore().showLogModal = false)">
+            <v-icon start class="menu-icon"> mdi-close </v-icon>
             <span class="menu-label">Close</span>
           </v-btn>
         </v-col>
@@ -109,38 +109,28 @@ document.addEventListener("keydown", (e) => {
 
       <div class="dialog-data">
         <!-- Log view options -->
-        <v-row class="pt-4 pt-md-0 no-gutters">
-          <v-col cols="12" md="5" class="align-self-center">
+        <v-row no-gutters class="pt-4 pt-md-0" style="display: flex; justify-content: space-between">
+          <v-col cols="12" md="7" style="display: flex; align-items: center">
             <v-text-field
               v-model="searchQuery"
-              dark
-              dense
+              density="compact"
               clearable
               hide-details="auto"
               prepend-icon="mdi-magnify"
               color="accent"
               label="Search"
+              variant="underlined"
             />
-          </v-col>
-          <v-col cols="12" md="2" style="display: flex; align-items: center">
-            <input v-model="timeInput" type="time" step="1" class="white--text pl-0 pl-md-8" />
-            <v-btn icon class="ml-3" @click="timeInput = undefined">
+            <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
+            <v-btn icon variant="flat" @click="timeInput = undefined">
               <v-icon>mdi-close-circle-outline</v-icon>
             </v-btn>
           </v-col>
-          <v-col cols="12" md="5" class="pr-3">
-            <v-row class="no-gutters">
-              <v-col v-for="level in [0, 1, 2, 3]" :key="level">
-                <v-row dense align="center">
-                  <v-col cols="6" md="8" style="text-align: right">
-                    {{ getLogLevelFromIndex(level) }}
-                  </v-col>
-                  <v-col cols="6" md="4">
-                    <v-switch v-model="selectedLogLevels[level]" dark color="#ffd843" />
-                  </v-col>
-                </v-row>
-              </v-col>
-            </v-row>
+          <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
+            <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
+              {{ getLogLevelFromIndex(level)
+              }}<v-switch v-model="selectedLogLevels[level]" class="pl-2" hide-details color="#ffd843"></v-switch>
+            </div>
           </v-col>
         </v-row>
 

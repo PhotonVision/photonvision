@@ -7,13 +7,13 @@ const props = defineProps<{ source: LogMessage }>();
 const logColorClass = computed<string>(() => {
   switch (props.source.level) {
     case LogLevel.ERROR:
-      return "red--text";
+      return "text-red";
     case LogLevel.WARN:
-      return "yellow--text";
+      return "text-yellow";
     case LogLevel.INFO:
-      return "light-blue--text";
+      return "text-light-blue";
     case LogLevel.DEBUG:
-      return "white--text";
+      return "text-white";
   }
   return "";
 });

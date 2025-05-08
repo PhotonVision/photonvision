@@ -24,7 +24,7 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
 
 <template>
   <div>
-    <v-simple-table dense :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr v-if="cameraInfoFor(camera).dev !== undefined && cameraInfoFor(camera).dev !== null">
           <td>Device Number:</td>
@@ -57,15 +57,15 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
           <td>Path:</td>
           <td style="word-break: break-all">{{ cameraInfoFor(camera).path }}</td>
         </tr>
-        <tr v-if="cameraInfoFor(camera).otherPaths !== undefined && cameraInfoFor(camera).otherPaths !== null">
-          <td>Other Paths:</td>
-          <td>{{ cameraInfoFor(camera).otherPaths }}</td>
-        </tr>
         <tr v-if="cameraInfoFor(camera).uniquePath !== undefined && cameraInfoFor(camera).uniquePath !== null">
           <td>Unique Path:</td>
           <td style="word-break: break-all">{{ cameraInfoFor(camera).uniquePath }}</td>
         </tr>
+        <tr v-if="cameraInfoFor(camera).otherPaths !== undefined && cameraInfoFor(camera).otherPaths !== null">
+          <td>Other Paths:</td>
+          <td>{{ cameraInfoFor(camera).otherPaths }}</td>
+        </tr>
       </tbody>
-    </v-simple-table>
+    </v-table>
   </div>
 </template>

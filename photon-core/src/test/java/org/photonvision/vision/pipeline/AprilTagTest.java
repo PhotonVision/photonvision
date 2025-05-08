@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import edu.wpi.first.math.geometry.Translation3d;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.ConfigManager;
@@ -29,7 +29,6 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class AprilTagTest {
     @BeforeEach
@@ -59,7 +58,7 @@ public class AprilTagTest {
 
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -74,33 +73,31 @@ public class AprilTagTest {
 
         // Test corner order
         var corners = target.getTargetCorners();
-        Assertions.assertEquals(260, corners.get(0).x, 10);
-        Assertions.assertEquals(245, corners.get(0).y, 10);
-        Assertions.assertEquals(315, corners.get(1).x, 10);
-        Assertions.assertEquals(245, corners.get(1).y, 10);
-        Assertions.assertEquals(315, corners.get(2).x, 10);
-        Assertions.assertEquals(190, corners.get(2).y, 10);
-        Assertions.assertEquals(260, corners.get(3).x, 10);
-        Assertions.assertEquals(190, corners.get(3).y, 10);
+        assertEquals(260, corners.get(0).x, 10);
+        assertEquals(245, corners.get(0).y, 10);
+        assertEquals(315, corners.get(1).x, 10);
+        assertEquals(245, corners.get(1).y, 10);
+        assertEquals(315, corners.get(2).x, 10);
+        assertEquals(190, corners.get(2).y, 10);
+        assertEquals(260, corners.get(3).x, 10);
+        assertEquals(190, corners.get(3).y, 10);
 
         var pose = target.getBestCameraToTarget3d();
         // Test pose estimate translation
-        Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(0.1, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+        assertEquals(2, pose.getTranslation().getX(), 0.2);
+        assertEquals(0.1, pose.getTranslation().getY(), 0.2);
+        assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
 
         // Test pose estimate rotation
         // We expect the object axes to be in NWU, with the x-axis coming out of the tag
         // This visible tag is facing the camera almost parallel, so in world space:
 
         // The object's X axis should be (-1, 0, 0)
-        Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
+        assertEquals(-1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
         // The object's Y axis should be (0, -1, 0)
-        Assertions.assertEquals(
-                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
+        assertEquals(-1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
         // The object's Z axis should be (0, 0, 1)
-        Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
+        assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
     }
 
     @Test
@@ -124,7 +121,7 @@ public class AprilTagTest {
 
         CVPipelineResult pipelineResult;
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -136,20 +133,8 @@ public class AprilTagTest {
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(4.14, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(2, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-        System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
+        assertEquals(4.14, pose.getTranslation().getX(), 0.2);
+        assertEquals(2, pose.getTranslation().getY(), 0.2);
+        assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
     }
 }

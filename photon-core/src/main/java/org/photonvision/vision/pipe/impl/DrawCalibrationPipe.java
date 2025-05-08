@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.awt.Color;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -32,20 +32,19 @@ import org.photonvision.vision.target.TrackedTarget;
 public class DrawCalibrationPipe
         extends MutatingPipe<
                 Pair<Mat, List<TrackedTarget>>, DrawCalibrationPipe.DrawCalibrationPipeParams> {
-    Scalar[] chessboardColors =
-            new Scalar[] {
-                ColorHelper.colorToScalar(Color.RED, 0.4),
-                ColorHelper.colorToScalar(Color.ORANGE, 0.4),
-                ColorHelper.colorToScalar(Color.GREEN, 0.4),
-                ColorHelper.colorToScalar(Color.BLUE, 0.4),
-                ColorHelper.colorToScalar(Color.MAGENTA, 0.4),
-            };
+    Scalar[] chessboardColors = {
+        ColorHelper.colorToScalar(Color.RED, 0.4),
+        ColorHelper.colorToScalar(Color.ORANGE, 0.4),
+        ColorHelper.colorToScalar(Color.GREEN, 0.4),
+        ColorHelper.colorToScalar(Color.BLUE, 0.4),
+        ColorHelper.colorToScalar(Color.MAGENTA, 0.4),
+    };
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.drawAllSnapshots) return null;
+        if (!params.drawAllSnapshots()) return null;
 
-        var image = in.getLeft();
+        var image = in.getFirst();
 
         var imgSz = image.size();
         var diag = Math.hypot(imgSz.width, imgSz.height);
@@ -56,7 +55,7 @@ public class DrawCalibrationPipe
         int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
 
         int i = 0;
-        for (var target : in.getRight()) {
+        for (var target : in.getSecond()) {
             for (var c : target.getTargetCorners()) {
                 if (c.x < 0 || c.y < 0) {
                     // Skip if the corner is less than zero
@@ -65,7 +64,8 @@ public class DrawCalibrationPipe
 
                 c =
                         new Point(
-                                c.x / params.divisor.value.doubleValue(), c.y / params.divisor.value.doubleValue());
+                                c.x / params.divisor().value.doubleValue(),
+                                c.y / params.divisor().value.doubleValue());
 
                 var r2 = r / Math.sqrt(2);
                 var color = chessboardColors[i % chessboardColors.length];
@@ -82,13 +82,5 @@ public class DrawCalibrationPipe
         return null;
     }
 
-    public static class DrawCalibrationPipeParams {
-        private final FrameDivisor divisor;
-        public boolean drawAllSnapshots;
-
-        public DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawSnapshots) {
-            this.divisor = divisor;
-            this.drawAllSnapshots = drawSnapshots;
-        }
-    }
+    public static record DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawAllSnapshots) {}
 }

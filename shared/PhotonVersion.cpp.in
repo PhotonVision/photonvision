@@ -30,5 +30,9 @@ namespace photon {
     const char* versionString = "${version}";
     const char* buildDate = "${date}";
     const bool isRelease = strncmp(dev_, versionString, strlen(dev_)) != 0;
+
+    // Versions of dependant libraries
+    const char* wpilibTargetVersion = "${wpilibVersion}";
+    const char* opencvTargetVersion = "${opencvVersion}";
   }
 }

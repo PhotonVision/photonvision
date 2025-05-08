@@ -34,7 +34,7 @@ Innomaker and Arducam are common manufacturers of hardware designed specifically
 - Driver Camera
   - OV9281
   - OV9782
-  - Pi Camera Module V1 {ref}`(More setup info)<docs/hardware/picamconfig:Pi Camera Configuration>`
+  - Pi Camera Module V1 {ref}`(More setup info)<docs/camera-specific-configuration/picamconfig:Pi Camera Configuration>`
 
 Feel free to get started with any color webcam you have sitting around.
 

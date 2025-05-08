@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
@@ -38,7 +37,6 @@ import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class SolvePNPTest {
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
@@ -70,16 +68,12 @@ public class SolvePNPTest {
         assertNotNull(cameraCalibration);
         assertEquals(3, cameraCalibration.cameraIntrinsics.rows);
         assertEquals(3, cameraCalibration.cameraIntrinsics.cols);
-        assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMat().rows());
-        assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMat().cols());
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().rows());
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().cols());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().rows());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().cols());
         assertEquals(1, cameraCalibration.distCoeffs.rows);
         assertEquals(5, cameraCalibration.distCoeffs.cols);
-        assertEquals(1, cameraCalibration.distCoeffs.getAsMat().rows());
-        assertEquals(5, cameraCalibration.distCoeffs.getAsMat().cols());
         assertEquals(1, cameraCalibration.distCoeffs.getAsMatOfDouble().rows());
         assertEquals(5, cameraCalibration.distCoeffs.getAsMatOfDouble().cols());
         assertEquals(1, cameraCalibration.getDistCoeffsMat().rows());
@@ -117,7 +111,7 @@ public class SolvePNPTest {
         frameProvider.requestHsvSettings(hsvParams);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -172,7 +166,7 @@ public class SolvePNPTest {
         frameProvider.requestHsvSettings(hsvParams);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
@@ -208,7 +202,7 @@ public class SolvePNPTest {
 
         while (true) {
             CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
+            TestUtils.printTestResultsWithLocation(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();
             int postRelease = CVMat.getMatCount();
@@ -235,17 +229,5 @@ public class SolvePNPTest {
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
         continuouslyRunPipeline(frameProvider.get(), settings);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-        System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
     }
 }
