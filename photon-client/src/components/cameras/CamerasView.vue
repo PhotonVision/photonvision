@@ -31,35 +31,29 @@ const fpsTooLow = computed<boolean>(() => {
 <template>
   <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
     <v-card-title class="justify-space-between align-content-center pa-0 pl-6 pr-6">
-      <div class="d-flex flex-wrap pt-4 pb-4">
-        <div>
-          <span class="mr-4" style="white-space: nowrap"> Cameras </span>
-        </div>
-        <div>
-          <v-chip
-            v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
-            label
-            :color="fpsTooLow ? 'error' : 'transparent'"
-            style="font-size: 1rem; padding: 0; margin: 0"
-          >
-            <span class="pr-1" :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }">
-              {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-              {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
-            </span>
-          </v-chip>
-          <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
-            <span class="pr-1">Camera not connected</span>
-          </v-chip>
-        </div>
-      </div>
-      <div class="d-flex align-center">
+      <div class="d-flex flex-wrap align-center pt-4 pb-4">
+        <span class="mr-4" style="white-space: nowrap"> Cameras </span>
+        <v-chip
+          v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
+          label
+          :color="fpsTooLow ? 'error' : 'transparent'"
+          style="font-size: 1rem; padding: 0; margin: 0"
+        >
+          <span class="pr-1" :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }">
+            {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+            {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
+          </span>
+        </v-chip>
+        <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
+          <span class="pr-1">Camera not connected</span>
+        </v-chip>
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
           color="accent"
-          class="pt-2 pb-2"
+          density="compact"
           hide-details="auto"
         />
       </div>
