@@ -5,7 +5,9 @@ from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget
 
 if TYPE_CHECKING:
-    from ..generated.PhotonPipelineMetadataSerde import PhotonPipelineMetadataSerde
+    from ..generated.PhotonPipelineMetadataSerde import (
+        PhotonPipelineMetadataSerde,
+    )
     from ..generated.PhotonPipelineResultSerde import PhotonPipelineResultSerde
 
 
