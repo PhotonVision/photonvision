@@ -34,6 +34,7 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -217,6 +218,24 @@ public class ConfigManager {
         return out;
     }
 
+    public File getObjectDetectionExportAsZip() {
+        File out =
+                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
+                        .toFile();
+        File tempProperties =
+                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.json")
+                        .toFile();
+        try {
+            ZipUtil.pack(getModelsDirectory(), out);
+            JacksonUtils.serialize(
+                    tempProperties.toPath(), this.getConfig().neuralNetworkPropertyManager());
+            ZipUtil.pack(tempProperties, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
     public void setNetworkSettings(NetworkConfig networkConfig) {
         getConfig().setNetworkConfig(networkConfig);
         requestSave();
@@ -292,6 +311,10 @@ public class ConfigManager {
 
     public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
         return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+    }
+
+    public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
+        return m_provider.saveUploadedNeuralNetworkProperties(uploadPath);
     }
 
     public void requestSave() {
