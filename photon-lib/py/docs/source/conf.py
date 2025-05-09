@@ -25,7 +25,7 @@ import sys
 sys.path.insert(
     0, os.path.abspath("../../photonlibpy")
 )  # adjust based on your project layout
-
+print(sys.path)
 templates_path = ["_templates"]
 exclude_patterns = []
 
