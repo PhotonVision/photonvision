@@ -6,11 +6,12 @@
 PhotonVision documentation
 ==========================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
 
+The main documentation for PhotonVision can be found at [docs.photonvision.org](https://docs.photonvision.org)
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   modules
+   photonlibpy  # if you have these .rst files from sphinx-apidoc

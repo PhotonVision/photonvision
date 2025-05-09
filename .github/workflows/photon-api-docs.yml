@@ -85,7 +85,7 @@ jobs:
           pip install -r photon-lib/py/docs/requirements.txt
 
       - name: Build Sphinx site
-        run: | 
+        run: |
           sphinx-apidoc -o docs/source photonlibpy
           make -C docs html
         working-directory: photon-lib/py
