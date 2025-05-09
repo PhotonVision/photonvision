@@ -1,8 +1,8 @@
-# Hardware Selection
+# Hardware
 
 ```{toctree}
 :maxdepth: 2
 
-selecting-hardware
-customhardware
+other-hardware
+custom-hardware
 ```

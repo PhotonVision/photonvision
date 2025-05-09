@@ -244,7 +244,7 @@ A `PhotonCameraSim` can also draw and publish generated camera frames to a MJPEG
       cameraSim.enableDrawWireframe(true);
 ```
 
-These streams follow the port order mentioned in {ref}`docs/quick-start/networking:Camera Stream Ports`. For example, a single simulated camera will have its raw stream at `localhost:1181` and processed stream at `localhost:1182`, which can also be found in the CameraServer tab of Shuffleboard like a normal camera stream.
+These streams follow the port order mentioned in {ref}`docs/getting-started/networking:Camera Stream Ports`. For example, a single simulated camera will have its raw stream at `localhost:1181` and processed stream at `localhost:1182`, which can also be found in the CameraServer tab of Shuffleboard like a normal camera stream.
 
 :::{figure} images/SimExampleFrame.png
 _A frame from the processed stream of a simulated camera viewing some 2023 AprilTags with the field wireframe enabled_
