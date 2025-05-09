@@ -149,5 +149,4 @@ dist
 components.d.ts
 
 # Py docs stuff
-photon-lib/py/site
-photon-lib/py/docs/reference
+photon-lib/py/docs/build
