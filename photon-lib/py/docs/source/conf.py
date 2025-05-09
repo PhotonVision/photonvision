@@ -22,7 +22,9 @@ extensions = [
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../.."))  # adjust based on your project layout
+sys.path.insert(
+    0, os.path.abspath("../../photonlibpy")
+)  # adjust based on your project layout
 
 templates_path = ["_templates"]
 exclude_patterns = []

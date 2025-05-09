@@ -3,11 +3,11 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-PhotonVision documentation
+PhotonLib Python Documentation
 ==========================
 
 
-The main documentation for PhotonVision can be found at [docs.photonvision.org](https://docs.photonvision.org)
+The main documentation for PhotonVision can be found at `photonvision.org <https://photonvision.org>`_.
 
 .. toctree::
    :maxdepth: 2
