@@ -13,6 +13,7 @@ plugins:
         python:
           options:
             show_source: false
+            docstring_style: sphinx
           paths:
             - "."
   - gen-files:
