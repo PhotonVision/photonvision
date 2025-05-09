@@ -18,11 +18,13 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import java.io.IOException;
 import java.util.EnumSet;
@@ -34,6 +36,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.metrics.DeviceMetrics;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -55,6 +58,12 @@ public class NetworkTablesManager {
 
     private StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
+
+    ProtobufPublisher<DeviceMetrics> metricPublisher =
+            kRootTable
+                    .getSubTable(".metrics")
+                    .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
+                    .publish();
 
     private final TimeSyncManager m_timeSync = new TimeSyncManager(kRootTable);
 
@@ -205,6 +214,10 @@ public class NetworkTablesManager {
         kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
+    private void broadcastMetrics() {
+        metricPublisher.set(HardwareManager.getInstance().getMetrics());
+    }
+
     public void setConfig(NetworkConfig config) {
         if (config.runNTServer) {
             setServerMode();
@@ -246,9 +259,9 @@ public class NetworkTablesManager {
 
     // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
     // it'll never connect. This hack works around it by restarting the client/server while the nt
-    // instance
-    // isn't connected, same as clicking the save button in the settings menu (or restarting the
-    // service)
+    // instance isn't connected, same as clicking the save button in the settings menu
+    // (or restarting the service)
+    // It's also used to update the metrics every tick
     private void ntTick() {
         if (!ntInstance.isConnected()
                 && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
@@ -260,6 +273,8 @@ public class NetworkTablesManager {
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
+
+        broadcastMetrics();
     }
 
     public long getTimeSinceLastPong() {

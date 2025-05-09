@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.metrics;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashMap;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -129,21 +128,24 @@ public class MetricsManager {
         return addr;
     }
 
+    public DeviceMetrics getMetrics() {
+        return new DeviceMetrics(
+                this.getTemp(),
+                this.getUtilization(),
+                this.getMemory(),
+                this.getThrottleReason(),
+                this.getUptime(),
+                this.getGPUMemorySplit(),
+                this.getUsedRam(),
+                this.getMallocedMemory(),
+                this.getUsedDiskPct(),
+                this.getNpuUsage(),
+                this.getIpAddress());
+    }
+
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
-        final var metrics = new HashMap<String, String>();
-
-        metrics.put("cpuTemp", this.getTemp());
-        metrics.put("cpuUtil", this.getUtilization());
-        metrics.put("cpuMem", this.getMemory());
-        metrics.put("cpuThr", this.getThrottleReason());
-        metrics.put("cpuUptime", this.getUptime());
-        metrics.put("gpuMem", this.getGPUMemorySplit());
-        metrics.put("ramUtil", this.getUsedRam());
-        metrics.put("gpuMemUtil", this.getMallocedMemory());
-        metrics.put("diskUtilPct", this.getUsedDiskPct());
-        metrics.put("npuUsage", this.getNpuUsage());
-        metrics.put("ipAddress", this.getIpAddress());
+        var metrics = getMetrics();
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
