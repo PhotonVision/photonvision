@@ -47,9 +47,6 @@ ogp_site_url = "https://docs.photonvision.org/en/latest/"
 ogp_site_name = "PhotonVision Documentation"
 ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/main/source/assets/RectLogo.png"
 
-# Add any paths that contain templates here, relative to this directory.
-
-
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
