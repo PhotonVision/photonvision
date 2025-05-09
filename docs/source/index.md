@@ -137,5 +137,7 @@ docs/contributing/index
 
  Java <https://javadocs.photonvision.org>
 
- C++ <https://cppdocs.photonvision.org/>
+ C++ <https://cppdocs.photonvision.org>
+
+ Python <https://pydocs.photonvision.org>
 ```

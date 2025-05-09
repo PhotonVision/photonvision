@@ -39,11 +39,11 @@ jobs:
         run: npm run build-demo
       - uses: actions/upload-artifact@v4
         with:
-          name: built-demo
+          name: demo
           path: photon-client/dist/
 
-  run_api_docs:
-    name: Build API Docs
+  run_java_cpp_docs:
+    name: Build Java and C++ API Docs
     runs-on: "ubuntu-22.04"
     steps:
     - name: Checkout code
@@ -63,27 +63,57 @@ jobs:
         ./gradlew photon-docs:generateJavaDocs photon-docs:doxygen
     - uses: actions/upload-artifact@v4
       with:
-        name: built-docs
+        name: docs-java-cpp
         path: photon-docs/build/docs
+
+  run_py_docs:
+    name: Build Python API Docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r photon-lib/py/docs/requirements.txt
+
+      - name: Build Sphinx site
+        run: |
+          sphinx-apidoc -o docs/source photonlibpy
+          make -C docs html
+        working-directory: photon-lib/py
+
+      - name: Upload built site as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-python
+          path: photon-lib/py/docs/build/html
 
   publish_api_docs:
     name: Publish API Docs
-    needs: [run_api_docs]
+    needs: [ run_java_cpp_docs, run_py_docs ]
     runs-on: ubuntu-22.04
     steps:
       # Download docs artifact
       - uses: actions/download-artifact@v4
         with:
-          name: built-docs
+          pattern: docs-*
       - run: find .
       - name: Publish Docs To Development
-        if: github.ref == 'refs/heads/main'
+        # if: github.ref == 'refs/heads/main'
         uses: up9cloud/action-rsync@v1.4
         env:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           KEY: ${{secrets.WEBMASTER_SSH_KEY}}
-          TARGET: /var/www/html/photonvision-docs/development
+          TARGET: /var/www/html/photonvision-docs/development/
       - name: Publish Docs To Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: up9cloud/action-rsync@v1.4
@@ -100,7 +130,7 @@ jobs:
       steps:
       - uses: actions/download-artifact@v4
         with:
-          name: built-demo
+          name: demo
       - run: find .
       - name: Publish demo
         if: github.ref == 'refs/heads/main'
