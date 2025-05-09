@@ -26,6 +26,8 @@ import org.opencv.core.Size;
 import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
+import org.photonvision.jni.ArucoNanoV5Detector;
+import org.photonvision.jni.ArucoNanoV5Detector.DetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.opencv.CVMat;
@@ -53,7 +55,7 @@ public class ArucoDetectionPipe
             return List.of();
         }
 
-        var detections = photonDetector.detect(imgMat);
+        var detections = detect(imgMat);
         // manually do corner refinement ourselves
         if (params.useCornerRefinement) {
             for (var detection : detections) {
@@ -94,7 +96,7 @@ public class ArucoDetectionPipe
                 }
             }
         }
-        return List.of(detections);
+        return detections;
     }
 
     @Override
@@ -132,6 +134,14 @@ public class ArucoDetectionPipe
         var pt1 = new Point(corner.x - windowSize, corner.y - windowSize);
         var pt2 = new Point(corner.x + windowSize, corner.y + windowSize);
         Imgproc.rectangle(outputMat, pt1, pt2, new Scalar(0, 0, 255), thickness);
+    }
+
+    public static List<ArucoDetectionResult> detect(Mat in) {
+        DetectionResult[] ret = ArucoNanoV5Detector.detect(in);
+
+        return List.of(ret).stream()
+                .map(it -> new ArucoDetectionResult(it.xCorners(), it.yCorners(), it.id()))
+                .toList();
     }
 
     @Override
