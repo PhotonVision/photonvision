@@ -17,10 +17,11 @@ If you are interested in contributing code or documentation to the project, plea
 ## Documentation
 
 - Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
-- Photon UI demo: [http://photonvision.global/](http://photonvision.global/) (or [manual link](https://photonvision.github.io/photonvision/built-client/))
-- Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/javadoc/))
-- C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org) (or [manual link](https://photonvision.github.io/photonvision/built-docs/doxygen/html/))
+- Photon UI demo: [http://photonvision.global/](http://photonvision.global/)
+- Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org)
+- C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org)
 - Python Documentation [pydocs.photonvision.org](https://pydocs.photonvision.org)
+
 ## Building
 
 Gradle is used for all C++ and Java code, and NPM is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#compiling-instructions).
