@@ -159,7 +159,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      */
     updateCameraSettings(
       data: CameraSettingsChangeRequest,
-      cameraUniqueName: String = useStateStore().currentCameraUniqueName
+      cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       // The camera settings endpoint doesn't actually require all data, instead, it needs key data such as the FOV
       const payload = {
@@ -179,7 +179,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     createNewPipeline(
       newPipelineName: string,
       pipelineType: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
-      cameraUniqueName: String = useStateStore().currentCameraUniqueName
+      cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       const payload = {
         addNewPipeline: [newPipelineName, pipelineType],
