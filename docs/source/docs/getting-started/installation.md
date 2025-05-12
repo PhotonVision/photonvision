@@ -1,13 +1,11 @@
-# Quick Install
+# Installation
 
-## Install the latest image of photonvision for your coprocessor
+## Install the latest image of PhotonVision for your coprocessor
 
 - For the supported coprocessors
   - RPI 3,4,5
   - Orange Pi 5
   - Limelight
-
-For installing on non-supported devices {ref}`see. <docs/advanced-installation/sw_install/index:Software Installation>`
 
 [Download the latest preconfigured image of photonvision for your coprocessor](https://github.com/PhotonVision/photonvision/releases/latest)
 
@@ -31,3 +29,5 @@ Unless otherwise noted in release notes or if updating from the prior years vers
 :::{note}
 Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for lighting to work. Currently only limelight 2 and 2+ files are available.
 :::
+
+For installation on other coprocessors, refer to the {ref}`docs/advanced-installation/index:Advanced Installation` page.

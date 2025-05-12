@@ -1,12 +1,12 @@
 # Networking Troubleshooting
 
-Before reading further, ensure that you follow all the recommendations {ref}`in our networking section <docs/quick-start/networking:Physical Networking>`. You should follow these guidelines in order for PhotonVision to work properly; other networking setups are not officially supported.
+Before reading further, ensure that you follow all the recommendations {ref}`in our networking section <docs/getting-started/networking:Physical Networking>`. You should follow these guidelines in order for PhotonVision to work properly; other networking setups are not officially supported.
 
 ## Checklist
 
 A few issues make up the majority of support requests. Run through this checklist quickly to catch some common mistakes.
 
-- Is your camera connected to the robot's radio through a {ref}`network switch <docs/quick-start/networking:Physical Networking>`?
+- Is your camera connected to the robot's radio through a {ref}`network switch <docs/getting-started/networking:Physical Networking>`?
   - Ethernet straight from a laptop to a coprocessor will not work (most likely), due to the unreliability of link-local connections.
   - Even if there's a switch between your laptop and coprocessor, you'll still want a radio or router in the loop somehow.
   - The FRC radio is the _only_ router we will officially support due to the innumerable variations between routers.

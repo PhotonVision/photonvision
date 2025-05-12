@@ -1,7 +1,7 @@
-# Selecting Hardware
+# Other Hardware
 
 :::{note}
-See the {ref}`quick start guide<docs/quick-start/common-setups:Common Hardware Setups>`, for latest, specific recommendations on hardware to use for PhotonVision.
+See the {ref}`quick start guide<docs/getting-started/hardware-setups:Hardware Setups>`, for latest, specific recommendations on hardware to use for PhotonVision.
 :::
 
 In order to use PhotonVision, you need a coprocessor and a camera. This page discusses the specifics of why that hardware is recommended.
@@ -51,7 +51,6 @@ Better storage space and read/write speed mostly matter if image capture is used
 
 Industrial-grade SD cards are recommended for their stability under shock, vibration, variable voltage, and power-off. Raspberry Pi and Orange Pi coprocessors are generally robust against robot power interruptions, teams have anecdotally reported that Sandisk industrial SD cards reduce the chances of an unexpected settings or log file corruption on shutdown.
 
-
 ## Choosing a Camera
 
 PhotonVision relies on [CSCore](https://github.com/wpilibsuite/allwpilib/tree/main/cscore) to detect and process cameras, so camera support is determined based off compatibility with CScore along with native support for the camera within your OS (ex. [V4L compatibility](https://en.wikipedia.org/wiki/Video4Linux)).
@@ -66,7 +65,6 @@ PhotonVision attempts to support most USB Cameras. Exceptions include:
   - PhotonVision assumes the camera has real physical hardware to control - these do not expose the minimum number of controls.
 
 Use caution when using multiple identical cameras, as only the physical USB port they are plugged into can differentiate them. PhotonVision provides a "strict matching" setting which can reduce errors related to identical cameras. Arducam has a [tool that allows for identical cameras to be renamed](https://docs.arducam.com/UVC-Camera/Serial-Number-Tool-Guide/) by their physical location or purpose.
-
 
 ### Cameras Attributes
 
