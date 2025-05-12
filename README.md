@@ -17,7 +17,7 @@ If you are interested in contributing code or documentation to the project, plea
 ## Documentation
 
 - Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
-- Photon UI demo: [http://photonvision.global/](http://photonvision.global/)
+- Photon UI demo: [demo.photonvision.org](http://demo.photonvision.org/)
 - Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org)
 - C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org)
 
