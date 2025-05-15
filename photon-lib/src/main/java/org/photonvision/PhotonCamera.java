@@ -231,6 +231,7 @@ public class PhotonCamera implements AutoCloseable {
                     + "\n"
                     + ">>> but you are using OpenCV "
                     + Core.VERSION
+                    + "\n"
                     + """
                     >>>                                          \s
                     >>> This is neither tested nor supported.    \s
