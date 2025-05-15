@@ -104,7 +104,7 @@ inline void verifyDependencies() {
     bfw +=
         "\n>>>                                          \n"
         ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update PhotonVision,            \n"
+        ">>> You MUST update WPILib,            \n"
         ">>> PhotonLib, or both.                      \n"
         ">>> Verify the output of `./gradlew dependencies` \n"
         ">>>                                          \n"

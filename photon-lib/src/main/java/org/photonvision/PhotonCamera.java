@@ -231,11 +231,12 @@ public class PhotonCamera implements AutoCloseable {
                     + "\n"
                     + ">>> but you are using OpenCV "
                     + Core.VERSION
+                    + "\n"
                     + """
                     >>>                                          \s
                     >>> This is neither tested nor supported.    \s
-                    >>> You MUST update PhotonVision,            \s
-                    >>> PhotonLib, or both.                      \s
+                    >>> You MUST update WPILib, PhotonLib, or    \s
+                    >>> both.                                    \s
                     >>> Verify the output of `./gradlew dependencies`
                     >>>                                          \s
                     >>> Your code will now crash.                \s
