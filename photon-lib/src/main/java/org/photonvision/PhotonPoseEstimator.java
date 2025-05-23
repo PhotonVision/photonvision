@@ -58,7 +58,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  * below. Example usage can be found in our apriltagExample example project.
  */
 public class PhotonPoseEstimator {
-    private static int InstanceCount = 0;
+    private static int InstanceCount = 1;
 
     /** Position estimation strategies that can be used by the {@link PhotonPoseEstimator} class. */
     public enum PoseStrategy {
