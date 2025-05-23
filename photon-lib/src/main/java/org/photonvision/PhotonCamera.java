@@ -58,7 +58,7 @@ import org.photonvision.timesync.TimeSyncSingleton;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
-    private static int InstanceCount = 0;
+    private static int InstanceCount = 1;
     public static final String kTableName = "photonvision";
     private static final String PHOTON_ALERT_GROUP = "PhotonAlerts";
 
