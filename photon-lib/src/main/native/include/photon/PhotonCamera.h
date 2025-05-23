@@ -225,7 +225,7 @@ class PhotonCamera {
  private:
   units::second_t lastVersionCheckTime = 0_s;
   static bool VERSION_CHECK_ENABLED;
-  inline static int InstanceCount = 0;
+  inline static int InstanceCount = 1;
 
   units::second_t prevTimeSyncWarnTime = 0_s;
 
