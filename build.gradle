@@ -31,6 +31,7 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 
 // Configure the version number.
 apply from: "versioningHelper.gradle"
+apply plugin:'eclipse'
 
 ext {
     wpilibVersion = "2025.3.2"

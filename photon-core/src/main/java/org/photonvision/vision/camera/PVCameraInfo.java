@@ -32,7 +32,8 @@ import java.util.Arrays;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
+    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
+    @JsonSubTypes.Type(value = PVCameraInfo.PVGstreamerCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
     /**
@@ -268,4 +269,55 @@ public sealed interface PVCameraInfo {
     public static PVCameraInfo fromFileInfo(String path, String baseName) {
         return new PVFileCameraInfo(path, baseName);
     }
+
+
+  @JsonTypeName("PVGstreamerCameraInfo")
+  public static final class PVGstreamerCameraInfo implements PVCameraInfo {
+    public final String pipeline;  // GStreamer pipeline string
+    public final String name;
+
+    @JsonCreator
+    public PVGstreamerCameraInfo(
+      @JsonProperty("pipeline") String pipeline,
+      @JsonProperty("name") String name) {
+      this.pipeline = pipeline;
+      this.name = name;
+    }
+
+    @Override
+    public String path() {
+      return pipeline;
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
+
+    @Override
+    public String uniquePath() {
+      return pipeline;  // Use the pipeline string as unique identifier
+    }
+
+    @Override
+    public String[] otherPaths() {
+      return new String[0];
+    }
+
+    @Override
+    public CameraType type() {
+      return CameraType.GstreamerCamera;
+    }
+
+    @Override
+    public String toString() {
+      return "PVGstreamerCameraInfo[type=" + type() + 
+      ", name='" + name + "', pipeline='" + pipeline + "']";
+    }
+  }
+
+  // Add factory method
+  public static PVCameraInfo fromGstreamerPipeline(String pipeline, String name) {
+    return new PVGstreamerCameraInfo(pipeline, name);
+  }
 }

@@ -8,7 +8,8 @@ import {
   type PVCSICameraInfo,
   type PVFileCameraInfo,
   type PVUsbCameraInfo,
-  type UiCameraConfiguration
+  type UiCameraConfiguration,
+  type PVGstreamerCameraInfo
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";

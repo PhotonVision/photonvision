@@ -62,7 +62,7 @@ export interface PVCameraInfoBase {
   Huge hack. In Jackson, this is set based on the underlying type -- this
   then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
   */
-  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo" | "PVGstreamerCameraInfo" ;
 }
 
 export interface PVUsbCameraInfo {
@@ -72,6 +72,14 @@ export interface PVUsbCameraInfo {
   path: string;
   vendorId: number;
   productId: number;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+
+export interface PVGstreamerCameraInfo{
+  baseName: string;
+  path: string;
 
   // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
   uniquePath: string;
@@ -95,6 +103,7 @@ export interface PVFileCameraInfo {
 export class PVCameraInfo {
   PVUsbCameraInfo: PVUsbCameraInfo | undefined;
   PVCSICameraInfo: PVCSICameraInfo | undefined;
+  PVCSICameraInfo: PVGstreamerCameraInfo | undefined;
   PVFileCameraInfo: PVFileCameraInfo | undefined;
 }
 

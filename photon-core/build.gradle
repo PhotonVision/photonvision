@@ -43,6 +43,8 @@ dependencies {
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
+    implementation project(':gstreamer')
+
     // Only include mrcal natives on platforms that we build for
     if (!(jniPlatform in [
                 "osxx86-64",

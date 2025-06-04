@@ -18,7 +18,8 @@
 package org.photonvision.vision.camera;
 
 public enum CameraType {
-    UsbCamera,
-    ZeroCopyPicam,
-    FileCamera // special case for File-based vision sources
+  UsbCamera,
+  ZeroCopyPicam,
+  GstreamerCamera,
+  FileCamera // special case for File-based vision sources
 }

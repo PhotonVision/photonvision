@@ -44,6 +44,7 @@ import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
+import org.photonvision.vision.camera.csi.GstreamerSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 
 /**
@@ -318,6 +319,12 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
+        PVCameraInfo cameraInfo = PVCameraInfo.fromGstreamerPipeline(
+            "v4l2src device=/dev/video0 ! video/x-raw,format=YUY2 ! videoconvert ! video/x-raw,format=BGR",
+            "GStreamer Camera"
+        );
+        cameraInfos.add(cameraInfo);
+
         return cameraInfos;
     }
 
@@ -399,6 +406,7 @@ public class VisionSourceManager {
                 switch (configuration.matchedCameraInfo.type()) {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
+                    case GstreamerCamera -> new GstreamerSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
                 };
 
