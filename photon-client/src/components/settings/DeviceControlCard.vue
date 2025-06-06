@@ -280,7 +280,7 @@ const nukePhotonConfigDirectory = () => {
             "
           >
             <v-card color="primary" dark>
-              <v-card-title>Import Settings</v-card-title>
+              <v-card-title class="pa-6 pb-0">Import Settings</v-card-title>
               <v-card-text>
                 Upload and apply previously saved or exported PhotonVision settings to this device
                 <v-row class="mt-6 ml-4">
