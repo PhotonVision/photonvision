@@ -92,8 +92,8 @@ const expanded = ref([]);
 
 <template>
   <v-card style="background-color: #006492">
-    <v-card-title>Camera Control</v-card-title>
-    <v-card-text>
+    <v-card-title class="pa-6">Camera Control</v-card-title>
+    <v-card-text class="pa-6 pt-0">
       <v-btn color="secondary" @click="fetchSnapshots">
         <v-icon start class="open-icon"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
