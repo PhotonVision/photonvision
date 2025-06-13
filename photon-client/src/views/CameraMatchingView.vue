@@ -189,7 +189,7 @@ const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
   else return false;
 };
 
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVGstreamerCameraInfo | any => {
   if (!camera) return null;
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
@@ -199,6 +199,9 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
   }
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
+  }
+  if (camera.PVGstreamerCameraInfo) {
+    return camera.PVGstreamerCameraInfo;
   }
   return {};
 };
@@ -211,6 +214,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     return {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
+      PVGstreamerCameraInfo: undefined,
       PVUsbCameraInfo: undefined
     };
   }
@@ -220,6 +224,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     ) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
+      PVGstreamerCameraInfo: undefined,
       PVUsbCameraInfo: undefined
     }
   );
@@ -472,6 +477,7 @@ const openExportSettingsPrompt = () => {
           <v-card-title class="pb-2">
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
+            <span v-else-if="camera.PVGstreamerCameraInfo">Gstreamer Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>

@@ -11,6 +11,7 @@ import { useDisplay } from "vuetify";
 const isTagPipeline = computed(
   () =>
     useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+    useCameraSettingsStore().currentPipelineType === PipelineType.AprilTagCuda ||
     useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
 );
 
@@ -68,6 +69,7 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+        currentPipelineSettings.pipelineType === PipelineType.AprilTagCuda ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
@@ -84,6 +86,7 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+        currentPipelineSettings.pipelineType === PipelineType.AprilTagCuda ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled

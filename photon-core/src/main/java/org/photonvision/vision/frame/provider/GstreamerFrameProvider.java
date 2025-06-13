@@ -30,27 +30,43 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
 
-import jni.Gstreamer;
+import jni.Gstreamer; // TODO (charlie) refactor?
+
+class releaseCapThread extends Thread {
+  private long cap;
+
+  public releaseCapThread(long cap) {
+    this.cap = cap;
+  }
+
+  public void run() {
+    Gstreamer.releaseCam(cap);
+    System.out.println("Succesfully shutdown camera\n");
+  }
+}
 
 public class GstreamerFrameProvider extends FrameProvider {
   private final GstreamerSettables settables;
-  static final Logger logger = new Logger(GstreamerFrameProvider.class, LogGroup.Camera);
-  private Gstreamer gstreamer;
   private long cap;
-  private Mat frame;
+  private Mat raw;
+  // private Mat processed;
 
-  public GstreamerFrameProvider(GstreamerSettables visionSettables) {
+  public GstreamerFrameProvider(GstreamerSettables visionSettables, String pipeline) {
     this.settables = visionSettables;
-
     var vidMode = settables.getCurrentVideoMode();
     settables.setVideoMode(vidMode);
-    gstreamer = new Gstreamer();
-    String pipeline = "nvarguscamerasrc sensor-id=0 aelock=true ! " +
-        "video/x-raw(memory:NVMM), width=1456, height=1088, framerate=60/1, format=NV12 ! " +
-        "nvvidconv ! videoconvert ! appsink";
 
-    cap = gstreamer.initCam(pipeline);
-    frame = new Mat();
+    Runtime current = Runtime.getRuntime();
+
+    // Warmup?
+    cap = Gstreamer.initCam(pipeline);
+    Gstreamer.releaseCam(cap);
+
+    cap = Gstreamer.initCam(pipeline);
+    current.addShutdownHook(new releaseCapThread(cap));
+    raw = new Mat();
+    // processed = new Mat();
+    onCameraConnected();
   }
 
   @Override
@@ -62,18 +78,28 @@ public class GstreamerFrameProvider extends FrameProvider {
 
   @Override
   public Frame get() {
-    ++sequenceID;
+    synchronized (settables.CAMERA_LOCK) {
+      var start = MathUtils.wpiNanoTime();
 
-    gstreamer.readMat(cap, frame.nativeObj);
-    CVMat mat = new CVMat(frame);
+      Gstreamer.readMat(cap, raw.nativeObj);
+      Mat processed = new Mat();
+      Gstreamer.getGrayScale(raw.nativeObj, processed.nativeObj);
+      CVMat frame = new CVMat(processed);
 
-    return new Frame(
-        sequenceID,
-        mat,
-        mat,
-        FrameThresholdType.HSV,
-        MathUtils.wpiNanoTime(),
-        settables.getFrameStaticProperties());
+      var end = MathUtils.wpiNanoTime();
+      var latency = (end - start);
+      System.out.println("Camera latency " + latency / 1000_000);
+
+      ++sequenceID;
+
+      return new Frame(
+          sequenceID,
+          frame,
+          frame,
+          FrameThresholdType.GREYSCALE,
+          MathUtils.wpiNanoTime() - latency,
+          settables.getFrameStaticProperties());
+    }
   }
 
   @Override
@@ -94,7 +120,7 @@ public class GstreamerFrameProvider extends FrameProvider {
 
   @Override
   public void release() {
-    gstreamer.releaseCam(cap);
+    Gstreamer.releaseCam(cap);
   }
 
   @Override

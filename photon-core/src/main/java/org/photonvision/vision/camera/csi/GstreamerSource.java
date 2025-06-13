@@ -21,10 +21,13 @@ public class GstreamerSource extends VisionSource {
     }
 
     settables = new GstreamerSettables(configuration);
-    frameProvider = new GstreamerFrameProvider(settables);
+    frameProvider = new GstreamerFrameProvider(settables, configuration.getDevicePath());
+    System.out.println("\n\n\n\n\n");
+    System.out.println(configuration.getDevicePath());
+    System.out.println("\n\n\n\n\n");
 
     if (getCameraConfiguration().cameraQuirks == null)
-        getCameraConfiguration().cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
+      getCameraConfiguration().cameraQuirks = QuirkyCamera.ZeroCopyPiCamera; // TODO
   }
 
   @Override
@@ -38,7 +41,8 @@ public class GstreamerSource extends VisionSource {
   }
 
   @Override
-  public void remakeSettables() {}
+  public void remakeSettables() {
+  }
 
   @Override
   public boolean hasLEDs() {

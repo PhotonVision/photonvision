@@ -36,6 +36,9 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
   }
+  if (camera.PVGstreamerCameraInfo) {
+    return camera.PVGstreamerCameraInfo;
+  }
   return {};
 };
 </script>
@@ -78,10 +81,12 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
           <td v-if="saved.PVUsbCameraInfo" class="mb-3">USB Camera</td>
           <td v-else-if="saved.PVCSICameraInfo" class="mb-3">CSI Camera</td>
           <td v-else-if="saved.PVFileCameraInfo" class="mb-3">File Camera</td>
+          <td v-else-if="current.PVGstreamerCameraInfo" class="mb-3">Gstreamer Camera</td>
           <td v-else>Unidentified Camera Type</td>
           <td v-if="current.PVUsbCameraInfo" class="mb-3">USB Camera</td>
           <td v-else-if="current.PVCSICameraInfo" class="mb-3">CSI Camera</td>
           <td v-else-if="current.PVFileCameraInfo" class="mb-3">File Camera</td>
+          <td v-else-if="current.PVGstreamerCameraInfo" class="mb-3">Gstreamer Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr

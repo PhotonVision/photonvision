@@ -60,7 +60,7 @@ export type ConfigurableNetworkSettings = Omit<
 export interface PVCameraInfoBase {
   /*
   Huge hack. In Jackson, this is set based on the underlying type -- this
-  then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
+  then maps to one of the 4 subclasses here below. Not sure how to best deal with this.
   */
   cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo" | "PVGstreamerCameraInfo" ;
 }
@@ -92,8 +92,8 @@ export interface PVCSICameraInfo {
   uniquePath: string;
 }
 export interface PVFileCameraInfo {
-  path: string;
   name: string;
+  path: string;
 
   // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
   uniquePath: string;
@@ -103,7 +103,7 @@ export interface PVFileCameraInfo {
 export class PVCameraInfo {
   PVUsbCameraInfo: PVUsbCameraInfo | undefined;
   PVCSICameraInfo: PVCSICameraInfo | undefined;
-  PVCSICameraInfo: PVGstreamerCameraInfo | undefined;
+  PVGstreamerCameraInfo: PVGstreamerCameraInfo | undefined;
   PVFileCameraInfo: PVFileCameraInfo | undefined;
 }
 

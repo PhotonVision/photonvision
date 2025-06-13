@@ -13,7 +13,7 @@ extern "C" {
  * Signature: (Ljava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_jni_Gstreamer_initCam
-  (JNIEnv *, jobject, jstring);
+  (JNIEnv *, jclass, jstring);
 
 /*
  * Class:     jni_Gstreamer
@@ -21,7 +21,15 @@ JNIEXPORT jlong JNICALL Java_jni_Gstreamer_initCam
  * Signature: (JJ)V
  */
 JNIEXPORT void JNICALL Java_jni_Gstreamer_readMat
-  (JNIEnv *, jobject, jlong, jlong);
+  (JNIEnv *, jclass, jlong, jlong);
+
+/*
+ * Class:     jni_Gstreamer
+ * Method:    getGrayScale
+ * Signature: (JJ)V
+ */
+JNIEXPORT void JNICALL Java_jni_Gstreamer_getGrayScale
+  (JNIEnv *, jclass, jlong, jlong);
 
 /*
  * Class:     jni_Gstreamer
@@ -29,7 +37,7 @@ JNIEXPORT void JNICALL Java_jni_Gstreamer_readMat
  * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_jni_Gstreamer_releaseCam
-  (JNIEnv *, jobject, jlong);
+  (JNIEnv *, jclass, jlong);
 
 #ifdef __cplusplus
 }

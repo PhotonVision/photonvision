@@ -19,19 +19,20 @@ package org.photonvision.vision.pipeline;
 
 @SuppressWarnings("rawtypes")
 public enum PipelineType {
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class),
-    ObjectDetection(4, ObjectDetectionPipeline.class);
+  Calib3d(-2, Calibrate3dPipeline.class),
+  DriverMode(-1, DriverModePipeline.class),
+  Reflective(0, ReflectivePipeline.class),
+  ColoredShape(1, ColoredShapePipeline.class),
+  AprilTag(2, AprilTagPipeline.class),
+  Aruco(3, ArucoPipeline.class),
+  ObjectDetection(4, ObjectDetectionPipeline.class),
+  AprilTagCuda(5, AprilTagCudaPipeline.class);
 
-    public final int baseIndex;
-    public final Class clazz;
+  public final int baseIndex;
+  public final Class clazz;
 
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
-    }
+  PipelineType(int baseIndex, Class clazz) {
+    this.baseIndex = baseIndex;
+    this.clazz = clazz;
+  }
 }

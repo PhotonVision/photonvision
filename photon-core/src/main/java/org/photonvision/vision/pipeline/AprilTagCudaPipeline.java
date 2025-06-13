@@ -38,7 +38,8 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionCudaPipe;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionCudaPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
@@ -48,20 +49,20 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
-  private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
+public class AprilTagCudaPipeline extends CVPipeline<CVPipelineResult, AprilTagCudaPipelineSettings> {
+  private final AprilTagDetectionCudaPipe aprilTagDetectionPipe = new AprilTagDetectionCudaPipe();
   private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe = new AprilTagPoseEstimatorPipe();
   private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
   private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
   private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
-  public AprilTagPipeline() {
+  public AprilTagCudaPipeline() {
     super(PROCESSING_TYPE);
-    settings = new AprilTagPipelineSettings();
+    settings = new AprilTagCudaPipelineSettings();
   }
 
-  public AprilTagPipeline(AprilTagPipelineSettings settings) {
+  public AprilTagCudaPipeline(AprilTagCudaPipelineSettings settings) {
     super(PROCESSING_TYPE);
     this.settings = settings;
   }
@@ -86,22 +87,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     config.refineEdges = settings.refineEdges;
     config.quadSigma = (float) settings.blur;
     config.quadDecimate = settings.decimate;
-
-    var quadParams = new AprilTagDetector.QuadThresholdParameters();
-    // 5 was the default minClusterPixels in WPILib prior to 2025
-    // increasing it causes detection problems when decimate > 1
-    quadParams.minClusterPixels = 5;
-    // these are the same as the values in WPILib 2025
-    // setting them here to prevent upstream changes from changing behavior of the
-    // detector
-    quadParams.maxNumMaxima = 10;
-    quadParams.criticalAngle = 45 * Math.PI / 180.0;
-    quadParams.maxLineFitMSE = 10.0f;
-    quadParams.minWhiteBlackDiff = 5;
-    quadParams.deglitch = false;
-
     aprilTagDetectionPipe.setParams(
-        new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
+        new AprilTagDetectionCudaPipeParams(settings.tagFamily, config, frameStaticProperties.cameraCalibration));
 
     if (frameStaticProperties.cameraCalibration != null) {
       var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
@@ -126,7 +113,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
   }
 
   @Override
-  protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
+  protected CVPipelineResult process(Frame frame, AprilTagCudaPipelineSettings settings) {
     long sumPipeNanosElapsed = 0L;
 
     if (frame.type != FrameThresholdType.GREYSCALE) {
@@ -135,9 +122,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
       return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
     }
 
-    CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+    CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
+    tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
     sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
-    System.out.println(sumPipeNanosElapsed / 1000_000);
 
     List<AprilTagDetection> detections = tagDetectionPipeResult.output;
     List<AprilTagDetection> usedDetections = new ArrayList<>();

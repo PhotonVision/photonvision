@@ -28,6 +28,7 @@ public class GstreamerSettables extends VisionSourceSettables {
   static int width = 1456;
   static int height = 1088;
   static int fps;
+  public final Object CAMERA_LOCK = new Object();
   private HashMap<Integer, VideoMode> videoModes = new HashMap<Integer, VideoMode>();
 
   public GstreamerSettables(CameraConfiguration configuration) {
@@ -36,7 +37,8 @@ public class GstreamerSettables extends VisionSourceSettables {
   }
 
   @Override
-  protected void setVideoModeInternal(VideoMode videoMode) {}
+  protected void setVideoModeInternal(VideoMode videoMode) {
+  }
 
   @Override
   public double getMinExposureRaw() {
@@ -49,7 +51,8 @@ public class GstreamerSettables extends VisionSourceSettables {
   }
 
   @Override
-  public void setWhiteBalanceTemp(double temp) {}
+  public void setWhiteBalanceTemp(double temp) {
+  }
 
   @Override
   public double getMinWhiteBalanceTemp() {
@@ -62,10 +65,12 @@ public class GstreamerSettables extends VisionSourceSettables {
   }
 
   @Override
-  public void setBrightness(int brightness) {}
+  public void setBrightness(int brightness) {
+  }
 
   @Override
-  public void setAutoExposure(boolean cameraAutoExposure) {}
+  public void setAutoExposure(boolean cameraAutoExposure) {
+  }
 
   @Override
   public HashMap<Integer, VideoMode> getAllVideoModes() {
@@ -73,10 +78,12 @@ public class GstreamerSettables extends VisionSourceSettables {
   }
 
   @Override
-  public void setGain(int gain) {}
+  public void setGain(int gain) {
+  }
 
   @Override
-  public void setExposureRaw(double exposureRaw) {}
+  public void setExposureRaw(double exposureRaw) {
+  }
 
   @Override
   public VideoMode getCurrentVideoMode() {
@@ -84,5 +91,6 @@ public class GstreamerSettables extends VisionSourceSettables {
   }
 
   @Override
-  public void setAutoWhiteBalance(boolean autowb) {}
+  public void setAutoWhiteBalance(boolean autowb) {
+  }
 }

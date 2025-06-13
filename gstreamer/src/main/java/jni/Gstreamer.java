@@ -6,9 +6,11 @@ public class Gstreamer {
       System.loadLibrary("gstreamer");
   }
 
-  public native long initCam(String jpipe);
+  public static native long initCam(String jpipe);
 
-  public native void readMat(long pcap, long pmat);
+  public static native void readMat(long pcap, long pmat);
 
-  public native void releaseCam(long pcap);
+  public static native void getGrayScale(long praw, long pprocessed);
+
+  public static native void releaseCam(long pcap);
 }
