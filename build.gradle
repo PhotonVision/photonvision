@@ -3,8 +3,8 @@ import edu.wpi.first.toolchain.*
 plugins {
     id "cpp"
     id "com.diffplug.spotless" version "8.1.0"
-    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
-    id "edu.wpi.first.GradleRIO" version "2026.2.1"
+    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2025.0"
+    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-1"
     id 'org.photonvision.tools.WpilibTools' version '2.4.1-photon'
     id 'com.google.protobuf' version '0.9.3' apply false
     id 'edu.wpi.first.GradleJni' version '1.1.0'
@@ -21,6 +21,7 @@ allprojects {
         maven { url = "https://maven.photonvision.org/releases" }
         maven { url = "https://maven.photonvision.org/snapshots" }
     }
+    wpilibRepositories.use2027Repos()
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
 }
@@ -32,7 +33,7 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2026.2.1"
+    wpilibVersion = "2027.0.0-alpha-1"
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
@@ -40,7 +41,7 @@ ext {
     libcameraDriverVersion = "v2026.0.0"
     rknnVersion = "dev-v2026.0.1-1-g89b2888"
     rubikVersion = "dev-v2026.0.1-4-g13d6279"
-    frcYear = "2026"
+    frcYear = "2027_alpha1"
     mrcalVersion = "dev-v2026.0.0-1-g239d80e";
 
     pubVersion = versionString
