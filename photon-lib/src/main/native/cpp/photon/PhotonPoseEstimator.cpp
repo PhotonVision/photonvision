@@ -86,9 +86,8 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       referencePose(frc::Pose3d()),
       poseCacheTimestamp(-1_s),
       headingBuffer(frc::TimeInterpolatableBuffer<frc::Rotation2d>(1_s)) {
-  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
-             InstanceCount);
   InstanceCount++;
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
 }
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
