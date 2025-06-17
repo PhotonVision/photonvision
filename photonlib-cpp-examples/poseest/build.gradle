@@ -1,24 +1,14 @@
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-1"
 }
 
-repositories {
-    mavenLocal()
-    jcenter()
-}
-
-wpi.maven.useLocal = false
-wpi.maven.useDevelopment = false
-wpi.versions.wpilibVersion = "2025.3.2"
-wpi.versions.wpimathVersion = "2025.3.2"
-
-// Define my targets (RoboRIO) and artifacts (deployable files)
+// Define my targets (SystemCore) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
     targets {
-        roborio(getTargetTypeClass('RoboRIO')) {
+        systemcore(getTargetTypeClass('SystemCore')) {
             // Team number is loaded either from the .wpilib/wpilib_preferences.json
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
@@ -36,14 +26,16 @@ deploy {
                 // Static files artifact
                 frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
                     files = project.fileTree('src/main/deploy')
-                    directory = '/home/lvuser/deploy'
+                    directory = '/home/systemcore/deploy'
+                    deleteOldFiles = false // Change to true to delete files on SystemCore that no
+                    // longer exist in deploy directory of this project
                 }
             }
         }
     }
 }
 
-def deployArtifact = deploy.targets.roborio.artifacts.frcCpp
+def deployArtifact = deploy.targets.systemcore.artifacts.frcCpp
 
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
@@ -59,15 +51,7 @@ wpi.sim.addDriverstation()
 model {
     components {
         frcUserProgram(NativeExecutableSpec) {
-            // We don't need to build for roborio -- if we do, we need to install
-            // a roborio toolchain every time we build in CI
-            // Ideally, we'd be able to set the roborio toolchain as optional, but
-            // I can't figure out how to set that environment variable from build.gradle
-            // (see https://github.com/wpilibsuite/native-utils/blob/2917c69fb5094e36d499c465f047dab81c68446c/ToolchainPlugin/src/main/java/edu/wpi/first/toolchain/ToolchainGraphBuildService.java#L71)
-            // for now, commented out
-
-            // targetPlatform wpi.platforms.roborio
-
+            targetPlatform wpi.platforms.systemcore
             if (includeDesktopSupport) {
                 targetPlatform wpi.platforms.desktop
             }

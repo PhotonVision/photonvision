@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include <wpi/FileLogger.h>
+#include <wpi/datalog/FileLogger.h>
 
 #include "jni_utils.h"
 #include "org_photonvision_jni_QueuedFileLogger.h"
@@ -30,7 +30,7 @@ struct QueuedFileLogger {
 
   std::mutex m_mutex;
 
-  wpi::FileLogger logger;
+  wpi::log::FileLogger logger;
 
   explicit QueuedFileLogger(std::string_view file)
       : logger{file, std::bind(&QueuedFileLogger::callback, this,

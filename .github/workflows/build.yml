@@ -57,8 +57,8 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - name: Install RoboRIO Toolchain
-        run: ./gradlew installRoboRioToolchain
+      - name: Install SystemCore Toolchain
+        run: ./gradlew installSystemCoreToolchain
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
@@ -191,7 +191,7 @@ jobs:
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && github.ref == 'refs/heads/main'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v4
@@ -228,7 +228,7 @@ jobs:
         run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && github.ref == 'refs/heads/main'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
       - uses: actions/upload-artifact@v4

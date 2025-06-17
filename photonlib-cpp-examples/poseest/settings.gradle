@@ -3,9 +3,8 @@ import org.gradle.internal.os.OperatingSystem
 pluginManagement {
     repositories {
         mavenLocal()
-        jcenter()
         gradlePluginPortal()
-        String frcYear = '2025'
+        String frcYear = '2027_alpha1'
         File frcHome
         if (OperatingSystem.current().isWindows()) {
             String publicFolder = System.getenv('PUBLIC')
@@ -21,8 +20,11 @@ pluginManagement {
         }
         def frcHomeMaven = new File(frcHome, 'maven')
         maven {
-            name 'frcHome'
-            url frcHomeMaven
+            name = 'frcHome'
+            url = frcHomeMaven
         }
     }
 }
+
+Properties props = System.getProperties();
+props.setProperty("org.gradle.internal.native.headers.unresolved.dependencies.ignore", "true");
