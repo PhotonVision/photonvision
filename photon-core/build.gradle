@@ -22,6 +22,7 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("wpimath")
     wpilibNatives wpilibTools.deps.wpilib("wpinet")
     wpilibNatives wpilibTools.deps.wpilib("wpiutil")
+    wpilibNatives wpilibTools.deps.wpilib("datalog")
     wpilibNatives wpilibTools.deps.wpilib("ntcore")
     wpilibNatives wpilibTools.deps.wpilib("cscore")
     wpilibNatives wpilibTools.deps.wpilib("apriltag")

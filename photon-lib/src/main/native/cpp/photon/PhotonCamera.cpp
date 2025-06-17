@@ -24,7 +24,7 @@
 
 #include "photon/PhotonCamera.h"
 
-#include <hal/FRCUsageReporting.h>
+#include <hal/UsageReporting.h>
 #include <net/TimeSyncServer.h>
 
 #include <stdexcept>
@@ -208,8 +208,8 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                       frc::Alert::AlertType::kWarning),
       timesyncAlert(PHOTON_ALERT_GROUP, "", frc::Alert::AlertType::kWarning) {
   verifyDependencies();
-  HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
+  HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
   // The Robot class is actually created here:
   // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/frc/RobotBase.h#L33

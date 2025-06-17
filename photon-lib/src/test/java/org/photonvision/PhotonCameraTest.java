@@ -253,14 +253,14 @@ class PhotonCameraTest {
 
             if (i == coprocStart || i == coprocRestart) {
                 coprocNt.setServer("127.0.0.1", 5940);
-                coprocNt.startClient4("testClient");
+                coprocNt.startClient("testClient");
 
                 // PhotonCamera makes a server by default - connect to it
                 tspClient = new TimeSyncClient("127.0.0.1", 5810, 0.5);
             }
 
             if (i == robotStart || i == robotRestart) {
-                robotNt.startServer("networktables_random.json", "", 5941, 5940);
+                robotNt.startServer("networktables_random.json", "", 5940);
             }
 
             Thread.sleep(100);

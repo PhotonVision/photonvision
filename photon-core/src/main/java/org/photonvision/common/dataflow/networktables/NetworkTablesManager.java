@@ -354,7 +354,7 @@ public class NetworkTablesManager {
         ntInstance.stopClient();
         String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
         logger.debug("Starting NT Client with hostname: " + hostname);
-        ntInstance.startClient4(hostname);
+        ntInstance.startClient(hostname);
         try {
             int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
