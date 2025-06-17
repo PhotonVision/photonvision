@@ -223,7 +223,7 @@ public class NetworkTablesManager {
 
     private void setClientMode(String ntServerAddress) {
         ntInstance.stopServer();
-        ntInstance.startClient4("photonvision");
+        ntInstance.startClient("photonvision");
         try {
             int t = Integer.parseInt(ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
