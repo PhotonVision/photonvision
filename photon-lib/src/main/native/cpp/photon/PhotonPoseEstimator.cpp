@@ -24,7 +24,7 @@
 
 #include "photon/PhotonPoseEstimator.h"
 
-#include <hal/FRCUsageReporting.h>
+#include <hal/UsageReporting.h>
 
 #include <cmath>
 #include <iostream>
@@ -74,9 +74,8 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
       poseCacheTimestamp(-1_s) {
-  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
-             InstanceCount);
   InstanceCount++;
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
 }
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {

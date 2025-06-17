@@ -3,8 +3,8 @@ import edu.wpi.first.toolchain.*
 plugins {
     id "cpp"
     id "com.diffplug.spotless" version "6.24.0"
-    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
-    id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2025.0"
+    id "edu.wpi.first.GradleRIO2027" version "2027.0.0-alpha-1"
     id 'edu.wpi.first.WpilibTools' version '1.3.0'
     id 'com.google.protobuf' version '0.9.3' apply false
     id 'edu.wpi.first.GradleJni' version '1.1.0'
@@ -22,6 +22,7 @@ allprojects {
         maven { url = "https://maven.photonvision.org/snapshots" }
         maven { url = "https://jogamp.org/deployment/maven/" }
     }
+    wpilibRepositories.use2027Repos()
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
 }
@@ -33,14 +34,14 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2025.3.2"
+    wpilibVersion = "2027.0.0-alpha-1"
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
     javalinVersion = "5.6.2"
     libcameraDriverVersion = "v2025.0.3"
     rknnVersion = "dev-v2025.0.0-1-g33b6263"
-    frcYear = "2025"
+    frcYear = "2027_alpha1"
     mrcalVersion = "v2025.0.0";
 
 
