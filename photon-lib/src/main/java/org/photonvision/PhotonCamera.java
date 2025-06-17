@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
@@ -163,8 +162,8 @@ public class PhotonCamera implements AutoCloseable {
                 new MultiSubscriber(
                         instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
 
-        HAL.report(tResourceType.kResourceType_PhotonCamera, InstanceCount);
         InstanceCount++;
+        HAL.reportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();

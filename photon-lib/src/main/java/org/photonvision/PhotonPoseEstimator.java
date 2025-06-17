@@ -26,7 +26,6 @@ package org.photonvision;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
@@ -161,8 +160,8 @@ public class PhotonPoseEstimator {
             OpenCvLoader.forceStaticLoad();
         }
 
-        HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
         InstanceCount++;
+        HAL.reportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
     }
 
     /** Invalidates the pose cache. */

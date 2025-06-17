@@ -90,6 +90,7 @@ model {
                 }
             }
 
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
@@ -366,6 +367,7 @@ nativeTasks.addToSourceSetResources(sourceSets.test)
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")

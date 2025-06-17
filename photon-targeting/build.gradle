@@ -69,6 +69,7 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
@@ -95,6 +96,7 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpiutil_shared")
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "wpimath_shared")
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
@@ -161,6 +163,7 @@ model {
 
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
@@ -247,6 +250,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
