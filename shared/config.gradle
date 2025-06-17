@@ -1,6 +1,5 @@
 // Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
-nativeUtils.withCrossRoboRIO()
 nativeUtils.withCrossLinuxArm32()
 nativeUtils.withCrossLinuxArm64()
 
