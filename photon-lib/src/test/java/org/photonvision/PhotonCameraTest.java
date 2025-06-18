@@ -305,6 +305,8 @@ class PhotonCameraTest {
 
     @Test
     public void testAlerts() throws InterruptedException {
+        // See https://github.com/PhotonVision/photonvision/pull/1969. Flaky on Linux
+        assumeTrue(false);
         // GIVEN a fresh NT instance
 
         var cameraName = "foobar";
