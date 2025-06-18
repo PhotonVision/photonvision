@@ -24,10 +24,51 @@ html {
   background: #005281 !important;
 }
 
-.v-card__title {
+.v-banner {
+  padding: 4px !important;
+}
+
+.v-card-title,
+.v-dialog > .v-overlay__content > .v-card > .v-card-title,
+.v-dialog > .v-overlay__content > form > .v-card > .v-card-title {
+  padding: 20px;
   word-break: break-word !important;
+}
+
+.v-card-text,
+.v-dialog > .v-overlay__content > .v-card > .v-card-text,
+.v-dialog > .v-overlay__content > form > .v-card > .v-card-text {
+  font-size: 1rem;
+  padding: 20px;
+}
+
+.v-card-subtitle,
+.v-dialog > .v-overlay__content > .v-card > .v-card-subtitle,
+.v-dialog > .v-overlay__content > form > .v-card > .v-card-subtitle {
+  font-size: 1rem;
+  padding: 20px;
 }
 
 .v-field__input {
   padding: 0px !important;
+}
+
+.pb-10px {
+  padding-bottom: 10px !important;
+}
+
+.pt-10px {
+  padding-top: 10px !important;
+}
+
+.pl-10px {
+  padding-left: 10px !important;
+}
+
+.pr-10px {
+  padding-right: 10px !important;
+}
+
+.pa-10px {
+  padding: 10px !important;
 }

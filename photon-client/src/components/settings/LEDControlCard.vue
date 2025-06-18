@@ -5,14 +5,15 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-      <v-card-title class="pa-6 pb-3">LED Control</v-card-title>
+    <v-card-title class="pb-10px">LED Control</v-card-title>
+    <v-card-text>
       <pv-slider
-      v-model="useSettingsStore().lighting.brightness"
-      label="Brightness"
-      class="pa-6 pt-0"
-      :min="0"
-      :max="100"
-      @update:modelValue="(args) => useSettingsStore().changeLEDBrightness(args)"
+        v-model="useSettingsStore().lighting.brightness"
+        label="Brightness"
+        :min="0"
+        :max="100"
+        @update:modelValue="(args) => useSettingsStore().changeLEDBrightness(args)"
       />
+    </v-card-text>
   </v-card>
 </template>

@@ -292,107 +292,105 @@ const openExportSettingsPrompt = () => {
         class="pr-0"
       >
         <v-card color="primary">
-          <div class="card-wrapper">
-            <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-            <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
-              >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
+          <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
+          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+            >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
+          >
+          <v-card-subtitle
+            v-else-if="
+              cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+              camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
+            "
+            >Status: <span class="active-status">Active</span></v-card-subtitle
+          >
+          <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
+          <v-card-text class="pt-3">
+            <v-table density="compact">
+              <tbody>
+                <tr>
+                  <td>Streams:</td>
+                  <td>
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
+                    /
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Pipelines</td>
+                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                </tr>
+                <tr>
+                  <td>Calibrations</td>
+                  <td>
+                    {{
+                      module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
+                      "Not calibrated"
+                    }}
+                  </td>
+                </tr>
+                <tr
+                  v-if="
+                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+                    useStateStore().backendResults[module.uniqueName]
+                  "
+                >
+                  <td style="width: 50%">Frames Processed</td>
+                  <td>
+                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
+                      useStateStore().backendResults[module.uniqueName].fps
+                    }}
+                    FPS)
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+            <div
+              v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+              :id="`stream-container-${index}`"
+              class="d-flex flex-column justify-center align-center mt-3"
+              style="height: 250px"
             >
-            <v-card-subtitle
-              v-else-if="
-                cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-                camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
-              "
-              >Status: <span class="active-status">Active</span></v-card-subtitle
-            >
-            <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
-            <v-card-text>
-              <v-table density="compact">
-                <tbody>
-                  <tr>
-                    <td>Streams:</td>
-                    <td>
-                      <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
-                      /
-                      <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Pipelines</td>
-                    <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                  </tr>
-                  <tr>
-                    <td>Calibrations</td>
-                    <td>
-                      {{
-                        module.completeCalibrations.map((it) => getResolutionString(it.resolution)).join(", ") ||
-                        "Not calibrated"
-                      }}
-                    </td>
-                  </tr>
-                  <tr
-                    v-if="
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-                      useStateStore().backendResults[module.uniqueName]
-                    "
-                  >
-                    <td style="width: 50%">Frames Processed</td>
-                    <td>
-                      {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
-                        useStateStore().backendResults[module.uniqueName].fps
-                      }}
-                      FPS)
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-              <div
-                v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
-                :id="`stream-container-${index}`"
-                class="d-flex flex-column justify-center align-center mt-3"
-                style="height: 250px"
-              >
-                <photon-camera-stream
-                  :id="`output-camera-stream-${index}`"
-                  :camera-settings="module"
-                  stream-type="Processed"
-                />
-              </div>
-            </v-card-text>
-            <v-card-text class="pt-0">
-              <v-row>
-                <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                  <v-btn
-                    color="secondary"
-                    style="width: 100%"
-                    @click="
-                      setCameraView(
-                        module.matchedCameraInfo,
-                        cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
-                      )
-                    "
-                  >
-                    <span>Details</span>
-                  </v-btn>
-                </v-col>
-                <v-col cols="6" md="5" class="pr-0">
-                  <v-btn
-                    class="text-black"
-                    color="accent"
-                    style="width: 100%"
-                    :loading="deactivatingModule"
-                    @click="deactivateModule(module.uniqueName)"
-                  >
-                    Deactivate
-                  </v-btn>
-                </v-col>
-                <v-col cols="6" md="3">
-                  <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
-                    <v-icon>mdi-trash-can-outline</v-icon>
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </div>
+              <photon-camera-stream
+                :id="`output-camera-stream-${index}`"
+                :camera-settings="module"
+                stream-type="Processed"
+              />
+            </div>
+          </v-card-text>
+          <v-card-text class="pt-0">
+            <v-row>
+              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
+                <v-btn
+                  color="secondary"
+                  style="width: 100%"
+                  @click="
+                    setCameraView(
+                      module.matchedCameraInfo,
+                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                    )
+                  "
+                >
+                  <span>Details</span>
+                </v-btn>
+              </v-col>
+              <v-col cols="6" md="5" class="pr-0">
+                <v-btn
+                  class="text-black"
+                  color="accent"
+                  style="width: 100%"
+                  :loading="deactivatingModule"
+                  @click="deactivateModule(module.uniqueName)"
+                >
+                  Deactivate
+                </v-btn>
+              </v-col>
+              <v-col cols="6" md="3">
+                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
+                  <v-icon>mdi-trash-can-outline</v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-text>
         </v-card>
       </v-col>
 
@@ -406,112 +404,108 @@ const openExportSettingsPrompt = () => {
         class="pr-0"
       >
         <v-card class="pr-0" color="primary">
-          <div class="card-wrapper">
-            <v-card-title>{{ module.nickname }}</v-card-title>
-            <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
-            <v-card-text>
-              <v-table density="compact">
-                <tbody>
-                  <tr>
-                    <td>Name</td>
-                    <td>
-                      {{ module.cameraQuirks.baseName }}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Pipelines</td>
-                    <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                  </tr>
-                  <tr>
-                    <td>Connected</td>
-                    <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
-                  </tr>
-                  <tr>
-                    <td>Calibrations</td>
-                    <td>
-                      {{
-                        module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") ||
-                        "Not calibrated"
-                      }}
-                    </td>
-                  </tr>
-                </tbody>
-              </v-table>
-            </v-card-text>
-            <v-card-text class="pt-0">
-              <v-row>
-                <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                  <v-btn
-                    color="secondary"
-                    style="width: 100%"
-                    @click="
-                      setCameraView(
-                        module.matchedCameraInfo,
-                        cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
-                      )
-                    "
-                  >
-                    <span>Details</span>
-                  </v-btn>
-                </v-col>
-                <v-col cols="6" md="5" class="pr-0">
-                  <v-btn
-                    class="text-black"
-                    color="accent"
-                    style="width: 100%"
-                    :loading="activatingModule"
-                    @click="activateModule(module.uniqueName)"
-                  >
-                    Activate
-                  </v-btn>
-                </v-col>
-                <v-col cols="6" md="3">
-                  <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
-                    <v-icon>mdi-trash-can-outline</v-icon>
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </div>
+          <v-card-title>{{ module.nickname }}</v-card-title>
+          <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
+          <v-card-text class="pt-3">
+            <v-table density="compact">
+              <tbody>
+                <tr>
+                  <td>Name</td>
+                  <td>
+                    {{ module.cameraQuirks.baseName }}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Pipelines</td>
+                  <td>{{ module.pipelineNicknames.join(", ") }}</td>
+                </tr>
+                <tr>
+                  <td>Connected</td>
+                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
+                </tr>
+                <tr>
+                  <td>Calibrations</td>
+                  <td>
+                    {{
+                      module.calibrations.map((it2) => getResolutionString(it2.resolution)).join(", ") ||
+                      "Not calibrated"
+                    }}
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-card-text>
+          <v-card-text class="pt-0">
+            <v-row>
+              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
+                <v-btn
+                  color="secondary"
+                  style="width: 100%"
+                  @click="
+                    setCameraView(
+                      module.matchedCameraInfo,
+                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                    )
+                  "
+                >
+                  <span>Details</span>
+                </v-btn>
+              </v-col>
+              <v-col cols="6" md="5" class="pr-0">
+                <v-btn
+                  class="text-black"
+                  color="accent"
+                  style="width: 100%"
+                  :loading="activatingModule"
+                  @click="activateModule(module.uniqueName)"
+                >
+                  Activate
+                </v-btn>
+              </v-col>
+              <v-col cols="6" md="3">
+                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
+                  <v-icon>mdi-trash-can-outline</v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-text>
         </v-card>
       </v-col>
 
       <!-- Unassigned cameras -->
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
         <v-card class="pr-0" color="primary">
-          <div class="card-wrapper">
-            <v-card-title>
-              <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
-              <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
-              <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
-              <span v-else>Unknown Camera:</span>
-              &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
-            </v-card-title>
-            <v-card-subtitle>Status: Unassigned</v-card-subtitle>
-            <v-card-text>
-              <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
-            </v-card-text>
-            <v-card-text class="pt-0">
-              <v-row>
-                <v-col cols="6" class="pr-0">
-                  <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera, false)">
-                    <span>Details</span>
-                  </v-btn>
-                </v-col>
-                <v-col cols="6">
-                  <v-btn
-                    class="text-black"
-                    color="accent"
-                    style="width: 100%"
-                    :loading="assigningCamera"
-                    @click="assignCamera(camera)"
-                  >
-                    Activate
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </div>
+          <v-card-title>
+            <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
+            <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
+            <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-else>Unknown Camera:</span>
+            &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
+          </v-card-title>
+          <v-card-subtitle>Status: Unassigned</v-card-subtitle>
+          <v-card-text class="pt-3">
+            <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
+          </v-card-text>
+          <v-card-text class="pt-0">
+            <v-row>
+              <v-col cols="6" class="pr-0">
+                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera, false)">
+                  <span>Details</span>
+                </v-btn>
+              </v-col>
+              <v-col cols="6">
+                <v-btn
+                  class="text-black"
+                  color="accent"
+                  style="width: 100%"
+                  :loading="assigningCamera"
+                  @click="assignCamera(camera)"
+                >
+                  Activate
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-card-text>
         </v-card>
       </v-col>
 
@@ -544,7 +538,7 @@ const openExportSettingsPrompt = () => {
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
         <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
-          <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
+          <v-banner rounded bg-color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
             It looks like a different camera may have been connected to this device! Compare the following information
             carefully.
           </v-banner>
@@ -558,10 +552,10 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-3 pb-2" color="primary" flat>
+      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
-        <v-card-text>
-          <v-row class="align-center pt-6">
+        <v-card-text class="pb-10px">
+          <v-row class="align-center">
             <v-col cols="12" md="6">
               <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
@@ -580,7 +574,7 @@ const openExportSettingsPrompt = () => {
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
@@ -588,7 +582,7 @@ const openExportSettingsPrompt = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-10px">
           <v-btn
             block
             color="error"
@@ -610,12 +604,8 @@ td {
   padding: 0 !important;
 }
 
-.card-wrapper {
-  padding: 8px !important;
-  padding-top: 16px !important;
-}
-
 .v-card-subtitle {
+  padding-top: 0px !important;
   padding-bottom: 8px !important;
 }
 

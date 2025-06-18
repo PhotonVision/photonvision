@@ -44,10 +44,10 @@ const localValue = computed({
 
 <template>
   <div class="d-flex">
-    <v-col :cols="12 - sliderCols" class="pl-0 d-flex align-center">
+    <v-col :cols="12 - sliderCols" class="pl-0 pt-10px pb-10px d-flex align-center">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col :cols="sliderCols - 1" class="pl-0">
+    <v-col :cols="sliderCols - 1" class="pl-0 pt-10px pb-10px">
       <v-slider
         v-model="localValue"
         class="align-center"
@@ -63,7 +63,7 @@ const localValue = computed({
         @click:prepend="localValue -= step"
       />
     </v-col>
-    <v-col :cols="1" class="pr-0">
+    <v-col :cols="1" class="pr-0 pt-10px pb-10px">
       <v-text-field
         :model-value="localValue"
         color="accent"
