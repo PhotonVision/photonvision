@@ -91,9 +91,9 @@ const calibrationImageURL = (index: number) =>
 
 <template>
   <v-card color="primary" dark>
-    <div class="d-flex flex-wrap pr-md-3">
+    <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
       <v-col cols="12" md="6">
-        <v-card-title class="pl-3 pb-0 pb-md-4"> Calibration Details </v-card-title>
+        <v-card-title class="pa-0"> Calibration Details </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
         <v-btn color="secondary" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
@@ -126,7 +126,7 @@ const calibrationImageURL = (index: number) =>
         />
       </v-col>
     </div>
-    <v-card-title class="pl-6 pt-0 pb-0"
+    <v-card-title class="pl-5 pt-0 pb-0"
       >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
     >
     <v-card-text v-if="!currentCalibrationCoeffs">
@@ -142,7 +142,7 @@ const calibrationImageURL = (index: number) =>
         The selected video format has not been calibrated.
       </v-banner>
     </v-card-text>
-    <v-card-text class="pt-0">
+    <v-card-text class="pa-5 pt-0">
       <v-table density="compact" style="width: 100%">
         <template #default>
           <thead>
@@ -248,8 +248,8 @@ const calibrationImageURL = (index: number) =>
         </template>
       </v-table>
     </v-card-text>
-    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
-    <v-card-text v-if="currentCalibrationCoeffs">
+    <v-card-title v-if="currentCalibrationCoeffs" class="pl-5 pt-0 pb-0">Individual Observations</v-card-title>
+    <v-card-text v-if="currentCalibrationCoeffs" class="pa-5">
       <v-data-table
         density="compact"
         style="width: 100%"
