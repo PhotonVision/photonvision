@@ -92,16 +92,16 @@ const expanded = ref([]);
 
 <template>
   <v-card style="background-color: #006492">
-    <v-card-title class="pa-6">Camera Control</v-card-title>
-    <v-card-text class="pa-6 pt-0">
+    <v-card-title class="pa-5">Camera Control</v-card-title>
+    <v-card-text class="pa-5 pt-0">
       <v-btn color="secondary" @click="fetchSnapshots">
         <v-icon start class="open-icon"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>
     </v-card-text>
     <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card class="pt-3 pl-5 pr-5" color="primary" flat>
-        <v-card-title> View Saved Frame Snapshots </v-card-title>
+      <v-card class="pt-5 pl-5 pr-5" color="primary" flat>
+        <v-card-title class="pa-0">View Saved Frame Snapshots</v-card-title>
         <v-divider />
         <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
           There are no snapshots saved

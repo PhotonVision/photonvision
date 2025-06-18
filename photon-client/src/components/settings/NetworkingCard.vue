@@ -142,8 +142,8 @@ watchEffect(() => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Global Settings</v-card-title>
-    <div class="pa-6 pt-0">
+    <v-card-title class="pa-5">Global Settings</v-card-title>
+    <div class="pa-5 pt-0">
       <v-divider class="pb-3" />
       <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">

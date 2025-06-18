@@ -533,24 +533,24 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" flat color="primary">
-        <v-card-title class="d-flex justify-space-between">
+      <v-card v-if="viewingCamera[0] !== null" flat color="primary" class="pa-5">
+        <v-card-title class="d-flex justify-space-between pa-0">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
           <v-btn variant="text" @click="setCameraView(null, null)">
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
-        <v-card-text v-if="!viewingCamera[1]">
+        <v-card-text v-if="!viewingCamera[1]" class="pa-0">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
-        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
-          <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
+        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])" class="pa-0">
+          <v-banner rounded bg-color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
             It looks like a different camera may have been connected to this device! Compare the following information
             carefully.
           </v-banner>
           <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
-        <v-card-text v-else>
+        <v-card-text v-else class="pa-0">
           <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
       </v-card>
@@ -558,10 +558,10 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-3 pb-2" color="primary" flat>
-        <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
-        <v-card-text>
-          <v-row class="align-center pt-6">
+      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-5" color="primary" flat>
+        <v-card-title class="pa-0"> Delete {{ cameraToDelete.nickname }}? </v-card-title>
+        <v-card-text class="pl-0 pr-0">
+          <v-row class="align-center">
             <v-col cols="12" md="6">
               <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
@@ -580,7 +580,7 @@ const openExportSettingsPrompt = () => {
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pa-0">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
@@ -588,7 +588,7 @@ const openExportSettingsPrompt = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pa-0 pt-4">
           <v-btn
             block
             color="error"
@@ -611,8 +611,8 @@ td {
 }
 
 .card-wrapper {
-  padding: 8px !important;
-  padding-top: 16px !important;
+  padding: 4px !important;
+  padding-top: 12px !important;
 }
 
 .v-card-subtitle {

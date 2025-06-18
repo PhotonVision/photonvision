@@ -215,9 +215,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
 <template>
   <div>
     <v-card class="mb-3" color="primary" dark>
-      <v-card-title class="pa-6 pb-3">Camera Calibration</v-card-title>
+      <v-card-title class="pa-5 pb-3">Camera Calibration</v-card-title>
       <v-card-text v-show="!isCalibrating">
-        <v-card-subtitle class="pt-3 pl-2 pb-4 text-white">Current Calibration</v-card-subtitle>
+        <v-card-subtitle class="pt-2 pl-1 pb-4 text-white">Current Calibration</v-card-subtitle>
         <v-table fixed-header height="100%" density="compact">
           <thead>
             <tr>
@@ -250,7 +250,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </tbody>
         </v-table>
       </v-card-text>
-      <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-6 pt-0">
+      <v-card-text v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column pa-5 pt-0">
         <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
           >Configure New Calibration</v-card-subtitle
         >
@@ -348,7 +348,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-banner>
         </v-form>
       </v-card-text>
-      <v-card-text v-if="isCalibrating" class="pa-6 pt-0">
+      <v-card-text v-if="isCalibrating" class="pa-5 pt-0">
         <pv-switch
           v-model="drawAllSnapshots"
           label="Draw Collected Corners"
@@ -437,7 +437,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           Too many corners. Finish calibration now!
         </v-banner>
       </v-card-text>
-      <v-card-text v-if="isCalibrating" class="d-flex justify-center align-center pa-6 pt-0">
+      <v-card-text v-if="isCalibrating" class="d-flex justify-center align-center pa-5 pt-0">
         <v-chip
           variant="flat"
           label
@@ -447,7 +447,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           {{ useStateStore().calibrationData.minimumImageCount }}
         </v-chip>
       </v-card-text>
-      <v-card-text class="d-flex pa-6 pt-0">
+      <v-card-text class="d-flex pa-5 pt-0">
         <v-col cols="6" class="pa-0 pr-2">
           <v-btn
             size="small"
@@ -477,7 +477,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-btn>
         </v-col>
       </v-card-text>
-      <v-card-text class="pa-6 pt-0">
+      <v-card-text class="pa-5 pt-0">
         <v-btn
           color="accent"
           size="small"
