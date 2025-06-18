@@ -92,21 +92,21 @@ const expanded = ref([]);
 
 <template>
   <v-card style="background-color: #006492">
-    <v-card-title class="pa-6">Camera Control</v-card-title>
-    <v-card-text class="pa-6 pt-0">
+    <v-card-title>Camera Control</v-card-title>
+    <v-card-text class="pt-0">
       <v-btn color="secondary" @click="fetchSnapshots">
         <v-icon start class="open-icon"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>
     </v-card-text>
     <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card class="pt-3 pl-5 pr-5" color="primary" flat>
+      <v-card color="primary" flat>
         <v-card-title> View Saved Frame Snapshots </v-card-title>
         <v-divider />
         <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
           There are no snapshots saved
         </v-card-text>
-        <div v-else class="pb-2">
+        <v-card-text v-else>
           <v-data-table
             v-model:expanded="expanded"
             :headers="[
@@ -155,7 +155,7 @@ const expanded = ref([]);
             >Snapshot Timestamps may be incorrect as they depend on when the coprocessor was last connected to the
             internet</span
           >
-        </div>
+        </v-card-text>
       </v-card>
     </v-dialog>
   </v-card>

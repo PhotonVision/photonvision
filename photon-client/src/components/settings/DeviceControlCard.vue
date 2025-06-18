@@ -239,8 +239,8 @@ const nukePhotonConfigDirectory = () => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Device Control</v-card-title>
-    <div class="pa-6 pt-0">
+    <v-card-title>Device Control</v-card-title>
+    <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" lg="4" md="6">
           <v-btn color="error" @click="restartProgram">
@@ -280,10 +280,10 @@ const nukePhotonConfigDirectory = () => {
             "
           >
             <v-card color="primary" dark>
-              <v-card-title class="pa-6 pb-0">Import Settings</v-card-title>
+              <v-card-title class="pb-0">Import Settings</v-card-title>
               <v-card-text>
                 Upload and apply previously saved or exported PhotonVision settings to this device
-                <v-row class="mt-6 ml-4">
+                <div class="pa-5 pb-0">
                   <pv-select
                     v-model="importType"
                     label="Type"
@@ -298,21 +298,19 @@ const nukePhotonConfigDirectory = () => {
                     :select-cols="10"
                     style="width: 100%"
                   />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input
+                    class="pb-5"
                     v-model="importFile"
+                    variant="underlined"
                     :disabled="importType === undefined"
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
-                </v-row>
-                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
                   <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
                   </v-btn>
-                </v-row>
+                </div>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -370,18 +368,18 @@ const nukePhotonConfigDirectory = () => {
     </div>
 
     <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card color="primary" class="pa-3" flat>
-        <v-card-title style="justify-content: center" class="pb-6">
+      <v-card color="primary" flat>
+        <v-card-title style="display: flex; justify-content: center">
           <span class="open-label">
             <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
             Factory Reset PhotonVision
             <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
           </span>
         </v-card-title>
-        <v-card-text class="pt-3">
+        <v-card-text class="pt-0 pb-10px">
           <v-row class="align-center text-white">
             <v-col cols="12" md="6">
-              <span class="mt-3"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
@@ -398,7 +396,7 @@ const nukePhotonConfigDirectory = () => {
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + expected + '&quot;:'"
@@ -406,7 +404,7 @@ const nukePhotonConfigDirectory = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-10px">
           <v-btn
             color="error"
             :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"

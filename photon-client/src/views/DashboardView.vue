@@ -116,7 +116,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     >
       <v-card flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
-        <v-card-text>
+        <v-card-text class="pt-0">
           No cameras activated - head to the <router-link to="/cameraConfigs">Camera matching tab</router-link> to set
           some up!
         </v-card-text>

@@ -271,7 +271,7 @@ const handleBulkImport = () => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-5">Object Detection</v-card-title>
+    <v-card-title>Object Detection</v-card-title>
     <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" sm="6">
@@ -293,12 +293,12 @@ const handleBulkImport = () => {
             "
           >
             <v-card color="primary" dark>
-              <v-card-title class="pa-5 pb-0">Import New Object Detection Model</v-card-title>
-              <v-card-text class="pa-5">
+              <v-card-title class="pb-0">Import New Object Detection Model</v-card-title>
+              <v-card-text>
                 Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
                 640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are
                 currently supported!
-                <div class="pa-5">
+                <div class="pa-5 pb-0">
                   <v-file-input v-model="importModelFile" variant="underlined" label="Model File" accept=".rknn" />
                   <v-text-field
                     v-model="importLabels"
@@ -341,8 +341,8 @@ const handleBulkImport = () => {
           </v-btn>
           <v-dialog v-model="showBulkImportDialog" width="600">
             <v-card color="primary" dark>
-              <v-card-title class="pa-5 pb-0">Import Multiple Object Detection Models</v-card-title>
-              <v-card-text class="pa-5">
+              <v-card-title class="pb-0">Import Multiple Object Detection Models</v-card-title>
+              <v-card-text>
                 Upload a zip file containing multiple object detection models to this device. Note this zip file should
                 only come from a previous export of object detection models.
                 <div class="pa-5">
@@ -476,15 +476,15 @@ const handleBulkImport = () => {
     </div>
 
     <v-dialog v-model="showNukeDialog" width="800" dark>
-      <v-card color="primary" class="pa-3" flat>
-        <v-card-title style="justify-content: center" class="pb-6">
+      <v-card color="primary" flat>
+        <v-card-title style="display: flex; justify-content: center">
           <span class="open-label">
             <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
             Clear and Reset Object Detection Models
             <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
           </span>
         </v-card-title>
-        <v-card-text class="pt-3">
+        <v-card-text class="pt-0 pb-10px">
           <v-row class="align-center text-white">
             <v-col cols="12" md="6">
               <span class="mt-3"> This will delete ALL OF YOUR MODELS and re-extract the default models. </span>
@@ -504,7 +504,7 @@ const handleBulkImport = () => {
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="yesDeleteMyModelsText"
             :label="'Type &quot;' + expected + '&quot;:'"
@@ -512,7 +512,7 @@ const handleBulkImport = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-10px">
           <v-btn
             color="error"
             :disabled="yesDeleteMyModelsText.toLowerCase() !== expected.toLowerCase()"
@@ -533,6 +533,11 @@ const handleBulkImport = () => {
 .v-btn {
   width: 100%;
 }
+
+.pt-10px {
+  padding-top: 10px !important;
+}
+
 @media only screen and (max-width: 351px) {
   .open-icon {
     margin: 0 !important;

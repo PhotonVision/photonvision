@@ -30,7 +30,7 @@ const fpsTooLow = computed<boolean>(() => {
 
 <template>
   <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
-    <v-card-title class="justify-space-between align-content-center pa-0 pl-6 pr-6">
+    <v-card-title class="justify-space-between align-content-center pt-0 pb-0">
       <div class="d-flex flex-wrap align-center pt-4 pb-4">
         <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         <v-chip
@@ -119,10 +119,6 @@ const fpsTooLow = computed<boolean>(() => {
 th {
   width: 80px;
   text-align: center;
-}
-
-.v-input--switch {
-  margin-top: 0;
 }
 
 .stream-container {

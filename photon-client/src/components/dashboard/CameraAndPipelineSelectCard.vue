@@ -371,27 +371,25 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-row>
     <v-dialog v-model="showPipelineCreationDialog" persistent width="500">
       <v-card color="primary">
-        <v-card-title> Create New Pipeline </v-card-title>
-        <v-card-text>
+        <v-card-title class="pb-0"> Create New Pipeline </v-card-title>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="newPipelineName"
             placeholder="Pipeline Name"
-            :label-cols="3"
-            :input-cols="12 - 3"
+            :label-cols="4"
+            :input-cols="12 - 4"
             label="Pipeline Name"
             :rules="[(v) => checkPipelineName(v)]"
           />
           <pv-select
             v-model="newPipelineType"
-            :select-cols="12 - 3"
+            :select-cols="12 - 4"
             label="Tracking Type"
             tooltip="Pipeline type, which changes the type of processing that will happen on input frames"
             :items="validNewPipelineTypes"
           />
         </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
+        <v-card-actions class="pr-5 pt-10px pb-5">
           <v-btn
             color="#ffd843"
             :disabled="checkPipelineName(newPipelineName) !== true"
@@ -406,7 +404,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-dialog>
     <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
       <v-card color="primary">
-        <v-card-title> Pipeline Deletion Confirmation </v-card-title>
+        <v-card-title class="pb-0">Pipeline Deletion Confirmation</v-card-title>
         <v-card-text>
           Are you sure you want to delete the pipeline
           <b style="color: white; font-weight: bold">{{
@@ -414,9 +412,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           }}</b
           >? This cannot be undone.
         </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
+        <v-card-actions class="pa-5 pt-0">
           <v-btn variant="flat" color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
           <v-btn
             variant="flat"
@@ -431,15 +427,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-dialog>
     <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
       <v-card color="primary" dark>
-        <v-card-title>Change Pipeline Type</v-card-title>
+        <v-card-title class="pb-0">Change Pipeline Type</v-card-title>
         <v-card-text>
           Are you sure you want to change the current pipeline type? This will cause all the pipeline settings to be
           overwritten and they will be lost. If this isn't what you want, duplicate this pipeline first or export
           settings.
         </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
+        <v-card-actions class="pa-5 pt-0">
           <v-btn color="error" variant="elevated" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
           <v-btn color="#ffd843" variant="elevated" class="text-black" @click="cancelChangePipelineType">
             No, take me back

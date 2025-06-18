@@ -142,10 +142,10 @@ watchEffect(() => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Global Settings</v-card-title>
-    <div class="pa-6 pt-0">
-      <v-divider class="pb-3" />
-      <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
+    <v-card-title>Global Settings</v-card-title>
+    <div class="pa-5 pt-0">
+      <v-divider class="pb-2" />
+      <v-card-title class="pl-0 pt-3 pb-10px">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -207,8 +207,8 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pt-3 pb-3">Advanced Networking</v-card-title>
+        <v-divider class="mt-10px pb-2" />
+        <v-card-title class="pl-0 pt-3 pb-10px">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -259,8 +259,8 @@ watchEffect(() => {
         >
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
-        <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pt-3 pb-3">Miscellaneous</v-card-title>
+        <v-divider class="mt-10px pb-2" />
+        <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
@@ -277,7 +277,7 @@ watchEffect(() => {
           This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
           this mode.
         </v-banner>
-        <v-divider class="mt-3 mb-6" />
+        <v-divider class="mt-10px pb-5" />
       </v-form>
       <v-btn
         color="accent"
@@ -293,6 +293,9 @@ watchEffect(() => {
 </template>
 
 <style>
+.mt-10px {
+  margin-top: 10px !important;
+}
 .v-banner__wrapper {
   padding: 6px !important;
 }
