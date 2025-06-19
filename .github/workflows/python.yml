@@ -47,13 +47,14 @@ jobs:
             pip install --no-cache-dir dist/*.whl
             pytest
 
-      - name: Run mypy type checking
-        uses: liskin/gh-problem-matcher-wrap@v3
-        with:
-          linters: mypy
-          run: |
-            mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
-
+      # Disable due to robotpy issue. See
+      # https://github.com/PhotonVision/photonvision/issues/1968
+      # - name: Run mypy type checking
+      #   uses: liskin/gh-problem-matcher-wrap@v3
+      #   with:
+      #     linters: mypy
+      #     run: |
+      #       mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@master
