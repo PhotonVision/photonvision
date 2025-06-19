@@ -4,6 +4,7 @@ import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
+import pvInput from "@/components/common/pv-input.vue";
 
 const showImportDialog = ref(false);
 const showInfo = ref({ show: false, model: {} as ObjectDetectionModelProperties });
@@ -190,7 +191,7 @@ const nukeModels = () => {
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to clear the models.",
+          message: "The backend is unable to fulfill the request to clear the models.",
           color: "error"
         });
       } else if (error.request) {
@@ -292,7 +293,7 @@ const nukeModels = () => {
           />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="error" @click="showNukeDialog">
+          <v-btn color="error" @click="() => (showNukeDialog = true)">
             <v-icon left class="open-icon"> mdi-trash </v-icon>
             <span class="open-label">Clear and reset models</span>
           </v-btn>

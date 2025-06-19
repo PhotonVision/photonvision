@@ -804,7 +804,7 @@ public class RequestHandler {
 
             logger.debug("Here's what I got: " + request.modelPath);
 
-            modelPath = Path.of(request.modelPath);
+            modelPath = Path.of(request.modelPath.substring(7));
 
             if (modelPath == null) {
                 ctx.status(400);
