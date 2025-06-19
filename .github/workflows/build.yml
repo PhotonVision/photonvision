@@ -15,7 +15,7 @@ jobs:
     defaults:
       run:
         working-directory: photon-client
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -40,7 +40,7 @@ jobs:
             architecture: x64
           - os: macos-14
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
@@ -70,7 +70,7 @@ jobs:
         run: ./gradlew build
   build-gradle:
     name: "Gradle Build"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # Checkout code.
       - name: Checkout code
@@ -85,7 +85,7 @@ jobs:
           java-version: 17
           distribution: temurin
       - name: Install mrcal deps
-        run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+        run: sudo apt-get update && sudo apt-get install -y libcholmod5 liblapack3 libsuitesparseconfig7
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
@@ -102,7 +102,7 @@ jobs:
           file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
   build-offline-docs:
     name: "Build Offline Docs"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -129,7 +129,7 @@ jobs:
 
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -169,7 +169,7 @@ jobs:
           - os: macos-14
             artifact-name: macOS
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
@@ -204,17 +204,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2025-24.04
-            artifact-name: Athena
-            build-options: "-Ponlylinuxathena"
-          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+          - container: wpilib/raspbian-cross-ubuntu:bookworm-24.04
             artifact-name: Raspbian
             build-options: "-Ponlylinuxarm32"
-          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+          - container: wpilib/aarch64-cross-ubuntu:bookworm-24.04
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
     steps:
@@ -242,7 +239,7 @@ jobs:
   combine:
     name: Combine
     needs: [build-photonlib-docker, build-photonlib-host]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -283,11 +280,11 @@ jobs:
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
             architecture: x64
             arch-override: linuxx64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             architecture: x64
             arch-override: linuxarm64
@@ -344,7 +341,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: jar-Linux
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
@@ -369,7 +366,7 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
-        if: ${{ (matrix.os) == 'ubuntu-22.04' }}
+        if: ${{ (matrix.os) == 'ubuntu-24.04' }}
       # and actually run the jar
       - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
@@ -383,7 +380,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_raspi.img.xz
@@ -422,61 +419,61 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight2
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight3
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight3G
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_limelight3g.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5b
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5b.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5pro
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5pro.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5max
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: rock5c
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_rock5c.img.xz
@@ -520,7 +517,7 @@ jobs:
           path: photonvision*.xz
   release:
     needs: [build-package, build-image, combine]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # Download all fat JARs
       - uses: actions/download-artifact@v4
@@ -581,7 +578,7 @@ jobs:
   dispatch:
     name: dispatch
     needs: [build-photonlib-vendorjson, release]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: peter-evans/repository-dispatch@v3
         if: |
