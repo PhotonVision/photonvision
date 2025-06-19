@@ -21,7 +21,7 @@ jobs:
     defaults:
       run:
         working-directory: photon-client
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -39,7 +39,7 @@ jobs:
 
   run_java_cpp_docs:
     name: Build Java and C++ API Docs
-    runs-on: "ubuntu-22.04"
+    runs-on: "ubuntu-24.04"
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
   publish_api_docs:
     name: Publish API Docs
     needs: [run_java_cpp_docs]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # Download docs artifact
       - uses: actions/download-artifact@v4
@@ -91,7 +91,7 @@ jobs:
   publish_demo:
       name: Publish PhotonClient Demo
       needs: [build_demo]
-      runs-on: ubuntu-22.04
+      runs-on: ubuntu-24.04
       steps:
       - uses: actions/download-artifact@v4
         with:
