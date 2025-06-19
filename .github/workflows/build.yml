@@ -30,7 +30,7 @@ jobs:
             architecture: x64
           - os: macos-14
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
@@ -94,7 +94,7 @@ jobs:
         run: ./gradlew jacocoTestReport
   build-offline-docs:
     name: "Build Offline Docs"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -121,7 +121,7 @@ jobs:
 
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       - uses: actions/checkout@v4
@@ -162,7 +162,7 @@ jobs:
           - os: macos-14
             artifact-name: macOS
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
@@ -198,17 +198,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2025-24.04
-            artifact-name: Athena
-            build-options: "-Ponlylinuxathena"
-          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+          - container: wpilib/raspbian-cross-ubuntu:bookworm-24.04
             artifact-name: Raspbian
             build-options: "-Ponlylinuxarm32"
-          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+          - container: wpilib/aarch64-cross-ubuntu:bookworm-24.04
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
     needs: [validation]
@@ -237,7 +234,7 @@ jobs:
   combine:
     name: Combine
     needs: [build-photonlib-docker, build-photonlib-host]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -278,11 +275,11 @@ jobs:
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
             architecture: x64
             arch-override: linuxx64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             architecture: x64
             arch-override: linuxarm64
@@ -337,7 +334,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: jar-Linux
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
@@ -557,7 +554,7 @@ jobs:
           path: photonvision*.xz
   release:
     needs: [build-photonlib-vendorjson, build-package, build-image, build-rubik-image, combine]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # Download all fat JARs
       - uses: actions/download-artifact@v4
