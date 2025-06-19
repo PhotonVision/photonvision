@@ -375,7 +375,7 @@ const nukeModels = () => {
               <v-card-title>Object Detection Model Info</v-card-title>
               <v-btn color="secondary" @click="openExportIndividualModelPrompt">
                 <v-icon left class="open-icon"> mdi-export </v-icon>
-                <span class="open-label">Export Models</span>
+                <span class="open-label">Export Model</span>
               </v-btn>
               <a
                 ref="exportIndividualModel"
@@ -389,7 +389,7 @@ const nukeModels = () => {
                 <p>Model Nickname: {{ showInfo.model.nickname }}</p>
                 <p>Model Family: {{ showInfo.model.family }}</p>
                 <p>Model Version: {{ showInfo.model.version }}</p>
-                <p>Model Labels: {{ showInfo.model.labels.join(", ") }}</p>
+                <p>Model Label(s): {{ showInfo.model.labels.join(", ") }}</p>
                 <p>Model Resolution: {{ (showInfo.model.resolutionWidth, " x ", showInfo.model.resolutionHeight) }}</p>
               </v-card-text>
             </v-card>
