@@ -10,7 +10,7 @@ In order to use PhotonVision, you need a coprocessor and a camera. This page dis
 
 ### Minimum System Requirements
 
-- Ubuntu 22.04 LTS or Windows 10/11
+- Ubuntu 24.04 LTS or Windows 10/11
   - We don't recommend using Windows for anything except testing out the system on a local machine.
 - CPU: ARM Cortex-A53 (the CPU on Raspberry Pi 3) or better
 - At least 8GB of storage
