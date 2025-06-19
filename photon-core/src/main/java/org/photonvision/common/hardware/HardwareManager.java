@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
+import org.photonvision.common.hardware.metrics.DeviceMetrics;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -228,5 +229,9 @@ public class HardwareManager {
 
     public void publishMetrics() {
         metricsManager.publishMetrics();
+    }
+
+    public DeviceMetrics getMetrics() {
+        return metricsManager.getMetrics();
     }
 }
