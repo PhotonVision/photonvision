@@ -749,6 +749,7 @@ public class RequestHandler {
             try (var stream = Files.list(tempDir)) {
                 for (Path modelFile : stream.toList()) {
                     if (Files.isRegularFile(modelFile) && !modelFile.getFileName().toString().endsWith(".json")) {
+                        logger.debug("Copying model file: " + modelFile.getFileName());
                         Files.copy(
                                 modelFile,
                                 Path.of(targetModelsDir.toString(), modelFile.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
