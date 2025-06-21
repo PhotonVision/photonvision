@@ -138,7 +138,8 @@ enum ImportType {
   HardwareConfig,
   HardwareSettings,
   NetworkConfig,
-  ApriltagFieldLayout
+  ApriltagFieldLayout,
+  ObjectDetectionModels
 }
 const showImportDialog = ref(false);
 const importType = ref<ImportType | undefined>(undefined);
@@ -162,6 +163,9 @@ const handleSettingsImport = () => {
       break;
     case ImportType.ApriltagFieldLayout:
       settingsEndpoint = "/aprilTagFieldLayout";
+      break;
+    case ImportType.ObjectDetectionModels:
+      settingsEndpoint = "/bulkObjectDetection";
       break;
     default:
     case ImportType.AllSettings:
@@ -218,7 +222,7 @@ const nukePhotonConfigDirectory = () => {
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to reset the device.",
+          message: "The backend is unable to fulfill the request to reset the device.",
           color: "error"
         });
       } else if (error.request) {
@@ -293,7 +297,8 @@ const nukePhotonConfigDirectory = () => {
                       'Hardware Config',
                       'Hardware Settings',
                       'Network Config',
-                      'Apriltag Layout'
+                      'Apriltag Layout',
+                      'Object Detection Models'
                     ]"
                     :select-cols="10"
                     style="width: 100%"
@@ -304,7 +309,7 @@ const nukePhotonConfigDirectory = () => {
                     v-model="importFile"
                     :disabled="importType === undefined"
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
-                    :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
+                    :accept="importType === ImportType.AllSettings || ImportType.ObjectDetectionModels ? '.zip' : '.json'"
                   />
                 </v-row>
                 <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
