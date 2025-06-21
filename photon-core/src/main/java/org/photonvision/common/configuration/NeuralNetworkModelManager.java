@@ -333,7 +333,8 @@ public class NeuralNetworkModelManager {
         return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().nuke();
     }
 
-    public File zipModel(String modelPath) {
+    public File exportSingleModel(String modelPath) {
+        try{
         File modelFile = new File(modelPath);
         if (!modelFile.exists()) {
             logger.error("Model file does not exist: " + modelFile.getAbsolutePath());
@@ -347,26 +348,36 @@ public class NeuralNetworkModelManager {
                         .getModel(Path.of(modelPath));
 
         String fileName = "";
+        String suffix = modelFile.getName().substring(modelFile.getName().lastIndexOf('.'));
         if (properties != null) {
             fileName =
                     String.format(
-                            "%s-%s-%s-%dx%d",
+                            "%s-%s-%s-%dx%d-%s",
                             properties.nickname().replace(" ", ""),
                             properties.family(),
                             properties.version(),
                             properties.resolutionWidth(),
-                            properties.resolutionHeight());
+                            properties.resolutionHeight(),
+                            String.join("_", properties.labels()));
         } else {
             fileName = new File(modelPath).getName();
+
         }
 
         try {
-            var out = Files.createTempFile(fileName, ".zip");
-            ZipUtil.pack(new File(modelPath), out.toFile());
+            var out = Files.createTempFile(fileName, suffix);
+            Files.copy(
+                    modelFile.toPath(),
+                    out,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.COPY_ATTRIBUTES);
             return out.toFile();
         } catch (Exception e) {
             e.printStackTrace();
-            logger.error("Failed to zip model file: " + modelFile.getAbsolutePath(), e);
+            logger.error("Failed to export model file: " + modelFile.getAbsolutePath(), e);
+            return null;
+        }}catch (Exception e) {
+            logger.error("Failed to export model file: " + modelPath, e);
             return null;
         }
     }

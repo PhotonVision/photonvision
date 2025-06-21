@@ -54,12 +54,14 @@ const modelNames = computed(() => {
 
 const selectedModel = computed({
   get: () => {
-    const index = supportedModels.value.findIndex((model) => {
-      return model === currentPipelineSettings.value.model;
-    });
-    return index;
+    return currentPipelineSettings.value.model.nickname !== null ? currentPipelineSettings.value.model.nickname : "NO MODEL FOUND";
   },
-  set: (v) => v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false)
+  set: (model) => {
+    const modelObj = supportedModels.value.find((m) => m.nickname === model);
+    if (modelObj) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model: modelObj }, false);
+    }
+  }
 });
 </script>
 

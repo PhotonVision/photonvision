@@ -52,7 +52,8 @@ public class ConfigManager {
     private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
-    // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
+    // special case flag to disable flushing settings to disk at shutdown. Avoids
+    // the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
     private boolean allowWriteTask = true;
@@ -63,7 +64,8 @@ public class ConfigManager {
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we want to switch
+    // This logic decides which kind of ConfigManager we load as the default. If we
+    // want to switch
     // back to the legacy config manager, change this constant
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
@@ -73,7 +75,7 @@ public class ConfigManager {
             switch (m_saveStrat) {
                 case SQL -> INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
                 case LEGACY ->
-                        INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
+                    INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
                 case ATOMIC_ZIP -> {
                     // TODO: Not done yet
                 }
@@ -100,7 +102,8 @@ public class ConfigManager {
             var loadedConfig = legacy.getConfig();
 
             // yeet our current cameras directory, not needed anymore
-            if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
+            if (maybeCamsBak.exists())
+                FileUtils.deleteDirectory(maybeCamsBak.toPath());
             if (!maybeCams.canWrite()) {
                 maybeCams.setWritable(true);
             }
@@ -110,20 +113,24 @@ public class ConfigManager {
             } catch (IOException e) {
                 logger.error("Exception moving cameras to cameras_bak!", e);
 
-                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
+                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes
+                // needs us to
                 // do that
                 try {
                     org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
                 } catch (IOException e1) {
-                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
+                    // So we can't move to cams_bak, and we can't copy and delete either? We just
+                    // have to give
                     // up here on preserving the old folder
                     logger.error("Exception while backup-copying cameras to cameras_bak!", e);
                     e1.printStackTrace();
                 }
 
-                // Delete the directory because we were successfully able to load the config but were unable
+                // Delete the directory because we were successfully able to load the config but
+                // were unable
                 // to save or copy the folder.
-                if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
+                if (maybeCams.exists())
+                    FileUtils.deleteDirectory(maybeCams.toPath());
             }
 
             // Save the same config out using SQL loader
@@ -219,17 +226,19 @@ public class ConfigManager {
     }
 
     public File getObjectDetectionExportAsZip() {
-        File out =
-                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
-                        .toFile();
-        File tempProperties =
-                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.json")
-                        .toFile();
+        File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
+                .toFile();
+        File tempProperties = Path.of(getModelsDirectory().toString(), "photonvision-object-detection-models.json")
+                .toFile();
         try {
-            ZipUtil.pack(getModelsDirectory(), out);
+
             JacksonUtils.serialize(
                     tempProperties.toPath(), this.getConfig().neuralNetworkPropertyManager());
-            ZipUtil.pack(tempProperties, out);
+            ZipUtil.pack(getModelsDirectory(), out);
+            // Now delete the tempProperties
+            if (tempProperties.exists()) {
+                Files.delete(tempProperties.toPath());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -267,33 +276,35 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists())
+            logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePath(String uniqueCameraName) {
-        var imgFilePath =
-                Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        var imgFilePath = Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
     public Path getCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
-        var imgFilePath =
-                Path.of(
-                                configDirectoryFile.toString(),
-                                "calibration",
-                                uniqueCameraName,
-                                "imgs",
-                                frameSize.toString())
-                        .toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        var imgFilePath = Path.of(
+                configDirectoryFile.toString(),
+                "calibration",
+                uniqueCameraName,
+                "imgs",
+                frameSize.toString())
+                .toFile();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
@@ -358,13 +369,16 @@ public class ConfigManager {
     /** Get (and create if not present) the subfolder where ML models are stored */
     public File getModelsDirectory() {
         var ret = new File(configDirectoryFile, "models");
-        if (!ret.exists()) ret.mkdirs();
+        if (!ret.exists())
+            ret.mkdirs();
         return ret;
     }
 
     /**
-     * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
-     * settings from getting its new configs overwritten at program exit and before they're all
+     * Disable flushing settings to disk as part of our JVM exit hook. Used to
+     * prevent uploading all
+     * settings from getting its new configs overwritten at program exit and before
+     * they're all
      * loaded.
      */
     public void disableFlushOnShutdown() {

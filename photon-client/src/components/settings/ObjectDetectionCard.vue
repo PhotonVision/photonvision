@@ -288,7 +288,7 @@ const nukeModels = () => {
             ref="exportModels"
             style="color: black; text-decoration: none; display: none"
             :href="`http://${address}/api/objectdetection/export`"
-            download="photonvision-object-detection-models.zip"
+            download="photonvision-object-detection-models-export.zip"
             target="_blank"
           />
         </v-col>
@@ -357,7 +357,7 @@ const nukeModels = () => {
             <v-card color="primary" dark>
               <v-card-title>Rename Object Detection Model</v-card-title>
               <v-card-text>
-                Enter a new name for the model {{ showRenameDialog.model }}:
+                Enter a new name for the model {{ showRenameDialog.model.nickname }}:
                 <v-row class="mt-6 ml-4 mr-8">
                   <v-text-field v-model="showRenameDialog.newName" label="New Name" />
                 </v-row>
@@ -381,7 +381,7 @@ const nukeModels = () => {
                 ref="exportIndividualModel"
                 style="color: black; text-decoration: none; display: none"
                 :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath}`"
-                :download="`${showInfo.model.nickname}-${showInfo.model.family}-${showInfo.model.version}-${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}.zip`"
+                :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
                 target="_blank"
               />
               <v-card-text>
@@ -420,7 +420,7 @@ const nukeModels = () => {
                   ref="exportModels"
                   style="color: black; text-decoration: none; display: none"
                   :href="`http://${address}/api/objectdetection/export`"
-                  download="photonvision-object-detection-models.zip"
+                  download="photonvision-object-detection-models-export.zip"
                   target="_blank"
                 />
               </v-btn>

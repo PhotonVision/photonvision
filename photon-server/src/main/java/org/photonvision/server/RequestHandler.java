@@ -22,9 +22,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
 import java.io.*;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -70,7 +72,8 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    private record CommonCameraUniqueName(String cameraUniqueName) {}
+    private record CommonCameraUniqueName(String cameraUniqueName) {
+    }
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -334,8 +337,7 @@ public class RequestHandler {
         }
 
         try {
-            Path filePath =
-                    Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+            Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
             File targetFile = new File(filePath.toString());
             var stream = new FileOutputStream(targetFile);
 
@@ -385,12 +387,12 @@ public class RequestHandler {
     }
 
     private record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
+            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {
+    }
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
-            CameraSettingsRequest request =
-                    kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
+            CameraSettingsRequest request = kObjectMapper.readValue(ctx.body(), CameraSettingsRequest.class);
             // Extract the settings from the request
             double fov = request.fov;
             HashMap<CameraQuirk, Boolean> quirksToChange = request.quirksToChange;
@@ -451,7 +453,7 @@ public class RequestHandler {
                 var out = Files.createTempFile("photonvision-logs", "zip").toFile();
 
                 try {
-                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                    ZipUtil.packEntries(new File[] { tempPath.toFile(), tempPath2.toFile() }, out);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -478,14 +480,11 @@ public class RequestHandler {
         logger.info("Calibrating camera! This will take a long time...");
 
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
-            var calData =
-                    VisionSourceManager.getInstance()
-                            .vmm
-                            .getModule(request.cameraUniqueName)
-                            .endCalibration();
+            var calData = VisionSourceManager.getInstance().vmm
+                    .getModule(request.cameraUniqueName)
+                    .endCalibration();
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
@@ -514,20 +513,20 @@ public class RequestHandler {
     }
 
     private record DataCalibrationImportRequest(
-            String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
+            String cameraUniqueName, CameraCalibrationCoefficients calibration) {
+    }
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            DataCalibrationImportRequest request =
-                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+            DataCalibrationImportRequest request = kObjectMapper.readValue(ctx.body(),
+                    DataCalibrationImportRequest.class);
 
-            var uploadCalibrationEvent =
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEMODULE,
-                            "calibrationUploaded",
-                            request.calibration,
-                            request.cameraUniqueName,
-                            null);
+            var uploadCalibrationEvent = new IncomingWebSocketEvent<>(
+                    DataChangeDestination.DCD_ACTIVEMODULE,
+                    "calibrationUploaded",
+                    request.calibration,
+                    request.cameraUniqueName,
+                    null);
             DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
 
             ctx.status(200);
@@ -555,35 +554,22 @@ public class RequestHandler {
         try {
             // Retrieve the uploaded files
             var modelFile = ctx.uploadedFile("modelFile");
-            logger.debug("I'm trying my best");
 
-            LinkedList<String> labels =
-                    new LinkedList<>(Arrays.asList(ctx.formParam("labels").split(",")));
-            double width = Double.parseDouble(ctx.formParam("width"));
-            double height = Double.parseDouble(ctx.formParam("height"));
-            NeuralNetworkModelManager.Version version =
-                    switch (ctx.formParam("version").toString()) {
-                        case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
-                        case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
-                        case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
-                            // Add more versions as necessary for new models
-                        default -> {
-                            ctx.status(400);
-                            ctx.result("The provided version was not valid");
-                            logger.error("The provided version was not valid");
-                            yield null;
-                        }
-                    };
-
-            logger.debug(
-                    "Labels: "
-                            + labels
-                            + " Width: "
-                            + width
-                            + " Height: "
-                            + height
-                            + " Version: "
-                            + version.toString());
+            LinkedList<String> labels = new LinkedList<>(Arrays.asList(ctx.formParam("labels").split(",")));
+            int width = Integer.parseInt(ctx.formParam("width"));
+            int height = Integer.parseInt(ctx.formParam("height"));
+            NeuralNetworkModelManager.Version version = switch (ctx.formParam("version").toString()) {
+                case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
+                case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
+                case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
+                // Add more versions as necessary for new models
+                default -> {
+                    ctx.status(400);
+                    ctx.result("The provided version was not valid");
+                    logger.error("The provided version was not valid");
+                    yield null;
+                }
+            };
 
             if (modelFile == null) {
                 ctx.status(400);
@@ -620,9 +606,8 @@ public class RequestHandler {
                 return;
             }
 
-            var modelPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+            var modelPath = Paths.get(
+                    ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
 
             try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
                 modelFile.content().transferTo(out);
@@ -634,7 +619,7 @@ public class RequestHandler {
                     .addModelProperties(
                             new ModelProperties(
                                     modelPath,
-                                    modelFile.filename().split(".")[0],
+                                    modelFile.filename().replaceAll(".rknn", ""),
                                     labels,
                                     width,
                                     height,
@@ -651,6 +636,7 @@ public class RequestHandler {
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
             ctx.status(500).result("Error processing files: " + e.getMessage());
+            logger.error("Error processing new object detection model", e);
         }
 
         DataChangeService.getInstance()
@@ -660,7 +646,7 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    public static void onExportObjectDetectionModelRequest(Context ctx) {
+    public static void onExportObjectDetectionModelsRequest(Context ctx) {
         logger.info("Exporting Object Detection Models to ZIP Archive");
 
         try {
@@ -683,10 +669,10 @@ public class RequestHandler {
     }
 
     public static void onExportIndividualObjectDetectionModelRequest(Context ctx) {
-        logger.info("Exporting Object Detection Model to ZIP Archive");
+        logger.info("Exporting Individual Object Detection Model");
 
         try {
-            var modelPath = ctx.formParam("modelPath");
+            String modelPath = ctx.queryParam("modelPath");
 
             if (modelPath == null || modelPath.isEmpty()) {
                 ctx.status(400);
@@ -695,21 +681,27 @@ public class RequestHandler {
                 return;
             }
 
-            var zip = NeuralNetworkModelManager.getInstance().zipModel(modelPath);
+            // When getting the path, we strip the first five characters (file:) as they are
+            // added by the JSON encoding
+            if (modelPath.startsWith("file://")) {
+                modelPath = modelPath.substring(7);
+            }
 
-            var stream = new FileInputStream(zip);
+            File modelFile = NeuralNetworkModelManager.getInstance().exportSingleModel(modelPath);
+
+            var stream = new FileInputStream(modelFile);
             logger.info("Uploading object detection model with size " + stream.available());
 
-            ctx.contentType("application/zip");
-            ctx.header("Content-Disposition", "attachment; filename=" + zip.getName());
+            ctx.contentType("application/octet-stream");
+            ctx.header("Content-Disposition", "attachment; filename=" + modelFile.getName());
 
             ctx.result(stream);
             ctx.status(200);
         } catch (IOException e) {
             logger.error(
-                    "Unable to export object detection model archive, bad recode from zip to byte, " + e);
+                    "Unable to export object detection model, " + e);
             ctx.status(500);
-            ctx.result("There was an error while exporting the object detection model archive");
+            ctx.result("There was an error while exporting the object detection model");
         }
     }
 
@@ -750,26 +742,22 @@ public class RequestHandler {
             tempDir = Files.createTempDirectory("photonvision-od-models");
             ZipUtil.unpack(tempFilePath.get(), tempDir.toFile());
 
-            Path sourceModelsDir = Path.of(tempDir.toString(), "models");
-            if (Files.exists(sourceModelsDir) && Files.isDirectory(sourceModelsDir)) {
-                Path targetModelsDir = ConfigManager.getInstance().getModelsDirectory().toPath();
+            Path targetModelsDir = ConfigManager.getInstance().getModelsDirectory().toPath();
 
-                // Copy all files from the source models directory to the target models
-                // directory
-                try (var stream = Files.list(sourceModelsDir)) {
-                    for (Path modelFile : stream.toList()) {
-                        if (Files.isRegularFile(modelFile)) {
-                            Files.copy(
-                                    modelFile,
-                                    Path.of(targetModelsDir.toString(), modelFile.getFileName().toString()));
-                        }
+            // Copy all files from the source models directory to the target models
+            // directory
+            try (var stream = Files.list(tempDir)) {
+                for (Path modelFile : stream.toList()) {
+                    if (Files.isRegularFile(modelFile) && !modelFile.getFileName().toString().endsWith(".json")) {
+                        Files.copy(
+                                modelFile,
+                                Path.of(targetModelsDir.toString(), modelFile.getFileName().toString()), StandardCopyOption.REPLACE_EXISTING);
                     }
                 }
-                logger.info(
-                        "Successfully copied models from " + sourceModelsDir + " to " + targetModelsDir);
-            } else {
-                logger.warn("Models directory not found in the uploaded zip at " + sourceModelsDir);
             }
+            logger.info(
+                    "Successfully copied models from " + tempDir + " to " + targetModelsDir);
+
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("There was an error while extracting and coyping the object detection models");
@@ -778,9 +766,8 @@ public class RequestHandler {
             return;
         }
 
-        if (ConfigManager.getInstance()
-                .saveUploadedNeuralNetworkProperties(
-                        Path.of(tempDir.toString(), "NeuralNetworkPropertiesManager.json"))) {
+        if (ConfigManager.getInstance().saveUploadedNeuralNetworkProperties(
+                Path.of(tempDir.toString(), "photonvision-object-detection-models.json"))) {
             ctx.status(200);
             ctx.result("Successfully saved the uploaded object detection models, rebooting...");
             logger.info("Successfully saved the uploaded object detection models, rebooting...");
@@ -792,15 +779,16 @@ public class RequestHandler {
         }
     }
 
-    private record DeleteObjectDetectionModelRequest(String modelPath) {}
+    private record DeleteObjectDetectionModelRequest(String modelPath) {
+    }
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
         Path modelPath;
 
         try {
-            DeleteObjectDetectionModelRequest request =
-                    JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
+            DeleteObjectDetectionModelRequest request = JacksonUtils.deserialize(ctx.body(),
+                    DeleteObjectDetectionModelRequest.class);
 
             logger.debug("Here's what I got: " + request.modelPath);
 
@@ -854,14 +842,17 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {
+    }
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
-            RenameObjectDetectionModelRequest request =
-                    JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
+            RenameObjectDetectionModelRequest request = JacksonUtils.deserialize(ctx.body(),
+                    RenameObjectDetectionModelRequest.class);
 
-            Path modelPath = Path.of(request.modelPath);
+            // When getting the path, we strip the first five characters (file:) as they are
+            // added by the JSON encoding
+            Path modelPath = Path.of(request.modelPath.substring(5));
 
             if (modelPath == null) {
                 ctx.status(400);
@@ -873,7 +864,7 @@ public class RequestHandler {
             if (!modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
-                logger.error("The provided model path does not exist");
+                logger.error("The model path: " + modelPath + " does not exist");
                 return;
             }
 
@@ -921,15 +912,15 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
-    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {
+    }
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
-            CameraNicknameChangeRequest request =
-                    kObjectMapper.readValue(ctx.body(), CameraNicknameChangeRequest.class);
+            CameraNicknameChangeRequest request = kObjectMapper.readValue(ctx.body(),
+                    CameraNicknameChangeRequest.class);
 
-            VisionSourceManager.getInstance()
-                    .vmm
+            VisionSourceManager.getInstance().vmm
                     .getModule(request.cameraUniqueName)
                     .setCameraNickname(request.name);
             ctx.status(200);
@@ -955,19 +946,15 @@ public class RequestHandler {
         var height = Integer.parseInt(ctx.queryParam("height"));
         Integer observationIdx = Integer.parseInt(ctx.queryParam("snapshotIdx"));
 
-        CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance()
-                        .vmm
-                        .getModule(cameraUniqueName)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+        CameraCalibrationCoefficients calList = VisionSourceManager.getInstance().vmm
+                .getModule(cameraUniqueName)
+                .getStateAsCameraConfig().calibrations
+                .stream()
+                .filter(
+                        it -> Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                .findFirst()
+                .orElse(null);
 
         if (calList == null || calList.observations.size() < observationIdx) {
             ctx.status(404);
@@ -979,9 +966,8 @@ public class RequestHandler {
         var jpegBytes = new MatOfByte();
         Mat img = null;
         try {
-            img =
-                    Imgcodecs.imread(
-                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
+            img = Imgcodecs.imread(
+                    calList.observations.get(observationIdx).snapshotDataLocation.toString());
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Unable to read calibration image");
@@ -1006,17 +992,14 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
-        var cc =
-                VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
+        var cc = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName).getStateAsCameraConfig();
 
-        CameraCalibrationCoefficients calList =
-                cc.calibrations.stream()
-                        .filter(
-                                it ->
-                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
-                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
-                        .findFirst()
-                        .orElse(null);
+        CameraCalibrationCoefficients calList = cc.calibrations.stream()
+                .filter(
+                        it -> Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                .findFirst()
+                .orElse(null);
 
         if (calList == null) {
             ctx.status(404);
@@ -1039,7 +1022,8 @@ public class RequestHandler {
             try {
                 for (File cameraDir : cameraDirs) {
                     var cameraSnapshots = cameraDir.listFiles();
-                    if (cameraSnapshots == null) continue;
+                    if (cameraSnapshots == null)
+                        continue;
 
                     String cameraUniqueName = cameraDir.getName();
 
@@ -1070,18 +1054,19 @@ public class RequestHandler {
 
     public static void onCameraCalibImagesRequest(Context ctx) {
         try {
-            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots =
-                    new HashMap<>();
+            HashMap<String, HashMap<String, ArrayList<HashMap<String, Object>>>> snapshots = new HashMap<>();
 
             var cameraDirs = ConfigManager.getInstance().getCalibDir().toFile().listFiles();
             if (cameraDirs != null) {
                 var camData = new HashMap<String, ArrayList<HashMap<String, Object>>>();
                 for (var cameraDir : cameraDirs) {
                     var resolutionDirs = cameraDir.listFiles();
-                    if (resolutionDirs == null) continue;
+                    if (resolutionDirs == null)
+                        continue;
                     for (var resolutionDir : resolutionDirs) {
                         var calibImages = resolutionDir.listFiles();
-                        if (calibImages == null) continue;
+                        if (calibImages == null)
+                            continue;
                         var resolutionImages = new ArrayList<HashMap<String, Object>>();
                         for (var calibImg : calibImages) {
                             var snapshotData = new HashMap<String, Object>();
@@ -1119,8 +1104,7 @@ public class RequestHandler {
      * @return Temporary file. Empty if the temporary file was unable to be created.
      */
     private static Optional<File> handleTempFileCreation(UploadedFile file) {
-        var tempFilePath =
-                new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
+        var tempFilePath = new File(Path.of(System.getProperty("java.io.tmpdir"), file.filename()).toString());
         boolean makeDirsRes = tempFilePath.getParentFile().mkdirs();
 
         if (!makeDirsRes && !(tempFilePath.getParentFile().exists())) {
@@ -1147,7 +1131,8 @@ public class RequestHandler {
     }
 
     /**
-     * Restart the running program. Note that this doesn't actually restart the program itself,
+     * Restart the running program. Note that this doesn't actually restart the
+     * program itself,
      * instead, it relies on systemd or an equivalent.
      */
     private static void restartProgram() {
@@ -1185,15 +1170,13 @@ public class RequestHandler {
 
     public static void onNukeOneCamera(Context ctx) {
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
             logger.warn("Deleting camera name " + request.cameraUniqueName);
 
-            var cameraDir =
-                    ConfigManager.getInstance()
-                            .getCalibrationImageSavePath(request.cameraUniqueName)
-                            .toFile();
+            var cameraDir = ConfigManager.getInstance()
+                    .getCalibrationImageSavePath(request.cameraUniqueName)
+                    .toFile();
             if (cameraDir.exists()) {
                 FileUtils.deleteDirectory(cameraDir);
             }
@@ -1212,8 +1195,7 @@ public class RequestHandler {
     public static void onActivateMatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
             if (VisionSourceManager.getInstance()
                     .reactivateDisabledCameraConfig(request.cameraUniqueName)) {
@@ -1229,14 +1211,14 @@ public class RequestHandler {
         }
     }
 
-    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
+    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {
+    }
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
 
         try {
-            AssignUnmatchedCamera request =
-                    kObjectMapper.readValue(ctx.body(), AssignUnmatchedCamera.class);
+            AssignUnmatchedCamera request = kObjectMapper.readValue(ctx.body(), AssignUnmatchedCamera.class);
 
             if (request.cameraInfo == null) {
                 ctx.status(400);
@@ -1263,8 +1245,7 @@ public class RequestHandler {
     public static void onUnassignCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CommonCameraUniqueName request = kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
 
             if (VisionSourceManager.getInstance().deactivateVisionSource(request.cameraUniqueName)) {
                 ctx.status(200);

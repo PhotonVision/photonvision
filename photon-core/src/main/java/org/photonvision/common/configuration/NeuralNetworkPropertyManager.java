@@ -35,8 +35,8 @@ public class NeuralNetworkPropertyManager {
             @JsonProperty("modelPath") Path modelPath,
             @JsonProperty("nickname") String nickname,
             @JsonProperty("labels") LinkedList<String> labels,
-            @JsonProperty("resolutionWidth") double resolutionWidth,
-            @JsonProperty("resolutionHeight") double resolutionHeight,
+            @JsonProperty("resolutionWidth") int resolutionWidth,
+            @JsonProperty("resolutionHeight") int resolutionHeight,
             @JsonProperty("family") Family family,
             @JsonProperty("version") Version version) {
         @JsonCreator
@@ -151,6 +151,7 @@ public class NeuralNetworkPropertyManager {
                             temp.resolutionHeight,
                             temp.family,
                             temp.version));
+            return true;
         }
         return false;
     }
