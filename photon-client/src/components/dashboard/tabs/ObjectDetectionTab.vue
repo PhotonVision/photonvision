@@ -54,7 +54,7 @@ const modelNames = computed(() => {
 
 const selectedModel = computed({
   get: () => {
-    return currentPipelineSettings.value.model.nickname !== null ? currentPipelineSettings.value.model.nickname : "NO MODEL FOUND";
+    return currentPipelineSettings.value.model != null ? currentPipelineSettings.value.model.nickname : "NO MODEL FOUND";
   },
   set: (model) => {
     const modelObj = supportedModels.value.find((m) => m.nickname === model);
