@@ -44,42 +44,42 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   return availableModels.filter(isSupported);
 });
 
-// const selectedModel = computed({
-//   get: () => {
-//     const index = supportedModels.value.findIndex(
-//       (model) => model.nickname === currentPipelineSettings.value.model.nickname
-//     );
-//     // Return -1 if not found, which will be handled properly by the select component
-//     return index >= 0 ? index : undefined;
-//   },
-//   set: (v) => {
-//     // Only proceed if v is a valid number and within bounds
-//     if (typeof v === 'number' && v >= 0 && v < supportedModels.value.length) {
-//       useCameraSettingsStore().changeCurrentPipelineSetting({ 
-//         model: supportedModels.value[v] 
-//       }, false);
-//     }
-//   }
-// });
-
-// Alternative approach - using the model object directly instead of index
-const selectedModelDirect = computed({
+const selectedModel = computed({
   get: () => {
-    return currentPipelineSettings.value.model.nickname;
+    const index = supportedModels.value.findIndex(
+      (model) => model.nickname === currentPipelineSettings.value.model.nickname
+    );
+    // Return -1 if not found, which will be handled properly by the select component
+    return index >= 0 ? index : undefined;
   },
-  set: (nickname) => {
-    const model = supportedModels.value.find(m => m.nickname === nickname);
-    if (model) {
-      useCameraSettingsStore().changeCurrentPipelineSetting({ model }, false);
+  set: (v) => {
+    // Only proceed if v is a valid number and within bounds
+    if (typeof v === 'number' && v >= 0 && v < supportedModels.value.length) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ 
+        model: supportedModels.value[v] 
+      }, false);
     }
   }
 });
+
+// Alternative approach - using the model object directly instead of index
+// const selectedModelDirect = computed({
+//   get: () => {
+//     return currentPipelineSettings.value.model.nickname;
+//   },
+//   set: (nickname) => {
+//     const model = supportedModels.value.find(m => m.nickname === nickname);
+//     if (model) {
+//       useCameraSettingsStore().changeCurrentPipelineSetting({ model }, false);
+//     }
+//   }
+// });
 </script>
 
 <template>
   <div v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
     <!-- Option 1: Using index-based approach (fixed version) -->
-    <!-- <pv-select
+    <pv-select
       v-model="selectedModel"
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
@@ -88,16 +88,16 @@ const selectedModelDirect = computed({
         name: model.nickname, 
         value: index 
       }))"
-    /> -->
+    />
 
     <!-- Option 2: Using direct nickname approach (simpler) -->
-    <pv-select
+    <!-- <pv-select
       v-model="selectedModelDirect"
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
       :items="supportedModels.map((model) => model.nickname)"
-    />
+    /> -->
   
     <pv-slider
       v-model="currentPipelineSettings.confidence"
