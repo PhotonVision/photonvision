@@ -212,12 +212,12 @@ const nukeModels = () => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Object Detection</v-card-title>
-    <div class="pa-6 pt-0">
+    <v-card-title class="pa-5">Object Detection</v-card-title>
+    <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" class="justify-center" @click="() => (showImportDialog = true)">
-            <v-icon left class="open-icon"> mdi-import </v-icon>
+            <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Model</span>
           </v-btn>
           <v-dialog
@@ -234,32 +234,28 @@ const nukeModels = () => {
             "
           >
             <v-card color="primary" dark>
-              <v-card-title>Import New Object Detection Model</v-card-title>
-              <v-card-text>
+              <v-card-title class="pa-5 pb-0">Import New Object Detection Model</v-card-title>
+              <v-card-text class="pa-5">
                 Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
                 640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are
                 currently supported!
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-file-input v-model="importModelFile" label="Model File" accept=".rknn" />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
+                <div class="pa-5">
+                  <v-file-input v-model="importModelFile" variant="underlined" label="Model File" accept=".rknn" />
                   <v-text-field
                     v-model="importLabels"
                     label="Labels"
                     placeholder="Comma separated labels, no spaces"
                     type="text"
+                    variant="underlined"
                   />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-text-field v-model="importWidth" label="Width" type="number" />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-text-field v-model="importHeight" label="Height" type="number" />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-select v-model="importVersion" label="Model Version" :items="['YOLOv5', 'YOLOv8', 'YOLO11']" />
-                </v-row>
-                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
+                  <v-text-field v-model="importWidth" variant="underlined" label="Width" type="number" />
+                  <v-text-field v-model="importHeight" variant="underlined" label="Height" type="number" />
+                  <v-select
+                    v-model="importVersion"
+                    variant="underlined"
+                    label="Model Version"
+                    :items="['YOLOv5', 'YOLOv8', 'YOLO11']"
+                  />
                   <v-btn
                     color="secondary"
                     :disabled="
@@ -274,14 +270,14 @@ const nukeModels = () => {
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
                   </v-btn>
-                </v-row>
+                </div>
               </v-card-text>
             </v-card>
           </v-dialog>
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn color="secondary" @click="openExportPrompt">
-            <v-icon left class="open-icon"> mdi-export </v-icon>
+            <v-icon start class="open-icon"> mdi-export </v-icon>
             <span class="open-label">Export Models</span>
           </v-btn>
           <a
