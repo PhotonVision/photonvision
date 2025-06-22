@@ -55,8 +55,11 @@ const selectedModel = computed({
     return supportedModels.value.length > 0 ? supportedModels.value[0].nickname : undefined;
   },
   set: (nickname) => {
+    console.log("I've been clicked");
     if (!nickname || typeof nickname !== 'string') return;
     
+    console.log("made it past the first check");
+
     const model = supportedModels.value.find(m => m.nickname === nickname);
     if (!model) {
       console.warn('Model not found:', nickname);
