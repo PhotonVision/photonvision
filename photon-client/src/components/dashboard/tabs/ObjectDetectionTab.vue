@@ -52,7 +52,8 @@ const selectedModel = computed({
       return currentNickname;
     }
     // Fallback to first available model if current is not supported
-    return supportedModels.value.length > 0 ? supportedModels.value[0].nickname : undefined;
+    // return supportedModels.value.length > 0 ? supportedModels.value[0].nickname : undefined;
+    return "ruh roh";
   },
   set: (nickname) => {
     console.log("I've been clicked");
