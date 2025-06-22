@@ -46,8 +46,9 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
 
 const selectedModel = computed({
   get: () => {
-    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
-    return index === -1 ? undefined : index;
+    return supportedModels.value.findIndex(
+      (model) => model.nickname === currentPipelineSettings.value.model.nickname
+    );
   },
   set: (v) => v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false)
 });
