@@ -39,7 +39,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
-import org.zeroturnaround.zip.ZipUtil;
 
 /**
  * Manages the loading of neural network models.
@@ -334,49 +333,49 @@ public class NeuralNetworkModelManager {
     }
 
     public File exportSingleModel(String modelPath) {
-        try{
-        File modelFile = new File(modelPath);
-        if (!modelFile.exists()) {
-            logger.error("Model file does not exist: " + modelFile.getAbsolutePath());
-            return null;
-        }
-
-        ModelProperties properties =
-                ConfigManager.getInstance()
-                        .getConfig()
-                        .neuralNetworkPropertyManager()
-                        .getModel(Path.of(modelPath));
-
-        String fileName = "";
-        String suffix = modelFile.getName().substring(modelFile.getName().lastIndexOf('.'));
-        if (properties != null) {
-            fileName =
-                    String.format(
-                            "%s-%s-%s-%dx%d-%s",
-                            properties.nickname().replace(" ", ""),
-                            properties.family(),
-                            properties.version(),
-                            properties.resolutionWidth(),
-                            properties.resolutionHeight(),
-                            String.join("_", properties.labels()));
-        } else {
-            fileName = new File(modelPath).getName();
-
-        }
-
         try {
-            var out = Files.createTempFile(fileName, suffix);
-            Files.copy(
-                    modelFile.toPath(),
-                    out,
-                    StandardCopyOption.REPLACE_EXISTING,
-                    StandardCopyOption.COPY_ATTRIBUTES);
-            return out.toFile();
+            File modelFile = new File(modelPath);
+            if (!modelFile.exists()) {
+                logger.error("Model file does not exist: " + modelFile.getAbsolutePath());
+                return null;
+            }
+
+            ModelProperties properties =
+                    ConfigManager.getInstance()
+                            .getConfig()
+                            .neuralNetworkPropertyManager()
+                            .getModel(Path.of(modelPath));
+
+            String fileName = "";
+            String suffix = modelFile.getName().substring(modelFile.getName().lastIndexOf('.'));
+            if (properties != null) {
+                fileName =
+                        String.format(
+                                "%s-%s-%s-%dx%d-%s",
+                                properties.nickname().replace(" ", ""),
+                                properties.family(),
+                                properties.version(),
+                                properties.resolutionWidth(),
+                                properties.resolutionHeight(),
+                                String.join("_", properties.labels()));
+            } else {
+                fileName = new File(modelPath).getName();
+            }
+
+            try {
+                var out = Files.createTempFile(fileName, suffix);
+                Files.copy(
+                        modelFile.toPath(),
+                        out,
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.COPY_ATTRIBUTES);
+                return out.toFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("Failed to export model file: " + modelFile.getAbsolutePath(), e);
+                return null;
+            }
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Failed to export model file: " + modelFile.getAbsolutePath(), e);
-            return null;
-        }}catch (Exception e) {
             logger.error("Failed to export model file: " + modelPath, e);
             return null;
         }
