@@ -55,10 +55,20 @@ const selectedModel = computed({
     return supportedModels.value.length > 0 ? supportedModels.value[0].nickname : undefined;
   },
   set: (nickname) => {
-    if (!nickname) return;
-    const model = supportedModels.value.find((m) => m.nickname === nickname);
-    if (model) {
-      useCameraSettingsStore().changeCurrentPipelineSetting({ model }, false);
+    if (!nickname || typeof nickname !== 'string') return;
+    
+    const model = supportedModels.value.find(m => m.nickname === nickname);
+    if (!model) {
+      console.warn('Model not found:', nickname);
+      return;
+    }
+    
+    console.log('Setting model:', model); // Debug log
+    
+    try {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model: model }, false);
+    } catch (error) {
+      console.error('Error setting model:', error);
     }
   }
 });
