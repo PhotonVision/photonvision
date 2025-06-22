@@ -98,8 +98,7 @@ const selectedModelDirect = computed({
       :select-cols="interactiveCols"
       :items="supportedModels.map((model) => model.nickname)"
     />
-  </div>
-</template>
+  
     <pv-slider
       v-model="currentPipelineSettings.confidence"
       class="pt-2"
