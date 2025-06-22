@@ -44,24 +44,12 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   return availableModels.filter(isSupported);
 });
 
-// Get model names for display in the select component
-const modelNames = computed(() => {
-  return supportedModels.value.map((model) => {
-    const modelName = model.nickname;
-    return `${modelName}`;
-  });
-});
-
 const selectedModel = computed({
   get: () => {
-    return currentPipelineSettings.value.model != null ? currentPipelineSettings.value.model.nickname : "NO MODEL FOUND";
+    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
+    return index === -1 ? undefined : index;
   },
-  set: (model) => {
-    const modelObj = supportedModels.value.find((m) => m.nickname === model);
-    if (modelObj) {
-      useCameraSettingsStore().changeCurrentPipelineSetting({ model: modelObj }, false);
-    }
-  }
+  set: (v) => v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false)
 });
 </script>
 
@@ -72,7 +60,7 @@ const selectedModel = computed({
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
-      :items="modelNames"
+      :items="supportedModels.map((model) => model.nickname)"
     />
     <pv-slider
       v-model="currentPipelineSettings.confidence"

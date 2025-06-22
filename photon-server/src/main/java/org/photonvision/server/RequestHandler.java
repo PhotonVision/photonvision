@@ -555,7 +555,14 @@ public class RequestHandler {
             // Retrieve the uploaded files
             var modelFile = ctx.uploadedFile("modelFile");
 
-            LinkedList<String> labels = new LinkedList<>(Arrays.asList(ctx.formParam("labels").split(",")));
+            //Strip any whitespaces on either side of the commas
+            LinkedList<String> labels = new LinkedList<>();
+            String rawLabels = ctx.formParam("labels");
+            if (rawLabels != null) {
+                for (String label : rawLabels.split(",")) {
+                    labels.add(label.trim());
+                }
+            }
             int width = Integer.parseInt(ctx.formParam("width"));
             int height = Integer.parseInt(ctx.formParam("height"));
             NeuralNetworkModelManager.Version version = switch (ctx.formParam("version").toString()) {
