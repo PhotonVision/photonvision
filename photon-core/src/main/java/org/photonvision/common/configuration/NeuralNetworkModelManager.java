@@ -169,7 +169,7 @@ public class NeuralNetworkModelManager {
         return models.get(supportedBackends.get(0)).stream().findFirst();
     }
 
-    // Do checking later on, when we create the rknn model
+    // Do checking later on, when we create the model object
     private void loadModel(ModelProperties properties) {
         if (models == null) {
             models = new HashMap<>();
