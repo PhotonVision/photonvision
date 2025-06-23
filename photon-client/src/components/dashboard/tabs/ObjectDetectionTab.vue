@@ -46,33 +46,13 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
 
 const selectedModel = computed({
   get: () => {
-    const currentNickname = currentPipelineSettings.value.model?.nickname;
-    // Check if the current model exists in supported models
-    if (currentNickname && supportedModels.value.some((m) => m.nickname === currentNickname)) {
-      return currentNickname;
-    }
-    // Fallback to first available model if current is not supported
-    // return supportedModels.value.length > 0 ? supportedModels.value[0].nickname : undefined;
-    return "ruh roh";
+    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
+    return index === -1 ? undefined : index;
   },
-  set: (nickname) => {
-    console.log("I've been clicked");
-    if (!nickname || typeof nickname !== 'string') return;
-    
-    console.log("made it past the first check");
-
-    const model = supportedModels.value.find(m => m.nickname === nickname);
-    if (!model) {
-      console.warn('Model not found:', nickname);
-      return;
-    }
-    
-    console.log('Setting model:', model); // Debug log
-    
-    try {
-      useCameraSettingsStore().changeCurrentPipelineSetting({ model: model }, false);
-    } catch (error) {
-      console.error('Error setting model:', error);
+  set: (v) => {
+    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
+      const newModel = supportedModels.value[v];
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
     }
   }
 });
