@@ -55,8 +55,8 @@ public class ObjectDetectionPipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        Optional<Model> selectedModel =
-                NeuralNetworkModelManager.getInstance().getModel(settings.model.modelPath().toString());
+        Optional<Model> selectedModel = settings.model != null ?
+                NeuralNetworkModelManager.getInstance().getModel(settings.model.modelPath().toString()) : Optional.empty();
 
         // If the desired model couldn't be found, log an error and try to use the default model
         if (selectedModel.isEmpty()) {
