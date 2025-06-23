@@ -18,6 +18,7 @@
 package org.photonvision.vision.objects;
 
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 
 public interface Model {
     public ObjectDetector load();
@@ -27,4 +28,6 @@ public interface Model {
     public String getNickname();
 
     public Family getFamily();
+
+    public ModelProperties getProperties();
 }

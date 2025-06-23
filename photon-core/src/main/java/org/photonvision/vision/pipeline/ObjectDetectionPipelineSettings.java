@@ -18,12 +18,13 @@
 package org.photonvision.vision.pipeline;
 
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager;
 import org.photonvision.vision.objects.Model;
 
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
-    public String model;
+    public NeuralNetworkPropertyManager.ModelProperties model;
 
     public ObjectDetectionPipelineSettings() {
         super();
@@ -34,6 +35,10 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         ledMode = false;
         confidence = .9;
         nms = .45;
-        model = NeuralNetworkModelManager.getInstance().getDefaultModel().map(Model::getUID).orElse("");
+        model =
+                NeuralNetworkModelManager.getInstance()
+                        .getDefaultModel()
+                        .map(Model::getProperties)
+                        .orElse(null);
     }
 }

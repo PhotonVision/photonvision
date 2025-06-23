@@ -74,6 +74,10 @@ public class RknnModel implements Model {
         return properties.family();
     }
 
+    public ModelProperties getProperties() {
+        return properties;
+    }
+
     public ObjectDetector load() {
         return new RknnObjectDetector(
                 this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
