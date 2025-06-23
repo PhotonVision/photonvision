@@ -208,6 +208,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       if (updateStore) {
         this.changePipelineSettingsInStore(settings, cameraUniqueName);
       }
+      console.log("Sending changePipelineSetting payload", payload);
       useStateStore().websocket?.send(payload, true);
     },
     changePipelineSettingsInStore(
