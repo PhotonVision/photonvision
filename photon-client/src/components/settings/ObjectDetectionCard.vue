@@ -343,7 +343,7 @@ const nukeModels = () => {
                 Are you sure you want to delete the model
                 {{ confirmDeleteDialog.model.nickname }}?
                 <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
-                  <v-btn text @click="confirmDeleteDialog.show = false">Cancel</v-btn>
+                  <v-btn text @click="confirmDeleteDialog.show = false" color="secondary">Cancel</v-btn>
                   <v-btn color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
                 </v-row>
               </v-card-text>
@@ -358,8 +358,8 @@ const nukeModels = () => {
                   <v-text-field v-model="showRenameDialog.newName" label="New Name" />
                 </v-row>
                 <v-row>
-                  <v-btn text @click="showRenameDialog.show = false">Cancel</v-btn>
-                  <v-btn text color="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
+                  <v-btn text @click="showRenameDialog.show = false" color="error">Cancel</v-btn>
+                  <v-btn text color="secondary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</v-btn
                   >
                 </v-row>
