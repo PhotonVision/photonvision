@@ -13,13 +13,13 @@ export interface GeneralSettings {
 }
 
 export interface ObjectDetectionModelProperties {
-  nickname: string;
   modelPath: string;
-  family: string;
-  version: string;
+  nickname: string;
+  labels: string[];
   resolutionWidth: number;
   resolutionHeight: number;
-  labels: string[];
+  family: "RKNN";
+  version: "YOLOV5" | "YOLOV8" | "YOLOV11";
 }
 
 export interface MetricData {
