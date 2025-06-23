@@ -205,10 +205,13 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           cameraUniqueName: cameraUniqueName
         }
       };
+
+      console.log('Payload being sent:', JSON.stringify(payload, null, 2));
+
+
       if (updateStore) {
         this.changePipelineSettingsInStore(settings, cameraUniqueName);
       }
-      console.log("Sending changePipelineSetting payload", payload);
       useStateStore().websocket?.send(payload, true);
     },
     changePipelineSettingsInStore(
