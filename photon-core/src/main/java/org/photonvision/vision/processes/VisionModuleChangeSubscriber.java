@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,8 +40,6 @@ import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     private final VisionModule parentModule;
@@ -50,10 +49,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     public VisionModuleChangeSubscriber(VisionModule parentModule) {
         this.parentModule = parentModule;
-        logger = new Logger(
-                VisionModuleChangeSubscriber.class,
-                parentModule.visionSource.getSettables().getConfiguration().nickname,
-                LogGroup.VisionModule);
+        logger =
+                new Logger(
+                        VisionModuleChangeSubscriber.class,
+                        parentModule.visionSource.getSettables().getConfiguration().nickname,
+                        LogGroup.VisionModule);
     }
 
     @Override
@@ -228,7 +228,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case CLEAR -> curAdvSettings.offsetSinglePoint = new Point();
                     case TAKE_SINGLE -> curAdvSettings.offsetSinglePoint = newPoint;
                     case TAKE_FIRST_DUAL, TAKE_SECOND_DUAL ->
-                        logger.warn("Dual point operation in single point mode");
+                            logger.warn("Dual point operation in single point mode");
                 }
             }
             case Dual -> {
@@ -257,18 +257,15 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
     }
 
     /**
-     * Sets the value of a property in the given object using reflection. This
-     * method should not be
-     * used generally and is only known to be correct in the context of
-     * `onDataChangeEvent`.
+     * Sets the value of a property in the given object using reflection. This method should not be
+     * used generally and is only known to be correct in the context of `onDataChangeEvent`.
      *
      * @param currentSettings The object whose property needs to be set.
-     * @param propName        The name of the property to be set.
-     * @param newPropValue    The new value to be assigned to the property.
+     * @param propName The name of the property to be set.
+     * @param newPropValue The new value to be assigned to the property.
      * @throws IllegalAccessException If the field cannot be accessed.
-     * @throws NoSuchFieldException   If the field does not exist.
-     * @throws Exception              If an some other unknown exception occurs
-     *                                while setting the property.
+     * @throws NoSuchFieldException If the field does not exist.
+     * @throws Exception If an some other unknown exception occurs while setting the property.
      */
     protected static void setProperty(Object currentSettings, String propName, Object newPropValue)
             throws IllegalAccessException, NoSuchFieldException, Exception {
@@ -296,7 +293,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             } else {
                 propField.setBoolean(currentSettings, (Boolean) newPropValue);
             }
-        } else if (propField.getType() == ModelProperties.class && newPropValue instanceof LinkedHashMap) {
+        } else if (propField.getType() == ModelProperties.class
+                && newPropValue instanceof LinkedHashMap) {
             ObjectMapper mapper = new ObjectMapper();
             ModelProperties modelProps = mapper.convertValue(newPropValue, ModelProperties.class);
             propField.set(currentSettings, modelProps);
