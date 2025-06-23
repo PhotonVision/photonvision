@@ -47,11 +47,14 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
 const selectedModel = computed({
   get: () => {
     const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
+    console.log("Selected model index:", index);
     return index === -1 ? undefined : index;
   },
   set: (v) => {
+    console.log("Setting selected model index:", v);
     if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
       const newModel = supportedModels.value[v];
+      console.log("New model:", newModel);
       useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
     }
   }
