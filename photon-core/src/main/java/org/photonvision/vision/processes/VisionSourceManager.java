@@ -320,16 +320,10 @@ public class VisionSourceManager {
         .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
         .forEach(cameraInfos::add);
 
-    PVCameraInfo cameraInfo = PVCameraInfo.fromGstreamerPipeline(
-        "nvarguscamerasrc sensor-id=0 aelock=true  exposuretimerange=\"100000 200000\" gainrange=\"1 15\" ispdigitalgainrange=\"1 1\" ! "
-            +
-            "video/x-raw(memory:NVMM), width=1456, height=1088, framerate=30/1, format=NV12 ! " +
-            "nvvidconv ! " +
-            "video/x-raw, format=BGRx ! " +
-            "appsink",
-        "Gstreamer Camera");
-
-    cameraInfos.add(cameraInfo);
+    for (String cameraName : GstreamerCameras.cameras){
+      PVCameraInfo cameraInfo = PVCameraInfo.fromGstreamerPipeline(cameraName, cameraName);
+      cameraInfos.add(cameraInfo);
+    }
 
     return cameraInfos;
   }

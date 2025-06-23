@@ -8,7 +8,7 @@ public class Gstreamer {
 
   public static native long initCam(String jpipe);
 
-  public static native void readMat(long pcap, long pmat);
+  public static native boolean readMat(long pcap, long pmat);
 
   public static native void getGrayScale(long praw, long pprocessed);
 

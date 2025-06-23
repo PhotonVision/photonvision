@@ -29,7 +29,7 @@ public class GstreamerSettables extends VisionSourceSettables {
   static int height = 1088;
   static int fps;
   public final Object CAMERA_LOCK = new Object();
-  private HashMap<Integer, VideoMode> videoModes = new HashMap<Integer, VideoMode>();
+  // private HashMap<Integer, VideoMode> videoModes = new HashMap<Integer, VideoMode>();
 
   public GstreamerSettables(CameraConfiguration configuration) {
     super(configuration);

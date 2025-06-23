@@ -362,11 +362,17 @@ public class VisionModule {
     }
 
     public void startCalibration(UICalibrationData data) {
+        System.out.println(data);
+        System.out.println(data.videoModeIndex);
         var settings = pipelineManager.calibration3dPipeline.getSettings();
 
         var videoMode = visionSource.getSettables().getAllVideoModes().get(data.videoModeIndex);
+        System.out.println(visionSource.getSettables().getAllVideoModes());
+        System.out.println(videoMode);
         var resolution = new Size(videoMode.width, videoMode.height);
 
+        System.out.println(data);
+        System.out.println(data.videoModeIndex);
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info(

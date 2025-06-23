@@ -35,12 +35,15 @@ public class AprilTagDetectionCudaPipe
     public AprilTagDetectionCudaPipe() {
         super();
 
-	handle = m_cudadetector.createGpuDetector(640,480); // just a guess
+	// handle = m_cudadetector.createGpuDetector(640,480); // just a guess Thats crazy (Charlie)
+	handle = m_cudadetector.createGpuDetector(1456,1088); // just a guess 
     }
 
     @Override
     protected List<AprilTagDetection> process(CVMat in) {
+        System.out.println("processing");
         if (in.getMat().empty()) {
+            System.out.println("empty");
             return List.of();
         }
 
@@ -50,6 +53,7 @@ public class AprilTagDetectionCudaPipe
             return List.of();
         }
 
+        System.out.println("done");
         return List.of(ret);
     }
 

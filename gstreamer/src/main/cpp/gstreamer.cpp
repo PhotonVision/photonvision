@@ -29,19 +29,23 @@ JNIEXPORT jlong JNICALL Java_jni_Gstreamer_initCam(JNIEnv* env, jclass clazz,
   return (jlong)cap;
 }
 
-JNIEXPORT void JNICALL Java_jni_Gstreamer_readMat(JNIEnv* env, jclass clazz,
-                                                  jlong pcap, jlong pmat) {
+JNIEXPORT jboolean JNICALL Java_jni_Gstreamer_readMat(JNIEnv* env, jclass clazz,
+                                                      jlong pcap, jlong pmat) {
   cv::VideoCapture* cap = reinterpret_cast<cv::VideoCapture*>(pcap);
   cv::Mat* mat = reinterpret_cast<cv::Mat*>(pmat);
-  cap->read(*mat);
+  bool success = cap->read(*mat);
+  std::cout << success << "\n";
+  return success;
 }
 
 JNIEXPORT void JNICALL Java_jni_Gstreamer_getGrayScale(JNIEnv* env,
                                                        jclass clazz, jlong praw,
                                                        jlong pprocessed) {
+  std::cout << "Grayscale\n";
   cv::Mat* raw = reinterpret_cast<cv::Mat*>(praw);
   cv::Mat* processed = reinterpret_cast<cv::Mat*>(pprocessed);
   cv::cvtColor(*raw, *processed, cv::COLOR_BGR2GRAY);
+  std::cout << "Done\n";
 }
 
 JNIEXPORT void JNICALL Java_jni_Gstreamer_releaseCam(JNIEnv* env, jclass clazz,

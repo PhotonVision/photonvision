@@ -128,8 +128,10 @@ public class Calibrate3dPipeline
         if (takeSnapshot) {
             // Set snapshot to false even if we don't find a board
             takeSnapshot = false;
+            System.out.println("Take snaphot = false");
 
             if (findBoardResult != null) {
+                System.out.println("Board found");
                 // Only copy the image into the result when we absolutely must
                 findBoardResult.inputImage = inputColorMat.clone();
 
@@ -137,6 +139,8 @@ public class Calibrate3dPipeline
 
                 // update the UI
                 broadcastState();
+            } else {
+                System.out.println("Board not found");
             }
         }
 
@@ -196,6 +200,7 @@ public class Calibrate3dPipeline
     }
 
     public void takeSnapshot() {
+        System.out.println("Taking snapshot");
         takeSnapshot = true;
     }
 

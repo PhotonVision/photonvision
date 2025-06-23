@@ -54,6 +54,7 @@ public class AprilTagPoseEstimatorPipe
         temp.fromArray(corners);
 
         // Probably overwrites what was in temp before. I hope
+        System.out.println("Undistort 1");
         Calib3d.undistortImagePoints(
                 temp,
                 temp,

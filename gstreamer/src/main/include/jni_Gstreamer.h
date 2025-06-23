@@ -18,9 +18,9 @@ JNIEXPORT jlong JNICALL Java_jni_Gstreamer_initCam
 /*
  * Class:     jni_Gstreamer
  * Method:    readMat
- * Signature: (JJ)V
+ * Signature: (JJ)Z
  */
-JNIEXPORT void JNICALL Java_jni_Gstreamer_readMat
+JNIEXPORT jboolean JNICALL Java_jni_Gstreamer_readMat
   (JNIEnv *, jclass, jlong, jlong);
 
 /*
