@@ -227,6 +227,7 @@ public class ConfigManager {
         File out =
                 Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
                         .toFile();
+        // We create the properties file inside of the models directory so that when we zip it, it's included in the zip and simplifies packaging
         File tempProperties =
                 Path.of(getModelsDirectory().toString(), "photonvision-object-detection-models.json")
                         .toFile();
