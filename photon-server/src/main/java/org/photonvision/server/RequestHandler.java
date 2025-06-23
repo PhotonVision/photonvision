@@ -860,9 +860,15 @@ public class RequestHandler {
             RenameObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
 
+            String incomingPath = request.modelPath;
+
+            Path modelPath = Path.of(incomingPath);
+
             // When getting the path, we strip the first five characters (file:) as they are
             // added by the JSON encoding
-            Path modelPath = Path.of(request.modelPath.substring(5));
+            if (incomingPath.startsWith("file://")) {
+                modelPath = Path.of(incomingPath.substring(7));
+            }
 
             if (modelPath == null) {
                 ctx.status(400);
