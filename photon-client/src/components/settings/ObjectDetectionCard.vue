@@ -125,7 +125,7 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
 
   axios
     .post("/objectdetection/rename", {
-      modelPath: model.modelPath,
+      modelPath: model.modelPath.replace("file:", ""),
       newName: newName
     })
     .then((response) => {
@@ -376,7 +376,7 @@ const nukeModels = () => {
               <a
                 ref="exportIndividualModel"
                 style="color: black; text-decoration: none; display: none"
-                :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath}`"
+                :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath.replace('file:', '')}`"
                 :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
                 target="_blank"
               />
