@@ -26,7 +26,7 @@
 
 #include <frc/estimator/SwerveDrivePoseEstimator.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
-#include <frc/OboardIMU.h>
+#include <frc/OnboardIMU.h>
 
 #include "SwerveDriveSim.h"
 #include "SwerveModule.h"
