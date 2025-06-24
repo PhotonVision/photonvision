@@ -197,13 +197,13 @@ public class NeuralNetworkModelManager {
             switch (properties.family()) {
                 case RKNN -> {
                     models.get(properties.family()).add(new RknnModel(properties));
-                    logger.info(
-                            "Loaded model "
-                                    + properties.nickname()
-                                    + " for backend "
-                                    + properties.family().toString());
                 }
             }
+            logger.info(
+                    "Loaded model "
+                            + properties.nickname()
+                            + " for backend "
+                            + properties.family().toString());
         } catch (IllegalArgumentException e) {
             logger.error("Failed to load model " + properties.nickname(), e);
         }
