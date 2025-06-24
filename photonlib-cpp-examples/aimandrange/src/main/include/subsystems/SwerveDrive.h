@@ -24,11 +24,9 @@
 
 #pragma once
 
-#include <frc/ADXRS450_Gyro.h>
-#include <frc/SPI.h>
 #include <frc/estimator/SwerveDrivePoseEstimator.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
-#include <frc/simulation/ADXRS450_GyroSim.h>
+#include <frc/OboardIMU.h>
 
 #include "SwerveDriveSim.h"
 #include "SwerveModule.h"
@@ -70,11 +68,12 @@ class SwerveDrive {
       swerveMods[2].GetModuleConstants().centerOffset,
       swerveMods[3].GetModuleConstants().centerOffset,
   };
-  frc::ADXRS450_Gyro gyro{frc::SPI::Port::kOnboardCS0};
+  frc::OnboardIMU gyro{MountOrientation::kFlat};
   frc::SwerveDrivePoseEstimator<4> poseEstimator;
   frc::ChassisSpeeds targetChassisSpeeds{};
 
-  frc::sim::ADXRS450_GyroSim gyroSim;
+  //TODO(Jade) onboard imu doesn't have sim yet
+  // frc::sim::ADXRS450_GyroSim gyroSim;
   SwerveDriveSim swerveDriveSim;
   units::ampere_t totalCurrentDraw{0};
 };
