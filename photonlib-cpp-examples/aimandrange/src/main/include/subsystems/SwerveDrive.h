@@ -24,9 +24,9 @@
 
 #pragma once
 
+#include <frc/OnboardIMU.h>
 #include <frc/estimator/SwerveDrivePoseEstimator.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
-#include <frc/OboardIMU.h>
 
 #include "SwerveDriveSim.h"
 #include "SwerveModule.h"
@@ -72,8 +72,8 @@ class SwerveDrive {
   frc::SwerveDrivePoseEstimator<4> poseEstimator;
   frc::ChassisSpeeds targetChassisSpeeds{};
 
-  //TODO(Jade) onboard imu doesn't have sim yet
-  // frc::sim::ADXRS450_GyroSim gyroSim;
+  // TODO(Jade) onboard imu doesn't have sim yet
+  //  frc::sim::ADXRS450_GyroSim gyroSim;
   SwerveDriveSim swerveDriveSim;
   units::ampere_t totalCurrentDraw{0};
 };
