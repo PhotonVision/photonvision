@@ -804,8 +804,6 @@ public class RequestHandler {
             DeleteObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
 
-            logger.debug("Here's what I got: " + request.modelPath);
-
             modelPath = Path.of(request.modelPath.substring(7));
 
             if (modelPath == null) {
