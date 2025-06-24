@@ -33,7 +33,7 @@
 SwerveDrive::SwerveDrive()
     : poseEstimator(kinematics, GetGyroYaw(), GetModulePositions(),
                     frc::Pose2d{}, {0.1, 0.1, 0.1}, {1.0, 1.0, 1.0}),
-      gyroSim(gyro),
+      // gyroSim(gyro),
       swerveDriveSim(constants::Swerve::kDriveFF, frc::DCMotor::Falcon500(1),
                      constants::Swerve::kDriveGearRatio,
                      constants::Swerve::kWheelDiameter / 2,
@@ -83,8 +83,8 @@ void SwerveDrive::ResetPose(const frc::Pose2d& pose, bool resetSimPose) {
     for (int i = 0; i < swerveMods.size(); i++) {
       swerveMods[i].SimulationUpdate(0_m, 0_mps, 0_A, 0_rad, 0_rad_per_s, 0_A);
     }
-    gyroSim.SetAngle(-pose.Rotation().Degrees());
-    gyroSim.SetRate(0_rad_per_s);
+    // gyroSim.SetAngle(-pose.Rotation().Degrees());
+    // gyroSim.SetRate(0_rad_per_s);
   }
 
   poseEstimator.ResetPosition(GetGyroYaw(), GetModulePositions(), pose);
@@ -191,8 +191,8 @@ void SwerveDrive::SimulationPeriodic() {
     swerveMods[i].SimulationUpdate(drivePos, driveRate, driveCurrents[i],
                                    steerPos, steerRate, steerCurrents[i]);
   }
-  gyroSim.SetRate(-swerveDriveSim.GetOmega());
-  gyroSim.SetAngle(-swerveDriveSim.GetPose().Rotation().Degrees());
+  // gyroSim.SetRate(-swerveDriveSim.GetOmega());
+  // gyroSim.SetAngle(-swerveDriveSim.GetPose().Rotation().Degrees());
 }
 
 frc::Pose2d SwerveDrive::GetSimPose() const { return swerveDriveSim.GetPose(); }
