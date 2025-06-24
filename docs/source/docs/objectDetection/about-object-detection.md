@@ -50,5 +50,3 @@ PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOL
 :::{warning}
 Non-quantized models are not supported! If you have the option, make sure quantization is enabled when exporting to .rknn format. This will represent the weights and activations of the model as 8-bit integers, instead of 32-bit floats which PhotonVision doesn't support. Quantized models are also much faster for a negligible loss in accuracy.
 :::
-
-

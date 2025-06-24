@@ -615,9 +615,18 @@ public class RequestHandler {
                 return;
             }
 
-            var modelPath =
+            Path modelPath =
                     Paths.get(
                             ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
+
+            if (modelPath.toFile().exists()) {
+                ctx.status(400);
+                ctx.result(
+                        "The model file already exists. Please delete the existing model file before uploading a new one.");
+                logger.error(
+                        "The model file already exists. Please delete the existing model file before uploading a new one.");
+                return;
+            }
 
             try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
                 modelFile.content().transferTo(out);
