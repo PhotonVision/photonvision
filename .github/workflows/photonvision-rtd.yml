@@ -2,10 +2,7 @@ name: PhotonVision ReadTheDocs Checks
 
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
