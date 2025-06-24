@@ -88,12 +88,12 @@ public class SwerveModule {
         steerMotor.setVoltage(steerPid);
 
         // Use feedforward model to translate target drive velocities into voltages
-        double driveFF = kDriveFF.calculate(desiredState.speedMetersPerSecond);
+        double driveFF = kDriveFF.calculate(desiredState.speed);
         double drivePid = 0;
         if (!openLoop) {
             // Perform PID feedback control to compensate for disturbances
             drivePid =
-                    drivePidController.calculate(driveEncoder.getRate(), desiredState.speedMetersPerSecond);
+                    drivePidController.calculate(driveEncoder.getRate(), desiredState.speed);
         }
 
         driveMotor.setVoltage(driveFF + drivePid);
@@ -157,10 +157,10 @@ public class SwerveModule {
         SmartDashboard.putNumber(
                 table + "Steer Target Degrees", Math.toDegrees(steerPidController.getSetpoint()));
         SmartDashboard.putNumber(
-                table + "Drive Velocity Feet", Units.metersToFeet(state.speedMetersPerSecond));
+                table + "Drive Velocity Feet", Units.metersToFeet(state.speed));
         SmartDashboard.putNumber(
                 table + "Drive Velocity Target Feet",
-                Units.metersToFeet(desiredState.speedMetersPerSecond));
+                Units.metersToFeet(desiredState.speed));
         SmartDashboard.putNumber(table + "Drive Current", driveCurrentSim);
         SmartDashboard.putNumber(table + "Steer Current", steerCurrentSim);
     }
