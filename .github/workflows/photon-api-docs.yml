@@ -3,12 +3,7 @@ name: Photon API Documentation
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main ]
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
