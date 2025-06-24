@@ -341,7 +341,7 @@ public class SwerveDriveSim {
             driveStates.set(i, moduleDriveStates.get(i).copy());
             steerStates.set(i, moduleSteerStates.get(i).copy());
         }
-        omegaRadsPerSec = kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond;
+        omegaRadsPerSec = kinematics.toChassisSpeeds(getModuleStates()).omega;
     }
 
     /**
@@ -444,12 +444,12 @@ public class SwerveDriveSim {
      */
     protected static double getCurrentDraw(
             DCMotor motor, double radiansPerSec, double inputVolts, double battVolts) {
-        double effVolts = inputVolts - radiansPerSec / motor.KvRadPerSecPerVolt;
+        double effVolts = inputVolts - radiansPerSec / motor.Kv;
         // ignore regeneration
         if (inputVolts >= 0) effVolts = MathUtil.clamp(effVolts, 0, inputVolts);
         else effVolts = MathUtil.clamp(effVolts, inputVolts, 0);
         // calculate battery current
-        return (inputVolts / battVolts) * (effVolts / motor.rOhms);
+        return (inputVolts / battVolts) * (effVolts / motor.R);
     }
 
     /**
