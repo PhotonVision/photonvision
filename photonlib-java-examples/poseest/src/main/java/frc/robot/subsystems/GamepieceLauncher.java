@@ -51,7 +51,7 @@ public class GamepieceLauncher {
 
     public void periodic() {
         double maxRPM =
-                Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeedRadPerSec);
+                Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
         curMotorCmd = curDesSpd / maxRPM;
         curMotorCmd = MathUtil.clamp(curMotorCmd, 0.0, 1.0);
         motor.set(curMotorCmd);
@@ -76,7 +76,7 @@ public class GamepieceLauncher {
     public void simulationPeriodic() {
         launcherSim.setInputVoltage(curMotorCmd * RobotController.getBatteryVoltage());
         launcherSim.update(0.02);
-        var spd = launcherSim.getAngularVelocityRPM();
+        var spd = launcherSim.getAngularVelocity();
         SmartDashboard.putNumber("GPLauncher Act Spd (RPM)", spd);
     }
 }
