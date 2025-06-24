@@ -122,8 +122,7 @@ public class SwerveDrive {
      * @param omega Angular velocity (rotation CCW+)
      */
     public void drive(double vx, double vy, double omega) {
-        var targetChassisSpeeds =
-                new ChassisSpeeds(vx, vy, omega).toRobotRelative(getHeading());
+        var targetChassisSpeeds = new ChassisSpeeds(vx, vy, omega).toRobotRelative(getHeading());
         setChassisSpeeds(targetChassisSpeeds, true, false);
     }
 
@@ -269,8 +268,7 @@ public class SwerveDrive {
         ChassisSpeeds chassisSpeeds = getChassisSpeeds();
         SmartDashboard.putNumber(table + "VX", chassisSpeeds.vx);
         SmartDashboard.putNumber(table + "VY", chassisSpeeds.vy);
-        SmartDashboard.putNumber(
-                table + "Omega Degrees", Math.toDegrees(chassisSpeeds.omega));
+        SmartDashboard.putNumber(table + "Omega Degrees", Math.toDegrees(chassisSpeeds.omega));
         SmartDashboard.putNumber(table + "Target VX", targetChassisSpeeds.vx);
         SmartDashboard.putNumber(table + "Target VY", targetChassisSpeeds.vy);
         SmartDashboard.putNumber(

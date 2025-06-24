@@ -50,8 +50,7 @@ public class GamepieceLauncher {
     }
 
     public void periodic() {
-        double maxRPM =
-                Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
+        double maxRPM = Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
         curMotorCmd = curDesSpd / maxRPM;
         curMotorCmd = MathUtil.clamp(curMotorCmd, 0.0, 1.0);
         motor.set(curMotorCmd);
