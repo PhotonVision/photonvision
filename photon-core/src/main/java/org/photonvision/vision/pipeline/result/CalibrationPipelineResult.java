@@ -23,16 +23,16 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CalibrationPipelineResult extends CVPipelineResult {
-    private static List<TrackedTarget> cornersToTarget(List<List<Point>> corners) {
-        return corners.stream().map(TrackedTarget::new).toList();
-    }
+  private static List<TrackedTarget> cornersToTarget(List<List<Point>> corners) {
+    return corners.stream().map(TrackedTarget::new).toList();
+  }
 
-    public CalibrationPipelineResult(
-            long sequenceID,
-            double latencyNanos,
-            double fps,
-            Frame outputFrame,
-            List<List<Point>> corners) {
-        super(sequenceID, latencyNanos, fps, cornersToTarget(corners), outputFrame);
-    }
+  public CalibrationPipelineResult(
+      long sequenceID,
+      double latencyNanos,
+      double fps,
+      Frame outputFrame,
+      List<List<Point>> corners) {
+    super(sequenceID, latencyNanos, fps, cornersToTarget(corners), outputFrame);
+  }
 }

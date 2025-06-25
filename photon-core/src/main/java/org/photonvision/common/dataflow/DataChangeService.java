@@ -27,108 +27,108 @@ import org.photonvision.common.logging.Logger;
 
 @SuppressWarnings("rawtypes")
 public class DataChangeService {
-    private static final Logger logger = new Logger(DataChangeService.class, LogGroup.WebServer);
+  private static final Logger logger = new Logger(DataChangeService.class, LogGroup.WebServer);
 
-    public static class SubscriberHandle {
-        private final int[] idxs;
+  public static class SubscriberHandle {
+    private final int[] idxs;
 
-        private SubscriberHandle(int[] idxs) {
-            this.idxs = idxs;
+    private SubscriberHandle(int[] idxs) {
+      this.idxs = idxs;
+    }
+
+    private SubscriberHandle(int idx) {
+      this.idxs = new int[] {idx};
+    }
+
+    public void stop() {
+      for (int idx : idxs) {
+        if (idx < 0) continue;
+        getInstance().subscribers.set(idx, null);
+      }
+    }
+  }
+
+  private static class ThreadSafeSingleton {
+    private static final DataChangeService INSTANCE = new DataChangeService();
+  }
+
+  public static DataChangeService getInstance() {
+    return ThreadSafeSingleton.INSTANCE;
+  }
+
+  private final CopyOnWriteArrayList<DataChangeSubscriber> subscribers;
+
+  @SuppressWarnings("FieldCanBeLocal")
+  private final Thread dispatchThread;
+
+  private final BlockingQueue<DataChangeEvent> eventQueue = new LinkedBlockingQueue<>();
+
+  private DataChangeService() {
+    subscribers = new CopyOnWriteArrayList<>();
+    dispatchThread = new Thread(this::dispatchFromQueue);
+    dispatchThread.setName("DataChangeEventDispatchThread");
+    dispatchThread.start();
+  }
+
+  public boolean hasEvents() {
+    return !eventQueue.isEmpty();
+  }
+
+  private void dispatchFromQueue() {
+    while (true) {
+      try {
+        var taken = eventQueue.take();
+        for (var sub : subscribers) {
+          if (sub == null) continue;
+          if (sub.wantedSources.contains(taken.sourceType)
+              && sub.wantedDestinations.contains(taken.destType)) {
+            sub.onDataChangeEvent(taken);
+          }
         }
-
-        private SubscriberHandle(int idx) {
-            this.idxs = new int[] {idx};
-        }
-
-        public void stop() {
-            for (int idx : idxs) {
-                if (idx < 0) continue;
-                getInstance().subscribers.set(idx, null);
-            }
-        }
+      } catch (Exception e) {
+        logger.error("Exception when dispatching event!", e);
+        e.printStackTrace();
+      }
     }
+  }
 
-    private static class ThreadSafeSingleton {
-        private static final DataChangeService INSTANCE = new DataChangeService();
+  public SubscriberHandle addSubscriber(DataChangeSubscriber subscriber) {
+    if (!subscribers.addIfAbsent(subscriber)) {
+      logger.warn("Attempted to add already added subscriber!");
+      return new SubscriberHandle(-1);
+    } else {
+      logger.debug(
+          () -> {
+            var sources =
+                subscriber.wantedSources.stream()
+                    .map(Enum::toString)
+                    .collect(Collectors.joining(", "));
+            var dests =
+                subscriber.wantedDestinations.stream()
+                    .map(Enum::toString)
+                    .collect(Collectors.joining(", "));
+
+            return "Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests;
+          });
+      return new SubscriberHandle(subscribers.size() - 1);
     }
+  }
 
-    public static DataChangeService getInstance() {
-        return ThreadSafeSingleton.INSTANCE;
+  public SubscriberHandle addSubscribers(DataChangeSubscriber... subs) {
+    int[] idxs = new int[subs.length];
+    for (int i = 0; i < subs.length; i++) {
+      idxs[i] = addSubscriber(subs[i]).idxs[0];
     }
+    return new SubscriberHandle(idxs);
+  }
 
-    private final CopyOnWriteArrayList<DataChangeSubscriber> subscribers;
+  public void publishEvent(DataChangeEvent event) {
+    eventQueue.offer(event);
+  }
 
-    @SuppressWarnings("FieldCanBeLocal")
-    private final Thread dispatchThread;
-
-    private final BlockingQueue<DataChangeEvent> eventQueue = new LinkedBlockingQueue<>();
-
-    private DataChangeService() {
-        subscribers = new CopyOnWriteArrayList<>();
-        dispatchThread = new Thread(this::dispatchFromQueue);
-        dispatchThread.setName("DataChangeEventDispatchThread");
-        dispatchThread.start();
+  public void publishEvents(DataChangeEvent... events) {
+    for (var event : events) {
+      publishEvent(event);
     }
-
-    public boolean hasEvents() {
-        return !eventQueue.isEmpty();
-    }
-
-    private void dispatchFromQueue() {
-        while (true) {
-            try {
-                var taken = eventQueue.take();
-                for (var sub : subscribers) {
-                    if (sub == null) continue;
-                    if (sub.wantedSources.contains(taken.sourceType)
-                            && sub.wantedDestinations.contains(taken.destType)) {
-                        sub.onDataChangeEvent(taken);
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("Exception when dispatching event!", e);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public SubscriberHandle addSubscriber(DataChangeSubscriber subscriber) {
-        if (!subscribers.addIfAbsent(subscriber)) {
-            logger.warn("Attempted to add already added subscriber!");
-            return new SubscriberHandle(-1);
-        } else {
-            logger.debug(
-                    () -> {
-                        var sources =
-                                subscriber.wantedSources.stream()
-                                        .map(Enum::toString)
-                                        .collect(Collectors.joining(", "));
-                        var dests =
-                                subscriber.wantedDestinations.stream()
-                                        .map(Enum::toString)
-                                        .collect(Collectors.joining(", "));
-
-                        return "Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests;
-                    });
-            return new SubscriberHandle(subscribers.size() - 1);
-        }
-    }
-
-    public SubscriberHandle addSubscribers(DataChangeSubscriber... subs) {
-        int[] idxs = new int[subs.length];
-        for (int i = 0; i < subs.length; i++) {
-            idxs[i] = addSubscriber(subs[i]).idxs[0];
-        }
-        return new SubscriberHandle(idxs);
-    }
-
-    public void publishEvent(DataChangeEvent event) {
-        eventQueue.offer(event);
-    }
-
-    public void publishEvents(DataChangeEvent... events) {
-        for (var event : events) {
-            publishEvent(event);
-        }
-    }
+  }
 }

@@ -22,34 +22,34 @@ import java.util.Objects;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 
 public abstract class DataChangeSubscriber {
-    public final List<DataChangeSource> wantedSources;
-    public final List<DataChangeDestination> wantedDestinations;
+  public final List<DataChangeSource> wantedSources;
+  public final List<DataChangeDestination> wantedDestinations;
 
-    private final int hash;
+  private final int hash;
 
-    public DataChangeSubscriber(
-            List<DataChangeSource> wantedSources, List<DataChangeDestination> wantedDestinations) {
-        this.wantedSources = wantedSources;
-        this.wantedDestinations = wantedDestinations;
-        hash = Objects.hash(wantedSources, wantedDestinations);
-    }
+  public DataChangeSubscriber(
+      List<DataChangeSource> wantedSources, List<DataChangeDestination> wantedDestinations) {
+    this.wantedSources = wantedSources;
+    this.wantedDestinations = wantedDestinations;
+    hash = Objects.hash(wantedSources, wantedDestinations);
+  }
 
-    public DataChangeSubscriber() {
-        this(DataChangeSource.AllSources, DataChangeDestination.AllDestinations);
-    }
+  public DataChangeSubscriber() {
+    this(DataChangeSource.AllSources, DataChangeDestination.AllDestinations);
+  }
 
-    public DataChangeSubscriber(DataChangeSource.DataChangeSourceList wantedSources) {
-        this(wantedSources, DataChangeDestination.AllDestinations);
-    }
+  public DataChangeSubscriber(DataChangeSource.DataChangeSourceList wantedSources) {
+    this(wantedSources, DataChangeDestination.AllDestinations);
+  }
 
-    public DataChangeSubscriber(DataChangeDestination.DataChangeDestinationList wantedDestinations) {
-        this(DataChangeSource.AllSources, wantedDestinations);
-    }
+  public DataChangeSubscriber(DataChangeDestination.DataChangeDestinationList wantedDestinations) {
+    this(DataChangeSource.AllSources, wantedDestinations);
+  }
 
-    public abstract void onDataChangeEvent(DataChangeEvent<?> event);
+  public abstract void onDataChangeEvent(DataChangeEvent<?> event);
 
-    @Override
-    public int hashCode() {
-        return hash;
-    }
+  @Override
+  public int hashCode() {
+    return hash;
+  }
 }

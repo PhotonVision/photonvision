@@ -22,78 +22,78 @@ import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record HardwareConfig(
-        String deviceName,
-        String deviceLogoPath,
-        String supportURL,
-        // LED control
+    String deviceName,
+    String deviceLogoPath,
+    String supportURL,
+    // LED control
 
-        ArrayList<Integer> ledPins,
-        String ledSetCommand,
-        boolean ledsCanDim,
-        ArrayList<Integer> ledBrightnessRange,
-        String ledDimCommand,
-        String ledBlinkCommand,
-        ArrayList<Integer> statusRGBPins,
-        // Metrics
+    ArrayList<Integer> ledPins,
+    String ledSetCommand,
+    boolean ledsCanDim,
+    ArrayList<Integer> ledBrightnessRange,
+    String ledDimCommand,
+    String ledBlinkCommand,
+    ArrayList<Integer> statusRGBPins,
+    // Metrics
 
-        String cpuTempCommand,
-        String cpuMemoryCommand,
-        String cpuUtilCommand,
-        String cpuThrottleReasonCmd,
-        String cpuUptimeCommand,
-        String gpuMemoryCommand,
-        String ramUtilCommand,
-        String gpuMemUsageCommand,
-        String diskUsageCommand,
-        // Device stuff
-        String restartHardwareCommand,
-        double vendorFOV) { // -1 for unmanaged
+    String cpuTempCommand,
+    String cpuMemoryCommand,
+    String cpuUtilCommand,
+    String cpuThrottleReasonCmd,
+    String cpuUptimeCommand,
+    String gpuMemoryCommand,
+    String ramUtilCommand,
+    String gpuMemUsageCommand,
+    String diskUsageCommand,
+    // Device stuff
+    String restartHardwareCommand,
+    double vendorFOV) { // -1 for unmanaged
 
-    public HardwareConfig() {
-        this(
-                "", // deviceName
-                "", // deviceLogoPath
-                "", // supportURL
-                new ArrayList<>(), // ledPins
-                "", // ledSetCommand
-                false, // ledsCanDim
-                new ArrayList<>(), // ledBrightnessRange
-                "", // ledDimCommand
-                "", // ledBlinkCommand
-                new ArrayList<>(), // statusRGBPins
-                "", // cpuTempCommand
-                "", // cpuMemoryCommand
-                "", // cpuUtilCommand
-                "", // cpuThrottleReasonCmd
-                "", // cpuUptimeCommand
-                "", // gpuMemoryCommand
-                "", // ramUtilCommand
-                "", // gpuMemUsageCommand
-                "", // diskUsageCommand
-                "", // restartHardwareCommand
-                -1); // vendorFOV
-    }
+  public HardwareConfig() {
+    this(
+        "", // deviceName
+        "", // deviceLogoPath
+        "", // supportURL
+        new ArrayList<>(), // ledPins
+        "", // ledSetCommand
+        false, // ledsCanDim
+        new ArrayList<>(), // ledBrightnessRange
+        "", // ledDimCommand
+        "", // ledBlinkCommand
+        new ArrayList<>(), // statusRGBPins
+        "", // cpuTempCommand
+        "", // cpuMemoryCommand
+        "", // cpuUtilCommand
+        "", // cpuThrottleReasonCmd
+        "", // cpuUptimeCommand
+        "", // gpuMemoryCommand
+        "", // ramUtilCommand
+        "", // gpuMemUsageCommand
+        "", // diskUsageCommand
+        "", // restartHardwareCommand
+        -1); // vendorFOV
+  }
 
-    /**
-     * @return True if the FOV has been preset to a sane value, false otherwise
-     */
-    public final boolean hasPresetFOV() {
-        return vendorFOV > 0;
-    }
+  /**
+   * @return True if the FOV has been preset to a sane value, false otherwise
+   */
+  public final boolean hasPresetFOV() {
+    return vendorFOV > 0;
+  }
 
-    /**
-     * @return True if any command has been configured to a non-default empty, false otherwise
-     */
-    public final boolean hasCommandsConfigured() {
-        return cpuTempCommand != ""
-                || cpuMemoryCommand != ""
-                || cpuUtilCommand != ""
-                || cpuThrottleReasonCmd != ""
-                || cpuUptimeCommand != ""
-                || gpuMemoryCommand != ""
-                || ramUtilCommand != ""
-                || ledBlinkCommand != ""
-                || gpuMemUsageCommand != ""
-                || diskUsageCommand != "";
-    }
+  /**
+   * @return True if any command has been configured to a non-default empty, false otherwise
+   */
+  public final boolean hasCommandsConfigured() {
+    return cpuTempCommand != ""
+        || cpuMemoryCommand != ""
+        || cpuUtilCommand != ""
+        || cpuThrottleReasonCmd != ""
+        || cpuUptimeCommand != ""
+        || gpuMemoryCommand != ""
+        || ramUtilCommand != ""
+        || ledBlinkCommand != ""
+        || gpuMemUsageCommand != ""
+        || diskUsageCommand != "";
+  }
 }

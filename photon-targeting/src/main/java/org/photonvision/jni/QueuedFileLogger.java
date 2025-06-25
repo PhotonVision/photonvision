@@ -18,43 +18,43 @@
 package org.photonvision.jni;
 
 public class QueuedFileLogger {
-    long m_handle = 0;
+  long m_handle = 0;
 
-    public QueuedFileLogger(String path) {
-        m_handle = QueuedFileLogger.create(path);
+  public QueuedFileLogger(String path) {
+    m_handle = QueuedFileLogger.create(path);
+  }
+
+  public String[] getNewlines() {
+    String newBuffer = null;
+
+    synchronized (this) {
+      if (m_handle == 0) {
+        System.err.println("QueuedFileLogger use after free");
+        return new String[0];
+      }
+
+      newBuffer = QueuedFileLogger.getNewLines(m_handle);
     }
 
-    public String[] getNewlines() {
-        String newBuffer = null;
-
-        synchronized (this) {
-            if (m_handle == 0) {
-                System.err.println("QueuedFileLogger use after free");
-                return new String[0];
-            }
-
-            newBuffer = QueuedFileLogger.getNewLines(m_handle);
-        }
-
-        if (newBuffer == null) {
-            return new String[0];
-        }
-
-        return newBuffer.split("\n");
+    if (newBuffer == null) {
+      return new String[0];
     }
 
-    public void stop() {
-        synchronized (this) {
-            if (m_handle != 0) {
-                QueuedFileLogger.destroy(m_handle);
-                m_handle = 0;
-            }
-        }
+    return newBuffer.split("\n");
+  }
+
+  public void stop() {
+    synchronized (this) {
+      if (m_handle != 0) {
+        QueuedFileLogger.destroy(m_handle);
+        m_handle = 0;
+      }
     }
+  }
 
-    private static native long create(String path);
+  private static native long create(String path);
 
-    private static native void destroy(long handle);
+  private static native void destroy(long handle);
 
-    private static native String getNewLines(long handle);
+  private static native String getNewLines(long handle);
 }

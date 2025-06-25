@@ -46,93 +46,93 @@ import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 
 public class FileSaveFrameConsumerTest {
-    NetworkTableInstance inst = null;
+  NetworkTableInstance inst = null;
 
-    @BeforeAll
-    public static void init() throws UnsatisfiedLinkError, IOException {
-        if (!WpilibLoader.loadLibraries()) {
-            fail();
-        }
-
-        try {
-            if (!PhotonTargetingJniLoader.load()) fail();
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
-        }
+  @BeforeAll
+  public static void init() throws UnsatisfiedLinkError, IOException {
+    if (!WpilibLoader.loadLibraries()) {
+      fail();
     }
 
-    @BeforeEach
-    public void setup() {
-        assertNull(inst);
-
-        HAL.initialize(500, 0);
-
-        inst = NetworkTablesManager.getInstance().getNTInst();
-        inst.stopClient();
-        inst.stopServer();
-        inst.startLocal();
-        SmartDashboard.setNetworkTableInstance(inst);
-
-        // DriverStation uses the default instance internally
-        assertEquals(NetworkTableInstance.getDefault(), inst);
+    try {
+      if (!PhotonTargetingJniLoader.load()) fail();
+    } catch (UnsatisfiedLinkError | IOException e) {
+      e.printStackTrace();
+      fail(e);
     }
+  }
 
-    @AfterEach
-    public void teardown() {
-        SimHooks.resumeTiming();
+  @BeforeEach
+  public void setup() {
+    assertNull(inst);
 
-        HAL.shutdown();
-    }
+    HAL.initialize(500, 0);
 
-    @CartesianTest
-    public void testNoMatch(
-            @Enum(MatchType.class) MatchType matchType, @Values(ints = {0, 1, 0xffff}) int matchNumber) {
-        String camNickname = "foobar";
-        String cameraUniqueName = "some_unique";
-        String streamPrefix = "input";
+    inst = NetworkTablesManager.getInstance().getNTInst();
+    inst.stopClient();
+    inst.stopServer();
+    inst.startLocal();
+    SmartDashboard.setNetworkTableInstance(inst);
 
-        // GIVEN an input consumer
-        FileSaveFrameConsumer consumer =
-                new FileSaveFrameConsumer(camNickname, cameraUniqueName, streamPrefix);
+    // DriverStation uses the default instance internally
+    assertEquals(NetworkTableInstance.getDefault(), inst);
+  }
 
-        // AND a frameProvider giving a random test mode image
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
-                        TestUtils.WPI2019Image.FOV);
+  @AfterEach
+  public void teardown() {
+    SimHooks.resumeTiming();
 
-        // AND fake FMS data
-        String eventName = "CASJ";
-        DriverStationSim.setMatchType(matchType);
-        DriverStationSim.setMatchNumber(matchNumber);
-        DriverStationSim.setEventName(eventName);
-        DriverStation.refreshData();
+    HAL.shutdown();
+  }
 
-        // WHEN we save the image
-        var currentTime = new Date();
-        var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
-        counterPublisher.accept(1);
-        consumer.accept(frameProvider.get().colorImage, currentTime);
+  @CartesianTest
+  public void testNoMatch(
+      @Enum(MatchType.class) MatchType matchType, @Values(ints = {0, 1, 0xffff}) int matchNumber) {
+    String camNickname = "foobar";
+    String cameraUniqueName = "some_unique";
+    String streamPrefix = "input";
 
-        // THEN an image will be created on disk
-        File expectedSnapshot =
-                ConfigManager.getInstance()
-                        .getImageSavePath()
-                        .resolve(cameraUniqueName)
-                        .resolve(
-                                camNickname
-                                        + "_"
-                                        + streamPrefix
-                                        + "_"
-                                        + FileSaveFrameConsumer.df.format(currentTime)
-                                        + "T"
-                                        + FileSaveFrameConsumer.tf.format(currentTime)
-                                        + "_"
-                                        + (matchType.name() + "-" + matchNumber + "-" + eventName)
-                                        + FileSaveFrameConsumer.FILE_EXTENSION)
-                        .toFile();
-        System.out.println("Checking that file exists: " + expectedSnapshot.getAbsolutePath());
-        assertTrue(expectedSnapshot.exists());
-    }
+    // GIVEN an input consumer
+    FileSaveFrameConsumer consumer =
+        new FileSaveFrameConsumer(camNickname, cameraUniqueName, streamPrefix);
+
+    // AND a frameProvider giving a random test mode image
+    var frameProvider =
+        new FileFrameProvider(
+            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
+            TestUtils.WPI2019Image.FOV);
+
+    // AND fake FMS data
+    String eventName = "CASJ";
+    DriverStationSim.setMatchType(matchType);
+    DriverStationSim.setMatchNumber(matchNumber);
+    DriverStationSim.setEventName(eventName);
+    DriverStation.refreshData();
+
+    // WHEN we save the image
+    var currentTime = new Date();
+    var counterPublisher = consumer.saveFrameEntry.getTopic().publish();
+    counterPublisher.accept(1);
+    consumer.accept(frameProvider.get().colorImage, currentTime);
+
+    // THEN an image will be created on disk
+    File expectedSnapshot =
+        ConfigManager.getInstance()
+            .getImageSavePath()
+            .resolve(cameraUniqueName)
+            .resolve(
+                camNickname
+                    + "_"
+                    + streamPrefix
+                    + "_"
+                    + FileSaveFrameConsumer.df.format(currentTime)
+                    + "T"
+                    + FileSaveFrameConsumer.tf.format(currentTime)
+                    + "_"
+                    + (matchType.name() + "-" + matchNumber + "-" + eventName)
+                    + FileSaveFrameConsumer.FILE_EXTENSION)
+            .toFile();
+    System.out.println("Checking that file exists: " + expectedSnapshot.getAbsolutePath());
+    assertTrue(expectedSnapshot.exists());
+  }
 }

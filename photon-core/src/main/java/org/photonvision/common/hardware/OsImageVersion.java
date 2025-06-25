@@ -31,25 +31,25 @@ import org.photonvision.common.logging.Logger;
  * <p>This class provides a convenient abstraction around this
  */
 public class OsImageVersion {
-    private static final Logger logger = new Logger(OsImageVersion.class, LogGroup.General);
+  private static final Logger logger = new Logger(OsImageVersion.class, LogGroup.General);
 
-    private static Path imageVersionFile = Path.of("/opt/photonvision/image-version");
+  private static Path imageVersionFile = Path.of("/opt/photonvision/image-version");
 
-    public static final Optional<String> IMAGE_VERSION = getImageVersion();
+  public static final Optional<String> IMAGE_VERSION = getImageVersion();
 
-    private static Optional<String> getImageVersion() {
-        if (!imageVersionFile.toFile().exists()) {
-            logger.warn(
-                    "Photon cannot locate base OS image version metadata at " + imageVersionFile.toString());
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(Files.readString(imageVersionFile).strip());
-        } catch (IOException e) {
-            logger.error("Couldn't read image-version file", e);
-        }
-
-        return Optional.empty();
+  private static Optional<String> getImageVersion() {
+    if (!imageVersionFile.toFile().exists()) {
+      logger.warn(
+          "Photon cannot locate base OS image version metadata at " + imageVersionFile.toString());
+      return Optional.empty();
     }
+
+    try {
+      return Optional.of(Files.readString(imageVersionFile).strip());
+    } catch (IOException e) {
+      logger.error("Couldn't read image-version file", e);
+    }
+
+    return Optional.empty();
+  }
 }

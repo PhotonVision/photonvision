@@ -24,31 +24,31 @@ import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
+  public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
 
-    public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
-    public int threshStepSize = 40;
-    public double threshConstant = 10;
-    public boolean debugThreshold = false;
+  public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
+  public int threshStepSize = 40;
+  public double threshConstant = 10;
+  public boolean debugThreshold = false;
 
-    public boolean useCornerRefinement = true;
-    public int refineNumIterations = 30;
-    public double refineMinErrorPx = 0.005;
+  public boolean useCornerRefinement = true;
+  public int refineNumIterations = 30;
+  public double refineMinErrorPx = 0.005;
 
-    public boolean useAruco3 = false;
-    public double aruco3MinMarkerSideRatio = 0.02;
-    public int aruco3MinCanonicalImgSide = 32;
+  public boolean useAruco3 = false;
+  public double aruco3MinMarkerSideRatio = 0.02;
+  public int aruco3MinCanonicalImgSide = 32;
 
-    public boolean doMultiTarget = false;
-    public boolean doSingleTargetAlways = false;
+  public boolean doMultiTarget = false;
+  public boolean doSingleTargetAlways = false;
 
-    public ArucoPipelineSettings() {
-        super();
-        pipelineType = PipelineType.Aruco;
-        outputShowMultipleTargets = true;
-        targetModel = TargetModel.kAprilTag6p5in_36h11;
-        cameraExposureRaw = 20;
-        cameraAutoExposure = true;
-        ledMode = false;
-    }
+  public ArucoPipelineSettings() {
+    super();
+    pipelineType = PipelineType.Aruco;
+    outputShowMultipleTargets = true;
+    targetModel = TargetModel.kAprilTag6p5in_36h11;
+    cameraExposureRaw = 20;
+    cameraAutoExposure = true;
+    ledMode = false;
+  }
 }

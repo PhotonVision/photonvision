@@ -42,218 +42,218 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
-    @BeforeAll
-    public static void init() {
-        String classpathStr = System.getProperty("java.class.path");
-        System.out.print(classpathStr);
+  @BeforeAll
+  public static void init() {
+    String classpathStr = System.getProperty("java.class.path");
+    System.out.print(classpathStr);
 
-        TestUtils.loadLibraries();
-        try {
-            if (!PhotonTargetingJniLoader.load()) fail();
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
-        }
+    TestUtils.loadLibraries();
+    try {
+      if (!PhotonTargetingJniLoader.load()) fail();
+    } catch (UnsatisfiedLinkError | IOException e) {
+      e.printStackTrace();
+      fail(e);
+    }
+  }
+
+  private static class TestSource extends VisionSource {
+    private final FrameProvider provider;
+
+    public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
+      super(cameraConfiguration);
+      this.provider = provider;
+      if (getCameraConfiguration().cameraQuirks == null)
+        getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
     }
 
-    private static class TestSource extends VisionSource {
-        private final FrameProvider provider;
-
-        public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
-            super(cameraConfiguration);
-            this.provider = provider;
-            if (getCameraConfiguration().cameraQuirks == null)
-                getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
-        }
-
-        @Override
-        public FrameProvider getFrameProvider() {
-            return provider;
-        }
-
-        @Override
-        public VisionSourceSettables getSettables() {
-            return new TestSettables(getCameraConfiguration());
-        }
-
-        @Override
-        public boolean isVendorCamera() {
-            return false;
-        }
-
-        @Override
-        public boolean hasLEDs() {
-            return false;
-        }
-
-        @Override
-        public void remakeSettables() {
-            return;
-        }
-
-        @Override
-        public void release() {}
+    @Override
+    public FrameProvider getFrameProvider() {
+      return provider;
     }
 
-    private static class TestSettables extends VisionSourceSettables {
-        protected TestSettables(CameraConfiguration configuration) {
-            super(configuration);
-        }
-
-        @Override
-        public void setExposureRaw(double exposure) {}
-
-        @Override
-        public void setBrightness(int brightness) {}
-
-        @Override
-        public void setGain(int gain) {}
-
-        @Override
-        public VideoMode getCurrentVideoMode() {
-            return new VideoMode(0, 320, 240, 254);
-        }
-
-        @Override
-        public void setVideoModeInternal(VideoMode videoMode) {
-            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV(), null);
-        }
-
-        @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
-            var ret = new HashMap<Integer, VideoMode>();
-            ret.put(0, getCurrentVideoMode());
-            return ret;
-        }
-
-        @Override
-        public void setAutoExposure(boolean cameraAutoExposure) {}
-
-        @Override
-        public double getMinExposureRaw() {
-            return 1;
-        }
-
-        @Override
-        public double getMaxExposureRaw() {
-            return 1234;
-        }
-
-        @Override
-        public void setAutoWhiteBalance(boolean autowb) {}
-
-        @Override
-        public void setWhiteBalanceTemp(double temp) {}
-
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return 1;
-        }
-
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return 2;
-        }
+    @Override
+    public VisionSourceSettables getSettables() {
+      return new TestSettables(getCameraConfiguration());
     }
 
-    private static class TestDataConsumer implements CVPipelineResultConsumer {
-        private CVPipelineResult result;
-
-        @Override
-        public void accept(CVPipelineResult result) {
-            this.result = result;
-        }
+    @Override
+    public boolean isVendorCamera() {
+      return false;
     }
 
-    @Test
-    public void setupManager() {
-        ConfigManager.getInstance().load();
-
-        var vmm = new VisionModuleManager();
-
-        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
-        var ffp =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-
-        var testSource = new TestSource(ffp, conf);
-
-        var module = vmm.addSource(testSource);
-        var module0DataConsumer = new TestDataConsumer();
-
-        module.addResultConsumer(module0DataConsumer);
-
-        module.start();
-
-        sleep(1500);
-
-        assertNotNull(module0DataConsumer.result);
-        TestUtils.printTestResults(module0DataConsumer.result);
+    @Override
+    public boolean hasLEDs() {
+      return false;
     }
 
-    @Test
-    public void testMultipleStreamIndex() {
-        ConfigManager.getInstance().load();
-
-        var vmm = new VisionModuleManager();
-
-        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
-        conf.streamIndex = 1;
-        var ffp =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource = new TestSource(ffp, conf);
-
-        var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
-        conf2.streamIndex = 0;
-        var ffp2 =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource2 = new TestSource(ffp2, conf2);
-
-        var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
-        conf3.streamIndex = 0;
-        var ffp3 =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
-        var testSource3 = new TestSource(ffp3, conf3);
-
-        // Arducam OV9281 UC844 raspberry pi test.
-        var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
-        USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
-
-        var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
-        USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
-
-        var modules =
-                List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
-                        .map(vmm::addSource)
-                        .toList();
-
-        System.out.println(
-                Arrays.toString(
-                        modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
-        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
-
-        assertTrue(usbSimulation.equals(usbSimulation));
-        assertTrue(!usbSimulation.equals(usbSimulation2));
-
-        assertTrue(idxs.contains(0));
-        assertTrue(idxs.contains(1));
-        assertTrue(idxs.contains(2));
-        assertTrue(idxs.contains(3));
-        assertTrue(idxs.contains(4));
+    @Override
+    public void remakeSettables() {
+      return;
     }
 
-    private void sleep(int millis) {
-        try {
-            Thread.sleep(millis);
-        } catch (InterruptedException e) {
-            // ignored
-        }
+    @Override
+    public void release() {}
+  }
+
+  private static class TestSettables extends VisionSourceSettables {
+    protected TestSettables(CameraConfiguration configuration) {
+      super(configuration);
     }
+
+    @Override
+    public void setExposureRaw(double exposure) {}
+
+    @Override
+    public void setBrightness(int brightness) {}
+
+    @Override
+    public void setGain(int gain) {}
+
+    @Override
+    public VideoMode getCurrentVideoMode() {
+      return new VideoMode(0, 320, 240, 254);
+    }
+
+    @Override
+    public void setVideoModeInternal(VideoMode videoMode) {
+      this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV(), null);
+    }
+
+    @Override
+    public HashMap<Integer, VideoMode> getAllVideoModes() {
+      var ret = new HashMap<Integer, VideoMode>();
+      ret.put(0, getCurrentVideoMode());
+      return ret;
+    }
+
+    @Override
+    public void setAutoExposure(boolean cameraAutoExposure) {}
+
+    @Override
+    public double getMinExposureRaw() {
+      return 1;
+    }
+
+    @Override
+    public double getMaxExposureRaw() {
+      return 1234;
+    }
+
+    @Override
+    public void setAutoWhiteBalance(boolean autowb) {}
+
+    @Override
+    public void setWhiteBalanceTemp(double temp) {}
+
+    @Override
+    public double getMaxWhiteBalanceTemp() {
+      return 1;
+    }
+
+    @Override
+    public double getMinWhiteBalanceTemp() {
+      return 2;
+    }
+  }
+
+  private static class TestDataConsumer implements CVPipelineResultConsumer {
+    private CVPipelineResult result;
+
+    @Override
+    public void accept(CVPipelineResult result) {
+      this.result = result;
+    }
+  }
+
+  @Test
+  public void setupManager() {
+    ConfigManager.getInstance().load();
+
+    var vmm = new VisionModuleManager();
+
+    var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
+    var ffp =
+        new FileFrameProvider(
+            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+            TestUtils.WPI2019Image.FOV);
+
+    var testSource = new TestSource(ffp, conf);
+
+    var module = vmm.addSource(testSource);
+    var module0DataConsumer = new TestDataConsumer();
+
+    module.addResultConsumer(module0DataConsumer);
+
+    module.start();
+
+    sleep(1500);
+
+    assertNotNull(module0DataConsumer.result);
+    TestUtils.printTestResults(module0DataConsumer.result);
+  }
+
+  @Test
+  public void testMultipleStreamIndex() {
+    ConfigManager.getInstance().load();
+
+    var vmm = new VisionModuleManager();
+
+    var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
+    conf.streamIndex = 1;
+    var ffp =
+        new FileFrameProvider(
+            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+            TestUtils.WPI2019Image.FOV);
+    var testSource = new TestSource(ffp, conf);
+
+    var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
+    conf2.streamIndex = 0;
+    var ffp2 =
+        new FileFrameProvider(
+            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+            TestUtils.WPI2019Image.FOV);
+    var testSource2 = new TestSource(ffp2, conf2);
+
+    var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
+    conf3.streamIndex = 0;
+    var ffp3 =
+        new FileFrameProvider(
+            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+            TestUtils.WPI2019Image.FOV);
+    var testSource3 = new TestSource(ffp3, conf3);
+
+    // Arducam OV9281 UC844 raspberry pi test.
+    var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
+    USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
+
+    var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
+    USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
+
+    var modules =
+        List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
+            .map(vmm::addSource)
+            .toList();
+
+    System.out.println(
+        Arrays.toString(
+            modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
+    var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
+
+    assertTrue(usbSimulation.equals(usbSimulation));
+    assertTrue(!usbSimulation.equals(usbSimulation2));
+
+    assertTrue(idxs.contains(0));
+    assertTrue(idxs.contains(1));
+    assertTrue(idxs.contains(2));
+    assertTrue(idxs.contains(3));
+    assertTrue(idxs.contains(4));
+  }
+
+  private void sleep(int millis) {
+    try {
+      Thread.sleep(millis);
+    } catch (InterruptedException e) {
+      // ignored
+    }
+  }
 }

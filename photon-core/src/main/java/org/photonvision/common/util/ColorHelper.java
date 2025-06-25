@@ -21,11 +21,11 @@ import java.awt.*;
 import org.opencv.core.Scalar;
 
 public class ColorHelper {
-    public static Scalar colorToScalar(Color color) {
-        return new Scalar(color.getBlue(), color.getGreen(), color.getRed());
-    }
+  public static Scalar colorToScalar(Color color) {
+    return new Scalar(color.getBlue(), color.getGreen(), color.getRed());
+  }
 
-    public static Scalar colorToScalar(Color color, double alpha) {
-        return new Scalar(color.getBlue(), color.getGreen(), color.getRed(), alpha);
-    }
+  public static Scalar colorToScalar(Color color, double alpha) {
+    return new Scalar(color.getBlue(), color.getGreen(), color.getRed(), alpha);
+  }
 }

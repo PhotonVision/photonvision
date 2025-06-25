@@ -39,128 +39,128 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
 public class Robot extends TimedRobot {
-    private SwerveDrive drivetrain;
-    private VisionSim visionSim;
-    private PhotonCamera camera;
+  private SwerveDrive drivetrain;
+  private VisionSim visionSim;
+  private PhotonCamera camera;
 
-    private final double VISION_TURN_kP = 0.01;
-    private final double VISION_DES_ANGLE_deg = 0.0;
-    private final double VISION_STRAFE_kP = 0.5;
-    private final double VISION_DES_RANGE_m = 1.25;
+  private final double VISION_TURN_kP = 0.01;
+  private final double VISION_DES_ANGLE_deg = 0.0;
+  private final double VISION_STRAFE_kP = 0.5;
+  private final double VISION_DES_RANGE_m = 1.25;
 
-    private XboxController controller;
+  private XboxController controller;
 
-    @Override
-    public void robotInit() {
-        drivetrain = new SwerveDrive();
-        camera = new PhotonCamera(kCameraName);
+  @Override
+  public void robotInit() {
+    drivetrain = new SwerveDrive();
+    camera = new PhotonCamera(kCameraName);
 
-        visionSim = new VisionSim(camera);
+    visionSim = new VisionSim(camera);
 
-        controller = new XboxController(0);
-    }
+    controller = new XboxController(0);
+  }
 
-    @Override
-    public void robotPeriodic() {
-        // Update drivetrain subsystem
-        drivetrain.periodic();
+  @Override
+  public void robotPeriodic() {
+    // Update drivetrain subsystem
+    drivetrain.periodic();
 
-        // Log values to the dashboard
-        drivetrain.log();
-    }
+    // Log values to the dashboard
+    drivetrain.log();
+  }
 
-    @Override
-    public void disabledPeriodic() {
-        drivetrain.stop();
-    }
+  @Override
+  public void disabledPeriodic() {
+    drivetrain.stop();
+  }
 
-    @Override
-    public void teleopInit() {
-        resetPose();
-    }
+  @Override
+  public void teleopInit() {
+    resetPose();
+  }
 
-    @Override
-    public void teleopPeriodic() {
-        // Calculate drivetrain commands from Joystick values
-        double forward = -controller.getLeftY() * Constants.Swerve.kMaxLinearSpeed;
-        double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
-        double turn = -controller.getRightX() * Constants.Swerve.kMaxAngularSpeed;
+  @Override
+  public void teleopPeriodic() {
+    // Calculate drivetrain commands from Joystick values
+    double forward = -controller.getLeftY() * Constants.Swerve.kMaxLinearSpeed;
+    double strafe = -controller.getLeftX() * Constants.Swerve.kMaxLinearSpeed;
+    double turn = -controller.getRightX() * Constants.Swerve.kMaxAngularSpeed;
 
-        // Read in relevant data from the Camera
-        boolean targetVisible = false;
-        double targetYaw = 0.0;
-        double targetRange = 0.0;
-        var results = camera.getAllUnreadResults();
-        if (!results.isEmpty()) {
-            // Camera processed a new frame since last
-            // Get the last one in the list.
-            var result = results.get(results.size() - 1);
-            if (result.hasTargets()) {
-                // At least one AprilTag was seen by the camera
-                for (var target : result.getTargets()) {
-                    if (target.getFiducialId() == 7) {
-                        // Found Tag 7, record its information
-                        targetYaw = target.getYaw();
-                        targetRange =
-                                PhotonUtils.calculateDistanceToTargetMeters(
-                                        0.5, // Measured with a tape measure, or in CAD.
-                                        1.435, // From 2024 game manual for ID 7
-                                        Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
-                                        Units.degreesToRadians(target.getPitch()));
+    // Read in relevant data from the Camera
+    boolean targetVisible = false;
+    double targetYaw = 0.0;
+    double targetRange = 0.0;
+    var results = camera.getAllUnreadResults();
+    if (!results.isEmpty()) {
+      // Camera processed a new frame since last
+      // Get the last one in the list.
+      var result = results.get(results.size() - 1);
+      if (result.hasTargets()) {
+        // At least one AprilTag was seen by the camera
+        for (var target : result.getTargets()) {
+          if (target.getFiducialId() == 7) {
+            // Found Tag 7, record its information
+            targetYaw = target.getYaw();
+            targetRange =
+                PhotonUtils.calculateDistanceToTargetMeters(
+                    0.5, // Measured with a tape measure, or in CAD.
+                    1.435, // From 2024 game manual for ID 7
+                    Units.degreesToRadians(-30.0), // Measured with a protractor, or in CAD.
+                    Units.degreesToRadians(target.getPitch()));
 
-                        targetVisible = true;
-                    }
-                }
-            }
+            targetVisible = true;
+          }
         }
-
-        // Auto-align when requested
-        if (controller.getAButton() && targetVisible) {
-            // Driver wants auto-alignment to tag 7
-            // And, tag 7 is in sight, so we can turn toward it.
-            // Override the driver's turn and fwd/rev command with an automatic one
-            // That turns toward the tag, and gets the range right.
-            turn =
-                    (VISION_DES_ANGLE_deg - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
-            forward =
-                    (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * Constants.Swerve.kMaxLinearSpeed;
-        }
-
-        // Command drivetrain motors based on target speeds
-        drivetrain.drive(forward, strafe, turn);
-
-        // Put debug information to the dashboard
-        SmartDashboard.putBoolean("Vision Target Visible", targetVisible);
-        SmartDashboard.putNumber("Vision Target Range (m)", targetRange);
+      }
     }
 
-    @Override
-    public void simulationPeriodic() {
-        // Update drivetrain simulation
-        drivetrain.simulationPeriodic();
-
-        // Update camera simulation
-        visionSim.simulationPeriodic(drivetrain.getSimPose());
-
-        var debugField = visionSim.getSimDebugField();
-        debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
-        debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
-
-        // Calculate battery voltage sag due to current draw
-        var batteryVoltage =
-                BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw());
-
-        // Using max(0.1, voltage) here isn't a *physically correct* solution,
-        // but it avoids problems with battery voltage measuring 0.
-        RoboRioSim.setVInVoltage(Math.max(0.1, batteryVoltage));
+    // Auto-align when requested
+    if (controller.getAButton() && targetVisible) {
+      // Driver wants auto-alignment to tag 7
+      // And, tag 7 is in sight, so we can turn toward it.
+      // Override the driver's turn and fwd/rev command with an automatic one
+      // That turns toward the tag, and gets the range right.
+      turn =
+          (VISION_DES_ANGLE_deg - targetYaw) * VISION_TURN_kP * Constants.Swerve.kMaxAngularSpeed;
+      forward =
+          (VISION_DES_RANGE_m - targetRange) * VISION_STRAFE_kP * Constants.Swerve.kMaxLinearSpeed;
     }
 
-    public void resetPose() {
-        // Example Only - startPose should be derived from some assumption
-        // of where your robot was placed on the field.
-        // The first pose in an autonomous path is often a good choice.
-        var startPose = new Pose2d(1, 1, new Rotation2d());
-        drivetrain.resetPose(startPose, true);
-        visionSim.resetSimPose(startPose);
-    }
+    // Command drivetrain motors based on target speeds
+    drivetrain.drive(forward, strafe, turn);
+
+    // Put debug information to the dashboard
+    SmartDashboard.putBoolean("Vision Target Visible", targetVisible);
+    SmartDashboard.putNumber("Vision Target Range (m)", targetRange);
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // Update drivetrain simulation
+    drivetrain.simulationPeriodic();
+
+    // Update camera simulation
+    visionSim.simulationPeriodic(drivetrain.getSimPose());
+
+    var debugField = visionSim.getSimDebugField();
+    debugField.getObject("EstimatedRobot").setPose(drivetrain.getPose());
+    debugField.getObject("EstimatedRobotModules").setPoses(drivetrain.getModulePoses());
+
+    // Calculate battery voltage sag due to current draw
+    var batteryVoltage =
+        BatterySim.calculateDefaultBatteryLoadedVoltage(drivetrain.getCurrentDraw());
+
+    // Using max(0.1, voltage) here isn't a *physically correct* solution,
+    // but it avoids problems with battery voltage measuring 0.
+    RoboRioSim.setVInVoltage(Math.max(0.1, batteryVoltage));
+  }
+
+  public void resetPose() {
+    // Example Only - startPose should be derived from some assumption
+    // of where your robot was placed on the field.
+    // The first pose in an autonomous path is often a good choice.
+    var startPose = new Pose2d(1, 1, new Rotation2d());
+    drivetrain.resetPose(startPose, true);
+    visionSim.resetSimPose(startPose);
+  }
 }

@@ -33,35 +33,35 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 public class PhotonVersionTest {
-    public static boolean versionMatches(String versionString, String other) {
-        String c = versionString;
-        Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");
-        Matcher m = p.matcher(c);
-        if (m.find()) {
-            c = m.group(0);
-        } else {
-            return false;
-        }
-        m = p.matcher(other);
-        if (m.find()) {
-            other = m.group(0);
-        } else {
-            return false;
-        }
-        return c.equals(other);
+  public static boolean versionMatches(String versionString, String other) {
+    String c = versionString;
+    Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");
+    Matcher m = p.matcher(c);
+    if (m.find()) {
+      c = m.group(0);
+    } else {
+      return false;
     }
+    m = p.matcher(other);
+    if (m.find()) {
+      other = m.group(0);
+    } else {
+      return false;
+    }
+    return c.equals(other);
+  }
 
-    @Test
-    public void testVersion() {
-        assertTrue(versionMatches("v2021.1.6", "v2021.1.6"));
-        assertTrue(versionMatches("dev-v2021.1.6", "v2021.1.6"));
-        assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
-        assertFalse(versionMatches("", "v2021.1.6"));
-        assertFalse(versionMatches("v2021.1.6", ""));
-    }
+  @Test
+  public void testVersion() {
+    assertTrue(versionMatches("v2021.1.6", "v2021.1.6"));
+    assertTrue(versionMatches("dev-v2021.1.6", "v2021.1.6"));
+    assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
+    assertFalse(versionMatches("", "v2021.1.6"));
+    assertFalse(versionMatches("v2021.1.6", ""));
+  }
 
-    @Test
-    public void testNominalDeps() {
-        assertDoesNotThrow(PhotonCamera::verifyDependencies);
-    }
+  @Test
+  public void testNominalDeps() {
+    assertDoesNotThrow(PhotonCamera::verifyDependencies);
+  }
 }

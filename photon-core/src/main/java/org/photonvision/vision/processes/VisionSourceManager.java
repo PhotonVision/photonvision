@@ -49,20 +49,14 @@ import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 
 /**
  * This class manages starting up VisionModules for serialized devices ({@link
- * VisionSourceManager#loadVisionSourceFromCamConfig}), as well as handling
- * requests from users to
- * disable (release the camera device, but keep the configuration around)
- * ({@link
- * VisionSourceManager#deactivateVisionSource}), reactivate (recreate a
- * VisionModule from a saved
+ * VisionSourceManager#loadVisionSourceFromCamConfig}), as well as handling requests from users to
+ * disable (release the camera device, but keep the configuration around) ({@link
+ * VisionSourceManager#deactivateVisionSource}), reactivate (recreate a VisionModule from a saved
  * and currently disabled configuration) ({@link
- * VisionSourceManager#reactivateDisabledCameraConfig}), and create a new
- * VisionModule from a {@link
+ * VisionSourceManager#reactivateDisabledCameraConfig}), and create a new VisionModule from a {@link
  * PVCameraInfo} ({@link VisionSourceManager#assignUnmatchedCamera}).
  *
- * <p>
- * We now require user interaction for pretty much every operation this
- * undertakes.
+ * <p>We now require user interaction for pretty much every operation this undertakes.
  */
 public class VisionSourceManager {
   private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
@@ -94,8 +88,7 @@ public class VisionSourceManager {
   }
 
   /**
-   * Register new camera configs loaded from disk. This will create vision modules
-   * for each camera
+   * Register new camera configs loaded from disk. This will create vision modules for each camera
    * config and start them.
    *
    * @param configs The loaded camera configs.
@@ -109,8 +102,10 @@ public class VisionSourceManager {
     // paranoia. This
     // seems redundant, consider deleting
     for (var config : configs) {
-      Predicate<PVCameraInfo> checkDuplicateCamera = (other) -> (other.type().equals(config.matchedCameraInfo.type())
-          && other.uniquePath().equals(config.matchedCameraInfo.uniquePath()));
+      Predicate<PVCameraInfo> checkDuplicateCamera =
+          (other) ->
+              (other.type().equals(config.matchedCameraInfo.type())
+                  && other.uniquePath().equals(config.matchedCameraInfo.uniquePath()));
 
       if (deserializedConfigs.containsKey(config.uniqueName)) {
         logger.error(
@@ -163,26 +158,29 @@ public class VisionSourceManager {
     // Check if the camera is already in use by another module
     if (vmm.getModules().stream()
         .anyMatch(
-            module -> module
-                .getCameraConfiguration().matchedCameraInfo
-                .uniquePath()
-                .equals(deactivatedConfig.get().matchedCameraInfo.uniquePath()))) {
+            module ->
+                module
+                    .getCameraConfiguration()
+                    .matchedCameraInfo
+                    .uniquePath()
+                    .equals(deactivatedConfig.get().matchedCameraInfo.uniquePath()))) {
       logger.error(
           "Camera unique-path already in use by active VisionModule! Cannot reactivate "
               + deactivatedConfig.get().nickname);
     }
 
     // transform the camera info all the way to a VisionModule and then start it
-    var created = deactivatedConfig
-        .map(this::loadVisionSourceFromCamConfig)
-        .map(vmm::addSource)
-        .map(
-            it -> {
-              it.start();
-              it.saveAndBroadcastAll();
-              return it;
-            })
-        .isPresent();
+    var created =
+        deactivatedConfig
+            .map(this::loadVisionSourceFromCamConfig)
+            .map(vmm::addSource)
+            .map(
+                it -> {
+                  it.start();
+                  it.saveAndBroadcastAll();
+                  return it;
+                })
+            .isPresent();
 
     if (!created) {
       // Couldn't create a VM for this config - restore state
@@ -210,10 +208,12 @@ public class VisionSourceManager {
     // Check if the camera is already in use by another module
     if (vmm.getModules().stream()
         .anyMatch(
-            module -> module
-                .getCameraConfiguration().matchedCameraInfo
-                .uniquePath()
-                .equals(cameraInfo.uniquePath()))) {
+            module ->
+                module
+                    .getCameraConfiguration()
+                    .matchedCameraInfo
+                    .uniquePath()
+                    .equals(cameraInfo.uniquePath()))) {
       logger.error(
           "Camera unique-path already in use by active VisionModule! Cannot add " + cameraInfo);
       return false;
@@ -254,14 +254,15 @@ public class VisionSourceManager {
 
   public synchronized boolean deactivateVisionSource(String uniqueName) {
     // try to find the module. If we find it, remove it from the VMM
-    var removedConfig = vmm.getModules().stream()
-        .filter(module -> module.uniqueName().equals(uniqueName))
-        .findFirst()
-        .map(
-            it -> {
-              vmm.removeModule(it);
-              return it.getCameraConfiguration();
-            });
+    var removedConfig =
+        vmm.getModules().stream()
+            .filter(module -> module.uniqueName().equals(uniqueName))
+            .findFirst()
+            .map(
+                it -> {
+                  vmm.removeModule(it);
+                  return it.getCameraConfiguration();
+                });
 
     if (removedConfig.isEmpty()) {
       logger.error("Could not find module " + uniqueName);
@@ -282,7 +283,8 @@ public class VisionSourceManager {
     var ret = new VisionSourceManagerState();
 
     ret.allConnectedCameras = filterAllowedDevices(getConnectedCameras());
-    ret.disabledConfigs = disabledCameraConfigs.values().stream().map(it -> it.toUiConfig()).toList();
+    ret.disabledConfigs =
+        disabledCameraConfigs.values().stream().map(it -> it.toUiConfig()).toList();
 
     return ret;
   }
@@ -320,7 +322,7 @@ public class VisionSourceManager {
         .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
         .forEach(cameraInfos::add);
 
-    for (String cameraName : GstreamerCameras.cameras){
+    for (String cameraName : GstreamerCameras.cameras) {
       PVCameraInfo cameraInfo = PVCameraInfo.fromGstreamerPipeline(cameraName, cameraName);
       cameraInfos.add(cameraInfo);
     }
@@ -369,15 +371,11 @@ public class VisionSourceManager {
   }
 
   /**
-   * Convert a configuration into a VisionSource. The VisionSource type is pulled
-   * from the {@link
-   * CameraConfiguration}'s matchedCameraInfo. We depend on the underlying
-   * {@link VisionSource} to
+   * Convert a configuration into a VisionSource. The VisionSource type is pulled from the {@link
+   * CameraConfiguration}'s matchedCameraInfo. We depend on the underlying {@link VisionSource} to
    * be robust to disconnected sources at boot
    *
-   * <p>
-   * Verify that nickname is unique within the set of deserialized camera
-   * configurations, adding
+   * <p>Verify that nickname is unique within the set of deserialized camera configurations, adding
    * random characters if this isn't the case
    */
   protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
@@ -407,12 +405,13 @@ public class VisionSourceManager {
       }
     }
 
-    VisionSource source = switch (configuration.matchedCameraInfo.type()) {
-      case UsbCamera -> new USBCameraSource(configuration);
-      case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
-      case GstreamerCamera -> new GstreamerSource(configuration);
-      case FileCamera -> new FileVisionSource(configuration);
-    };
+    VisionSource source =
+        switch (configuration.matchedCameraInfo.type()) {
+          case UsbCamera -> new USBCameraSource(configuration);
+          case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
+          case GstreamerCamera -> new GstreamerSource(configuration);
+          case FileCamera -> new FileVisionSource(configuration);
+        };
 
     if (source.getFrameProvider() == null) {
       logger.error("Frame provider is null?");

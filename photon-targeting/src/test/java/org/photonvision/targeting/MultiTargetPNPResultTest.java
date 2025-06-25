@@ -27,40 +27,40 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class MultiTargetPNPResultTest {
-    @Test
-    public void equalityTest() {
-        var a = new MultiTargetPNPResult();
-        var b = new MultiTargetPNPResult();
-        assertEquals(a, b);
+  @Test
+  public void equalityTest() {
+    var a = new MultiTargetPNPResult();
+    var b = new MultiTargetPNPResult();
+    assertEquals(a, b);
 
-        a =
-                new MultiTargetPNPResult(
-                        new PnpResult(
-                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of((short) 1, (short) 2, (short) 3));
+    a =
+        new MultiTargetPNPResult(
+            new PnpResult(
+                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+            List.of((short) 1, (short) 2, (short) 3));
 
-        b =
-                new MultiTargetPNPResult(
-                        new PnpResult(
-                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of((short) 1, (short) 2, (short) 3));
+    b =
+        new MultiTargetPNPResult(
+            new PnpResult(
+                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+            List.of((short) 1, (short) 2, (short) 3));
 
-        assertEquals(a, b);
-    }
+    assertEquals(a, b);
+  }
 
-    @Test
-    public void inequalityTest() {
-        var a =
-                new MultiTargetPNPResult(
-                        new PnpResult(
-                                new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of((short) 3, (short) 4, (short) 7));
-        var b =
-                new MultiTargetPNPResult(
-                        new PnpResult(
-                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of((short) 1, (short) 2, (short) 3));
+  @Test
+  public void inequalityTest() {
+    var a =
+        new MultiTargetPNPResult(
+            new PnpResult(
+                new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
+            List.of((short) 3, (short) 4, (short) 7));
+    var b =
+        new MultiTargetPNPResult(
+            new PnpResult(
+                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+            List.of((short) 1, (short) 2, (short) 3));
 
-        assertNotEquals(a, b);
-    }
+    assertNotEquals(a, b);
+  }
 }

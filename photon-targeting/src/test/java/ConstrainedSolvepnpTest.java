@@ -31,74 +31,74 @@ import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.WpilibLoader;
 
 public class ConstrainedSolvepnpTest {
-    @BeforeAll
-    public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
-        if (!WpilibLoader.loadLibraries()) {
-            fail();
-        }
-        if (!PhotonTargetingJniLoader.load()) {
-            fail();
-        }
-
-        HAL.initialize(1000, 0);
+  @BeforeAll
+  public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
+    if (!WpilibLoader.loadLibraries()) {
+      fail();
+    }
+    if (!PhotonTargetingJniLoader.load()) {
+      fail();
     }
 
-    @AfterAll
-    public static void teardown() {
-        HAL.shutdown();
-    }
+    HAL.initialize(1000, 0);
+  }
 
-    @Test
-    public void smoketest() {
-        double[] cameraCal = {
-            600, 600, 300, 150,
-        };
+  @AfterAll
+  public static void teardown() {
+    HAL.shutdown();
+  }
 
-        var field2points =
-                MatBuilder.fill(
-                                Nat.N4(),
-                                Nat.N4(),
-                                2.5,
-                                0 - 0.08255,
-                                0.5 - 0.08255,
-                                1,
-                                2.5,
-                                0 - 0.08255,
-                                0.5 + 0.08255,
-                                1,
-                                2.5,
-                                0 + 0.08255,
-                                0.5 + 0.08255,
-                                1,
-                                2.5,
-                                0 + 0.08255,
-                                0.5 - 0.08255,
-                                1)
-                        .transpose();
+  @Test
+  public void smoketest() {
+    double[] cameraCal = {
+      600, 600, 300, 150,
+    };
 
-        var point_observations =
-                MatBuilder.fill(Nat.N4(), Nat.N2(), 333, -17, 333, -83, 267, -83, 267, -17).transpose();
+    var field2points =
+        MatBuilder.fill(
+                Nat.N4(),
+                Nat.N4(),
+                2.5,
+                0 - 0.08255,
+                0.5 - 0.08255,
+                1,
+                2.5,
+                0 - 0.08255,
+                0.5 + 0.08255,
+                1,
+                2.5,
+                0 + 0.08255,
+                0.5 + 0.08255,
+                1,
+                2.5,
+                0 + 0.08255,
+                0.5 - 0.08255,
+                1)
+            .transpose();
 
-        // Camera with +x in world -y, +y in world -z, and +z in world +x
-        // (IE, camera pointing straight along the +X axis facing forwards)
-        var robot2camera =
-                MatBuilder.fill(Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
+    var point_observations =
+        MatBuilder.fill(Nat.N4(), Nat.N2(), 333, -17, 333, -83, 267, -83, 267, -17).transpose();
 
-        // Initial guess for optimization
-        double[] x_guess = {0.2, 0.1, -.05};
+    // Camera with +x in world -y, +y in world -z, and +z in world +x
+    // (IE, camera pointing straight along the +X axis facing forwards)
+    var robot2camera =
+        MatBuilder.fill(Nat.N4(), Nat.N4(), 0, 0, 1, 0, -1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 1);
 
-        var ret =
-                ConstrainedSolvepnpJni.do_optimization(
-                        true,
-                        1,
-                        cameraCal,
-                        robot2camera.getData(),
-                        x_guess,
-                        field2points.getData(),
-                        point_observations.getData(),
-                        0,
-                        0);
-        assertNotNull(ret);
-        System.out.println(Arrays.toString(ret));
-    }
+    // Initial guess for optimization
+    double[] x_guess = {0.2, 0.1, -.05};
+
+    var ret =
+        ConstrainedSolvepnpJni.do_optimization(
+            true,
+            1,
+            cameraCal,
+            robot2camera.getData(),
+            x_guess,
+            field2points.getData(),
+            point_observations.getData(),
+            0,
+            0);
+    assertNotNull(ret);
+    System.out.println(Arrays.toString(ret));
+  }
 }

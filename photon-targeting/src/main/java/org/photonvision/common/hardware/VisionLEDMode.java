@@ -18,24 +18,24 @@
 package org.photonvision.common.hardware;
 
 public enum VisionLEDMode {
-    kDefault(-1),
-    kOff(0),
-    kOn(1),
-    kBlink(2);
+  kDefault(-1),
+  kOff(0),
+  kOn(1),
+  kBlink(2);
 
-    public final int value;
+  public final int value;
 
-    VisionLEDMode(int value) {
-        this.value = value;
-    }
+  VisionLEDMode(int value) {
+    this.value = value;
+  }
 
-    @Override
-    public String toString() {
-        return switch (this) {
-            case kDefault -> "Default";
-            case kOff -> "Off";
-            case kOn -> "On";
-            case kBlink -> "Blink";
-        };
-    }
+  @Override
+  public String toString() {
+    return switch (this) {
+      case kDefault -> "Default";
+      case kOff -> "Off";
+      case kOn -> "On";
+      case kBlink -> "Blink";
+    };
+  }
 }

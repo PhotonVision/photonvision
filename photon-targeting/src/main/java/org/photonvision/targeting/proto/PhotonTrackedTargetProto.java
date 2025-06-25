@@ -28,71 +28,71 @@ import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedMessage;
 
 public class PhotonTrackedTargetProto
-        implements Protobuf<PhotonTrackedTarget, ProtobufPhotonTrackedTarget> {
-    @Override
-    public Class<PhotonTrackedTarget> getTypeClass() {
-        return PhotonTrackedTarget.class;
+    implements Protobuf<PhotonTrackedTarget, ProtobufPhotonTrackedTarget> {
+  @Override
+  public Class<PhotonTrackedTarget> getTypeClass() {
+    return PhotonTrackedTarget.class;
+  }
+
+  @Override
+  public Descriptor getDescriptor() {
+    return ProtobufPhotonTrackedTarget.getDescriptor();
+  }
+
+  @Override
+  public ProtobufPhotonTrackedTarget createMessage() {
+    return ProtobufPhotonTrackedTarget.newInstance();
+  }
+
+  @Override
+  public PhotonTrackedTarget unpack(ProtobufPhotonTrackedTarget msg) {
+    return new PhotonTrackedTarget(
+        msg.getYaw(),
+        msg.getPitch(),
+        msg.getArea(),
+        msg.getSkew(),
+        msg.getFiducialId(),
+        msg.getObjDetectionId(),
+        msg.getObjDetectionConf(),
+        Transform3d.proto.unpack(msg.getBestCameraToTarget()),
+        Transform3d.proto.unpack(msg.getAltCameraToTarget()),
+        msg.getPoseAmbiguity(),
+        TargetCorner.proto.unpack(msg.getMinAreaRectCorners()),
+        TargetCorner.proto.unpack(msg.getDetectedCorners()));
+  }
+
+  public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
+    ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
+    for (ProtobufPhotonTrackedTarget target : msg) {
+      targets.add(unpack(target));
     }
+    return targets;
+  }
 
-    @Override
-    public Descriptor getDescriptor() {
-        return ProtobufPhotonTrackedTarget.getDescriptor();
+  @Override
+  public void pack(ProtobufPhotonTrackedTarget msg, PhotonTrackedTarget value) {
+    msg.setYaw(value.getYaw())
+        .setPitch(value.getPitch())
+        .setSkew(value.getSkew())
+        .setArea(value.getArea())
+        .setFiducialId(value.getFiducialId())
+        .setPoseAmbiguity(value.getPoseAmbiguity())
+        .setObjDetectionConf(value.getDetectedObjectConfidence())
+        .setObjDetectionId(value.getDetectedObjectClassID());
+
+    Transform3d.proto.pack(msg.getMutableBestCameraToTarget(), value.getBestCameraToTarget());
+    Transform3d.proto.pack(msg.getMutableAltCameraToTarget(), value.getAlternateCameraToTarget());
+
+    TargetCorner.proto.pack(msg.getMutableMinAreaRectCorners(), value.getMinAreaRectCorners());
+    TargetCorner.proto.pack(msg.getMutableDetectedCorners(), value.getDetectedCorners());
+  }
+
+  public void pack(
+      RepeatedMessage<ProtobufPhotonTrackedTarget> msg, List<PhotonTrackedTarget> value) {
+    var targets = msg.reserve(value.size());
+    for (PhotonTrackedTarget trackedTarget : value) {
+      var target = targets.next();
+      pack(target, trackedTarget);
     }
-
-    @Override
-    public ProtobufPhotonTrackedTarget createMessage() {
-        return ProtobufPhotonTrackedTarget.newInstance();
-    }
-
-    @Override
-    public PhotonTrackedTarget unpack(ProtobufPhotonTrackedTarget msg) {
-        return new PhotonTrackedTarget(
-                msg.getYaw(),
-                msg.getPitch(),
-                msg.getArea(),
-                msg.getSkew(),
-                msg.getFiducialId(),
-                msg.getObjDetectionId(),
-                msg.getObjDetectionConf(),
-                Transform3d.proto.unpack(msg.getBestCameraToTarget()),
-                Transform3d.proto.unpack(msg.getAltCameraToTarget()),
-                msg.getPoseAmbiguity(),
-                TargetCorner.proto.unpack(msg.getMinAreaRectCorners()),
-                TargetCorner.proto.unpack(msg.getDetectedCorners()));
-    }
-
-    public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
-        ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
-        for (ProtobufPhotonTrackedTarget target : msg) {
-            targets.add(unpack(target));
-        }
-        return targets;
-    }
-
-    @Override
-    public void pack(ProtobufPhotonTrackedTarget msg, PhotonTrackedTarget value) {
-        msg.setYaw(value.getYaw())
-                .setPitch(value.getPitch())
-                .setSkew(value.getSkew())
-                .setArea(value.getArea())
-                .setFiducialId(value.getFiducialId())
-                .setPoseAmbiguity(value.getPoseAmbiguity())
-                .setObjDetectionConf(value.getDetectedObjectConfidence())
-                .setObjDetectionId(value.getDetectedObjectClassID());
-
-        Transform3d.proto.pack(msg.getMutableBestCameraToTarget(), value.getBestCameraToTarget());
-        Transform3d.proto.pack(msg.getMutableAltCameraToTarget(), value.getAlternateCameraToTarget());
-
-        TargetCorner.proto.pack(msg.getMutableMinAreaRectCorners(), value.getMinAreaRectCorners());
-        TargetCorner.proto.pack(msg.getMutableDetectedCorners(), value.getDetectedCorners());
-    }
-
-    public void pack(
-            RepeatedMessage<ProtobufPhotonTrackedTarget> msg, List<PhotonTrackedTarget> value) {
-        var targets = msg.reserve(value.size());
-        for (PhotonTrackedTarget trackedTarget : value) {
-            var target = targets.next();
-            pack(target, trackedTarget);
-        }
-    }
+  }
 }

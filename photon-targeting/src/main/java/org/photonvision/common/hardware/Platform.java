@@ -162,8 +162,8 @@ public enum Platform {
   // Debug info related to unknown platforms for debug help
   private static final String OS_NAME = System.getProperty("os.name");
   private static final String OS_ARCH = System.getProperty("os.arch");
-  private static final String UnknownPlatformString = String.format("Unknown Platform. OS: %s, Architecture: %s",
-      OS_NAME, OS_ARCH);
+  private static final String UnknownPlatformString =
+      String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
   private static final String UnknownDeviceModelString = "Unknown";
 
   public static Platform getCurrentPlatform() {

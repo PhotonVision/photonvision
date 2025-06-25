@@ -28,48 +28,48 @@ import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 
 public class PathManager {
-    private static PathManager INSTANCE;
+  private static PathManager INSTANCE;
 
-    final File configDirectoryFile;
+  final File configDirectoryFile;
 
-    public static PathManager getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new PathManager();
-        }
-        return INSTANCE;
+  public static PathManager getInstance() {
+    if (INSTANCE == null) {
+      INSTANCE = new PathManager();
     }
+    return INSTANCE;
+  }
 
-    private PathManager() {
-        this.configDirectoryFile = new File(getRootFolder().toUri());
-    }
+  private PathManager() {
+    this.configDirectoryFile = new File(getRootFolder().toUri());
+  }
 
-    public Path getRootFolder() {
-        return Path.of("photonvision_config");
-    }
+  public Path getRootFolder() {
+    return Path.of("photonvision_config");
+  }
 
-    public Path getLogsDir() {
-        return Path.of(configDirectoryFile.toString(), "logs");
-    }
+  public Path getLogsDir() {
+    return Path.of(configDirectoryFile.toString(), "logs");
+  }
 
-    public static final String LOG_PREFIX = "photonvision-";
-    public static final String LOG_EXT = ".log";
-    public static final String LOG_DATE_TIME_FORMAT = "yyyy-MM-dd_HH-mm-ss";
+  public static final String LOG_PREFIX = "photonvision-";
+  public static final String LOG_EXT = ".log";
+  public static final String LOG_DATE_TIME_FORMAT = "yyyy-MM-dd_HH-mm-ss";
 
-    public static String taToLogFname(TemporalAccessor date) {
-        var dateString = DateTimeFormatter.ofPattern(LOG_DATE_TIME_FORMAT).format(date);
-        return LOG_PREFIX + dateString + LOG_EXT;
-    }
+  public static String taToLogFname(TemporalAccessor date) {
+    var dateString = DateTimeFormatter.ofPattern(LOG_DATE_TIME_FORMAT).format(date);
+    return LOG_PREFIX + dateString + LOG_EXT;
+  }
 
-    public Path getLogPath() {
-        var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
-        return logFile.toPath();
-    }
+  public Path getLogPath() {
+    var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
+    if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+    return logFile.toPath();
+  }
 
-    public Date logFnameToDate(String fname) throws ParseException {
-        // Strip away known unneeded portions of the log file name
-        fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
-        DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
-        return format.parse(fname);
-    }
+  public Date logFnameToDate(String fname) throws ParseException {
+    // Strip away known unneeded portions of the log file name
+    fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
+    DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
+    return format.parse(fname);
+  }
 }

@@ -30,77 +30,77 @@ import org.opencv.core.Point3;
 // Ignore the previous calibration data that was stored in the json file.
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
-    // Expected feature 3d location in the camera frame
-    @JsonProperty("locationInObjectSpace")
-    public List<Point3> locationInObjectSpace;
+  // Expected feature 3d location in the camera frame
+  @JsonProperty("locationInObjectSpace")
+  public List<Point3> locationInObjectSpace;
 
-    // Observed location in pixel space
-    @JsonProperty("locationInImageSpace")
-    public List<Point> locationInImageSpace;
+  // Observed location in pixel space
+  @JsonProperty("locationInImageSpace")
+  public List<Point> locationInImageSpace;
 
-    // (measured location in pixels) - (expected from FK)
-    @JsonProperty("reprojectionErrors")
-    public List<Point> reprojectionErrors;
+  // (measured location in pixels) - (expected from FK)
+  @JsonProperty("reprojectionErrors")
+  public List<Point> reprojectionErrors;
 
-    // Solver optimized board poses
-    @JsonProperty("optimisedCameraToObject")
-    public Pose3d optimisedCameraToObject;
+  // Solver optimized board poses
+  @JsonProperty("optimisedCameraToObject")
+  public Pose3d optimisedCameraToObject;
 
-    // If we should use this observation when re-calculating camera calibration
-    @JsonProperty("includeObservationInCalibration")
-    public boolean includeObservationInCalibration;
+  // If we should use this observation when re-calculating camera calibration
+  @JsonProperty("includeObservationInCalibration")
+  public boolean includeObservationInCalibration;
 
-    @JsonProperty("snapshotName")
-    public String snapshotName;
+  @JsonProperty("snapshotName")
+  public String snapshotName;
 
-    @JsonProperty("snapshotDataLocation")
-    @Nullable
-    public Path snapshotDataLocation;
+  @JsonProperty("snapshotDataLocation")
+  @Nullable
+  public Path snapshotDataLocation;
 
-    @JsonCreator
-    public BoardObservation(
-            @JsonProperty("locationInObjectSpace") List<Point3> locationInObjectSpace,
-            @JsonProperty("locationInImageSpace") List<Point> locationInImageSpace,
-            @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
-            @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
-            @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration,
-            @JsonProperty("snapshotName") String snapshotName,
-            @JsonProperty("snapshotDataLocation") Path snapshotDataLocation) {
-        this.locationInObjectSpace = locationInObjectSpace;
-        this.locationInImageSpace = locationInImageSpace;
-        this.reprojectionErrors = reprojectionErrors;
-        this.optimisedCameraToObject = optimisedCameraToObject;
-        this.includeObservationInCalibration = includeObservationInCalibration;
-        this.snapshotName = snapshotName;
-        this.snapshotDataLocation = snapshotDataLocation;
+  @JsonCreator
+  public BoardObservation(
+      @JsonProperty("locationInObjectSpace") List<Point3> locationInObjectSpace,
+      @JsonProperty("locationInImageSpace") List<Point> locationInImageSpace,
+      @JsonProperty("reprojectionErrors") List<Point> reprojectionErrors,
+      @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
+      @JsonProperty("includeObservationInCalibration") boolean includeObservationInCalibration,
+      @JsonProperty("snapshotName") String snapshotName,
+      @JsonProperty("snapshotDataLocation") Path snapshotDataLocation) {
+    this.locationInObjectSpace = locationInObjectSpace;
+    this.locationInImageSpace = locationInImageSpace;
+    this.reprojectionErrors = reprojectionErrors;
+    this.optimisedCameraToObject = optimisedCameraToObject;
+    this.includeObservationInCalibration = includeObservationInCalibration;
+    this.snapshotName = snapshotName;
+    this.snapshotDataLocation = snapshotDataLocation;
+  }
+
+  @Override
+  public String toString() {
+    return "BoardObservation [locationInObjectSpace="
+        + locationInObjectSpace
+        + ", locationInImageSpace="
+        + locationInImageSpace
+        + ", reprojectionErrors="
+        + reprojectionErrors
+        + ", optimisedCameraToObject="
+        + optimisedCameraToObject
+        + ", includeObservationInCalibration="
+        + includeObservationInCalibration
+        + ", snapshotName="
+        + snapshotName
+        + ", snapshotDataLocation="
+        + snapshotDataLocation
+        + "]";
+  }
+
+  @Override
+  public BoardObservation clone() {
+    try {
+      return (BoardObservation) super.clone();
+    } catch (CloneNotSupportedException e) {
+      System.err.println("Guhhh clone buh");
+      return null;
     }
-
-    @Override
-    public String toString() {
-        return "BoardObservation [locationInObjectSpace="
-                + locationInObjectSpace
-                + ", locationInImageSpace="
-                + locationInImageSpace
-                + ", reprojectionErrors="
-                + reprojectionErrors
-                + ", optimisedCameraToObject="
-                + optimisedCameraToObject
-                + ", includeObservationInCalibration="
-                + includeObservationInCalibration
-                + ", snapshotName="
-                + snapshotName
-                + ", snapshotDataLocation="
-                + snapshotDataLocation
-                + "]";
-    }
-
-    @Override
-    public BoardObservation clone() {
-        try {
-            return (BoardObservation) super.clone();
-        } catch (CloneNotSupportedException e) {
-            System.err.println("Guhhh clone buh");
-            return null;
-        }
-    }
+  }
 }

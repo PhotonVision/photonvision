@@ -30,114 +30,114 @@ import org.photonvision.vision.opencv.Releasable;
 
 /** JSON-serializable image. Data is stored as a raw JSON array. */
 public class JsonMatOfDouble implements Releasable {
-    public final int rows;
-    public final int cols;
-    public final int type;
-    public final double[] data;
+  public final int rows;
+  public final int cols;
+  public final int type;
+  public final double[] data;
 
-    // Cached matrices to avoid object recreation
-    @JsonIgnore private Mat wrappedMat = null;
-    @JsonIgnore private Matrix wpilibMat = null;
+  // Cached matrices to avoid object recreation
+  @JsonIgnore private Mat wrappedMat = null;
+  @JsonIgnore private Matrix wpilibMat = null;
 
-    @JsonIgnore private MatOfDouble wrappedMatOfDouble;
-    private boolean released = false;
+  @JsonIgnore private MatOfDouble wrappedMatOfDouble;
+  private boolean released = false;
 
-    public JsonMatOfDouble(int rows, int cols, double[] data) {
-        this(rows, cols, CvType.CV_64FC1, data);
+  public JsonMatOfDouble(int rows, int cols, double[] data) {
+    this(rows, cols, CvType.CV_64FC1, data);
+  }
+
+  public JsonMatOfDouble(
+      @JsonProperty("rows") int rows,
+      @JsonProperty("cols") int cols,
+      @JsonProperty("type") int type,
+      @JsonProperty("data") double[] data) {
+    this.rows = rows;
+    this.cols = cols;
+    this.type = type;
+    this.data = data;
+  }
+
+  @JsonIgnore
+  private static double[] getDataFromMat(Mat mat) {
+    double[] data = new double[(int) mat.total()];
+    mat.get(0, 0, data);
+    return data;
+  }
+
+  /**
+   * Returns a JsonMatOfDouble by copying the data from a Mat. The Mat type must be {@link
+   * CvType#CV_64FC1}.
+   *
+   * @param mat The Mat.
+   * @return The JsonMatOfDouble
+   */
+  public static JsonMatOfDouble fromMat(Mat mat) {
+    return new JsonMatOfDouble(mat.rows(), mat.cols(), getDataFromMat(mat));
+  }
+
+  @JsonIgnore
+  private Mat getAsMat() {
+    if (this.type != CvType.CV_64FC1) return null;
+
+    if (wrappedMat == null) {
+      this.wrappedMat = new Mat(this.rows, this.cols, this.type);
+      this.wrappedMat.put(0, 0, this.data);
     }
 
-    public JsonMatOfDouble(
-            @JsonProperty("rows") int rows,
-            @JsonProperty("cols") int cols,
-            @JsonProperty("type") int type,
-            @JsonProperty("data") double[] data) {
-        this.rows = rows;
-        this.cols = cols;
-        this.type = type;
-        this.data = data;
+    if (this.released) {
+      throw new RuntimeException("This calibration object was already released");
     }
 
-    @JsonIgnore
-    private static double[] getDataFromMat(Mat mat) {
-        double[] data = new double[(int) mat.total()];
-        mat.get(0, 0, data);
-        return data;
+    return this.wrappedMat;
+  }
+
+  @JsonIgnore
+  public MatOfDouble getAsMatOfDouble() {
+    if (this.released) {
+      throw new RuntimeException("This calibration object was already released");
     }
 
-    /**
-     * Returns a JsonMatOfDouble by copying the data from a Mat. The Mat type must be {@link
-     * CvType#CV_64FC1}.
-     *
-     * @param mat The Mat.
-     * @return The JsonMatOfDouble
-     */
-    public static JsonMatOfDouble fromMat(Mat mat) {
-        return new JsonMatOfDouble(mat.rows(), mat.cols(), getDataFromMat(mat));
+    if (this.wrappedMatOfDouble == null) {
+      this.wrappedMatOfDouble = new MatOfDouble();
+      getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
+    }
+    return this.wrappedMatOfDouble;
+  }
+
+  @SuppressWarnings("unchecked")
+  @JsonIgnore
+  public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
+    if (wpilibMat == null) {
+      wpilibMat = new Matrix<R, C>(new SimpleMatrix(rows, cols, true, data));
+    }
+    return wpilibMat;
+  }
+
+  @Override
+  public void release() {
+    if (wrappedMatOfDouble != null) {
+      wrappedMatOfDouble.release();
     }
 
-    @JsonIgnore
-    private Mat getAsMat() {
-        if (this.type != CvType.CV_64FC1) return null;
+    this.released = true;
+  }
 
-        if (wrappedMat == null) {
-            this.wrappedMat = new Mat(this.rows, this.cols, this.type);
-            this.wrappedMat.put(0, 0, this.data);
-        }
-
-        if (this.released) {
-            throw new RuntimeException("This calibration object was already released");
-        }
-
-        return this.wrappedMat;
-    }
-
-    @JsonIgnore
-    public MatOfDouble getAsMatOfDouble() {
-        if (this.released) {
-            throw new RuntimeException("This calibration object was already released");
-        }
-
-        if (this.wrappedMatOfDouble == null) {
-            this.wrappedMatOfDouble = new MatOfDouble();
-            getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
-        }
-        return this.wrappedMatOfDouble;
-    }
-
-    @SuppressWarnings("unchecked")
-    @JsonIgnore
-    public <R extends Num, C extends Num> Matrix<R, C> getAsWpilibMat() {
-        if (wpilibMat == null) {
-            wpilibMat = new Matrix<R, C>(new SimpleMatrix(rows, cols, true, data));
-        }
-        return wpilibMat;
-    }
-
-    @Override
-    public void release() {
-        if (wrappedMatOfDouble != null) {
-            wrappedMatOfDouble.release();
-        }
-
-        this.released = true;
-    }
-
-    @Override
-    public String toString() {
-        return "JsonMat [rows="
-                + rows
-                + ", cols="
-                + cols
-                + ", type="
-                + type
-                + ", data="
-                + Arrays.toString(data)
-                + ", wrappedMat="
-                + wrappedMat
-                + ", wpilibMat="
-                + wpilibMat
-                + ", wrappedMatOfDouble="
-                + wrappedMatOfDouble
-                + "]";
-    }
+  @Override
+  public String toString() {
+    return "JsonMat [rows="
+        + rows
+        + ", cols="
+        + cols
+        + ", type="
+        + type
+        + ", data="
+        + Arrays.toString(data)
+        + ", wrappedMat="
+        + wrappedMat
+        + ", wpilibMat="
+        + wpilibMat
+        + ", wrappedMatOfDouble="
+        + wrappedMatOfDouble
+        + "]";
+  }
 }

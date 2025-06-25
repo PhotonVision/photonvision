@@ -24,59 +24,59 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonJNICommon;
 
 public class MrCalJNILoader extends PhotonJNICommon {
-    private boolean isLoaded;
-    private static MrCalJNILoader instance = null;
+  private boolean isLoaded;
+  private static MrCalJNILoader instance = null;
 
-    private MrCalJNILoader() {
-        isLoaded = false;
+  private MrCalJNILoader() {
+    isLoaded = false;
+  }
+
+  public static synchronized MrCalJNILoader getInstance() {
+    if (instance == null) instance = new MrCalJNILoader();
+
+    return instance;
+  }
+
+  public static synchronized void forceLoad() throws IOException {
+    // Force load opencv
+    TestUtils.loadLibraries();
+
+    // Library naming is dumb and has "lib" appended for Windows when it ought not to
+    if (Platform.isWindows()) {
+      // Order is correct to match dependencies of libraries
+      forceLoad(
+          MrCalJNILoader.getInstance(),
+          MrCalJNILoader.class,
+          List.of(
+              "libamd",
+              "libcamd",
+              "libcolamd",
+              "libccolamd",
+              "openblas",
+              "libwinpthread-1",
+              "libgcc_s_seh-1",
+              "libquadmath-0",
+              "libgfortran-5",
+              "liblapack",
+              "libcholmod",
+              "mrcal_jni"));
+    } else {
+      // Nothing else to do on linux
+      forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
     }
 
-    public static synchronized MrCalJNILoader getInstance() {
-        if (instance == null) instance = new MrCalJNILoader();
-
-        return instance;
+    if (!MrCalJNILoader.getInstance().isLoaded()) {
+      throw new IOException("Unable to load mrcal JNI!");
     }
+  }
 
-    public static synchronized void forceLoad() throws IOException {
-        // Force load opencv
-        TestUtils.loadLibraries();
+  @Override
+  public boolean isLoaded() {
+    return isLoaded;
+  }
 
-        // Library naming is dumb and has "lib" appended for Windows when it ought not to
-        if (Platform.isWindows()) {
-            // Order is correct to match dependencies of libraries
-            forceLoad(
-                    MrCalJNILoader.getInstance(),
-                    MrCalJNILoader.class,
-                    List.of(
-                            "libamd",
-                            "libcamd",
-                            "libcolamd",
-                            "libccolamd",
-                            "openblas",
-                            "libwinpthread-1",
-                            "libgcc_s_seh-1",
-                            "libquadmath-0",
-                            "libgfortran-5",
-                            "liblapack",
-                            "libcholmod",
-                            "mrcal_jni"));
-        } else {
-            // Nothing else to do on linux
-            forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
-        }
-
-        if (!MrCalJNILoader.getInstance().isLoaded()) {
-            throw new IOException("Unable to load mrcal JNI!");
-        }
-    }
-
-    @Override
-    public boolean isLoaded() {
-        return isLoaded;
-    }
-
-    @Override
-    public void setLoaded(boolean state) {
-        isLoaded = state;
-    }
+  @Override
+  public void setLoaded(boolean state) {
+    isLoaded = state;
+  }
 }

@@ -18,13 +18,13 @@
 package org.photonvision.common.logging;
 
 public enum LogGroup {
-    Camera,
-    WebServer,
-    VisionModule,
-    Data,
-    General,
-    Config,
-    CSCore,
-    NetworkTables,
-    System,
+  Camera,
+  WebServer,
+  VisionModule,
+  Data,
+  General,
+  Config,
+  CSCore,
+  NetworkTables,
+  System,
 }

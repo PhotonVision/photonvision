@@ -23,11 +23,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 public class TimedTaskManagerTest {
-    @Test
-    public void atomicIntegerIncrementTest() throws InterruptedException {
-        AtomicInteger i = new AtomicInteger();
-        TimedTaskManager.getInstance().addTask("TaskManagerTest", i::getAndIncrement, 2);
-        Thread.sleep(400);
-        assertEquals(200, i.get(), 15);
-    }
+  @Test
+  public void atomicIntegerIncrementTest() throws InterruptedException {
+    AtomicInteger i = new AtomicInteger();
+    TimedTaskManager.getInstance().addTask("TaskManagerTest", i::getAndIncrement, 2);
+    Thread.sleep(400);
+    assertEquals(200, i.get(), 15);
+  }
 }

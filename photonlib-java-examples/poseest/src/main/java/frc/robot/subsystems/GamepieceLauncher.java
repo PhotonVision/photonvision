@@ -34,49 +34,49 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class GamepieceLauncher {
-    private final PWMSparkMax motor;
+  private final PWMSparkMax motor;
 
-    private final double LAUNCH_SPEED_RPM = 2500;
-    private double curDesSpd;
-    private double curMotorCmd = 0.0;
+  private final double LAUNCH_SPEED_RPM = 2500;
+  private double curDesSpd;
+  private double curMotorCmd = 0.0;
 
-    public GamepieceLauncher() {
-        motor = new PWMSparkMax(8);
-        simulationInit();
-    }
+  public GamepieceLauncher() {
+    motor = new PWMSparkMax(8);
+    simulationInit();
+  }
 
-    public void setRunning(boolean shouldRun) {
-        curDesSpd = shouldRun ? LAUNCH_SPEED_RPM : 0.0;
-    }
+  public void setRunning(boolean shouldRun) {
+    curDesSpd = shouldRun ? LAUNCH_SPEED_RPM : 0.0;
+  }
 
-    public void periodic() {
-        double maxRPM =
-                Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeedRadPerSec);
-        curMotorCmd = curDesSpd / maxRPM;
-        curMotorCmd = MathUtil.clamp(curMotorCmd, 0.0, 1.0);
-        motor.set(curMotorCmd);
+  public void periodic() {
+    double maxRPM =
+        Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeedRadPerSec);
+    curMotorCmd = curDesSpd / maxRPM;
+    curMotorCmd = MathUtil.clamp(curMotorCmd, 0.0, 1.0);
+    motor.set(curMotorCmd);
 
-        SmartDashboard.putNumber("GPLauncher Des Spd (RPM)", curDesSpd);
-    }
+    SmartDashboard.putNumber("GPLauncher Des Spd (RPM)", curDesSpd);
+  }
 
-    // -- SIMULATION SUPPORT
-    private DCMotor motorSim;
-    private FlywheelSim launcherSim;
-    private final double flywheelMoiKgM2 = 0.002;
-    private final double flywheelGearRatio = 1.0;
+  // -- SIMULATION SUPPORT
+  private DCMotor motorSim;
+  private FlywheelSim launcherSim;
+  private final double flywheelMoiKgM2 = 0.002;
+  private final double flywheelGearRatio = 1.0;
 
-    private void simulationInit() {
-        motorSim = DCMotor.getFalcon500(1);
-        launcherSim =
-                new FlywheelSim(
-                        LinearSystemId.createFlywheelSystem(motorSim, flywheelMoiKgM2, flywheelGearRatio),
-                        motorSim);
-    }
+  private void simulationInit() {
+    motorSim = DCMotor.getFalcon500(1);
+    launcherSim =
+        new FlywheelSim(
+            LinearSystemId.createFlywheelSystem(motorSim, flywheelMoiKgM2, flywheelGearRatio),
+            motorSim);
+  }
 
-    public void simulationPeriodic() {
-        launcherSim.setInputVoltage(curMotorCmd * RobotController.getBatteryVoltage());
-        launcherSim.update(0.02);
-        var spd = launcherSim.getAngularVelocityRPM();
-        SmartDashboard.putNumber("GPLauncher Act Spd (RPM)", spd);
-    }
+  public void simulationPeriodic() {
+    launcherSim.setInputVoltage(curMotorCmd * RobotController.getBatteryVoltage());
+    launcherSim.update(0.02);
+    var spd = launcherSim.getAngularVelocityRPM();
+    SmartDashboard.putNumber("GPLauncher Act Spd (RPM)", spd);
+  }
 }

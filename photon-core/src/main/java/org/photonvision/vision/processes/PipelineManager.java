@@ -31,7 +31,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
 
-@SuppressWarnings({ "rawtypes", "unused" })
+@SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager {
   private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
@@ -51,14 +51,12 @@ public class PipelineManager {
   /**
    * Index of the last active user-created pipeline. <br>
    * <br>
-   * Used only when switching from any of the built-in pipelines back to a
-   * user-created pipeline.
+   * Used only when switching from any of the built-in pipelines back to a user-created pipeline.
    */
   private int lastUserPipelineIdx;
 
   /**
-   * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline,
-   * and all provided
+   * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
    * pipelines.
    */
   PipelineManager(
@@ -70,8 +68,7 @@ public class PipelineManager {
 
     this.driverModePipeline.setSettings(driverSettings);
 
-    if (userPipelines.isEmpty())
-      addPipeline(PipelineType.AprilTag);
+    if (userPipelines.isEmpty()) addPipeline(PipelineType.AprilTag);
 
     calibration3dPipeline = new Calibrate3dPipeline();
 
@@ -98,8 +95,7 @@ public class PipelineManager {
       case CAL_3D_INDEX -> calibration3dPipeline.getSettings();
       default -> {
         for (var setting : userPipelineSettings) {
-          if (setting.pipelineIndex == index)
-            yield setting;
+          if (setting.pipelineIndex == index) yield setting;
         }
         yield null;
       }
@@ -118,8 +114,7 @@ public class PipelineManager {
       case CAL_3D_INDEX -> calibration3dPipeline.getSettings().pipelineNickname;
       default -> {
         for (var setting : userPipelineSettings) {
-          if (setting.pipelineIndex == index)
-            yield setting.pipelineNickname;
+          if (setting.pipelineIndex == index) yield setting.pipelineNickname;
         }
         yield null;
       }
@@ -158,7 +153,7 @@ public class PipelineManager {
     return switch (currentPipelineIndex) {
       case CAL_3D_INDEX -> calibration3dPipeline;
       case DRIVERMODE_INDEX -> driverModePipeline;
-      // Just return the current user pipeline, we're not on a built-in one
+        // Just return the current user pipeline, we're not on a built-in one
       default -> currentUserPipeline;
     };
   }
@@ -175,8 +170,7 @@ public class PipelineManager {
   private volatile int requestedIndex = 0;
 
   /**
-   * Grab the currently requested pipeline index. The VisionRunner may not have
-   * changed over to this
+   * Grab the currently requested pipeline index. The VisionRunner may not have changed over to this
    * pipeline yet.
    */
   public int getRequestedIndex() {
@@ -186,8 +180,7 @@ public class PipelineManager {
   /**
    * Internal method for setting the active pipeline. <br>
    * <br>
-   * All externally accessible methods that intend to change the active pipeline
-   * MUST go through
+   * All externally accessible methods that intend to change the active pipeline MUST go through
    * here to ensure all proper steps are taken.
    *
    * @param newIndex Index of pipeline to be active
@@ -197,12 +190,9 @@ public class PipelineManager {
   }
 
   /**
-   * Based on a requested pipeline index, create/destroy pipelines as necessary.
-   * We do this as a
-   * side effect of the main thread that calls getCurrentPipeline to avoid race
-   * conditions between
-   * server threads and the VisionRunner TODO: this should be refactored. Shame
-   * Java doesn't have
+   * Based on a requested pipeline index, create/destroy pipelines as necessary. We do this as a
+   * side effect of the main thread that calls getCurrentPipeline to avoid race conditions between
+   * server threads and the VisionRunner TODO: this should be refactored. Shame Java doesn't have
    * RAII
    */
   private void updatePipelineFromRequested() {
@@ -236,8 +226,7 @@ public class PipelineManager {
   }
 
   /**
-   * Recreate the current user pipeline with the current pipeline index. Useful to
-   * force a
+   * Recreate the current user pipeline with the current pipeline index. Useful to force a
    * recreation after changing pipeline type
    */
   private void recreateUserPipeline() {
@@ -251,19 +240,23 @@ public class PipelineManager {
     switch (desiredPipelineSettings.pipelineType) {
       case Reflective -> {
         logger.debug("Creating Reflective pipeline");
-        currentUserPipeline = new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
+        currentUserPipeline =
+            new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
       }
       case ColoredShape -> {
         logger.debug("Creating ColoredShape pipeline");
-        currentUserPipeline = new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
+        currentUserPipeline =
+            new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
       }
       case AprilTag -> {
         logger.debug("Creating AprilTag pipeline");
-        currentUserPipeline = new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
+        currentUserPipeline =
+            new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
       }
       case AprilTagCuda -> {
         logger.debug("Creating AprilTagCuda pipeline");
-        currentUserPipeline = new AprilTagCudaPipeline((AprilTagCudaPipelineSettings) desiredPipelineSettings);
+        currentUserPipeline =
+            new AprilTagCudaPipeline((AprilTagCudaPipelineSettings) desiredPipelineSettings);
       }
       case Aruco -> {
         logger.debug("Creating Aruco Pipeline");
@@ -271,10 +264,10 @@ public class PipelineManager {
       }
       case ObjectDetection -> {
         logger.debug("Creating ObjectDetection Pipeline");
-        currentUserPipeline = new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
+        currentUserPipeline =
+            new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
       }
-      case Calib3d, DriverMode -> {
-      }
+      case Calib3d, DriverMode -> {}
     }
   }
 
@@ -283,12 +276,10 @@ public class PipelineManager {
    * <br>
    * Exiting returns to the last used user pipeline.
    *
-   * @param wantsCalibration True to enter calibration mode, false to exit
-   *                         calibration mode.
+   * @param wantsCalibration True to enter calibration mode, false to exit calibration mode.
    */
   public void setCalibrationMode(boolean wantsCalibration) {
-    if (!wantsCalibration)
-      calibration3dPipeline.finishCalibration();
+    if (!wantsCalibration) calibration3dPipeline.finishCalibration();
     setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastUserPipelineIdx);
   }
 
@@ -312,12 +303,11 @@ public class PipelineManager {
     return currentPipelineIndex == DRIVERMODE_INDEX;
   }
 
-  public static final Comparator<CVPipelineSettings> PipelineSettingsIndexComparator = Comparator
-      .comparingInt(o -> o.pipelineIndex);
+  public static final Comparator<CVPipelineSettings> PipelineSettingsIndexComparator =
+      Comparator.comparingInt(o -> o.pipelineIndex);
 
   /**
-   * Sorts the pipeline list by index, and reassigns their indexes to match the
-   * new order. <br>
+   * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
    * <br>
    * I don't like this, but I have no other ideas, and it works so
    */
@@ -344,18 +334,19 @@ public class PipelineManager {
   }
 
   private CVPipelineSettings createSettingsForType(PipelineType type, String nickname) {
-    CVPipelineSettings settings = switch (type) {
-      case Reflective -> new ReflectivePipelineSettings();
-      case ColoredShape -> new ColoredShapePipelineSettings();
-      case AprilTag -> new AprilTagPipelineSettings();
-      case AprilTagCuda -> new AprilTagCudaPipelineSettings();
-      case Aruco -> new ArucoPipelineSettings();
-      case ObjectDetection -> new ObjectDetectionPipelineSettings();
-      case Calib3d, DriverMode -> {
-        logger.error("Got invalid pipeline type: " + type);
-        yield null;
-      }
-    };
+    CVPipelineSettings settings =
+        switch (type) {
+          case Reflective -> new ReflectivePipelineSettings();
+          case ColoredShape -> new ColoredShapePipelineSettings();
+          case AprilTag -> new AprilTagPipelineSettings();
+          case AprilTagCuda -> new AprilTagCudaPipelineSettings();
+          case Aruco -> new ArucoPipelineSettings();
+          case ObjectDetection -> new ObjectDetectionPipelineSettings();
+          case Calib3d, DriverMode -> {
+            logger.error("Got invalid pipeline type: " + type);
+            yield null;
+          }
+        };
     if (settings != null) {
       settings.pipelineNickname = nickname;
     }
@@ -369,8 +360,7 @@ public class PipelineManager {
   }
 
   /**
-   * Remove a pipeline settings at the given index and return the new current
-   * index
+   * Remove a pipeline settings at the given index and return the new current index
    *
    * @param index The idx to remove
    */
@@ -406,7 +396,8 @@ public class PipelineManager {
   public int duplicatePipeline(int index) {
     var settings = userPipelineSettings.get(index);
     var newSettings = settings.clone();
-    newSettings.pipelineNickname = createUniqueName(settings.pipelineNickname, userPipelineSettings);
+    newSettings.pipelineNickname =
+        createUniqueName(settings.pipelineNickname, userPipelineSettings);
     newSettings.pipelineIndex = Integer.MAX_VALUE;
     logger.debug("Duplicating pipe " + index + " to " + newSettings.pipelineNickname);
     userPipelineSettings.add(newSettings);
@@ -421,7 +412,8 @@ public class PipelineManager {
     StringBuilder uniqueName = new StringBuilder(nickname);
     while (true) {
       String finalUniqueName = uniqueName.toString(); // To get around lambda capture
-      var conflictingName = existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
+      var conflictingName =
+          existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
 
       if (!conflictingName) {
         // If no conflict, we're done
@@ -463,10 +455,11 @@ public class PipelineManager {
     // To do this we look at all the PipelineType entries and look for one with
     // matching
     // base indexes
-    PipelineType type = Arrays.stream(PipelineType.values())
-        .filter(it -> it.baseIndex == newType)
-        .findAny()
-        .orElse(null);
+    PipelineType type =
+        Arrays.stream(PipelineType.values())
+            .filter(it -> it.baseIndex == newType)
+            .findAny()
+            .orElse(null);
     if (type == null) {
       logger.error("Could not match type " + newType + " to a PipelineType!");
       return;

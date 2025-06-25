@@ -22,32 +22,32 @@ import java.util.List;
 import org.photonvision.common.util.TestUtils;
 
 public class RknnDetectorJNI extends PhotonJNICommon {
-    private boolean isLoaded;
-    private static RknnDetectorJNI instance = null;
+  private boolean isLoaded;
+  private static RknnDetectorJNI instance = null;
 
-    private RknnDetectorJNI() {
-        isLoaded = false;
-    }
+  private RknnDetectorJNI() {
+    isLoaded = false;
+  }
 
-    public static RknnDetectorJNI getInstance() {
-        if (instance == null) instance = new RknnDetectorJNI();
+  public static RknnDetectorJNI getInstance() {
+    if (instance == null) instance = new RknnDetectorJNI();
 
-        return instance;
-    }
+    return instance;
+  }
 
-    public static synchronized void forceLoad() throws IOException {
-        TestUtils.loadLibraries();
+  public static synchronized void forceLoad() throws IOException {
+    TestUtils.loadLibraries();
 
-        forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
-    }
+    forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
+  }
 
-    @Override
-    public boolean isLoaded() {
-        return isLoaded;
-    }
+  @Override
+  public boolean isLoaded() {
+    return isLoaded;
+  }
 
-    @Override
-    public void setLoaded(boolean state) {
-        isLoaded = state;
-    }
+  @Override
+  public void setLoaded(boolean state) {
+    isLoaded = state;
+  }
 }

@@ -27,101 +27,101 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 public class PhotonTrackedTargetTest {
-    @Test
-    public void equalityTest() {
-        var a =
-                new PhotonTrackedTarget(
-                        3.0,
-                        4.0,
-                        9.0,
-                        -5.0,
-                        -1,
-                        -1,
-                        -1f,
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        0.25,
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)),
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)));
-        var b =
-                new PhotonTrackedTarget(
-                        3.0,
-                        4.0,
-                        9.0,
-                        -5.0,
-                        -1,
-                        -1,
-                        -1f,
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        0.25,
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)),
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)));
-        assertEquals(a, b);
-    }
+  @Test
+  public void equalityTest() {
+    var a =
+        new PhotonTrackedTarget(
+            3.0,
+            4.0,
+            9.0,
+            -5.0,
+            -1,
+            -1,
+            -1f,
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            0.25,
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)),
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)));
+    var b =
+        new PhotonTrackedTarget(
+            3.0,
+            4.0,
+            9.0,
+            -5.0,
+            -1,
+            -1,
+            -1f,
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            0.25,
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)),
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)));
+    assertEquals(a, b);
+  }
 
-    @Test
-    public void inequalityTest() {
-        var a =
-                new PhotonTrackedTarget(
-                        3.0,
-                        4.0,
-                        9.0,
-                        -5.0,
-                        -1,
-                        -1,
-                        -1f,
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        0.25,
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)),
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)));
-        var b =
-                new PhotonTrackedTarget(
-                        7.0,
-                        2.0,
-                        1.0,
-                        -9.0,
-                        -1,
-                        -1,
-                        -1f,
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        new Transform3d(new Translation3d(), new Rotation3d()),
-                        0.25,
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)),
-                        List.of(
-                                new TargetCorner(1, 2),
-                                new TargetCorner(3, 4),
-                                new TargetCorner(5, 6),
-                                new TargetCorner(7, 8)));
-        assertNotEquals(a, b);
-    }
+  @Test
+  public void inequalityTest() {
+    var a =
+        new PhotonTrackedTarget(
+            3.0,
+            4.0,
+            9.0,
+            -5.0,
+            -1,
+            -1,
+            -1f,
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            0.25,
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)),
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)));
+    var b =
+        new PhotonTrackedTarget(
+            7.0,
+            2.0,
+            1.0,
+            -9.0,
+            -1,
+            -1,
+            -1f,
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            new Transform3d(new Translation3d(), new Rotation3d()),
+            0.25,
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)),
+            List.of(
+                new TargetCorner(1, 2),
+                new TargetCorner(3, 4),
+                new TargetCorner(5, 6),
+                new TargetCorner(7, 8)));
+    assertNotEquals(a, b);
+  }
 }

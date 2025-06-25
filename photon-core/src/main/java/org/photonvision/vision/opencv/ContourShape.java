@@ -18,23 +18,23 @@
 package org.photonvision.vision.opencv;
 
 public enum ContourShape {
-    Circle(0),
-    Custom(-1),
-    Triangle(3),
-    Quadrilateral(4);
+  Circle(0),
+  Custom(-1),
+  Triangle(3),
+  Quadrilateral(4);
 
-    public final int sides;
+  public final int sides;
 
-    ContourShape(int sides) {
-        this.sides = sides;
-    }
+  ContourShape(int sides) {
+    this.sides = sides;
+  }
 
-    public static ContourShape fromSides(int sides) {
-        return switch (sides) {
-            case 0 -> Circle;
-            case 3 -> Triangle;
-            case 4 -> Quadrilateral;
-            default -> Custom;
-        };
-    }
+  public static ContourShape fromSides(int sides) {
+    return switch (sides) {
+      case 0 -> Circle;
+      case 3 -> Triangle;
+      case 4 -> Quadrilateral;
+      default -> Custom;
+    };
+  }
 }

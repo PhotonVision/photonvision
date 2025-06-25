@@ -23,36 +23,36 @@ import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 
 public class StatusLED {
-    public final GPIOBase redLED;
-    public final GPIOBase greenLED;
-    public final GPIOBase blueLED;
+  public final GPIOBase redLED;
+  public final GPIOBase greenLED;
+  public final GPIOBase blueLED;
 
-    public StatusLED(List<Integer> statusLedPins) {
-        // fill unassigned pins with -1 to disable
-        if (statusLedPins.size() != 3) {
-            for (int i = 0; i < 3 - statusLedPins.size(); i++) {
-                statusLedPins.add(-1);
-            }
-        }
-
-        if (Platform.isRaspberryPi()) {
-            redLED = new PigpioPin(statusLedPins.get(0));
-            greenLED = new PigpioPin(statusLedPins.get(1));
-            blueLED = new PigpioPin(statusLedPins.get(2));
-        } else {
-            redLED = new CustomGPIO(statusLedPins.get(0));
-            greenLED = new CustomGPIO(statusLedPins.get(1));
-            blueLED = new CustomGPIO(statusLedPins.get(2));
-        }
+  public StatusLED(List<Integer> statusLedPins) {
+    // fill unassigned pins with -1 to disable
+    if (statusLedPins.size() != 3) {
+      for (int i = 0; i < 3 - statusLedPins.size(); i++) {
+        statusLedPins.add(-1);
+      }
     }
 
-    public void setRGB(boolean r, boolean g, boolean b) {
-        // Outputs are active-low, so invert the level applied
-        redLED.setState(!r);
-        redLED.setBrightness(r ? 0 : 100);
-        greenLED.setState(!g);
-        greenLED.setBrightness(g ? 0 : 100);
-        blueLED.setState(!b);
-        blueLED.setBrightness(b ? 0 : 100);
+    if (Platform.isRaspberryPi()) {
+      redLED = new PigpioPin(statusLedPins.get(0));
+      greenLED = new PigpioPin(statusLedPins.get(1));
+      blueLED = new PigpioPin(statusLedPins.get(2));
+    } else {
+      redLED = new CustomGPIO(statusLedPins.get(0));
+      greenLED = new CustomGPIO(statusLedPins.get(1));
+      blueLED = new CustomGPIO(statusLedPins.get(2));
     }
+  }
+
+  public void setRGB(boolean r, boolean g, boolean b) {
+    // Outputs are active-low, so invert the level applied
+    redLED.setState(!r);
+    redLED.setBrightness(r ? 0 : 100);
+    greenLED.setState(!g);
+    greenLED.setBrightness(g ? 0 : 100);
+    blueLED.setState(!b);
+    blueLED.setBrightness(b ? 0 : 100);
+  }
 }

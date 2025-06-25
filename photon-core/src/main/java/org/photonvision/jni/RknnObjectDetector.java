@@ -34,117 +34,117 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /** Manages an object detector using the rknn backend. */
 public class RknnObjectDetector implements ObjectDetector {
-    private static final Logger logger = new Logger(RknnDetectorJNI.class, LogGroup.General);
+  private static final Logger logger = new Logger(RknnDetectorJNI.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it goes out of scope */
-    private final Cleaner cleaner = Cleaner.create();
+  /** Cleaner instance to release the detector when it goes out of scope */
+  private final Cleaner cleaner = Cleaner.create();
 
-    /** Atomic boolean to ensure that the native object can only be released once. */
-    private AtomicBoolean released = new AtomicBoolean(false);
+  /** Atomic boolean to ensure that the native object can only be released once. */
+  private AtomicBoolean released = new AtomicBoolean(false);
 
-    /** Pointer to the native object */
-    private final long objPointer;
+  /** Pointer to the native object */
+  private final long objPointer;
 
-    private final RknnModel model;
+  private final RknnModel model;
 
-    private final Size inputSize;
+  private final Size inputSize;
 
-    /** Returns the model in use by this detector. */
-    @Override
-    public RknnModel getModel() {
-        return model;
+  /** Returns the model in use by this detector. */
+  @Override
+  public RknnModel getModel() {
+    return model;
+  }
+
+  /**
+   * Creates a new RknnObjectDetector from the given model.
+   *
+   * @param model The model to create the detector from.
+   * @param inputSize The required image dimensions for the model. Images will be {@link
+   *     Letterbox}ed to this shape.
+   */
+  public RknnObjectDetector(RknnModel model, Size inputSize) {
+    this.model = model;
+    this.inputSize = inputSize;
+
+    // Create the detector
+    objPointer =
+        RknnJNI.create(model.modelFile.getPath(), model.labels.size(), model.version.ordinal(), -1);
+    if (objPointer <= 0) {
+      throw new RuntimeException(
+          "Failed to create detector from path " + model.modelFile.getPath());
     }
 
-    /**
-     * Creates a new RknnObjectDetector from the given model.
-     *
-     * @param model The model to create the detector from.
-     * @param inputSize The required image dimensions for the model. Images will be {@link
-     *     Letterbox}ed to this shape.
-     */
-    public RknnObjectDetector(RknnModel model, Size inputSize) {
-        this.model = model;
-        this.inputSize = inputSize;
+    logger.debug("Created detector for model " + model.modelFile.getName());
 
-        // Create the detector
-        objPointer =
-                RknnJNI.create(model.modelFile.getPath(), model.labels.size(), model.version.ordinal(), -1);
-        if (objPointer <= 0) {
-            throw new RuntimeException(
-                    "Failed to create detector from path " + model.modelFile.getPath());
-        }
+    // Register the cleaner to release the detector when it goes out of scope
+    cleaner.register(this, this::release);
+  }
 
-        logger.debug("Created detector for model " + model.modelFile.getName());
+  /**
+   * Returns the classes that the detector can detect
+   *
+   * @return The classes
+   */
+  @Override
+  public List<String> getClasses() {
+    return model.labels;
+  }
 
-        // Register the cleaner to release the detector when it goes out of scope
-        cleaner.register(this, this::release);
+  /**
+   * Detects objects in the given input image using the RknnDetector.
+   *
+   * @param in The input image to perform object detection on.
+   * @param nmsThresh The threshold value for non-maximum suppression.
+   * @param boxThresh The threshold value for bounding box detection.
+   * @return A list of NeuralNetworkPipeResult objects representing the detected objects. Returns an
+   *     empty list if the detector is not initialized or if no objects are detected.
+   */
+  @Override
+  public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
+    if (objPointer <= 0) {
+      // Report error and make sure to include the model name
+      logger.error("Detector is not initialized! Model: " + model.modelFile.getName());
+      return List.of();
     }
 
-    /**
-     * Returns the classes that the detector can detect
-     *
-     * @return The classes
-     */
-    @Override
-    public List<String> getClasses() {
-        return model.labels;
+    // Resize the frame to the input size of the model
+    Mat letterboxed = new Mat();
+    Letterbox scale =
+        Letterbox.letterbox(in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
+    if (!letterboxed.size().equals(this.inputSize)) {
+      letterboxed.release();
+      throw new RuntimeException("Letterboxed frame is not the right size!");
     }
 
-    /**
-     * Detects objects in the given input image using the RknnDetector.
-     *
-     * @param in The input image to perform object detection on.
-     * @param nmsThresh The threshold value for non-maximum suppression.
-     * @param boxThresh The threshold value for bounding box detection.
-     * @return A list of NeuralNetworkPipeResult objects representing the detected objects. Returns an
-     *     empty list if the detector is not initialized or if no objects are detected.
-     */
-    @Override
-    public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
-        if (objPointer <= 0) {
-            // Report error and make sure to include the model name
-            logger.error("Detector is not initialized! Model: " + model.modelFile.getName());
-            return List.of();
-        }
+    // Detect objects in the letterboxed frame
+    var results = RknnJNI.detect(objPointer, letterboxed.getNativeObjAddr(), nmsThresh, boxThresh);
 
-        // Resize the frame to the input size of the model
-        Mat letterboxed = new Mat();
-        Letterbox scale =
-                Letterbox.letterbox(in, letterboxed, this.inputSize, ColorHelper.colorToScalar(Color.GRAY));
-        if (!letterboxed.size().equals(this.inputSize)) {
-            letterboxed.release();
-            throw new RuntimeException("Letterboxed frame is not the right size!");
-        }
+    letterboxed.release();
 
-        // Detect objects in the letterboxed frame
-        var results = RknnJNI.detect(objPointer, letterboxed.getNativeObjAddr(), nmsThresh, boxThresh);
-
-        letterboxed.release();
-
-        if (results == null) {
-            return List.of();
-        }
-
-        return scale.resizeDetections(
-                List.of(results).stream()
-                        .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
-                        .toList());
+    if (results == null) {
+      return List.of();
     }
 
-    /** Thread-safe method to release the detector. */
-    @Override
-    public void release() {
-        // Checks if the atomic is 'false', and if so, sets it to 'true'
-        if (released.compareAndSet(false, true)) {
-            if (objPointer <= 0) {
-                logger.error(
-                        "Detector is not initialized, and so it can't be released! Model: "
-                                + model.modelFile.getName());
-                return;
-            }
+    return scale.resizeDetections(
+        List.of(results).stream()
+            .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
+            .toList());
+  }
 
-            RknnJNI.destroy(objPointer);
-            logger.debug("Released detector for model " + model.modelFile.getName());
-        }
+  /** Thread-safe method to release the detector. */
+  @Override
+  public void release() {
+    // Checks if the atomic is 'false', and if so, sets it to 'true'
+    if (released.compareAndSet(false, true)) {
+      if (objPointer <= 0) {
+        logger.error(
+            "Detector is not initialized, and so it can't be released! Model: "
+                + model.modelFile.getName());
+        return;
+      }
+
+      RknnJNI.destroy(objPointer);
+      logger.debug("Released detector for model " + model.modelFile.getName());
     }
+  }
 }

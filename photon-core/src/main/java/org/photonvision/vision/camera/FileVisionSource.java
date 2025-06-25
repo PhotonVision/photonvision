@@ -30,141 +30,141 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class FileVisionSource extends VisionSource {
-    private final FileFrameProvider frameProvider;
-    private final FileSourceSettables settables;
+  private final FileFrameProvider frameProvider;
+  private final FileSourceSettables settables;
 
-    public FileVisionSource(CameraConfiguration cameraConfiguration) {
-        super(cameraConfiguration);
-        var calibration =
-                !cameraConfiguration.calibrations.isEmpty()
-                        ? cameraConfiguration.calibrations.get(0)
-                        : null;
-        frameProvider =
-                new FileFrameProvider(
-                        // TODO - create new File/replay camera info type
-                        Path.of(cameraConfiguration.getDevicePath()),
-                        cameraConfiguration.FOV,
-                        FileFrameProvider.MAX_FPS,
-                        calibration);
+  public FileVisionSource(CameraConfiguration cameraConfiguration) {
+    super(cameraConfiguration);
+    var calibration =
+        !cameraConfiguration.calibrations.isEmpty()
+            ? cameraConfiguration.calibrations.get(0)
+            : null;
+    frameProvider =
+        new FileFrameProvider(
+            // TODO - create new File/replay camera info type
+            Path.of(cameraConfiguration.getDevicePath()),
+            cameraConfiguration.FOV,
+            FileFrameProvider.MAX_FPS,
+            calibration);
 
-        if (getCameraConfiguration().cameraQuirks == null)
-            getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
+    if (getCameraConfiguration().cameraQuirks == null)
+      getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
 
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
-    }
+    settables =
+        new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+  }
 
-    public FileVisionSource(String name, String imagePath, double fov) {
-        // TODO - create new File/replay camera info type
-        super(
-                new CameraConfiguration(
-                        PVCameraInfo.fromUsbCameraInfo(new UsbCameraInfo(0, imagePath, name, null, 0, 0)),
-                        name,
-                        name));
-        frameProvider = new FileFrameProvider(imagePath, fov);
-        settables =
-                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+  public FileVisionSource(String name, String imagePath, double fov) {
+    // TODO - create new File/replay camera info type
+    super(
+        new CameraConfiguration(
+            PVCameraInfo.fromUsbCameraInfo(new UsbCameraInfo(0, imagePath, name, null, 0, 0)),
+            name,
+            name));
+    frameProvider = new FileFrameProvider(imagePath, fov);
+    settables =
+        new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+  }
+
+  @Override
+  public FrameProvider getFrameProvider() {
+    return frameProvider;
+  }
+
+  @Override
+  public VisionSourceSettables getSettables() {
+    return settables;
+  }
+
+  @Override
+  public boolean isVendorCamera() {
+    return false;
+  }
+
+  @Override
+  public void remakeSettables() {
+    // Nothing to do, settables for this type of VisionSource should never be remade.
+    return;
+  }
+
+  @Override
+  public boolean hasLEDs() {
+    return false; // Assume USB cameras do not have photonvision-controlled LEDs
+  }
+
+  @Override
+  public void release() {
+    frameProvider.release();
+  }
+
+  public static class FileSourceSettables extends VisionSourceSettables {
+    private final VideoMode videoMode;
+
+    private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
+
+    FileSourceSettables(
+        CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
+      super(cameraConfiguration);
+      this.frameStaticProperties = frameStaticProperties;
+      videoMode =
+          new VideoMode(
+              PixelFormat.kMJPEG,
+              frameStaticProperties.imageWidth,
+              frameStaticProperties.imageHeight,
+              30);
+      videoModes.put(0, videoMode);
     }
 
     @Override
-    public FrameProvider getFrameProvider() {
-        return frameProvider;
+    public void setExposureRaw(double exposureRaw) {}
+
+    public void setAutoExposure(boolean cameraAutoExposure) {}
+
+    @Override
+    public void setBrightness(int brightness) {}
+
+    @Override
+    public void setGain(int gain) {}
+
+    @Override
+    public VideoMode getCurrentVideoMode() {
+      return videoMode;
     }
 
     @Override
-    public VisionSourceSettables getSettables() {
-        return settables;
+    protected void setVideoModeInternal(VideoMode videoMode) {
+      // Do nothing
     }
 
     @Override
-    public boolean isVendorCamera() {
-        return false;
+    public HashMap<Integer, VideoMode> getAllVideoModes() {
+      return videoModes;
     }
 
     @Override
-    public void remakeSettables() {
-        // Nothing to do, settables for this type of VisionSource should never be remade.
-        return;
+    public double getMinExposureRaw() {
+      return 1f;
     }
 
     @Override
-    public boolean hasLEDs() {
-        return false; // Assume USB cameras do not have photonvision-controlled LEDs
+    public double getMaxExposureRaw() {
+      return 100f;
     }
 
     @Override
-    public void release() {
-        frameProvider.release();
+    public void setAutoWhiteBalance(boolean autowb) {}
+
+    @Override
+    public void setWhiteBalanceTemp(double temp) {}
+
+    @Override
+    public double getMaxWhiteBalanceTemp() {
+      return 2;
     }
 
-    public static class FileSourceSettables extends VisionSourceSettables {
-        private final VideoMode videoMode;
-
-        private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
-
-        FileSourceSettables(
-                CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
-            super(cameraConfiguration);
-            this.frameStaticProperties = frameStaticProperties;
-            videoMode =
-                    new VideoMode(
-                            PixelFormat.kMJPEG,
-                            frameStaticProperties.imageWidth,
-                            frameStaticProperties.imageHeight,
-                            30);
-            videoModes.put(0, videoMode);
-        }
-
-        @Override
-        public void setExposureRaw(double exposureRaw) {}
-
-        public void setAutoExposure(boolean cameraAutoExposure) {}
-
-        @Override
-        public void setBrightness(int brightness) {}
-
-        @Override
-        public void setGain(int gain) {}
-
-        @Override
-        public VideoMode getCurrentVideoMode() {
-            return videoMode;
-        }
-
-        @Override
-        protected void setVideoModeInternal(VideoMode videoMode) {
-            // Do nothing
-        }
-
-        @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
-            return videoModes;
-        }
-
-        @Override
-        public double getMinExposureRaw() {
-            return 1f;
-        }
-
-        @Override
-        public double getMaxExposureRaw() {
-            return 100f;
-        }
-
-        @Override
-        public void setAutoWhiteBalance(boolean autowb) {}
-
-        @Override
-        public void setWhiteBalanceTemp(double temp) {}
-
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return 2;
-        }
-
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return 1;
-        }
+    @Override
+    public double getMinWhiteBalanceTemp() {
+      return 1;
     }
+  }
 }

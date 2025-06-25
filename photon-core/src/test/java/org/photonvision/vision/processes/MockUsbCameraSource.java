@@ -27,70 +27,70 @@ import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 
 public class MockUsbCameraSource extends USBCameraSource {
-    /** Used for unit tests to better simulate a usb camera without a camera being present. */
-    public MockUsbCameraSource(CameraConfiguration config, int pid, int vid) {
-        super(config);
+  /** Used for unit tests to better simulate a usb camera without a camera being present. */
+  public MockUsbCameraSource(CameraConfiguration config, int pid, int vid) {
+    super(config);
 
-        getCameraConfiguration().cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(pid, vid, config.matchedCameraInfo.name());
+    getCameraConfiguration().cameraQuirks =
+        QuirkyCamera.getQuirkyCamera(pid, vid, config.matchedCameraInfo.name());
 
-        /** File used as frame provider */
-        usbFrameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
+    /** File used as frame provider */
+    usbFrameProvider =
+        new FileFrameProvider(
+            TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+            TestUtils.WPI2019Image.FOV);
 
-        this.settables = createSettables(config, null);
+    this.settables = createSettables(config, null);
+  }
+
+  @Override
+  public GenericUSBCameraSettables createSettables(CameraConfiguration config, UsbCamera camera) {
+    return new MockUsbCameraSettables(config, null);
+  }
+
+  private class MockUsbCameraSettables extends GenericUSBCameraSettables {
+    public MockUsbCameraSettables(CameraConfiguration config, UsbCamera camera) {
+      super(config, camera);
+    }
+
+    /** Hardware-specific implementation - do nothing in test */
+    @Override
+    public void setExposureRaw(double exposureRaw) {}
+
+    /** Hardware-specific implementation - do nothing in test */
+    @Override
+    public void setAutoExposure(boolean cameraAutoExposure) {}
+
+    /** Hardware-specific implementation - do nothing in test */
+    @Override
+    public void setBrightness(int brightness) {}
+
+    @Override
+    public void setGain(int gain) {}
+
+    @Override
+    public void setVideoModeInternal(VideoMode videoMode) {}
+
+    @Override
+    public void setUpExposureProperties() {}
+
+    @Override
+    protected void setUpWhiteBalanceProperties() {}
+
+    @Override
+    public void setWhiteBalanceTemp(double tempNumber) {}
+
+    @Override
+    public void setAutoWhiteBalance(boolean autoWB) {}
+
+    @Override
+    public double getMinWhiteBalanceTemp() {
+      return 1;
     }
 
     @Override
-    public GenericUSBCameraSettables createSettables(CameraConfiguration config, UsbCamera camera) {
-        return new MockUsbCameraSettables(config, null);
+    public double getMaxWhiteBalanceTemp() {
+      return 2;
     }
-
-    private class MockUsbCameraSettables extends GenericUSBCameraSettables {
-        public MockUsbCameraSettables(CameraConfiguration config, UsbCamera camera) {
-            super(config, camera);
-        }
-
-        /** Hardware-specific implementation - do nothing in test */
-        @Override
-        public void setExposureRaw(double exposureRaw) {}
-
-        /** Hardware-specific implementation - do nothing in test */
-        @Override
-        public void setAutoExposure(boolean cameraAutoExposure) {}
-
-        /** Hardware-specific implementation - do nothing in test */
-        @Override
-        public void setBrightness(int brightness) {}
-
-        @Override
-        public void setGain(int gain) {}
-
-        @Override
-        public void setVideoModeInternal(VideoMode videoMode) {}
-
-        @Override
-        public void setUpExposureProperties() {}
-
-        @Override
-        protected void setUpWhiteBalanceProperties() {}
-
-        @Override
-        public void setWhiteBalanceTemp(double tempNumber) {}
-
-        @Override
-        public void setAutoWhiteBalance(boolean autoWB) {}
-
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return 1;
-        }
-
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return 2;
-        }
-    }
+  }
 }

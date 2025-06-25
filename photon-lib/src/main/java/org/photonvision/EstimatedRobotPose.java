@@ -31,32 +31,32 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 /** An estimated pose based on pipeline result */
 public class EstimatedRobotPose {
-    /** The estimated pose */
-    public final Pose3d estimatedPose;
+  /** The estimated pose */
+  public final Pose3d estimatedPose;
 
-    /** The estimated time the frame used to derive the robot pose was taken */
-    public final double timestampSeconds;
+  /** The estimated time the frame used to derive the robot pose was taken */
+  public final double timestampSeconds;
 
-    /** A list of the targets used to compute this pose */
-    public final List<PhotonTrackedTarget> targetsUsed;
+  /** A list of the targets used to compute this pose */
+  public final List<PhotonTrackedTarget> targetsUsed;
 
-    /** The strategy actually used to produce this pose */
-    public final PoseStrategy strategy;
+  /** The strategy actually used to produce this pose */
+  public final PoseStrategy strategy;
 
-    /**
-     * Constructs an EstimatedRobotPose
-     *
-     * @param estimatedPose estimated pose
-     * @param timestampSeconds timestamp of the estimate
-     */
-    public EstimatedRobotPose(
-            Pose3d estimatedPose,
-            double timestampSeconds,
-            List<PhotonTrackedTarget> targetsUsed,
-            PoseStrategy strategy) {
-        this.estimatedPose = estimatedPose;
-        this.timestampSeconds = timestampSeconds;
-        this.targetsUsed = targetsUsed;
-        this.strategy = strategy;
-    }
+  /**
+   * Constructs an EstimatedRobotPose
+   *
+   * @param estimatedPose estimated pose
+   * @param timestampSeconds timestamp of the estimate
+   */
+  public EstimatedRobotPose(
+      Pose3d estimatedPose,
+      double timestampSeconds,
+      List<PhotonTrackedTarget> targetsUsed,
+      PoseStrategy strategy) {
+    this.estimatedPose = estimatedPose;
+    this.timestampSeconds = timestampSeconds;
+    this.targetsUsed = targetsUsed;
+    this.strategy = strategy;
+  }
 }

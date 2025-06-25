@@ -24,16 +24,16 @@ import org.photonvision.common.configuration.CameraConfiguration;
  * This class holds the non-windows camera quirks for the Arducam OV2311. This version supports auto-exposure, while windows does not.
  */
 public class ArduOV2311CameraSettables extends GenericUSBCameraSettables {
-    public ArduOV2311CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
-        super(configuration, camera);
-    }
+  public ArduOV2311CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+    super(configuration, camera);
+  }
 
-    @Override
-    protected void setUpExposureProperties() {
-        super.setUpExposureProperties();
+  @Override
+  protected void setUpExposureProperties() {
+    super.setUpExposureProperties();
 
-        // Property limits are incorrect
-        this.minExposure = 1;
-        this.maxExposure = 140;
-    }
+    // Property limits are incorrect
+    this.minExposure = 1;
+    this.maxExposure = 140;
+  }
 }

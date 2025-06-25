@@ -31,26 +31,26 @@ import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.Logger;
 
 public class UIInboundSubscriber extends DataChangeSubscriber {
-    public UIInboundSubscriber() {
-        super(
-                Collections.singletonList(DataChangeSource.DCS_WEBSOCKET),
-                Collections.singletonList(DataChangeDestination.DCD_GENSETTINGS));
-    }
+  public UIInboundSubscriber() {
+    super(
+        Collections.singletonList(DataChangeSource.DCS_WEBSOCKET),
+        Collections.singletonList(DataChangeDestination.DCD_GENSETTINGS));
+  }
 
-    @Override
-    public void onDataChangeEvent(DataChangeEvent<?> event) {
-        if (event instanceof IncomingWebSocketEvent incomingWSEvent) {
-            if (incomingWSEvent.propertyName.equals("userConnected")
-                    || incomingWSEvent.propertyName.equals("sendFullSettings")) {
-                // Send full settings
-                var settings =
-                        UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig());
-                var message =
-                        new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
-                DataChangeService.getInstance().publishEvent(message);
-                Logger.sendConnectedBacklog();
-                NetworkTablesManager.getInstance().broadcastConnectedStatus();
-            }
-        }
+  @Override
+  public void onDataChangeEvent(DataChangeEvent<?> event) {
+    if (event instanceof IncomingWebSocketEvent incomingWSEvent) {
+      if (incomingWSEvent.propertyName.equals("userConnected")
+          || incomingWSEvent.propertyName.equals("sendFullSettings")) {
+        // Send full settings
+        var settings =
+            UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig());
+        var message =
+            new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
+        DataChangeService.getInstance().publishEvent(message);
+        Logger.sendConnectedBacklog();
+        NetworkTablesManager.getInstance().broadcastConnectedStatus();
+      }
     }
+  }
 }

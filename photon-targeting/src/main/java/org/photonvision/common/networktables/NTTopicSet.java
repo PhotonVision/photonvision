@@ -41,105 +41,105 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * different for sim vs. real camera
  */
 public class NTTopicSet {
-    public NetworkTable subTable;
+  public NetworkTable subTable;
 
-    public PacketPublisher<PhotonPipelineResult> resultPublisher;
-    public ProtobufPublisher<PhotonPipelineResult> protoResultPublisher;
+  public PacketPublisher<PhotonPipelineResult> resultPublisher;
+  public ProtobufPublisher<PhotonPipelineResult> protoResultPublisher;
 
-    public IntegerPublisher pipelineIndexPublisher;
-    public IntegerSubscriber pipelineIndexRequestSub;
+  public IntegerPublisher pipelineIndexPublisher;
+  public IntegerSubscriber pipelineIndexRequestSub;
 
-    public BooleanTopic driverModeEntry;
-    public BooleanPublisher driverModePublisher;
-    public BooleanSubscriber driverModeSubscriber;
+  public BooleanTopic driverModeEntry;
+  public BooleanPublisher driverModePublisher;
+  public BooleanSubscriber driverModeSubscriber;
 
-    public DoublePublisher latencyMillisEntry;
-    public BooleanPublisher hasTargetEntry;
-    public DoublePublisher targetPitchEntry;
-    public DoublePublisher targetYawEntry;
-    public DoublePublisher targetAreaEntry;
-    public StructPublisher<Transform3d> targetPoseEntry;
-    public DoublePublisher targetSkewEntry;
+  public DoublePublisher latencyMillisEntry;
+  public BooleanPublisher hasTargetEntry;
+  public DoublePublisher targetPitchEntry;
+  public DoublePublisher targetYawEntry;
+  public DoublePublisher targetAreaEntry;
+  public StructPublisher<Transform3d> targetPoseEntry;
+  public DoublePublisher targetSkewEntry;
 
-    // The raw position of the best target, in pixels.
-    public DoublePublisher bestTargetPosX;
-    public DoublePublisher bestTargetPosY;
+  // The raw position of the best target, in pixels.
+  public DoublePublisher bestTargetPosX;
+  public DoublePublisher bestTargetPosY;
 
-    // Heartbeat
-    public IntegerTopic heartbeatTopic;
-    public IntegerPublisher heartbeatPublisher;
+  // Heartbeat
+  public IntegerTopic heartbeatTopic;
+  public IntegerPublisher heartbeatPublisher;
 
-    // Camera Calibration
-    public DoubleArrayPublisher cameraIntrinsicsPublisher;
-    public DoubleArrayPublisher cameraDistortionPublisher;
+  // Camera Calibration
+  public DoubleArrayPublisher cameraIntrinsicsPublisher;
+  public DoubleArrayPublisher cameraDistortionPublisher;
 
-    public void updateEntries() {
-        var rawBytesEntry =
-                subTable
-                        .getRawTopic("rawBytes")
-                        .publish(
-                                PhotonPipelineResult.photonStruct.getTypeString(),
-                                PubSubOption.periodic(0.01),
-                                PubSubOption.sendAll(true),
-                                PubSubOption.keepDuplicates(true));
+  public void updateEntries() {
+    var rawBytesEntry =
+        subTable
+            .getRawTopic("rawBytes")
+            .publish(
+                PhotonPipelineResult.photonStruct.getTypeString(),
+                PubSubOption.periodic(0.01),
+                PubSubOption.sendAll(true),
+                PubSubOption.keepDuplicates(true));
 
-        resultPublisher =
-                new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
-        protoResultPublisher =
-                subTable
-                        .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
-                        .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+    resultPublisher =
+        new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
+    protoResultPublisher =
+        subTable
+            .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
+            .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
-        pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
-        pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);
+    pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
+    pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);
 
-        driverModePublisher = subTable.getBooleanTopic("driverMode").publish();
-        driverModeSubscriber = subTable.getBooleanTopic("driverModeRequest").subscribe(false);
+    driverModePublisher = subTable.getBooleanTopic("driverMode").publish();
+    driverModeSubscriber = subTable.getBooleanTopic("driverModeRequest").subscribe(false);
 
-        // Fun little hack to make the request show up
-        driverModeSubscriber.getTopic().publish().setDefault(false);
+    // Fun little hack to make the request show up
+    driverModeSubscriber.getTopic().publish().setDefault(false);
 
-        latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
-        hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
+    latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
+    hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
 
-        targetPitchEntry = subTable.getDoubleTopic("targetPitch").publish();
-        targetAreaEntry = subTable.getDoubleTopic("targetArea").publish();
-        targetYawEntry = subTable.getDoubleTopic("targetYaw").publish();
-        targetPoseEntry = subTable.getStructTopic("targetPose", Transform3d.struct).publish();
-        targetSkewEntry = subTable.getDoubleTopic("targetSkew").publish();
+    targetPitchEntry = subTable.getDoubleTopic("targetPitch").publish();
+    targetAreaEntry = subTable.getDoubleTopic("targetArea").publish();
+    targetYawEntry = subTable.getDoubleTopic("targetYaw").publish();
+    targetPoseEntry = subTable.getStructTopic("targetPose", Transform3d.struct).publish();
+    targetSkewEntry = subTable.getDoubleTopic("targetSkew").publish();
 
-        bestTargetPosX = subTable.getDoubleTopic("targetPixelsX").publish();
-        bestTargetPosY = subTable.getDoubleTopic("targetPixelsY").publish();
+    bestTargetPosX = subTable.getDoubleTopic("targetPixelsX").publish();
+    bestTargetPosY = subTable.getDoubleTopic("targetPixelsY").publish();
 
-        heartbeatTopic = subTable.getIntegerTopic("heartbeat");
-        heartbeatPublisher = heartbeatTopic.publish();
+    heartbeatTopic = subTable.getIntegerTopic("heartbeat");
+    heartbeatPublisher = heartbeatTopic.publish();
 
-        cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
-        cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
-    }
+    cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
+    cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
+  }
 
-    @SuppressWarnings("DuplicatedCode")
-    public void removeEntries() {
-        if (resultPublisher != null) resultPublisher.close();
-        if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
-        if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
+  @SuppressWarnings("DuplicatedCode")
+  public void removeEntries() {
+    if (resultPublisher != null) resultPublisher.close();
+    if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
+    if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
 
-        if (driverModePublisher != null) driverModePublisher.close();
-        if (driverModeSubscriber != null) driverModeSubscriber.close();
+    if (driverModePublisher != null) driverModePublisher.close();
+    if (driverModeSubscriber != null) driverModeSubscriber.close();
 
-        if (latencyMillisEntry != null) latencyMillisEntry.close();
-        if (hasTargetEntry != null) hasTargetEntry.close();
-        if (targetPitchEntry != null) targetPitchEntry.close();
-        if (targetAreaEntry != null) targetAreaEntry.close();
-        if (targetYawEntry != null) targetYawEntry.close();
-        if (targetPoseEntry != null) targetPoseEntry.close();
-        if (targetSkewEntry != null) targetSkewEntry.close();
-        if (bestTargetPosX != null) bestTargetPosX.close();
-        if (bestTargetPosY != null) bestTargetPosY.close();
+    if (latencyMillisEntry != null) latencyMillisEntry.close();
+    if (hasTargetEntry != null) hasTargetEntry.close();
+    if (targetPitchEntry != null) targetPitchEntry.close();
+    if (targetAreaEntry != null) targetAreaEntry.close();
+    if (targetYawEntry != null) targetYawEntry.close();
+    if (targetPoseEntry != null) targetPoseEntry.close();
+    if (targetSkewEntry != null) targetSkewEntry.close();
+    if (bestTargetPosX != null) bestTargetPosX.close();
+    if (bestTargetPosY != null) bestTargetPosY.close();
 
-        if (heartbeatPublisher != null) heartbeatPublisher.close();
+    if (heartbeatPublisher != null) heartbeatPublisher.close();
 
-        if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
-        if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
-    }
+    if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
+    if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
+  }
 }

@@ -69,35 +69,21 @@ public class AprilTagCudaPipelineSettings extends AdvancedPipelineSettings {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (!super.equals(obj))
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (!super.equals(obj)) return false;
+    if (getClass() != obj.getClass()) return false;
     AprilTagCudaPipelineSettings other = (AprilTagCudaPipelineSettings) obj;
-    if (tagFamily != other.tagFamily)
-      return false;
-    if (decimate != other.decimate)
-      return false;
-    if (Double.doubleToLongBits(blur) != Double.doubleToLongBits(other.blur))
-      return false;
-    if (threads != other.threads)
-      return false;
-    if (debug != other.debug)
-      return false;
-    if (refineEdges != other.refineEdges)
-      return false;
-    if (numIterations != other.numIterations)
-      return false;
-    if (hammingDist != other.hammingDist)
-      return false;
-    if (decisionMargin != other.decisionMargin)
-      return false;
-    if (doMultiTarget != other.doMultiTarget)
-      return false;
-    if (doSingleTargetAlways != other.doSingleTargetAlways)
-      return false;
+    if (tagFamily != other.tagFamily) return false;
+    if (decimate != other.decimate) return false;
+    if (Double.doubleToLongBits(blur) != Double.doubleToLongBits(other.blur)) return false;
+    if (threads != other.threads) return false;
+    if (debug != other.debug) return false;
+    if (refineEdges != other.refineEdges) return false;
+    if (numIterations != other.numIterations) return false;
+    if (hammingDist != other.hammingDist) return false;
+    if (decisionMargin != other.decisionMargin) return false;
+    if (doMultiTarget != other.doMultiTarget) return false;
+    if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
     return true;
   }
 }

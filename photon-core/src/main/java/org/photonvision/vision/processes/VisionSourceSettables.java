@@ -26,120 +26,120 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
-    protected Logger logger;
+  protected Logger logger;
 
-    private final CameraConfiguration configuration;
+  private final CameraConfiguration configuration;
 
-    protected VisionSourceSettables(CameraConfiguration configuration) {
-        this.configuration = configuration;
-        this.logger =
-                new Logger(VisionSourceSettables.class, configuration.nickname, LogGroup.VisionModule);
-    }
+  protected VisionSourceSettables(CameraConfiguration configuration) {
+    this.configuration = configuration;
+    this.logger =
+        new Logger(VisionSourceSettables.class, configuration.nickname, LogGroup.VisionModule);
+  }
 
-    protected FrameStaticProperties frameStaticProperties = null;
-    protected HashMap<Integer, VideoMode> videoModes = new HashMap<>();
+  protected FrameStaticProperties frameStaticProperties = null;
+  protected HashMap<Integer, VideoMode> videoModes = new HashMap<>();
 
-    public CameraConfiguration getConfiguration() {
-        return configuration;
-    }
+  public CameraConfiguration getConfiguration() {
+    return configuration;
+  }
 
-    // If the device has been connected at least once, and we cached properties
-    protected boolean cameraPropertiesCached = false;
+  // If the device has been connected at least once, and we cached properties
+  protected boolean cameraPropertiesCached = false;
 
-    /**
-     * Runs exactly once the first time that the underlying device goes from disconnected to connected
-     */
-    public void onCameraConnected() {
-        cameraPropertiesCached = true;
-    }
+  /**
+   * Runs exactly once the first time that the underlying device goes from disconnected to connected
+   */
+  public void onCameraConnected() {
+    cameraPropertiesCached = true;
+  }
 
-    public abstract void setExposureRaw(double exposureRaw);
+  public abstract void setExposureRaw(double exposureRaw);
 
-    public abstract double getMinExposureRaw();
+  public abstract double getMinExposureRaw();
 
-    public abstract double getMaxExposureRaw();
+  public abstract double getMaxExposureRaw();
 
-    public abstract void setAutoExposure(boolean cameraAutoExposure);
+  public abstract void setAutoExposure(boolean cameraAutoExposure);
 
-    public abstract void setWhiteBalanceTemp(double temp);
+  public abstract void setWhiteBalanceTemp(double temp);
 
-    public abstract void setAutoWhiteBalance(boolean autowb);
+  public abstract void setAutoWhiteBalance(boolean autowb);
 
-    public abstract void setBrightness(int brightness);
+  public abstract void setBrightness(int brightness);
 
-    public abstract void setGain(int gain);
+  public abstract void setGain(int gain);
 
-    // Pretty uncommon so instead of abstract this is just a no-op by default
-    // Overridden by cameras with AWB gain support
-    public void setRedGain(int red) {}
+  // Pretty uncommon so instead of abstract this is just a no-op by default
+  // Overridden by cameras with AWB gain support
+  public void setRedGain(int red) {}
 
-    public void setBlueGain(int blue) {}
+  public void setBlueGain(int blue) {}
 
-    public abstract VideoMode getCurrentVideoMode();
+  public abstract VideoMode getCurrentVideoMode();
 
-    public void setVideoModeInternal(int index) {
-        if (!getAllVideoModes().isEmpty()) setVideoMode(getAllVideoModes().get(index));
-    }
+  public void setVideoModeInternal(int index) {
+    if (!getAllVideoModes().isEmpty()) setVideoMode(getAllVideoModes().get(index));
+  }
 
-    public void setVideoMode(VideoMode mode) {
-        logger.info(
-                "Setting video mode to "
-                        + "FPS: "
-                        + mode.fps
-                        + " Width: "
-                        + mode.width
-                        + " Height: "
-                        + mode.height
-                        + " Pixel Format: "
-                        + mode.pixelFormat);
-        setVideoModeInternal(mode);
-        calculateFrameStaticProps();
-    }
+  public void setVideoMode(VideoMode mode) {
+    logger.info(
+        "Setting video mode to "
+            + "FPS: "
+            + mode.fps
+            + " Width: "
+            + mode.width
+            + " Height: "
+            + mode.height
+            + " Pixel Format: "
+            + mode.pixelFormat);
+    setVideoModeInternal(mode);
+    calculateFrameStaticProps();
+  }
 
-    protected abstract void setVideoModeInternal(VideoMode videoMode);
+  protected abstract void setVideoModeInternal(VideoMode videoMode);
 
-    @SuppressWarnings("unused")
-    public void setVideoModeIndex(int index) {
-        setVideoMode(videoModes.get(index));
-    }
+  @SuppressWarnings("unused")
+  public void setVideoModeIndex(int index) {
+    setVideoMode(videoModes.get(index));
+  }
 
-    public abstract HashMap<Integer, VideoMode> getAllVideoModes();
+  public abstract HashMap<Integer, VideoMode> getAllVideoModes();
 
-    public double getFOV() {
-        return configuration.FOV;
-    }
+  public double getFOV() {
+    return configuration.FOV;
+  }
 
-    public void setFOV(double fov) {
-        logger.info("Setting FOV to " + fov);
-        configuration.FOV = fov;
-        calculateFrameStaticProps();
-    }
+  public void setFOV(double fov) {
+    logger.info("Setting FOV to " + fov);
+    configuration.FOV = fov;
+    calculateFrameStaticProps();
+  }
 
-    public void addCalibration(CameraCalibrationCoefficients calibrationCoefficients) {
-        configuration.addCalibration(calibrationCoefficients);
-        calculateFrameStaticProps();
-    }
+  public void addCalibration(CameraCalibrationCoefficients calibrationCoefficients) {
+    configuration.addCalibration(calibrationCoefficients);
+    calculateFrameStaticProps();
+  }
 
-    protected void calculateFrameStaticProps() {
-        var videoMode = getCurrentVideoMode();
-        this.frameStaticProperties =
-                new FrameStaticProperties(
-                        videoMode,
-                        getFOV(),
-                        configuration.calibrations.stream()
-                                .filter(
-                                        it ->
-                                                it.unrotatedImageSize.width == videoMode.width
-                                                        && it.unrotatedImageSize.height == videoMode.height)
-                                .findFirst()
-                                .orElse(null));
-    }
+  protected void calculateFrameStaticProps() {
+    var videoMode = getCurrentVideoMode();
+    this.frameStaticProperties =
+        new FrameStaticProperties(
+            videoMode,
+            getFOV(),
+            configuration.calibrations.stream()
+                .filter(
+                    it ->
+                        it.unrotatedImageSize.width == videoMode.width
+                            && it.unrotatedImageSize.height == videoMode.height)
+                .findFirst()
+                .orElse(null));
+  }
 
-    public FrameStaticProperties getFrameStaticProperties() {
-        return frameStaticProperties;
-    }
+  public FrameStaticProperties getFrameStaticProperties() {
+    return frameStaticProperties;
+  }
 
-    public abstract double getMinWhiteBalanceTemp();
+  public abstract double getMinWhiteBalanceTemp();
 
-    public abstract double getMaxWhiteBalanceTemp();
+  public abstract double getMaxWhiteBalanceTemp();
 }

@@ -21,35 +21,35 @@ import io.javalin.websocket.WsContext;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 
 public class VisionModuleChange<T> {
-    private final String propName;
-    private final T newPropValue;
-    private final CVPipelineSettings currentSettings;
-    private final WsContext originContext;
+  private final String propName;
+  private final T newPropValue;
+  private final CVPipelineSettings currentSettings;
+  private final WsContext originContext;
 
-    public VisionModuleChange(
-            String propName,
-            T newPropValue,
-            CVPipelineSettings currentSettings,
-            WsContext originContext) {
-        this.propName = propName;
-        this.newPropValue = newPropValue;
-        this.currentSettings = currentSettings;
-        this.originContext = originContext;
-    }
+  public VisionModuleChange(
+      String propName,
+      T newPropValue,
+      CVPipelineSettings currentSettings,
+      WsContext originContext) {
+    this.propName = propName;
+    this.newPropValue = newPropValue;
+    this.currentSettings = currentSettings;
+    this.originContext = originContext;
+  }
 
-    public String getPropName() {
-        return propName;
-    }
+  public String getPropName() {
+    return propName;
+  }
 
-    public T getNewPropValue() {
-        return newPropValue;
-    }
+  public T getNewPropValue() {
+    return newPropValue;
+  }
 
-    public CVPipelineSettings getCurrentSettings() {
-        return currentSettings;
-    }
+  public CVPipelineSettings getCurrentSettings() {
+    return currentSettings;
+  }
 
-    public WsContext getOriginContext() {
-        return originContext;
-    }
+  public WsContext getOriginContext() {
+    return originContext;
+  }
 }

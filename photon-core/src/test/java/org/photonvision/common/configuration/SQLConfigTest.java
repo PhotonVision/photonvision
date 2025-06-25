@@ -39,83 +39,83 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
-    private static Path tmpDir;
+  private static Path tmpDir;
 
-    @BeforeAll
-    public static void init() {
-        TestUtils.loadLibraries();
-        try {
-            tmpDir = Files.createTempDirectory("SQLConfigTest");
-        } catch (IOException e) {
-            System.out.println("Couldn't create temporary directory, using current directory");
-            tmpDir = Path.of("jdbc_test", "temp");
-        }
+  @BeforeAll
+  public static void init() {
+    TestUtils.loadLibraries();
+    try {
+      tmpDir = Files.createTempDirectory("SQLConfigTest");
+    } catch (IOException e) {
+      System.out.println("Couldn't create temporary directory, using current directory");
+      tmpDir = Path.of("jdbc_test", "temp");
     }
+  }
 
-    @AfterAll
-    public static void cleanUp() throws IOException {
-        Files.walk(tmpDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+  @AfterAll
+  public static void cleanUp() throws IOException {
+    Files.walk(tmpDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+  }
+
+  @Test
+  @Order(1)
+  public void testMigration() {
+    SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
+    cfgLoader.load();
+
+    assertEquals(
+        DatabaseSchema.migrations.length,
+        cfgLoader.getUserVersion(),
+        "Database isn't at the correct version");
+  }
+
+  @Test
+  @Order(2)
+  public void testLoad() {
+    var cfgLoader = new SqlConfigProvider(tmpDir);
+
+    cfgLoader.load();
+
+    var testCamCfg =
+        new CameraConfiguration(
+            PVCameraInfo.fromUsbCameraInfo(
+                new UsbCameraInfo(0, "/dev/videoN", "some_name", new String[0], -1, 01)));
+
+    testCamCfg.pipelineSettings =
+        List.of(
+            new ReflectivePipelineSettings(),
+            new AprilTagPipelineSettings(),
+            new ColoredShapePipelineSettings());
+
+    cfgLoader.getConfig().addCameraConfig(testCamCfg);
+    cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
+    cfgLoader.saveToDisk();
+
+    cfgLoader.load();
+    System.out.println(cfgLoader.getConfig());
+
+    assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
+  }
+
+  @Test
+  public void testLoad2024_3_1() {
+    var cfgLoader =
+        new SqlConfigProvider(
+            TestUtils.getConfigDirectoriesPath(false)
+                .resolve("photonvision_config_from_v2024.3.1"));
+
+    assertDoesNotThrow(cfgLoader::load);
+
+    System.out.println(cfgLoader.getConfig());
+    for (var c : CameraQuirk.values()) {
+      assertDoesNotThrow(
+          () ->
+              cfgLoader
+                  .config
+                  .getCameraConfigurations()
+                  .get("Microsoft_LifeCam_HD-3000")
+                  .cameraQuirks
+                  .hasQuirk(c));
     }
-
-    @Test
-    @Order(1)
-    public void testMigration() {
-        SqlConfigProvider cfgLoader = new SqlConfigProvider(tmpDir);
-        cfgLoader.load();
-
-        assertEquals(
-                DatabaseSchema.migrations.length,
-                cfgLoader.getUserVersion(),
-                "Database isn't at the correct version");
-    }
-
-    @Test
-    @Order(2)
-    public void testLoad() {
-        var cfgLoader = new SqlConfigProvider(tmpDir);
-
-        cfgLoader.load();
-
-        var testCamCfg =
-                new CameraConfiguration(
-                        PVCameraInfo.fromUsbCameraInfo(
-                                new UsbCameraInfo(0, "/dev/videoN", "some_name", new String[0], -1, 01)));
-
-        testCamCfg.pipelineSettings =
-                List.of(
-                        new ReflectivePipelineSettings(),
-                        new AprilTagPipelineSettings(),
-                        new ColoredShapePipelineSettings());
-
-        cfgLoader.getConfig().addCameraConfig(testCamCfg);
-        cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
-        cfgLoader.saveToDisk();
-
-        cfgLoader.load();
-        System.out.println(cfgLoader.getConfig());
-
-        assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
-    }
-
-    @Test
-    public void testLoad2024_3_1() {
-        var cfgLoader =
-                new SqlConfigProvider(
-                        TestUtils.getConfigDirectoriesPath(false)
-                                .resolve("photonvision_config_from_v2024.3.1"));
-
-        assertDoesNotThrow(cfgLoader::load);
-
-        System.out.println(cfgLoader.getConfig());
-        for (var c : CameraQuirk.values()) {
-            assertDoesNotThrow(
-                    () ->
-                            cfgLoader
-                                    .config
-                                    .getCameraConfigurations()
-                                    .get("Microsoft_LifeCam_HD-3000")
-                                    .cameraQuirks
-                                    .hasQuirk(c));
-        }
-    }
+  }
 }

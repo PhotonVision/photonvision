@@ -31,110 +31,110 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 
 public class AprilTagTest {
-    @BeforeEach
-    public void setup() {
-        TestUtils.loadLibraries();
-        ConfigManager.getInstance().load();
-    }
+  @BeforeEach
+  public void setup() {
+    TestUtils.loadLibraries();
+    ConfigManager.getInstance().load();
+  }
 
-    @Test
-    public void testApriltagFacingCamera() {
-        var pipeline = new AprilTagPipeline();
+  @Test
+  public void testApriltagFacingCamera() {
+    var pipeline = new AprilTagPipeline();
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+    pipeline.getSettings().inputShouldShow = true;
+    pipeline.getSettings().outputShouldDraw = true;
+    pipeline.getSettings().solvePNPEnabled = true;
+    pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+    pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+    pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+    pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+    var frameProvider =
+        new FileFrameProvider(
+            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+            TestUtils.WPI2020Image.FOV,
+            TestUtils.get2020LifeCamCoeffs(false));
+    frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+    CVPipelineResult pipelineResult;
+    pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+    // Draw on input
+    var outputPipe = new OutputStreamPipeline();
+    var ret =
+        outputPipe.process(
+            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+    TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        // these numbers are not *accurate*, but they are known and expected
-        var target = pipelineResult.targets.get(0);
+    // these numbers are not *accurate*, but they are known and expected
+    var target = pipelineResult.targets.get(0);
 
-        // Test corner order
-        var corners = target.getTargetCorners();
-        assertEquals(260, corners.get(0).x, 10);
-        assertEquals(245, corners.get(0).y, 10);
-        assertEquals(315, corners.get(1).x, 10);
-        assertEquals(245, corners.get(1).y, 10);
-        assertEquals(315, corners.get(2).x, 10);
-        assertEquals(190, corners.get(2).y, 10);
-        assertEquals(260, corners.get(3).x, 10);
-        assertEquals(190, corners.get(3).y, 10);
+    // Test corner order
+    var corners = target.getTargetCorners();
+    assertEquals(260, corners.get(0).x, 10);
+    assertEquals(245, corners.get(0).y, 10);
+    assertEquals(315, corners.get(1).x, 10);
+    assertEquals(245, corners.get(1).y, 10);
+    assertEquals(315, corners.get(2).x, 10);
+    assertEquals(190, corners.get(2).y, 10);
+    assertEquals(260, corners.get(3).x, 10);
+    assertEquals(190, corners.get(3).y, 10);
 
-        var pose = target.getBestCameraToTarget3d();
-        // Test pose estimate translation
-        assertEquals(2, pose.getTranslation().getX(), 0.2);
-        assertEquals(0.1, pose.getTranslation().getY(), 0.2);
-        assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+    var pose = target.getBestCameraToTarget3d();
+    // Test pose estimate translation
+    assertEquals(2, pose.getTranslation().getX(), 0.2);
+    assertEquals(0.1, pose.getTranslation().getY(), 0.2);
+    assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
 
-        // Test pose estimate rotation
-        // We expect the object axes to be in NWU, with the x-axis coming out of the tag
-        // This visible tag is facing the camera almost parallel, so in world space:
+    // Test pose estimate rotation
+    // We expect the object axes to be in NWU, with the x-axis coming out of the tag
+    // This visible tag is facing the camera almost parallel, so in world space:
 
-        // The object's X axis should be (-1, 0, 0)
-        assertEquals(-1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
-        // The object's Y axis should be (0, -1, 0)
-        assertEquals(-1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
-        // The object's Z axis should be (0, 0, 1)
-        assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
-    }
+    // The object's X axis should be (-1, 0, 0)
+    assertEquals(-1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
+    // The object's Y axis should be (0, -1, 0)
+    assertEquals(-1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
+    // The object's Z axis should be (0, 0, 1)
+    assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
+  }
 
-    @Test
-    public void testApriltagDistorted() {
-        var pipeline = new AprilTagPipeline();
+  @Test
+  public void testApriltagDistorted() {
+    var pipeline = new AprilTagPipeline();
 
-        pipeline.getSettings().inputShouldShow = true;
-        pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
+    pipeline.getSettings().inputShouldShow = true;
+    pipeline.getSettings().outputShouldDraw = true;
+    pipeline.getSettings().solvePNPEnabled = true;
+    pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+    pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+    pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
+    pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
 
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+    var frameProvider =
+        new FileFrameProvider(
+            TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag_corner_1280, false),
+            TestUtils.WPI2020Image.FOV,
+            TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
+    frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
-        CVPipelineResult pipelineResult;
-        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        TestUtils.printTestResultsWithLocation(pipelineResult);
+    CVPipelineResult pipelineResult;
+    pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+    TestUtils.printTestResultsWithLocation(pipelineResult);
 
-        // Draw on input
-        var outputPipe = new OutputStreamPipeline();
-        var ret =
-                outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+    // Draw on input
+    var outputPipe = new OutputStreamPipeline();
+    var ret =
+        outputPipe.process(
+            pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
+    TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 
-        // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        assertEquals(4.14, pose.getTranslation().getX(), 0.2);
-        assertEquals(2, pose.getTranslation().getY(), 0.2);
-        assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
-    }
+    // these numbers are not *accurate*, but they are known and expected
+    var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
+    assertEquals(4.14, pose.getTranslation().getX(), 0.2);
+    assertEquals(2, pose.getTranslation().getY(), 0.2);
+    assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+  }
 }

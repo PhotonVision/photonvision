@@ -25,45 +25,45 @@ import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
 
 public class MJPGFrameConsumer implements AutoCloseable {
-    private static final double MAX_FRAMERATE = -1;
-    private static final long MAX_FRAME_PERIOD_NS = Math.round(1e9 / MAX_FRAMERATE);
+  private static final double MAX_FRAMERATE = -1;
+  private static final long MAX_FRAME_PERIOD_NS = Math.round(1e9 / MAX_FRAMERATE);
 
-    private long lastFrameTimeNs;
-    private CvSource cvSource;
-    private MjpegServer mjpegServer;
+  private long lastFrameTimeNs;
+  private CvSource cvSource;
+  private MjpegServer mjpegServer;
 
-    public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
-        this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
+  public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
+    this.cvSource = new CvSource(sourceName, PixelFormat.kMJPEG, width, height, 30);
 
-        this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
-        mjpegServer.setSource(cvSource);
-        mjpegServer.setCompression(75);
-        CameraServer.addServer(mjpegServer);
+    this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
+    mjpegServer.setSource(cvSource);
+    mjpegServer.setCompression(75);
+    CameraServer.addServer(mjpegServer);
+  }
+
+  public MJPGFrameConsumer(String name, int port) {
+    this(name, 320, 240, port);
+  }
+
+  public void accept(CVMat image) {
+    long now = MathUtils.wpiNanoTime();
+
+    if (image == null || image.getMat() == null || image.getMat().empty()) {
+      image.copyFrom(StaticFrames.LOST_MAT);
     }
 
-    public MJPGFrameConsumer(String name, int port) {
-        this(name, 320, 240, port);
+    if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
+      lastFrameTimeNs = now;
+      cvSource.putFrame(image.getMat());
     }
+  }
 
-    public void accept(CVMat image) {
-        long now = MathUtils.wpiNanoTime();
-
-        if (image == null || image.getMat() == null || image.getMat().empty()) {
-            image.copyFrom(StaticFrames.LOST_MAT);
-        }
-
-        if (now - lastFrameTimeNs > MAX_FRAME_PERIOD_NS) {
-            lastFrameTimeNs = now;
-            cvSource.putFrame(image.getMat());
-        }
-    }
-
-    @Override
-    public void close() {
-        CameraServer.removeServer(mjpegServer.getName());
-        mjpegServer.close();
-        cvSource.close();
-        mjpegServer = null;
-        cvSource = null;
-    }
+  @Override
+  public void close() {
+    CameraServer.removeServer(mjpegServer.getName());
+    mjpegServer.close();
+    cvSource.close();
+    mjpegServer = null;
+    cvSource = null;
+  }
 }

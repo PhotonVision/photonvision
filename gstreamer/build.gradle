@@ -1,56 +1,59 @@
 plugins {
-  id 'java'
-  id 'java-library'
+    id 'java'
+    id 'java-library'
 }
 
 java {
-  toolchain {
-    languageVersion = JavaLanguageVersion.of(17) // Specify Java version here
-  }
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // Specify Java version here
+    }
 }
 
 dependencies {
-  testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
-  testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
 }
 
 test {
-  useJUnitPlatform()
+    useJUnitPlatform()
 }
 
 sourceSets {
-  main {
-    resources {
-      srcDirs "src/main/resources", "build/natives/lib"
+    main {
+        resources {
+            srcDirs "src/main/resources", "build/natives/lib"
+        }
     }
-  }
 }
 
 compileJava {
-  options.compilerArgs += ["-h", file("src/main/include")]
+    options.compilerArgs += [
+        "-h",
+        file("src/main/include")
+    ]
 }
 
 task compileJNI {
-  dependsOn compileJava
+    dependsOn compileJava
 
-  doLast {
-    exec {
-      commandLine 'sh', '-c', 'mkdir -p build/natives && cd build/natives && cmake ../.. && make'
+    doLast {
+        exec {
+            commandLine 'sh', '-c', 'mkdir -p build/natives && cd build/natives && cmake ../.. && make'
+        }
     }
-  }
 }
 
 clean.doFirst {
-  delete fileTree('src/main/include') {
-    include 'jni_*.h'
-  }
+    delete fileTree('src/main/include') {
+        include 'jni_*.h'
+    }
 }
 
 processResources {
-  dependsOn compileJNI
+    dependsOn compileJNI
 }
 
 tasks.withType(Test) {
-  systemProperty "java.library.path", "build/natives/lib"
-  testLogging.showStandardStreams = false
+    systemProperty "java.library.path", "build/natives/lib"
+    testLogging.showStandardStreams = false
 }

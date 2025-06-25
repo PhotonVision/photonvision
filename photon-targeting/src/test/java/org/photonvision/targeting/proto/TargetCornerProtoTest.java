@@ -23,12 +23,12 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.targeting.TargetCorner;
 
 public class TargetCornerProtoTest {
-    @Test
-    public void protobufTest() {
-        var corner = new TargetCorner(0, 1);
-        var serializedCorner = TargetCorner.proto.createMessage();
-        TargetCorner.proto.pack(serializedCorner, corner);
-        var unpackedCorner = TargetCorner.proto.unpack(serializedCorner);
-        assertEquals(corner, unpackedCorner);
-    }
+  @Test
+  public void protobufTest() {
+    var corner = new TargetCorner(0, 1);
+    var serializedCorner = TargetCorner.proto.createMessage();
+    TargetCorner.proto.pack(serializedCorner, corner);
+    var unpackedCorner = TargetCorner.proto.unpack(serializedCorner);
+    assertEquals(corner, unpackedCorner);
+  }
 }

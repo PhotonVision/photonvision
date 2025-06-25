@@ -24,16 +24,16 @@ import org.photonvision.common.configuration.CameraConfiguration;
  * This class holds the camera quirks for the See3Cam 24UGS.
  */
 public class See3Cam24CUGSettables extends GenericUSBCameraSettables {
-    public See3Cam24CUGSettables(CameraConfiguration configuration, UsbCamera camera) {
-        super(configuration, camera);
-    }
+  public See3Cam24CUGSettables(CameraConfiguration configuration, UsbCamera camera) {
+    super(configuration, camera);
+  }
 
-    @Override
-    protected void setUpExposureProperties() {
-        super.setUpExposureProperties();
+  @Override
+  protected void setUpExposureProperties() {
+    super.setUpExposureProperties();
 
-        // Property limits are incorrect
-        this.minExposure = 0;
-        this.maxExposure = 600;
-    }
+    // Property limits are incorrect
+    this.minExposure = 0;
+    this.maxExposure = 600;
+  }
 }

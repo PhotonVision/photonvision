@@ -30,10 +30,10 @@ import java.util.Arrays;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVGstreamerCameraInfo.class)
+  @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
+  @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
+  @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
+  @JsonSubTypes.Type(value = PVCameraInfo.PVGstreamerCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
   /**
@@ -54,14 +54,11 @@ public sealed interface PVCameraInfo {
   }
 
   /**
-   * If the camera is a USB camera this method returns a unique descriptor of the
-   * USB port this
-   * camera is attached to. EG
-   * "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
+   * If the camera is a USB camera this method returns a unique descriptor of the USB port this
+   * camera is attached to. EG "/dev/v4l/by-path/platform-fc800000.usb-usb-0:1.3:1.0-video-index0".
    * If the camera is a CSI camera this method returns the path of the camera.
    *
-   * <p>
-   * If we are on Windows, this will return the opaque path as described by
+   * <p>If we are on Windows, this will return the opaque path as described by
    * MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK (see
    * https://learn.microsoft.com/en-us/windows/win32/medfound/mf-devsource-attribute-source-type-vidcap-symbolic-link)
    *
@@ -127,10 +124,8 @@ public sealed interface PVCameraInfo {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
       return obj instanceof PVCameraInfo info && equals(info);
     }
 
@@ -195,10 +190,8 @@ public sealed interface PVCameraInfo {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
       return obj instanceof PVCameraInfo info && equals(info);
     }
 
@@ -254,10 +247,8 @@ public sealed interface PVCameraInfo {
 
     @Override
     public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
+      if (this == obj) return true;
+      if (obj == null) return false;
       return obj instanceof PVFileCameraInfo info && equals(info);
     }
 
@@ -286,8 +277,7 @@ public sealed interface PVCameraInfo {
 
     @JsonCreator
     public PVGstreamerCameraInfo(
-        @JsonProperty("pipeline") String pipeline,
-        @JsonProperty("name") String name) {
+        @JsonProperty("pipeline") String pipeline, @JsonProperty("name") String name) {
       this.path = pipeline;
       this.baseName = name;
     }
@@ -319,8 +309,13 @@ public sealed interface PVCameraInfo {
 
     @Override
     public String toString() {
-      return "PVGstreamerCameraInfo[type=" + type() +
-          ", name='" + baseName + "', pipeline='" + path + "']";
+      return "PVGstreamerCameraInfo[type="
+          + type()
+          + ", name='"
+          + baseName
+          + "', pipeline='"
+          + path
+          + "']";
     }
   }
 

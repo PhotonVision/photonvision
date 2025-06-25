@@ -18,14 +18,14 @@
 package org.photonvision.jni;
 
 public class ConstrainedSolvepnpJni {
-    public static native double[] do_optimization(
-            boolean heading_free,
-            int nTags,
-            double[] cameraCal,
-            double[] robot2camera,
-            double[] x_guess,
-            double[] field2points,
-            double[] point_observations,
-            double gyro_θ,
-            double gyro_error_scale_fac);
+  public static native double[] do_optimization(
+      boolean heading_free,
+      int nTags,
+      double[] cameraCal,
+      double[] robot2camera,
+      double[] x_guess,
+      double[] field2points,
+      double[] point_observations,
+      double gyro_θ,
+      double gyro_error_scale_fac);
 }

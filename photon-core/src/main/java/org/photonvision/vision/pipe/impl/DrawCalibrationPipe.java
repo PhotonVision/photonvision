@@ -30,57 +30,57 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class DrawCalibrationPipe
-        extends MutatingPipe<
-                Pair<Mat, List<TrackedTarget>>, DrawCalibrationPipe.DrawCalibrationPipeParams> {
-    Scalar[] chessboardColors = {
-        ColorHelper.colorToScalar(Color.RED, 0.4),
-        ColorHelper.colorToScalar(Color.ORANGE, 0.4),
-        ColorHelper.colorToScalar(Color.GREEN, 0.4),
-        ColorHelper.colorToScalar(Color.BLUE, 0.4),
-        ColorHelper.colorToScalar(Color.MAGENTA, 0.4),
-    };
+    extends MutatingPipe<
+        Pair<Mat, List<TrackedTarget>>, DrawCalibrationPipe.DrawCalibrationPipeParams> {
+  Scalar[] chessboardColors = {
+    ColorHelper.colorToScalar(Color.RED, 0.4),
+    ColorHelper.colorToScalar(Color.ORANGE, 0.4),
+    ColorHelper.colorToScalar(Color.GREEN, 0.4),
+    ColorHelper.colorToScalar(Color.BLUE, 0.4),
+    ColorHelper.colorToScalar(Color.MAGENTA, 0.4),
+  };
 
-    @Override
-    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.drawAllSnapshots()) return null;
+  @Override
+  protected Void process(Pair<Mat, List<TrackedTarget>> in) {
+    if (!params.drawAllSnapshots()) return null;
 
-        var image = in.getFirst();
+    var image = in.getFirst();
 
-        var imgSz = image.size();
-        var diag = Math.hypot(imgSz.width, imgSz.height);
+    var imgSz = image.size();
+    var diag = Math.hypot(imgSz.width, imgSz.height);
 
-        // heuristic: about 4px at a diagonal of 750px, or .5%, 'looks good'. keep it at least 3px at
-        // worst tho
-        int r = (int) Math.max(diag * 4.0 / 750.0, 3);
-        int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
+    // heuristic: about 4px at a diagonal of 750px, or .5%, 'looks good'. keep it at least 3px at
+    // worst tho
+    int r = (int) Math.max(diag * 4.0 / 750.0, 3);
+    int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
 
-        int i = 0;
-        for (var target : in.getSecond()) {
-            for (var c : target.getTargetCorners()) {
-                if (c.x < 0 || c.y < 0) {
-                    // Skip if the corner is less than zero
-                    continue;
-                }
-
-                c =
-                        new Point(
-                                c.x / params.divisor().value.doubleValue(),
-                                c.y / params.divisor().value.doubleValue());
-
-                var r2 = r / Math.sqrt(2);
-                var color = chessboardColors[i % chessboardColors.length];
-                Imgproc.circle(image, c, r, color, thickness);
-                Imgproc.line(
-                        image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color, thickness);
-                Imgproc.line(
-                        image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color, thickness);
-            }
-
-            i++;
+    int i = 0;
+    for (var target : in.getSecond()) {
+      for (var c : target.getTargetCorners()) {
+        if (c.x < 0 || c.y < 0) {
+          // Skip if the corner is less than zero
+          continue;
         }
 
-        return null;
+        c =
+            new Point(
+                c.x / params.divisor().value.doubleValue(),
+                c.y / params.divisor().value.doubleValue());
+
+        var r2 = r / Math.sqrt(2);
+        var color = chessboardColors[i % chessboardColors.length];
+        Imgproc.circle(image, c, r, color, thickness);
+        Imgproc.line(
+            image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color, thickness);
+        Imgproc.line(
+            image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color, thickness);
+      }
+
+      i++;
     }
 
-    public static record DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawAllSnapshots) {}
+    return null;
+  }
+
+  public static record DrawCalibrationPipeParams(FrameDivisor divisor, boolean drawAllSnapshots) {}
 }

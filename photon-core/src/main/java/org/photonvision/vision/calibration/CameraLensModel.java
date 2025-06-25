@@ -23,12 +23,12 @@ package org.photonvision.vision.calibration;
  * https://mrcal.secretsauce.net/lensmodels.html#org4e95788
  */
 public enum CameraLensModel {
-    /** OpenCV[4,5,8,12]-based model */
-    LENSMODEL_OPENCV,
-    /** Mrcal steriographic lens model. See LENSMODEL_STEREOGRAPHIC in the mrcal docs */
-    LENSMODEL_STERIOGRAPHIC,
-    /**
-     * Mrcal splined-steriographic lens model. See LENSMODEL_SPLINED_STEREOGRAPHIC in the mrcal docs
-     */
-    LENSMODEL_SPLINED_STERIOGRAPHIC
+  /** OpenCV[4,5,8,12]-based model */
+  LENSMODEL_OPENCV,
+  /** Mrcal steriographic lens model. See LENSMODEL_STEREOGRAPHIC in the mrcal docs */
+  LENSMODEL_STERIOGRAPHIC,
+  /**
+   * Mrcal splined-steriographic lens model. See LENSMODEL_SPLINED_STEREOGRAPHIC in the mrcal docs
+   */
+  LENSMODEL_SPLINED_STERIOGRAPHIC
 }

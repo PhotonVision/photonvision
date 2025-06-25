@@ -31,34 +31,34 @@ import org.photonvision.jni.QueuedFileLogger;
 import org.photonvision.jni.WpilibLoader;
 
 public class FileLoggerTest {
-    @BeforeAll
-    public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
-        if (!WpilibLoader.loadLibraries()) {
-            fail();
-        }
-        if (!PhotonTargetingJniLoader.load()) {
-            fail();
-        }
-
-        HAL.initialize(1000, 0);
+  @BeforeAll
+  public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
+    if (!WpilibLoader.loadLibraries()) {
+      fail();
+    }
+    if (!PhotonTargetingJniLoader.load()) {
+      fail();
     }
 
-    @AfterAll
-    public static void teardown() {
-        HAL.shutdown();
+    HAL.initialize(1000, 0);
+  }
+
+  @AfterAll
+  public static void teardown() {
+    HAL.shutdown();
+  }
+
+  @Test
+  public void smoketest() throws InterruptedException {
+    assumeTrue(Platform.isLinux());
+
+    var logger = new QueuedFileLogger("/var/log/kern.log");
+    for (int i = 0; i < 1; i++) {
+      for (var line : logger.getNewlines()) {
+        System.out.println(" ->:" + line);
+      }
     }
 
-    @Test
-    public void smoketest() throws InterruptedException {
-        assumeTrue(Platform.isLinux());
-
-        var logger = new QueuedFileLogger("/var/log/kern.log");
-        for (int i = 0; i < 1; i++) {
-            for (var line : logger.getNewlines()) {
-                System.out.println(" ->:" + line);
-            }
-        }
-
-        logger.stop();
-    }
+    logger.stop();
+  }
 }

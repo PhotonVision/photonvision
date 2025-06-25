@@ -24,37 +24,37 @@ import org.photonvision.targeting.PnpResult;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 public class PNPResultProto implements Protobuf<PnpResult, ProtobufPNPResult> {
-    @Override
-    public Class<PnpResult> getTypeClass() {
-        return PnpResult.class;
-    }
+  @Override
+  public Class<PnpResult> getTypeClass() {
+    return PnpResult.class;
+  }
 
-    @Override
-    public Descriptor getDescriptor() {
-        return ProtobufPNPResult.getDescriptor();
-    }
+  @Override
+  public Descriptor getDescriptor() {
+    return ProtobufPNPResult.getDescriptor();
+  }
 
-    @Override
-    public ProtobufPNPResult createMessage() {
-        return ProtobufPNPResult.newInstance();
-    }
+  @Override
+  public ProtobufPNPResult createMessage() {
+    return ProtobufPNPResult.newInstance();
+  }
 
-    @Override
-    public PnpResult unpack(ProtobufPNPResult msg) {
-        return new PnpResult(
-                Transform3d.proto.unpack(msg.getBest()),
-                Transform3d.proto.unpack(msg.getAlt()),
-                msg.getAmbiguity(),
-                msg.getBestReprojErr(),
-                msg.getAltReprojErr());
-    }
+  @Override
+  public PnpResult unpack(ProtobufPNPResult msg) {
+    return new PnpResult(
+        Transform3d.proto.unpack(msg.getBest()),
+        Transform3d.proto.unpack(msg.getAlt()),
+        msg.getAmbiguity(),
+        msg.getBestReprojErr(),
+        msg.getAltReprojErr());
+  }
 
-    @Override
-    public void pack(ProtobufPNPResult msg, PnpResult value) {
-        Transform3d.proto.pack(msg.getMutableBest(), value.best);
-        Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
-        msg.setAmbiguity(value.ambiguity)
-                .setBestReprojErr(value.bestReprojErr)
-                .setAltReprojErr(value.altReprojErr);
-    }
+  @Override
+  public void pack(ProtobufPNPResult msg, PnpResult value) {
+    Transform3d.proto.pack(msg.getMutableBest(), value.best);
+    Transform3d.proto.pack(msg.getMutableAlt(), value.alt);
+    msg.setAmbiguity(value.ambiguity)
+        .setBestReprojErr(value.bestReprojErr)
+        .setAltReprojErr(value.altReprojErr);
+  }
 }

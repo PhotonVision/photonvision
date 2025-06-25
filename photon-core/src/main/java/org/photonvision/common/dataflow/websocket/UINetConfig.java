@@ -22,15 +22,15 @@ import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.networking.NetworkUtils.NMDeviceInfo;
 
 public class UINetConfig extends NetworkConfig {
-    public UINetConfig(
-            NetworkConfig config, List<NMDeviceInfo> networkInterfaceNames, boolean networkingDisabled) {
-        super(config);
-        this.networkInterfaceNames = networkInterfaceNames;
-        this.networkingDisabled = networkingDisabled;
-        this.canManage = this.deviceCanManageNetwork();
-    }
+  public UINetConfig(
+      NetworkConfig config, List<NMDeviceInfo> networkInterfaceNames, boolean networkingDisabled) {
+    super(config);
+    this.networkInterfaceNames = networkInterfaceNames;
+    this.networkingDisabled = networkingDisabled;
+    this.canManage = this.deviceCanManageNetwork();
+  }
 
-    public List<NMDeviceInfo> networkInterfaceNames;
-    public boolean networkingDisabled;
-    public boolean canManage;
+  public List<NMDeviceInfo> networkInterfaceNames;
+  public boolean networkingDisabled;
+  public boolean canManage;
 }

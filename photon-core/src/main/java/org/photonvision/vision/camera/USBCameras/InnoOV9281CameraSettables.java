@@ -21,16 +21,16 @@ import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
 
 public class InnoOV9281CameraSettables extends GenericUSBCameraSettables {
-    public InnoOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
-        super(configuration, camera);
-    }
+  public InnoOV9281CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+    super(configuration, camera);
+  }
 
-    @Override
-    protected void setUpExposureProperties() {
-        super.setUpExposureProperties();
+  @Override
+  protected void setUpExposureProperties() {
+    super.setUpExposureProperties();
 
-        // Property limits are incorrect
-        this.minExposure = 1;
-        this.maxExposure = 500;
-    }
+    // Property limits are incorrect
+    this.minExposure = 1;
+    this.maxExposure = 500;
+  }
 }

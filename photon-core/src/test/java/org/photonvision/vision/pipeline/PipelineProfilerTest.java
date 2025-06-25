@@ -23,21 +23,21 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 public class PipelineProfilerTest {
-    @Test
-    public void reflectiveProfile() {
-        long[] invalidNanos = new long[20];
-        long[] validNanos = new long[PipelineProfiler.ReflectivePipeCount];
+  @Test
+  public void reflectiveProfile() {
+    long[] invalidNanos = new long[20];
+    long[] validNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
-        for (int i = 0; i < validNanos.length; i++) {
-            validNanos[i] = (long) (i * 1e+6); // fill data
-        }
-
-        var invalidResult = PipelineProfiler.getReflectiveProfileString(invalidNanos);
-        var validResult = PipelineProfiler.getReflectiveProfileString(validNanos);
-
-        System.out.println(validResult);
-
-        assertEquals("Invalid data", invalidResult);
-        assertTrue(validResult.contains("Total: 45.0ms"));
+    for (int i = 0; i < validNanos.length; i++) {
+      validNanos[i] = (long) (i * 1e+6); // fill data
     }
+
+    var invalidResult = PipelineProfiler.getReflectiveProfileString(invalidNanos);
+    var validResult = PipelineProfiler.getReflectiveProfileString(validNanos);
+
+    System.out.println(validResult);
+
+    assertEquals("Invalid data", invalidResult);
+    assertTrue(validResult.contains("Total: 45.0ms"));
+  }
 }

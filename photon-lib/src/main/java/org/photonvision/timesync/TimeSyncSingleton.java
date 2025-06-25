@@ -30,23 +30,23 @@ import org.photonvision.jni.TimeSyncServer;
 
 /** Helper to hold a single TimeSyncServer instance with some default config */
 public class TimeSyncSingleton {
-    private static TimeSyncServer INSTANCE = null;
+  private static TimeSyncServer INSTANCE = null;
 
-    public static boolean load() {
-        if (INSTANCE == null) {
-            try {
-                if (!PhotonTargetingJniLoader.load()) {
-                    return false;
-                }
-            } catch (UnsatisfiedLinkError | IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-
-            INSTANCE = new TimeSyncServer(5810);
-            INSTANCE.start();
+  public static boolean load() {
+    if (INSTANCE == null) {
+      try {
+        if (!PhotonTargetingJniLoader.load()) {
+          return false;
         }
+      } catch (UnsatisfiedLinkError | IOException e) {
+        e.printStackTrace();
+        return false;
+      }
 
-        return INSTANCE != null;
+      INSTANCE = new TimeSyncServer(5810);
+      INSTANCE.start();
     }
+
+    return INSTANCE != null;
+  }
 }

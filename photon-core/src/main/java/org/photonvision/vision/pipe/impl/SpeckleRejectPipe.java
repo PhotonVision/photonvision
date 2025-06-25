@@ -23,35 +23,35 @@ import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class SpeckleRejectPipe
-        extends CVPipe<List<Contour>, List<Contour>, SpeckleRejectPipe.SpeckleRejectParams> {
-    private final List<Contour> m_despeckledContours = new ArrayList<>();
+    extends CVPipe<List<Contour>, List<Contour>, SpeckleRejectPipe.SpeckleRejectParams> {
+  private final List<Contour> m_despeckledContours = new ArrayList<>();
 
-    @Override
-    protected List<Contour> process(List<Contour> in) {
-        for (var c : m_despeckledContours) {
-            c.mat.release();
+  @Override
+  protected List<Contour> process(List<Contour> in) {
+    for (var c : m_despeckledContours) {
+      c.mat.release();
+    }
+    m_despeckledContours.clear();
+
+    if (!in.isEmpty()) {
+      double averageArea = 0.0;
+      for (Contour c : in) {
+        averageArea += c.getArea();
+      }
+      averageArea /= in.size();
+
+      double minAllowedArea = params.minPercentOfAvg() / 100.0 * averageArea;
+      for (Contour c : in) {
+        if (c.getArea() >= minAllowedArea) {
+          m_despeckledContours.add(c);
+        } else {
+          c.release();
         }
-        m_despeckledContours.clear();
-
-        if (!in.isEmpty()) {
-            double averageArea = 0.0;
-            for (Contour c : in) {
-                averageArea += c.getArea();
-            }
-            averageArea /= in.size();
-
-            double minAllowedArea = params.minPercentOfAvg() / 100.0 * averageArea;
-            for (Contour c : in) {
-                if (c.getArea() >= minAllowedArea) {
-                    m_despeckledContours.add(c);
-                } else {
-                    c.release();
-                }
-            }
-        }
-
-        return m_despeckledContours;
+      }
     }
 
-    public static record SpeckleRejectParams(double minPercentOfAvg) {}
+    return m_despeckledContours;
+  }
+
+  public static record SpeckleRejectParams(double minPercentOfAvg) {}
 }

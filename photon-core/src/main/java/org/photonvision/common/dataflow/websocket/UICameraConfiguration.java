@@ -25,35 +25,35 @@ import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 
 public class UICameraConfiguration {
-    // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id
-    // or /dev/videoN.
-    // This is the path we hand to CSCore to do auto-reconnect on
-    public String cameraPath;
+  // Path to the camera device. On Linux, this is a special file in /dev/v4l/by-id
+  // or /dev/videoN.
+  // This is the path we hand to CSCore to do auto-reconnect on
+  public String cameraPath;
 
-    /** See {@link CameraConfiguration #deactivated} */
-    public boolean deactivated;
+  /** See {@link CameraConfiguration #deactivated} */
+  public boolean deactivated;
 
-    public String nickname;
-    public String uniqueName;
+  public String nickname;
+  public String uniqueName;
 
-    public double fov;
-    public HashMap<String, Object> currentPipelineSettings;
-    public int currentPipelineIndex;
-    public List<String> pipelineNicknames;
-    public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-    public int outputStreamPort;
-    public int inputStreamPort;
-    public List<UICameraCalibrationCoefficients> calibrations;
-    public boolean isFovConfigurable = true;
-    public QuirkyCamera cameraQuirks;
-    public boolean isCSICamera;
-    public double minExposureRaw;
-    public double maxExposureRaw;
-    public double minWhiteBalanceTemp;
-    public double maxWhiteBalanceTemp;
-    public PVCameraInfo matchedCameraInfo;
+  public double fov;
+  public HashMap<String, Object> currentPipelineSettings;
+  public int currentPipelineIndex;
+  public List<String> pipelineNicknames;
+  public HashMap<Integer, HashMap<String, Object>> videoFormatList;
+  public int outputStreamPort;
+  public int inputStreamPort;
+  public List<UICameraCalibrationCoefficients> calibrations;
+  public boolean isFovConfigurable = true;
+  public QuirkyCamera cameraQuirks;
+  public boolean isCSICamera;
+  public double minExposureRaw;
+  public double maxExposureRaw;
+  public double minWhiteBalanceTemp;
+  public double maxWhiteBalanceTemp;
+  public PVCameraInfo matchedCameraInfo;
 
-    // Status for if the underlying device is present and such
-    public boolean isConnected;
-    public boolean hasConnected;
+  // Status for if the underlying device is present and such
+  public boolean isConnected;
+  public boolean hasConnected;
 }

@@ -25,53 +25,53 @@ import edu.wpi.first.math.geometry.Transform3d;
 import org.junit.jupiter.api.Test;
 
 public class PNPResultTest {
-    @Test
-    public void equalityTest() {
-        var a = new PnpResult();
-        var b = new PnpResult();
-        assertEquals(a, b);
+  @Test
+  public void equalityTest() {
+    var a = new PnpResult();
+    var b = new PnpResult();
+    assertEquals(a, b);
 
-        a = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        b = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        assertEquals(a, b);
+    a = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+    b = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+    assertEquals(a, b);
 
-        a =
-                new PnpResult(
-                        new Transform3d(0, 1, 2, new Rotation3d()),
-                        new Transform3d(3, 4, 5, new Rotation3d()),
-                        0.5,
-                        0.1,
-                        0.1);
-        b =
-                new PnpResult(
-                        new Transform3d(0, 1, 2, new Rotation3d()),
-                        new Transform3d(3, 4, 5, new Rotation3d()),
-                        0.5,
-                        0.1,
-                        0.1);
-        assertEquals(a, b);
-    }
+    a =
+        new PnpResult(
+            new Transform3d(0, 1, 2, new Rotation3d()),
+            new Transform3d(3, 4, 5, new Rotation3d()),
+            0.5,
+            0.1,
+            0.1);
+    b =
+        new PnpResult(
+            new Transform3d(0, 1, 2, new Rotation3d()),
+            new Transform3d(3, 4, 5, new Rotation3d()),
+            0.5,
+            0.1,
+            0.1);
+    assertEquals(a, b);
+  }
 
-    @Test
-    public void inequalityTest() {
-        var a = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
-        var b = new PnpResult(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
-        assertNotEquals(a, b);
+  @Test
+  public void inequalityTest() {
+    var a = new PnpResult(new Transform3d(0, 1, 2, new Rotation3d()), 0.0);
+    var b = new PnpResult(new Transform3d(3, 4, 5, new Rotation3d()), 0.1);
+    assertNotEquals(a, b);
 
-        a =
-                new PnpResult(
-                        new Transform3d(3, 4, 5, new Rotation3d()),
-                        new Transform3d(0, 1, 2, new Rotation3d()),
-                        0.5,
-                        0.1,
-                        0.1);
-        b =
-                new PnpResult(
-                        new Transform3d(3, 4, 5, new Rotation3d()),
-                        new Transform3d(0, 1, 2, new Rotation3d()),
-                        0.5,
-                        0.1,
-                        0.2);
-        assertNotEquals(a, b);
-    }
+    a =
+        new PnpResult(
+            new Transform3d(3, 4, 5, new Rotation3d()),
+            new Transform3d(0, 1, 2, new Rotation3d()),
+            0.5,
+            0.1,
+            0.1);
+    b =
+        new PnpResult(
+            new Transform3d(3, 4, 5, new Rotation3d()),
+            new Transform3d(0, 1, 2, new Rotation3d()),
+            0.5,
+            0.1,
+            0.2);
+    assertNotEquals(a, b);
+  }
 }

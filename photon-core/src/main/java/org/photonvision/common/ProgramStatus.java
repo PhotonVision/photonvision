@@ -18,7 +18,7 @@
 package org.photonvision.common;
 
 public enum ProgramStatus {
-    UHOH,
-    RUNNING,
-    RUNNING_NT
+  UHOH,
+  RUNNING,
+  RUNNING_NT
 }

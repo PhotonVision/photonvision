@@ -29,77 +29,76 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
-        extends CVPipe<
-                AprilTagDetection,
-                AprilTagPoseEstimate,
-                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
-        implements Releasable {
-    private final AprilTagPoseEstimator m_poseEstimator =
-            new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
+    extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
+    implements Releasable {
+  private final AprilTagPoseEstimator m_poseEstimator = new AprilTagPoseEstimator(
+      new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
-    public AprilTagPoseEstimatorPipe() {
-        super();
+  public AprilTagPoseEstimatorPipe() {
+    super();
+  }
+
+  MatOfPoint2f temp = new MatOfPoint2f();
+
+  @Override
+  protected AprilTagPoseEstimate process(AprilTagDetection in) {
+    System.out.println("asdfasf:");
+    System.exit(0);
+    // Save the corner points of our detection to an array
+    Point[] corners = new Point[4];
+    for (int i = 0; i < 4; i++) {
+      corners[i] = new Point(in.getCornerX(i), in.getCornerY(i));
+    }
+    // And shove into our matofpoints
+    temp.fromArray(corners);
+
+    // Probably overwrites what was in temp before. I hope
+    System.out.println("Undistort 1");
+    Calib3d.undistortImagePoints(
+        temp,
+        temp,
+        params.calibration().getCameraIntrinsicsMat(),
+        params.calibration().getDistCoeffsMat());
+
+    // Save out undistorted corners
+    corners = temp.toArray();
+
+    // Apriltagdetection expects an array in form [x1 y1 x2 y2 ...]
+    var fixedCorners = new double[8];
+    for (int i = 0; i < 4; i++) {
+      fixedCorners[i * 2] = corners[i].x;
+      fixedCorners[i * 2 + 1] = corners[i].y;
     }
 
-    MatOfPoint2f temp = new MatOfPoint2f();
+    // Create a new Detection with the fixed corners
+    var corrected = new AprilTagDetection(
+        in.getFamily(),
+        in.getId(),
+        in.getHamming(),
+        in.getDecisionMargin(),
+        in.getHomography(),
+        in.getCenterX(),
+        in.getCenterY(),
+        fixedCorners);
 
-    @Override
-    protected AprilTagPoseEstimate process(AprilTagDetection in) {
-        // Save the corner points of our detection to an array
-        Point[] corners = new Point[4];
-        for (int i = 0; i < 4; i++) {
-            corners[i] = new Point(in.getCornerX(i), in.getCornerY(i));
-        }
-        // And shove into our matofpoints
-        temp.fromArray(corners);
+    return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters());
+  }
 
-        // Probably overwrites what was in temp before. I hope
-        System.out.println("Undistort 1");
-        Calib3d.undistortImagePoints(
-                temp,
-                temp,
-                params.calibration().getCameraIntrinsicsMat(),
-                params.calibration().getDistCoeffsMat());
-
-        // Save out undistorted corners
-        corners = temp.toArray();
-
-        // Apriltagdetection expects an array in form [x1 y1 x2 y2 ...]
-        var fixedCorners = new double[8];
-        for (int i = 0; i < 4; i++) {
-            fixedCorners[i * 2] = corners[i].x;
-            fixedCorners[i * 2 + 1] = corners[i].y;
-        }
-
-        // Create a new Detection with the fixed corners
-        var corrected =
-                new AprilTagDetection(
-                        in.getFamily(),
-                        in.getId(),
-                        in.getHamming(),
-                        in.getDecisionMargin(),
-                        in.getHomography(),
-                        in.getCenterX(),
-                        in.getCenterY(),
-                        fixedCorners);
-
-        return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters());
+  @Override
+  public void setParams(AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams newParams) {
+    if (this.params == null || !this.params.config().equals(newParams.config())) {
+      m_poseEstimator.setConfig(newParams.config());
     }
 
-    @Override
-    public void setParams(AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams newParams) {
-        if (this.params == null || !this.params.config().equals(newParams.config())) {
-            m_poseEstimator.setConfig(newParams.config());
-        }
+    super.setParams(newParams);
+  }
 
-        super.setParams(newParams);
-    }
+  @Override
+  public void release() {
+    temp.release();
+  }
 
-    @Override
-    public void release() {
-        temp.release();
-    }
-
-    public static record AprilTagPoseEstimatorPipeParams(
-            Config config, CameraCalibrationCoefficients calibration, int nIters) {}
+  public static record AprilTagPoseEstimatorPipeParams(
+      Config config, CameraCalibrationCoefficients calibration, int nIters) {
+  }
 }

@@ -21,31 +21,31 @@ import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
 
 public class ArduOV9782CameraSettables extends GenericUSBCameraSettables {
-    public ArduOV9782CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
-        super(configuration, camera);
-        // Arbitrary, worked well in Chris's basement
-        lastWhiteBalanceTemp = 5300;
+  public ArduOV9782CameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+    super(configuration, camera);
+    // Arbitrary, worked well in Chris's basement
+    lastWhiteBalanceTemp = 5300;
 
-        // According to Chris' pi, running an older kernel at least
-        this.minExposure = 1;
-        this.maxExposure = 70;
-    }
+    // According to Chris' pi, running an older kernel at least
+    this.minExposure = 1;
+    this.maxExposure = 70;
+  }
 
-    @Override
-    public void setAllCamDefaults() {
-        softSet("power_line_frequency", 2); // Assume 60Hz USA
-        softSet("exposure_metering_mode", 0);
-        softSet("exposure_dynamic_framerate", 0);
-        softSet("white_balance_automatic", 0);
-        softSet("white_balance_temperature", lastWhiteBalanceTemp);
-    }
+  @Override
+  public void setAllCamDefaults() {
+    softSet("power_line_frequency", 2); // Assume 60Hz USA
+    softSet("exposure_metering_mode", 0);
+    softSet("exposure_dynamic_framerate", 0);
+    softSet("white_balance_automatic", 0);
+    softSet("white_balance_temperature", lastWhiteBalanceTemp);
+  }
 
-    @Override
-    protected void setUpExposureProperties() {
-        super.setUpExposureProperties();
+  @Override
+  protected void setUpExposureProperties() {
+    super.setUpExposureProperties();
 
-        // Property limits are incorrect
-        this.minExposure = 1;
-        this.maxExposure = 60;
-    }
+    // Property limits are incorrect
+    this.minExposure = 1;
+    this.maxExposure = 60;
+  }
 }

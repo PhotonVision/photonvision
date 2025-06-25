@@ -50,7 +50,8 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
   private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-  private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe = new AprilTagPoseEstimatorPipe();
+  private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
+      new AprilTagPoseEstimatorPipe();
   private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
   private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
@@ -135,7 +136,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
       return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
     }
 
-    CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+    CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
+        aprilTagDetectionPipe.run(frame.processedImage);
     sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
     System.out.println(sumPipeNanosElapsed / 1000_000);
 
@@ -146,10 +148,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     // Filter out detections based on pipeline settings
     for (AprilTagDetection detection : detections) {
       // TODO this should be in a pipe, not in the top level here (Matt)
-      if (detection.getDecisionMargin() < settings.decisionMargin)
-        continue;
-      if (detection.getHamming() > settings.hammingDist)
-        continue;
+      if (detection.getDecisionMargin() < settings.decisionMargin) continue;
+      if (detection.getHamming() > settings.hammingDist) continue;
 
       usedDetections.add(detection);
 
@@ -157,11 +157,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
       // (TODO: Address circular dependencies. Multitag only requires corners and IDs,
       // this should
       // not be necessary.)
-      TrackedTarget target = new TrackedTarget(
-          detection,
-          null,
-          new TargetCalculationParameters(
-              false, null, null, null, null, frameStaticProperties));
+      TrackedTarget target =
+          new TrackedTarget(
+              detection,
+              null,
+              new TargetCalculationParameters(
+                  false, null, null, null, null, frameStaticProperties));
 
       targetList.add(target);
     }
@@ -199,28 +200,34 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
           // compute this tag's camera-to-tag transform using the multitag result
           var tagPose = atfl.getTagPose(detection.getId());
           if (tagPose.isPresent()) {
-            var camToTag = new Transform3d(
-                new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
+            var camToTag =
+                new Transform3d(
+                    new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
             // match expected AprilTag coordinate system
-            camToTag = CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
+            camToTag =
+                CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
             // (AprilTag expects Z axis going into tag)
-            camToTag = new Transform3d(
-                camToTag.getTranslation(),
-                new Rotation3d(0, Math.PI, 0).plus(camToTag.getRotation()));
+            camToTag =
+                new Transform3d(
+                    camToTag.getTranslation(),
+                    new Rotation3d(0, Math.PI, 0).plus(camToTag.getRotation()));
             tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
           }
         }
 
         // populate the target list
         // Challenge here is that TrackedTarget functions with OpenCV Contour
-        TrackedTarget target = new TrackedTarget(
-            detection,
-            tagPoseEstimate,
-            new TargetCalculationParameters(
-                false, null, null, null, null, frameStaticProperties));
+        TrackedTarget target =
+            new TrackedTarget(
+                detection,
+                tagPoseEstimate,
+                new TargetCalculationParameters(
+                    false, null, null, null, null, frameStaticProperties));
 
-        var correctedBestPose = MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
-        var correctedAltPose = MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
+        var correctedBestPose =
+            MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
+        var correctedAltPose =
+            MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
 
         target.setBestCameraToTarget3d(
             new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));

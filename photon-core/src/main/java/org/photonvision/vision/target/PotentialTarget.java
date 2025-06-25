@@ -27,61 +27,61 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class PotentialTarget implements Releasable {
-    public final Contour m_mainContour;
-    public final List<Contour> m_subContours;
-    public final CVShape shape;
+  public final Contour m_mainContour;
+  public final List<Contour> m_subContours;
+  public final CVShape shape;
 
-    // additional metadata about object detections we need to keep around
-    public final double confidence;
-    public final int clsId;
+  // additional metadata about object detections we need to keep around
+  public final double confidence;
+  public final int clsId;
 
-    public PotentialTarget(Contour inputContour) {
-        this(inputContour, List.of());
+  public PotentialTarget(Contour inputContour) {
+    this(inputContour, List.of());
+  }
+
+  public PotentialTarget(Contour inputContour, List<Contour> subContours) {
+    this(inputContour, subContours, null);
+  }
+
+  public PotentialTarget(Contour inputContour, List<Contour> subContours, CVShape shape) {
+    m_mainContour = inputContour;
+    m_subContours = new ArrayList<>(subContours);
+    this.shape = shape;
+    this.clsId = -1;
+    this.confidence = -1;
+  }
+
+  public PotentialTarget(Contour inputContour, CVShape shape) {
+    this(inputContour, List.of(), shape);
+  }
+
+  public PotentialTarget(NeuralNetworkPipeResult det) {
+    this.shape = new CVShape(new Contour(det.bbox()), ContourShape.Quadrilateral);
+    this.m_mainContour = this.shape.getContour();
+    m_subContours = List.of();
+    this.clsId = det.classIdx();
+    this.confidence = det.confidence();
+  }
+
+  public PotentialTarget(CVShape cvShape) {
+    this(cvShape.getContour(), cvShape);
+  }
+
+  public RotatedRect getMinAreaRect() {
+    return m_mainContour.getMinAreaRect();
+  }
+
+  public double getArea() {
+    return m_mainContour.getArea();
+  }
+
+  @Override
+  public void release() {
+    m_mainContour.release();
+    for (var sc : m_subContours) {
+      sc.release();
     }
-
-    public PotentialTarget(Contour inputContour, List<Contour> subContours) {
-        this(inputContour, subContours, null);
-    }
-
-    public PotentialTarget(Contour inputContour, List<Contour> subContours, CVShape shape) {
-        m_mainContour = inputContour;
-        m_subContours = new ArrayList<>(subContours);
-        this.shape = shape;
-        this.clsId = -1;
-        this.confidence = -1;
-    }
-
-    public PotentialTarget(Contour inputContour, CVShape shape) {
-        this(inputContour, List.of(), shape);
-    }
-
-    public PotentialTarget(NeuralNetworkPipeResult det) {
-        this.shape = new CVShape(new Contour(det.bbox()), ContourShape.Quadrilateral);
-        this.m_mainContour = this.shape.getContour();
-        m_subContours = List.of();
-        this.clsId = det.classIdx();
-        this.confidence = det.confidence();
-    }
-
-    public PotentialTarget(CVShape cvShape) {
-        this(cvShape.getContour(), cvShape);
-    }
-
-    public RotatedRect getMinAreaRect() {
-        return m_mainContour.getMinAreaRect();
-    }
-
-    public double getArea() {
-        return m_mainContour.getArea();
-    }
-
-    @Override
-    public void release() {
-        m_mainContour.release();
-        for (var sc : m_subContours) {
-            sc.release();
-        }
-        if (!m_subContours.isEmpty()) m_subContours.clear();
-        if (shape != null) shape.release();
-    }
+    if (!m_subContours.isEmpty()) m_subContours.clear();
+    if (shape != null) shape.release();
+  }
 }

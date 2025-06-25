@@ -29,96 +29,96 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 
 /** Dummy class for unit testing the vision source manager */
 public class TestSource extends VisionSource {
-    public TestSource(CameraConfiguration config) {
-        super(config);
+  public TestSource(CameraConfiguration config) {
+    super(config);
 
-        // Disable camera quirk detection using this fun hack
-        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(-1, -1, "");
-    }
+    // Disable camera quirk detection using this fun hack
+    getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(-1, -1, "");
+  }
 
-    @Override
-    public void remakeSettables() {
-        // Nothing to do, settables for this type of VisionSource should never be
-        // remade.
-        return;
-    }
+  @Override
+  public void remakeSettables() {
+    // Nothing to do, settables for this type of VisionSource should never be
+    // remade.
+    return;
+  }
 
-    @Override
-    public FrameProvider getFrameProvider() {
-        return new FrameProvider() {
-            @Override
-            public Frame get() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'get'");
-            }
-
-            @Override
-            public String getName() {
-                return cameraConfiguration.uniqueName;
-            }
-
-            @Override
-            public void requestFrameThresholdType(FrameThresholdType type) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameThresholdType'");
-            }
-
-            @Override
-            public void requestFrameRotation(ImageRotationMode rotationMode) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");
-            }
-
-            @Override
-            public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameCopies'");
-            }
-
-            @Override
-            public void requestHsvSettings(HSVParams params) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
-            }
-
-            @Override
-            public void release() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'release'");
-            }
-
-            @Override
-            public boolean checkCameraConnected() {
-                return true;
-            }
-
-            @Override
-            public boolean isConnected() {
-                return true;
-            }
-        };
-    }
-
-    @Override
-    public VisionSourceSettables getSettables() {
+  @Override
+  public FrameProvider getFrameProvider() {
+    return new FrameProvider() {
+      @Override
+      public Frame get() {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSettables'");
-    }
+        throw new UnsupportedOperationException("Unimplemented method 'get'");
+      }
 
-    @Override
-    public boolean isVendorCamera() {
+      @Override
+      public String getName() {
+        return cameraConfiguration.uniqueName;
+      }
+
+      @Override
+      public void requestFrameThresholdType(FrameThresholdType type) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'isVendorCamera'");
-    }
+        throw new UnsupportedOperationException("Unimplemented method 'requestFrameThresholdType'");
+      }
 
-    @Override
-    public boolean hasLEDs() {
-        return false; // Assume USB cameras do not have photonvision-controlled LEDs
-    }
-
-    @Override
-    public void release() {
+      @Override
+      public void requestFrameRotation(ImageRotationMode rotationMode) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'close'");
-    }
+        throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");
+      }
+
+      @Override
+      public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'requestFrameCopies'");
+      }
+
+      @Override
+      public void requestHsvSettings(HSVParams params) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
+      }
+
+      @Override
+      public void release() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'release'");
+      }
+
+      @Override
+      public boolean checkCameraConnected() {
+        return true;
+      }
+
+      @Override
+      public boolean isConnected() {
+        return true;
+      }
+    };
+  }
+
+  @Override
+  public VisionSourceSettables getSettables() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getSettables'");
+  }
+
+  @Override
+  public boolean isVendorCamera() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'isVendorCamera'");
+  }
+
+  @Override
+  public boolean hasLEDs() {
+    return false; // Assume USB cameras do not have photonvision-controlled LEDs
+  }
+
+  @Override
+  public void release() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'close'");
+  }
 }

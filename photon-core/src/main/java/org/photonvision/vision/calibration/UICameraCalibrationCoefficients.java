@@ -21,40 +21,40 @@ import java.util.List;
 import org.opencv.core.Size;
 
 public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficients {
-    public int numSnapshots;
+  public int numSnapshots;
 
-    /** Immutable list of mean errors. */
-    public List<Double> meanErrors;
+  /** Immutable list of mean errors. */
+  public List<Double> meanErrors;
 
-    public UICameraCalibrationCoefficients(
-            Size resolution,
-            JsonMatOfDouble cameraIntrinsics,
-            JsonMatOfDouble distCoeffs,
-            double[] calobjectWarp,
-            List<BoardObservation> observations,
-            Size calobjectSize,
-            double calobjectSpacing,
-            CameraLensModel lensmodel) {
-        // yeet observations, keep all else
-        super(
-                resolution,
-                cameraIntrinsics,
-                distCoeffs,
-                calobjectWarp,
-                List.of(),
-                calobjectSize,
-                calobjectSpacing,
-                lensmodel);
+  public UICameraCalibrationCoefficients(
+      Size resolution,
+      JsonMatOfDouble cameraIntrinsics,
+      JsonMatOfDouble distCoeffs,
+      double[] calobjectWarp,
+      List<BoardObservation> observations,
+      Size calobjectSize,
+      double calobjectSpacing,
+      CameraLensModel lensmodel) {
+    // yeet observations, keep all else
+    super(
+        resolution,
+        cameraIntrinsics,
+        distCoeffs,
+        calobjectWarp,
+        List.of(),
+        calobjectSize,
+        calobjectSpacing,
+        lensmodel);
 
-        this.numSnapshots = observations.size();
-        this.meanErrors =
-                observations.stream()
-                        .map(
-                                it2 ->
-                                        it2.reprojectionErrors.stream()
-                                                .mapToDouble(it -> Math.hypot(it.x, it.y))
-                                                .average()
-                                                .orElse(0))
-                        .toList();
-    }
+    this.numSnapshots = observations.size();
+    this.meanErrors =
+        observations.stream()
+            .map(
+                it2 ->
+                    it2.reprojectionErrors.stream()
+                        .mapToDouble(it -> Math.hypot(it.x, it.y))
+                        .average()
+                        .orElse(0))
+            .toList();
+  }
 }

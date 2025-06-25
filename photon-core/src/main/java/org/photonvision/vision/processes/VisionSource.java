@@ -22,23 +22,23 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.Releasable;
 
 public abstract class VisionSource implements Releasable {
-    protected final CameraConfiguration cameraConfiguration;
+  protected final CameraConfiguration cameraConfiguration;
 
-    protected VisionSource(CameraConfiguration cameraConfiguration) {
-        this.cameraConfiguration = cameraConfiguration;
-    }
+  protected VisionSource(CameraConfiguration cameraConfiguration) {
+    this.cameraConfiguration = cameraConfiguration;
+  }
 
-    public CameraConfiguration getCameraConfiguration() {
-        return cameraConfiguration;
-    }
+  public CameraConfiguration getCameraConfiguration() {
+    return cameraConfiguration;
+  }
 
-    public abstract FrameProvider getFrameProvider();
+  public abstract FrameProvider getFrameProvider();
 
-    public abstract VisionSourceSettables getSettables();
+  public abstract VisionSourceSettables getSettables();
 
-    public abstract boolean isVendorCamera();
+  public abstract boolean isVendorCamera();
 
-    public abstract boolean hasLEDs();
+  public abstract boolean hasLEDs();
 
-    public abstract void remakeSettables();
+  public abstract void remakeSettables();
 }

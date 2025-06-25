@@ -18,33 +18,33 @@
 package org.photonvision.jni;
 
 public class TimeSyncServer {
-    private final Object mutex = new Object();
-    private long handle;
+  private final Object mutex = new Object();
+  private long handle;
 
-    public TimeSyncServer(int port) {
-        this.handle = TimeSyncServer.create(port);
+  public TimeSyncServer(int port) {
+    this.handle = TimeSyncServer.create(port);
+  }
+
+  public void start() {
+    synchronized (mutex) {
+      if (handle != 0) {
+        TimeSyncServer.start(handle);
+      } else {
+        System.err.println("TimeSyncServer: use after free?");
+      }
     }
+  }
 
-    public void start() {
-        synchronized (mutex) {
-            if (handle != 0) {
-                TimeSyncServer.start(handle);
-            } else {
-                System.err.println("TimeSyncServer: use after free?");
-            }
-        }
+  public void stop() {
+    if (handle != 0) {
+      TimeSyncServer.stop(handle);
+      handle = 0;
     }
+  }
 
-    public void stop() {
-        if (handle != 0) {
-            TimeSyncServer.stop(handle);
-            handle = 0;
-        }
-    }
+  private static native long create(int port);
 
-    private static native long create(int port);
+  private static native void start(long handle);
 
-    private static native void start(long handle);
-
-    private static native void stop(long handle);
+  private static native void stop(long handle);
 }

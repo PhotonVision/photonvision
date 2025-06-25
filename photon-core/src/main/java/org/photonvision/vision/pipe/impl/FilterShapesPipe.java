@@ -25,43 +25,43 @@ import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class FilterShapesPipe
-        extends CVPipe<List<CVShape>, List<CVShape>, FilterShapesPipe.FilterShapesPipeParams> {
-    List<CVShape> outputList = new ArrayList<>();
+    extends CVPipe<List<CVShape>, List<CVShape>, FilterShapesPipe.FilterShapesPipeParams> {
+  List<CVShape> outputList = new ArrayList<>();
 
-    /**
-     * Runs the process for the pipe.
-     *
-     * @param in Input for pipe processing.
-     * @return Result of processing.
-     */
-    @Override
-    protected List<CVShape> process(List<CVShape> in) {
-        outputList.forEach(CVShape::release);
-        outputList.clear();
-        outputList = new ArrayList<>();
+  /**
+   * Runs the process for the pipe.
+   *
+   * @param in Input for pipe processing.
+   * @return Result of processing.
+   */
+  @Override
+  protected List<CVShape> process(List<CVShape> in) {
+    outputList.forEach(CVShape::release);
+    outputList.clear();
+    outputList = new ArrayList<>();
 
-        for (var shape : in) {
-            if (!shouldRemove(shape)) outputList.add(shape);
-        }
-
-        return outputList;
+    for (var shape : in) {
+      if (!shouldRemove(shape)) outputList.add(shape);
     }
 
-    private boolean shouldRemove(CVShape shape) {
-        return shape.shape != params.desiredShape()
-                || shape.contour.getArea() / params.frameStaticProperties().imageArea * 100.0
-                        > params.maxArea()
-                || shape.contour.getArea() / params.frameStaticProperties().imageArea * 100.0
-                        < params.minArea()
-                || shape.contour.getPerimeter() > params.maxPeri()
-                || shape.contour.getPerimeter() < params.minPeri();
-    }
+    return outputList;
+  }
 
-    public static record FilterShapesPipeParams(
-            ContourShape desiredShape,
-            double minArea,
-            double maxArea,
-            double minPeri,
-            double maxPeri,
-            FrameStaticProperties frameStaticProperties) {}
+  private boolean shouldRemove(CVShape shape) {
+    return shape.shape != params.desiredShape()
+        || shape.contour.getArea() / params.frameStaticProperties().imageArea * 100.0
+            > params.maxArea()
+        || shape.contour.getArea() / params.frameStaticProperties().imageArea * 100.0
+            < params.minArea()
+        || shape.contour.getPerimeter() > params.maxPeri()
+        || shape.contour.getPerimeter() < params.minPeri();
+  }
+
+  public static record FilterShapesPipeParams(
+      ContourShape desiredShape,
+      double minArea,
+      double maxArea,
+      double minPeri,
+      double maxPeri,
+      FrameStaticProperties frameStaticProperties) {}
 }

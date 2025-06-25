@@ -26,49 +26,49 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 public class PhotonPipelineResultProto
-        implements Protobuf<PhotonPipelineResult, ProtobufPhotonPipelineResult> {
-    @Override
-    public Class<PhotonPipelineResult> getTypeClass() {
-        return PhotonPipelineResult.class;
+    implements Protobuf<PhotonPipelineResult, ProtobufPhotonPipelineResult> {
+  @Override
+  public Class<PhotonPipelineResult> getTypeClass() {
+    return PhotonPipelineResult.class;
+  }
+
+  @Override
+  public Descriptor getDescriptor() {
+    return ProtobufPhotonPipelineResult.getDescriptor();
+  }
+
+  @Override
+  public ProtobufPhotonPipelineResult createMessage() {
+    return ProtobufPhotonPipelineResult.newInstance();
+  }
+
+  @Override
+  public PhotonPipelineResult unpack(ProtobufPhotonPipelineResult msg) {
+    return new PhotonPipelineResult(
+        msg.getSequenceId(),
+        msg.getCaptureTimestampMicros(),
+        msg.getNtPublishTimestampMicros(),
+        msg.getTimeSinceLastPongMicros(),
+        PhotonTrackedTarget.proto.unpack(msg.getTargets()),
+        msg.hasMultiTargetResult()
+            ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
+            : Optional.empty());
+  }
+
+  @Override
+  public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
+    PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.getTargets());
+
+    if (value.getMultiTagResult().isPresent()) {
+      MultiTargetPNPResult.proto.pack(
+          msg.getMutableMultiTargetResult(), value.getMultiTagResult().get());
+    } else {
+      msg.clearMultiTargetResult();
     }
 
-    @Override
-    public Descriptor getDescriptor() {
-        return ProtobufPhotonPipelineResult.getDescriptor();
-    }
-
-    @Override
-    public ProtobufPhotonPipelineResult createMessage() {
-        return ProtobufPhotonPipelineResult.newInstance();
-    }
-
-    @Override
-    public PhotonPipelineResult unpack(ProtobufPhotonPipelineResult msg) {
-        return new PhotonPipelineResult(
-                msg.getSequenceId(),
-                msg.getCaptureTimestampMicros(),
-                msg.getNtPublishTimestampMicros(),
-                msg.getTimeSinceLastPongMicros(),
-                PhotonTrackedTarget.proto.unpack(msg.getTargets()),
-                msg.hasMultiTargetResult()
-                        ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
-                        : Optional.empty());
-    }
-
-    @Override
-    public void pack(ProtobufPhotonPipelineResult msg, PhotonPipelineResult value) {
-        PhotonTrackedTarget.proto.pack(msg.getMutableTargets(), value.getTargets());
-
-        if (value.getMultiTagResult().isPresent()) {
-            MultiTargetPNPResult.proto.pack(
-                    msg.getMutableMultiTargetResult(), value.getMultiTagResult().get());
-        } else {
-            msg.clearMultiTargetResult();
-        }
-
-        msg.setSequenceId(value.metadata.getSequenceID());
-        msg.setCaptureTimestampMicros(value.metadata.getCaptureTimestampMicros());
-        msg.setNtPublishTimestampMicros(value.metadata.getPublishTimestampMicros());
-        msg.setTimeSinceLastPongMicros(value.metadata.timeSinceLastPong);
-    }
+    msg.setSequenceId(value.metadata.getSequenceID());
+    msg.setCaptureTimestampMicros(value.metadata.getCaptureTimestampMicros());
+    msg.setNtPublishTimestampMicros(value.metadata.getPublishTimestampMicros());
+    msg.setTimeSinceLastPongMicros(value.metadata.timeSinceLastPong);
+  }
 }

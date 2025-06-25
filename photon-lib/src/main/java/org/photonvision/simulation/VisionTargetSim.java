@@ -31,62 +31,62 @@ import org.photonvision.estimation.TargetModel;
 
 /** Describes a vision target located somewhere on the field that your vision system can detect. */
 public class VisionTargetSim {
-    private Pose3d pose;
-    private TargetModel model;
+  private Pose3d pose;
+  private TargetModel model;
 
-    public final int fiducialID;
+  public final int fiducialID;
 
-    /**
-     * Describes a vision target located somewhere on the field that your vision system can detect.
-     *
-     * @param pose Pose3d of the tag in field-relative coordinates
-     * @param model TargetModel which describes the shape of the target
-     */
-    public VisionTargetSim(Pose3d pose, TargetModel model) {
-        this.pose = pose;
-        this.model = model;
-        this.fiducialID = -1;
-    }
+  /**
+   * Describes a vision target located somewhere on the field that your vision system can detect.
+   *
+   * @param pose Pose3d of the tag in field-relative coordinates
+   * @param model TargetModel which describes the shape of the target
+   */
+  public VisionTargetSim(Pose3d pose, TargetModel model) {
+    this.pose = pose;
+    this.model = model;
+    this.fiducialID = -1;
+  }
 
-    /**
-     * Describes a fiducial tag located somewhere on the field that your vision system can detect.
-     *
-     * @param pose Pose3d of the tag in field-relative coordinates
-     * @param model TargetModel which describes the shape of the target(tag)
-     * @param id The ID of this fiducial tag
-     */
-    public VisionTargetSim(Pose3d pose, TargetModel model, int id) {
-        this.pose = pose;
-        this.model = model;
-        this.fiducialID = id;
-    }
+  /**
+   * Describes a fiducial tag located somewhere on the field that your vision system can detect.
+   *
+   * @param pose Pose3d of the tag in field-relative coordinates
+   * @param model TargetModel which describes the shape of the target(tag)
+   * @param id The ID of this fiducial tag
+   */
+  public VisionTargetSim(Pose3d pose, TargetModel model, int id) {
+    this.pose = pose;
+    this.model = model;
+    this.fiducialID = id;
+  }
 
-    public void setPose(Pose3d pose) {
-        this.pose = pose;
-    }
+  public void setPose(Pose3d pose) {
+    this.pose = pose;
+  }
 
-    public void setModel(TargetModel model) {
-        this.model = model;
-    }
+  public void setModel(TargetModel model) {
+    this.model = model;
+  }
 
-    public Pose3d getPose() {
-        return pose;
-    }
+  public Pose3d getPose() {
+    return pose;
+  }
 
-    public TargetModel getModel() {
-        return model;
-    }
+  public TargetModel getModel() {
+    return model;
+  }
 
-    /** This target's vertices offset from its field pose. */
-    public List<Translation3d> getFieldVertices() {
-        return model.getFieldVertices(pose);
-    }
+  /** This target's vertices offset from its field pose. */
+  public List<Translation3d> getFieldVertices() {
+    return model.getFieldVertices(pose);
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj
-                && obj instanceof VisionTargetSim o
-                && pose.equals(o.pose)
-                && model.equals(o.model);
-    }
+  @Override
+  public boolean equals(Object obj) {
+    return this == obj
+        && obj instanceof VisionTargetSim o
+        && pose.equals(o.pose)
+        && model.equals(o.model);
+  }
 }

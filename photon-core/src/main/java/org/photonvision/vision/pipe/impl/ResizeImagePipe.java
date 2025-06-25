@@ -25,19 +25,19 @@ import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that resizes an image to a given resolution */
 public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeImageParams> {
-    /**
-     * Process this pipe
-     *
-     * @param in {@link Mat} to be resized
-     */
-    @Override
-    protected Void process(Mat in) {
-        int width = in.cols() / params.divisor().value;
-        int height = in.rows() / params.divisor().value;
-        Imgproc.resize(in, in, new Size(width, height));
+  /**
+   * Process this pipe
+   *
+   * @param in {@link Mat} to be resized
+   */
+  @Override
+  protected Void process(Mat in) {
+    int width = in.cols() / params.divisor().value;
+    int height = in.rows() / params.divisor().value;
+    Imgproc.resize(in, in, new Size(width, height));
 
-        return null;
-    }
+    return null;
+  }
 
-    public static record ResizeImageParams(FrameDivisor divisor) {}
+  public static record ResizeImageParams(FrameDivisor divisor) {}
 }

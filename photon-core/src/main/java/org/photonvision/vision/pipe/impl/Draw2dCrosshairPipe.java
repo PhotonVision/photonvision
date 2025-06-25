@@ -34,98 +34,98 @@ import org.photonvision.vision.target.TargetCalculations;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dCrosshairPipe
-        extends MutatingPipe<
-                Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
-    @Override
-    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!params.shouldDraw()) return null;
+    extends MutatingPipe<
+        Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
+  @Override
+  protected Void process(Pair<Mat, List<TrackedTarget>> in) {
+    if (!params.shouldDraw()) return null;
 
-        var image = in.getFirst();
+    var image = in.getFirst();
 
-        if (params.showCrosshair()) {
-            double x = params.frameStaticProperties().centerX;
-            double y = params.frameStaticProperties().centerY;
-            double scale =
-                    params.frameStaticProperties().imageWidth / (double) params.divisor().value / 32.0;
+    if (params.showCrosshair()) {
+      double x = params.frameStaticProperties().centerX;
+      double y = params.frameStaticProperties().centerY;
+      double scale =
+          params.frameStaticProperties().imageWidth / (double) params.divisor().value / 32.0;
 
-            switch (params.robotOffsetPointMode()) {
-                case None -> {}
-                case Single -> {
-                    if (params.singleOffsetPoint().x != 0 && params.singleOffsetPoint().y != 0) {
-                        x = params.singleOffsetPoint().x;
-                        y = params.singleOffsetPoint().y;
-                    }
-                }
-                case Dual -> {
-                    if (!in.getSecond().isEmpty()) {
-                        var target = in.getSecond().get(0);
-                        if (target != null) {
-                            var area = target.getArea();
-                            var offsetCrosshair =
-                                    TargetCalculations.calculateDualOffsetCrosshair(params.dualOffsetValues(), area);
-                            x = offsetCrosshair.x;
-                            y = offsetCrosshair.y;
-                        }
-                    }
-                }
+      switch (params.robotOffsetPointMode()) {
+        case None -> {}
+        case Single -> {
+          if (params.singleOffsetPoint().x != 0 && params.singleOffsetPoint().y != 0) {
+            x = params.singleOffsetPoint().x;
+            y = params.singleOffsetPoint().y;
+          }
+        }
+        case Dual -> {
+          if (!in.getSecond().isEmpty()) {
+            var target = in.getSecond().get(0);
+            if (target != null) {
+              var area = target.getArea();
+              var offsetCrosshair =
+                  TargetCalculations.calculateDualOffsetCrosshair(params.dualOffsetValues(), area);
+              x = offsetCrosshair.x;
+              y = offsetCrosshair.y;
             }
-
-            x /= (double) params.divisor().value;
-            y /= (double) params.divisor().value;
-
-            Point xMax = new Point(x + scale, y);
-            Point xMin = new Point(x - scale, y);
-            Point yMax = new Point(x, y + scale);
-            Point yMin = new Point(x, y - scale);
-
-            Imgproc.line(image, xMax, xMin, ColorHelper.colorToScalar(params.crosshairColor()));
-            Imgproc.line(image, yMax, yMin, ColorHelper.colorToScalar(params.crosshairColor()));
+          }
         }
-        return null;
+      }
+
+      x /= (double) params.divisor().value;
+      y /= (double) params.divisor().value;
+
+      Point xMax = new Point(x + scale, y);
+      Point xMin = new Point(x - scale, y);
+      Point yMax = new Point(x, y + scale);
+      Point yMin = new Point(x, y - scale);
+
+      Imgproc.line(image, xMax, xMin, ColorHelper.colorToScalar(params.crosshairColor()));
+      Imgproc.line(image, yMax, yMin, ColorHelper.colorToScalar(params.crosshairColor()));
+    }
+    return null;
+  }
+
+  public static record Draw2dCrosshairParams(
+      boolean shouldDraw,
+      RobotOffsetPointMode robotOffsetPointMode,
+      Point singleOffsetPoint,
+      DualOffsetValues dualOffsetValues,
+      FrameStaticProperties frameStaticProperties,
+      FrameDivisor divisor,
+      ImageRotationMode rotMode,
+      boolean showCrosshair,
+      Color crosshairColor) {
+    public Draw2dCrosshairParams(
+        boolean shouldDraw,
+        RobotOffsetPointMode robotOffsetPointMode,
+        Point singleOffsetPoint,
+        DualOffsetValues dualOffsetValues,
+        FrameStaticProperties frameStaticProperties,
+        FrameDivisor divisor,
+        ImageRotationMode rotMode) {
+      this(
+          shouldDraw,
+          robotOffsetPointMode,
+          singleOffsetPoint,
+          dualOffsetValues,
+          frameStaticProperties,
+          divisor,
+          rotMode,
+          true,
+          Color.GREEN);
     }
 
-    public static record Draw2dCrosshairParams(
-            boolean shouldDraw,
-            RobotOffsetPointMode robotOffsetPointMode,
-            Point singleOffsetPoint,
-            DualOffsetValues dualOffsetValues,
-            FrameStaticProperties frameStaticProperties,
-            FrameDivisor divisor,
-            ImageRotationMode rotMode,
-            boolean showCrosshair,
-            Color crosshairColor) {
-        public Draw2dCrosshairParams(
-                boolean shouldDraw,
-                RobotOffsetPointMode robotOffsetPointMode,
-                Point singleOffsetPoint,
-                DualOffsetValues dualOffsetValues,
-                FrameStaticProperties frameStaticProperties,
-                FrameDivisor divisor,
-                ImageRotationMode rotMode) {
-            this(
-                    shouldDraw,
-                    robotOffsetPointMode,
-                    singleOffsetPoint,
-                    dualOffsetValues,
-                    frameStaticProperties,
-                    divisor,
-                    rotMode,
-                    true,
-                    Color.GREEN);
-        }
-
-        public Draw2dCrosshairParams(
-                FrameStaticProperties frameStaticProperties,
-                FrameDivisor divisor,
-                ImageRotationMode rotMode) {
-            this(
-                    true,
-                    RobotOffsetPointMode.None,
-                    new Point(),
-                    new DualOffsetValues(),
-                    frameStaticProperties,
-                    divisor,
-                    rotMode);
-        }
+    public Draw2dCrosshairParams(
+        FrameStaticProperties frameStaticProperties,
+        FrameDivisor divisor,
+        ImageRotationMode rotMode) {
+      this(
+          true,
+          RobotOffsetPointMode.None,
+          new Point(),
+          new DualOffsetValues(),
+          frameStaticProperties,
+          divisor,
+          rotMode);
     }
+  }
 }

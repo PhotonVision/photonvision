@@ -25,73 +25,73 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings>
-        implements Releasable {
-    static final int MAX_MULTI_TARGET_RESULTS = 10;
+    implements Releasable {
+  static final int MAX_MULTI_TARGET_RESULTS = 10;
 
-    protected S settings;
-    protected FrameStaticProperties frameStaticProperties;
-    protected QuirkyCamera cameraQuirks;
+  protected S settings;
+  protected FrameStaticProperties frameStaticProperties;
+  protected QuirkyCamera cameraQuirks;
 
-    private final FrameThresholdType thresholdType;
+  private final FrameThresholdType thresholdType;
 
-    // So releaseable doesn't keep track of if we double-free something. so (ew) remember that here
-    protected volatile boolean released = false;
+  // So releaseable doesn't keep track of if we double-free something. so (ew) remember that here
+  protected volatile boolean released = false;
 
-    public CVPipeline(FrameThresholdType thresholdType) {
-        this.thresholdType = thresholdType;
+  public CVPipeline(FrameThresholdType thresholdType) {
+    this.thresholdType = thresholdType;
+  }
+
+  public FrameThresholdType getThresholdType() {
+    return thresholdType;
+  }
+
+  protected void setPipeParams(
+      FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
+    this.settings = settings;
+    this.frameStaticProperties = frameStaticProperties;
+    this.cameraQuirks = cameraQuirks;
+
+    setPipeParamsImpl();
+  }
+
+  protected abstract void setPipeParamsImpl();
+
+  protected abstract R process(Frame frame, S settings);
+
+  public S getSettings() {
+    return settings;
+  }
+
+  public void setSettings(S s) {
+    this.settings = s;
+  }
+
+  public R run(Frame frame, QuirkyCamera cameraQuirks) {
+    if (released) {
+      throw new RuntimeException("Pipeline use-after-free!");
     }
-
-    public FrameThresholdType getThresholdType() {
-        return thresholdType;
+    if (settings == null) {
+      throw new RuntimeException("No settings provided for pipeline!");
     }
+    setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
 
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
-        this.settings = settings;
-        this.frameStaticProperties = frameStaticProperties;
-        this.cameraQuirks = cameraQuirks;
+    // if (frame.image.getMat().empty()) {
+    //     //noinspection unchecked
+    //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
+    // }
+    R result = process(frame, settings);
 
-        setPipeParamsImpl();
-    }
+    result.setImageCaptureTimestampNanos(frame.timestampNanos);
 
-    protected abstract void setPipeParamsImpl();
+    return result;
+  }
 
-    protected abstract R process(Frame frame, S settings);
-
-    public S getSettings() {
-        return settings;
-    }
-
-    public void setSettings(S s) {
-        this.settings = s;
-    }
-
-    public R run(Frame frame, QuirkyCamera cameraQuirks) {
-        if (released) {
-            throw new RuntimeException("Pipeline use-after-free!");
-        }
-        if (settings == null) {
-            throw new RuntimeException("No settings provided for pipeline!");
-        }
-        setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
-
-        // if (frame.image.getMat().empty()) {
-        //     //noinspection unchecked
-        //     return (R) new CVPipelineResult(0, 0, List.of(), frame);
-        // }
-        R result = process(frame, settings);
-
-        result.setImageCaptureTimestampNanos(frame.timestampNanos);
-
-        return result;
-    }
-
-    /**
-     * Release any native memory associated with this pipeline. Called by pipelinemanager at pipeline
-     * switch. Stubbed out, but override if needed.
-     */
-    @Override
-    public void release() {
-        released = true;
-    }
+  /**
+   * Release any native memory associated with this pipeline. Called by pipelinemanager at pipeline
+   * switch. Stubbed out, but override if needed.
+   */
+  @Override
+  public void release() {
+    released = true;
+  }
 }

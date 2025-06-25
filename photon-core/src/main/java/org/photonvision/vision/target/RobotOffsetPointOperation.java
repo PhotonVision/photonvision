@@ -18,24 +18,24 @@
 package org.photonvision.vision.target;
 
 public enum RobotOffsetPointOperation {
-    CLEAR(0),
-    TAKE_SINGLE(1),
-    TAKE_FIRST_DUAL(2),
-    TAKE_SECOND_DUAL(3);
+  CLEAR(0),
+  TAKE_SINGLE(1),
+  TAKE_FIRST_DUAL(2),
+  TAKE_SECOND_DUAL(3);
 
-    public final int index;
+  public final int index;
 
-    RobotOffsetPointOperation(int index) {
-        this.index = index;
-    }
+  RobotOffsetPointOperation(int index) {
+    this.index = index;
+  }
 
-    public static RobotOffsetPointOperation fromIndex(int index) {
-        return switch (index) {
-            case 0 -> CLEAR;
-            case 1 -> TAKE_SINGLE;
-            case 2 -> TAKE_FIRST_DUAL;
-            case 3 -> TAKE_SECOND_DUAL;
-            default -> CLEAR;
-        };
-    }
+  public static RobotOffsetPointOperation fromIndex(int index) {
+    return switch (index) {
+      case 0 -> CLEAR;
+      case 1 -> TAKE_SINGLE;
+      case 2 -> TAKE_FIRST_DUAL;
+      case 3 -> TAKE_SECOND_DUAL;
+      default -> CLEAR;
+    };
+  }
 }

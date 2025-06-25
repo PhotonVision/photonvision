@@ -2,8 +2,7 @@ package jni;
 
 public class Gstreamer {
   static {
-    if (!LibraryLoader.load(Gstreamer.class, "gstreamer"))
-      System.loadLibrary("gstreamer");
+    if (!LibraryLoader.load(Gstreamer.class, "gstreamer")) System.loadLibrary("gstreamer");
   }
 
   public static native long initCam(String jpipe);

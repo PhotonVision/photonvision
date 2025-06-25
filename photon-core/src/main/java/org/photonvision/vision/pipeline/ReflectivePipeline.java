@@ -31,136 +31,136 @@ import org.photonvision.vision.target.TrackedTarget;
 
 /** Represents a pipeline for tracking retro-reflective targets. */
 public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectivePipelineSettings> {
-    private final FindContoursPipe findContoursPipe = new FindContoursPipe();
-    private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
-    private final FilterContoursPipe filterContoursPipe = new FilterContoursPipe();
-    private final GroupContoursPipe groupContoursPipe = new GroupContoursPipe();
-    private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
-    private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
-    private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
-    private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+  private final FindContoursPipe findContoursPipe = new FindContoursPipe();
+  private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
+  private final FilterContoursPipe filterContoursPipe = new FilterContoursPipe();
+  private final GroupContoursPipe groupContoursPipe = new GroupContoursPipe();
+  private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
+  private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
+  private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
+  private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
+  private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
+  private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.HSV;
+  private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.HSV;
 
-    public ReflectivePipeline() {
-        super(PROCESSING_TYPE);
-        settings = new ReflectivePipelineSettings();
+  public ReflectivePipeline() {
+    super(PROCESSING_TYPE);
+    settings = new ReflectivePipelineSettings();
+  }
+
+  public ReflectivePipeline(ReflectivePipelineSettings settings) {
+    super(PROCESSING_TYPE);
+    this.settings = settings;
+  }
+
+  @Override
+  protected void setPipeParamsImpl() {
+    var dualOffsetValues =
+        new DualOffsetValues(
+            settings.offsetDualPointA,
+            settings.offsetDualPointAArea,
+            settings.offsetDualPointB,
+            settings.offsetDualPointBArea);
+
+    findContoursPipe.setParams(new FindContoursPipe.FindContoursParams());
+
+    speckleRejectPipe.setParams(
+        new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage));
+
+    filterContoursPipe.setParams(
+        new FilterContoursPipe.FilterContoursParams(
+            settings.contourArea,
+            settings.contourRatio,
+            settings.contourFullness,
+            frameStaticProperties,
+            settings.contourFilterRangeX,
+            settings.contourFilterRangeY,
+            settings.contourTargetOrientation == TargetOrientation.Landscape));
+
+    groupContoursPipe.setParams(
+        new GroupContoursPipe.GroupContoursParams(
+            settings.contourGroupingMode, settings.contourIntersection));
+
+    sortContoursPipe.setParams(
+        new SortContoursPipe.SortContoursParams(
+            settings.contourSortMode,
+            settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
+            frameStaticProperties));
+
+    collect2dTargetsPipe.setParams(
+        new Collect2dTargetsPipe.Collect2dTargetsParams(
+            settings.offsetRobotOffsetMode,
+            settings.offsetSinglePoint,
+            dualOffsetValues,
+            settings.contourTargetOffsetPointEdge,
+            settings.contourTargetOrientation,
+            frameStaticProperties));
+
+    cornerDetectionPipe.setParams(
+        new CornerDetectionPipe.CornerDetectionPipeParameters(
+            settings.cornerDetectionStrategy,
+            settings.cornerDetectionUseConvexHulls,
+            settings.cornerDetectionExactSideCount,
+            settings.cornerDetectionSideCount,
+            settings.cornerDetectionAccuracyPercentage));
+
+    solvePNPPipe.setParams(
+        new SolvePNPPipe.SolvePNPPipeParams(
+            frameStaticProperties.cameraCalibration, settings.targetModel));
+  }
+
+  @Override
+  public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
+    long sumPipeNanosElapsed = 0L;
+
+    CVPipeResult<List<Contour>> findContoursResult =
+        findContoursPipe.run(frame.processedImage.getMat());
+    sumPipeNanosElapsed += pipeProfileNanos[2] = findContoursResult.nanosElapsed;
+
+    CVPipeResult<List<Contour>> speckleRejectResult =
+        speckleRejectPipe.run(findContoursResult.output);
+    sumPipeNanosElapsed += pipeProfileNanos[3] = speckleRejectResult.nanosElapsed;
+
+    CVPipeResult<List<Contour>> filterContoursResult =
+        filterContoursPipe.run(speckleRejectResult.output);
+    sumPipeNanosElapsed += pipeProfileNanos[4] = filterContoursResult.nanosElapsed;
+
+    CVPipeResult<List<PotentialTarget>> groupContoursResult =
+        groupContoursPipe.run(filterContoursResult.output);
+    sumPipeNanosElapsed += pipeProfileNanos[5] = groupContoursResult.nanosElapsed;
+
+    CVPipeResult<List<PotentialTarget>> sortContoursResult =
+        sortContoursPipe.run(groupContoursResult.output);
+    sumPipeNanosElapsed += pipeProfileNanos[6] = sortContoursResult.nanosElapsed;
+
+    CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
+        collect2dTargetsPipe.run(sortContoursResult.output);
+    sumPipeNanosElapsed += pipeProfileNanos[7] = collect2dTargetsResult.nanosElapsed;
+
+    List<TrackedTarget> targetList;
+
+    // 3d stuff
+    if (settings.solvePNPEnabled) {
+      var cornerDetectionResult = cornerDetectionPipe.run(collect2dTargetsResult.output);
+      sumPipeNanosElapsed += pipeProfileNanos[8] = cornerDetectionResult.nanosElapsed;
+
+      var solvePNPResult = solvePNPPipe.run(cornerDetectionResult.output);
+      sumPipeNanosElapsed += pipeProfileNanos[9] = solvePNPResult.nanosElapsed;
+
+      targetList = solvePNPResult.output;
+    } else {
+      pipeProfileNanos[8] = 0;
+      pipeProfileNanos[9] = 0;
+      targetList = collect2dTargetsResult.output;
     }
 
-    public ReflectivePipeline(ReflectivePipelineSettings settings) {
-        super(PROCESSING_TYPE);
-        this.settings = settings;
-    }
+    var fpsResult = calculateFPSPipe.run(null);
+    var fps = fpsResult.output;
 
-    @Override
-    protected void setPipeParamsImpl() {
-        var dualOffsetValues =
-                new DualOffsetValues(
-                        settings.offsetDualPointA,
-                        settings.offsetDualPointAArea,
-                        settings.offsetDualPointB,
-                        settings.offsetDualPointBArea);
+    PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
-        findContoursPipe.setParams(new FindContoursPipe.FindContoursParams());
-
-        speckleRejectPipe.setParams(
-                new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage));
-
-        filterContoursPipe.setParams(
-                new FilterContoursPipe.FilterContoursParams(
-                        settings.contourArea,
-                        settings.contourRatio,
-                        settings.contourFullness,
-                        frameStaticProperties,
-                        settings.contourFilterRangeX,
-                        settings.contourFilterRangeY,
-                        settings.contourTargetOrientation == TargetOrientation.Landscape));
-
-        groupContoursPipe.setParams(
-                new GroupContoursPipe.GroupContoursParams(
-                        settings.contourGroupingMode, settings.contourIntersection));
-
-        sortContoursPipe.setParams(
-                new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
-                        frameStaticProperties));
-
-        collect2dTargetsPipe.setParams(
-                new Collect2dTargetsPipe.Collect2dTargetsParams(
-                        settings.offsetRobotOffsetMode,
-                        settings.offsetSinglePoint,
-                        dualOffsetValues,
-                        settings.contourTargetOffsetPointEdge,
-                        settings.contourTargetOrientation,
-                        frameStaticProperties));
-
-        cornerDetectionPipe.setParams(
-                new CornerDetectionPipe.CornerDetectionPipeParameters(
-                        settings.cornerDetectionStrategy,
-                        settings.cornerDetectionUseConvexHulls,
-                        settings.cornerDetectionExactSideCount,
-                        settings.cornerDetectionSideCount,
-                        settings.cornerDetectionAccuracyPercentage));
-
-        solvePNPPipe.setParams(
-                new SolvePNPPipe.SolvePNPPipeParams(
-                        frameStaticProperties.cameraCalibration, settings.targetModel));
-    }
-
-    @Override
-    public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
-        long sumPipeNanosElapsed = 0L;
-
-        CVPipeResult<List<Contour>> findContoursResult =
-                findContoursPipe.run(frame.processedImage.getMat());
-        sumPipeNanosElapsed += pipeProfileNanos[2] = findContoursResult.nanosElapsed;
-
-        CVPipeResult<List<Contour>> speckleRejectResult =
-                speckleRejectPipe.run(findContoursResult.output);
-        sumPipeNanosElapsed += pipeProfileNanos[3] = speckleRejectResult.nanosElapsed;
-
-        CVPipeResult<List<Contour>> filterContoursResult =
-                filterContoursPipe.run(speckleRejectResult.output);
-        sumPipeNanosElapsed += pipeProfileNanos[4] = filterContoursResult.nanosElapsed;
-
-        CVPipeResult<List<PotentialTarget>> groupContoursResult =
-                groupContoursPipe.run(filterContoursResult.output);
-        sumPipeNanosElapsed += pipeProfileNanos[5] = groupContoursResult.nanosElapsed;
-
-        CVPipeResult<List<PotentialTarget>> sortContoursResult =
-                sortContoursPipe.run(groupContoursResult.output);
-        sumPipeNanosElapsed += pipeProfileNanos[6] = sortContoursResult.nanosElapsed;
-
-        CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
-                collect2dTargetsPipe.run(sortContoursResult.output);
-        sumPipeNanosElapsed += pipeProfileNanos[7] = collect2dTargetsResult.nanosElapsed;
-
-        List<TrackedTarget> targetList;
-
-        // 3d stuff
-        if (settings.solvePNPEnabled) {
-            var cornerDetectionResult = cornerDetectionPipe.run(collect2dTargetsResult.output);
-            sumPipeNanosElapsed += pipeProfileNanos[8] = cornerDetectionResult.nanosElapsed;
-
-            var solvePNPResult = solvePNPPipe.run(cornerDetectionResult.output);
-            sumPipeNanosElapsed += pipeProfileNanos[9] = solvePNPResult.nanosElapsed;
-
-            targetList = solvePNPResult.output;
-        } else {
-            pipeProfileNanos[8] = 0;
-            pipeProfileNanos[9] = 0;
-            targetList = collect2dTargetsResult.output;
-        }
-
-        var fpsResult = calculateFPSPipe.run(null);
-        var fps = fpsResult.output;
-
-        PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
-
-        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
-    }
+    return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
+  }
 }

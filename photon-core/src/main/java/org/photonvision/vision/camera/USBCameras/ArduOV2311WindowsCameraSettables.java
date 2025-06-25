@@ -26,49 +26,49 @@ import org.photonvision.common.configuration.CameraConfiguration;
  * This class holds the windows specific camera quirks for the Arducam ov2311. A windows version is needed because windows doesn't expose the auto exposure properties of the arducam.
  */
 public class ArduOV2311WindowsCameraSettables extends GenericUSBCameraSettables {
-    public ArduOV2311WindowsCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
-        super(configuration, camera);
+  public ArduOV2311WindowsCameraSettables(CameraConfiguration configuration, UsbCamera camera) {
+    super(configuration, camera);
+  }
+
+  @Override
+  protected void setUpExposureProperties() {
+    var expProp =
+        findProperty(
+            "raw_exposure_absolute",
+            "raw_exposure_time_absolute",
+            "exposure",
+            "raw_Exposure",
+            "Exposure");
+
+    exposureAbsProp = expProp.get();
+    autoExposureProp = null;
+    this.minExposure = 1;
+    this.maxExposure = 140;
+  }
+
+  @Override
+  public void setExposureRaw(double exposureRaw) {
+    if (exposureRaw >= 0.0) {
+      try {
+        int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
+        camera.setExposureManual(propVal);
+        this.lastExposureRaw = exposureRaw;
+      } catch (VideoException e) {
+        logger.error("Failed to set camera exposure!", e);
+      }
     }
+  }
 
-    @Override
-    protected void setUpExposureProperties() {
-        var expProp =
-                findProperty(
-                        "raw_exposure_absolute",
-                        "raw_exposure_time_absolute",
-                        "exposure",
-                        "raw_Exposure",
-                        "Exposure");
+  public void setAutoExposure(boolean cameraAutoExposure) {
+    logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
-        exposureAbsProp = expProp.get();
-        autoExposureProp = null;
-        this.minExposure = 1;
-        this.maxExposure = 140;
+    if (!cameraAutoExposure) {
+      // Most cameras leave exposure time absolute at the last value from their AE
+      // algorithm.
+      // Set it back to the exposure slider value
+      camera.setExposureManual((int) this.lastExposureRaw);
+    } else {
+      camera.setExposureAuto();
     }
-
-    @Override
-    public void setExposureRaw(double exposureRaw) {
-        if (exposureRaw >= 0.0) {
-            try {
-                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
-                camera.setExposureManual(propVal);
-                this.lastExposureRaw = exposureRaw;
-            } catch (VideoException e) {
-                logger.error("Failed to set camera exposure!", e);
-            }
-        }
-    }
-
-    public void setAutoExposure(boolean cameraAutoExposure) {
-        logger.debug("Setting auto exposure to " + cameraAutoExposure);
-
-        if (!cameraAutoExposure) {
-            // Most cameras leave exposure time absolute at the last value from their AE
-            // algorithm.
-            // Set it back to the exposure slider value
-            camera.setExposureManual((int) this.lastExposureRaw);
-        } else {
-            camera.setExposureAuto();
-        }
-    }
+  }
 }

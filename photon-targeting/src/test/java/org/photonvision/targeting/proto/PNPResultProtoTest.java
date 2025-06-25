@@ -25,18 +25,18 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.targeting.PnpResult;
 
 public class PNPResultProtoTest {
-    @Test
-    public void protobufTest() {
-        var pnpRes = new PnpResult();
-        var serializedPNPRes = PnpResult.proto.createMessage();
-        PnpResult.proto.pack(serializedPNPRes, pnpRes);
-        var unpackedPNPRes = PnpResult.proto.unpack(serializedPNPRes);
-        assertEquals(pnpRes, unpackedPNPRes);
+  @Test
+  public void protobufTest() {
+    var pnpRes = new PnpResult();
+    var serializedPNPRes = PnpResult.proto.createMessage();
+    PnpResult.proto.pack(serializedPNPRes, pnpRes);
+    var unpackedPNPRes = PnpResult.proto.unpack(serializedPNPRes);
+    assertEquals(pnpRes, unpackedPNPRes);
 
-        pnpRes = new PnpResult(new Transform3d(1, 2, 3, new Rotation3d(1, 2, 3)), 0.1);
-        serializedPNPRes = PnpResult.proto.createMessage();
-        PnpResult.proto.pack(serializedPNPRes, pnpRes);
-        unpackedPNPRes = PnpResult.proto.unpack(serializedPNPRes);
-        assertEquals(pnpRes, unpackedPNPRes);
-    }
+    pnpRes = new PnpResult(new Transform3d(1, 2, 3, new Rotation3d(1, 2, 3)), 0.1);
+    serializedPNPRes = PnpResult.proto.createMessage();
+    PnpResult.proto.pack(serializedPNPRes, pnpRes);
+    unpackedPNPRes = PnpResult.proto.unpack(serializedPNPRes);
+    assertEquals(pnpRes, unpackedPNPRes);
+  }
 }

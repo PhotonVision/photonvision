@@ -23,40 +23,40 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
-    protected int sequenceID = 0;
+  protected int sequenceID = 0;
 
-    // Escape hatch to allow us to synchronously (from the main vision thread) run
-    // extra
-    // setup/callbacks once cscore connects to our underlying device for the first
-    // time
-    public boolean cameraPropertiesCached = false;
+  // Escape hatch to allow us to synchronously (from the main vision thread) run
+  // extra
+  // setup/callbacks once cscore connects to our underlying device for the first
+  // time
+  public boolean cameraPropertiesCached = false;
 
-    protected void onCameraConnected() {
-        cameraPropertiesCached = true;
-    }
+  protected void onCameraConnected() {
+    cameraPropertiesCached = true;
+  }
 
-    public abstract boolean isConnected();
+  public abstract boolean isConnected();
 
-    public abstract boolean checkCameraConnected();
+  public abstract boolean checkCameraConnected();
 
-    /**
-     * Returns if the camera has connected at some point. This is not if it is currently connected.
-     */
-    public boolean hasConnected() {
-        return cameraPropertiesCached;
-    }
+  /**
+   * Returns if the camera has connected at some point. This is not if it is currently connected.
+   */
+  public boolean hasConnected() {
+    return cameraPropertiesCached;
+  }
 
-    public abstract String getName();
+  public abstract String getName();
 
-    /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
-    public abstract void requestFrameThresholdType(FrameThresholdType type);
+  /** Ask the camera to produce a certain kind of processed image (e.g. HSV or greyscale) */
+  public abstract void requestFrameThresholdType(FrameThresholdType type);
 
-    /** Ask the camera to rotate frames it outputs */
-    public abstract void requestFrameRotation(ImageRotationMode rotationMode);
+  /** Ask the camera to rotate frames it outputs */
+  public abstract void requestFrameRotation(ImageRotationMode rotationMode);
 
-    /** Ask the camera to provide either the input, output, or both frames. */
-    public abstract void requestFrameCopies(boolean copyInput, boolean copyOutput);
+  /** Ask the camera to provide either the input, output, or both frames. */
+  public abstract void requestFrameCopies(boolean copyInput, boolean copyOutput);
 
-    /** Ask the camera to rotate frames it outputs */
-    public abstract void requestHsvSettings(HSVPipe.HSVParams params);
+  /** Ask the camera to rotate frames it outputs */
+  public abstract void requestHsvSettings(HSVPipe.HSVParams params);
 }

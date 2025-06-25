@@ -26,39 +26,39 @@ import us.hebi.quickbuf.Descriptors.Descriptor;
 import us.hebi.quickbuf.RepeatedInt;
 
 public class MultiTargetPNPResultProto
-        implements Protobuf<MultiTargetPNPResult, ProtobufMultiTargetPNPResult> {
-    @Override
-    public Class<MultiTargetPNPResult> getTypeClass() {
-        return MultiTargetPNPResult.class;
+    implements Protobuf<MultiTargetPNPResult, ProtobufMultiTargetPNPResult> {
+  @Override
+  public Class<MultiTargetPNPResult> getTypeClass() {
+    return MultiTargetPNPResult.class;
+  }
+
+  @Override
+  public Descriptor getDescriptor() {
+    return ProtobufMultiTargetPNPResult.getDescriptor();
+  }
+
+  @Override
+  public ProtobufMultiTargetPNPResult createMessage() {
+    return ProtobufMultiTargetPNPResult.newInstance();
+  }
+
+  @Override
+  public MultiTargetPNPResult unpack(ProtobufMultiTargetPNPResult msg) {
+    ArrayList<Short> fidIdsUsed = new ArrayList<>(msg.getFiducialIdsUsed().length());
+    for (var packedFidId : msg.getFiducialIdsUsed()) {
+      fidIdsUsed.add(packedFidId.shortValue());
     }
 
-    @Override
-    public Descriptor getDescriptor() {
-        return ProtobufMultiTargetPNPResult.getDescriptor();
+    return new MultiTargetPNPResult(PnpResult.proto.unpack(msg.getEstimatedPose()), fidIdsUsed);
+  }
+
+  @Override
+  public void pack(ProtobufMultiTargetPNPResult msg, MultiTargetPNPResult value) {
+    PnpResult.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
+
+    RepeatedInt idsUsed = msg.getMutableFiducialIdsUsed().reserve(value.fiducialIDsUsed.size());
+    for (int i = 0; i < value.fiducialIDsUsed.size(); i++) {
+      idsUsed.add(value.fiducialIDsUsed.get(i));
     }
-
-    @Override
-    public ProtobufMultiTargetPNPResult createMessage() {
-        return ProtobufMultiTargetPNPResult.newInstance();
-    }
-
-    @Override
-    public MultiTargetPNPResult unpack(ProtobufMultiTargetPNPResult msg) {
-        ArrayList<Short> fidIdsUsed = new ArrayList<>(msg.getFiducialIdsUsed().length());
-        for (var packedFidId : msg.getFiducialIdsUsed()) {
-            fidIdsUsed.add(packedFidId.shortValue());
-        }
-
-        return new MultiTargetPNPResult(PnpResult.proto.unpack(msg.getEstimatedPose()), fidIdsUsed);
-    }
-
-    @Override
-    public void pack(ProtobufMultiTargetPNPResult msg, MultiTargetPNPResult value) {
-        PnpResult.proto.pack(msg.getMutableEstimatedPose(), value.estimatedPose);
-
-        RepeatedInt idsUsed = msg.getMutableFiducialIdsUsed().reserve(value.fiducialIDsUsed.size());
-        for (int i = 0; i < value.fiducialIDsUsed.size(); i++) {
-            idsUsed.add(value.fiducialIDsUsed.get(i));
-        }
-    }
+  }
 }

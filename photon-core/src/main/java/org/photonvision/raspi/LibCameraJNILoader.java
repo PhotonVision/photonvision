@@ -28,52 +28,52 @@ import org.photonvision.common.logging.Logger;
  * PhotonJNICommon
  */
 public class LibCameraJNILoader {
-    private static boolean libraryLoaded = false;
-    private static final Logger logger = new Logger(LibCameraJNILoader.class, LogGroup.Camera);
+  private static boolean libraryLoaded = false;
+  private static final Logger logger = new Logger(LibCameraJNILoader.class, LogGroup.Camera);
 
-    public static synchronized void forceLoad() throws IOException {
-        if (libraryLoaded) return;
+  public static synchronized void forceLoad() throws IOException {
+    if (libraryLoaded) return;
 
-        var libraryName = "photonlibcamera";
+    var libraryName = "photonlibcamera";
 
-        try {
-            // We always extract the shared object (we could hash each so, but that's a lot of work)
-            var arch_name = "linuxarm64";
-            var nativeLibName = System.mapLibraryName(libraryName);
-            var resourcePath = "/nativelibraries/" + arch_name + "/" + nativeLibName;
-            var in = LibCameraJNILoader.class.getResourceAsStream(resourcePath);
+    try {
+      // We always extract the shared object (we could hash each so, but that's a lot of work)
+      var arch_name = "linuxarm64";
+      var nativeLibName = System.mapLibraryName(libraryName);
+      var resourcePath = "/nativelibraries/" + arch_name + "/" + nativeLibName;
+      var in = LibCameraJNILoader.class.getResourceAsStream(resourcePath);
 
-            if (in == null) {
-                logger.error("Failed to find internal native library at path " + resourcePath);
-                libraryLoaded = false;
-                return;
-            }
+      if (in == null) {
+        logger.error("Failed to find internal native library at path " + resourcePath);
+        libraryLoaded = false;
+        return;
+      }
 
-            // It's important that we don't mangle the names of these files on Windows at least
-            File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
-            FileOutputStream fos = new FileOutputStream(temp);
+      // It's important that we don't mangle the names of these files on Windows at least
+      File temp = new File(System.getProperty("java.io.tmpdir"), nativeLibName);
+      FileOutputStream fos = new FileOutputStream(temp);
 
-            int read = -1;
-            byte[] buffer = new byte[1024];
-            while ((read = in.read(buffer)) != -1) {
-                fos.write(buffer, 0, read);
-            }
-            fos.close();
-            in.close();
+      int read = -1;
+      byte[] buffer = new byte[1024];
+      while ((read = in.read(buffer)) != -1) {
+        fos.write(buffer, 0, read);
+      }
+      fos.close();
+      in.close();
 
-            System.load(temp.getAbsolutePath());
+      System.load(temp.getAbsolutePath());
 
-            logger.info("Successfully loaded shared object " + temp.getName());
+      logger.info("Successfully loaded shared object " + temp.getName());
 
-        } catch (UnsatisfiedLinkError e) {
-            logger.error("Couldn't load shared object " + libraryName, e);
-            e.printStackTrace();
-            // logger.error(System.getProperty("java.library.path"));
-        }
-        libraryLoaded = true;
+    } catch (UnsatisfiedLinkError e) {
+      logger.error("Couldn't load shared object " + libraryName, e);
+      e.printStackTrace();
+      // logger.error(System.getProperty("java.library.path"));
     }
+    libraryLoaded = true;
+  }
 
-    public static boolean isSupported() {
-        return libraryLoaded && LibCameraJNI.isSupported();
-    }
+  public static boolean isSupported() {
+    return libraryLoaded && LibCameraJNI.isSupported();
+  }
 }

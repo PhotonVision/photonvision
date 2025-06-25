@@ -24,31 +24,31 @@ import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that rotates an image to a given orientation */
 public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateImageParams> {
-    public RotateImagePipe() {
-        setParams(RotateImageParams.DEFAULT);
-    }
+  public RotateImagePipe() {
+    setParams(RotateImageParams.DEFAULT);
+  }
 
-    public RotateImagePipe(RotateImageParams params) {
-        setParams(params);
-    }
+  public RotateImagePipe(RotateImageParams params) {
+    setParams(params);
+  }
 
-    /**
-     * Process this pipe
-     *
-     * @param in {@link Mat} to be rotated
-     * @return Rotated {@link Mat}
-     */
-    @Override
-    protected Void process(Mat in) {
-        Core.rotate(in, in, params.rotation().value);
-        return null;
-    }
+  /**
+   * Process this pipe
+   *
+   * @param in {@link Mat} to be rotated
+   * @return Rotated {@link Mat}
+   */
+  @Override
+  protected Void process(Mat in) {
+    Core.rotate(in, in, params.rotation().value);
+    return null;
+  }
 
-    public static record RotateImageParams(ImageRotationMode rotation) {
-        public static RotateImageParams DEFAULT = new RotateImageParams(ImageRotationMode.DEG_0);
+  public static record RotateImageParams(ImageRotationMode rotation) {
+    public static RotateImageParams DEFAULT = new RotateImageParams(ImageRotationMode.DEG_0);
 
-        public RotateImageParams() {
-            this(DEFAULT.rotation);
-        }
+    public RotateImageParams() {
+      this(DEFAULT.rotation);
     }
+  }
 }

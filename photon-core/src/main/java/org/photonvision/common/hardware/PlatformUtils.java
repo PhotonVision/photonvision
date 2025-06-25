@@ -22,33 +22,33 @@ import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
 public class PlatformUtils {
-    private static final ShellExec shell = new ShellExec(true, false);
-    private static final boolean isRoot = checkForRoot();
+  private static final ShellExec shell = new ShellExec(true, false);
+  private static final boolean isRoot = checkForRoot();
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    private static boolean checkForRoot() {
-        if (Platform.isLinux()) {
-            try {
-                shell.executeBashCommand("id -u");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+  @SuppressWarnings("StatementWithEmptyBody")
+  private static boolean checkForRoot() {
+    if (Platform.isLinux()) {
+      try {
+        shell.executeBashCommand("id -u");
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
 
-            while (!shell.isOutputCompleted()) {
-                // TODO: add timeout
-            }
+      while (!shell.isOutputCompleted()) {
+        // TODO: add timeout
+      }
 
-            if (shell.getExitCode() == 0) {
-                return shell.getOutput().split("\n")[0].equals("0");
-            }
+      if (shell.getExitCode() == 0) {
+        return shell.getOutput().split("\n")[0].equals("0");
+      }
 
-        } else {
-            return true;
-        }
-        return false;
+    } else {
+      return true;
     }
+    return false;
+  }
 
-    public static boolean isRoot() {
-        return isRoot;
-    }
+  public static boolean isRoot() {
+    return isRoot;
+  }
 }

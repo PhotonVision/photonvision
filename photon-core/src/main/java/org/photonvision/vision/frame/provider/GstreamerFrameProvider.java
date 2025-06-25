@@ -17,28 +17,19 @@
 
 package org.photonvision.vision.frame.provider;
 
-import org.opencv.core.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import jni.Gstreamer; // TODO (charlie) refactor?
 import org.opencv.core.Mat;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.csi.GstreamerSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
-import java.util.concurrent.TimeUnit;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import java.util.concurrent.locks.Condition;
-
-import jni.Gstreamer; // TODO (charlie) refactor?
 
 class releaseCapThread extends Thread {
   private long cap;
@@ -69,12 +60,12 @@ class readCapThread extends Thread {
       lock.lock();
       Gstreamer.readMat(cap, mat);
       lock.unlock();
+      // cooked
       try {
-    Thread.sleep(5); // Sleep for 5 milliseconds
-} catch (InterruptedException e) {
-    e.printStackTrace();
-}
-
+        Thread.sleep(5); // Sleep for 5 milliseconds
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
   }
 }
@@ -94,7 +85,6 @@ public class GstreamerFrameProvider extends FrameProvider {
 
     Runtime current = Runtime.getRuntime();
 
-    // Warmup?
     cap = Gstreamer.initCam(pipeline);
     Gstreamer.releaseCam(cap);
 
@@ -119,40 +109,40 @@ public class GstreamerFrameProvider extends FrameProvider {
     Mat raw = new Mat();
 
     try {
-            if (lock.tryLock(100000, TimeUnit.MILLISECONDS)) {
-                try {
-                    raw = readMat.clone();
-                } finally {
-                    lock.unlock();
-                }
-            } else {
-                System.out.println("Couldn't get the lock within timeout.");
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Thread was interrupted.");
+      if (lock.tryLock(100000, TimeUnit.MILLISECONDS)) {
+        try {
+          raw = readMat.clone();
+        } finally {
+          lock.unlock();
         }
+      } else {
+        System.out.println("Couldn't get the lock within timeout.");
+      }
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      System.out.println("Thread was interrupted.");
+    }
 
     Mat processed = new Mat();
     Gstreamer.getGrayScale(raw.nativeObj, processed.nativeObj);
 
-      CVMat frame = new CVMat(raw);
-      CVMat gray = new CVMat(processed);
+    CVMat frame = new CVMat(raw);
+    CVMat gray = new CVMat(processed);
 
-      end = MathUtils.wpiNanoTime();
-      long latency = (end - start);
-      System.out.println("Camera latency " + latency / 1000_000);
-      System.out.println("Pipeline latency " + pipeline_latency / 1000_000);
+    end = MathUtils.wpiNanoTime();
+    long latency = (end - start);
+    System.out.println("Camera latency " + latency / 1000_000);
+    System.out.println("Pipeline latency " + pipeline_latency / 1000_000);
 
-      ++sequenceID;
+    ++sequenceID;
 
-      return new Frame(
-          sequenceID,
-          frame,
-          gray,
-          FrameThresholdType.GREYSCALE,
-          MathUtils.wpiNanoTime() - latency,
-          settables.getFrameStaticProperties());
+    return new Frame(
+        sequenceID,
+        frame,
+        gray,
+        FrameThresholdType.GREYSCALE,
+        MathUtils.wpiNanoTime() - latency,
+        settables.getFrameStaticProperties());
   }
 
   @Override

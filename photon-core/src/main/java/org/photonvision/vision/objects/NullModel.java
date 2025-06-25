@@ -26,42 +26,42 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
  * when no model is available to load.
  */
 public class NullModel implements Model, ObjectDetector {
-    // Singleton instance
-    public static final NullModel INSTANCE = new NullModel();
+  // Singleton instance
+  public static final NullModel INSTANCE = new NullModel();
 
-    private NullModel() {}
+  private NullModel() {}
 
-    public static NullModel getInstance() {
-        return INSTANCE;
-    }
+  public static NullModel getInstance() {
+    return INSTANCE;
+  }
 
-    @Override
-    public ObjectDetector load() {
-        return this;
-    }
+  @Override
+  public ObjectDetector load() {
+    return this;
+  }
 
-    @Override
-    public String getName() {
-        return "NullModel";
-    }
+  @Override
+  public String getName() {
+    return "NullModel";
+  }
 
-    @Override
-    public void release() {
-        // Do nothing
-    }
+  @Override
+  public void release() {
+    // Do nothing
+  }
 
-    @Override
-    public Model getModel() {
-        return this;
-    }
+  @Override
+  public Model getModel() {
+    return this;
+  }
 
-    @Override
-    public List<String> getClasses() {
-        return List.of();
-    }
+  @Override
+  public List<String> getClasses() {
+    return List.of();
+  }
 
-    @Override
-    public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
-        return List.of();
-    }
+  @Override
+  public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
+    return List.of();
+  }
 }

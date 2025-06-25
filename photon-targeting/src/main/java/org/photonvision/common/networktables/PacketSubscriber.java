@@ -24,92 +24,92 @@ import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 
 public class PacketSubscriber<T> implements AutoCloseable {
-    public static class PacketResult<U> {
-        public final U value;
-        public final long timestamp;
+  public static class PacketResult<U> {
+    public final U value;
+    public final long timestamp;
 
-        public PacketResult(U value, long timestamp) {
-            this.value = value;
-            this.timestamp = timestamp;
-        }
-
-        public PacketResult() {
-            this(null, 0);
-        }
+    public PacketResult(U value, long timestamp) {
+      this.value = value;
+      this.timestamp = timestamp;
     }
 
-    public final RawSubscriber subscriber;
-    private final PacketSerde<T> serde;
+    public PacketResult() {
+      this(null, 0);
+    }
+  }
 
-    private final Packet packet = new Packet(1);
+  public final RawSubscriber subscriber;
+  private final PacketSerde<T> serde;
 
-    /**
-     * Create a PacketSubscriber
-     *
-     * @param subscriber NT subscriber. Set pollStorage to 1 to make get() faster
-     * @param serde How we convert raw to actual things
-     */
-    public PacketSubscriber(RawSubscriber subscriber, PacketSerde<T> serde) {
-        this.subscriber = subscriber;
-        this.serde = serde;
+  private final Packet packet = new Packet(1);
+
+  /**
+   * Create a PacketSubscriber
+   *
+   * @param subscriber NT subscriber. Set pollStorage to 1 to make get() faster
+   * @param serde How we convert raw to actual things
+   */
+  public PacketSubscriber(RawSubscriber subscriber, PacketSerde<T> serde) {
+    this.subscriber = subscriber;
+    this.serde = serde;
+  }
+
+  /** Parse one chunk of timestamped data into T */
+  private PacketResult<T> parse(byte[] data, long timestamp) {
+    packet.clear();
+    packet.setData(data);
+    if (packet.getSize() < 1) {
+      return new PacketResult<T>();
     }
 
-    /** Parse one chunk of timestamped data into T */
-    private PacketResult<T> parse(byte[] data, long timestamp) {
-        packet.clear();
-        packet.setData(data);
-        if (packet.getSize() < 1) {
-            return new PacketResult<T>();
-        }
+    return new PacketResult<>(serde.unpack(packet), timestamp);
+  }
 
-        return new PacketResult<>(serde.unpack(packet), timestamp);
+  /**
+   * Get the latest value sent over NT. If the value has never been set, returns the provided
+   * default
+   */
+  public PacketResult<T> get() {
+    // Get /all/ changes since last call to readQueue
+    var data = subscriber.getAtomic();
+
+    // Topic has never been published to?
+    if (data.timestamp == 0) {
+      return new PacketResult<>();
     }
 
-    /**
-     * Get the latest value sent over NT. If the value has never been set, returns the provided
-     * default
-     */
-    public PacketResult<T> get() {
-        // Get /all/ changes since last call to readQueue
-        var data = subscriber.getAtomic();
+    return parse(data.value, data.timestamp);
+  }
 
-        // Topic has never been published to?
-        if (data.timestamp == 0) {
-            return new PacketResult<>();
-        }
+  @Override
+  public void close() {
+    subscriber.close();
+  }
 
-        return parse(data.value, data.timestamp);
+  // TODO - i can see an argument for moving this logic all here instead of keeping in photoncamera
+  public String getInterfaceUUID() {
+    // ntcore hands us a JSON string with leading/trailing quotes - remove those
+    var uuidStr = subscriber.getTopic().getProperty("message_uuid");
+
+    // "null" can be returned if the property does not exist. From system knowledge, uuid can never
+    // be the string literal "null".
+    if (uuidStr.equals("null")) {
+      return "";
     }
 
-    @Override
-    public void close() {
-        subscriber.close();
+    return uuidStr.replace("\"", "");
+  }
+
+  public List<PacketResult<T>> getAllChanges() {
+    List<PacketResult<T>> ret = new ArrayList<>();
+
+    // Get /all/ changes since last call to readQueue
+    var changes = subscriber.readQueue();
+
+    for (var change : changes) {
+      ret.add(parse(change.value, change.timestamp));
     }
 
-    // TODO - i can see an argument for moving this logic all here instead of keeping in photoncamera
-    public String getInterfaceUUID() {
-        // ntcore hands us a JSON string with leading/trailing quotes - remove those
-        var uuidStr = subscriber.getTopic().getProperty("message_uuid");
-
-        // "null" can be returned if the property does not exist. From system knowledge, uuid can never
-        // be the string literal "null".
-        if (uuidStr.equals("null")) {
-            return "";
-        }
-
-        return uuidStr.replace("\"", "");
-    }
-
-    public List<PacketResult<T>> getAllChanges() {
-        List<PacketResult<T>> ret = new ArrayList<>();
-
-        // Get /all/ changes since last call to readQueue
-        var changes = subscriber.readQueue();
-
-        for (var change : changes) {
-            ret.add(parse(change.value, change.timestamp));
-        }
-
-        return ret;
-    }
+    return ret;
+  }
 }

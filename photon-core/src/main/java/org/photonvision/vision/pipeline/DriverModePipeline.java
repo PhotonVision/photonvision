@@ -28,74 +28,74 @@ import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
 
 public class DriverModePipeline
-        extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
-    private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
+    extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
+  private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
+  private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+  private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
+  private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public DriverModePipeline() {
-        super(PROCESSING_TYPE);
-        settings = new DriverModePipelineSettings();
+  public DriverModePipeline() {
+    super(PROCESSING_TYPE);
+    settings = new DriverModePipelineSettings();
+  }
+
+  public DriverModePipeline(DriverModePipelineSettings settings) {
+    super(PROCESSING_TYPE);
+    this.settings = settings;
+  }
+
+  @Override
+  protected void setPipeParamsImpl() {
+    draw2dCrosshairPipe.setParams(
+        new Draw2dCrosshairPipe.Draw2dCrosshairParams(
+            frameStaticProperties,
+            settings.streamingFrameDivisor,
+            settings.inputImageRotationMode));
+
+    resizeImagePipe.setParams(
+        new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
+  }
+
+  @Override
+  public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
+    long totalNanos = 0;
+
+    // apply pipes
+    var inputMat = frame.colorImage.getMat();
+
+    boolean emptyIn = inputMat.empty();
+
+    if (!emptyIn) {
+      totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
+
+      if (settings.crosshair) {
+        var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
+
+        // calculate elapsed nanoseconds
+        totalNanos += draw2dCrosshairResult.nanosElapsed;
+      }
     }
 
-    public DriverModePipeline(DriverModePipelineSettings settings) {
-        super(PROCESSING_TYPE);
-        this.settings = settings;
-    }
+    var fpsResult = calculateFPSPipe.run(null);
+    var fps = fpsResult.output;
 
-    @Override
-    protected void setPipeParamsImpl() {
-        draw2dCrosshairPipe.setParams(
-                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        frameStaticProperties,
-                        settings.streamingFrameDivisor,
-                        settings.inputImageRotationMode));
+    // Flip-flop input and output in the Frame
+    return new DriverModePipelineResult(
+        frame.sequenceID,
+        MathUtils.nanosToMillis(totalNanos),
+        fps,
+        new Frame(
+            frame.sequenceID,
+            frame.processedImage,
+            frame.colorImage,
+            frame.type,
+            frame.frameStaticProperties));
+  }
 
-        resizeImagePipe.setParams(
-                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
-    }
-
-    @Override
-    public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
-        long totalNanos = 0;
-
-        // apply pipes
-        var inputMat = frame.colorImage.getMat();
-
-        boolean emptyIn = inputMat.empty();
-
-        if (!emptyIn) {
-            totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
-
-            if (settings.crosshair) {
-                var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
-
-                // calculate elapsed nanoseconds
-                totalNanos += draw2dCrosshairResult.nanosElapsed;
-            }
-        }
-
-        var fpsResult = calculateFPSPipe.run(null);
-        var fps = fpsResult.output;
-
-        // Flip-flop input and output in the Frame
-        return new DriverModePipelineResult(
-                frame.sequenceID,
-                MathUtils.nanosToMillis(totalNanos),
-                fps,
-                new Frame(
-                        frame.sequenceID,
-                        frame.processedImage,
-                        frame.colorImage,
-                        frame.type,
-                        frame.frameStaticProperties));
-    }
-
-    @Override
-    public void release() {
-        // we never actually need to give resources up since pipelinemanager only makes
-        // one of us
-    }
+  @Override
+  public void release() {
+    // we never actually need to give resources up since pipelinemanager only makes
+    // one of us
+  }
 }

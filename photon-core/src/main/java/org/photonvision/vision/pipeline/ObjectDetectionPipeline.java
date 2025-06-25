@@ -34,110 +34,110 @@ import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class ObjectDetectionPipeline
-        extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
-    private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
-    private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
-    private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
+    extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
+  private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+  private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
+  private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
+  private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
+  private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
+  private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public ObjectDetectionPipeline() {
-        super(PROCESSING_TYPE);
-        settings = new ObjectDetectionPipelineSettings();
+  public ObjectDetectionPipeline() {
+    super(PROCESSING_TYPE);
+    settings = new ObjectDetectionPipelineSettings();
+  }
+
+  public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
+    super(PROCESSING_TYPE);
+    this.settings = settings;
+  }
+
+  @Override
+  protected void setPipeParamsImpl() {
+    Optional<Model> selectedModel =
+        NeuralNetworkModelManager.getInstance().getModel(settings.model);
+
+    // If the desired model couldn't be found, log an error and try to use the default model
+    if (selectedModel.isEmpty()) {
+      selectedModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
     }
 
-    public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
-        super(PROCESSING_TYPE);
-        this.settings = settings;
+    // If the model remains empty, use the NullModel
+    if (selectedModel.isEmpty()) {
+      selectedModel = Optional.of(NullModel.getInstance());
     }
+    objectDetectorPipe.setParams(
+        new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get()));
 
-    @Override
-    protected void setPipeParamsImpl() {
-        Optional<Model> selectedModel =
-                NeuralNetworkModelManager.getInstance().getModel(settings.model);
+    DualOffsetValues dualOffsetValues =
+        new DualOffsetValues(
+            settings.offsetDualPointA,
+            settings.offsetDualPointAArea,
+            settings.offsetDualPointB,
+            settings.offsetDualPointBArea);
 
-        // If the desired model couldn't be found, log an error and try to use the default model
-        if (selectedModel.isEmpty()) {
-            selectedModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
-        }
+    sortContoursPipe.setParams(
+        new SortContoursPipe.SortContoursParams(
+            settings.contourSortMode,
+            settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
+            frameStaticProperties));
 
-        // If the model remains empty, use the NullModel
-        if (selectedModel.isEmpty()) {
-            selectedModel = Optional.of(NullModel.getInstance());
-        }
-        objectDetectorPipe.setParams(
-                new ObjectDetectionPipeParams(settings.confidence, settings.nms, selectedModel.get()));
+    filterContoursPipe.setParams(
+        new FilterObjectDetectionsPipe.FilterContoursParams(
+            settings.contourArea,
+            settings.contourRatio,
+            frameStaticProperties,
+            settings.contourTargetOrientation == TargetOrientation.Landscape));
 
-        DualOffsetValues dualOffsetValues =
-                new DualOffsetValues(
-                        settings.offsetDualPointA,
-                        settings.offsetDualPointAArea,
-                        settings.offsetDualPointB,
-                        settings.offsetDualPointBArea);
+    collect2dTargetsPipe.setParams(
+        new Collect2dTargetsPipe.Collect2dTargetsParams(
+            settings.offsetRobotOffsetMode,
+            settings.offsetSinglePoint,
+            dualOffsetValues,
+            settings.contourTargetOffsetPointEdge,
+            settings.contourTargetOrientation,
+            frameStaticProperties));
+  }
 
-        sortContoursPipe.setParams(
-                new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
-                        frameStaticProperties));
+  @Override
+  protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
+    long sumPipeNanosElapsed = 0;
 
-        filterContoursPipe.setParams(
-                new FilterObjectDetectionsPipe.FilterContoursParams(
-                        settings.contourArea,
-                        settings.contourRatio,
-                        frameStaticProperties,
-                        settings.contourTargetOrientation == TargetOrientation.Landscape));
+    // ***************** change based on backend ***********************
 
-        collect2dTargetsPipe.setParams(
-                new Collect2dTargetsPipe.Collect2dTargetsParams(
-                        settings.offsetRobotOffsetMode,
-                        settings.offsetSinglePoint,
-                        dualOffsetValues,
-                        settings.contourTargetOffsetPointEdge,
-                        settings.contourTargetOrientation,
-                        frameStaticProperties));
-    }
+    CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
+        objectDetectorPipe.run(frame.colorImage);
+    sumPipeNanosElapsed += rknnResult.nanosElapsed;
 
-    @Override
-    protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
-        long sumPipeNanosElapsed = 0;
+    var names = objectDetectorPipe.getClassNames();
 
-        // ***************** change based on backend ***********************
+    frame.colorImage.getMat().copyTo(frame.processedImage.getMat());
 
-        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
-                objectDetectorPipe.run(frame.colorImage);
-        sumPipeNanosElapsed += rknnResult.nanosElapsed;
+    // ***************** change based on backend ***********************
 
-        var names = objectDetectorPipe.getClassNames();
+    var filterContoursResult = filterContoursPipe.run(rknnResult.output);
+    sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
 
-        frame.colorImage.getMat().copyTo(frame.processedImage.getMat());
+    CVPipeResult<List<PotentialTarget>> sortContoursResult =
+        sortContoursPipe.run(
+            filterContoursResult.output.stream().map(shape -> new PotentialTarget(shape)).toList());
+    sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
-        // ***************** change based on backend ***********************
+    CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
+        collect2dTargetsPipe.run(sortContoursResult.output);
+    sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
-        var filterContoursResult = filterContoursPipe.run(rknnResult.output);
-        sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
+    var fpsResult = calculateFPSPipe.run(null);
+    var fps = fpsResult.output;
 
-        CVPipeResult<List<PotentialTarget>> sortContoursResult =
-                sortContoursPipe.run(
-                        filterContoursResult.output.stream().map(shape -> new PotentialTarget(shape)).toList());
-        sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
+    return new CVPipelineResult(
+        frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
+  }
 
-        CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
-                collect2dTargetsPipe.run(sortContoursResult.output);
-        sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
-
-        var fpsResult = calculateFPSPipe.run(null);
-        var fps = fpsResult.output;
-
-        return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
-    }
-
-    @Override
-    public void release() {
-        objectDetectorPipe.release();
-        super.release();
-    }
+  @Override
+  public void release() {
+    objectDetectorPipe.release();
+    super.release();
+  }
 }

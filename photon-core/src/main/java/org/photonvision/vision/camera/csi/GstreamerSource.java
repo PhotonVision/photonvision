@@ -1,8 +1,8 @@
 package org.photonvision.vision.camera.csi;
 
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.GstreamerFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -41,8 +41,7 @@ public class GstreamerSource extends VisionSource {
   }
 
   @Override
-  public void remakeSettables() {
-  }
+  public void remakeSettables() {}
 
   @Override
   public boolean hasLEDs() {

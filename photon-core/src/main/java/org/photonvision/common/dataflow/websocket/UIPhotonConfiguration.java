@@ -30,39 +30,39 @@ import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 
 public class UIPhotonConfiguration {
-    public List<UICameraConfiguration> cameraSettings;
-    public UIProgramSettings settings;
+  public List<UICameraConfiguration> cameraSettings;
+  public UIProgramSettings settings;
 
-    public UIPhotonConfiguration(
-            UIProgramSettings settings, List<UICameraConfiguration> cameraSettings) {
-        this.cameraSettings = cameraSettings;
-        this.settings = settings;
-    }
+  public UIPhotonConfiguration(
+      UIProgramSettings settings, List<UICameraConfiguration> cameraSettings) {
+    this.cameraSettings = cameraSettings;
+    this.settings = settings;
+  }
 
-    public static UIPhotonConfiguration programStateToUi(PhotonConfiguration c) {
-        return new UIPhotonConfiguration(
-                new UIProgramSettings(
-                        new UINetConfig(
-                                c.getNetworkConfig(),
-                                NetworkUtils.getAllActiveWiredInterfaces(),
-                                NetworkManager.getInstance().networkingIsDisabled),
-                        new UILightingConfig(
-                                c.getHardwareSettings().ledBrightnessPercentage,
-                                !c.getHardwareConfig().ledPins().isEmpty()),
-                        new UIGeneralSettings(
-                                PhotonVersion.versionString,
-                                // TODO add support for other types of GPU accel
-                                LibCameraJNILoader.isSupported() ? "Zerocopy Libcamera Working" : "",
-                                MrCalJNILoader.getInstance().isLoaded(),
-                                NeuralNetworkModelManager.getInstance().getModels(),
-                                NeuralNetworkModelManager.getInstance().getSupportedBackends(),
-                                c.getHardwareConfig().deviceName().isEmpty()
-                                        ? Platform.getHardwareModel()
-                                        : c.getHardwareConfig().deviceName(),
-                                Platform.getPlatformName()),
-                        c.getApriltagFieldLayout()),
-                VisionSourceManager.getInstance().getVisionModules().stream()
-                        .map(VisionModule::toUICameraConfig)
-                        .toList());
-    }
+  public static UIPhotonConfiguration programStateToUi(PhotonConfiguration c) {
+    return new UIPhotonConfiguration(
+        new UIProgramSettings(
+            new UINetConfig(
+                c.getNetworkConfig(),
+                NetworkUtils.getAllActiveWiredInterfaces(),
+                NetworkManager.getInstance().networkingIsDisabled),
+            new UILightingConfig(
+                c.getHardwareSettings().ledBrightnessPercentage,
+                !c.getHardwareConfig().ledPins().isEmpty()),
+            new UIGeneralSettings(
+                PhotonVersion.versionString,
+                // TODO add support for other types of GPU accel
+                LibCameraJNILoader.isSupported() ? "Zerocopy Libcamera Working" : "",
+                MrCalJNILoader.getInstance().isLoaded(),
+                NeuralNetworkModelManager.getInstance().getModels(),
+                NeuralNetworkModelManager.getInstance().getSupportedBackends(),
+                c.getHardwareConfig().deviceName().isEmpty()
+                    ? Platform.getHardwareModel()
+                    : c.getHardwareConfig().deviceName(),
+                Platform.getPlatformName()),
+            c.getApriltagFieldLayout()),
+        VisionSourceManager.getInstance().getVisionModules().stream()
+            .map(VisionModule::toUICameraConfig)
+            .toList());
+  }
 }

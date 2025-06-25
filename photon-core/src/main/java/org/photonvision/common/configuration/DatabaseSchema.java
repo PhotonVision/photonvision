@@ -25,9 +25,9 @@ package org.photonvision.common.configuration;
  * semicolon (;).
  */
 public final class DatabaseSchema {
-    public static final String[] migrations = {
-        // #1 - initial schema
-        // spotless:off
+  public static final String[] migrations = {
+    // #1 - initial schema
+    // spotless:off
         """
         CREATE TABLE IF NOT EXISTS global (
          filename TINYTEXT PRIMARY KEY,
@@ -40,28 +40,28 @@ public final class DatabaseSchema {
          pipeline_jsons mediumtext NOT NULL
          );""",
         // spotless:on
-        // #2 - add column otherpaths_json
-        "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';",
-        // add future migrations here
-    };
+    // #2 - add column otherpaths_json
+    "ALTER TABLE cameras ADD COLUMN otherpaths_json TEXT NOT NULL DEFAULT '[]';",
+    // add future migrations here
+  };
 
-    // Constants for the tables and column to help prevent typos in SQL queries
-    // Update these tables to keep them constant with the current schema
-    public final class Tables {
-        // These constants should match the current SQL name of each table
-        public static final String GLOBAL = "global";
-        public static final String CAMERAS = "cameras";
-    }
+  // Constants for the tables and column to help prevent typos in SQL queries
+  // Update these tables to keep them constant with the current schema
+  public final class Tables {
+    // These constants should match the current SQL name of each table
+    public static final String GLOBAL = "global";
+    public static final String CAMERAS = "cameras";
+  }
 
-    public final class Columns {
-        // These constants should match the current SQL name of each column
-        static final String GLB_FILENAME = "filename";
-        static final String GLB_CONTENTS = "contents";
+  public final class Columns {
+    // These constants should match the current SQL name of each column
+    static final String GLB_FILENAME = "filename";
+    static final String GLB_CONTENTS = "contents";
 
-        static final String CAM_UNIQUE_NAME = "unique_name";
-        static final String CAM_CONFIG_JSON = "config_json";
-        static final String CAM_DRIVERMODE_JSON = "drivermode_json";
-        static final String CAM_PIPELINE_JSONS = "pipeline_jsons";
-        static final String CAM_OTHERPATHS_JSON = "otherpaths_json";
-    }
+    static final String CAM_UNIQUE_NAME = "unique_name";
+    static final String CAM_CONFIG_JSON = "config_json";
+    static final String CAM_DRIVERMODE_JSON = "drivermode_json";
+    static final String CAM_PIPELINE_JSONS = "pipeline_jsons";
+    static final String CAM_OTHERPATHS_JSON = "otherpaths_json";
+  }
 }

@@ -26,8 +26,8 @@ public class AprilTagDetectionCudaPipeParams {
   public final AprilTagDetector.Config detectorParams;
   public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
-  public AprilTagDetectionCudaPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config,
-      CameraCalibrationCoefficients cal) {
+  public AprilTagDetectionCudaPipeParams(
+      AprilTagFamily tagFamily, AprilTagDetector.Config config, CameraCalibrationCoefficients cal) {
     this.family = tagFamily;
     this.detectorParams = config;
     this.cameraCalibrationCoefficients = cal;
@@ -38,27 +38,25 @@ public class AprilTagDetectionCudaPipeParams {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((family == null) ? 0 : family.hashCode());
-    result = prime * result + ((cameraCalibrationCoefficients == null) ? 0 : cameraCalibrationCoefficients.hashCode());
+    result =
+        prime * result
+            + ((cameraCalibrationCoefficients == null)
+                ? 0
+                : cameraCalibrationCoefficients.hashCode());
     result = prime * result + ((detectorParams == null) ? 0 : detectorParams.hashCode());
     return result;
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj)
-      return true;
-    if (obj == null)
-      return false;
-    if (getClass() != obj.getClass())
-      return false;
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
     AprilTagDetectionCudaPipeParams other = (AprilTagDetectionCudaPipeParams) obj;
-    if (family != other.family)
-      return false;
-    if (cameraCalibrationCoefficients != other.cameraCalibrationCoefficients)
-      return false;
+    if (family != other.family) return false;
+    if (cameraCalibrationCoefficients != other.cameraCalibrationCoefficients) return false;
     if (detectorParams == null) {
       return other.detectorParams == null;
-    } else
-      return detectorParams.equals(other.detectorParams);
+    } else return detectorParams.equals(other.detectorParams);
   }
 }

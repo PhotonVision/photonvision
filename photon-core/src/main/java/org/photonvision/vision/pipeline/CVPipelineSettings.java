@@ -23,20 +23,22 @@ import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_ARRAY, property = "type")
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.WRAPPER_ARRAY,
+    property = "type")
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = ColoredShapePipelineSettings.class),
-    @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
-    @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
-    @JsonSubTypes.Type(value = AprilTagPipelineSettings.class),
-    @JsonSubTypes.Type(value = ArucoPipelineSettings.class),
-    @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class),
-    @JsonSubTypes.Type(value = AprilTagCudaPipelineSettings.class)
+  @JsonSubTypes.Type(value = ColoredShapePipelineSettings.class),
+  @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
+  @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
+  @JsonSubTypes.Type(value = AprilTagPipelineSettings.class),
+  @JsonSubTypes.Type(value = ArucoPipelineSettings.class),
+  @JsonSubTypes.Type(value = ObjectDetectionPipelineSettings.class),
+  @JsonSubTypes.Type(value = AprilTagCudaPipelineSettings.class)
 })
 public class CVPipelineSettings implements Cloneable {
   public int pipelineIndex = 0;
-  @SuppressSettingCopy
-  public PipelineType pipelineType = PipelineType.DriverMode;
+  @SuppressSettingCopy public PipelineType pipelineType = PipelineType.DriverMode;
   public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
   public String pipelineNickname = "New Pipeline";
   public boolean cameraAutoExposure = false;
@@ -63,10 +65,8 @@ public class CVPipelineSettings implements Cloneable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o)
-      return true;
-    if (o == null || getClass() != o.getClass())
-      return false;
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     CVPipelineSettings that = (CVPipelineSettings) o;
     return pipelineIndex == that.pipelineIndex
         && Double.compare(that.cameraExposureRaw, cameraExposureRaw) == 0

@@ -20,38 +20,38 @@ package org.photonvision.common.dataflow.structures;
 import edu.wpi.first.util.struct.Struct;
 
 public interface PacketSerde<T> {
-    int getMaxByteSize();
+  int getMaxByteSize();
 
-    void pack(Packet packet, T value);
+  void pack(Packet packet, T value);
 
-    T unpack(Packet packet);
+  T unpack(Packet packet);
 
-    /** The name of this struct (eg "PhotonTrackedTarget") */
-    String getTypeName();
+  /** The name of this struct (eg "PhotonTrackedTarget") */
+  String getTypeName();
 
-    /**
-     * Gets the type string (e.g. for NetworkTables). This should be globally unique and start with
-     * "photonstruct:".
-     *
-     * @return type string
-     */
-    default String getTypeString() {
-        return "photonstruct:" + getTypeName() + ":" + getInterfaceUUID();
-    }
+  /**
+   * Gets the type string (e.g. for NetworkTables). This should be globally unique and start with
+   * "photonstruct:".
+   *
+   * @return type string
+   */
+  default String getTypeString() {
+    return "photonstruct:" + getTypeName() + ":" + getInterfaceUUID();
+  }
 
-    /** Gets the list of photonstruct types referenced by this struct. */
-    default PacketSerde<?>[] getNestedPhotonMessages() {
-        return new PacketSerde<?>[] {};
-    }
+  /** Gets the list of photonstruct types referenced by this struct. */
+  default PacketSerde<?>[] getNestedPhotonMessages() {
+    return new PacketSerde<?>[] {};
+  }
 
-    /** Gets the list of WPILib struct types referenced by this struct. */
-    default Struct<?>[] getNestedWpilibMessages() {
-        return new Struct<?>[] {};
-    }
+  /** Gets the list of WPILib struct types referenced by this struct. */
+  default Struct<?>[] getNestedWpilibMessages() {
+    return new Struct<?>[] {};
+  }
 
-    /** The schema definition, as defined in photon-serde/README.md */
-    String getSchema();
+  /** The schema definition, as defined in photon-serde/README.md */
+  String getSchema();
 
-    /** The hash of the schema string */
-    String getInterfaceUUID();
+  /** The hash of the schema string */
+  String getInterfaceUUID();
 }

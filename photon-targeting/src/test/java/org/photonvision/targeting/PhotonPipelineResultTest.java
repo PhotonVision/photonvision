@@ -28,433 +28,433 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 public class PhotonPipelineResultTest {
-    @Test
-    public void equalityTest() {
-        var a = new PhotonPipelineResult();
-        var b = new PhotonPipelineResult();
-        assertEquals(a, b);
+  @Test
+  public void equalityTest() {
+    var a = new PhotonPipelineResult();
+    var b = new PhotonPipelineResult();
+    assertEquals(a, b);
 
-        a =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        b =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        assertEquals(a, b);
+    a =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    b =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    assertEquals(a, b);
 
-        a =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))),
-                        Optional.of(
-                                new MultiTargetPNPResult(
-                                        new PnpResult(
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                        List.of((short) 1, (short) 2, (short) 3))));
-        b =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))),
-                        Optional.of(
-                                new MultiTargetPNPResult(
-                                        new PnpResult(
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                        List.of((short) 1, (short) 2, (short) 3))));
-        assertEquals(a, b);
-    }
+    a =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))),
+            Optional.of(
+                new MultiTargetPNPResult(
+                    new PnpResult(
+                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                    List.of((short) 1, (short) 2, (short) 3))));
+    b =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))),
+            Optional.of(
+                new MultiTargetPNPResult(
+                    new PnpResult(
+                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                    List.of((short) 1, (short) 2, (short) 3))));
+    assertEquals(a, b);
+  }
 
-    @Test
-    public void inequalityTest() {
-        var a =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        7.0,
-                                        2.0,
-                                        1.0,
-                                        -9.0,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        var b =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        7.0,
-                                        2.0,
-                                        1.0,
-                                        -9.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        assertNotEquals(a, b);
+  @Test
+  public void inequalityTest() {
+    var a =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    7.0,
+                    2.0,
+                    1.0,
+                    -9.0,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    var b =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    7.0,
+                    2.0,
+                    1.0,
+                    -9.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))));
+    assertNotEquals(a, b);
 
-        a =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))),
-                        Optional.of(
-                                new MultiTargetPNPResult(
-                                        new PnpResult(
-                                                new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                        List.of((short) 3, (short) 4, (short) 7))));
-        b =
-                new PhotonPipelineResult(
-                        3,
-                        4,
-                        5,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        2,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))),
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.1,
-                                        6.7,
-                                        3,
-                                        -1,
-                                        -1f,
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
-                                        0.25,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))),
-                        Optional.of(
-                                new MultiTargetPNPResult(
-                                        new PnpResult(
-                                                new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                                        List.of((short) 1, (short) 2, (short) 3))));
-        assertNotEquals(a, b);
-    }
+    a =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))),
+            Optional.of(
+                new MultiTargetPNPResult(
+                    new PnpResult(
+                        new Transform3d(new Translation3d(1, 8, 3), new Rotation3d(1, 2, 3)), 0.1),
+                    List.of((short) 3, (short) 4, (short) 7))));
+    b =
+        new PhotonPipelineResult(
+            3,
+            4,
+            5,
+            1024,
+            List.of(
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.0,
+                    4.0,
+                    2,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8))),
+                new PhotonTrackedTarget(
+                    3.0,
+                    -4.0,
+                    9.1,
+                    6.7,
+                    3,
+                    -1,
+                    -1f,
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                    0.25,
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)),
+                    List.of(
+                        new TargetCorner(1, 2),
+                        new TargetCorner(3, 4),
+                        new TargetCorner(5, 6),
+                        new TargetCorner(7, 8)))),
+            Optional.of(
+                new MultiTargetPNPResult(
+                    new PnpResult(
+                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
+                    List.of((short) 1, (short) 2, (short) 3))));
+    assertNotEquals(a, b);
+  }
 }

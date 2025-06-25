@@ -36,25 +36,25 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.timesync.TimeSyncSingleton;
 
 public class JniLoadTest {
-    @Test
-    public void smoketestTimeSync() {
-        if (!TimeSyncSingleton.load()) {
-            fail("Could not load TimeSync JNI????????");
-        }
+  @Test
+  public void smoketestTimeSync() {
+    if (!TimeSyncSingleton.load()) {
+      fail("Could not load TimeSync JNI????????");
     }
+  }
 
-    @Test
-    public void smoketestPhotonCameraSim() {
-        // This will trigger a force load of OpenCV internally - good to smoketest
-        var camera = new PhotonCamera("Hellowo");
-        var cameraProp = new SimCameraProperties();
-        cameraProp.setCalibration(320, 240, Rotation2d.fromDegrees(90));
+  @Test
+  public void smoketestPhotonCameraSim() {
+    // This will trigger a force load of OpenCV internally - good to smoketest
+    var camera = new PhotonCamera("Hellowo");
+    var cameraProp = new SimCameraProperties();
+    cameraProp.setCalibration(320, 240, Rotation2d.fromDegrees(90));
 
-        var sim = new PhotonCameraSim(camera, cameraProp);
-        sim.enableDrawWireframe(true);
-        sim.enableProcessedStream(true);
-        sim.enableRawStream(true);
+    var sim = new PhotonCameraSim(camera, cameraProp);
+    sim.enableDrawWireframe(true);
+    sim.enableProcessedStream(true);
+    sim.enableRawStream(true);
 
-        sim.process(0, new Pose3d(), List.of());
-    }
+    sim.process(0, new Pose3d(), List.of());
+  }
 }

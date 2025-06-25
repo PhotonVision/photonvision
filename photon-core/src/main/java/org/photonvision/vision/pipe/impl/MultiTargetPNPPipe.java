@@ -32,61 +32,61 @@ import org.photonvision.vision.target.TrackedTarget;
 
 /** Estimate the camera pose given multiple Apriltag observations */
 public class MultiTargetPNPPipe
-        extends CVPipe<
-                List<TrackedTarget>,
-                Optional<MultiTargetPNPResult>,
-                MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
-    private static final Logger logger = new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
+    extends CVPipe<
+        List<TrackedTarget>,
+        Optional<MultiTargetPNPResult>,
+        MultiTargetPNPPipe.MultiTargetPNPPipeParams> {
+  private static final Logger logger = new Logger(MultiTargetPNPPipe.class, LogGroup.VisionModule);
 
-    private boolean hasWarned = false;
+  private boolean hasWarned = false;
 
-    @Override
-    protected Optional<MultiTargetPNPResult> process(List<TrackedTarget> targetList) {
-        if (params == null
-                || params.cameraCoefficients() == null
-                || params.cameraCoefficients().getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients().getDistCoeffsMat() == null) {
-            if (!hasWarned) {
-                logger.warn(
-                        "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
-                hasWarned = true;
-            }
-            return Optional.empty();
-        }
-
-        return calculateCameraInField(targetList);
+  @Override
+  protected Optional<MultiTargetPNPResult> process(List<TrackedTarget> targetList) {
+    if (params == null
+        || params.cameraCoefficients() == null
+        || params.cameraCoefficients().getCameraIntrinsicsMat() == null
+        || params.cameraCoefficients().getDistCoeffsMat() == null) {
+      if (!hasWarned) {
+        logger.warn(
+            "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
+        hasWarned = true;
+      }
+      return Optional.empty();
     }
 
-    private Optional<MultiTargetPNPResult> calculateCameraInField(List<TrackedTarget> targetList) {
-        // Find tag IDs that exist in the tag layout
-        var tagIDsUsed = new ArrayList<Short>();
-        for (var target : targetList) {
-            int id = target.getFiducialId();
-            if (params.atfl().getTagPose(id).isPresent()) tagIDsUsed.add((short) id);
-        }
+    return calculateCameraInField(targetList);
+  }
 
-        // Only run with multiple targets
-        if (tagIDsUsed.size() < 2) {
-            return Optional.empty();
-        }
-
-        var estimatedPose =
-                VisionEstimation.estimateCamPosePNP(
-                        params.cameraCoefficients().cameraIntrinsics.getAsWpilibMat(),
-                        params.cameraCoefficients().distCoeffs.getAsWpilibMat(),
-                        TrackedTarget.simpleFromTrackedTargets(targetList),
-                        params.atfl(),
-                        params.targetModel());
-
-        if (estimatedPose.isPresent()) {
-            return Optional.of(new MultiTargetPNPResult(estimatedPose.get(), tagIDsUsed));
-        } else {
-            return Optional.empty();
-        }
+  private Optional<MultiTargetPNPResult> calculateCameraInField(List<TrackedTarget> targetList) {
+    // Find tag IDs that exist in the tag layout
+    var tagIDsUsed = new ArrayList<Short>();
+    for (var target : targetList) {
+      int id = target.getFiducialId();
+      if (params.atfl().getTagPose(id).isPresent()) tagIDsUsed.add((short) id);
     }
 
-    public static record MultiTargetPNPPipeParams(
-            CameraCalibrationCoefficients cameraCoefficients,
-            AprilTagFieldLayout atfl,
-            TargetModel targetModel) {}
+    // Only run with multiple targets
+    if (tagIDsUsed.size() < 2) {
+      return Optional.empty();
+    }
+
+    var estimatedPose =
+        VisionEstimation.estimateCamPosePNP(
+            params.cameraCoefficients().cameraIntrinsics.getAsWpilibMat(),
+            params.cameraCoefficients().distCoeffs.getAsWpilibMat(),
+            TrackedTarget.simpleFromTrackedTargets(targetList),
+            params.atfl(),
+            params.targetModel());
+
+    if (estimatedPose.isPresent()) {
+      return Optional.of(new MultiTargetPNPResult(estimatedPose.get(), tagIDsUsed));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public static record MultiTargetPNPPipeParams(
+      CameraCalibrationCoefficients cameraCoefficients,
+      AprilTagFieldLayout atfl,
+      TargetModel targetModel) {}
 }

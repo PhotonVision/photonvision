@@ -26,36 +26,36 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.PotentialTarget;
 
 public class SortContoursPipe
-        extends CVPipe<
-                List<PotentialTarget>, List<PotentialTarget>, SortContoursPipe.SortContoursParams> {
-    private final List<PotentialTarget> m_sortedContours = new ArrayList<>();
+    extends CVPipe<
+        List<PotentialTarget>, List<PotentialTarget>, SortContoursPipe.SortContoursParams> {
+  private final List<PotentialTarget> m_sortedContours = new ArrayList<>();
 
-    @Override
-    protected List<PotentialTarget> process(List<PotentialTarget> in) {
-        for (var oldTarget : m_sortedContours) {
-            oldTarget.release();
-        }
-        m_sortedContours.clear();
+  @Override
+  protected List<PotentialTarget> process(List<PotentialTarget> in) {
+    for (var oldTarget : m_sortedContours) {
+      oldTarget.release();
+    }
+    m_sortedContours.clear();
 
-        if (!in.isEmpty()) {
-            m_sortedContours.addAll(in);
-            if (params.sortMode() != ContourSortMode.Centermost) {
-                m_sortedContours.sort(params.sortMode().getComparator());
-            } else {
-                // we need knowledge of camera properties to calculate this distance -- do it ourselves
-                m_sortedContours.sort(Comparator.comparingDouble(this::calcSquareCenterDistance));
-            }
-        }
-
-        return new ArrayList<>(m_sortedContours.subList(0, Math.min(in.size(), params.maxTargets())));
+    if (!in.isEmpty()) {
+      m_sortedContours.addAll(in);
+      if (params.sortMode() != ContourSortMode.Centermost) {
+        m_sortedContours.sort(params.sortMode().getComparator());
+      } else {
+        // we need knowledge of camera properties to calculate this distance -- do it ourselves
+        m_sortedContours.sort(Comparator.comparingDouble(this::calcSquareCenterDistance));
+      }
     }
 
-    private double calcSquareCenterDistance(PotentialTarget tgt) {
-        return Math.hypot(
-                params.frameStaticProperties().centerX - tgt.getMinAreaRect().center.x,
-                params.frameStaticProperties().centerY - tgt.getMinAreaRect().center.y);
-    }
+    return new ArrayList<>(m_sortedContours.subList(0, Math.min(in.size(), params.maxTargets())));
+  }
 
-    public static record SortContoursParams(
-            ContourSortMode sortMode, int maxTargets, FrameStaticProperties frameStaticProperties) {}
+  private double calcSquareCenterDistance(PotentialTarget tgt) {
+    return Math.hypot(
+        params.frameStaticProperties().centerX - tgt.getMinAreaRect().center.x,
+        params.frameStaticProperties().centerY - tgt.getMinAreaRect().center.y);
+  }
+
+  public static record SortContoursParams(
+      ContourSortMode sortMode, int maxTargets, FrameStaticProperties frameStaticProperties) {}
 }

@@ -18,7 +18,7 @@
 package org.photonvision.vision.frame;
 
 public enum FrameThresholdType {
-    NONE,
-    HSV,
-    GREYSCALE,
+  NONE,
+  HSV,
+  GREYSCALE,
 }

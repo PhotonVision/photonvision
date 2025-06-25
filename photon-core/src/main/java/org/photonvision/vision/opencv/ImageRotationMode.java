@@ -30,49 +30,49 @@ import org.opencv.core.Point;
  * image-rotation.md
  */
 public enum ImageRotationMode {
-    DEG_0(-1, new Rotation2d()),
-    // rotating an image matrix clockwise is a ccw rotation about camera +Z, lmao
-    DEG_90_CCW(Core.ROTATE_90_COUNTERCLOCKWISE, new Rotation2d(Units.degreesToRadians(90))),
-    DEG_180_CCW(Core.ROTATE_180, new Rotation2d(Units.degreesToRadians(180))),
-    DEG_270_CCW(Core.ROTATE_90_CLOCKWISE, new Rotation2d(Units.degreesToRadians(-90)));
+  DEG_0(-1, new Rotation2d()),
+  // rotating an image matrix clockwise is a ccw rotation about camera +Z, lmao
+  DEG_90_CCW(Core.ROTATE_90_COUNTERCLOCKWISE, new Rotation2d(Units.degreesToRadians(90))),
+  DEG_180_CCW(Core.ROTATE_180, new Rotation2d(Units.degreesToRadians(180))),
+  DEG_270_CCW(Core.ROTATE_90_CLOCKWISE, new Rotation2d(Units.degreesToRadians(-90)));
 
-    public final int value;
-    public final Rotation2d rotation2d;
+  public final int value;
+  public final Rotation2d rotation2d;
 
-    private ImageRotationMode(int value, Rotation2d tr) {
-        this.value = value;
-        this.rotation2d = tr;
+  private ImageRotationMode(int value, Rotation2d tr) {
+    this.value = value;
+    this.rotation2d = tr;
+  }
+
+  /**
+   * Rotate a point in an image
+   *
+   * @param point The point in the unrotated image
+   * @param width Image width, in pixels
+   * @param height Image height, in pixels
+   * @return The point in the rotated frame
+   */
+  public Point rotatePoint(Point point, double width, double height) {
+    Pose2d offset;
+    switch (this) {
+      case DEG_0:
+        return point;
+      case DEG_90_CCW:
+        offset = new Pose2d(width, 0, rotation2d);
+        break;
+      case DEG_180_CCW:
+        offset = new Pose2d(width, height, rotation2d);
+        break;
+      case DEG_270_CCW:
+        offset = new Pose2d(0, height, rotation2d);
+        break;
+      default:
+        throw new RuntimeException("Totally bjork");
     }
 
-    /**
-     * Rotate a point in an image
-     *
-     * @param point The point in the unrotated image
-     * @param width Image width, in pixels
-     * @param height Image height, in pixels
-     * @return The point in the rotated frame
-     */
-    public Point rotatePoint(Point point, double width, double height) {
-        Pose2d offset;
-        switch (this) {
-            case DEG_0:
-                return point;
-            case DEG_90_CCW:
-                offset = new Pose2d(width, 0, rotation2d);
-                break;
-            case DEG_180_CCW:
-                offset = new Pose2d(width, height, rotation2d);
-                break;
-            case DEG_270_CCW:
-                offset = new Pose2d(0, height, rotation2d);
-                break;
-            default:
-                throw new RuntimeException("Totally bjork");
-        }
+    var pointAsPose = new Pose2d(point.x, point.y, new Rotation2d());
+    var ret = pointAsPose.relativeTo(offset);
 
-        var pointAsPose = new Pose2d(point.x, point.y, new Rotation2d());
-        var ret = pointAsPose.relativeTo(offset);
-
-        return new Point(ret.getX(), ret.getY());
-    }
+    return new Point(ret.getX(), ret.getY());
+  }
 }

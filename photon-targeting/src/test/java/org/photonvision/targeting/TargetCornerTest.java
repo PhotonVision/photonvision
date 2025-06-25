@@ -23,19 +23,19 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import org.junit.jupiter.api.Test;
 
 public class TargetCornerTest {
-    @Test
-    public void equalityTest() {
-        var a = new TargetCorner(0, 1);
-        var b = new TargetCorner(0, 1);
+  @Test
+  public void equalityTest() {
+    var a = new TargetCorner(0, 1);
+    var b = new TargetCorner(0, 1);
 
-        assertEquals(a, b);
-    }
+    assertEquals(a, b);
+  }
 
-    @Test
-    public void inequalityTest() {
-        var a = new TargetCorner(0, 1);
-        var b = new TargetCorner(2, 4);
+  @Test
+  public void inequalityTest() {
+    var a = new TargetCorner(0, 1);
+    var b = new TargetCorner(2, 4);
 
-        assertNotEquals(a, b);
-    }
+    assertNotEquals(a, b);
+  }
 }
