@@ -64,13 +64,11 @@ public class AprilTagDetectionCudaPipe
   @Override
   public void setParams(AprilTagDetectionCudaPipeParams newParams) {
     if (this.params == null || !this.params.equals(newParams)) {
-      if (newParams.cameraCalibrationCoefficients == null)
-        return;
+      if (newParams.cameraCalibrationCoefficients == null) return;
 
       final Mat cameraMatrix = newParams.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
       final Mat distCoeffs = newParams.cameraCalibrationCoefficients.getDistCoeffsMat();
-      if (cameraMatrix == null || distCoeffs == null)
-        return;
+      if (cameraMatrix == null || distCoeffs == null) return;
       var cx = cameraMatrix.get(0, 2)[0];
       var cy = cameraMatrix.get(1, 2)[0];
       var fx = cameraMatrix.get(0, 0)[0];

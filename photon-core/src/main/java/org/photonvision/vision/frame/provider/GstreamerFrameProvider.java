@@ -146,20 +146,16 @@ public class GstreamerFrameProvider extends FrameProvider {
   }
 
   @Override
-  public void requestFrameThresholdType(FrameThresholdType type) {
-  }
+  public void requestFrameThresholdType(FrameThresholdType type) {}
 
   @Override
-  public void requestFrameRotation(ImageRotationMode rotationMode) {
-  }
+  public void requestFrameRotation(ImageRotationMode rotationMode) {}
 
   @Override
-  public void requestHsvSettings(HSVParams params) {
-  }
+  public void requestHsvSettings(HSVParams params) {}
 
   @Override
-  public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
-  }
+  public void requestFrameCopies(boolean copyInput, boolean copyOutput) {}
 
   @Override
   public void release() {

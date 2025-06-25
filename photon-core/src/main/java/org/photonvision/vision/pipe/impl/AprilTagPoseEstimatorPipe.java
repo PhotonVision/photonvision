@@ -29,10 +29,13 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
-    extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
+    extends CVPipe<
+        AprilTagDetection,
+        AprilTagPoseEstimate,
+        AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams>
     implements Releasable {
-  private final AprilTagPoseEstimator m_poseEstimator = new AprilTagPoseEstimator(
-      new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
+  private final AprilTagPoseEstimator m_poseEstimator =
+      new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
   public AprilTagPoseEstimatorPipe() {
     super();
@@ -71,15 +74,16 @@ public class AprilTagPoseEstimatorPipe
     }
 
     // Create a new Detection with the fixed corners
-    var corrected = new AprilTagDetection(
-        in.getFamily(),
-        in.getId(),
-        in.getHamming(),
-        in.getDecisionMargin(),
-        in.getHomography(),
-        in.getCenterX(),
-        in.getCenterY(),
-        fixedCorners);
+    var corrected =
+        new AprilTagDetection(
+            in.getFamily(),
+            in.getId(),
+            in.getHamming(),
+            in.getDecisionMargin(),
+            in.getHomography(),
+            in.getCenterX(),
+            in.getCenterY(),
+            fixedCorners);
 
     return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters());
   }
@@ -99,6 +103,5 @@ public class AprilTagPoseEstimatorPipe
   }
 
   public static record AprilTagPoseEstimatorPipeParams(
-      Config config, CameraCalibrationCoefficients calibration, int nIters) {
-  }
+      Config config, CameraCalibrationCoefficients calibration, int nIters) {}
 }
