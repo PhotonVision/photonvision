@@ -304,9 +304,7 @@ const nukePhotonConfigDirectory = () => {
                     v-model="importFile"
                     :disabled="importType === undefined"
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
-                    :accept="
-                      importType === ImportType.AllSettings ? '.zip' : '.json'
-                    "
+                    :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
                 </v-row>
                 <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">

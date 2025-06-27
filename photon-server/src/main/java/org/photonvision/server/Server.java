@@ -146,7 +146,8 @@ public class Server {
 
         // Object detection
         app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
-        app.post("/api/objectdetection/bulkimport", RequestHandler::onBulkImportObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/bulkimport", RequestHandler::onBulkImportObjectDetectionModelRequest);
         app.get("/api/objectdetection/export", RequestHandler::onExportObjectDetectionModelsRequest);
         app.get(
                 "/api/objectdetection/exportIndividual",
