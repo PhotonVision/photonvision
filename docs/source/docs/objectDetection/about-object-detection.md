@@ -50,3 +50,5 @@ PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOL
 :::{warning}
 Non-quantized models are not supported! If you have the option, make sure quantization is enabled when exporting to .rknn format. This will represent the weights and activations of the model as 8-bit integers, instead of 32-bit floats which PhotonVision doesn't support. Quantized models are also much faster for a negligible loss in accuracy.
 :::
+
+Custom models can now be managed from the Object Detection tab in settings. You can upload a custom model by clicking the "Upload Model" button, selecting your `.rknn` file, and filling out the property fields. Models can also be exported, both individually and in bulk. Models exported in bulk can be imported using the `Import Settings` button in the `Device Controls` card. Models exported individually must be re-imported as an individual model, and all the relevant metadata is stored in the filename of the model.
