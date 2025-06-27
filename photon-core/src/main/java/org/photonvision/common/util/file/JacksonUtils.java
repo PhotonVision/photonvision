@@ -17,9 +17,15 @@
 
 package org.photonvision.common.util.file;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
@@ -31,6 +37,7 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.jetty.io.EofException;
@@ -38,41 +45,71 @@ import org.eclipse.jetty.io.EofException;
 public class JacksonUtils {
     public static class UIMap extends HashMap<String, Object> {}
 
+    // Custom Path serializer that outputs just the path string without file:/ prefix
+    public static class PathSerializer extends JsonSerializer<Path> {
+        @Override
+        public void serialize(Path value, JsonGenerator gen, SerializerProvider serializers)
+                throws IOException {
+            if (value == null) {
+                gen.writeNull();
+            } else {
+                gen.writeString(value.toString());
+            }
+        }
+    }
+
+    // Custom Path deserializer that reads path strings
+    public static class PathDeserializer extends JsonDeserializer<Path> {
+        @Override
+        public Path deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+            String pathString = p.getValueAsString();
+            if (pathString == null || pathString.isEmpty()) {
+                return null;
+            }
+
+            // Handle case where old serialized data might still have file:/ prefix
+            if (pathString.startsWith("file:/")) {
+                pathString = pathString.substring(6); // Remove "file:/" prefix
+            }
+
+            return Paths.get(pathString);
+        }
+    }
+
+    // Helper method to create ObjectMapper with Path serialization support
+    private static ObjectMapper createObjectMapperWithPathSupport(Class<?> baseType) {
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(baseType).build();
+
+        SimpleModule pathModule = new SimpleModule();
+        pathModule.addSerializer(Path.class, new PathSerializer());
+        pathModule.addDeserializer(Path.class, new PathDeserializer());
+
+        return JsonMapper.builder()
+                .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                .addModule(pathModule)
+                .build();
+    }
+
     public static <T> void serialize(Path path, T object) throws IOException {
         serialize(path, object, true);
     }
 
     public static <T> String serializeToString(T object) throws IOException {
-        PolymorphicTypeValidator ptv =
-                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
-        ObjectMapper objectMapper =
-                JsonMapper.builder()
-                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                        .build();
+        ObjectMapper objectMapper = createObjectMapperWithPathSupport(object.getClass());
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
     }
 
     public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
-        PolymorphicTypeValidator ptv =
-                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
-        ObjectMapper objectMapper =
-                JsonMapper.builder()
-                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                        .build();
+        ObjectMapper objectMapper = createObjectMapperWithPathSupport(object.getClass());
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
         saveJsonString(json, path, forceSync);
     }
 
     public static <T> T deserialize(Map<?, ?> s, Class<T> ref) throws IOException {
-        PolymorphicTypeValidator ptv =
-                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper =
-                JsonMapper.builder()
-                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                        .build();
-
+        ObjectMapper objectMapper = createObjectMapperWithPathSupport(ref);
         return objectMapper.convertValue(s, ref);
     }
 
@@ -81,76 +118,14 @@ public class JacksonUtils {
             throw new EofException("Provided empty string for class " + ref.getName());
         }
 
-        PolymorphicTypeValidator ptv =
-                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper =
-                JsonMapper.builder()
-                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
-                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                        .build();
+        ObjectMapper objectMapper = createObjectMapperWithPathSupport(ref);
+        objectMapper.enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL);
 
-        return objectMapper.readValue(s, ref);
-    }
-
-    /**
-     * Deserializes a JSON string into an object of the specified class with Path support.
-     * This method adds specialized deserializers for Path objects both as keys and values.
-     *
-     * @param <T> the type of the object to deserialize
-     * @param s the JSON string to deserialize
-     * @param ref the class of the object to deserialize to
-     * @return the deserialized object
-     * @throws IOException if there is an error reading the JSON
-     * @throws IllegalArgumentException if the input string is null or empty
-     */
-    public static <T> T deserializeWithPathSupport(String s, Class<T> ref) throws IOException {
-        if (s == null) {
-            throw new IllegalArgumentException("Cannot deserialize null string for class " + ref.getName());
-        }
-        if (s.length() == 0) {
-            throw new EofException("Provided empty string for class " + ref.getName());
-        }
-    
-        PolymorphicTypeValidator ptv =
-                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper =
-                JsonMapper.builder()
-                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
-                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                        .build();
-    
-        // Add Path key deserializer support
-        SimpleModule pathModule = new SimpleModule();
-        pathModule.addKeyDeserializer(Path.class, new com.fasterxml.jackson.databind.KeyDeserializer() {
-            @Override
-            public Object deserializeKey(String key, com.fasterxml.jackson.databind.DeserializationContext ctxt) throws IOException {
-                return java.nio.file.Paths.get(key);
-            }
-        });
-        pathModule.addDeserializer(Path.class, new com.fasterxml.jackson.databind.JsonDeserializer<Path>() {
-            @Override
-            public Path deserialize(com.fasterxml.jackson.core.JsonParser p, com.fasterxml.jackson.databind.DeserializationContext ctxt) throws IOException {
-                return java.nio.file.Paths.get(p.getValueAsString());
-            }
-        });
-        objectMapper.registerModule(pathModule);
-    
         return objectMapper.readValue(s, ref);
     }
 
     public static <T> T deserialize(Path path, Class<T> ref) throws IOException {
-        PolymorphicTypeValidator ptv =
-                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper =
-                JsonMapper.builder()
-                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                        .build();
+        ObjectMapper objectMapper = createObjectMapperWithPathSupport(ref);
         File jsonFile = new File(path.toString());
         if (jsonFile.exists() && jsonFile.length() > 0) {
             return objectMapper.readValue(jsonFile, ref);
@@ -163,6 +138,11 @@ public class JacksonUtils {
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addDeserializer(ref, deserializer);
+
+        // Add Path support to custom deserializer case as well
+        module.addSerializer(Path.class, new PathSerializer());
+        module.addDeserializer(Path.class, new PathDeserializer());
+
         objectMapper.registerModule(module);
 
         File jsonFile = new File(path.toString());
@@ -183,6 +163,11 @@ public class JacksonUtils {
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule module = new SimpleModule();
         module.addSerializer(ref, serializer);
+
+        // Add Path support to custom serializer case as well
+        module.addSerializer(Path.class, new PathSerializer());
+        module.addDeserializer(Path.class, new PathDeserializer());
+
         objectMapper.registerModule(module);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
         saveJsonString(json, path, forceSync);

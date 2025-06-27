@@ -314,7 +314,7 @@ public class SqlConfigProvider extends ConfigProvider {
 
             try {
                 nnProps =
-                        JacksonUtils.deserializeWithPathSupport(
+                        JacksonUtils.deserialize(
                                 getOneConfigFile(conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES),
                                 NeuralNetworkPropertyManager.class);
             } catch (IOException e) {
