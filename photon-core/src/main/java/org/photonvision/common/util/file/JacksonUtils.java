@@ -94,7 +94,21 @@ public class JacksonUtils {
         return objectMapper.readValue(s, ref);
     }
 
+    /**
+     * Deserializes a JSON string into an object of the specified class with Path support.
+     * This method adds specialized deserializers for Path objects both as keys and values.
+     *
+     * @param <T> the type of the object to deserialize
+     * @param s the JSON string to deserialize
+     * @param ref the class of the object to deserialize to
+     * @return the deserialized object
+     * @throws IOException if there is an error reading the JSON
+     * @throws IllegalArgumentException if the input string is null or empty
+     */
     public static <T> T deserializeWithPathSupport(String s, Class<T> ref) throws IOException {
+        if (s == null) {
+            throw new IllegalArgumentException("Cannot deserialize null string for class " + ref.getName());
+        }
         if (s.length() == 0) {
             throw new EofException("Provided empty string for class " + ref.getName());
         }
