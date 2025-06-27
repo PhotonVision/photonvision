@@ -114,6 +114,7 @@ const deleteModel = async (model: ObjectDetectionModelProperties) => {
         });
       }
     });
+  confirmDeleteDialog.value.show = false;
 };
 
 const renameModel = async (model: ObjectDetectionModelProperties, newName: string) => {
@@ -152,6 +153,7 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
         });
       }
     });
+  showRenameDialog.value.show = false;
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
