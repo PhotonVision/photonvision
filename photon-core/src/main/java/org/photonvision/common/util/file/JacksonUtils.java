@@ -94,6 +94,40 @@ public class JacksonUtils {
         return objectMapper.readValue(s, ref);
     }
 
+    public static <T> T deserializeWithPathSupport(String s, Class<T> ref) throws IOException {
+        if (s.length() == 0) {
+            throw new EofException("Provided empty string for class " + ref.getName());
+        }
+    
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .enable(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL)
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
+    
+        // Add Path key deserializer support
+        SimpleModule pathModule = new SimpleModule();
+        pathModule.addKeyDeserializer(Path.class, new com.fasterxml.jackson.databind.KeyDeserializer() {
+            @Override
+            public Object deserializeKey(String key, com.fasterxml.jackson.databind.DeserializationContext ctxt) throws IOException {
+                return java.nio.file.Paths.get(key);
+            }
+        });
+        pathModule.addDeserializer(Path.class, new com.fasterxml.jackson.databind.JsonDeserializer<Path>() {
+            @Override
+            public Path deserialize(com.fasterxml.jackson.core.JsonParser p, com.fasterxml.jackson.databind.DeserializationContext ctxt) throws IOException {
+                return java.nio.file.Paths.get(p.getValueAsString());
+            }
+        });
+        objectMapper.registerModule(pathModule);
+    
+        return objectMapper.readValue(s, ref);
+    }
+
     public static <T> T deserialize(Path path, Class<T> ref) throws IOException {
         PolymorphicTypeValidator ptv =
                 BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
