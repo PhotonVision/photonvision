@@ -138,8 +138,7 @@ enum ImportType {
   HardwareConfig,
   HardwareSettings,
   NetworkConfig,
-  ApriltagFieldLayout,
-  ObjectDetectionModels
+  ApriltagFieldLayout
 }
 const showImportDialog = ref(false);
 const importType = ref<ImportType | undefined>(undefined);
@@ -163,9 +162,6 @@ const handleSettingsImport = () => {
       break;
     case ImportType.ApriltagFieldLayout:
       settingsEndpoint = "/aprilTagFieldLayout";
-      break;
-    case ImportType.ObjectDetectionModels:
-      settingsEndpoint = "/bulkObjectDetection";
       break;
     default:
     case ImportType.AllSettings:
@@ -297,8 +293,7 @@ const nukePhotonConfigDirectory = () => {
                       'Hardware Config',
                       'Hardware Settings',
                       'Network Config',
-                      'Apriltag Layout',
-                      'Object Detection Models'
+                      'Apriltag Layout'
                     ]"
                     :select-cols="10"
                     style="width: 100%"
@@ -310,7 +305,7 @@ const nukePhotonConfigDirectory = () => {
                     :disabled="importType === undefined"
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
                     :accept="
-                      importType === ImportType.AllSettings || ImportType.ObjectDetectionModels ? '.zip' : '.json'
+                      importType === ImportType.AllSettings ? '.zip' : '.json'
                     "
                   />
                 </v-row>

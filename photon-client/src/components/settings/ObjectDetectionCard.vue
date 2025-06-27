@@ -210,6 +210,47 @@ const nukeModels = () => {
     });
   showNukeDialog.value = false;
 };
+
+const showBulkImportDialog = ref(false);
+const importFile = ref<File | null>(null);
+const handleBulkImport = () => {
+  if (importFile.value === null) return;
+
+  const formData = new FormData();
+  formData.append("data", importFile.value);
+
+  axios
+    .post(`/objectdetection/bulkimport`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+
+  showImportDialog.value = false;
+  importFile.value = null;
+};
 </script>
 
 <template>
@@ -271,6 +312,28 @@ const nukeModels = () => {
                   >
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
+                  </v-btn>
+                </div>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </v-col>
+        <v-col cols="12" sm="6">
+          <v-btn color="secondary" class="justify-center" @click="() => (showBulkImportDialog = true)">
+            <v-icon start class="open-icon"> mdi-import </v-icon>
+            <span class="open-label">Bulk Import</span>
+          </v-btn>
+          <v-dialog v-model="showBulkImportDialog" width="600">
+            <v-card color="primary" dark>
+              <v-card-title class="pa-5 pb-0">Import Multiple Object Detection Models</v-card-title>
+              <v-card-text class="pa-5">
+                Upload a zip file containing multiple object detection models to this device. Note this zip file should
+                only come from a previous export of object detection models.
+                <div class="pa-5">
+                  <v-file-input v-model="importFile" variant="underlined" label="Zip File" accept=".zip" />
+                  <v-btn color="secondary" :disabled="importFile === null" @click="handleBulkImport()">
+                    <v-icon start class="open-icon"> mdi-import </v-icon>
+                    <span class="open-label">Bulk Import</span>
                   </v-btn>
                 </div>
               </v-card-text>
