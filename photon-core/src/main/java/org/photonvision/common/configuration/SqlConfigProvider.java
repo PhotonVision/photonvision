@@ -317,7 +317,6 @@ public class SqlConfigProvider extends ConfigProvider {
                         JacksonUtils.deserializeWithPathSupport(
                                 getOneConfigFile(conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES),
                                 NeuralNetworkPropertyManager.class);
-                config.setNeuralNetworkProperties(nnProps);
             } catch (IOException e) {
                 logger.error("Could not deserialize neural network properties! Loading defaults", e);
                 nnProps = new NeuralNetworkPropertyManager();
