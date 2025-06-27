@@ -76,6 +76,23 @@ public class JacksonUtils {
         }
     }
 
+    // Custom Path key deserializer for Maps with Path keys
+    public static class PathKeyDeserializer extends com.fasterxml.jackson.databind.KeyDeserializer {
+        @Override
+        public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
+            if (key == null || key.isEmpty()) {
+                return null;
+            }
+
+            // Handle case where old serialized data might still have file:/ prefix
+            if (key.startsWith("file:/")) {
+                key = key.substring(6); // Remove "file:/" prefix
+            }
+
+            return Paths.get(key);
+        }
+    }
+
     // Helper method to create ObjectMapper with Path serialization support
     private static ObjectMapper createObjectMapperWithPathSupport(Class<?> baseType) {
         PolymorphicTypeValidator ptv =
@@ -84,6 +101,7 @@ public class JacksonUtils {
         SimpleModule pathModule = new SimpleModule();
         pathModule.addSerializer(Path.class, new PathSerializer());
         pathModule.addDeserializer(Path.class, new PathDeserializer());
+        pathModule.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
         return JsonMapper.builder()
                 .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
@@ -142,6 +160,7 @@ public class JacksonUtils {
         // Add Path support to custom deserializer case as well
         module.addSerializer(Path.class, new PathSerializer());
         module.addDeserializer(Path.class, new PathDeserializer());
+        module.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
         objectMapper.registerModule(module);
 
@@ -167,6 +186,7 @@ public class JacksonUtils {
         // Add Path support to custom serializer case as well
         module.addSerializer(Path.class, new PathSerializer());
         module.addDeserializer(Path.class, new PathDeserializer());
+        module.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
         objectMapper.registerModule(module);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
