@@ -3,12 +3,7 @@ name: Photon API Documentation
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main ]
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -42,8 +37,8 @@ jobs:
           name: built-demo
           path: photon-client/dist/
 
-  run_api_docs:
-    name: Build API Docs
+  run_java_cpp_docs:
+    name: Build Java and C++ API Docs
     runs-on: "ubuntu-22.04"
     steps:
     - name: Checkout code
@@ -63,18 +58,18 @@ jobs:
         ./gradlew photon-docs:generateJavaDocs photon-docs:doxygen
     - uses: actions/upload-artifact@v4
       with:
-        name: built-docs
+        name: docs-java-cpp
         path: photon-docs/build/docs
 
   publish_api_docs:
     name: Publish API Docs
-    needs: [run_api_docs]
+    needs: [run_java_cpp_docs]
     runs-on: ubuntu-22.04
     steps:
       # Download docs artifact
       - uses: actions/download-artifact@v4
         with:
-          name: built-docs
+          pattern: docs-*
       - run: find .
       - name: Publish Docs To Development
         if: github.ref == 'refs/heads/main'
@@ -83,7 +78,7 @@ jobs:
           HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
           USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
           KEY: ${{secrets.WEBMASTER_SSH_KEY}}
-          TARGET: /var/www/html/photonvision-docs/development
+          TARGET: /var/www/html/photonvision-docs/development/
       - name: Publish Docs To Release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: up9cloud/action-rsync@v1.4
