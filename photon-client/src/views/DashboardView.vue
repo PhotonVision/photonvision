@@ -41,10 +41,8 @@ const cameraViewType = computed<number[]>({
 
 // TODO - deduplicate with needsCamerasConfigured
 const warningShown = computed<boolean>(() => {
-  return (
-    Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    "Placeholder Camera" === useCameraSettingsStore().currentCameraName
-  );
+  return Object.values(useCameraSettingsStore().cameras).length === 0 ||
+    PlaceholderCameraSettings.nickname === useCameraSettingsStore().currentCameraName;
 });
 
 const arducamWarningShown = computed<boolean>(() => {
