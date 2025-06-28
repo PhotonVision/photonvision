@@ -221,7 +221,23 @@ const handleBulkImport = () => {
 
   axios
     .post(`/objectdetection/bulkimport`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "Object Detection Models Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+            color: "secondary",
+            timeout: -1
+          });
+        } else {
+          useStateStore().showSnackbarMessage({
+            message: "Importing New Object Detection Models...",
+            color: "secondary",
+            timeout: -1
+          });
+        }
+      }
     })
     .then((response) => {
       useStateStore().showSnackbarMessage({
