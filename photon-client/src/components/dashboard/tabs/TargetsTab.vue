@@ -269,6 +269,10 @@ const resetCurrentBuffer = () => {
 </template>
 
 <style scoped lang="scss">
+th {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
 .v-table {
   background-color: #006492 !important;
   width: 100%;

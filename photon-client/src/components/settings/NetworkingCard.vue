@@ -142,9 +142,9 @@ watchEffect(() => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Global Settings</v-card-title>
-    <div class="pa-6 pt-0">
-      <v-divider class="pb-3" />
+    <v-card-title class="pa-5">Global Settings</v-card-title>
+    <div class="pa-5 pt-0">
+      <v-divider class="pb-2" />
       <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
@@ -207,7 +207,7 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="mt-3 pb-3" />
+        <v-divider class="mt-3 pb-2" />
         <v-card-title class="pl-0 pt-3 pb-3">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -259,7 +259,7 @@ watchEffect(() => {
         >
           This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
         </v-banner>
-        <v-divider class="mt-3 pb-3" />
+        <v-divider class="mt-3 pb-2" />
         <v-card-title class="pl-0 pt-3 pb-3">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
@@ -277,7 +277,7 @@ watchEffect(() => {
           This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
           this mode.
         </v-banner>
-        <v-divider class="mt-3 mb-6" />
+        <v-divider class="mt-3 pb-5" />
       </v-form>
       <v-btn
         color="accent"

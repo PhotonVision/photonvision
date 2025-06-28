@@ -41,6 +41,7 @@ const cameraViewType = computed<number[]>({
 
 // TODO - deduplicate with needsCamerasConfigured
 const warningShown = computed<boolean>(() => {
+  console.log(useCameraSettingsStore().cameras["Placeholder Name"] == PlaceholderCameraSettings)
   return (
     Object.values(useCameraSettingsStore().cameras).length === 0 ||
     PlaceholderCameraSettings.nickname === useCameraSettingsStore().currentCameraName
@@ -87,7 +88,7 @@ const arducamWarningShown = computed<boolean>(() => {
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog v-if="warningShown" v-model="warningShown" :persistent="false" max-width="800" dark>
+    <v-dialog v-model="warningShown" :persistent="false" max-width="800" dark>
       <v-card flat color="primary">
         <v-card-title>Setup some cameras to get started!</v-card-title>
         <v-card-text>
