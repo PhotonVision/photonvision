@@ -43,7 +43,7 @@ const cameraViewType = computed<number[]>({
 const warningShown = computed<boolean>(() => {
   return (
     Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    useCameraSettingsStore().cameras["Placeholder Name"] === PlaceholderCameraSettings
+    PlaceholderCameraSettings.nickname === useCameraSettingsStore().currentCameraName
   );
 });
 
