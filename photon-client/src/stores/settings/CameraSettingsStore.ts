@@ -26,6 +26,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     cameras: { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings }
   }),
   getters: {
+    needsCameraConfiguration(): boolean {
+      return (
+        JSON.stringify(useCameraSettingsStore().cameras[PlaceholderCameraSettings.uniqueName]) ===
+        JSON.stringify(PlaceholderCameraSettings)
+      );
+    },
     // TODO update types to update this value being undefined. This would be a decently large change.
     currentCameraSettings(): UiCameraConfiguration {
       const currentCameraUniqueName = useStateStore().currentCameraUniqueName;
