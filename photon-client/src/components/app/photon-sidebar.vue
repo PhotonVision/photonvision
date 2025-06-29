@@ -3,7 +3,6 @@ import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useRoute } from "vue-router";
 import { useDisplay } from "vuetify";
 
@@ -18,13 +17,6 @@ const compact = computed<boolean>({
 const { mdAndUp } = useDisplay();
 
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
-
-const needsCamerasConfigured = computed<boolean>(() => {
-  return (
-    Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    useCameraSettingsStore().cameras["PlaceHolder Name"] === PlaceholderCameraSettings
-  );
-});
 </script>
 
 <template>
@@ -50,12 +42,18 @@ const needsCamerasConfigured = computed<boolean>(() => {
       <v-list-item
         link
         to="/cameraConfigs"
-        :class="{ cameraicon: needsCamerasConfigured && useRoute().path !== '/cameraConfigs' }"
+        :class="{
+          cameraicon: useCameraSettingsStore().needsCameraConfiguration && useRoute().path !== '/cameraConfigs'
+        }"
       >
         <template #prepend>
-          <v-icon :class="{ 'text-red': needsCamerasConfigured }">mdi-swap-horizontal-bold</v-icon>
+          <v-icon :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
+            >mdi-swap-horizontal-bold</v-icon
+          >
         </template>
-        <v-list-item-title :class="{ 'text-red': needsCamerasConfigured }">Camera Matching</v-list-item-title>
+        <v-list-item-title :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
+          >Camera Matching</v-list-item-title
+        >
       </v-list-item>
       <v-list-item link to="/docs" prepend-icon="mdi-bookshelf">
         <v-list-item-title>Documentation</v-list-item-title>
