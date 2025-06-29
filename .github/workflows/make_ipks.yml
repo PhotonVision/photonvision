@@ -1,0 +1,30 @@
+name: Make IPKs
+
+on:
+  push:
+    branches:
+      - "*"
+    tags-ignore:
+      - "*"
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+
+  build-system-viewer:
+    name: Build IPK for SystemViewer
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Build IPK (SystemCore)
+        run: cd systemcore-apps/system-view && ./build.sh
+      - name: Upload development artifact (SystemCore)
+        uses: actions/upload-artifact@v4
+        with:
+          name: advantagescopelite-systemcore
+          path: systemcore-apps/system-view/pv-system-view_*.ipk
+
+
