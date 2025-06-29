@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Build IPK (SystemCore)
-        run: cd systemcore-apps/system-view && ./build.sh
+        run: cd systemcore-apps/system-view && chmod +x build.sh && ./build.sh
       - name: Upload development artifact (SystemCore)
         uses: actions/upload-artifact@v4
         with:
