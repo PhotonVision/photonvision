@@ -1,0 +1,15 @@
+#!/bin/sh
+PACKAGE_NAME="pv-system-viewer"
+
+systemctl daemon-reload
+systemctl reset-failed $PACKAGE_NAME.service 2>/dev/null || true
+
+if systemctl list-unit-files | grep -q "$PACKAGE_NAME.service"; then
+    echo "Service still appears in systemd unit files (normal until next boot)"
+else
+    echo "Service removed from systemd"
+fi
+
+echo "Service cleanup complete."
+
+exit 0

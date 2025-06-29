@@ -1,0 +1,29 @@
+#!/bin/sh
+PACKAGE_NAME="pv-system-viewer"
+
+echo "Configuring service for $PACKAGE_NAME"
+
+systemctl daemon-reload
+sleep 1
+
+echo "Enabling service for auto-start on boot..."
+systemctl enable $PACKAGE_NAME.service
+
+echo "Starting service..."
+if systemctl start $PACKAGE_NAME.service; then
+    echo "Service started successfully"
+    
+    sleep 2
+    
+    if systemctl is-active $PACKAGE_NAME.service >/dev/null 2>&1; then
+        echo "Service is now running"
+    else
+        echo "Service may have an issue"
+    fi
+else
+    echo "Failed to start service automatically"
+fi
+
+echo "Package installation complete"
+
+exit 0
