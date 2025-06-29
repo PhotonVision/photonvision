@@ -24,6 +24,7 @@ jobs:
       - name: Upload development artifact (SystemCore)
         uses: actions/upload-artifact@v4
         with:
+          name: pv-system-viewer.ipk
           path: systemcore-apps/system-view/pv-system-viewer_*.ipk
 
 
