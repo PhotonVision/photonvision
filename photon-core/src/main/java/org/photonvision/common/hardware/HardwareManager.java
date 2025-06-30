@@ -165,6 +165,53 @@ public class HardwareManager {
         }
     }
 
+    /**
+     * Get the MAC address of the device
+     *
+     * @return The MAC address of the device, or null if it could not be determined
+     */
+    public String getMACAddress() {
+        if (Platform.isLinux()) {
+            try {
+                // Try using ip link to get MAC addresses
+                String command =
+                        "ip link | grep -A1 'state UP' | grep -i 'link/ether' | head -n1 | awk '{print $2}'";
+                shellExec.executeBashCommand(command);
+                String result = shellExec.getOutput().trim();
+
+                if (result != null && !result.isEmpty()) {
+                    return result;
+                }
+
+                // Fallback 1: Try any ethernet interface
+                command = "ip link | grep -i 'link/ether' | head -n1 | awk '{print $2}'";
+                shellExec.executeBashCommand(command);
+                result = shellExec.getOutput().trim();
+
+                if (result != null && !result.isEmpty()) {
+                    return result;
+                }
+
+                // Fallback 2: Try using ifconfig if available
+                command = "ifconfig | grep -o -E '([0-9a-fA-F]{2}:){5}([0-9a-fA-F]{2})' | head -n1";
+                shellExec.executeBashCommand(command);
+                result = shellExec.getOutput().trim();
+
+                if (result != null && !result.isEmpty()) {
+                    return result;
+                }
+
+                logger.warn("Could not determine MAC address with any method");
+                return null;
+            } catch (IOException e) {
+                logger.error("Could not get MAC address!", e);
+                return null;
+            }
+        }
+        logger.warn("getMacAddress() is not supported on this platform!");
+        return null;
+    }
+
     // API's supporting status LEDs
 
     private Map<String, Boolean> pipelineTargets = new HashMap<String, Boolean>();
