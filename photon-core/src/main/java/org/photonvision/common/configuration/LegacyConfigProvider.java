@@ -489,7 +489,7 @@ class LegacyConfigProvider extends ConfigProvider {
 
     @Override
     public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
-        // TODO I'm not implementing this cause nobody with the legacy config is gonna have one of these
+        // I'm not implementing this cause nobody with the legacy config is gonna have one of these
 
         System.exit(1);
         return false;

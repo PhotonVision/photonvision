@@ -156,7 +156,7 @@ public class NeuralNetworkPropertyManager {
         return false;
     }
 
-    public boolean nuke() {
+    public boolean clear() {
         modelPathToProperties.clear();
         return true;
     }

@@ -307,7 +307,7 @@ public class NeuralNetworkModelManager {
                                 .sum(ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
     }
 
-    public boolean nukeModels() {
+    public boolean clearModels() {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         if (modelsDirectory.exists()) {
@@ -329,7 +329,7 @@ public class NeuralNetworkModelManager {
         }
 
         // Delete model info
-        return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().nuke();
+        return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().clear();
     }
 
     public File exportSingleModel(String modelPath) {

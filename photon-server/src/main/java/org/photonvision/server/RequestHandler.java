@@ -907,7 +907,7 @@ public class RequestHandler {
     public static void onNukeObjectDetectionModelsRequest(Context ctx) {
         logger.info("Attempting to clear object detection models");
         try {
-            NeuralNetworkModelManager.getInstance().nukeModels();
+            NeuralNetworkModelManager.getInstance().clearModels();
             NeuralNetworkModelManager.getInstance().extractModels();
             ctx.status(200).result("Successfully cleared and reset object detection models");
         } catch (Exception e) {
