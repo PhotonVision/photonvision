@@ -25,16 +25,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -48,14 +47,32 @@ import org.photonvision.vision.objects.RknnModel;
  * also supports shipping pre-trained models as resources in the JAR. If the model has already been
  * extracted to the filesystem, it will not be extracted again.
  *
- * <p>Each model must have a corresponding <code>labels</code> file. The labels file format is
- * simply a list of string names per label, one label per line. The labels file must have the same
- * name as the model file, but with the suffix <code>-labels.txt</code> instead of <code>.rknn
- * </code>.
+ * <p>Each model must have a corresponding {@link ModelProperties} entry in {@link
+ * NeuralNetworkPropertyManager}.
  */
 public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
     private static NeuralNetworkModelManager INSTANCE;
+
+    /**
+     * This function stores the properties of the shipped object detection models. It is stored as a
+     * function so that it can be dynamic, to adjust for the models directory.
+     */
+    private NeuralNetworkPropertyManager getShippedProperties(File modelsDirectory) {
+        NeuralNetworkPropertyManager nnProps = new NeuralNetworkPropertyManager();
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "algaeV1-640-640-yolov8n.rknn"),
+                        "Algae v8n",
+                        new LinkedList<String>(List.of("Algae")),
+                        640,
+                        480,
+                        Family.RKNN,
+                        Version.YOLOV8));
+
+        return nnProps;
+    }
 
     /**
      * Private constructor to prevent instantiation
@@ -63,10 +80,10 @@ public class NeuralNetworkModelManager {
      * @return The NeuralNetworkModelManager instance
      */
     private NeuralNetworkModelManager() {
-        ArrayList<NeuralNetworkBackend> backends = new ArrayList<>();
+        ArrayList<Family> backends = new ArrayList<>();
 
         if (Platform.isRK3588()) {
-            backends.add(NeuralNetworkBackend.RKNN);
+            backends.add(Family.RKNN);
         }
 
         supportedBackends = backends;
@@ -87,17 +104,17 @@ public class NeuralNetworkModelManager {
     /** Logger for the NeuralNetworkModelManager */
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
-    public enum NeuralNetworkBackend {
-        RKNN(".rknn");
-
-        private String format;
-
-        private NeuralNetworkBackend(String format) {
-            this.format = format;
-        }
+    public enum Family {
+        RKNN
     }
 
-    private final List<NeuralNetworkBackend> supportedBackends;
+    public enum Version {
+        YOLOV5,
+        YOLOV8,
+        YOLOV11
+    }
+
+    private final List<Family> supportedBackends;
 
     /**
      * Retrieves the list of supported backends.
@@ -113,30 +130,7 @@ public class NeuralNetworkModelManager {
      *
      * <p>The first model in the list is the default model.
      */
-    private Map<NeuralNetworkBackend, ArrayList<Model>> models;
-
-    /**
-     * Retrieves the deep neural network models available, in a format that can be used by the
-     * frontend.
-     *
-     * @return A map containing the available models, where the key is the backend and the value is a
-     *     list of model names.
-     */
-    public HashMap<String, ArrayList<String>> getModels() {
-        HashMap<String, ArrayList<String>> modelMap = new HashMap<>();
-        if (models == null) {
-            return modelMap;
-        }
-
-        models.forEach(
-                (backend, backendModels) -> {
-                    ArrayList<String> modelNames = new ArrayList<>();
-                    backendModels.forEach(model -> modelNames.add(model.getName()));
-                    modelMap.put(backend.toString(), modelNames);
-                });
-
-        return modelMap;
-    }
+    private Map<Family, ArrayList<Model>> models;
 
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported
@@ -144,19 +138,19 @@ public class NeuralNetworkModelManager {
      *
      * <p>If this method returns `Optional.of(..)` then the model should be safe to load.
      *
-     * @param modelName the name of the model to retrieve
+     * @param modelUID the unique identifier of the model to retrieve
      * @return an Optional containing the model if found, or an empty Optional if not found
      */
-    public Optional<Model> getModel(String modelName) {
+    public Optional<Model> getModel(String modelUID) {
         if (models == null) {
             return Optional.empty();
         }
 
         // Check if the model exists in any supported backend
-        for (NeuralNetworkBackend backend : supportedBackends) {
+        for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getName().equals(modelName)).findFirst();
+                        models.get(backend).stream().filter(m -> m.getUID().equals(modelUID)).findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
@@ -168,65 +162,63 @@ public class NeuralNetworkModelManager {
 
     /** The default model when no model is specified. */
     public Optional<Model> getDefaultModel() {
-        if (models == null) {
-            return Optional.empty();
-        }
-
-        if (supportedBackends.isEmpty()) {
+        if (models == null || supportedBackends.isEmpty()) {
             return Optional.empty();
         }
 
         return models.get(supportedBackends.get(0)).stream().findFirst();
     }
 
-    private void loadModel(File model) {
+    // Do checking later on, when we create the model object
+    private void loadModel(ModelProperties properties) {
         if (models == null) {
             models = new HashMap<>();
         }
 
-        // Get the model extension and check if it is supported
-        String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
-        if (modelExtension.equals(".txt")) {
+        if (properties == null) {
+            logger.error(
+                    "Model properties are null, this could mean the models config was unable to be found in the database");
             return;
         }
 
-        Optional<NeuralNetworkBackend> backend =
-                Arrays.stream(NeuralNetworkBackend.values())
-                        .filter(b -> b.format.equals(modelExtension))
-                        .findFirst();
-
-        if (!backend.isPresent()) {
-            logger.warn("Model " + model.getName() + " has an unknown extension.");
+        if (!supportedBackends.contains(properties.family())) {
+            logger.warn(
+                    "Model "
+                            + properties.nickname()
+                            + " has an unknown extension or is not supported on this hardware.");
             return;
         }
 
-        String labels = model.getAbsolutePath().replace(backend.get().format, "-labels.txt");
-        if (!models.containsKey(backend.get())) {
-            models.put(backend.get(), new ArrayList<>());
+        if (!models.containsKey(properties.family())) {
+            models.put(properties.family(), new ArrayList<>());
         }
 
         try {
-            switch (backend.get()) {
+            switch (properties.family()) {
                 case RKNN -> {
-                    models.get(backend.get()).add(new RknnModel(model, labels));
-                    logger.info(
-                            "Loaded model " + model.getName() + " for backend " + backend.get().toString());
+                    models.get(properties.family()).add(new RknnModel(properties));
                 }
             }
+            logger.info(
+                    "Loaded model "
+                            + properties.nickname()
+                            + " for backend "
+                            + properties.family().toString());
         } catch (IllegalArgumentException e) {
-            logger.error("Failed to load model " + model.getName(), e);
-        } catch (IOException e) {
-            logger.error("Failed to read labels for model " + model.getName(), e);
+            logger.error("Failed to load model " + properties.nickname(), e);
         }
     }
 
     /**
      * Discovers DNN models from the specified folder.
      *
-     * @param modelsDirectory The folder where the models are stored
+     * <p>This makes the assumption that all of the models have their properties stored in the
+     * database
      */
-    public void discoverModels(File modelsDirectory) {
+    public void discoverModels() {
         logger.info("Supported backends: " + supportedBackends);
+
+        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         if (!modelsDirectory.exists()) {
             logger.error("Models folder " + modelsDirectory.getAbsolutePath() + " does not exist.");
@@ -238,7 +230,13 @@ public class NeuralNetworkModelManager {
         try {
             Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
-                    .forEach(path -> loadModel(path.toFile()));
+                    .forEach(
+                            path ->
+                                    loadModel(
+                                            ConfigManager.getInstance()
+                                                    .getConfig()
+                                                    .neuralNetworkPropertyManager()
+                                                    .getModel(path)));
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
@@ -246,8 +244,7 @@ public class NeuralNetworkModelManager {
         // After loading all of the models, sort them by name to ensure a consistent
         // ordering
         models.forEach(
-                (backend, backendModels) ->
-                        backendModels.sort((a, b) -> a.getName().compareTo(b.getName())));
+                (backend, backendModels) -> backendModels.sort((a, b) -> a.getUID().compareTo(b.getUID())));
 
         // Log
         StringBuilder sb = new StringBuilder();
@@ -255,17 +252,17 @@ public class NeuralNetworkModelManager {
         models.forEach(
                 (backend, backendModels) -> {
                     sb.append(backend).append(" [");
-                    backendModels.forEach(model -> sb.append(model.getName()).append(", "));
+                    backendModels.forEach(model -> sb.append(model.getUID()).append(", "));
                     sb.append("] ");
                 });
     }
 
     /**
-     * Extracts models from the JAR and copies them to disk.
-     *
-     * @param modelsDirectory the directory on disk to save models
+     * Extracts models from the JAR and copies them to disk. Also copies properties into the database.
      */
-    public void extractModels(File modelsDirectory) {
+    public void extractModels() {
+        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
+
         if (!modelsDirectory.exists() && !modelsDirectory.mkdirs()) {
             throw new RuntimeException("Failed to create directory: " + modelsDirectory);
         }
@@ -302,67 +299,85 @@ public class NeuralNetworkModelManager {
         } catch (IOException | URISyntaxException e) {
             logger.error("Error extracting models", e);
         }
+
+        ConfigManager.getInstance()
+                .getConfig()
+                .setNeuralNetworkProperties(
+                        getShippedProperties(modelsDirectory)
+                                .sum(ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
     }
 
-    private static Pattern modelPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
+    public boolean clearModels() {
+        File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
-    private static Pattern labelsPattern =
-            Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
-
-    /**
-     * Check naming conventions for models and labels.
-     *
-     * <p>This is static as it is not dependent on the state of the class.
-     *
-     * @param modelName the name of the model
-     * @param labelsName the name of the labels file
-     * @throws IllegalArgumentException if the names are invalid
-     */
-    public static void verifyRKNNNames(String modelName, String labelsName) {
-        // check null
-        if (modelName == null || labelsName == null) {
-            throw new IllegalArgumentException("Model name and labels name cannot be null");
+        if (modelsDirectory.exists()) {
+            try {
+                Files.walk(modelsDirectory.toPath())
+                        .sorted((a, b) -> b.compareTo(a))
+                        .forEach(
+                                path -> {
+                                    try {
+                                        Files.delete(path);
+                                    } catch (IOException e) {
+                                        logger.error("Failed to delete file: " + path, e);
+                                    }
+                                });
+            } catch (IOException e) {
+                logger.error("Failed to delete models directory", e);
+                return false;
+            }
         }
 
-        // These patterns check that the naming convention of
-        // name-widthResolution-heightResolution-modelType is followed
-
-        Matcher modelMatcher = modelPattern.matcher(modelName);
-        Matcher labelsMatcher = labelsPattern.matcher(labelsName);
-
-        if (!modelMatcher.matches() || !labelsMatcher.matches()) {
-            throw new IllegalArgumentException(
-                    "Model name and labels name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn and name-widthResolution-heightResolution-modelType-labels.txt");
-        }
-
-        if (!modelMatcher.group(1).equals(labelsMatcher.group(1))
-                || !modelMatcher.group(2).equals(labelsMatcher.group(2))
-                || !modelMatcher.group(3).equals(labelsMatcher.group(3))
-                || !modelMatcher.group(4).equals(labelsMatcher.group(4))) {
-            throw new IllegalArgumentException("Model name and labels name must be matching.");
-        }
+        // Delete model info
+        return ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().clear();
     }
 
-    /**
-     * Parse RKNN name and return the name, width, height, and model type.
-     *
-     * <p>This is static as it is not dependent on the state of the class.
-     *
-     * @param modelName the name of the model
-     * @throws IllegalArgumentException if the model name does not follow the naming convention
-     * @return an array containing the name, width, height, and model type
-     */
-    public static String[] parseRKNNName(String modelName) {
-        Matcher modelMatcher = modelPattern.matcher(modelName);
+    public File exportSingleModel(String modelPath) {
+        try {
+            File modelFile = new File(modelPath);
+            if (!modelFile.exists()) {
+                logger.error("Model file does not exist: " + modelFile.getAbsolutePath());
+                return null;
+            }
 
-        if (!modelMatcher.matches()) {
-            throw new IllegalArgumentException(
-                    "Model name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn");
+            ModelProperties properties =
+                    ConfigManager.getInstance()
+                            .getConfig()
+                            .neuralNetworkPropertyManager()
+                            .getModel(Path.of(modelPath));
+
+            String fileName = "";
+            String suffix = modelFile.getName().substring(modelFile.getName().lastIndexOf('.'));
+            if (properties != null) {
+                fileName =
+                        String.format(
+                                "%s-%s-%s-%dx%d-%s",
+                                properties.nickname().replace(" ", ""),
+                                properties.family(),
+                                properties.version(),
+                                properties.resolutionWidth(),
+                                properties.resolutionHeight(),
+                                String.join("_", properties.labels()));
+            } else {
+                fileName = new File(modelPath).getName();
+            }
+
+            try {
+                var out = Files.createTempFile(fileName, suffix);
+                Files.copy(
+                        modelFile.toPath(),
+                        out,
+                        StandardCopyOption.REPLACE_EXISTING,
+                        StandardCopyOption.COPY_ATTRIBUTES);
+                return out.toFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.error("Failed to export model file: " + modelFile.getAbsolutePath(), e);
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("Failed to export model file: " + modelPath, e);
+            return null;
         }
-
-        return new String[] {
-            modelMatcher.group(1), modelMatcher.group(2), modelMatcher.group(3), modelMatcher.group(4)
-        };
     }
 }

@@ -218,7 +218,7 @@ const nukePhotonConfigDirectory = () => {
     .catch((error) => {
       if (error.response) {
         useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to reset the device.",
+          message: "The backend is unable to fulfill the request to reset the device.",
           color: "error"
         });
       } else if (error.request) {

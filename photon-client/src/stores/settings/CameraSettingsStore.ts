@@ -211,6 +211,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           cameraUniqueName: cameraUniqueName
         }
       };
+
       if (updateStore) {
         this.changePipelineSettingsInStore(settings, cameraUniqueName);
       }

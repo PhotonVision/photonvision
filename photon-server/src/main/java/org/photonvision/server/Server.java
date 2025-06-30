@@ -127,9 +127,6 @@ public class Server {
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
-        app.post(
-                "/api/utils/importObjectDetectionModel",
-                RequestHandler::onImportObjectDetectionModelRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
@@ -146,6 +143,18 @@ public class Server {
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
+
+        // Object detection
+        app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/bulkimport", RequestHandler::onBulkImportObjectDetectionModelRequest);
+        app.get("/api/objectdetection/export", RequestHandler::onExportObjectDetectionModelsRequest);
+        app.get(
+                "/api/objectdetection/exportIndividual",
+                RequestHandler::onExportIndividualObjectDetectionModelRequest);
+        app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
+        app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
+        app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
 
         app.start(port);
     }
