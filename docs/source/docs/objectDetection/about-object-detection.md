@@ -41,15 +41,14 @@ Power users only. This requires some setup, such as obtaining your own dataset a
 
 Before beginning, it is necessary to install the [rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2). Then, install the relevant [Ultralytics repository](https://github.com/airockchip?tab=repositories&q=yolo&type=&language=&sort=) from this list. After training your model, export it to `rknn`. This will give you an `onnx` file, formatted for conversion. Copy this file to the relevant folder in [rknn_model_zoo](https://github.com/airockchip/rknn_model_zoo), and use the conversion script located there to convert it. If necessary, modify the script to provide the path to your training database for quantization.
 
-## Uploading Custom Models
+## Managing Custom Models
 
 :::{warning}
 PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
 :::
 
-In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
-should be `name-verticalResolution-horizontalResolution-yolovXXX`. The
-`name` should only include alphanumeric characters, periods, and underscores. Additionally, the labels
-file ought to have the same name as the RKNN file, with `-labels` appended to the end. For
-example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the labels file should be
-named `Algae_1.03.2025-640-640-yolov5s-labels.txt`.
+:::{warning}
+Non-quantized models are not supported! If you have the option, make sure quantization is enabled when exporting to .rknn format. This will represent the weights and activations of the model as 8-bit integers, instead of 32-bit floats which PhotonVision doesn't support. Quantized models are also much faster for a negligible loss in accuracy.
+:::
+
+Custom models can now be managed from the Object Detection tab in settings. You can upload a custom model by clicking the "Upload Model" button, selecting your `.rknn` file, and filling out the property fields. Models can also be exported, both individually and in bulk. Models exported in bulk can be imported using the `import bulk` button. Models exported individually must be re-imported as an individual model, and all the relevant metadata is stored in the filename of the model.

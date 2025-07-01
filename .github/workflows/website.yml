@@ -2,13 +2,7 @@ name: Website
 
 on:
   push:
-    # For now, run on all commits to main
-    branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main ]
-  merge_group:
 
 jobs:
   rsync:

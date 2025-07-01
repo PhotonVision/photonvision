@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -53,26 +52,16 @@ public class NetworkUtils {
         }
     }
 
-    public static class NMDeviceInfo {
+    /**
+     * Contains data about network devices retrieved from "nmcli device show"
+     *
+     * @param connName The human-readable name used by "nmcli con"
+     * @param devName The underlying device name, used by dhclient
+     * @param nmType The NetworkManager device type
+     */
+    public static record NMDeviceInfo(String connName, String devName, NMType nmType) {
         public NMDeviceInfo(String c, String d, String type) {
-            connName = c;
-            devName = d;
-            nmType = NMType.typeForString(type);
-        }
-
-        public final String connName; // Human-readable name used by "nmcli con"
-        public final String devName; // underlying device, used by dhclient
-        public final NMType nmType;
-
-        @Override
-        public String toString() {
-            return "NMDeviceInfo [connName="
-                    + connName
-                    + ", devName="
-                    + devName
-                    + ", nmType="
-                    + nmType
-                    + "]";
+            this(c, d, NMType.typeForString(type));
         }
     }
 
@@ -118,24 +107,35 @@ public class NetworkUtils {
         return ret;
     }
 
+    /**
+     * Returns an immutable list of active network interfaces.
+     *
+     * @return The list.
+     */
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
         // Seems like if an interface exists but isn't actually connected, the connection name will be
         // an empty string. Check here and only return connections with non-empty names
-        return getAllInterfaces().stream()
-                .filter(it -> !it.connName.trim().isEmpty())
-                .collect(Collectors.toList());
+        return getAllInterfaces().stream().filter(it -> !it.connName.trim().isEmpty()).toList();
     }
 
+    /**
+     * Returns an immutable list of all wired network interfaces.
+     *
+     * @return The list.
+     */
     public static List<NMDeviceInfo> getAllWiredInterfaces() {
         return getAllInterfaces().stream()
                 .filter(it -> it.nmType.equals(NMType.NMTYPE_ETHERNET))
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    /**
+     * Returns an immutable list of all wired and active network interfaces.
+     *
+     * @return The list.
+     */
     public static List<NMDeviceInfo> getAllActiveWiredInterfaces() {
-        return getAllWiredInterfaces().stream()
-                .filter(it -> !it.connName.isBlank())
-                .collect(Collectors.toList());
+        return getAllWiredInterfaces().stream().filter(it -> !it.connName.isBlank()).toList();
     }
 
     public static NMDeviceInfo getNMinfoForConnName(String connName) {

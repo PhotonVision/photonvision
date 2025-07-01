@@ -18,6 +18,7 @@
 import enum
 from typing import Optional
 
+import hal
 import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
@@ -61,6 +62,8 @@ class PoseStrategy(enum.Enum):
 
 
 class PhotonPoseEstimator:
+    instance_count = 1
+
     """
     The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
     given timestamp on the field to produce a single robot in field pose, using the strategy set
@@ -96,7 +99,12 @@ class PhotonPoseEstimator:
         self._lastPose: Optional[Pose3d] = None
         self._referencePose: Optional[Pose3d] = None
 
-        # TODO: Implement HAL reporting
+        # Usage reporting
+        hal.report(
+            hal.tResourceType.kResourceType_PhotonPoseEstimator.value,
+            PhotonPoseEstimator.instance_count,
+        )
+        PhotonPoseEstimator.instance_count += 1
 
     @property
     def fieldTags(self) -> AprilTagFieldLayout:

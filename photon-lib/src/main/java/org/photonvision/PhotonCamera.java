@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.opencv.core.Core;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
@@ -59,7 +58,7 @@ import org.photonvision.timesync.TimeSyncSingleton;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
-    private static int InstanceCount = 0;
+    private static int InstanceCount = 1;
     public static final String kTableName = "photonvision";
     private static final String PHOTON_ALERT_GROUP = "PhotonAlerts";
 
@@ -138,7 +137,7 @@ public class PhotonCamera implements AutoCloseable {
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 PhotonPipelineResult.photonStruct.getTypeString(),
-                                new byte[] {},
+                                new byte[0],
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.sendAll(true),
                                 PubSubOption.pollStorage(20));
@@ -175,65 +174,77 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     public static void verifyDependencies() {
+        // spotless:off
         if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
-            String bfw =
-                    "\n\n\n\n\n"
-                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                            + ">>>                                          \n"
-                            + ">>> You are running an incompatible version  \n"
-                            + ">>> of PhotonVision !                        \n"
-                            + ">>>                                          \n"
-                            + ">>> PhotonLib "
-                            + PhotonVersion.versionString
-                            + " is built for WPILib "
-                            + PhotonVersion.wpilibTargetVersion
-                            + "\n"
-                            + ">>> but you are using WPILib "
-                            + WPILibVersion.Version
-                            + ">>>                                          \n"
-                            + ">>> This is neither tested nor supported.    \n"
-                            + ">>> You MUST update PhotonVision,            \n"
-                            + ">>> PhotonLib, or both.                      \n"
-                            + ">>> Verify the output of `./gradlew dependencies` \n"
-                            + ">>>                                          \n"
-                            + ">>> Your code will now crash.                \n"
-                            + ">>> We hope your day gets better.            \n"
-                            + ">>>                                          \n"
-                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+            String bfw = """
+
+
+
+
+                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
+                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
+                    >>>                                          \s
+                    >>> You are running an incompatible version  \s
+                    >>> of PhotonVision !                        \s
+                    >>>                                          \s
+                    >>> PhotonLib """
+                    + PhotonVersion.versionString
+                    + " is built for WPILib "
+                    + PhotonVersion.wpilibTargetVersion
+                    + "\n"
+                    + ">>> but you are using WPILib "
+                    + WPILibVersion.Version
+                    + """
+                    >>>                                          \s
+                    >>> This is neither tested nor supported.    \s
+                    >>> You MUST update PhotonVision,            \s
+                    >>> PhotonLib, or both.                      \s
+                    >>> Verify the output of `./gradlew dependencies`
+                    >>>                                          \s
+                    >>> Your code will now crash.                \s
+                    >>> We hope your day gets better.            \s
+                    >>>                                          \s
+                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
+                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
+                    """;
 
             DriverStation.reportWarning(bfw, false);
             DriverStation.reportError(bfw, false);
             throw new UnsupportedOperationException(bfw);
         }
         if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
-            String bfw =
-                    "\n\n\n\n\n"
-                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                            + ">>>                                          \n"
-                            + ">>> You are running an incompatible version  \n"
-                            + ">>> of PhotonVision !                        \n"
-                            + ">>>                                          \n"
-                            + ">>> PhotonLib "
-                            + PhotonVersion.versionString
-                            + " is built for OpenCV "
-                            + PhotonVersion.opencvTargetVersion
-                            + "\n"
-                            + ">>> but you are using OpenCV "
-                            + Core.VERSION
-                            + ">>>                                          \n"
-                            + ">>> This is neither tested nor supported.    \n"
-                            + ">>> You MUST update PhotonVision,            \n"
-                            + ">>> PhotonLib, or both.                      \n"
-                            + ">>> Verify the output of `./gradlew dependencies` \n"
-                            + ">>>                                          \n"
-                            + ">>> Your code will now crash.                \n"
-                            + ">>> We hope your day gets better.            \n"
-                            + ">>>                                          \n"
-                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+            String bfw = """
+
+
+
+
+                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
+                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
+                    >>>                                          \s
+                    >>> You are running an incompatible version  \s
+                    >>> of PhotonVision !                        \s
+                    >>>                                          \s
+                    >>> PhotonLib """
+                    + PhotonVersion.versionString
+                    + " is built for OpenCV "
+                    + PhotonVersion.opencvTargetVersion
+                    + "\n"
+                    + ">>> but you are using OpenCV "
+                    + Core.VERSION
+                    + """
+                    >>>                                          \s
+                    >>> This is neither tested nor supported.    \s
+                    >>> You MUST update PhotonVision,            \s
+                    >>> PhotonLib, or both.                      \s
+                    >>> Verify the output of `./gradlew dependencies`
+                    >>>                                          \s
+                    >>> Your code will now crash.                \s
+                    >>> We hope your day gets better.            \s
+                    >>>                                          \s
+                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
+                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
+                    """;
+            // spotless:on
 
             DriverStation.reportWarning(bfw, false);
             DriverStation.reportError(bfw, false);
@@ -533,23 +544,30 @@ public class PhotonCamera implements AutoCloseable {
             // Error on a verified version mismatch
             // But stay silent otherwise
 
-            String bfw =
-                    "\n\n\n\n\n"
-                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                            + ">>>                                          \n"
-                            + ">>> You are running an incompatible version  \n"
-                            + ">>> of PhotonVision on your coprocessor!     \n"
-                            + ">>>                                          \n"
-                            + ">>> This is neither tested nor supported.    \n"
-                            + ">>> You MUST update PhotonVision,            \n"
-                            + ">>> PhotonLib, or both.                      \n"
-                            + ">>>                                          \n"
-                            + ">>> Your code will now crash.                \n"
-                            + ">>> We hope your day gets better.            \n"
-                            + ">>>                                          \n"
-                            + ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-                            + ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
+            // spotless:off
+            String bfw = """
+
+
+
+
+
+                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    >>>                                         \s
+                    >>> You are running an incompatible version \s
+                    >>> of PhotonVision on your coprocessor!    \s
+                    >>>                                         \s
+                    >>> This is neither tested nor supported.   \s
+                    >>> You MUST update PhotonVision,           \s
+                    >>> PhotonLib, or both.                     \s
+                    >>>                                         \s
+                    >>> Your code will now crash.               \s
+                    >>> We hope your day gets better.           \s
+                    >>>                                         \s
+                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                    """;
+            // spotless:on
 
             DriverStation.reportWarning(bfw, false);
             var versionMismatchMessage =
@@ -575,6 +593,6 @@ public class PhotonCamera implements AutoCloseable {
                         it -> {
                             return rootPhotonTable.getSubTable(it).getEntry("rawBytes").exists();
                         })
-                .collect(Collectors.toList());
+                .toList();
     }
 }

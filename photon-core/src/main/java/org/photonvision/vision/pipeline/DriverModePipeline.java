@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.Pair;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -47,10 +47,11 @@ public class DriverModePipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
+        draw2dCrosshairPipe.setParams(
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        frameStaticProperties, settings.streamingFrameDivisor, settings.inputImageRotationMode);
-        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
+                        frameStaticProperties,
+                        settings.streamingFrameDivisor,
+                        settings.inputImageRotationMode));
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));

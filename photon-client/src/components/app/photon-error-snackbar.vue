@@ -5,7 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 <template>
   <v-snackbar
     v-model="useStateStore().snackbarData.show"
-    top
+    location="top"
     :color="useStateStore().snackbarData.color"
     :timeout="useStateStore().snackbarData.timeout"
   >

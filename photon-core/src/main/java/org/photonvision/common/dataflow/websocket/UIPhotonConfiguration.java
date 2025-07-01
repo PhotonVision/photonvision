@@ -18,7 +18,6 @@
 package org.photonvision.common.dataflow.websocket;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -49,21 +48,21 @@ public class UIPhotonConfiguration {
                                 NetworkManager.getInstance().networkingIsDisabled),
                         new UILightingConfig(
                                 c.getHardwareSettings().ledBrightnessPercentage,
-                                !c.getHardwareConfig().ledPins.isEmpty()),
+                                !c.getHardwareConfig().ledPins().isEmpty()),
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
                                 // TODO add support for other types of GPU accel
                                 LibCameraJNILoader.isSupported() ? "Zerocopy Libcamera Working" : "",
                                 MrCalJNILoader.getInstance().isLoaded(),
-                                NeuralNetworkModelManager.getInstance().getModels(),
+                                c.neuralNetworkPropertyManager().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
-                                c.getHardwareConfig().deviceName.isEmpty()
+                                c.getHardwareConfig().deviceName().isEmpty()
                                         ? Platform.getHardwareModel()
-                                        : c.getHardwareConfig().deviceName,
+                                        : c.getHardwareConfig().deviceName(),
                                 Platform.getPlatformName()),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
-                        .collect(Collectors.toList()));
+                        .toList());
     }
 }

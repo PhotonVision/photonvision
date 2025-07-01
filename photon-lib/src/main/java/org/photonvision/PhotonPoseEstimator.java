@@ -58,7 +58,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
  * below. Example usage can be found in our apriltagExample example project.
  */
 public class PhotonPoseEstimator {
-    private static int InstanceCount = 0;
+    private static int InstanceCount = 1;
 
     /** Position estimation strategies that can be used by the {@link PhotonPoseEstimator} class. */
     public enum PoseStrategy {
@@ -334,6 +334,19 @@ public class PhotonPoseEstimator {
      */
     public void addHeadingData(double timestampSeconds, Rotation2d heading) {
         headingBuffer.addSample(timestampSeconds, heading);
+    }
+
+    /**
+     * Clears all heading data in the buffer, and adds a new seed. Useful for preventing estimates
+     * from utilizing heading data provided prior to a pose or rotation reset.
+     *
+     * @param timestampSeconds timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void resetHeadingData(double timestampSeconds, Rotation2d heading) {
+        headingBuffer.clear();
+        addHeadingData(timestampSeconds, heading);
     }
 
     /**
