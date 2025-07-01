@@ -76,7 +76,8 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     </v-banner>
     <v-banner v-if="conflictingCameraShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
       <span
-        >Conflicting Camera Name Detected! Please change the name of {{ useSettingsStore().network.conflictingCamera }}!
+        >Conflicting Camera Name(s) Detected! Please change the name(s) of
+        {{ useSettingsStore().network.conflictingCamera }}!
       </span>
     </v-banner>
     <v-row no-gutters>

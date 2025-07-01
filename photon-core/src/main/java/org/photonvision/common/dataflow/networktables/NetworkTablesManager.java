@@ -246,7 +246,7 @@ public class NetworkTablesManager {
         logger.info("Published hostname and camera names to NT under MAC: " + MAC);
 
         Boolean conflictingHostname = false;
-        String conflictingCamera = "";
+        StringBuilder conflictingCamera = new StringBuilder();
 
         // Check for conflicts with other coprocessors
         for (String key : coprocTable.getKeys()) {
@@ -268,9 +268,7 @@ public class NetworkTablesManager {
                     if (java.util.Arrays.stream(otherCameraNames)
                             .anyMatch(otherName -> otherName.equals(cameraName))) {
                         logger.warn("Camera name conflict detected: " + cameraName);
-                        conflictingCamera = cameraName;
-                        break; // No need to check further if we found a conflict, if there are any additional
-                        // conflicts they'll be found in subsequent calls
+                        conflictingCamera.append(conflictingCamera.isEmpty() ? cameraName : ", " + cameraName);
                     }
                 }
             }
@@ -279,7 +277,7 @@ public class NetworkTablesManager {
         // Publish the conflict status
         NetworkConfig config = ConfigManager.getInstance().getConfig().getNetworkConfig();
         config.conflictingHostname = conflictingHostname;
-        config.conflictingCamera = conflictingCamera;
+        config.conflictingCamera = conflictingCamera.toString();
         ConfigManager.getInstance().setNetworkSettings(config);
     }
 
