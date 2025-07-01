@@ -25,8 +25,10 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
@@ -37,6 +39,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -50,6 +53,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -550,55 +554,108 @@ public class RequestHandler {
     public static void onImportObjectDetectionModelRequest(Context ctx) {
         try {
             // Retrieve the uploaded files
-            var modelFile = ctx.uploadedFile("rknn");
-            var labelsFile = ctx.uploadedFile("labels");
+            var modelFile = ctx.uploadedFile("modelFile");
 
-            if (modelFile == null || labelsFile == null) {
+            // Strip any whitespaces on either side of the commas
+            LinkedList<String> labels = new LinkedList<>();
+            String rawLabels = ctx.formParam("labels");
+            if (rawLabels != null) {
+                for (String label : rawLabels.split(",")) {
+                    labels.add(label.trim());
+                }
+            }
+            int width = Integer.parseInt(ctx.formParam("width"));
+            int height = Integer.parseInt(ctx.formParam("height"));
+            NeuralNetworkModelManager.Version version =
+                    switch (ctx.formParam("version").toString()) {
+                        case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
+                        case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
+                        case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
+                            // Add more versions as necessary for new models
+                        default -> {
+                            ctx.status(400);
+                            ctx.result("The provided version was not valid");
+                            logger.error("The provided version was not valid");
+                            yield null;
+                        }
+                    };
+
+            if (modelFile == null) {
                 ctx.status(400);
                 ctx.result(
-                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                        "No File was sent with the request. Make sure that the model file is sent at the key 'modelFile'");
                 logger.error(
-                        "No File was sent with the request. Make sure that the model and labels files are sent at the keys 'rknn' and 'labels'");
+                        "No File was sent with the request. Make sure that the model file is sent at the key 'modelFile'");
                 return;
             }
 
-            if (!modelFile.extension().contains("rknn") || !labelsFile.extension().contains("txt")) {
+            if (labels == null || labels.isEmpty()) {
                 ctx.status(400);
-                ctx.result(
-                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
-                logger.error(
-                        "The uploaded files were not of type 'rknn' and 'txt'. The uploaded files should be a .rknn and .txt file.");
+                ctx.result("The provided labels were malformed");
+                logger.error("The provided labels were malformed");
                 return;
             }
 
-            // verify naming convention
+            if (width < 0 || height < 0 || width != Math.floor(width) || height != Math.floor(height)) {
+                ctx.status(400);
+                ctx.result(
+                        "The provided width and height were malformed. They must be integers greater than one.");
+                logger.error(
+                        "The provided width and height were malformed.  They must be integers greater than one.");
+                return;
+            }
 
-            // throws IllegalArgumentException if the model name is invalid
-            NeuralNetworkModelManager.verifyRKNNNames(modelFile.filename(), labelsFile.filename());
+            // If adding additional platforms, check platform matches
+            if (!modelFile.extension().contains("rknn")) {
+                ctx.status(400);
+                ctx.result(
+                        "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+                logger.error(
+                        "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+                return;
+            }
 
-            // TODO move into neural network manager
-
-            var modelPath =
+            Path modelPath =
                     Paths.get(
                             ConfigManager.getInstance().getModelsDirectory().toString(), modelFile.filename());
-            var labelsPath =
-                    Paths.get(
-                            ConfigManager.getInstance().getModelsDirectory().toString(), labelsFile.filename());
+
+            if (modelPath.toFile().exists()) {
+                ctx.status(400);
+                ctx.result(
+                        "The model file already exists. Please delete the existing model file before uploading a new one.");
+                logger.error(
+                        "The model file already exists. Please delete the existing model file before uploading a new one.");
+                return;
+            }
 
             try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
                 modelFile.content().transferTo(out);
             }
 
-            try (FileOutputStream out = new FileOutputStream(labelsPath.toFile())) {
-                labelsFile.content().transferTo(out);
-            }
+            ConfigManager.getInstance()
+                    .getConfig()
+                    .neuralNetworkPropertyManager()
+                    .addModelProperties(
+                            new ModelProperties(
+                                    modelPath,
+                                    modelFile.filename().replaceAll(".rknn", ""),
+                                    labels,
+                                    width,
+                                    height,
+                                    NeuralNetworkModelManager.Family.RKNN, // This can be determined by platform if
+                                    // additional platforms are
+                                    // supported
+                                    version));
 
-            NeuralNetworkModelManager.getInstance()
-                    .discoverModels(ConfigManager.getInstance().getModelsDirectory());
+            logger.debug(
+                    ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().toString());
+
+            NeuralNetworkModelManager.getInstance().discoverModels();
 
             ctx.status(200).result("Successfully uploaded object detection model");
         } catch (Exception e) {
             ctx.status(500).result("Error processing files: " + e.getMessage());
+            logger.error("Error processing new object detection model", e);
         }
 
         DataChangeService.getInstance()
@@ -606,6 +663,258 @@ public class RequestHandler {
                         new OutgoingUIEvent<>(
                                 "fullsettings",
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+    }
+
+    public static void onExportObjectDetectionModelsRequest(Context ctx) {
+        logger.info("Exporting Object Detection Models to ZIP Archive");
+
+        try {
+            var zip = ConfigManager.getInstance().getObjectDetectionExportAsZip();
+            var stream = new FileInputStream(zip);
+            logger.info("Uploading object detection models with size " + stream.available());
+
+            ctx.contentType("application/zip");
+            ctx.header(
+                    "Content-Disposition",
+                    "attachment; filename=\"photonvision-object-detection-models-export.zip\"");
+
+            ctx.result(stream);
+            ctx.status(200);
+        } catch (IOException e) {
+            logger.error("Unable to export object detection models archive, bad recode from zip to byte");
+            ctx.status(500);
+            ctx.result("There was an error while exporting the object detection models archive");
+        }
+    }
+
+    public static void onExportIndividualObjectDetectionModelRequest(Context ctx) {
+        logger.info("Exporting Individual Object Detection Model");
+
+        try {
+            String modelPath = ctx.queryParam("modelPath");
+
+            if (modelPath == null || modelPath.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided model path was malformed");
+                logger.error("The provided model path was malformed");
+                return;
+            }
+
+            File modelFile = NeuralNetworkModelManager.getInstance().exportSingleModel(modelPath);
+
+            var stream = new FileInputStream(modelFile);
+            logger.info("Uploading object detection model with size " + stream.available());
+
+            ctx.contentType("application/octet-stream");
+            ctx.header("Content-Disposition", "attachment; filename=" + modelFile.getName());
+
+            ctx.result(stream);
+            ctx.status(200);
+        } catch (IOException e) {
+            logger.error("Unable to export object detection model, " + e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the object detection model");
+        }
+    }
+
+    public static void onBulkImportObjectDetectionModelRequest(Context ctx) {
+        var file = ctx.uploadedFile("data");
+
+        if (file == null) {
+            ctx.status(400);
+            ctx.result(
+                    "No File was sent with the request. Make sure that the object detection zip is sent at the key 'data'");
+            logger.error(
+                    "No File was sent with the request. Make sure that the object detection zip file is sent at the key 'data'");
+            return;
+        }
+
+        if (!file.extension().contains("zip")) {
+            ctx.status(400);
+            ctx.result(
+                    "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            logger.error(
+                    "The uploaded file was not of type 'zip'. The uploaded file should be a .zip file.");
+            return;
+        }
+
+        // Create a temp file
+        var tempFilePath = handleTempFileCreation(file);
+
+        if (tempFilePath.isEmpty()) {
+            ctx.status(500);
+            ctx.result("There was an error while creating a temporary copy of the file");
+            logger.error("There was an error while creating a temporary copy of the file");
+            return;
+        }
+
+        Path tempDir = null;
+        // Extract .rknn files from zip and move to models directory
+        try {
+            tempDir = Files.createTempDirectory("photonvision-od-models");
+            ZipUtil.unpack(tempFilePath.get(), tempDir.toFile());
+
+            Path targetModelsDir = ConfigManager.getInstance().getModelsDirectory().toPath();
+
+            // Copy all files from the source models directory to the target models
+            // directory
+            try (var stream = Files.list(tempDir)) {
+                for (Path modelFile : stream.toList()) {
+                    if (Files.isRegularFile(modelFile)
+                            && !modelFile.getFileName().toString().endsWith(".json")) {
+                        logger.debug("Copying model file: " + modelFile.getFileName());
+                        Files.copy(
+                                modelFile,
+                                Path.of(targetModelsDir.toString(), modelFile.getFileName().toString()),
+                                StandardCopyOption.REPLACE_EXISTING);
+                    }
+                }
+            }
+            logger.info("Successfully copied models from " + tempDir + " to " + targetModelsDir);
+
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("There was an error while extracting and coyping the object detection models");
+            logger.error(
+                    "There was an error while extracting and copying the object detection models", e);
+            return;
+        }
+
+        if (ConfigManager.getInstance()
+                .saveUploadedNeuralNetworkProperties(
+                        Path.of(tempDir.toString(), "photonvision-object-detection-models.json"))) {
+            ctx.status(200);
+            ctx.result("Successfully saved the uploaded object detection models, rebooting...");
+            logger.info("Successfully saved the uploaded object detection models, rebooting...");
+            restartProgram();
+        } else {
+            ctx.status(500);
+            ctx.result("There was an error while saving the uploaded object detection models");
+            logger.error("There was an error while saving the uploaded object detection models");
+        }
+    }
+
+    private record DeleteObjectDetectionModelRequest(String modelPath) {}
+
+    public static void onDeleteObjectDetectionModelRequest(Context ctx) {
+        logger.info("Deleting object detection model");
+        Path modelPath;
+
+        try {
+            DeleteObjectDetectionModelRequest request =
+                    JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
+
+            modelPath = Path.of(request.modelPath.substring(7));
+
+            if (modelPath == null) {
+                ctx.status(400);
+                ctx.result("The provided model path was malformed");
+                logger.error("The provided model path was malformed");
+                return;
+            }
+
+            if (!modelPath.toFile().exists()) {
+                ctx.status(400);
+                ctx.result("The provided model path does not exist");
+                logger.error("The provided model path does not exist");
+                return;
+            }
+
+            if (!modelPath.toFile().delete()) {
+                ctx.status(500);
+                ctx.result("Unable to delete the model file");
+                logger.error("Unable to delete the model file");
+                return;
+            }
+
+            if (!ConfigManager.getInstance()
+                    .getConfig()
+                    .neuralNetworkPropertyManager()
+                    .removeModel(modelPath)) {
+                ctx.status(400);
+                ctx.result("The model's information was not found in the config");
+                logger.error("The model's information was not found in the config");
+                return;
+            }
+
+            NeuralNetworkModelManager.getInstance().discoverModels();
+
+            ctx.status(200).result("Successfully deleted object detection model");
+
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("Error deleting object detection model: " + e.getMessage());
+            logger.error("Error deleting object detection model", e);
+        }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+    }
+
+    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+
+    public static void onRenameObjectDetectionModelRequest(Context ctx) {
+        try {
+            RenameObjectDetectionModelRequest request =
+                    JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
+
+            Path modelPath = Path.of(request.modelPath);
+
+            if (modelPath == null) {
+                ctx.status(400);
+                ctx.result("The provided model path was malformed");
+                logger.error("The provided model path was malformed");
+                return;
+            }
+
+            if (!modelPath.toFile().exists()) {
+                ctx.status(400);
+                ctx.result("The provided model path does not exist");
+                logger.error("The model path: " + modelPath + " does not exist");
+                return;
+            }
+
+            if (request.newName == null || request.newName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided new name was malformed");
+                logger.error("The provided new name was malformed");
+                return;
+            }
+
+            if (!ConfigManager.getInstance()
+                    .getConfig()
+                    .neuralNetworkPropertyManager()
+                    .renameModel(modelPath, request.newName)) {
+                ctx.status(400);
+                ctx.result("The model's information was not found in the config");
+                logger.error("The model's information was not found in the config");
+                return;
+            }
+
+            NeuralNetworkModelManager.getInstance().discoverModels();
+            ctx.status(200).result("Successfully renamed object detection model");
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("Error renaming object detection model: " + e.getMessage());
+            logger.error("Error renaming object detection model", e);
+            return;
+        }
+    }
+
+    public static void onNukeObjectDetectionModelsRequest(Context ctx) {
+        logger.info("Attempting to clear object detection models");
+        try {
+            NeuralNetworkModelManager.getInstance().clearModels();
+            NeuralNetworkModelManager.getInstance().extractModels();
+            ctx.status(200).result("Successfully cleared and reset object detection models");
+        } catch (Exception e) {
+            ctx.status(500);
+            ctx.result("Error clearing object detection models: " + e.getMessage());
+            logger.error("Error clearing object detection models", e);
+        }
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
