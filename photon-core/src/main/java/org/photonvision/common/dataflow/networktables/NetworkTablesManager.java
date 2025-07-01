@@ -38,6 +38,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
@@ -215,7 +216,7 @@ public class NetworkTablesManager {
      * this table.
      */
     private void checkHostnameAndCameraNames() {
-        String MAC = HardwareManager.getInstance().getMACAddress();
+        String MAC = NetworkManager.getInstance().getMACAddress();
         if (MAC == null || MAC.isEmpty()) {
             logger.error("Cannot check hostname and camera names, MAC address is not set!");
             return;
@@ -248,14 +249,17 @@ public class NetworkTablesManager {
         Boolean conflictingHostname = false;
         StringBuilder conflictingCamera = new StringBuilder();
 
+        logger.debug("These are the other MAC addresses" + coprocTable.getSubTables().toString());
+
         // Check for conflicts with other coprocessors
-        for (String key : coprocTable.getKeys()) {
+        for (String key : coprocTable.getSubTables()) {
             if (!key.equals(MAC)) { // Skip our own entry
                 NetworkTable otherCoprocTable = coprocTable.getSubTable(key);
                 String otherHostname = otherCoprocTable.getEntry("hostname").getString("");
+                logger.debug("Checking coprocessor " + key + " with hostname: " + otherHostname);
                 String[] otherCameraNames =
                         otherCoprocTable.getEntry("cameraNames").getStringArray(new String[0]);
-
+                logger.debug("Other camera names: " + String.join(", ", otherCameraNames));
                 // Check for hostname conflicts
                 if (otherHostname.equals(hostname)) {
                     logger.warn("Hostname conflict detected with coprocessor " + key + ": " + hostname);
