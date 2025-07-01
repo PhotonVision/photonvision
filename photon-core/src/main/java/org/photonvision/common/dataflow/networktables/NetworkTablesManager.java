@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import org.photonvision.PhotonVersion;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -41,7 +42,6 @@ import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.raspi.LibCameraJNI;
 
 public class NetworkTablesManager {
     private static final Logger logger =
@@ -215,9 +215,24 @@ public class NetworkTablesManager {
      * this table.
      */
     private void checkHostnameAndCameraNames() {
-        String hostname = ConfigManager.getInstance().getConfig().getNetworkConfig().hostname;
-        String[] cameraNames = LibCameraJNI.getCameraNames();
         String MAC = HardwareManager.getInstance().getMACAddress();
+        if (MAC == null || MAC.isEmpty()) {
+            logger.error("Cannot check hostname and camera names, MAC address is not set!");
+            return;
+        }
+
+        String hostname = ConfigManager.getInstance().getConfig().getNetworkConfig().hostname;
+        if (hostname == null || hostname.isEmpty()) {
+            logger.error("Cannot check hostname and camera names, hostname is not set!");
+            return;
+        }
+
+        HashMap<String, CameraConfiguration> cameraConfigs =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations();
+        String[] cameraNames =
+                cameraConfigs.entrySet().stream()
+                        .map(entry -> entry.getValue().nickname)
+                        .toArray(String[]::new);
 
         // Create a subtable under the photonvision root table
         NetworkTable coprocTable = kRootTable.getSubTable("coprocessors");
