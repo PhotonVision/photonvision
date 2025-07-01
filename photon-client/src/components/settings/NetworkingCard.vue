@@ -57,6 +57,8 @@ const settingsHaveChanged = (): boolean => {
     a.runNTServer !== b.runNTServer ||
     a.shouldManage !== b.shouldManage ||
     a.shouldPublishProto !== b.shouldPublishProto ||
+    a.conflictingHostname !== b.conflictingHostname ||
+    a.conflictingCamera !== b.conflictingCamera ||
     a.networkManagerIface !== b.networkManagerIface ||
     a.setStaticCommand !== b.setStaticCommand ||
     a.setDHCPcommand !== b.setDHCPcommand
@@ -77,6 +79,8 @@ const saveGeneralSettings = () => {
     setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
     shouldManage: tempSettingsStruct.value.shouldManage,
     shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
+    conflictingHostname: tempSettingsStruct.value.conflictingHostname,
+    conflictingCamera: tempSettingsStruct.value.conflictingCamera,
     staticIp: tempSettingsStruct.value.staticIp
   };
 

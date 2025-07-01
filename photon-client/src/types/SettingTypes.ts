@@ -44,6 +44,8 @@ export interface NetworkSettings {
   runNTServer: boolean;
   shouldManage: boolean;
   shouldPublishProto: boolean;
+  conflictingHostname: boolean;
+  conflictingCamera: string;
   canManage: boolean;
   networkManagerIface?: string;
   setStaticCommand?: string;

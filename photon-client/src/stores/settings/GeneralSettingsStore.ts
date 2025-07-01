@@ -39,6 +39,8 @@ export const useSettingsStore = defineStore("settings", {
       hostname: "photonvision",
       runNTServer: false,
       shouldPublishProto: false,
+      conflictingHostname: false,
+      conflictingCamera: "",
       networkInterfaceNames: [
         {
           connName: "Example Wired Connection",
