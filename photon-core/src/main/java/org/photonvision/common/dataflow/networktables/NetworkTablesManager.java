@@ -41,6 +41,7 @@ import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.raspi.LibCameraJNI;
 
 public class NetworkTablesManager {
     private static final Logger logger =
@@ -70,7 +71,8 @@ public class NetworkTablesManager {
 
         ntDriverStation = new NTDriverStation(this.getNTInst());
 
-        // Get the UI state in sync with the backend. NT should fire a callback when it first connects
+        // Get the UI state in sync with the backend. NT should fire a callback when it
+        // first connects
         // to the robot
         broadcastConnectedStatus();
     }
@@ -78,6 +80,8 @@ public class NetworkTablesManager {
     public void registerTimedTasks() {
         m_timeSync.start();
         TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
+        TimedTaskManager.getInstance()
+                .addTask("CheckHostnameAndCameraNames", this::checkHostnameAndCameraNames, 10000);
     }
 
     private static NetworkTablesManager INSTANCE;
@@ -205,6 +209,65 @@ public class NetworkTablesManager {
         kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
+    /**
+     * Publishes the hostname and camera names to a table using the MAC address as a key. Then checks
+     * for conflicts of hostname or camera names across other coprocessors that are also publishing to
+     * this table.
+     */
+    private void checkHostnameAndCameraNames() {
+        String hostname = ConfigManager.getInstance().getConfig().getNetworkConfig().hostname;
+        String[] cameraNames = LibCameraJNI.getCameraNames();
+        String MAC = HardwareManager.getInstance().getMACAddress();
+
+        // Create a subtable under the photonvision root table
+        NetworkTable coprocTable = kRootTable.getSubTable("coprocessors");
+
+        // Create a subtable for this coprocessor using its MAC address
+        NetworkTable macTable = coprocTable.getSubTable(MAC);
+
+        // Publish the hostname and camera names
+        macTable.getEntry("hostname").setString(hostname);
+        macTable.getEntry("cameraNames").setStringArray(cameraNames);
+        logger.info("Published hostname and camera names to NT under MAC: " + MAC);
+
+        Boolean conflictingHostname = false;
+        String conflictingCamera = "";
+
+        // Check for conflicts with other coprocessors
+        for (String key : coprocTable.getKeys()) {
+            if (!key.equals(MAC)) { // Skip our own entry
+                NetworkTable otherCoprocTable = coprocTable.getSubTable(key);
+                String otherHostname = otherCoprocTable.getEntry("hostname").getString("");
+                String[] otherCameraNames =
+                        otherCoprocTable.getEntry("cameraNames").getStringArray(new String[0]);
+
+                // Check for hostname conflicts
+                if (otherHostname.equals(hostname)) {
+                    logger.warn("Hostname conflict detected with coprocessor " + key + ": " + hostname);
+                    conflictingHostname = true;
+                }
+
+                // Check for camera name conflicts
+                // Check for camera name conflicts using streams
+                for (String cameraName : cameraNames) {
+                    if (java.util.Arrays.stream(otherCameraNames)
+                            .anyMatch(otherName -> otherName.equals(cameraName))) {
+                        logger.warn("Camera name conflict detected: " + cameraName);
+                        conflictingCamera = cameraName;
+                        break; // No need to check further if we found a conflict, if there are any additional
+                        // conflicts they'll be found in subsequent calls
+                    }
+                }
+            }
+        }
+
+        // Publish the conflict status
+        NetworkConfig config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        config.conflictingHostname = conflictingHostname;
+        config.conflictingCamera = conflictingCamera;
+        ConfigManager.getInstance().setNetworkSettings(config);
+    }
+
     public void setConfig(NetworkConfig config) {
         if (config.runNTServer) {
             setServerMode();
@@ -244,10 +307,13 @@ public class NetworkTablesManager {
         broadcastVersion();
     }
 
-    // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
-    // it'll never connect. This hack works around it by restarting the client/server while the nt
+    // So it seems like if Photon starts before the robot NT server does, and both
+    // aren't static IP,
+    // it'll never connect. This hack works around it by restarting the
+    // client/server while the nt
     // instance
-    // isn't connected, same as clicking the save button in the settings menu (or restarting the
+    // isn't connected, same as clicking the save button in the settings menu (or
+    // restarting the
     // service)
     private void ntTick() {
         if (!ntInstance.isConnected()
