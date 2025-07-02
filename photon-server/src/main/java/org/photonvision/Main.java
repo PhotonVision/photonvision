@@ -18,8 +18,14 @@
 package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
@@ -172,6 +178,36 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
+        if (Platform.isSystemCore()) {
+            File jarLocation = getJarLocation();
+            if (jarLocation == null) {
+                logger.error("SystemCore is not a supported platform for PhotonVision!");
+                System.exit(1);
+            }
+            // Make a file where the PV JAR is located indicating systemcore is not supported
+            try {
+                File notSupportedFile =
+                        new File(jarLocation.getParent(), "SYSTEMCORE_NOT_SUPPORTED_BY_PHOTONVISION.txt");
+                try (FileWriter writer = new FileWriter(notSupportedFile)) {
+                    writer.write("SystemCore is not a supported platform for PhotonVision.\n");
+                    writer.write("PhotonVision has been uninstalled from this device.\n");
+                    writer.write("Please visit https://docs.photonvision.org for supported platforms.");
+                }
+            } catch (IOException e) {
+                logger.error("Failed to create SystemCore not supported file", e);
+                System.exit(1);
+            }
+
+            // Delete the PV JAR
+            if (!jarLocation.delete()) {
+                logger.error("Failed to delete PhotonVision JAR file on SystemCore!");
+                System.exit(1);
+            }
+
+            // Exit
+            System.exit(1);
+        }
+
         if (OsImageVersion.IMAGE_VERSION.isPresent()) {
             logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
         }
@@ -307,5 +343,22 @@ public class Main {
         logger.info("Starting server...");
         HardwareManager.getInstance().setRunning(true);
         Server.initialize(DEFAULT_WEBPORT);
+    }
+
+    public static File getJarLocation() {
+        try {
+            ProtectionDomain protectionDomain = Main.class.getProtectionDomain();
+            CodeSource codeSource = protectionDomain.getCodeSource();
+            if (codeSource != null) {
+                URL location = codeSource.getLocation();
+                return new File(location.toURI());
+            } else {
+                logger.error("Could not determine JAR location: code source is null");
+                return null;
+            }
+        } catch (URISyntaxException e) {
+            logger.error("Error determining JAR location", e);
+            return null;
+        }
     }
 }

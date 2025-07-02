@@ -124,6 +124,10 @@ public enum Platform {
         return Platform.isOrangePi() || Platform.isCoolPi4b() || Platform.isRock5C();
     }
 
+    public static boolean isSystemCore() {
+        return new File("/home/systemcore").exists();
+    }
+
     public static boolean isRaspberryPi() {
         return currentPlatform.isPi;
     }
