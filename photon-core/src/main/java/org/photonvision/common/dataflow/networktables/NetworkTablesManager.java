@@ -19,6 +19,7 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.networktables.LogMessage;
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
@@ -50,6 +51,7 @@ public class NetworkTablesManager {
 
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
+    private final String kCoprocTableName = "coprocessors";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
@@ -236,7 +238,7 @@ public class NetworkTablesManager {
                         .toArray(String[]::new);
 
         // Create a subtable under the photonvision root table
-        NetworkTable coprocTable = kRootTable.getSubTable("coprocessors");
+        NetworkTable coprocTable = kRootTable.getSubTable(kCoprocTableName);
 
         // Create a subtable for this coprocessor using its MAC address
         NetworkTable macTable = coprocTable.getSubTable(MAC);
@@ -249,17 +251,17 @@ public class NetworkTablesManager {
         Boolean conflictingHostname = false;
         StringBuilder conflictingCamera = new StringBuilder();
 
-        logger.debug("These are the other MAC addresses" + coprocTable.getSubTables().toString());
+        MultiSubscriber sub =
+                new MultiSubscriber(
+                        ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
         // Check for conflicts with other coprocessors
         for (String key : coprocTable.getSubTables()) {
             if (!key.equals(MAC)) { // Skip our own entry
                 NetworkTable otherCoprocTable = coprocTable.getSubTable(key);
                 String otherHostname = otherCoprocTable.getEntry("hostname").getString("");
-                logger.debug("Checking coprocessor " + key + " with hostname: " + otherHostname);
                 String[] otherCameraNames =
                         otherCoprocTable.getEntry("cameraNames").getStringArray(new String[0]);
-                logger.debug("Other camera names: " + String.join(", ", otherCameraNames));
                 // Check for hostname conflicts
                 if (otherHostname.equals(hostname)) {
                     logger.warn("Hostname conflict detected with coprocessor " + key + ": " + hostname);
@@ -283,6 +285,8 @@ public class NetworkTablesManager {
         config.conflictingHostname = conflictingHostname;
         config.conflictingCamera = conflictingCamera.toString();
         ConfigManager.getInstance().setNetworkSettings(config);
+
+        sub.close();
     }
 
     public void setConfig(NetworkConfig config) {
