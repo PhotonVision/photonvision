@@ -89,7 +89,7 @@ jobs:
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --stacktrace
+        run: ./gradlew testHeadless --stacktrace
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
       - name: Publish Coverage Report
@@ -185,7 +185,7 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
-      - run: ./gradlew photon-targeting:build photon-lib:build -i
+      - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
@@ -226,7 +226,7 @@ jobs:
           git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
-        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
+        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
       - name: Publish
         run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
