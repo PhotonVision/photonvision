@@ -55,6 +55,10 @@ public class NetworkTablesManager {
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
+    MultiSubscriber sub =
+    new MultiSubscriber(
+            ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
+
     private boolean m_isRetryingConnection = false;
 
     private StringSubscriber m_fieldLayoutSubscriber =
@@ -251,10 +255,6 @@ public class NetworkTablesManager {
         Boolean conflictingHostname = false;
         StringBuilder conflictingCamera = new StringBuilder();
 
-        MultiSubscriber sub =
-                new MultiSubscriber(
-                        ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
-
         // Check for conflicts with other coprocessors
         for (String key : coprocTable.getSubTables()) {
             if (!key.equals(MAC)) { // Skip our own entry
@@ -285,8 +285,6 @@ public class NetworkTablesManager {
         config.conflictingHostname = conflictingHostname;
         config.conflictingCamera = conflictingCamera.toString();
         ConfigManager.getInstance().setNetworkSettings(config);
-
-        sub.close();
     }
 
     public void setConfig(NetworkConfig config) {
