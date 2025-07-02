@@ -25,6 +25,8 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringSubscriber;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -56,8 +58,10 @@ public class NetworkTablesManager {
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
     MultiSubscriber sub =
-    new MultiSubscriber(
-            ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
+            new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
+
+    // Creating the alert up here since it should be persistent
+    Alert conflictAlert = new Alert("", AlertType.kWarning);
 
     private boolean m_isRetryingConnection = false;
 
@@ -77,6 +81,9 @@ public class NetworkTablesManager {
                 m_fieldLayoutSubscriber, EnumSet.of(Kind.kValueAll), this::onFieldLayoutChanged);
 
         ntDriverStation = new NTDriverStation(this.getNTInst());
+
+        // This should start as false, since we don't know if there's a conflict yet
+        conflictAlert.set(false);
 
         // Get the UI state in sync with the backend. NT should fire a callback when it
         // first connects
@@ -285,6 +292,32 @@ public class NetworkTablesManager {
         config.conflictingHostname = conflictingHostname;
         config.conflictingCamera = conflictingCamera.toString();
         ConfigManager.getInstance().setNetworkSettings(config);
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
+        // Also send an Alert in NT
+        if (conflictingHostname || !conflictingCamera.isEmpty()) {
+            // If there are conflicts, set the alert message
+            StringBuilder alertMessage = new StringBuilder("Network Tables Conflict Detected:\n");
+            if (conflictingHostname) {
+                alertMessage.append(" - Hostname conflict with another coprocessor.\n");
+            }
+            if (!conflictingCamera.isEmpty()) {
+                alertMessage
+                        .append(" - Camera name conflict with: ")
+                        .append(conflictingCamera)
+                        .append("\n");
+            }
+            conflictAlert.setText(alertMessage.toString());
+            conflictAlert.set(true);
+        } else {
+            // If there are no conflicts, clear the alert
+            conflictAlert.set(false);
+        }
     }
 
     public void setConfig(NetworkConfig config) {
@@ -327,13 +360,9 @@ public class NetworkTablesManager {
     }
 
     // So it seems like if Photon starts before the robot NT server does, and both
-    // aren't static IP,
-    // it'll never connect. This hack works around it by restarting the
-    // client/server while the nt
-    // instance
-    // isn't connected, same as clicking the save button in the settings menu (or
-    // restarting the
-    // service)
+    // aren't static IP, it'll never connect. This hack works around it by
+    // restarting the client/server while the nt instance isn't connected, same as clicking the
+    // save button in the settings menu (or restarting the service)
     private void ntTick() {
         if (!ntInstance.isConnected()
                 && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
