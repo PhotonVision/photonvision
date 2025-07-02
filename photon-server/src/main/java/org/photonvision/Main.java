@@ -191,7 +191,7 @@ public class Main {
                 try (FileWriter writer = new FileWriter(notSupportedFile)) {
                     writer.write("SystemCore is not a supported platform for PhotonVision.\n");
                     writer.write("PhotonVision has been uninstalled from this device.\n");
-                    writer.write("Please visit https://docs.photonvision.org for supported platforms.");
+                    writer.write("Please visit https://docs.photonvision.org/en/stable/docs/quick-start/common-setups.html#Unsupported-devices for more information.");
                 }
             } catch (IOException e) {
                 logger.error("Failed to create SystemCore not supported file", e);

@@ -13,6 +13,11 @@ PhotonVision requires dedicated hardware, above and beyond a roboRIO. This page 
 The Orange Pi 5 is the only currently supported device for object detection.
 :::
 
+## SystemCore Support
+
+The SystemCore is not supported by PhotonVision. PhotonVision is designed to utilize the entirety of the coprocessor's resources, and this could prove to be dangerous if attempted on the main robot controller.
+There are no current plans to support running on SystemCore alongside robot code, and any attempts to do so are entirely at your own risk and will require a separate fork of PhotonVision. 
+
 ## SD Cards
 
 - 8GB or larger micro SD card
