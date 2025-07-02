@@ -179,9 +179,13 @@ public class Main {
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
         if (Platform.isSystemCore()) {
+            logger.error(
+                    "SystemCore is not a supported platform for PhotonVision!\n "
+                            + "PhotonVision will now proceed to uninstall itself from this device.\n"
+                            + "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#unsupported-devices for more information.");
+
             File jarLocation = getJarLocation();
             if (jarLocation == null) {
-                logger.error("SystemCore is not a supported platform for PhotonVision!");
                 System.exit(1);
             }
             // Make a file where the PV JAR is located indicating systemcore is not supported
@@ -191,7 +195,8 @@ public class Main {
                 try (FileWriter writer = new FileWriter(notSupportedFile)) {
                     writer.write("SystemCore is not a supported platform for PhotonVision.\n");
                     writer.write("PhotonVision has been uninstalled from this device.\n");
-                    writer.write("Please visit https://docs.photonvision.org/en/stable/docs/quick-start/common-setups.html#Unsupported-devices for more information.");
+                    writer.write(
+                            "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#unsupported-devices for more information.");
                 }
             } catch (IOException e) {
                 logger.error("Failed to create SystemCore not supported file", e);
