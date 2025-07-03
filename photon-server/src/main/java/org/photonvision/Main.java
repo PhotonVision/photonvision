@@ -182,7 +182,7 @@ public class Main {
             logger.error(
                     "SystemCore is not a supported platform for PhotonVision!\n "
                             + "PhotonVision will now proceed to uninstall itself from this device.\n"
-                            + "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#unsupported-devices for more information.");
+                            + "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support for more information.");
 
             File jarLocation = getJarLocation();
             if (jarLocation == null) {
@@ -196,7 +196,7 @@ public class Main {
                     writer.write("SystemCore is not a supported platform for PhotonVision.\n");
                     writer.write("PhotonVision has been uninstalled from this device.\n");
                     writer.write(
-                            "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#unsupported-devices for more information.");
+                            "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support for more information.");
                 }
             } catch (IOException e) {
                 logger.error("Failed to create SystemCore not supported file", e);
