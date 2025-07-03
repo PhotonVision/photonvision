@@ -290,40 +290,31 @@ public class NetworkTablesManager {
             }
         }
 
+        boolean hasChanged =
+                this.conflictingHostname != conflictingHostname
+                        || !this.conflictingCamera.equals(conflictingCamera.toString());
+
         // Publish the conflict status
-        if (this.conflictingHostname != conflictingHostname
-                || !this.conflictingCamera.equals(conflictingCamera.toString())) {
-            publishConflictingHostnameAndCamera();
-        } else {
-            conflictAlert.set(false); // No conflicts, clear the alert
+        if (hasChanged) {
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         }
+
+        conflictAlert.setText(
+                conflictingHostname
+                        ? "Hostname conflict detected for " + hostname + "!"
+                        : ""
+                                + (conflictingCamera.isEmpty()
+                                        ? ""
+                                        : " Camera name conflict detected: " + conflictingCamera.toString() + "!"));
+        conflictAlert.set(conflictingHostname || !conflictingCamera.isEmpty());
+        logger.debug("Conflict alert set to: " + (conflictingHostname || !conflictingCamera.isEmpty()));
+
         this.conflictingHostname = conflictingHostname;
         this.conflictingCamera = conflictingCamera.toString();
-    }
-
-    public void publishConflictingHostnameAndCamera() {
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
-
-        // Also send an Alert in NT
-        if (conflictingHostname || !conflictingCamera.isEmpty()) {
-            // If there are conflicts, set the alert message
-            StringBuilder alertMessage = new StringBuilder("Network Tables Conflict Detected:\n");
-            if (conflictingHostname) {
-                alertMessage.append(" - Hostname conflict with another coprocessor.\n");
-            }
-            if (!conflictingCamera.isEmpty()) {
-                alertMessage
-                        .append(" - Camera name conflict with: ")
-                        .append(conflictingCamera)
-                        .append("\n");
-            }
-            conflictAlert.setText(alertMessage.toString());
-            conflictAlert.set(true);
-        }
     }
 
     public void setConfig(NetworkConfig config) {
