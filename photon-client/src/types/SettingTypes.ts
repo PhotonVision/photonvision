@@ -11,7 +11,7 @@ export interface GeneralSettings {
   availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
   conflictingHostname: boolean;
-  conflictingCamera: string;
+  conflictingCameras: string;
 }
 
 export interface ObjectDetectionModelProperties {

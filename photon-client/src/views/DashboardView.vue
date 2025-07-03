@@ -56,7 +56,7 @@ const conflictingHostnameShown = computed<boolean>(() => {
 });
 
 const conflictingCameraShown = computed<boolean>(() => {
-  return useSettingsStore().general.conflictingCamera.length > 0;
+  return useSettingsStore().general.conflictingCameras.length > 0;
 });
 
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
@@ -77,7 +77,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     <v-banner v-if="conflictingCameraShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
       <span
         >Conflicting Camera Name(s) Detected! Please change the name(s) of
-        {{ useSettingsStore().general.conflictingCamera }}!
+        {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </v-banner>
     <v-row no-gutters>

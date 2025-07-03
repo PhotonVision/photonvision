@@ -30,7 +30,7 @@ export const useSettingsStore = defineStore("settings", {
       availableModels: [],
       supportedBackends: [],
       conflictingHostname: false,
-      conflictingCamera: ""
+      conflictingCameras: ""
     },
     network: {
       ntServerAddress: "",
@@ -111,7 +111,7 @@ export const useSettingsStore = defineStore("settings", {
         availableModels: data.general.availableModels || undefined,
         supportedBackends: data.general.supportedBackends || [],
         conflictingHostname: data.general.conflictingHostname || false,
-        conflictingCamera: data.general.conflictingCamera || ""
+        conflictingCameras: data.general.conflictingCameras || ""
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
