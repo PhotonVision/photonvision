@@ -10,6 +10,8 @@ export interface GeneralSettings {
   mrCalWorking: boolean;
   availableModels: Record<string, string[]>;
   supportedBackends: string[];
+  conflictingHostname: boolean;
+  conflictingCamera: string;
 }
 
 export interface MetricData {
@@ -44,8 +46,6 @@ export interface NetworkSettings {
   runNTServer: boolean;
   shouldManage: boolean;
   shouldPublishProto: boolean;
-  conflictingHostname: boolean;
-  conflictingCamera: string;
   canManage: boolean;
   networkManagerIface?: string;
   setStaticCommand?: string;

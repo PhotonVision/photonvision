@@ -29,7 +29,9 @@ public class UIGeneralSettings {
             Map<String, ArrayList<String>> availableModels,
             List<String> supportedBackends,
             String hardwareModel,
-            String hardwarePlatform) {
+            String hardwarePlatform,
+            boolean conflictingHostname,
+            String conflictingCamera) {
         this.version = version;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
@@ -37,6 +39,8 @@ public class UIGeneralSettings {
         this.supportedBackends = supportedBackends;
         this.hardwareModel = hardwareModel;
         this.hardwarePlatform = hardwarePlatform;
+        this.conflictingHostname = conflictingHostname;
+        this.conflictingCamera = conflictingCamera;
     }
 
     public String version;
@@ -46,4 +50,6 @@ public class UIGeneralSettings {
     public List<String> supportedBackends;
     public String hardwareModel;
     public String hardwarePlatform;
+    public boolean conflictingHostname;
+    public String conflictingCamera;
 }

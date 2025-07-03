@@ -28,7 +28,9 @@ export const useSettingsStore = defineStore("settings", {
       hardwarePlatform: undefined,
       mrCalWorking: true,
       availableModels: {},
-      supportedBackends: []
+      supportedBackends: [],
+      conflictingHostname: false,
+      conflictingCamera: ""
     },
     network: {
       ntServerAddress: "",
@@ -39,8 +41,6 @@ export const useSettingsStore = defineStore("settings", {
       hostname: "photonvision",
       runNTServer: false,
       shouldPublishProto: false,
-      conflictingHostname: false,
-      conflictingCamera: "",
       networkInterfaceNames: [
         {
           connName: "Example Wired Connection",
@@ -109,7 +109,9 @@ export const useSettingsStore = defineStore("settings", {
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
         availableModels: data.general.availableModels || undefined,
-        supportedBackends: data.general.supportedBackends || []
+        supportedBackends: data.general.supportedBackends || [],
+        conflictingHostname: data.general.conflictingHostname || false,
+        conflictingCamera: data.general.conflictingCamera || ""
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;

@@ -33,8 +33,6 @@ public class NetworkConfig {
     public boolean runNTServer = false;
     public boolean shouldManage;
     public boolean shouldPublishProto = false;
-    public boolean conflictingHostname = false;
-    public String conflictingCamera = "";
 
     @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
     @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
@@ -62,8 +60,6 @@ public class NetworkConfig {
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
             @JsonProperty("shouldPublishProto") boolean shouldPublishProto,
-            @JsonProperty("conflictingHostname") boolean conflictingHostname,
-            @JsonProperty("conflictingCamera") String conflictingCamera,
             @JsonProperty("networkManagerIface") String networkManagerIface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
             @JsonProperty("setDHCPcommand") String setDHCPcommand) {
@@ -73,8 +69,6 @@ public class NetworkConfig {
         this.hostname = hostname;
         this.runNTServer = runNTServer;
         this.shouldPublishProto = shouldPublishProto;
-        this.conflictingHostname = conflictingHostname;
-        this.conflictingCamera = conflictingCamera;
         this.networkManagerIface = networkManagerIface;
         this.setStaticCommand = setStaticCommand;
         this.setDHCPcommand = setDHCPcommand;
@@ -90,8 +84,6 @@ public class NetworkConfig {
                 config.runNTServer,
                 config.shouldManage,
                 config.shouldPublishProto,
-                config.conflictingHostname,
-                config.conflictingCamera,
                 config.networkManagerIface,
                 config.setStaticCommand,
                 config.setDHCPcommand);
@@ -136,12 +128,6 @@ public class NetworkConfig {
                 + setDHCPcommand
                 + ", shouldManage="
                 + shouldManage
-                + ", shouldPublishProto="
-                + shouldPublishProto
-                + ", conflictingHostname="
-                + conflictingHostname
-                + ", conflictingCamera="
-                + conflictingCamera
                 + "]";
     }
 }

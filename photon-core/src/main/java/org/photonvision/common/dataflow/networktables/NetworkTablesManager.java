@@ -63,6 +63,9 @@ public class NetworkTablesManager {
     // Creating the alert up here since it should be persistent
     Alert conflictAlert = new Alert("", AlertType.kWarning);
 
+    public boolean conflictingHostname = false;
+    public String conflictingCamera = "";
+
     private boolean m_isRetryingConnection = false;
 
     private StringSubscriber m_fieldLayoutSubscriber =
@@ -257,7 +260,7 @@ public class NetworkTablesManager {
         // Publish the hostname and camera names
         macTable.getEntry("hostname").setString(hostname);
         macTable.getEntry("cameraNames").setStringArray(cameraNames);
-        logger.info("Published hostname and camera names to NT under MAC: " + MAC);
+        logger.debug("Published hostname and camera names to NT under MAC: " + MAC);
 
         Boolean conflictingHostname = false;
         StringBuilder conflictingCamera = new StringBuilder();
@@ -288,11 +291,17 @@ public class NetworkTablesManager {
         }
 
         // Publish the conflict status
-        NetworkConfig config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        config.conflictingHostname = conflictingHostname;
-        config.conflictingCamera = conflictingCamera.toString();
-        ConfigManager.getInstance().setNetworkSettings(config);
+        if (this.conflictingHostname != conflictingHostname
+                || !this.conflictingCamera.equals(conflictingCamera.toString())) {
+            publishConflictingHostnameAndCamera();
+        } else {
+            conflictAlert.set(false); // No conflicts, clear the alert
+        }
+        this.conflictingHostname = conflictingHostname;
+        this.conflictingCamera = conflictingCamera.toString();
+    }
 
+    public void publishConflictingHostnameAndCamera() {
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
@@ -314,9 +323,6 @@ public class NetworkTablesManager {
             }
             conflictAlert.setText(alertMessage.toString());
             conflictAlert.set(true);
-        } else {
-            // If there are no conflicts, clear the alert
-            conflictAlert.set(false);
         }
     }
 

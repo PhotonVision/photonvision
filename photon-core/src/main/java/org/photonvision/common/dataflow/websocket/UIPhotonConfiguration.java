@@ -21,6 +21,7 @@ import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
@@ -59,7 +60,9 @@ public class UIPhotonConfiguration {
                                 c.getHardwareConfig().deviceName().isEmpty()
                                         ? Platform.getHardwareModel()
                                         : c.getHardwareConfig().deviceName(),
-                                Platform.getPlatformName()),
+                                Platform.getPlatformName(),
+                                NetworkTablesManager.getInstance().conflictingHostname,
+                                NetworkTablesManager.getInstance().conflictingCamera),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
