@@ -18,6 +18,7 @@
 from enum import Enum
 from typing import List
 
+import hal
 import ntcore
 
 # magical import to make serde stuff work
@@ -48,6 +49,8 @@ def setVersionCheckEnabled(enabled: bool):
 
 
 class PhotonCamera:
+    instance_count = 1
+
     def __init__(self, cameraName: str):
         """Constructs a PhotonCamera from the name of the camera.
 
@@ -107,6 +110,13 @@ class PhotonCamera:
 
         # Start the time sync server
         inst.start()
+
+        # Usage reporting
+        hal.report(
+            hal.tResourceType.kResourceType_PhotonCamera.value,
+            PhotonCamera.instance_count,
+        )
+        PhotonCamera.instance_count += 1
 
     def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
         """
