@@ -105,7 +105,7 @@ const resetCurrentBuffer = () => {
                 <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.yaw.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.skew.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.area.toFixed(2) }}&deg;</td>
+                <td class="text-center">{{ target.area.toFixed(2) }}%</td>
               </template>
               <template v-else>
                 <td class="text-center">{{ target.pose?.x.toFixed(3) }}&nbsp;m</td>
