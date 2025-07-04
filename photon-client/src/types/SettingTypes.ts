@@ -10,6 +10,8 @@ export interface GeneralSettings {
   mrCalWorking: boolean;
   availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
+  conflictingHostname: boolean;
+  conflictingCameras: string;
 }
 
 export interface ObjectDetectionModelProperties {

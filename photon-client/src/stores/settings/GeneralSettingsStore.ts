@@ -28,7 +28,9 @@ export const useSettingsStore = defineStore("settings", {
       hardwarePlatform: undefined,
       mrCalWorking: true,
       availableModels: [],
-      supportedBackends: []
+      supportedBackends: [],
+      conflictingHostname: false,
+      conflictingCameras: ""
     },
     network: {
       ntServerAddress: "",
@@ -107,7 +109,9 @@ export const useSettingsStore = defineStore("settings", {
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
         availableModels: data.general.availableModels || undefined,
-        supportedBackends: data.general.supportedBackends || []
+        supportedBackends: data.general.supportedBackends || [],
+        conflictingHostname: data.general.conflictingHostname || false,
+        conflictingCameras: data.general.conflictingCameras || ""
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
