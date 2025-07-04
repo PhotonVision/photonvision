@@ -29,12 +29,12 @@ public class LinuxCmds extends CmdBase {
         cpuUtilizationCommand =
                 "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
 
-        cpuUptimeCommand = "uptime -p | cut -c 4-";
+        cpuUptimeCommand = "awk '{print $1}' /proc/uptime";
 
         // RAM
         ramUsageCommand = "free -m | awk 'FNR == 2 {print $3}'";
 
         // Disk
-        diskUsageCommand = "df ./ --output=pcent | tail -n +2";
+        diskUsageCommand = "df ./ --output=pcent | tail -n +2 | cut -d'%' -f1";
     }
 }
