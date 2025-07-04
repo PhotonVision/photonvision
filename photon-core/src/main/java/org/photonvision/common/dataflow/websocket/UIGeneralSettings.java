@@ -30,7 +30,7 @@ public class UIGeneralSettings {
             String hardwareModel,
             String hardwarePlatform,
             boolean conflictingHostname,
-            String conflictingCamera) {
+            String conflictingCameras) {
         this.version = version;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
@@ -39,7 +39,7 @@ public class UIGeneralSettings {
         this.hardwareModel = hardwareModel;
         this.hardwarePlatform = hardwarePlatform;
         this.conflictingHostname = conflictingHostname;
-        this.conflictingCamera = conflictingCamera;
+        this.conflictingCameras = conflictingCameras;
     }
 
     public String version;
@@ -50,5 +50,5 @@ public class UIGeneralSettings {
     public String hardwareModel;
     public String hardwarePlatform;
     public boolean conflictingHostname;
-    public String conflictingCamera;
+    public String conflictingCameras;
 }
