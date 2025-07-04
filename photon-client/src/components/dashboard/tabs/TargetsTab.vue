@@ -294,6 +294,7 @@ th {
     }
     tr {
       td {
+        padding: 0 !important;
         font-size: 1rem !important;
         color: white !important;
       }
