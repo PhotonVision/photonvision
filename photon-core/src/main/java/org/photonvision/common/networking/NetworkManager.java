@@ -196,11 +196,10 @@ public class NetworkManager {
                 logger.error("No MAC address found for " + config.networkManagerIface);
                 return "";
             }
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder(17);
             for (byte b : mac) {
                 sb.append(String.format("%02X-", b));
             }
-            // remove the last colon
             sb.setLength(sb.length() - 1);
             return sb.toString();
         } catch (Exception e) {

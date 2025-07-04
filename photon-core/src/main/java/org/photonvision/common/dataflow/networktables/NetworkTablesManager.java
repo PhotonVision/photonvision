@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import org.photonvision.PhotonVersion;
@@ -58,11 +59,11 @@ public class NetworkTablesManager {
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
-    MultiSubscriber sub =
+    private final MultiSubscriber sub =
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
@@ -267,6 +268,12 @@ public class NetworkTablesManager {
 
         // Check for conflicts with other coprocessors
         for (String key : coprocTable.getSubTables()) {
+            // Check that key is formatted like a MAC address
+            if (!key.matches("([0-9A-F]{2}-){5}[0-9A-F]{2}")) {
+                logger.warn("Skipping non-MAC key in conflict detection: " + key);
+                continue;
+            }
+
             if (!key.equals(MAC)) { // Skip our own entry
                 NetworkTable otherCoprocTable = coprocTable.getSubTable(key);
                 String otherHostname = otherCoprocTable.getEntry("hostname").getString("");
@@ -279,10 +286,8 @@ public class NetworkTablesManager {
                 }
 
                 // Check for camera name conflicts
-                // Check for camera name conflicts using streams
                 for (String cameraName : cameraNames) {
-                    if (java.util.Arrays.stream(otherCameraNames)
-                            .anyMatch(otherName -> otherName.equals(cameraName))) {
+                    if (Arrays.stream(otherCameraNames).anyMatch(otherName -> otherName.equals(cameraName))) {
                         logger.warn("Camera name conflict detected: " + cameraName);
                         conflictingCameras.append(
                                 conflictingCameras.isEmpty() ? cameraName : ", " + cameraName);
@@ -356,10 +361,10 @@ public class NetworkTablesManager {
         broadcastVersion();
     }
 
-    // So it seems like if Photon starts before the robot NT server does, and both
-    // aren't static IP, it'll never connect. This hack works around it by
-    // restarting the client/server while the nt instance isn't connected, same as clicking the
-    // save button in the settings menu (or restarting the service)
+    // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
+    // it'll never connect. This hack works around it by restarting the client/server while the nt
+    // instance isn't connected, same as clicking the save button in the settings menu (or restarting
+    // the service)
     private void ntTick() {
         if (!ntInstance.isConnected()
                 && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
