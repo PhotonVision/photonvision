@@ -62,7 +62,7 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    Alert conflictAlert = new Alert("", AlertType.kWarning);
+    Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
@@ -90,8 +90,7 @@ public class NetworkTablesManager {
         conflictAlert.set(false);
 
         // Get the UI state in sync with the backend. NT should fire a callback when it
-        // first connects
-        // to the robot
+        // first connects to the robot
         broadcastConnectedStatus();
     }
 
@@ -313,8 +312,6 @@ public class NetworkTablesManager {
                                         ? ""
                                         : " Camera name conflict detected: " + conflictingCameras.toString() + "!"));
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
-        logger.debug(
-                "Conflict alert set to: " + (conflictingHostname || !conflictingCameras.isEmpty()));
         SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras.toString();

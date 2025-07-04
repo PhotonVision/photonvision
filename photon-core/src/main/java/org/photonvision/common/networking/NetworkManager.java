@@ -198,7 +198,7 @@ public class NetworkManager {
             }
             StringBuilder sb = new StringBuilder();
             for (byte b : mac) {
-                sb.append(String.format("%02X:", b));
+                sb.append(String.format("%02X-", b));
             }
             // remove the last colon
             sb.setLength(sb.length() - 1);
