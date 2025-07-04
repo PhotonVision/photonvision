@@ -26,5 +26,3 @@ jobs:
         with:
           name: pv-system-viewer.ipk
           path: systemcore-apps/system-view/pv-system-viewer_*.ipk
-
-

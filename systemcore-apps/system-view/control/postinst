@@ -12,9 +12,9 @@ systemctl enable $PACKAGE_NAME.service
 echo "Starting service..."
 if systemctl start $PACKAGE_NAME.service; then
     echo "Service started successfully"
-    
+
     sleep 2
-    
+
     if systemctl is-active $PACKAGE_NAME.service >/dev/null 2>&1; then
         echo "Service is now running"
     else
