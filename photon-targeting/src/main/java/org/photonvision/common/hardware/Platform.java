@@ -133,7 +133,7 @@ public enum Platform {
 
     public static boolean isSystemCore() {
         File sysCore = new File("/home/systemcore");
-        return sysCore.exists();
+        return sysCore.exists() | fileHasText("/etc/os-release", "systemcore");
     }
 
     public static boolean isRaspberryPi() {
