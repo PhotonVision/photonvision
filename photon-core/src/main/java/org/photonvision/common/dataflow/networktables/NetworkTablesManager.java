@@ -27,6 +27,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -262,7 +263,7 @@ public class NetworkTablesManager {
         macTable.getEntry("cameraNames").setStringArray(cameraNames);
         logger.debug("Published hostname and camera names to NT under MAC: " + MAC);
 
-        Boolean conflictingHostname = false;
+        boolean conflictingHostname = false;
         StringBuilder conflictingCameras = new StringBuilder();
 
         // Check for conflicts with other coprocessors
@@ -314,7 +315,7 @@ public class NetworkTablesManager {
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
         logger.debug(
                 "Conflict alert set to: " + (conflictingHostname || !conflictingCameras.isEmpty()));
-
+        SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras.toString();
     }
