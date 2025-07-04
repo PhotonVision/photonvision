@@ -290,17 +290,20 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     {
       resolution: { width: 1920, height: 1080 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 0
     },
     {
       resolution: { width: 1280, height: 720 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 1
     },
     {
       resolution: { width: 640, height: 480 },
       fps: 30,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 2
     }
   ],
   completeCalibrations: [
