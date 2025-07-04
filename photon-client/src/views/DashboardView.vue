@@ -69,12 +69,12 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
       </span>
     </v-banner>
-    <v-banner v-if="conflictingHostnameShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
+    <v-banner v-if="conflictingHostnameShown" rounded bg-color="error" color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
       <span
         >Conflicting Hostname Detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
     </v-banner>
-    <v-banner v-if="conflictingCameraShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
+    <v-banner v-if="conflictingCameraShown" rounded bg-color="error" color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
       <span
         >Conflicting Camera Name(s) Detected! Please change the name(s) of
         {{ useSettingsStore().general.conflictingCameras }}!
