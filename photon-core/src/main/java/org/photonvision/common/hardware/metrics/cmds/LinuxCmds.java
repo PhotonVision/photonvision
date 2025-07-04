@@ -27,7 +27,7 @@ public class LinuxCmds extends CmdBase {
         // TODO: boards have lots of thermal devices. Hard to pick the CPU
 
         cpuUtilizationCommand =
-                "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
+                "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}' | cut -d'%' -f1";
 
         cpuUptimeCommand = "awk '{print $1}' /proc/uptime";
 
