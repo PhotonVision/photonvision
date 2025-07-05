@@ -42,11 +42,11 @@ const handleKeydown = ({ key }) => {
 
 <template>
   <div class="d-flex">
-    <v-col :cols="labelCols || 12 - inputCols" class="d-flex align-center pl-0">
+    <v-col :cols="labelCols || 12 - inputCols" class="d-flex align-center pl-0 pt-10px pb-10px">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
 
-    <v-col :cols="inputCols" class="d-flex align-center pr-0">
+    <v-col :cols="inputCols" class="d-flex align-center pr-0 pt-10px pb-10px">
       <v-text-field
         v-model="value"
         density="compact"

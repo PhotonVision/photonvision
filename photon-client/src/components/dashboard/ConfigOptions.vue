@@ -160,13 +160,13 @@ const onBeforeTabUpdate = () => {
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
         @vue:before-update="onBeforeTabUpdate"
       >
-        <v-card color="primary" height="100%" class="pr-4 pl-4">
+        <v-card color="primary" height="100%" class="pr-5 pl-5">
           <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="primary" height="48" slider-color="accent">
             <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
               {{ tabConfig.tabName }}
             </v-tab>
           </v-tabs>
-          <div class="pl-2 pr-2 pt-3 pb-3">
+          <div class="pt-10px pb-10px">
             <KeepAlive>
               <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
             </KeepAlive>

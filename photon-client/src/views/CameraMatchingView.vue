@@ -289,10 +289,11 @@ const openExportSettingsPrompt = () => {
         cols="12"
         sm="6"
         lg="4"
+        class="pr-0"
       >
         <v-card color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="pb-2"
+          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
           <v-card-subtitle
@@ -300,11 +301,10 @@ const openExportSettingsPrompt = () => {
               cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
               camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
             "
-            class="pb-2"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
-          <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
-          <v-card-text>
+          <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
+          <v-card-text class="pt-3">
             <v-table density="compact">
               <tbody>
                 <tr>
@@ -395,11 +395,18 @@ const openExportSettingsPrompt = () => {
       </v-col>
 
       <!-- Disabled modules -->
-      <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
-        <v-card color="primary">
+      <v-col
+        v-for="module in disabledVisionModules"
+        :key="`disabled-${module.uniqueName}`"
+        cols="12"
+        sm="6"
+        lg="4"
+        class="pr-0"
+      >
+        <v-card class="pr-0" color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
-          <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
-          <v-card-text>
+          <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
+          <v-card-text class="pt-3">
             <v-table density="compact">
               <tbody>
                 <tr>
@@ -466,9 +473,9 @@ const openExportSettingsPrompt = () => {
       </v-col>
 
       <!-- Unassigned cameras -->
-      <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
-        <v-card color="primary">
-          <v-card-title class="pb-2">
+      <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
+        <v-card class="pr-0" color="primary">
+          <v-card-title>
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
@@ -476,7 +483,7 @@ const openExportSettingsPrompt = () => {
             &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
           </v-card-title>
           <v-card-subtitle>Status: Unassigned</v-card-subtitle>
-          <v-card-text>
+          <v-card-text class="pt-3">
             <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
           </v-card-text>
           <v-card-text class="pt-0">
@@ -503,7 +510,7 @@ const openExportSettingsPrompt = () => {
       </v-col>
 
       <!-- Info card -->
-      <v-col cols="12" sm="6" lg="4">
+      <v-col cols="12" sm="6" lg="4" class="pr-0">
         <v-card
           dark
           flat
@@ -531,7 +538,7 @@ const openExportSettingsPrompt = () => {
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
         <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
-          <v-banner rounded color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
+          <v-banner rounded bg-color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
             It looks like a different camera may have been connected to this device! Compare the following information
             carefully.
           </v-banner>
@@ -545,10 +552,10 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-3 pb-2" color="primary" flat>
+      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
-        <v-card-text>
-          <v-row class="align-center pt-6">
+        <v-card-text class="pb-10px">
+          <v-row class="align-center">
             <v-col cols="12" md="6">
               <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
@@ -567,7 +574,7 @@ const openExportSettingsPrompt = () => {
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
@@ -575,7 +582,7 @@ const openExportSettingsPrompt = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-10px">
           <v-btn
             block
             color="error"
@@ -593,7 +600,17 @@ const openExportSettingsPrompt = () => {
 </template>
 
 <style scoped>
+td {
+  padding: 0 !important;
+}
+
+.v-card-subtitle {
+  padding-top: 0px !important;
+  padding-bottom: 8px !important;
+}
+
 .v-card-title {
+  padding-bottom: 0 !important;
   text-wrap-mode: wrap !important;
 }
 
