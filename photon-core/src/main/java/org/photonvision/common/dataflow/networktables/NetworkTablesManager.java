@@ -261,7 +261,6 @@ public class NetworkTablesManager {
         // Publish the hostname and camera names
         macTable.getEntry("hostname").setString(hostname);
         macTable.getEntry("cameraNames").setStringArray(cameraNames);
-        logger.debug("Published hostname and camera names to NT under MAC: " + MAC);
 
         boolean conflictingHostname = false;
         StringBuilder conflictingCameras = new StringBuilder();
@@ -302,6 +301,12 @@ public class NetworkTablesManager {
 
         // Publish the conflict status
         if (hasChanged) {
+            logger.debug(
+                    "Host and camera name conflict status has changed to conflicting hostname: "
+                            + conflictingHostname
+                            + " conflicting camera(s)"
+                            + conflictingCameras.toString());
+
             DataChangeService.getInstance()
                     .publishEvent(
                             new OutgoingUIEvent<>(
