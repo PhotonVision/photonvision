@@ -317,6 +317,7 @@ const handleBulkImport = () => {
                   />
                   <v-btn
                     color="secondary"
+                    width="100%"
                     :disabled="
                       importModelFile === null ||
                       importLabels === null ||
@@ -345,9 +346,9 @@ const handleBulkImport = () => {
               <v-card-text>
                 Upload a zip file containing multiple object detection models to this device. Note this zip file should
                 only come from a previous export of object detection models.
-                <div class="pa-5">
+                <div class="pa-5 pb-0">
                   <v-file-input v-model="importFile" variant="underlined" label="Zip File" accept=".zip" />
-                  <v-btn color="secondary" :disabled="importFile === null" @click="handleBulkImport()">
+                  <v-btn color="secondary" width="100%" :disabled="importFile === null" @click="handleBulkImport()">
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Bulk Import</span>
                   </v-btn>
@@ -377,16 +378,21 @@ const handleBulkImport = () => {
         </v-col>
       </v-row>
       <v-row>
-        <v-col cols="12">
-          <v-simple-table fixed-header height="100%" density="compact" dark>
+        <v-col cols="">
+          <v-table fixed-header height="100%" density="compact" dark>
             <thead style="font-size: 1.25rem">
               <tr>
-                <th class="text-left">Available Models</th>
+                <th>Model Nicknames</th>
+                <th>Labels</th>
+                <th>Delete</th>
+                <th>Edit</th>
+                <th>Info</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="model in supportedModels" :key="model.modelPath">
                 <td>{{ model.nickname }}</td>
+                <td>{{ model.labels.join(", ") }}</td>
                 <td class="text-right">
                   <v-btn
                     icon
@@ -416,58 +422,62 @@ const handleBulkImport = () => {
                 </td>
               </tr>
             </tbody>
-          </v-simple-table>
+          </v-table>
           <v-dialog v-model="confirmDeleteDialog.show" width="600">
             <v-card color="primary" dark>
               <v-card-title>Delete Object Detection Model</v-card-title>
-              <v-card-text>
-                Are you sure you want to delete the model
-                {{ confirmDeleteDialog.model.nickname }}?
-                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
-                  <v-btn text @click="confirmDeleteDialog.show = false" color="secondary">Cancel</v-btn>
-                  <v-btn color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
-                </v-row>
+              <v-card-text class="pt-0">
+                Are you sure you want to delete the model {{ confirmDeleteDialog.model.nickname }}?
+                <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
+                  <v-btn variant="elevated" color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
+                  <v-btn variant="elevated" @click="confirmDeleteDialog.show = false" color="secondary">Cancel</v-btn>
+                </v-card-actions>
               </v-card-text>
             </v-card>
           </v-dialog>
           <v-dialog v-model="showRenameDialog.show" width="600">
             <v-card color="primary" dark>
               <v-card-title>Rename Object Detection Model</v-card-title>
-              <v-card-text>
+              <v-card-text class="pt-0">
                 Enter a new name for the model {{ showRenameDialog.model.nickname }}:
-                <v-row class="mt-6 ml-4 mr-8">
-                  <v-text-field v-model="showRenameDialog.newName" label="New Name" />
-                </v-row>
-                <v-row>
-                  <v-btn text @click="showRenameDialog.show = false" color="error">Cancel</v-btn>
-                  <v-btn text color="secondary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
+                <div class="pa-5 pb-0">
+                  <v-text-field v-model="showRenameDialog.newName" hide-details label="New Name" variant="underlined" />
+                </div>
+                <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
+                  <v-btn
+                    variant="elevated"
+                    color="secondary"
+                    @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</v-btn
                   >
-                </v-row>
+                  <v-btn variant="elevated" @click="showRenameDialog.show = false" color="error">Cancel</v-btn>
+                </v-card-actions>
               </v-card-text>
             </v-card>
           </v-dialog>
           <v-dialog v-model="showInfo.show" width="600">
             <v-card color="primary" dark>
               <v-card-title>Object Detection Model Info</v-card-title>
-              <v-btn color="secondary" @click="openExportIndividualModelPrompt">
-                <v-icon left class="open-icon"> mdi-export </v-icon>
-                <span class="open-label">Export Model</span>
-              </v-btn>
-              <a
-                ref="exportIndividualModel"
-                style="color: black; text-decoration: none; display: none"
-                :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath.replace('file:', '')}`"
-                :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
-                target="_blank"
-              />
-              <v-card-text>
-                <p>Model Path: {{ showInfo.model.modelPath }}</p>
-                <p>Model Nickname: {{ showInfo.model.nickname }}</p>
-                <p>Model Family: {{ showInfo.model.family }}</p>
-                <p>Model Version: {{ showInfo.model.version }}</p>
-                <p>Model Label(s): {{ showInfo.model.labels.join(", ") }}</p>
-                <p>Model Resolution: {{ showInfo.model.resolutionWidth }} x {{ showInfo.model.resolutionHeight }}</p>
+              <v-card-text class="pt-0">
+                <v-btn color="secondary" width="100%" @click="openExportIndividualModelPrompt">
+                  <v-icon left class="open-icon"> mdi-export </v-icon>
+                  <span class="open-label">Export Model</span>
+                </v-btn>
+                <a
+                  ref="exportIndividualModel"
+                  style="color: black; text-decoration: none; display: none"
+                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath.replace('file:', '')}`"
+                  :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
+                  target="_blank"
+                />
+                <div class="pt-5">
+                  <p>Model Path: {{ showInfo.model.modelPath }}</p>
+                  <p>Model Nickname: {{ showInfo.model.nickname }}</p>
+                  <p>Model Family: {{ showInfo.model.family }}</p>
+                  <p>Model Version: {{ showInfo.model.version }}</p>
+                  <p>Model Label(s): {{ showInfo.model.labels.join(", ") }}</p>
+                  <p>Model Resolution: {{ showInfo.model.resolutionWidth }} x {{ showInfo.model.resolutionHeight }}</p>
+                </div>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -487,7 +497,7 @@ const handleBulkImport = () => {
         <v-card-text class="pt-0 pb-10px">
           <v-row class="align-center text-white">
             <v-col cols="12" md="6">
-              <span class="mt-3"> This will delete ALL OF YOUR MODELS and re-extract the default models. </span>
+              <span> This will delete ALL OF YOUR MODELS and re-extract the default models. </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" style="float: right" @click="openExportPrompt">
@@ -515,6 +525,7 @@ const handleBulkImport = () => {
         <v-card-text class="pt-10px">
           <v-btn
             color="error"
+            width="100%"
             :disabled="yesDeleteMyModelsText.toLowerCase() !== expected.toLowerCase()"
             @click="nukeModels"
           >
@@ -530,7 +541,7 @@ const handleBulkImport = () => {
 </template>
 
 <style scoped lang="scss">
-.v-btn {
+.v-col-12 > .v-btn {
   width: 100%;
 }
 
@@ -557,6 +568,7 @@ const handleBulkImport = () => {
     background-color: #006492 !important;
     font-size: 1rem !important;
     color: white !important;
+    text-align: center !important;
   }
 
   td {
