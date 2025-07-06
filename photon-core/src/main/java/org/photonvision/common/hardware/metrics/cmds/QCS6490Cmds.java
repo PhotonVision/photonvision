@@ -24,16 +24,16 @@ public class QCS6490Cmds extends LinuxCmds {
     public void initCmds(HardwareConfig config) {
         super.initCmds(config);
 
-        /**
-         * for zone in /sys/class/thermal/thermal_zone*; do echo "=== $(basename $zone) ===" echo "Type:
-         * $(cat $zone/type 2>/dev/null || echo 'N/A')" echo "Temp: $(cat $zone/temp 2>/dev/null || echo
-         * 'N/A')" echo "Policy: $(cat $zone/policy 2>/dev/null || echo 'N/A')" echo done
+        /* Thermal zone information can be found in /sys/class/thermal/thermal_zone* directories:
+         * zone/type: Contains the thermal zone type/name (e.g., "acpi", "x86_pkg_temp")
+         * zone/temp: Current temperature in millidegrees Celsius (divide by 1000 for actual temp)
+         * zone/policy: Thermal governor policy (e.g., "step_wise", "power_allocator")
+         * Each thermal_zone* directory represents a different temperature sensor in the system
          */
-        // The command below gets the temperaure of the CPU thermal zone. To find a different thermal
-        // zone, run the above command on a Rubik Pi 3.
 
         cpuTemperatureCommand =
                 "cat /sys/class/thermal/thermal_zone10/temp | awk '{printf \"%.1f\", $1/1000}'";
+
         // TODO: NPU usage, doesn't seem to be in the same place as the opi. We're gonna just wait on QC
         // to get back to us on this one.
     }
