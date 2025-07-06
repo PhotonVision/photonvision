@@ -34,7 +34,7 @@ public class QCS6490Cmds extends LinuxCmds {
 
         cpuTemperatureCommand =
                 "cat /sys/class/thermal/thermal_zone10/temp | awk '{printf \"%.1f\", $1/1000}'";
-        // TODO: NPU usage, we might be able to get it from the debug section in /sys/ but we're waiting
-        // on the ubuntu image for that.
+        // TODO: NPU usage, doesn't seem to be in the same place as the opi. We're gonna just wait on QC
+        // to get back to us on this one.
     }
 }
