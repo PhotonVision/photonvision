@@ -28,7 +28,9 @@ public class UIGeneralSettings {
             NeuralNetworkPropertyManager.ModelProperties[] availableModels,
             List<String> supportedBackends,
             String hardwareModel,
-            String hardwarePlatform) {
+            String hardwarePlatform,
+            boolean conflictingHostname,
+            String conflictingCameras) {
         this.version = version;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
@@ -36,6 +38,8 @@ public class UIGeneralSettings {
         this.supportedBackends = supportedBackends;
         this.hardwareModel = hardwareModel;
         this.hardwarePlatform = hardwarePlatform;
+        this.conflictingHostname = conflictingHostname;
+        this.conflictingCameras = conflictingCameras;
     }
 
     public String version;
@@ -45,4 +49,6 @@ public class UIGeneralSettings {
     public List<String> supportedBackends;
     public String hardwareModel;
     public String hardwarePlatform;
+    public boolean conflictingHostname;
+    public String conflictingCameras;
 }

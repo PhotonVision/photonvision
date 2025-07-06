@@ -6,6 +6,7 @@ import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -50,22 +51,49 @@ const arducamWarningShown = computed<boolean>(() => {
   );
 });
 
+const conflictingHostnameShown = computed<boolean>(() => {
+  return useSettingsStore().general.conflictingHostname;
+});
+
+const conflictingCameraShown = computed<boolean>(() => {
+  return useSettingsStore().general.conflictingCameras.length > 0;
+});
+
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
 <template>
   <v-container class="pa-3" fluid>
+    <v-banner v-if="arducamWarningShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
+      <span
+        >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+      </span>
+    </v-banner>
     <v-banner
-      v-if="arducamWarningShown"
-      v-model="arducamWarningShown"
+      v-if="conflictingHostnameShown"
       rounded
+      bg-color="error"
       color="error"
       dark
       class="mb-3"
       icon="mdi-alert-circle-outline"
     >
       <span
-        >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+        >Conflicting Hostname Detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      </span>
+    </v-banner>
+    <v-banner
+      v-if="conflictingCameraShown"
+      rounded
+      bg-color="error"
+      color="error"
+      dark
+      class="mb-3"
+      icon="mdi-alert-circle-outline"
+    >
+      <span
+        >Conflicting Camera Name(s) Detected! Please change the name(s) of
+        {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </v-banner>
     <v-row no-gutters>
