@@ -45,8 +45,8 @@ public class AprilTagPoseEstimatorPipe
 
   @Override
   protected AprilTagPoseEstimate process(AprilTagDetection in) {
-    System.out.println("asdfasf:");
-    System.exit(0);
+    // System.out.println("asdfasf:");
+    // System.exit(0);
     // Save the corner points of our detection to an array
     Point[] corners = new Point[4];
     for (int i = 0; i < 4; i++) {

@@ -35,12 +35,9 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
-    extends CVPipe<
-        Pair<Mat, Mat>,
-        FindBoardCornersPipe.FindBoardCornersPipeResult,
-        FindBoardCornersPipe.FindCornersPipeParams> {
-  private static final Logger logger =
-      new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
+    extends
+    CVPipe<Pair<Mat, Mat>, FindBoardCornersPipe.FindBoardCornersPipeResult, FindBoardCornersPipe.FindCornersPipeParams> {
+  private static final Logger logger = new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
   MatOfPoint3f objectPoints = new MatOfPoint3f();
 
@@ -54,11 +51,10 @@ public class FindBoardCornersPipe
   // Since we return results in real-time, we want to ensure it goes as fast as
   // possible
   // and fails as fast as possible.
-  static final int findChessboardFlags =
-      Calib3d.CALIB_CB_NORMALIZE_IMAGE
-          | Calib3d.CALIB_CB_ADAPTIVE_THRESH
-          | Calib3d.CALIB_CB_FILTER_QUADS
-          | Calib3d.CALIB_CB_FAST_CHECK;
+  static final int findChessboardFlags = Calib3d.CALIB_CB_NORMALIZE_IMAGE
+      | Calib3d.CALIB_CB_ADAPTIVE_THRESH
+      | Calib3d.CALIB_CB_FILTER_QUADS
+      | Calib3d.CALIB_CB_FAST_CHECK;
 
   private final MatOfPoint2f boardCorners = new MatOfPoint2f();
 
@@ -73,7 +69,8 @@ public class FindBoardCornersPipe
   private FindCornersPipeParams lastParams = null;
 
   public void createObjectPoints() {
-    if (this.lastParams != null && this.lastParams.equals(this.params)) return;
+    if (this.lastParams != null && this.lastParams.equals(this.params))
+      return;
     this.lastParams = this.params;
 
     this.objectPoints.release();
@@ -90,10 +87,9 @@ public class FindBoardCornersPipe
      * squares, not the
      * number of corners.
      */
-    this.patternSize =
-        params.type() == UICalibrationData.BoardType.CHESSBOARD
-            ? new Size(params.boardWidth() - 1, params.boardHeight() - 1)
-            : new Size(params.boardWidth(), params.boardHeight());
+    this.patternSize = params.type() == UICalibrationData.BoardType.CHESSBOARD
+        ? new Size(params.boardWidth() - 1, params.boardHeight() - 1)
+        : new Size(params.boardWidth(), params.boardHeight());
 
     // Chessboard and dot board have different 3D points to project as a dot board
     // has alternating
@@ -108,12 +104,11 @@ public class FindBoardCornersPipe
         }
       }
     } else if (params.type() == UICalibrationData.BoardType.CHARUCOBOARD) {
-      board =
-          new CharucoBoard(
-              new Size(params.boardWidth(), params.boardHeight()),
-              (float) params.gridSize(),
-              (float) params.markerSize(),
-              Objdetect.getPredefinedDictionary(params.tagFamily().getValue()));
+      board = new CharucoBoard(
+          new Size(params.boardWidth(), params.boardHeight()),
+          (float) params.gridSize(),
+          (float) params.markerSize(),
+          Objdetect.getPredefinedDictionary(params.tagFamily().getValue()));
       board.setLegacyPattern(params.useOldPattern());
       detector = new CharucoDetector(board);
       detector.getDetectorParameters().set_adaptiveThreshConstant(10);
@@ -138,7 +133,8 @@ public class FindBoardCornersPipe
   }
 
   /**
-   * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
+   * Figures out how much a frame or point cloud must be scaled down by to match
+   * the desired size at
    * which to run FindCorners. Should usually be > 1.
    *
    * @param inFrame
@@ -149,16 +145,25 @@ public class FindBoardCornersPipe
   }
 
   /**
-   * Finds the minimum spacing between a set of x/y points Currently only considers points whose
-   * index is next to each other Which, currently, means it traverses one dimension. This is a rough
+   * Finds the minimum spacing between a set of x/y points Currently only
+   * considers points whose
+   * index is next to each other Which, currently, means it traverses one
+   * dimension. This is a rough
    * heuristic approach which could be refined in the future.
    *
-   * <p>Note that the current implementation can be fooled under the following conditions: (1) The
-   * width of the image is an odd number, and the smallest distance was actually on the between the
-   * last two points in a given row and (2) The smallest distance was actually in the direction
-   * orthogonal to that which was getting traversed by iterating through the MatOfPoint2f in order.
+   * <p>
+   * Note that the current implementation can be fooled under the following
+   * conditions: (1) The
+   * width of the image is an odd number, and the smallest distance was actually
+   * on the between the
+   * last two points in a given row and (2) The smallest distance was actually in
+   * the direction
+   * orthogonal to that which was getting traversed by iterating through the
+   * MatOfPoint2f in order.
    *
-   * <p>I've chosen not to handle these for speed's sake, and because, really, you don't need the
+   * <p>
+   * I've chosen not to handle these for speed's sake, and because, really, you
+   * don't need the
    * exact answer for "min distance". you just need something fairly reasonable.
    *
    * @param inPoints point set to analyze. Must be a "tall" matrix.
@@ -178,8 +183,9 @@ public class FindBoardCornersPipe
   }
 
   /**
-   * @param inFrame Full-size mat that is going to get scaled down before passing to
-   *     findBoardCorners
+   * @param inFrame Full-size mat that is going to get scaled down before passing
+   *                to
+   *                findBoardCorners
    * @return the size to scale the input mat to
    */
   private Size getFindCornersImgSize(Mat in) {
@@ -189,11 +195,13 @@ public class FindBoardCornersPipe
   }
 
   /**
-   * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis,
+   * Given an input frame and a set of points from the "smaller"
+   * findChessboardCorner analysis,
    * re-scale the points back to where they would have been in the input frame
    *
-   * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat.
-   *     Must be a "tall" matrix.
+   * @param inPoints  set of points derived from a call to findChessboardCorner on
+   *                  a shrunken mat.
+   *                  Must be a "tall" matrix.
    * @param origFrame Original frame we're rescaling points back to
    * @param outPoints mat into which the output rescaled points get placed
    */
@@ -212,7 +220,8 @@ public class FindBoardCornersPipe
   }
 
   /**
-   * Picks a window size for doing subpixel optimization based on the board type and spacing
+   * Picks a window size for doing subpixel optimization based on the board type
+   * and spacing
    * observed between the corners or points in the image
    *
    * @param inPoints
@@ -247,16 +256,15 @@ public class FindBoardCornersPipe
 
     // Convert the inFrame too grayscale to increase contrast
     Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
+    Imgproc.cvtColor(outFrame, outFrame, Imgproc.COLOR_BGR2GRAY);
     boolean boardFound = false;
 
     // Get the size of the inFrame
     this.imageSize = new Size(inFrame.width(), inFrame.height());
 
     if (params.type() == UICalibrationData.BoardType.CHARUCOBOARD) {
-      Mat objPoints =
-          new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
-      Mat imgPoints =
-          new Mat(); // 2 dimensional currentImagePoints, the likely distorted board on the flat
+      Mat objPoints = new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
+      Mat imgPoints = new Mat(); // 2 dimensional currentImagePoints, the likely distorted board on the flat
       // camera sensor frame posed relative to the target
       Mat detectedCorners = new Mat(); // currentCharucoCorners
       Mat detectedIds = new Mat(); // currentCharucoIds
@@ -268,8 +276,8 @@ public class FindBoardCornersPipe
         detectedCornersList.add(detectedCorners.row(i));
       }
 
-      if (detectedCornersList.size()
-          >= 10) { // We need at least 4 corners to be used for calibration but we force 10 just to
+      if (detectedCornersList.size() >= 10) { // We need at least 4 corners to be used for calibration but we force 10
+                                              // just to
         // ensure the user cant get away with a garbage calibration.
         boardFound = true;
       }
@@ -287,15 +295,16 @@ public class FindBoardCornersPipe
       imgPoints.copyTo(outBoardCorners);
       objPoints.copyTo(objPts);
 
-      // Since charuco can still detect without the whole board we need to send "fake" (all
-      // values less than zero) points and then tell it to ignore that corner by setting the
-      // corresponding level to -1. Calibrate3dPipe deals with piping this into the correct format
+      // Since charuco can still detect without the whole board we need to send "fake"
+      // (all
+      // values less than zero) points and then tell it to ignore that corner by
+      // setting the
+      // corresponding level to -1. Calibrate3dPipe deals with piping this into the
+      // correct format
       // for each backend
       {
-        Point[] boardCorners =
-            new Point[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
-        Point3[] objectPoints =
-            new Point3[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
+        Point[] boardCorners = new Point[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
+        Point3[] objectPoints = new Point3[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
         levels = new float[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
 
         for (int i = 0; i < detectedIds.total(); i++) {
@@ -334,9 +343,8 @@ public class FindBoardCornersPipe
       }
 
       // Run the chessboard corner finder on the smaller image
-      boardFound =
-          Calib3d.findChessboardCorners(
-              smallerInFrame, patternSize, smallerBoardCorners, findChessboardFlags);
+      boardFound = Calib3d.findChessboardCorners(
+          smallerInFrame, patternSize, smallerBoardCorners, findChessboardFlags);
 
       if (!boardFound) {
         return null;
@@ -377,7 +385,8 @@ public class FindBoardCornersPipe
       double gridSize, // meters
       double markerSize, // meters
       FrameDivisor divisor,
-      boolean useOldPattern) {}
+      boolean useOldPattern) {
+  }
 
   public static class FindBoardCornersPipeResult implements Releasable {
     public Size size;
@@ -401,7 +410,8 @@ public class FindBoardCornersPipe
       objectPoints.release();
       imagePoints.release();
       levels.release();
-      if (inputImage != null) inputImage.release();
+      if (inputImage != null)
+        inputImage.release();
     }
   }
 }
