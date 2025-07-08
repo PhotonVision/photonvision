@@ -605,13 +605,40 @@ public class RequestHandler {
                 return;
             }
 
+            String modelFileExtension = "";
+            NeuralNetworkModelManager.Family family;
+
+            switch (Platform.getCurrentPlatform()) {
+                case LINUX_QCS6490:
+                    modelFileExtension = "tflite";
+                    family = NeuralNetworkModelManager.Family.RUBIK;
+                    break;
+                case LINUX_RK3588_64:
+                    modelFileExtension = "rknn";
+                    family = NeuralNetworkModelManager.Family.RKNN;
+                    break;
+                default:
+                    ctx.status(400);
+                    ctx.result("The current platform does not support object detection models");
+                    logger.error("The current platform does not support object detection models");
+                    return;
+            }
+
             // If adding additional platforms, check platform matches
-            if (!modelFile.extension().contains("rknn")) {
+            if (!modelFile.extension().contains(modelFileExtension)) {
                 ctx.status(400);
                 ctx.result(
-                        "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+                        "The uploaded file was not of type '"
+                                + modelFileExtension
+                                + "'. The uploaded file should be a ."
+                                + modelFileExtension
+                                + " file.");
                 logger.error(
-                        "The uploaded file was not of type 'rknn'. The uploaded file should be a .rknn file.");
+                        "The uploaded file was not of type '"
+                                + modelFileExtension
+                                + "'. The uploaded file should be a ."
+                                + modelFileExtension
+                                + " file.");
                 return;
             }
 
@@ -638,13 +665,11 @@ public class RequestHandler {
                     .addModelProperties(
                             new ModelProperties(
                                     modelPath,
-                                    modelFile.filename().replaceAll(".rknn", ""),
+                                    modelFile.filename().replaceAll("." + modelFileExtension, ""),
                                     labels,
                                     width,
                                     height,
-                                    NeuralNetworkModelManager.Family.RKNN, // This can be determined by platform if
-                                    // additional platforms are
-                                    // supported
+                                    family,
                                     version));
 
             logger.debug(
