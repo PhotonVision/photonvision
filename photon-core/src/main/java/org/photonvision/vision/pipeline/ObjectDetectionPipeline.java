@@ -107,6 +107,8 @@ public class ObjectDetectionPipeline
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
 
+        // TODO: use a switch statement to update by backend
+
         // ***************** change based on backend ***********************
 
         CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
