@@ -65,22 +65,22 @@ const platformMetrics = computed<MetricItem[]>(() => {
     },
     {
       header: "CPU Throttling",
-      value: useSettingsStore().metrics.cpuThr || "Unknown"
+      value: useSettingsStore().metrics.cpuThr?.toString() || "Unknown"
     },
     {
       header: "CPU Uptime",
-      value: useSettingsStore().metrics.cpuUptime || "Unknown"
+      value: useSettingsStore().metrics.cpuUptime?.toString() || "Unknown"
     },
     {
       header: "Disk Usage",
-      value: useSettingsStore().metrics.diskUtilPct || "Unknown"
+      value: useSettingsStore().metrics.diskUtilPct?.toString() || "Unknown"
     }
   ];
 
   if (useSettingsStore().metrics.npuUsage) {
     stats.push({
       header: "NPU Usage",
-      value: useSettingsStore().metrics.npuUsage || "Unknown"
+      value: useSettingsStore().metrics.npuUsage?.toString() || "Unknown"
     });
   }
 

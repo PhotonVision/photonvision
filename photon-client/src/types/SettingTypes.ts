@@ -25,16 +25,16 @@ export interface ObjectDetectionModelProperties {
 }
 
 export interface MetricData {
-  cpuTemp?: string;
-  cpuUtil?: string;
-  cpuMem?: string;
-  gpuMem?: string;
-  ramUtil?: string;
-  gpuMemUtil?: string;
+  cpuTemp?: number;
+  cpuUtil?: number;
+  cpuMem?: number;
+  gpuMem?: number;
+  ramUtil?: number;
+  gpuMemUtil?: number;
   cpuThr?: string;
-  cpuUptime?: string;
-  diskUtilPct?: string;
-  npuUsage?: string;
+  cpuUptime?: number;
+  diskUtilPct?: number;
+  npuUsage?: number[];
   ipAddress?: string;
 }
 

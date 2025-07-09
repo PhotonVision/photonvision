@@ -20,16 +20,16 @@ package org.photonvision.common.hardware.metrics;
 import org.photonvision.common.hardware.metrics.proto.DeviceMetricsProto;
 
 public record DeviceMetrics(
-        String cpuTemp,
-        String cpuUtil,
-        String cpuMem,
+        double cpuTemp,
+        double cpuUtil,
+        double cpuMem,
         String cpuThr,
-        String cpuUptime,
-        String gpuMem,
-        String ramUtil,
-        String gpuMemUtil,
-        String diskUtilPct,
-        String npuUsage,
+        double cpuUptime,
+        double gpuMem,
+        double ramUtil,
+        double gpuMemUtil,
+        double diskUtilPct,
+        double[] npuUsage,
         String ipAddress) {
     public static final DeviceMetricsProto proto = new DeviceMetricsProto();
 }

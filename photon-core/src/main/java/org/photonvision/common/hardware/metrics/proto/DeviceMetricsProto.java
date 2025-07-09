@@ -50,7 +50,7 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
                 msg.getRamUtil(),
                 msg.getGpuMemUtil(),
                 msg.getDiskUtilPct(),
-                msg.getNpuUsage(),
+                msg.getNpuUsage().toArray(),
                 msg.getIpAddress());
     }
 
@@ -65,7 +65,7 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
         msg.setRamUtil(value.ramUtil());
         msg.setGpuMemUtil(value.gpuMemUtil());
         msg.setDiskUtilPct(value.diskUtilPct());
-        msg.setNpuUsage(value.npuUsage());
+        msg.addAllNpuUsage(value.npuUsage());
         msg.setIpAddress(value.ipAddress());
     }
 }

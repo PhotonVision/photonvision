@@ -66,58 +66,115 @@ public class MetricsManager {
         }
     }
 
-    private String cpuMemSave = null;
+    private double cpuMemSave = -2.0;
 
-    public String getMemory() {
-        if (cmds.cpuMemoryCommand.isEmpty()) return "";
-        if (cpuMemSave == null) {
-            // save the value and only run it once
-            cpuMemSave = execute(cmds.cpuMemoryCommand);
+    public double getMemory() {
+        if (cpuMemSave == -2.0) {
+            try {
+                cpuMemSave = Double.parseDouble(safeExecute(cmds.cpuMemoryCommand));
+            } catch (NumberFormatException e) {
+                cpuMemSave = -1.0;
+            }
         }
         return cpuMemSave;
     }
 
-    public String getTemp() {
-        return safeExecute(cmds.cpuTemperatureCommand);
+    public double getTemp() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.cpuTemperatureCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
     }
 
-    public String getUtilization() {
-        return safeExecute(cmds.cpuUtilizationCommand);
+    public double getUtilization() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.cpuUtilizationCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
     }
 
-    public String getUptime() {
-        return safeExecute(cmds.cpuUptimeCommand);
+    public double getUptime() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.cpuUptimeCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
     }
 
     public String getThrottleReason() {
         return safeExecute(cmds.cpuThrottleReasonCmd);
     }
 
-    public String getNpuUsage() {
-        return safeExecute(cmds.npuUsageCommand);
+    boolean npuParseWarning = false;
+
+    public double[] getNpuUsage() {
+        String[] usages = safeExecute(cmds.npuUsageCommand).split(",");
+        double[] usageDoubles = new double[usages.length];
+        for (int i = 0; i < usages.length; i++) {
+            try {
+                usageDoubles[i] = Double.parseDouble(usages[i]);
+            } catch (NumberFormatException e) {
+                if (!npuParseWarning) {
+                    logger.error("Failed to parse NPU usage value: " + usages[i], e);
+                    npuParseWarning = true;
+                }
+                usageDoubles = null; // Default to null if parsing fails
+                break;
+            }
+        }
+        return usageDoubles;
     }
 
-    private String gpuMemSave = null;
+    private double gpuMemSave = -2.0;
 
-    public String getGPUMemorySplit() {
-        if (gpuMemSave == null) {
-            // only needs to run once
-            gpuMemSave = safeExecute(cmds.gpuMemoryCommand);
+    public double getGPUMemorySplit() {
+        if (gpuMemSave == -2.0) {
+            try {
+                gpuMemSave = Double.parseDouble(safeExecute(cmds.gpuMemoryCommand));
+            } catch (NumberFormatException e) {
+                gpuMemSave = -1.0;
+            }
         }
         return gpuMemSave;
     }
 
-    public String getMallocedMemory() {
-        return safeExecute(cmds.gpuMemUsageCommand);
+    public double getMallocedMemory() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.gpuMemUsageCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
     }
 
-    public String getUsedDiskPct() {
-        return safeExecute(cmds.diskUsageCommand);
+    public double getUsedDiskPct() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.diskUsageCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
     }
 
     // TODO: Output in MBs for consistency
-    public String getUsedRam() {
-        return safeExecute(cmds.ramUsageCommand);
+    public double getUsedRam() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.ramUsageCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
     }
 
     public String getIpAddress() {
