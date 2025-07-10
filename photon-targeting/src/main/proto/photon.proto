@@ -72,13 +72,13 @@ message ProtobufPhotonPipelineResult {
 message ProtobufDeviceMetrics {
   double cpu_temp = 1;
   double cpu_util = 2;
-  double cpu_mem = 3;
-  string cpu_thr = 4;
-  double cpu_uptime = 5;
+  string cpu_thr = 3;
+  double ram_mem = 4;
+  double ram_util = 5;
   double gpu_mem = 6;
-  double ram_util = 7;
-  double gpu_mem_util = 8;
-  double disk_util_pct = 9;
-  repeated double npu_usage = 10;
-  string ip_address = 11;
+  double gpu_mem_util = 7;
+  double disk_util_pct = 8;
+  repeated double npu_usage = 9;
+  string ip_address = 10;
+  double uptime = 11;
 }

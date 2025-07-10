@@ -41,7 +41,7 @@ const generalMetrics = computed<MetricItem[]>(() => {
 
 const platformMetrics = computed<MetricItem[]>(() => {
   const ramUtil = useSettingsStore().metrics.ramUtil;
-  const cpuMem = useSettingsStore().metrics.cpuMem;
+  const ramMem = useSettingsStore().metrics.ramMem;
   const stats = [
     {
       header: "CPU Temp",
@@ -54,18 +54,18 @@ const platformMetrics = computed<MetricItem[]>(() => {
     {
       header: "CPU Memory Usage",
       value:
-      (ramUtil&& cpuMem && ramUtil >= 0 && cpuMem >= 0)
-
-          ? `${useSettingsStore().metrics.ramUtil}MB of ${useSettingsStore().metrics.cpuMem}MB` : "Unknown"
+        ramUtil && ramMem && ramUtil >= 0 && ramMem >= 0
+          ? `${useSettingsStore().metrics.ramUtil}MB of ${useSettingsStore().metrics.ramMem}MB`
+          : "Unknown"
     },
     {
       header: "CPU Throttling",
       value: useSettingsStore().metrics.cpuThr?.toString() || "Unknown"
     },
     {
-      header: "CPU Uptime",
+      header: "Uptime",
       value: (() => {
-        const seconds = useSettingsStore().metrics.cpuUptime;
+        const seconds = useSettingsStore().metrics.uptime;
         if (seconds === undefined) return "Unknown";
 
         const days = Math.floor(seconds / 86400);
@@ -73,7 +73,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
         const minutes = Math.floor((seconds % 3600) / 60);
         const remainingSeconds = Math.floor(seconds % 60);
 
-        let result = '';
+        let result = "";
         if (days > 0) result += `${days}d `;
         if (hours > 0 || days > 0) result += `${hours}h `;
         if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
@@ -84,7 +84,8 @@ const platformMetrics = computed<MetricItem[]>(() => {
     },
     {
       header: "Disk Usage",
-      value: useSettingsStore().metrics.diskUtilPct === undefined ? "Unknown" : `${useSettingsStore().metrics.diskUtilPct}%`
+      value:
+        useSettingsStore().metrics.diskUtilPct === undefined ? "Unknown" : `${useSettingsStore().metrics.diskUtilPct}%`
     }
   ];
 
@@ -92,7 +93,10 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (npuUsage) {
     stats.push({
       header: "NPU Usage",
-      value: useSettingsStore().metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`).join(', ') || "Unknown"
+      value:
+        useSettingsStore()
+          .metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`)
+          .join(", ") || "Unknown"
     });
   }
 

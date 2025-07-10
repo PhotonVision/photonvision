@@ -43,24 +43,24 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
         return new DeviceMetrics(
                 msg.getCpuTemp(),
                 msg.getCpuUtil(),
-                msg.getCpuMem(),
                 msg.getCpuThr(),
-                msg.getCpuUptime(),
-                msg.getGpuMem(),
+                msg.getRamMem(),
                 msg.getRamUtil(),
+                msg.getGpuMem(),
                 msg.getGpuMemUtil(),
                 msg.getDiskUtilPct(),
                 msg.getNpuUsage().toArray(),
-                msg.getIpAddress());
+                msg.getIpAddress(),
+                msg.getUptime());
     }
 
     @Override
     public void pack(ProtobufDeviceMetrics msg, DeviceMetrics value) {
         msg.setCpuTemp(value.cpuTemp());
         msg.setCpuUtil(value.cpuUtil());
-        msg.setCpuMem(value.cpuMem());
+        msg.setRamMem(value.ramMem());
         msg.setCpuThr(value.cpuThr());
-        msg.setCpuUptime(value.cpuUptime());
+        msg.setUptime(value.uptime());
         msg.setGpuMem(value.gpuMem());
         msg.setRamUtil(value.ramUtil());
         msg.setGpuMemUtil(value.gpuMemUtil());

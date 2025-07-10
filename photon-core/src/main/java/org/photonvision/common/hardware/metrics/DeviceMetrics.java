@@ -22,14 +22,14 @@ import org.photonvision.common.hardware.metrics.proto.DeviceMetricsProto;
 public record DeviceMetrics(
         double cpuTemp,
         double cpuUtil,
-        double cpuMem,
         String cpuThr,
-        double cpuUptime,
-        double gpuMem,
+        double ramMem,
         double ramUtil,
+        double gpuMem,
         double gpuMemUtil,
         double diskUtilPct,
         double[] npuUsage,
-        String ipAddress) {
+        String ipAddress,
+        double uptime) {
     public static final DeviceMetricsProto proto = new DeviceMetricsProto();
 }

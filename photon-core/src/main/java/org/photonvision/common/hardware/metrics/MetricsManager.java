@@ -66,20 +66,7 @@ public class MetricsManager {
         }
     }
 
-    private double cpuMemSave = -2.0;
-
-    public double getMemory() {
-        if (cpuMemSave == -2.0) {
-            try {
-                cpuMemSave = Double.parseDouble(safeExecute(cmds.cpuMemoryCommand));
-            } catch (NumberFormatException e) {
-                cpuMemSave = -1.0;
-            }
-        }
-        return cpuMemSave;
-    }
-
-    public double getTemp() {
+    public double getCpuTemp() {
         Double value;
         try {
             value = Double.parseDouble(safeExecute(cmds.cpuTemperatureCommand));
@@ -89,20 +76,10 @@ public class MetricsManager {
         return value;
     }
 
-    public double getUtilization() {
+    public double getCpuUtilization() {
         Double value;
         try {
             value = Double.parseDouble(safeExecute(cmds.cpuUtilizationCommand));
-        } catch (NumberFormatException e) {
-            value = -1.0;
-        }
-        return value;
-    }
-
-    public double getUptime() {
-        Double value;
-        try {
-            value = Double.parseDouble(safeExecute(cmds.cpuUptimeCommand));
         } catch (NumberFormatException e) {
             value = -1.0;
         }
@@ -113,32 +90,40 @@ public class MetricsManager {
         return safeExecute(cmds.cpuThrottleReasonCmd);
     }
 
-    boolean npuParseWarning = false;
+    // This is only ran once as it retrieves total memory, this will not change over the course of
+    // time
+    private double ramMemSave = -2.0;
 
-    public double[] getNpuUsage() {
-        String[] usages = safeExecute(cmds.npuUsageCommand).split(",");
-        double[] usageDoubles = new double[usages.length];
-        for (int i = 0; i < usages.length; i++) {
+    public double getRamMem() {
+        if (ramMemSave == -2.0) {
             try {
-                usageDoubles[i] = Double.parseDouble(usages[i]);
+                ramMemSave = Double.parseDouble(safeExecute(cmds.ramMemCommand));
             } catch (NumberFormatException e) {
-                if (!npuParseWarning) {
-                    logger.error("Failed to parse NPU usage value: " + usages[i], e);
-                    npuParseWarning = true;
-                }
-                usageDoubles = null; // Default to null if parsing fails
-                break;
+                ramMemSave = -1.0;
             }
         }
-        return usageDoubles;
+        return ramMemSave;
     }
 
+    // TODO: Output in MBs for consistency
+    public double getRamUtil() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.ramUtilCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
+    }
+
+    // This is only ran once as it retrieves total memory, this will not change over the course of
+    // time
     private double gpuMemSave = -2.0;
 
-    public double getGPUMemorySplit() {
+    public double getGpuMem() {
         if (gpuMemSave == -2.0) {
             try {
-                gpuMemSave = Double.parseDouble(safeExecute(cmds.gpuMemoryCommand));
+                gpuMemSave = Double.parseDouble(safeExecute(cmds.gpuMemCommand));
             } catch (NumberFormatException e) {
                 gpuMemSave = -1.0;
             }
@@ -146,10 +131,10 @@ public class MetricsManager {
         return gpuMemSave;
     }
 
-    public double getMallocedMemory() {
+    public double getGpuMemUtil() {
         Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.gpuMemUsageCommand));
+            value = Double.parseDouble(safeExecute(cmds.gpuMemUtilCommand));
         } catch (NumberFormatException e) {
             value = -1.0;
         }
@@ -166,15 +151,26 @@ public class MetricsManager {
         return value;
     }
 
-    // TODO: Output in MBs for consistency
-    public double getUsedRam() {
-        Double value;
-        try {
-            value = Double.parseDouble(safeExecute(cmds.ramUsageCommand));
-        } catch (NumberFormatException e) {
-            value = -1.0;
+    // This is here so we don't spam logs if it fails
+    boolean npuParseWarning = false;
+
+    public double[] getNpuUsage() {
+        String[] usages = safeExecute(cmds.npuUsageCommand).split(",");
+        double[] usageDoubles = new double[usages.length];
+        for (int i = 0; i < usages.length; i++) {
+            try {
+                usageDoubles[i] = Double.parseDouble(usages[i]);
+                npuParseWarning = false; // Reset warning if parsing succeeds
+            } catch (NumberFormatException e) {
+                if (!npuParseWarning) {
+                    logger.error("Failed to parse NPU usage value: " + usages[i], e);
+                    npuParseWarning = true;
+                }
+                usageDoubles = null; // Default to null if parsing fails
+                break;
+            }
         }
-        return value;
+        return usageDoubles;
     }
 
     public String getIpAddress() {
@@ -185,19 +181,29 @@ public class MetricsManager {
         return addr;
     }
 
+    public double getUptime() {
+        Double value;
+        try {
+            value = Double.parseDouble(safeExecute(cmds.uptimeCommand));
+        } catch (NumberFormatException e) {
+            value = -1.0;
+        }
+        return value;
+    }
+
     public DeviceMetrics getMetrics() {
         return new DeviceMetrics(
-                this.getTemp(),
-                this.getUtilization(),
-                this.getMemory(),
+                this.getCpuTemp(),
+                this.getCpuUtilization(),
                 this.getThrottleReason(),
-                this.getUptime(),
-                this.getGPUMemorySplit(),
-                this.getUsedRam(),
-                this.getMallocedMemory(),
+                this.getRamMem(),
+                this.getRamUtil(),
+                this.getGpuMem(),
+                this.getGpuMemUtil(),
                 this.getUsedDiskPct(),
                 this.getNpuUsage(),
-                this.getIpAddress());
+                this.getIpAddress(),
+                this.getUptime());
     }
 
     public void publishMetrics() {

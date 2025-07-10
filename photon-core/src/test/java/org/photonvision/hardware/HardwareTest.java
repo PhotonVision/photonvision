@@ -37,15 +37,15 @@ public class HardwareTest {
         System.out.println("Testing on platform: " + Platform.getPlatformName());
 
         System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + mm.getMemory() + "MB");
-        System.out.println("Temperature: " + mm.getTemp() + "C");
-        System.out.println("Utilization: : " + mm.getUtilization() + "%");
+        System.out.println("Memory: " + mm.getRamMem() + "MB");
+        System.out.println("Temperature: " + mm.getCpuTemp() + "C");
+        System.out.println("Utilization: : " + mm.getCpuUtilization() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + mm.getGPUMemorySplit() + "MB");
+        System.out.println("Memory: " + mm.getGpuMem() + "MB");
 
         System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + mm.getUsedRam() + "MB");
+        System.out.println("Used RAM: : " + mm.getRamUtil() + "MB");
     }
 
     @Test
