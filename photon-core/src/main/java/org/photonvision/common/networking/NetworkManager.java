@@ -77,21 +77,22 @@ public class NetworkManager {
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
             activeConnections.put(
-                    deviceInfo.devName, NetworkUtils.getActiveConnection(deviceInfo.devName));
-            monitorDevice(deviceInfo.devName, 5000);
+                    deviceInfo.devName(), NetworkUtils.getActiveConnection(deviceInfo.devName()));
+            monitorDevice(deviceInfo.devName(), 5000);
         }
 
         var physicalDevices = NetworkUtils.getAllActiveWiredInterfaces();
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        if (physicalDevices.stream().noneMatch(it -> (it.devName.equals(config.networkManagerIface)))) {
+        if (physicalDevices.stream()
+                .noneMatch(it -> (it.devName().equals(config.networkManagerIface)))) {
             try {
                 // if the configured interface isn't in the list of available ones, select one that is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
                 logger.warn(
                         "The configured interface doesn't match any available interface. Applying configuration to "
-                                + iFace.devName);
+                                + iFace.devName());
                 // update NetworkConfig with found interface
-                config.networkManagerIface = iFace.devName;
+                config.networkManagerIface = iFace.devName();
                 ConfigManager.getInstance().requestSave();
             } catch (NoSuchElementException e) {
                 // if there are no available interfaces, go with the one from settings
@@ -175,6 +176,35 @@ public class NetworkManager {
             }
         } catch (Exception e) {
             logger.error("Failed to set hostname!", e);
+        }
+    }
+
+    public String getMACAddress() {
+        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
+            logger.error("No network interface configured, cannot get MAC address!");
+            return "";
+        }
+        try {
+            NetworkInterface iFace = NetworkInterface.getByName(config.networkManagerIface);
+            if (iFace == null) {
+                logger.error("Network interface " + config.networkManagerIface + " not found!");
+                return "";
+            }
+            byte[] mac = iFace.getHardwareAddress();
+            if (mac == null) {
+                logger.error("No MAC address found for " + config.networkManagerIface);
+                return "";
+            }
+            StringBuilder sb = new StringBuilder(17);
+            for (byte b : mac) {
+                sb.append(String.format("%02X-", b));
+            }
+            sb.setLength(sb.length() - 1);
+            return sb.toString();
+        } catch (Exception e) {
+            logger.error("Error getting MAC address for " + config.networkManagerIface, e);
+            return "";
         }
     }
 

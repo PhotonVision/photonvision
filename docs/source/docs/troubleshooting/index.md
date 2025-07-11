@@ -7,4 +7,5 @@ common-errors
 logging
 camera-troubleshooting
 networking-troubleshooting
+unix-commands
 ```

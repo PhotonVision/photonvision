@@ -17,6 +17,11 @@
 
 package org.photonvision.common.util;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,7 +31,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.Logger;
@@ -39,7 +43,7 @@ public class LogFileManagementTest {
 
         String testDir = ConfigManager.getInstance().getLogsDir().toString() + "/test";
 
-        Assertions.assertDoesNotThrow(() -> Files.createDirectories(Path.of(testDir)));
+        assertDoesNotThrow(() -> Files.createDirectories(Path.of(testDir)));
 
         // Create a bunch of log files with dummy contents.
         for (int fileIdx = 0; fileIdx < Logger.MAX_LOGS_TO_KEEP + 5; fileIdx++) {
@@ -52,20 +56,19 @@ public class LogFileManagementTest {
                 testLogWriter.write("Test log contents created for testing purposes only");
                 testLogWriter.close();
             } catch (IOException e) {
-                Assertions.fail("Could not create test files");
+                fail("Could not create test files");
             }
         }
 
         // Confirm new log files were created
-        Assertions.assertTrue(
+        assertTrue(
                 Logger.MAX_LOGS_TO_KEEP + 5 <= countLogFiles(testDir), "Not enough log files discovered");
 
         // Run the log cleanup routine
         Logger.cleanLogs(Path.of(testDir));
 
         // Confirm we deleted log files
-        Assertions.assertEquals(
-                Logger.MAX_LOGS_TO_KEEP, countLogFiles(testDir), "Not enough log files deleted");
+        assertEquals(Logger.MAX_LOGS_TO_KEEP, countLogFiles(testDir), "Not enough log files deleted");
 
         // Clean uptest directory
         org.photonvision.common.util.file.FileUtils.deleteDirectory(Path.of(testDir));

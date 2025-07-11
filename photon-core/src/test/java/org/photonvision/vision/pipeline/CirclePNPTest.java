@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
@@ -34,7 +33,6 @@ import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
-import org.photonvision.vision.target.TrackedTarget;
 
 public class CirclePNPTest {
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
@@ -111,7 +109,7 @@ public class CirclePNPTest {
         frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResultsWithLocation(pipelineResult);
 
         TestUtils.showImage(
                 pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
@@ -123,7 +121,7 @@ public class CirclePNPTest {
 
         while (true) {
             CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
+            TestUtils.printTestResultsWithLocation(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();
             int postRelease = CVMat.getMatCount();
@@ -150,17 +148,5 @@ public class CirclePNPTest {
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
         continuouslyRunPipeline(frameProvider.get(), settings);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
-        System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getBestCameraToTarget3d)
-                                .collect(Collectors.toList()));
     }
 }

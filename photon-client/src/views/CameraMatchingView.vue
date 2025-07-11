@@ -11,6 +11,8 @@ import {
   type UiCameraConfiguration
 } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
+import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
@@ -23,36 +25,106 @@ const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
-  const url = new URL(`http://${host}/api/utils/activateMatchedCamera`);
-  url.searchParams.set("cameraUniqueName", moduleUniqueName);
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (activatingModule.value = false));
+  axios
+    .post("/utils/activateMatchedCamera", { cameraUniqueName: moduleUniqueName })
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Camera activated successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to activate this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
 const assignCamera = (cameraInfo: PVCameraInfo) => {
   if (assigningCamera.value) return;
   assigningCamera.value = true;
-  const url = new URL(`http://${host}/api/utils/assignUnmatchedCamera`);
-  url.searchParams.set("cameraInfo", JSON.stringify(cameraInfo));
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (assigningCamera.value = false));
+  const payload = {
+    cameraInfo: cameraInfo
+  };
+
+  axios
+    .post("/utils/assignUnmatchedCamera", payload)
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Unmatched camera assigned successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to assign this unmatched camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (assigningCamera.value = false));
 };
 
 const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  const url = new URL(`http://${host}/api/utils/unassignCamera`);
-  url.searchParams.set("cameraUniqueName", cameraUniqueName);
 
-  fetch(url.toString(), {
-    method: "POST"
-  }).finally(() => (deactivatingModule.value = false));
+  axios
+    .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
+    .then(() => {
+      useStateStore().showSnackbarMessage({
+        message: "Camera deactivated successfully",
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          message: "The backend is unable to fulfil the request to deactivate this camera.",
+          color: "error"
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          message: "Error while trying to process the request! The backend didn't respond.",
+          color: "error"
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          message: "An error occurred while trying to process the request.",
+          color: "error"
+        });
+      }
+    })
+    .finally(() => (deactivatingModule.value = false));
 };
 
 const deletingCamera = ref(false);
@@ -208,7 +280,7 @@ const openExportSettingsPrompt = () => {
 </script>
 
 <template>
-  <div class="pa-5">
+  <div class="pa-3">
     <v-row>
       <!-- Active modules -->
       <v-col
@@ -218,7 +290,7 @@ const openExportSettingsPrompt = () => {
         sm="6"
         lg="4"
       >
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="pb-2"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
@@ -233,7 +305,7 @@ const openExportSettingsPrompt = () => {
           >
           <v-card-subtitle v-else class="pb-2">Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dark dense>
+            <v-table density="compact">
               <tbody>
                 <tr>
                   <td>Streams:</td>
@@ -271,7 +343,7 @@ const openExportSettingsPrompt = () => {
                   </td>
                 </tr>
               </tbody>
-            </v-simple-table>
+            </v-table>
             <div
               v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
@@ -303,7 +375,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="deactivatingModule"
@@ -324,11 +396,11 @@ const openExportSettingsPrompt = () => {
 
       <!-- Disabled modules -->
       <v-col v-for="module in disabledVisionModules" :key="`disabled-${module.uniqueName}`" cols="12" sm="6" lg="4">
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle class="pb-2">Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text>
-            <v-simple-table dense>
+            <v-table density="compact">
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -354,7 +426,7 @@ const openExportSettingsPrompt = () => {
                   </td>
                 </tr>
               </tbody>
-            </v-simple-table>
+            </v-table>
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
@@ -374,7 +446,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="activatingModule"
@@ -395,7 +467,7 @@ const openExportSettingsPrompt = () => {
 
       <!-- Unassigned cameras -->
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4">
-        <v-card dark color="primary">
+        <v-card color="primary">
           <v-card-title class="pb-2">
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
@@ -416,7 +488,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6">
                 <v-btn
-                  class="black--text"
+                  class="text-black"
                   color="accent"
                   style="width: 100%"
                   :loading="assigningCamera"
@@ -448,10 +520,10 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" dark flat color="primary">
+      <v-card v-if="viewingCamera[0] !== null" flat color="primary">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
-          <v-btn text @click="setCameraView(null, null)">
+          <v-btn variant="text" @click="setCameraView(null, null)">
             <v-icon>mdi-close-thick</v-icon>
           </v-btn>
         </v-card-title>
@@ -472,17 +544,17 @@ const openExportSettingsPrompt = () => {
     </v-dialog>
 
     <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera" dark width="800">
-      <v-card v-if="cameraToDelete !== null" dark class="dialog-container pa-3 pb-2" color="primary" flat>
+    <v-dialog v-model="viewingDeleteCamera" width="800">
+      <v-card v-if="cameraToDelete !== null" class="dialog-container pa-3 pb-2" color="primary" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text>
           <v-row class="align-center pt-6">
             <v-col cols="12" md="6">
-              <span class="white--text"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
               <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon left class="open-icon"> mdi-export </v-icon>
+                <v-icon start class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
                   ref="exportSettings"
@@ -511,7 +583,7 @@ const openExportSettingsPrompt = () => {
             :loading="deletingCamera"
             @click="deleteThisCamera(cameraToDelete.uniqueName)"
           >
-            <v-icon left class="open-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
             <span class="open-label">DELETE (UNRECOVERABLE)</span>
           </v-btn>
         </v-card-text>
@@ -521,7 +593,11 @@ const openExportSettingsPrompt = () => {
 </template>
 
 <style scoped>
-.v-data-table {
+.v-card-title {
+  text-wrap-mode: wrap !important;
+}
+
+.v-table {
   background-color: #006492 !important;
 }
 

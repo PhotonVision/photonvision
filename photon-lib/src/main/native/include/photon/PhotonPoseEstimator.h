@@ -224,7 +224,7 @@ class PhotonPoseEstimator {
 
   units::second_t poseCacheTimestamp;
 
-  inline static int InstanceCount = 0;
+  inline static int InstanceCount = 1;
 
   inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 

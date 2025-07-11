@@ -205,8 +205,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
             ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
         } else {
-            ts.cameraIntrinsicsPublisher.accept(new double[] {});
-            ts.cameraDistortionPublisher.accept(new double[] {});
+            ts.cameraIntrinsicsPublisher.accept(new double[0]);
+            ts.cameraDistortionPublisher.accept(new double[0]);
         }
 
         ts.heartbeatPublisher.set(acceptedResult.sequenceID);

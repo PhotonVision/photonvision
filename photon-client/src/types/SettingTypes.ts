@@ -8,8 +8,20 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
-  availableModels: Record<string, string[]>;
+  availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
+  conflictingHostname: boolean;
+  conflictingCameras: string;
+}
+
+export interface ObjectDetectionModelProperties {
+  modelPath: string;
+  nickname: string;
+  labels: string[];
+  resolutionWidth: number;
+  resolutionHeight: number;
+  family: "RKNN";
+  version: "YOLOV5" | "YOLOV8" | "YOLOV11";
 }
 
 export interface MetricData {
