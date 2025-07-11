@@ -71,15 +71,15 @@ const platformMetrics = computed<MetricItem[]>(() => {
         const days = Math.floor(seconds / 86400);
         const hours = Math.floor((seconds % 86400) / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
+        const secs = seconds % 60;
 
-        let result = "";
-        if (days > 0) result += `${days}d `;
-        if (hours > 0 || days > 0) result += `${hours}h `;
-        if (minutes > 0 || hours > 0 || days > 0) result += `${minutes}m `;
-        result += `${remainingSeconds}s`;
-
-        return result;
+        // @ts-expect-error This uses Intl.DurationFormat which is newly implemented and not available in TS.
+        return new Intl.DurationFormat("en", { style: "narrow" }).format({
+          days: days,
+          hours: hours,
+          minutes: minutes,
+          seconds: secs
+        });
       })()
     },
     {
