@@ -66,6 +66,11 @@ public class MetricsManager {
         }
     }
 
+    /**
+     * Get the CPU temperature in Celsius.
+     *
+     * @return The CPU temperature in Celsius, or -1.0 if the command fails or parsing fails.
+     */
     public double getCpuTemp() {
         Double value;
         try {
@@ -76,6 +81,11 @@ public class MetricsManager {
         return value;
     }
 
+    /**
+     * Get the CPU utilization as a percentage.
+     *
+     * @return The CPU utilization as a percentage, or -1.0 if the command fails or parsing fails.
+     */
     public double getCpuUtilization() {
         Double value;
         try {
@@ -86,14 +96,22 @@ public class MetricsManager {
         return value;
     }
 
+    /**
+     * Get the reason for CPU throttling, if applicable.
+     *
+     * @return A string describing the CPU throttle reason, or an empty string if the command fails.
+     */
     public String getThrottleReason() {
         return safeExecute(cmds.cpuThrottleReasonCmd);
     }
 
-    // This is only ran once as it retrieves total memory, this will not change over the course of
-    // time
     private double ramMemSave = -2.0;
 
+    /**
+     * Get the total RAM memory in MB. This only runs once, as it won't change over time.
+     *
+     * @return The total RAM memory in MB, or -1.0 if the command fails or parsing fails.
+     */
     public double getRamMem() {
         if (ramMemSave == -2.0) {
             try {
@@ -106,6 +124,11 @@ public class MetricsManager {
     }
 
     // TODO: Output in MBs for consistency
+    /**
+     * Get the RAM utilization in MBs.
+     *
+     * @return The RAM utilization in MBs, or -1.0 if the command fails or parsing fails.
+     */
     public double getRamUtil() {
         Double value;
         try {
@@ -116,10 +139,13 @@ public class MetricsManager {
         return value;
     }
 
-    // This is only ran once as it retrieves total memory, this will not change over the course of
-    // time
     private double gpuMemSave = -2.0;
 
+    /**
+     * Get the total GPU memory in MB. This only runs once, as it won't change over time.
+     *
+     * @return The total GPU memory in MB, or -1.0 if the command fails or parsing fails.
+     */
     public double getGpuMem() {
         if (gpuMemSave == -2.0) {
             try {
@@ -131,6 +157,11 @@ public class MetricsManager {
         return gpuMemSave;
     }
 
+    /**
+     * Get the GPU memory utilization as MBs.
+     *
+     * @return The GPU memory utilization in MBs, or -1.0 if the command fails or parsing fails.
+     */
     public double getGpuMemUtil() {
         Double value;
         try {
@@ -141,6 +172,11 @@ public class MetricsManager {
         return value;
     }
 
+    /**
+     * Get the percentage of disk space used.
+     *
+     * @return The percentage of disk space used, or -1.0 if the command fails or parsing fails.
+     */
     public double getUsedDiskPct() {
         Double value;
         try {
@@ -154,6 +190,11 @@ public class MetricsManager {
     // This is here so we don't spam logs if it fails
     boolean npuParseWarning = false;
 
+    /**
+     * Get the NPU usage as an array of doubles.
+     *
+     * @return An array of doubles representing NPU usage, or null if parsing fails.
+     */
     public double[] getNpuUsage() {
         String[] usages = safeExecute(cmds.npuUsageCommand).split(",");
         double[] usageDoubles = new double[usages.length];
@@ -173,6 +214,11 @@ public class MetricsManager {
         return usageDoubles;
     }
 
+    /**
+     * Get the IP address of the device.
+     *
+     * @return The IP address as a string, or an empty string if the command fails.
+     */
     public String getIpAddress() {
         String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
         logger.debug("Requesting IP addresses for \"" + dev + "\"");
@@ -181,6 +227,11 @@ public class MetricsManager {
         return addr;
     }
 
+    /**
+     * Get the uptime of the device in seconds.
+     *
+     * @return The uptime in seconds, or -1.0 if the command fails or parsing fails.
+     */
     public double getUptime() {
         Double value;
         try {
