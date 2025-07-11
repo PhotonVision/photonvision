@@ -73,8 +73,9 @@ if (!is_demo) {
 <style lang="scss">
 @use "@/assets/styles/settings";
 @use "@/assets/styles/variables";
+@use "sass:map";
 
-@media #{map-get(settings.$display-breakpoints, 'md-and-down')} {
+@media #{map.get(settings.$display-breakpoints, 'md-and-down')} {
   html {
     font-size: 14px !important;
   }
