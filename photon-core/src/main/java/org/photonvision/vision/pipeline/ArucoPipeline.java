@@ -15,23 +15,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Copyright (C) Photon Vision.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
@@ -54,6 +37,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.ArucoDetectionPipe.ArucoDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -78,7 +62,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     @Override
     protected void setPipeParamsImpl() {
-        var params = new ArucoDetectionPipeParams();
+        arucoDetectionPipe.setParams(new ArucoDetectionPipeParams());
         // sanitize and record settings
 
         // for now, hard code tag width based on enum value
@@ -86,40 +70,12 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         double tagWidth = Units.inchesToMeters(6);
         TargetModel tagModel = TargetModel.kAprilTag16h5;
 
-        params.tagFamily =
-                switch (settings.tagFamily) {
-                    case kTag36h11 -> {
-                        // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6.5);
-                        tagModel = TargetModel.kAprilTag36h11;
-                        yield Objdetect.DICT_APRILTAG_36h11;
-                    }
-                    case kTag16h5 -> {
-                        // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6);
-                        tagModel = TargetModel.kAprilTag16h5;
-                        yield Objdetect.DICT_APRILTAG_16h5;
-                    }
-                };
-
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
         settings.threshWinSizes.setFirst(threshMinSize);
-        params.threshMinSize = threshMinSize;
         int threshStepSize = Math.max(2, settings.threshStepSize);
         settings.threshStepSize = threshStepSize;
-        params.threshStepSize = threshStepSize;
         int threshMaxSize = Math.max(threshMinSize, settings.threshWinSizes.getSecond());
         settings.threshWinSizes.setSecond(threshMaxSize);
-        params.threshMaxSize = threshMaxSize;
-        params.threshConstant = settings.threshConstant;
-
-        params.useCornerRefinement = settings.useCornerRefinement;
-        params.refinementMaxIterations = settings.refineNumIterations;
-        params.refinementMinErrorPx = settings.refineMinErrorPx;
-        params.useAruco3 = settings.useAruco3;
-        params.aruco3MinMarkerSideRatio = settings.aruco3MinMarkerSideRatio;
-        params.aruco3MinCanonicalImgSide = settings.aruco3MinCanonicalImgSide;
-        arucoDetectionPipe.setParams(params);
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();

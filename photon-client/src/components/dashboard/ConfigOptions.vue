@@ -7,7 +7,6 @@ import InputTab from "@/components/dashboard/tabs/InputTab.vue";
 import ThresholdTab from "@/components/dashboard/tabs/ThresholdTab.vue";
 import ContoursTab from "@/components/dashboard/tabs/ContoursTab.vue";
 import AprilTagTab from "@/components/dashboard/tabs/AprilTagTab.vue";
-import ArucoTab from "@/components/dashboard/tabs/ArucoTab.vue";
 import ObjectDetectionTab from "@/components/dashboard/tabs/ObjectDetectionTab.vue";
 import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
@@ -37,10 +36,6 @@ const allTabs = Object.freeze({
   apriltagTab: {
     tabName: "AprilTag",
     component: AprilTagTab
-  },
-  arucoTab: {
-    tabName: "Aruco",
-    component: ArucoTab
   },
   objectDetectionTab: {
     tabName: "Object Detection",
@@ -77,7 +72,6 @@ const getTabGroups = (): ConfigOption[][] => {
         allTabs.thresholdTab,
         allTabs.contoursTab,
         allTabs.apriltagTab,
-        allTabs.arucoTab,
         allTabs.objectDetectionTab,
         allTabs.outputTab
       ],
@@ -86,21 +80,14 @@ const getTabGroups = (): ConfigOption[][] => {
   } else if (lgAndDown.value) {
     return [
       [allTabs.inputTab],
-      [
-        allTabs.thresholdTab,
-        allTabs.contoursTab,
-        allTabs.apriltagTab,
-        allTabs.arucoTab,
-        allTabs.objectDetectionTab,
-        allTabs.outputTab
-      ],
+      [allTabs.thresholdTab, allTabs.contoursTab, allTabs.apriltagTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   } else if (xl.value) {
     return [
       [allTabs.inputTab],
       [allTabs.thresholdTab],
-      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.arucoTab, allTabs.objectDetectionTab, allTabs.outputTab],
+      [allTabs.contoursTab, allTabs.apriltagTab, allTabs.objectDetectionTab, allTabs.outputTab],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
   }
@@ -126,8 +113,7 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
-          !(!isAruco && tabConfig.tabName === "Aruco") &&
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out aruco unless we actually are doing Aruco
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection")
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
@@ -137,6 +123,8 @@ const onBeforeTabUpdate = () => {
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
     selectedTabs.value[0] = 0;
+  } else if (useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco && selectedTabs.value[0] == 2) {
+    selectedTabs.value[0]--;
   }
 };
 </script>
