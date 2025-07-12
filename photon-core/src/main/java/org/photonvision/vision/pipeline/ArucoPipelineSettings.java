@@ -35,10 +35,6 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public int refineNumIterations = 30;
     public double refineMinErrorPx = 0.005;
 
-    public boolean useAruco3 = false;
-    public double aruco3MinMarkerSideRatio = 0.02;
-    public int aruco3MinCanonicalImgSide = 32;
-
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
