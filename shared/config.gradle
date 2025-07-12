@@ -2,6 +2,7 @@
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withCrossLinuxArm32()
 nativeUtils.withCrossLinuxArm64()
+nativeUtils.withCrossSystemCore()
 
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
