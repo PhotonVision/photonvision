@@ -39,6 +39,8 @@ const generalMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
+// @ts-expect-error This uses Intl.DurationFormat which is newly implemented and not available in TS.
+const durationFormatter = new Intl.DurationFormat("en", { style: "narrow" });
 const platformMetrics = computed<MetricItem[]>(() => {
   const metrics = useSettingsStore().metrics;
   const stats = [
@@ -72,11 +74,12 @@ const platformMetrics = computed<MetricItem[]>(() => {
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
 
-        var result = "";
-        if (days > 0) result += `${days}d `;
-        if (hours > 0) result += `${hours}h `;
-        if (minutes > 0) result += `${minutes}m `;
-        return (result += `${secs}s`);
+        return durationFormatter.format({
+          days: days,
+          hours: hours,
+          minutes: minutes,
+          seconds: secs
+        });
       })()
     },
     {
