@@ -170,8 +170,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 
 <template>
   <v-card class="mb-3" color="primary" dark>
-    <v-card-title class="pa-6 pb-0">Camera Settings</v-card-title>
-    <v-card-text class="pa-6 pt-3">
+    <v-card-title class="pb-0">Camera Settings</v-card-title>
+    <v-card-text class="pt-3">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
@@ -202,7 +202,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         :select-cols="8"
       />
     </v-card-text>
-    <v-card-text class="d-flex pa-6 pt-0">
+    <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
         <v-btn block size="small" color="secondary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings">
           <v-icon start> mdi-content-save </v-icon>
@@ -218,10 +218,10 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-card-text>
 
     <v-dialog v-model="showDeleteCamera" width="800">
-      <v-card class="dialog-container pa-3 pb-2" color="primary" flat>
+      <v-card color="primary" flat>
         <v-card-title> Delete {{ useCameraSettingsStore().currentCameraSettings.nickname }}? </v-card-title>
-        <v-card-text>
-          <v-row class="align-center pt-6">
+        <v-card-text class="pt-0 pb-10px">
+          <v-row class="align-center">
             <v-col cols="12" md="6">
               <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
@@ -240,7 +240,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
@@ -248,7 +248,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-10px">
           <v-btn
             block
             color="error"

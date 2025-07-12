@@ -40,10 +40,10 @@ const items = computed<SelectItem[]>(() => {
 
 <template>
   <div class="d-flex">
-    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0">
+    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0 pt-10px pb-10px">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col :cols="selectCols" class="d-flex align-center pr-0">
+    <v-col :cols="selectCols" class="d-flex align-center pr-0 pt-10px pb-10px">
       <v-select
         v-model="value"
         :items="items"
