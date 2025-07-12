@@ -40,72 +40,62 @@ const generalMetrics = computed<MetricItem[]>(() => {
 });
 
 const platformMetrics = computed<MetricItem[]>(() => {
-  const ramUtil = useSettingsStore().metrics.ramUtil;
-  const ramMem = useSettingsStore().metrics.ramMem;
+  const metrics = useSettingsStore().metrics;
   const stats = [
     {
       header: "CPU Temp",
-      value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
+      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp}°C`
     },
     {
       header: "CPU Usage",
-      value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
+      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil}%`
     },
     {
       header: "CPU Memory Usage",
       value:
-        ramUtil && ramMem && ramUtil >= 0 && ramMem >= 0
-          ? `${useSettingsStore().metrics.ramUtil}MB of ${useSettingsStore().metrics.ramMem}MB`
+        metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
+          ? `${metrics.ramUtil}MB of ${metrics.ramMem}MB`
           : "Unknown"
     },
     {
       header: "CPU Throttling",
-      value: useSettingsStore().metrics.cpuThr?.toString() || "Unknown"
+      value: metrics.cpuThr?.toString() || "Unknown"
     },
     {
       header: "Uptime",
       value: (() => {
-        const seconds = useSettingsStore().metrics.uptime;
+        const seconds = metrics.uptime;
         if (seconds === undefined) return "Unknown";
 
         const days = Math.floor(seconds / 86400);
         const hours = Math.floor((seconds % 86400) / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
+        const secs = Math.floor(seconds % 60);
 
-        // @ts-expect-error This uses Intl.DurationFormat which is newly implemented and not available in TS.
-        return new Intl.DurationFormat("en", { style: "narrow" }).format({
-          days: days,
-          hours: hours,
-          minutes: minutes,
-          seconds: secs
-        });
+        var result = "";
+        if (days > 0) result += `${days}d `;
+        if (hours > 0) result += `${hours}h `;
+        if (minutes > 0) result += `${minutes}m `;
+        return (result += `${secs}s`);
       })()
     },
     {
       header: "Disk Usage",
-      value:
-        useSettingsStore().metrics.diskUtilPct === undefined ? "Unknown" : `${useSettingsStore().metrics.diskUtilPct}%`
+      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
     }
   ];
 
-  const npuUsage = useSettingsStore().metrics.npuUsage;
-  if (npuUsage) {
+  if (metrics.npuUsage && metrics.npuUsage.length > 0) {
     stats.push({
       header: "NPU Usage",
-      value:
-        useSettingsStore()
-          .metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`)
-          .join(", ") || "Unknown"
+      value: metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`).join(", ") || "Unknown"
     });
   }
 
-  const gpuMem = useSettingsStore().metrics.gpuMem;
-  const gpuMemUtil = useSettingsStore().metrics.gpuMemUtil;
-  if (gpuMem && gpuMemUtil && gpuMem > 0 && gpuMemUtil > 0) {
+  if (metrics.gpuMem && metrics.gpuMemUtil && metrics.gpuMem > 0 && metrics.gpuMemUtil > 0) {
     stats.push({
       header: "GPU Memory Usage",
-      value: `${gpuMemUtil}MB of ${gpuMem}MB`
+      value: `${metrics.gpuMemUtil}MB of ${metrics.gpuMem}MB`
     });
   }
 

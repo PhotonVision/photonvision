@@ -207,7 +207,7 @@ public class MetricsManager {
                     logger.error("Failed to parse NPU usage value: " + usages[i], e);
                     npuParseWarning = true;
                 }
-                usageDoubles = null; // Default to null if parsing fails
+                usageDoubles = new double[0]; // Default to empty array if parsing fails
                 break;
             }
         }
