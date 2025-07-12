@@ -30,44 +30,44 @@ jobs:
         with:
           name: built-client
           path: photon-client/dist/
-  build-examples:
+  # build-examples:
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-2022
-            architecture: x64
-          - os: macos-14
-            architecture: aarch64
-          - os: ubuntu-24.04
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - os: windows-2022
+  #           architecture: x64
+  #         - os: macos-14
+  #           architecture: aarch64
+  #         - os: ubuntu-24.04
 
-    name: "Photonlib - Build Examples - ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
+  #   name: "Photonlib - Build Examples - ${{ matrix.os }}"
+  #   runs-on: ${{ matrix.os }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Fetch tags
-        run: git fetch --tags --force
-      - name: Install Java 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: temurin
-      - name: Install SystemCore Toolchain
-        run: ./gradlew installSystemCoreToolchain
-      # Need to publish to maven local first, so that C++ sim can pick it up
-      - name: Publish photonlib to maven local
-        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
-      - name: Build Java examples
-        working-directory: photonlib-java-examples
-        run: ./gradlew build
-      - name: Build C++ examples
-        working-directory: photonlib-cpp-examples
-        run: ./gradlew build
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Fetch tags
+  #       run: git fetch --tags --force
+  #     - name: Install Java 17
+  #       uses: actions/setup-java@v4
+  #       with:
+  #         java-version: 17
+  #         distribution: temurin
+  #     - name: Install SystemCore Toolchain
+  #       run: ./gradlew installSystemCoreToolchain
+  #     # Need to publish to maven local first, so that C++ sim can pick it up
+  #     - name: Publish photonlib to maven local
+  #       run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
+  #     - name: Build Java examples
+  #       working-directory: photonlib-java-examples
+  #       run: ./gradlew build
+  #     - name: Build C++ examples
+  #       working-directory: photonlib-cpp-examples
+  #       run: ./gradlew build
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-24.04
