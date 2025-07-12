@@ -60,10 +60,6 @@ const platformMetrics = computed<MetricItem[]>(() => {
           : "Unknown"
     },
     {
-      header: "CPU Throttling",
-      value: metrics.cpuThr?.toString() || "Unknown"
-    },
-    {
       header: "Uptime",
       value: (() => {
         const seconds = metrics.uptime;
@@ -99,6 +95,13 @@ const platformMetrics = computed<MetricItem[]>(() => {
     stats.push({
       header: "GPU Memory Usage",
       value: `${metrics.gpuMemUtil}MB of ${metrics.gpuMem}MB`
+    });
+  }
+
+  if (metrics.cpuThr) {
+    stats.push({
+      header: "CPU Throttling",
+      value: metrics.cpuThr.toString()
     });
   }
 
