@@ -179,35 +179,6 @@ public class NetworkManager {
         }
     }
 
-    public String getMACAddress() {
-        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
-            logger.error("No network interface configured, cannot get MAC address!");
-            return "";
-        }
-        try {
-            NetworkInterface iFace = NetworkInterface.getByName(config.networkManagerIface);
-            if (iFace == null) {
-                logger.error("Network interface " + config.networkManagerIface + " not found!");
-                return "";
-            }
-            byte[] mac = iFace.getHardwareAddress();
-            if (mac == null) {
-                logger.error("No MAC address found for " + config.networkManagerIface);
-                return "";
-            }
-            StringBuilder sb = new StringBuilder(17);
-            for (byte b : mac) {
-                sb.append(String.format("%02X-", b));
-            }
-            sb.setLength(sb.length() - 1);
-            return sb.toString();
-        } catch (Exception e) {
-            logger.error("Error getting MAC address for " + config.networkManagerIface, e);
-            return "";
-        }
-    }
-
     private void setConnectionDHCP(NetworkConfig config) {
         String connName = "dhcp-" + config.networkManagerIface;
 
