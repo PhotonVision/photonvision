@@ -64,7 +64,15 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-banner v-if="arducamWarningShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
+    <v-banner
+      v-if="arducamWarningShown"
+      rounded
+      bg-color="error"
+      color="error"
+      dark
+      class="mb-3"
+      icon="mdi-alert-circle-outline"
+    >
       <span
         >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
       </span>
