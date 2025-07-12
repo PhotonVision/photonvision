@@ -109,6 +109,7 @@ public class Server {
                 ws -> {
                     ws.onConnect(dsHandler::onConnect);
                     ws.onClose(dsHandler::onClose);
+                    ws.onError(e -> logger.error(e.toString(), e.error()));
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 

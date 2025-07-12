@@ -142,14 +142,14 @@ onBeforeMount(() => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pl-6" style="display: flex; justify-content: space-between">
-      <span class="pt-2 pb-2">Stats</span>
+    <v-card-title style="display: flex; justify-content: space-between">
+      <span>Stats</span>
       <v-btn variant="text" @click="fetchMetrics">
         <v-icon start class="open-icon">mdi-reload</v-icon>
         Last Fetched: {{ metricsLastFetched }}
       </v-btn>
     </v-card-title>
-    <v-card-text class="pa-6 pt-0 pb-3">
+    <v-card-text class="pt-0 pb-3">
       <v-card-subtitle class="pa-0" style="font-size: 16px">General Metrics</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>
@@ -186,7 +186,7 @@ onBeforeMount(() => {
         </tbody>
       </v-table>
     </v-card-text>
-    <v-card-text class="pa-6 pt-4">
+    <v-card-text class="pt-4">
       <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px">Hardware Metrics</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>

@@ -74,7 +74,7 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card class="dialog-container pa-6" color="primary" flat>
+    <v-card class="dialog-container pa-5" color="primary" flat>
       <!-- Logs header -->
       <v-row class="pb-3">
         <v-col cols="4">
@@ -168,7 +168,7 @@ document.addEventListener("keydown", (e) => {
 
 .log-display {
   /* Dialog data size - options */
-  height: calc(100% - 66px);
+  height: calc(100% - 56px);
   padding: 10px;
   background-color: #232c37 !important;
   border-radius: 5px;
