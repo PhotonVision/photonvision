@@ -18,14 +18,12 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -42,7 +40,6 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.metrics.DeviceMetrics;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -58,7 +55,7 @@ public class NetworkTablesManager {
 
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
-    private final String kCoprocTableName = "coprocessors";
+    public final String kCoprocTableName = "coprocessors";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
@@ -77,12 +74,6 @@ public class NetworkTablesManager {
 
     private StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
-
-    ProtobufPublisher<DeviceMetrics> metricPublisher =
-            kRootTable
-                    .getSubTable("/" + kCoprocTableName + "/metrics")
-                    .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
-                    .publish();
 
     private final TimeSyncManager m_timeSync = new TimeSyncManager(kRootTable);
 
@@ -238,10 +229,6 @@ public class NetworkTablesManager {
         kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
-    private void broadcastMetrics() {
-        metricPublisher.set(HardwareManager.getInstance().getMetrics());
-    }
-
     /**
      * Publishes the hostname and camera names to a table using the MAC address as a key. Then checks
      * for conflicts of hostname or camera names across other coprocessors that are also publishing to
@@ -391,8 +378,6 @@ public class NetworkTablesManager {
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
-
-        broadcastMetrics();
     }
 
     public long getTimeSinceLastPong() {

@@ -29,7 +29,6 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
-import org.photonvision.common.hardware.metrics.DeviceMetrics;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -76,6 +75,9 @@ public class HardwareManager {
 
         this.metricsManager = new MetricsManager();
         this.metricsManager.setConfig(hardwareConfig);
+
+        TimedTaskManager.getInstance()
+                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
 
         ledModeRequest =
                 NetworkTablesManager.getInstance()
@@ -223,15 +225,7 @@ public class HardwareManager {
         blinkCounter++;
     }
 
-    public HardwareConfig getConfig() {
-        return hardwareConfig;
-    }
-
     public void publishMetrics() {
         metricsManager.publishMetrics();
-    }
-
-    public DeviceMetrics getMetrics() {
-        return metricsManager.getMetrics();
     }
 }

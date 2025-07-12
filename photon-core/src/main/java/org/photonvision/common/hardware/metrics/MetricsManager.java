@@ -17,12 +17,15 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.cmds.CmdBase;
 import org.photonvision.common.hardware.metrics.cmds.FileCmds;
@@ -38,6 +41,13 @@ public class MetricsManager {
     final Logger logger = new Logger(MetricsManager.class, LogGroup.General);
 
     CmdBase cmds;
+
+    ProtobufPublisher<DeviceMetrics> metricPublisher =
+            NetworkTablesManager.getInstance()
+                    .kRootTable
+                    .getSubTable("/" + NetworkTablesManager.getInstance().kCoprocTableName + "/metrics")
+                    .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
+                    .publish();
 
     private final ShellExec runCommand = new ShellExec(true, true);
 
@@ -72,13 +82,11 @@ public class MetricsManager {
      * @return The CPU temperature in Celsius, or -1.0 if the command fails or parsing fails.
      */
     public double getCpuTemp() {
-        Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.cpuTemperatureCommand));
+            return Double.parseDouble(safeExecute(cmds.cpuTemperatureCommand));
         } catch (NumberFormatException e) {
-            value = -1.0;
+            return -1.0;
         }
-        return value;
     }
 
     /**
@@ -87,13 +95,11 @@ public class MetricsManager {
      * @return The CPU utilization as a percentage, or -1.0 if the command fails or parsing fails.
      */
     public double getCpuUtilization() {
-        Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.cpuUtilizationCommand));
+            return Double.parseDouble(safeExecute(cmds.cpuUtilizationCommand));
         } catch (NumberFormatException e) {
-            value = -1.0;
+            return -1.0;
         }
-        return value;
     }
 
     /**
@@ -123,20 +129,17 @@ public class MetricsManager {
         return ramMemSave;
     }
 
-    // TODO: Output in MBs for consistency
     /**
      * Get the RAM utilization in MBs.
      *
      * @return The RAM utilization in MBs, or -1.0 if the command fails or parsing fails.
      */
     public double getRamUtil() {
-        Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.ramUtilCommand));
+            return Double.parseDouble(safeExecute(cmds.ramUtilCommand));
         } catch (NumberFormatException e) {
-            value = -1.0;
+            return -1.0;
         }
-        return value;
     }
 
     private double gpuMemSave = -2.0;
@@ -163,13 +166,11 @@ public class MetricsManager {
      * @return The GPU memory utilization in MBs, or -1.0 if the command fails or parsing fails.
      */
     public double getGpuMemUtil() {
-        Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.gpuMemUtilCommand));
+            return Double.parseDouble(safeExecute(cmds.gpuMemUtilCommand));
         } catch (NumberFormatException e) {
-            value = -1.0;
+            return -1.0;
         }
-        return value;
     }
 
     /**
@@ -178,13 +179,11 @@ public class MetricsManager {
      * @return The percentage of disk space used, or -1.0 if the command fails or parsing fails.
      */
     public double getUsedDiskPct() {
-        Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.diskUsageCommand));
+            return Double.parseDouble(safeExecute(cmds.diskUsageCommand));
         } catch (NumberFormatException e) {
-            value = -1.0;
+            return -1.0;
         }
-        return value;
     }
 
     // This is here so we don't spam logs if it fails
@@ -233,33 +232,30 @@ public class MetricsManager {
      * @return The uptime in seconds, or -1.0 if the command fails or parsing fails.
      */
     public double getUptime() {
-        Double value;
         try {
-            value = Double.parseDouble(safeExecute(cmds.uptimeCommand));
+            return Double.parseDouble(safeExecute(cmds.uptimeCommand));
         } catch (NumberFormatException e) {
-            value = -1.0;
+            return -1.0;
         }
-        return value;
-    }
-
-    public DeviceMetrics getMetrics() {
-        return new DeviceMetrics(
-                this.getCpuTemp(),
-                this.getCpuUtilization(),
-                this.getThrottleReason(),
-                this.getRamMem(),
-                this.getRamUtil(),
-                this.getGpuMem(),
-                this.getGpuMemUtil(),
-                this.getUsedDiskPct(),
-                this.getNpuUsage(),
-                this.getIpAddress(),
-                this.getUptime());
     }
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
-        var metrics = getMetrics();
+        var metrics =
+                new DeviceMetrics(
+                        this.getCpuTemp(),
+                        this.getCpuUtilization(),
+                        this.getThrottleReason(),
+                        this.getRamMem(),
+                        this.getRamUtil(),
+                        this.getGpuMem(),
+                        this.getGpuMemUtil(),
+                        this.getUsedDiskPct(),
+                        this.getNpuUsage(),
+                        this.getIpAddress(),
+                        this.getUptime());
+
+        metricPublisher.set(metrics);
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
