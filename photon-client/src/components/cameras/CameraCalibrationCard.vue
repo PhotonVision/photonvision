@@ -589,8 +589,5 @@ th {
   .calib-btn-icon {
     margin: 0 !important;
   }
-  .calib-btn-label {
-    display: none;
-  }
 }
 </style>
