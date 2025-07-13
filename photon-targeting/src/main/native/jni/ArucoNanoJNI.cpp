@@ -44,7 +44,7 @@ Java_org_photonvision_jni_ArucoNanoDetector_detect
   cv::Mat* mat = reinterpret_cast<cv::Mat*>(matPtr);
   unsigned int maxAttemptsPerCandidate = 10;
   auto markers = MarkerDetector::detect(*mat, maxAttemptsPerCandidate,
-                                        TagDicts::APRILTAG_36h11);
+                                        MarkerDetector::Dict::APRILTAG_36h11);
 
   std::vector<double> corners;
   for (auto& marker : markers) {
