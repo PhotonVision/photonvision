@@ -100,7 +100,7 @@ if (!is_demo) {
 }
 
 .main-container {
-  background-color: #232c37;
+  // background-color: #232c37;
   padding: 0 !important;
 }
 
@@ -113,5 +113,9 @@ if (!is_demo) {
 }
 div.v-layout {
   overflow: unset !important;
+}
+
+.v-card.rounded-lg {
+  border-radius: 12px !important;
 }
 </style>

@@ -53,10 +53,7 @@ const saveCameraNameEdit = (newName: string) => {
   useCameraSettingsStore()
     .changeCameraNickname(newName, false)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        color: "success",
-        message: response.data.text || response.data
-      });
+      useStateStore().showSnackbarMessage({ color: "success", message: response.data.text || response.data });
       useCameraSettingsStore().currentCameraSettings.nickname = newName;
     })
     .catch((error) => {
@@ -241,7 +238,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 </script>
 
 <template>
-  <v-card color="primary">
+  <v-card color="surface" class="rounded-12">
     <v-row no-gutters class="pl-4 pt-2 pb-0">
       <v-col cols="10" class="pa-0">
         <pv-select

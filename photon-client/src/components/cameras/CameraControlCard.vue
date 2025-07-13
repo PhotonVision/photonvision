@@ -91,10 +91,10 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card style="background-color: #006492">
+  <v-card color="surface">
     <v-card-title>Camera Control</v-card-title>
     <v-card-text class="pt-0">
-      <v-btn color="secondary" @click="fetchSnapshots">
+      <v-btn color="accent" @click="fetchSnapshots">
         <v-icon start class="open-icon"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>

@@ -4,7 +4,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useRoute } from "vue-router";
-import { useDisplay } from "vuetify";
+import { useDisplay, useTheme } from "vuetify";
 
 const compact = computed<boolean>({
   get: () => {
@@ -16,17 +16,19 @@ const compact = computed<boolean>({
 });
 const { mdAndUp } = useDisplay();
 
+const theme = useTheme();
+
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </script>
 
 <template>
-  <v-navigation-drawer permanent :rail="renderCompact" color="primary">
-    <v-list nav>
+  <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
+    <v-list nav color="accent">
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
         <template #prepend>
           <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
-          <img v-else class="logo" src="@/assets/images/logoSmall.svg" alt="small logo" />
+          <img v-else class="logo" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
         </template>
       </v-list-item>
 
@@ -61,6 +63,15 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
     </v-list>
     <template #append>
       <v-list nav>
+        <v-list-item
+          v-if="mdAndUp"
+          link
+          :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
+          @click="theme.global.name.value = theme.global.name.value === 'LightTheme' ? 'DarkTheme' : 'LightTheme'"
+        >
+          <v-list-item-title>Theme</v-list-item-title>
+        </v-list-item>
+
         <v-list-item
           v-if="mdAndUp"
           link
@@ -114,6 +125,25 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </template>
 
 <style scoped>
+/* .v-navigation-drawer {
+  margin: 12px !important;
+  width: calc(256px - 24px) !important;
+  height: calc(100% - 24px) !important;
+  border-radius: 12px;
+}
+
+.v-navigation-drawer--rail {
+  width: calc(56px - 24px) !important;
+} */
+
+.v-navigation-drawer {
+  border: none;
+}
+
+.v-navigation-drawer--rail {
+  border: none;
+}
+
 .v-list-item-title {
   font-size: 1rem !important;
   line-height: 1.2rem !important;

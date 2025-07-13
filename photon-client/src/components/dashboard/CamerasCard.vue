@@ -39,16 +39,15 @@ const performanceRecommendation = computed<string>(() => {
 </script>
 
 <template>
-  <v-card color="primary" height="100%" class="d-flex flex-column" dark>
+  <v-card color="surface" height="100%" class="d-flex flex-column rounded-12" dark>
     <v-card-title class="justify-space-between align-center pt-1 pb-1 d-flex">
       <span>Cameras</span>
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
-        :color="fpsTooLow ? 'error' : ''"
+        :color="fpsTooLow ? 'error' : 'accent'"
         style="font-size: 1rem; padding: 0; margin: 0"
-        :variant="fpsTooLow ? 'tonal' : 'text'"
-        :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }"
+        variant="text"
       >
         <span class="pr-1"
           >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span

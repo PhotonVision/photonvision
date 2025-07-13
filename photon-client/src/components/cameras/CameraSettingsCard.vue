@@ -73,10 +73,7 @@ const saveCameraSettings = () => {
   useCameraSettingsStore()
     .updateCameraSettings(tempSettingsStruct.value)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        color: "success",
-        message: response.data.text || response.data
-      });
+      useStateStore().showSnackbarMessage({ color: "success", message: response.data.text || response.data });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
       useCameraSettingsStore().currentCameraSettings.fov.value = tempSettingsStruct.value.fov;
@@ -125,9 +122,7 @@ const deleteThisCamera = () => {
   if (deletingCamera.value) return;
   deletingCamera.value = true;
 
-  const payload = {
-    cameraUniqueName: useStateStore().currentCameraUniqueName
-  };
+  const payload = { cameraUniqueName: useStateStore().currentCameraUniqueName };
 
   axios
     .post("/utils/nukeOneCamera", payload)
@@ -169,7 +164,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 </script>
 
 <template>
-  <v-card class="mb-3" color="primary" dark>
+  <v-card class="mb-3 rounded-12" color="surface" dark>
     <v-card-title class="pb-0">Camera Settings</v-card-title>
     <v-card-text class="pt-3">
       <pv-select

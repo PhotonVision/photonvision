@@ -10,30 +10,15 @@ interface MetricItem {
 
 const generalMetrics = computed<MetricItem[]>(() => {
   const stats = [
-    {
-      header: "Version",
-      value: useSettingsStore().general.version || "Unknown"
-    },
-    {
-      header: "Hardware Model",
-      value: useSettingsStore().general.hardwareModel || "Unknown"
-    },
-    {
-      header: "Platform",
-      value: useSettingsStore().general.hardwarePlatform || "Unknown"
-    },
+    { header: "Version", value: useSettingsStore().general.version || "Unknown" },
+    { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
+    { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
 
-    {
-      header: "GPU Acceleration",
-      value: useSettingsStore().general.gpuAcceleration || "Unknown"
-    }
+    { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "Unknown" }
   ];
 
   if (!useSettingsStore().network.networkingDisabled) {
-    stats.push({
-      header: "IP Address",
-      value: useSettingsStore().metrics.ipAddress || "Unknown"
-    });
+    stats.push({ header: "IP Address", value: useSettingsStore().metrics.ipAddress || "Unknown" });
   }
 
   return stats;
@@ -63,25 +48,13 @@ const platformMetrics = computed<MetricItem[]>(() => {
           ? "Unknown"
           : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
     },
-    {
-      header: "CPU Throttling",
-      value: useSettingsStore().metrics.cpuThr || "Unknown"
-    },
-    {
-      header: "CPU Uptime",
-      value: useSettingsStore().metrics.cpuUptime || "Unknown"
-    },
-    {
-      header: "Disk Usage",
-      value: useSettingsStore().metrics.diskUtilPct || "Unknown"
-    }
+    { header: "CPU Throttling", value: useSettingsStore().metrics.cpuThr || "Unknown" },
+    { header: "CPU Uptime", value: useSettingsStore().metrics.cpuUptime || "Unknown" },
+    { header: "Disk Usage", value: useSettingsStore().metrics.diskUtilPct || "Unknown" }
   ];
 
   if (useSettingsStore().metrics.npuUsage) {
-    stats.push({
-      header: "NPU Usage",
-      value: useSettingsStore().metrics.npuUsage || "Unknown"
-    });
+    stats.push({ header: "NPU Usage", value: useSettingsStore().metrics.npuUsage || "Unknown" });
   }
 
   return stats;
@@ -120,7 +93,7 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Stats</span>
       <v-btn variant="text" @click="fetchMetrics">
@@ -212,46 +185,48 @@ onBeforeMount(() => {
   text-align: center;
 }
 
+$stats-table-border: rgba(255, 255, 255, 0.5);
+
 .t {
-  border-top: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
 }
 
 .b {
-  border-bottom: 1px solid white;
-  border-right: 1px solid white;
+  border-bottom: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
 }
 
 .tl {
-  border-top: 1px solid white;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid $stats-table-border;
+  border-left: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
   border-top-left-radius: 5px;
 }
 
 .tr {
-  border-top: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
   border-top-right-radius: 5px;
 }
 
 .bl {
-  border-bottom: 1px solid white;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  border-bottom: 1px solid $stats-table-border;
+  border-left: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
   border-bottom-left-radius: 5px;
 }
 
 .br {
-  border-bottom: 1px solid white;
-  border-right: 1px solid white;
+  border-bottom: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
   border-bottom-right-radius: 5px;
 }
 
 .metric-item {
   font-size: 16px !important;
   padding: 1px 15px 1px 10px;
-  border-right: 1px solid;
+  border-right: 1px solid $stats-table-border;
   font-weight: normal;
   color: white !important;
   text-align: center !important;
@@ -264,14 +239,9 @@ onBeforeMount(() => {
 }
 
 .v-table {
-  thead,
-  tbody {
-    background-color: #006492;
-  }
-
   :hover {
     tbody > tr {
-      background-color: #005281 !important;
+      // background-color: #005281 !important;
     }
   }
 

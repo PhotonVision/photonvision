@@ -274,7 +274,6 @@ th {
   padding-right: 8px !important;
 }
 .v-table {
-  background-color: #006492 !important;
   width: 100%;
   font-size: 1rem !important;
 

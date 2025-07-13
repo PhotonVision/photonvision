@@ -9,10 +9,7 @@ const restartProgram = () => {
   axios
     .post("/utils/restartProgram")
     .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully sent program restart request",
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: "Successfully sent program restart request", color: "success" });
     })
     .catch((error) => {
       // This endpoint always return 204 regardless of outcome
@@ -98,10 +95,7 @@ const handleOfflineUpdate = () => {
       }
     })
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
     })
     .catch((error) => {
       if (error.response) {
@@ -170,14 +164,9 @@ const handleSettingsImport = () => {
   }
 
   axios
-    .post(`/settings${settingsEndpoint}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
+    .post(`/settings${settingsEndpoint}`, formData, { headers: { "Content-Type": "multipart/form-data" } })
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
     })
     .catch((error) => {
       if (error.response) {
@@ -238,24 +227,24 @@ const nukePhotonConfigDirectory = () => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title>Device Control</v-card-title>
     <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" lg="4" md="6">
-          <v-btn color="error" @click="restartProgram">
+          <v-btn color="warning" @click="restartProgram">
             <v-icon start class="open-icon"> mdi-restart </v-icon>
             <span class="open-label">Restart PhotonVision</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4" md="6">
-          <v-btn color="error" @click="restartDevice">
+          <v-btn color="warning" @click="restartDevice">
             <v-icon start class="open-icon"> mdi-restart-alert </v-icon>
             <span class="open-label">Restart Device</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4">
-          <v-btn color="secondary" @click="openOfflineUpdatePrompt">
+          <v-btn color="primary" @click="openOfflineUpdatePrompt">
             <v-icon start class="open-icon"> mdi-upload </v-icon>
             <span class="open-label">Offline Update</span>
           </v-btn>
@@ -265,7 +254,7 @@ const nukePhotonConfigDirectory = () => {
       <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="() => (showImportDialog = true)">
+          <v-btn color="accent" @click="() => (showImportDialog = true)">
             <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Settings</span>
           </v-btn>
@@ -306,7 +295,7 @@ const nukePhotonConfigDirectory = () => {
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
-                  <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
+                  <v-btn color="accent" :disabled="importFile === null" @click="handleSettingsImport">
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
                   </v-btn>
@@ -316,7 +305,7 @@ const nukePhotonConfigDirectory = () => {
           </v-dialog>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="openExportSettingsPrompt">
+          <v-btn color="accent" @click="openExportSettingsPrompt">
             <v-icon start class="open-icon"> mdi-export </v-icon>
             <span class="open-label">Export Settings</span>
           </v-btn>
@@ -329,7 +318,7 @@ const nukePhotonConfigDirectory = () => {
           />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="openExportLogsPrompt">
+          <v-btn color="accent" @click="openExportLogsPrompt">
             <v-icon start class="open-icon"> mdi-download </v-icon>
             <span class="open-label">Download logs</span>
 
@@ -344,7 +333,7 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="useStateStore().showLogModal = true">
+          <v-btn color="accent" @click="useStateStore().showLogModal = true">
             <v-icon start class="open-icon"> mdi-eye </v-icon>
             <span class="open-label">View program logs</span>
           </v-btn>
@@ -353,7 +342,7 @@ const nukePhotonConfigDirectory = () => {
       <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12">
-          <v-btn color="error" @click="() => (showFactoryReset = true)">
+          <v-btn color="secondary" @click="() => (showFactoryReset = true)">
             <v-icon start class="open-icon"> mdi-skull-crossbones </v-icon>
             <span class="open-icon">
               {{

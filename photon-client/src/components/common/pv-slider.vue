@@ -13,15 +13,9 @@ const props = withDefaults(
     disabled?: boolean;
     sliderCols?: number;
   }>(),
-  {
-    step: 1,
-    disabled: false,
-    sliderCols: 8
-  }
+  { step: 1, disabled: false, sliderCols: 8 }
 );
-const emit = defineEmits<{
-  (e: "update:modelValue", value: number): void;
-}>();
+const emit = defineEmits<{ (e: "update:modelValue", value: number): void }>();
 
 // Debounce function
 function debounce(func: (...args: any[]) => void, wait: number) {

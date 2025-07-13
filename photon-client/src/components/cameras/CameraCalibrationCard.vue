@@ -128,10 +128,7 @@ const downloadCalibBoard = () => {
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
 
-      doc.text("8 x 8 | 1in & 0.75in", paperWidth - 1, 1.0, {
-        maxWidth: (paperWidth - 2.0) / 2,
-        align: "right"
-      });
+      doc.text("8 x 8 | 1in & 0.75in", paperWidth - 1, 1.0, { maxWidth: (paperWidth - 2.0) / 2, align: "right" });
 
       break;
   }
@@ -214,7 +211,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
 
 <template>
   <div>
-    <v-card class="mb-3" color="primary" dark>
+    <v-card class="mb-3 rounded-12" color="surface" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <v-card-text v-show="!isCalibrating">
         <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibration</v-card-subtitle>
@@ -241,7 +238,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-tooltip location="bottom">
                 <template #activator="{ props }">
                   <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon size="small">mdi-information</v-icon>
+                    <v-icon size="small" color="primary">mdi-information</v-icon>
                   </td>
                 </template>
                 <span>Click for more info on this calibration.</span>
@@ -336,8 +333,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-banner
                 v-if="useSettingsStore().general.mrCalWorking"
                 rounded
-                bg-color="secondary"
-                color="secondary"
+                bg-color="accent"
+                color="accent"
                 text-color="white"
                 icon="mdi-alert-circle-outline"
               >
@@ -460,7 +457,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-btn
               size="small"
               block
-              color="secondary"
+              color="accent"
               :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
@@ -487,7 +484,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <div class="pt-5">
           <v-btn
-            color="accent"
+            color="secondary"
             size="small"
             block
             variant="outlined"
@@ -559,12 +556,12 @@ th {
 
   th,
   td {
-    background-color: #006492 !important;
+    // background-color: #006492 !important;
     font-size: 1rem !important;
   }
 
   tbody :hover td {
-    background-color: #005281 !important;
+    // background-color: #005281 !important;
     cursor: pointer;
   }
 

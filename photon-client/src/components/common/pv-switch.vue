@@ -3,18 +3,8 @@ import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
 const value = defineModel<boolean>();
 withDefaults(
-  defineProps<{
-    label?: string;
-    tooltip?: string;
-    disabled?: boolean;
-    labelCols?: number;
-    switchCols?: number;
-  }>(),
-  {
-    disabled: false,
-    labelCols: 2,
-    switchCols: 8
-  }
+  defineProps<{ label?: string; tooltip?: string; disabled?: boolean; labelCols?: number; switchCols?: number }>(),
+  { disabled: false, labelCols: 2, switchCols: 8 }
 );
 </script>
 
@@ -24,7 +14,7 @@ withDefaults(
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
     <v-col :cols="switchCols || 12 - labelCols" class="d-flex align-center pr-0">
-      <v-switch v-model="value" :disabled="disabled" color="#ffd843" hide-details density="compact" />
+      <v-switch v-model="value" :disabled="disabled" color="accent" hide-details density="compact" />
     </v-col>
   </div>
 </template>

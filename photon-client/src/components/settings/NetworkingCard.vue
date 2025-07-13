@@ -83,16 +83,10 @@ const saveGeneralSettings = () => {
   useSettingsStore()
     .updateGeneralSettings(payload)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = {
-        ...useSettingsStore().network,
-        ...Object.assign({}, tempSettingsStruct.value)
-      };
+      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
     })
     .catch((error) => {
       resetTempSettingsStruct();
@@ -141,7 +135,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title>Global Settings</v-card-title>
     <div class="pa-5 pt-0">
       <v-divider class="pb-2" />
