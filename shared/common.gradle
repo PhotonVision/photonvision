@@ -64,6 +64,11 @@ tasks.register('testHeadless', Test) {
     group = "verification"
     systemProperty("java.awt.headless", "true")
     useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
     exclude '**/*BenchmarkTest*'
     workingDir = "../"
 }
