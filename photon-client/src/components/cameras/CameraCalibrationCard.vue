@@ -216,39 +216,41 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   <div>
     <v-card class="mb-3" color="primary" dark>
       <v-card-title>Camera Calibration</v-card-title>
-      <v-card-text v-show="!isCalibrating">
-        <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibration</v-card-subtitle>
-        <v-table fixed-header height="100%" density="compact">
-          <thead>
-            <tr>
-              <th>Resolution</th>
-              <th>Mean Error</th>
-              <th>Horizontal FOV</th>
-              <th>Vertical FOV</th>
-              <th>Diagonal FOV</th>
-              <th>Info</th>
-            </tr>
-          </thead>
-          <tbody style="cursor: pointer">
-            <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
-              <td>{{ getResolutionString(value.resolution) }}</td>
-              <td>
-                {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
-              </td>
-              <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon size="small">mdi-information</v-icon>
-                  </td>
-                </template>
-                <span>Click for more info on this calibration.</span>
-              </v-tooltip>
-            </tr>
-          </tbody>
-        </v-table>
+      <v-card-text>
+        <div v-show="!isCalibrating">
+          <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibration</v-card-subtitle>
+          <v-table fixed-header height="100%" density="compact">
+            <thead>
+              <tr>
+                <th>Resolution</th>
+                <th>Mean Error</th>
+                <th>Horizontal FOV</th>
+                <th>Vertical FOV</th>
+                <th>Diagonal FOV</th>
+                <th>Info</th>
+              </tr>
+            </thead>
+            <tbody style="cursor: pointer">
+              <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
+                <td>{{ getResolutionString(value.resolution) }}</td>
+                <td>
+                  {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
+                </td>
+                <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                <v-tooltip location="bottom">
+                  <template #activator="{ props }">
+                    <td v-bind="props" @click="setSelectedVideoFormat(value)">
+                      <v-icon size="small">mdi-information</v-icon>
+                    </td>
+                  </template>
+                  <span>Click for more info on this calibration.</span>
+                </v-tooltip>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
         <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
           <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
             >Configure New Calibration</v-card-subtitle
