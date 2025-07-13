@@ -58,7 +58,7 @@ public class NetworkTablesManager {
     public final String kCoprocTableName = "coprocessors";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
-    private final NetworkTable kCoprocTable = kRootTable.getSubTable(kCoprocTableName);
+    public final NetworkTable kCoprocTable = kRootTable.getSubTable(kCoprocTableName);
 
     // This is used to subscribe to all coprocessor tables, so we can detect conflicts
     @SuppressWarnings("unused")
