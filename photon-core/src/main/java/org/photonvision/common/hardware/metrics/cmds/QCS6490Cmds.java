@@ -19,22 +19,22 @@ package org.photonvision.common.hardware.metrics.cmds;
 
 import org.photonvision.common.configuration.HardwareConfig;
 
-public class PiCmds extends LinuxCmds {
+public class QCS6490Cmds extends LinuxCmds {
     /** Applies pi-specific commands, ignoring any input configuration */
     public void initCmds(HardwareConfig config) {
         super.initCmds(config);
 
-        // CPU
-        cpuTemperatureCommand = "sed 's/.\\{3\\}$/.&/' /sys/class/thermal/thermal_zone0/temp";
-        cpuThrottleReasonCmd =
-                "if   ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x01 )) != 0x00 )); then echo \"LOW VOLTAGE\"; "
-                        + " elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x08 )) != 0x00 )); then echo \"HIGH TEMP\"; "
-                        + " elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x10000 )) != 0x00 )); then echo \"Prev. Low Voltage\"; "
-                        + " elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x80000 )) != 0x00 )); then echo \"Prev. High Temp\"; "
-                        + " else echo \"None\"; fi";
+        /* Thermal zone information can be found in /sys/class/thermal/thermal_zone* directories:
+         * zone/type: Contains the thermal zone type/name (e.g., "acpi", "x86_pkg_temp")
+         * zone/temp: Current temperature in millidegrees Celsius (divide by 1000 for actual temp)
+         * zone/policy: Thermal governor policy (e.g., "step_wise", "power_allocator")
+         * Each thermal_zone* directory represents a different temperature sensor in the system
+         */
 
-        // GPU
-        gpuMemCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-        gpuMemUtilCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
+        cpuTemperatureCommand =
+                "cat /sys/class/thermal/thermal_zone10/temp | awk '{printf \"%.1f\", $1/1000}'";
+
+        // TODO: NPU usage, doesn't seem to be in the same place as the opi. We're gonna just wait on QC
+        // to get back to us on this one.
     }
 }

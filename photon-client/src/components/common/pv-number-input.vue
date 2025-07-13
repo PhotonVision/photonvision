@@ -28,10 +28,10 @@ const localValue = computed({
 
 <template>
   <div class="d-flex">
-    <v-col :cols="labelCols" class="d-flex pl-0 align-center">
+    <v-col :cols="labelCols" class="d-flex pl-0 pt-10px pb-10px align-center">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col class="pr-0">
+    <v-col class="pr-0 pt-10px pb-10px">
       <v-text-field
         v-model="localValue"
         class="mt-0 pt-0"

@@ -105,7 +105,7 @@ const resetCurrentBuffer = () => {
                 <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.yaw.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.skew.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.area.toFixed(2) }}&deg;</td>
+                <td class="text-center">{{ target.area.toFixed(2) }}%</td>
               </template>
               <template v-else>
                 <td class="text-center">{{ target.pose?.x.toFixed(3) }}&nbsp;m</td>
@@ -269,6 +269,10 @@ const resetCurrentBuffer = () => {
 </template>
 
 <style scoped lang="scss">
+th {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
 .v-table {
   background-color: #006492 !important;
   width: 100%;
@@ -290,6 +294,7 @@ const resetCurrentBuffer = () => {
     }
     tr {
       td {
+        padding: 0 !important;
         font-size: 1rem !important;
         color: white !important;
       }

@@ -39,48 +39,69 @@ const generalMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
+// @ts-expect-error This uses Intl.DurationFormat which is newly implemented and not available in TS.
+const durationFormatter = new Intl.DurationFormat("en", { style: "narrow" });
 const platformMetrics = computed<MetricItem[]>(() => {
+  const metrics = useSettingsStore().metrics;
   const stats = [
     {
       header: "CPU Temp",
-      value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
+      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp}°C`
     },
     {
       header: "CPU Usage",
-      value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
+      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil}%`
     },
     {
       header: "CPU Memory Usage",
       value:
-        useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined
-          ? "Unknown"
-          : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
+        metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
+          ? `${metrics.ramUtil}MB of ${metrics.ramMem}MB`
+          : "Unknown"
     },
     {
-      header: "GPU Memory Usage",
-      value:
-        useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined
-          ? "Unknown"
-          : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
-    },
-    {
-      header: "CPU Throttling",
-      value: useSettingsStore().metrics.cpuThr || "Unknown"
-    },
-    {
-      header: "CPU Uptime",
-      value: useSettingsStore().metrics.cpuUptime || "Unknown"
+      header: "Uptime",
+      value: (() => {
+        const seconds = metrics.uptime;
+        if (seconds === undefined) return "Unknown";
+
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+
+        return durationFormatter.format({
+          days: days,
+          hours: hours,
+          minutes: minutes,
+          seconds: secs
+        });
+      })()
     },
     {
       header: "Disk Usage",
-      value: useSettingsStore().metrics.diskUtilPct || "Unknown"
+      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
     }
   ];
 
-  if (useSettingsStore().metrics.npuUsage) {
+  if (metrics.npuUsage && metrics.npuUsage.length > 0) {
     stats.push({
       header: "NPU Usage",
-      value: useSettingsStore().metrics.npuUsage || "Unknown"
+      value: metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`).join(", ") || "Unknown"
+    });
+  }
+
+  if (metrics.gpuMem && metrics.gpuMemUtil && metrics.gpuMem > 0 && metrics.gpuMemUtil > 0) {
+    stats.push({
+      header: "GPU Memory Usage",
+      value: `${metrics.gpuMemUtil}MB of ${metrics.gpuMem}MB`
+    });
+  }
+
+  if (metrics.cpuThr) {
+    stats.push({
+      header: "CPU Throttling",
+      value: metrics.cpuThr.toString()
     });
   }
 
@@ -121,14 +142,14 @@ onBeforeMount(() => {
 
 <template>
   <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pl-6" style="display: flex; justify-content: space-between">
-      <span class="pt-2 pb-2">Stats</span>
+    <v-card-title style="display: flex; justify-content: space-between">
+      <span>Stats</span>
       <v-btn variant="text" @click="fetchMetrics">
         <v-icon start class="open-icon">mdi-reload</v-icon>
         Last Fetched: {{ metricsLastFetched }}
       </v-btn>
     </v-card-title>
-    <v-card-text class="pa-6 pt-0 pb-3">
+    <v-card-text class="pt-0 pb-3">
       <v-card-subtitle class="pa-0" style="font-size: 16px">General Metrics</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>
@@ -165,7 +186,7 @@ onBeforeMount(() => {
         </tbody>
       </v-table>
     </v-card-text>
-    <v-card-text class="pa-6 pt-4">
+    <v-card-text class="pt-4">
       <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px">Hardware Metrics</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>

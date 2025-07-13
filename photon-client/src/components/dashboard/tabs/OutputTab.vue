@@ -132,16 +132,20 @@ const interactiveCols = computed(() =>
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
       class="metrics-table mt-3 mb-3"
     >
-      <tr>
-        <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
-          {{ item.header }}
-        </th>
-      </tr>
-      <tr>
-        <td v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item">
-          {{ item.value }}
-        </td>
-      </tr>
+      <thead>
+        <tr>
+          <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
+            {{ item.header }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item">
+            {{ item.value }}
+          </td>
+        </tr>
+      </tbody>
     </table>
     <div
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
