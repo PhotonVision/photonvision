@@ -45,8 +45,8 @@ public class MetricsManager {
 
     ProtobufPublisher<DeviceMetrics> metricPublisher =
             NetworkTablesManager.getInstance()
-                    .kRootTable
-                    .getSubTable("/" + NetworkTablesManager.getInstance().kCoprocTableName + "/metrics")
+                    .kCoprocTable
+                    .getSubTable("/metrics")
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
 
