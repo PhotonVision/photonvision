@@ -10,6 +10,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
+
   build-client:
     name: "PhotonClient Build"
     defaults:
@@ -44,6 +52,7 @@ jobs:
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
+    needs: [validation]
 
     steps:
       - name: Checkout code
@@ -71,6 +80,7 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
+    needs: [validation]
     steps:
       # Checkout code.
       - name: Checkout code
@@ -130,6 +140,7 @@ jobs:
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
     runs-on: ubuntu-22.04
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -174,6 +185,7 @@ jobs:
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -217,6 +229,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
