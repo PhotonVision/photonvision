@@ -16,6 +16,12 @@ permissions:
   id-token: write
 
 jobs:
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
   build_demo:
     name: Build PhotonClient Demo
     defaults:
@@ -39,6 +45,7 @@ jobs:
 
   run_java_cpp_docs:
     name: Build Java and C++ API Docs
+    needs: [validation]
     runs-on: "ubuntu-22.04"
     steps:
     - name: Checkout code
