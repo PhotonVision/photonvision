@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,8 +56,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -170,10 +167,10 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(aprilTags, PoseStrategy.LOWEST_AMBIGUITY, new Transform3d());
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, new Transform3d());
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateLowestAmbiguityPose(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(11, estimatedPose.get().timestampSeconds);
@@ -257,11 +254,10 @@ class PhotonPoseEstimatorTest {
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
-                        new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateClosestToCameraHeightPose(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(4, estimatedPose.get().timestampSeconds);
@@ -345,12 +341,11 @@ class PhotonPoseEstimatorTest {
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
-        estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateClosestToReferencePose(
+                        cameraOne.result, new Pose3d(1, 1, 1, new Rotation3d()));
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(17, estimatedPose.get().timestampSeconds);
@@ -434,13 +429,11 @@ class PhotonPoseEstimatorTest {
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.CLOSEST_TO_LAST_POSE,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-        estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
-
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateClosestToReferencePose(
+                        cameraOne.result, new Pose3d(1, 1, 1, new Rotation3d()));
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         cameraOne.result =
@@ -514,7 +507,7 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        estimatedPose = estimator.update(cameraOne.result);
+        estimatedPose = estimator.estimateClosestToReferencePose(cameraOne.result, pose);
         pose = estimatedPose.get().estimatedPose;
 
         assertEquals(7, estimatedPose.get().timestampSeconds);
@@ -542,9 +535,7 @@ class PhotonPoseEstimatorTest {
                                     Units.degreesToRadians(6),
                                     Units.degreesToRadians(60)));
 
-            var estimator =
-                    new PhotonPoseEstimator(
-                            aprilTags, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
+            var estimator = new PhotonPoseEstimator(aprilTags, compoundTestTransform);
 
             /* this is the real pose of the robot base we test against */
             var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
@@ -556,7 +547,7 @@ class PhotonPoseEstimatorTest {
             assertEquals(0, bestTarget.fiducialId);
 
             estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
-            var estimatedPose = estimator.update(result);
+            var estimatedPose = estimator.estimatePnpDistanceTrigSolvePose(result);
 
             var pose = estimatedPose.get().estimatedPose;
             assertEquals(realPose.getX(), pose.getX(), .01);
@@ -575,7 +566,7 @@ class PhotonPoseEstimatorTest {
                             1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
 
             estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
-            estimatedPose = estimator.update(result);
+            estimatedPose = estimator.estimatePnpDistanceTrigSolvePose(result);
 
             pose = estimatedPose.get().estimatedPose;
             assertEquals(realPose.getX(), pose.getX(), .01);
@@ -617,9 +608,7 @@ class PhotonPoseEstimatorTest {
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.AVERAGE_BEST_TARGETS,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
         // Initial state, expect no timestamp
         assertEquals(-1, estimator.poseCacheTimestampSeconds);
@@ -627,19 +616,20 @@ class PhotonPoseEstimatorTest {
         // Empty result, expect empty result
         cameraOne.result = new PhotonPipelineResult();
         cameraOne.result.metadata.captureTimestampMicros = (long) (1 * 1e6);
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateAverageBestTargetsPose(cameraOne.result);
         assertFalse(estimatedPose.isPresent());
 
         // Set actual result
         cameraOne.result = result;
-        estimatedPose = estimator.update(cameraOne.result);
+        estimatedPose = estimator.estimateAverageBestTargetsPose(cameraOne.result);
         assertTrue(estimatedPose.isPresent());
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
         assertEquals(20, estimator.poseCacheTimestampSeconds);
 
         // And again -- pose cache should mean this is empty
         cameraOne.result = result;
-        estimatedPose = estimator.update(cameraOne.result);
+        estimatedPose = estimator.estimateAverageBestTargetsPose(cameraOne.result);
         assertFalse(estimatedPose.isPresent());
         // Expect the old timestamp to still be here
         assertEquals(20, estimator.poseCacheTimestampSeconds);
@@ -649,7 +639,7 @@ class PhotonPoseEstimatorTest {
         assertEquals(-1, estimator.poseCacheTimestampSeconds);
         // Update should cache the current timestamp (20) again
         cameraOne.result = result;
-        estimatedPose = estimator.update(cameraOne.result);
+        estimatedPose = estimator.estimateAverageBestTargetsPose(cameraOne.result);
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
         assertEquals(20, estimator.poseCacheTimestampSeconds);
 
@@ -735,11 +725,10 @@ class PhotonPoseEstimatorTest {
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        aprilTags,
-                        PoseStrategy.AVERAGE_BEST_TARGETS,
-                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
+                        aprilTags, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateAverageBestTargetsPose(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
 
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
@@ -750,7 +739,8 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void testMultiTagOnRioFallback() {
-        cameraOne.result =
+        PhotonCameraInjector camera = new PhotonCameraInjector();
+        camera.result =
                 new PhotonPipelineResult(
                         0,
                         11 * 1_000_000,
@@ -803,7 +793,7 @@ class PhotonPoseEstimatorTest {
                 new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_PNP_ON_RIO, Transform3d.kZero);
         estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(camera.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
         // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
         assertAll(
@@ -888,18 +878,13 @@ class PhotonPoseEstimatorTest {
 
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo),
-                        PoseStrategy.CONSTRAINED_SOLVEPNP,
-                        kRobotToCam);
+                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo), kRobotToCam);
 
+        var multiTagEstimate = estimator.estimateCoprocMultiTagPose(result);
         estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.kZero);
-
         Optional<EstimatedRobotPose> estimatedPose =
-                estimator.update(
-                        result,
-                        Optional.of(cameraMat),
-                        Optional.of(distortion),
-                        Optional.of(new ConstrainedSolvepnpParams(true, 0)));
+                estimator.estimateConstrainedPnpPose(
+                        result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
     }
@@ -908,11 +893,16 @@ class PhotonPoseEstimatorTest {
     void testConstrainedPnpEmptyCase() {
         PhotonPoseEstimator estimator =
                 new PhotonPoseEstimator(
-                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo),
-                        PoseStrategy.CONSTRAINED_SOLVEPNP,
-                        Transform3d.kZero);
+                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo), Transform3d.kZero);
         PhotonPipelineResult result = new PhotonPipelineResult();
-        var estimate = estimator.update(result);
+        var estimate =
+                estimator.estimateConstrainedPnpPose(
+                        result,
+                        MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 0, 0, 0, 0, 0, 0, 0),
+                        VecBuilder.fill(0, 0, 0, 0, 0, 0, 0, 0),
+                        Pose3d.kZero,
+                        true,
+                        0);
         assertEquals(estimate, Optional.empty());
     }
 
