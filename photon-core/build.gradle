@@ -36,6 +36,12 @@ dependencies {
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
+    implementation("org.photonvision:rubik_jni-jni:$rubikVersion") {
+        transitive = false
+    }
+    implementation("org.photonvision:rubik_jni-java:$rubikVersion"){
+        transitive = false
+    }
     implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {
         transitive = false
     }

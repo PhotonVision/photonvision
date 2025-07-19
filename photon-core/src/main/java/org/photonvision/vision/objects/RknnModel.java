@@ -22,7 +22,6 @@ import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
-import org.photonvision.jni.RknnObjectDetector;
 
 public class RknnModel implements Model {
     public final File modelFile;
