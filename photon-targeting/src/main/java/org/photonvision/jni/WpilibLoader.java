@@ -20,6 +20,7 @@ package org.photonvision.jni;
 import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.OpenCvLoader;
+import edu.wpi.first.datalog.DataLogJNI;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.jni.WPIMathJNI;
 import edu.wpi.first.net.WPINetJNI;
@@ -37,6 +38,7 @@ public class WpilibLoader {
 
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        DataLogJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
         OpenCvLoader.Helper.setExtractOnStaticLoad(false);
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
@@ -54,6 +56,7 @@ public class WpilibLoader {
                     "wpinetjni",
                     "wpiHaljni",
                     "cscorejni",
+                    "datalogjni",
                     "apriltagjni");
 
             CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, Core.NATIVE_LIBRARY_NAME);
