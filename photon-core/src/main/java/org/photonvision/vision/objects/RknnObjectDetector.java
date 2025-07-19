@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.jni;
+package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
@@ -26,10 +26,8 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.rknn.RknnJNI;
-import org.photonvision.vision.objects.Letterbox;
-import org.photonvision.vision.objects.ObjectDetector;
-import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /** Manages an object detector using the rknn backend. */
