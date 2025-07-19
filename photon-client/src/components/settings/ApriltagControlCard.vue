@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { Euler, Quaternion as ThreeQuat } from "three";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
+const { Euler, Quaternion: ThreeQuat } = await import("three");
 
 const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
   const quat = new ThreeQuat(rot_quat.X, rot_quat.Y, rot_quat.Z, rot_quat.W);

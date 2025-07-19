@@ -2,8 +2,6 @@
 import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
-import JsPDF from "jspdf";
-import { font as PromptRegular } from "@/assets/fonts/PromptRegular";
 import MonoLogo from "@/assets/images/logoMono.png";
 import CharucoImage from "@/assets/images/ChArUco_Marker8x8.png";
 import PvSlider from "@/components/common/pv-slider.vue";
@@ -15,6 +13,8 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+const PromptRegular = import("@/assets/fonts/PromptRegular");
+const jspdf = import("jspdf");
 
 const settingsValid = ref(true);
 
@@ -88,10 +88,12 @@ const tooManyPoints = computed(
   () => useStateStore().calibrationData.imageCount * patternWidth.value * patternHeight.value > 700000
 );
 
-const downloadCalibBoard = () => {
-  const doc = new JsPDF({ unit: "in", format: "letter" });
+const downloadCalibBoard = async () => {
+  const { jsPDF } = await jspdf;
+  const { font } = await PromptRegular;
+  const doc = new jsPDF({ unit: "in", format: "letter" });
 
-  doc.addFileToVFS("Prompt-Regular.tff", PromptRegular);
+  doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
   doc.setFont("Prompt-Regular");
   doc.setFontSize(12);
@@ -216,39 +218,41 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   <div>
     <v-card class="mb-3" color="primary" dark>
       <v-card-title>Camera Calibration</v-card-title>
-      <v-card-text v-show="!isCalibrating">
-        <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibration</v-card-subtitle>
-        <v-table fixed-header height="100%" density="compact">
-          <thead>
-            <tr>
-              <th>Resolution</th>
-              <th>Mean Error</th>
-              <th>Horizontal FOV</th>
-              <th>Vertical FOV</th>
-              <th>Diagonal FOV</th>
-              <th>Info</th>
-            </tr>
-          </thead>
-          <tbody style="cursor: pointer">
-            <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
-              <td>{{ getResolutionString(value.resolution) }}</td>
-              <td>
-                {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
-              </td>
-              <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon size="small">mdi-information</v-icon>
-                  </td>
-                </template>
-                <span>Click for more info on this calibration.</span>
-              </v-tooltip>
-            </tr>
-          </tbody>
-        </v-table>
+      <v-card-text>
+        <div v-show="!isCalibrating">
+          <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibration</v-card-subtitle>
+          <v-table fixed-header height="100%" density="compact">
+            <thead>
+              <tr>
+                <th>Resolution</th>
+                <th>Mean Error</th>
+                <th>Horizontal FOV</th>
+                <th>Vertical FOV</th>
+                <th>Diagonal FOV</th>
+                <th>Info</th>
+              </tr>
+            </thead>
+            <tbody style="cursor: pointer">
+              <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
+                <td>{{ getResolutionString(value.resolution) }}</td>
+                <td>
+                  {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
+                </td>
+                <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                <v-tooltip location="bottom">
+                  <template #activator="{ props }">
+                    <td v-bind="props" @click="setSelectedVideoFormat(value)">
+                      <v-icon size="small">mdi-information</v-icon>
+                    </td>
+                  </template>
+                  <span>Click for more info on this calibration.</span>
+                </v-tooltip>
+              </tr>
+            </tbody>
+          </v-table>
+        </div>
         <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
           <v-card-subtitle v-show="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
             >Configure New Calibration</v-card-subtitle
