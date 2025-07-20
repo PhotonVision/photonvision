@@ -322,8 +322,8 @@ public class VisionSourceManager {
         .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
         .forEach(cameraInfos::add);
 
-    for (String cameraName : GstreamerCameras.cameras) {
-      PVCameraInfo cameraInfo = PVCameraInfo.fromGstreamerPipeline(cameraName, cameraName);
+    for (int i = 0; i < GstreamerCameras.length; i++) {
+      PVCameraInfo cameraInfo = PVCameraInfo.fromGstreamerPipeline(GstreamerCameras.pipelines[i], GstreamerCameras.names[i]);
       cameraInfos.add(cameraInfo);
     }
 
