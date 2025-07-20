@@ -44,31 +44,31 @@ class releaseCapThread extends Thread {
   }
 }
 
-class readCapThread extends Thread {
-  private long cap;
-  private long mat;
-  private Lock lock;
-
-  public readCapThread(long cap, long mat, Lock lock) {
-    this.cap = cap;
-    this.mat = mat;
-    this.lock = lock;
-  }
-
-  public void run() {
-    while (true) {
-      lock.lock();
-      Gstreamer.readMat(cap, mat);
-      lock.unlock();
-      // cooked
-      try {
-        Thread.sleep(5); // Sleep for 5 milliseconds
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-  }
-}
+// class readCapThread extends Thread {
+//   private long cap;
+//   private long mat;
+//   private Lock lock;
+//
+//   public readCapThread(long cap, long mat, Lock lock) {
+//     this.cap = cap;
+//     this.mat = mat;
+//     this.lock = lock;
+//   }
+//
+//   public void run() {
+//     while (true) {
+//       lock.lock();
+//       Gstreamer.readMat(cap, mat);
+//       lock.unlock();
+//       // cooked
+//       try {
+//         Thread.sleep(5); // Sleep for 5 milliseconds
+//       } catch (InterruptedException e) {
+//         e.printStackTrace();
+//       }
+//     }
+//   }
+// }
 
 public class GstreamerFrameProvider extends FrameProvider {
   private final GstreamerSettables settables;
@@ -90,8 +90,9 @@ public class GstreamerFrameProvider extends FrameProvider {
 
     cap = Gstreamer.initCam(pipeline);
     current.addShutdownHook(new releaseCapThread(cap));
-    Thread readThread = new readCapThread(cap, readMat.nativeObj, lock);
-    readThread.start();
+
+    // Thread readThread = new readCapThread(cap, readMat.nativeObj, lock);
+    // readThread.start();
     onCameraConnected();
   }
 
@@ -106,22 +107,9 @@ public class GstreamerFrameProvider extends FrameProvider {
   public Frame get() {
     start = MathUtils.wpiNanoTime();
     long pipeline_latency = (start - end);
-    Mat raw = new Mat();
 
-    try {
-      if (lock.tryLock(100000, TimeUnit.MILLISECONDS)) {
-        try {
-          raw = readMat.clone();
-        } finally {
-          lock.unlock();
-        }
-      } else {
-        System.out.println("Couldn't get the lock within timeout.");
-      }
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      System.out.println("Thread was interrupted.");
-    }
+    Mat raw = new Mat();
+    Gstreamer.readMat(cap, raw.nativeObj);
 
     Mat processed = new Mat();
     Gstreamer.getGrayScale(raw.nativeObj, processed.nativeObj);

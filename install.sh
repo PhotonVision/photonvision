@@ -4,6 +4,8 @@
 # nvm use 18
 # ./gradlew --stop
 
+sudo cp photonvision.service /etc/systemd/system
+
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
 
 git config --add oh-my-zsh.hide-status 1

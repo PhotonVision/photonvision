@@ -37,12 +37,23 @@ JNIEXPORT jboolean JNICALL Java_jni_Gstreamer_readMat(JNIEnv* env, jclass clazz,
   return success;
 }
 
+
 JNIEXPORT void JNICALL Java_jni_Gstreamer_getGrayScale(JNIEnv* env,
                                                        jclass clazz, jlong praw,
                                                        jlong pprocessed) {
   cv::Mat* raw = reinterpret_cast<cv::Mat*>(praw);
   cv::Mat* processed = reinterpret_cast<cv::Mat*>(pprocessed);
-  cv::cvtColor(*raw, *processed, cv::COLOR_BGR2GRAY);
+
+  std::cout << "Grayscaling" << std::endl;
+
+  if (!raw || raw->empty()) {
+    // Make a black image of size 1456x1088
+    *processed = cv::Mat(1088, 1456, CV_8UC1, cv::Scalar(0));
+  } else {
+    cv::cvtColor(*raw, *processed, cv::COLOR_BGR2GRAY);
+  }
+
+  std::cout << "Done" << std::endl;
 }
 
 JNIEXPORT void JNICALL Java_jni_Gstreamer_releaseCam(JNIEnv* env, jclass clazz,
