@@ -18,6 +18,7 @@
 package org.photonvision.vision.objects;
 
 import java.io.File;
+import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
@@ -77,7 +78,7 @@ public class RubikModel implements Model {
     }
 
     public ObjectDetector load() {
-        // TODO: implement this
-        return null;
+        return new RubikObjectDetector(
+                this, new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
     }
 }
