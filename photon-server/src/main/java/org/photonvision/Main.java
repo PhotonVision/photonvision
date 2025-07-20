@@ -40,6 +40,7 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.RknnDetectorJNI;
+import org.photonvision.jni.RubikDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
@@ -236,6 +237,15 @@ public class Main {
             }
         } catch (IOException e) {
             logger.error("Failed to load rknn-JNI!", e);
+        }
+        try {
+            if (Platform.isQCS6490()) {
+                RubikDetectorJNI.forceLoad();
+            } else {
+                logger.error("Platform does not support Rubik based machine learning!");
+            }
+        } catch (IOException e) {
+            logger.error("Failed to load rubik-JNI!", e);
         }
         try {
             MrCalJNILoader.forceLoad();
