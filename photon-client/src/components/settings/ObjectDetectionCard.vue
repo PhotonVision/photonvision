@@ -9,6 +9,7 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
+//TODO: set import type to be dynamic based on supported backends
 const showImportDialog = ref(false);
 const showInfo = ref({ show: false, model: {} as ObjectDetectionModelProperties });
 const confirmDeleteDialog = ref({ show: false, model: {} as ObjectDetectionModelProperties });
@@ -304,10 +305,25 @@ const handleBulkImport = () => {
               <v-card-title class="pb-0">Import New Object Detection Model</v-card-title>
               <v-card-text>
                 Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
-                640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs are
-                currently supported!
+                640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to
+                <span v-if="useSettingsStore().general.supportedBackends?.includes('RKNN')"
+                  >`.rknn` format for RK3588 CPUs</span
+                >
+                <span v-else-if="useSettingsStore().general.supportedBackends?.includes('RUBIK')"
+                  >`.tflite` format for QCS6490 compatible backends</span
+                >
+                <span v-else>
+                  if you're seeing this, something broke; please file a ticket and tell us the details of your
+                  situation</span
+                >
+                are currently supported!
                 <div class="pa-5 pb-0">
-                  <v-file-input v-model="importModelFile" variant="underlined" label="Model File" accept=".rknn" />
+                  <v-file-input
+                    v-model="importModelFile"
+                    variant="underlined"
+                    label="Model File"
+                    accept=".rknn,.tflite"
+                  />
                   <v-text-field
                     v-model="importLabels"
                     label="Labels"
