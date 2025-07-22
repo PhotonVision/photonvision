@@ -251,7 +251,7 @@ public class MetricsManager {
             metricPublisher.close();
             metricPublisher =
                     NetworkTablesManager.getInstance()
-                            .kCoprocTable
+                            .kRootTable
                             .getSubTable("/metrics")
                             .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                             .publish();
