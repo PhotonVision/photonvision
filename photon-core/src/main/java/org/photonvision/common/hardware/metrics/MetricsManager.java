@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -46,9 +47,7 @@ public class MetricsManager {
             NetworkTablesManager.getInstance()
                     .kRootTable
                     .getSubTable("/metrics")
-                    .getProtobufTopic(
-                            ConfigManager.getInstance().getConfig().getNetworkConfig().hostname,
-                            DeviceMetrics.proto)
+                    .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
 
     private final ShellExec runCommand = new ShellExec(true, true);
@@ -247,19 +246,14 @@ public class MetricsManager {
         logger.debug("Publishing Metrics...");
 
         // Check that the hostname hasn't changed
-        if (!metricPublisher
-                .getTopic()
-                .getName()
-                .equals(ConfigManager.getInstance().getConfig().getNetworkConfig().hostname)) {
+        if (!metricPublisher.getTopic().getName().equals(CameraServerJNI.getHostname())) {
             logger.warn("Metrics publisher name does not match hostname! Reinitializing publisher...");
             metricPublisher.close();
             metricPublisher =
                     NetworkTablesManager.getInstance()
                             .kCoprocTable
                             .getSubTable("/metrics")
-                            .getProtobufTopic(
-                                    ConfigManager.getInstance().getConfig().getNetworkConfig().hostname,
-                                    DeviceMetrics.proto)
+                            .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                             .publish();
         }
 
