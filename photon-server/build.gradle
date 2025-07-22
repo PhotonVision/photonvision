@@ -44,6 +44,10 @@ tasks.register('copyClientUIToResources', Copy) {
     into "${projectDir}/src/main/resources/web/"
 }
 
+tasks.named('processResources') {
+    dependsOn 'copyClientUIToResources'
+}
+
 tasks.register("buildAndCopyUI") {
     dependsOn "npm_run_build"
     finalizedBy "copyClientUIToResources"
@@ -74,7 +78,13 @@ remotes {
 
 task findDeployTarget {
     doLast {
-        if(project.hasProperty('tgtIP')){
+        if(project.hasProperty('tgtIP') && project.hasProperty('user') && project.hasProperty('password')){
+            //If user specified IP, user, and password, use those to deploy
+            findDeployTarget.ext.rmt = remotes.pi
+            findDeployTarget.ext.rmt.host = tgtIP
+            findDeployTarget.ext.rmt.user = user
+            findDeployTarget.ext.rmt.password = password
+        } else if(project.hasProperty('tgtIP')){
             //If user specified IP, default to using the PI profile
             // but adjust hostname to match the provided IP address
             findDeployTarget.ext.rmt = remotes.pi
@@ -106,8 +116,12 @@ task findDeployTarget {
 }
 
 task deploy {
+    if(project.hasProperty("withBuildAndCopyUI")){
+        dependsOn 'buildAndCopyUI'
+    }
     dependsOn findDeployTarget
     dependsOn 'shadowJar'
+
 
     doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host
