@@ -71,8 +71,9 @@ run {
 remotes {
     pi {
         host = 'photonvision.local'
-        user = 'pi'
-        password = 'raspberry'
+        // Yell at me to change this back before the PR gets merged
+        user = 'ubuntu'
+        password = 'raspbery'
         knownHosts = allowAnyHosts
     }
 }
