@@ -55,6 +55,7 @@ public class NetworkTablesManager {
 
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
+    // The coprocessors table should only be used for operations/data related to MAC address
     public final String kCoprocTableName = "coprocessors";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
