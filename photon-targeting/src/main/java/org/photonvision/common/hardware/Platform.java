@@ -132,9 +132,7 @@ public enum Platform {
     }
 
     public static boolean isQCS6490() {
-        // TODO: hacky workaround 2, electric boogaloo
-        return true;
-        // return isRubik();
+        return isRubik();
     }
 
     public static boolean isRaspberryPi() {
@@ -176,79 +174,78 @@ public enum Platform {
     private static final String UnknownDeviceModelString = "Unknown";
 
     public static Platform getCurrentPlatform() {
-        return LINUX_QCS6490; // TODO - remove this once the image is fixed
-        // String OS_NAME;
-        // if (Platform.OS_NAME != null) {
-        //     OS_NAME = Platform.OS_NAME;
-        // } else {
-        //     OS_NAME = System.getProperty("os.name");
-        // }
+        String OS_NAME;
+        if (Platform.OS_NAME != null) {
+            OS_NAME = Platform.OS_NAME;
+        } else {
+            OS_NAME = System.getProperty("os.name");
+        }
 
-        // String OS_ARCH;
-        // if (Platform.OS_ARCH != null) {
-        //     OS_ARCH = Platform.OS_ARCH;
-        // } else {
-        //     OS_ARCH = System.getProperty("os.arch");
-        // }
+        String OS_ARCH;
+        if (Platform.OS_ARCH != null) {
+            OS_ARCH = Platform.OS_ARCH;
+        } else {
+            OS_ARCH = System.getProperty("os.arch");
+        }
 
-        // if (OS_NAME.startsWith("Windows")) {
-        //     if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
-        //         return WINDOWS_32;
-        //     } else if (OS_ARCH.equals("amd64") || OS_ARCH.equals("x86_64")) {
-        //         return WINDOWS_64;
-        //     } else {
-        //         // please don't try this
-        //         return UNKNOWN;
-        //     }
-        // }
+        if (OS_NAME.startsWith("Windows")) {
+            if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
+                return WINDOWS_32;
+            } else if (OS_ARCH.equals("amd64") || OS_ARCH.equals("x86_64")) {
+                return WINDOWS_64;
+            } else {
+                // please don't try this
+                return UNKNOWN;
+            }
+        }
 
-        // if (OS_NAME.startsWith("Mac")) {
-        //     // TODO - once we have real support, this might have to be more granular
-        //     return MACOS;
-        // }
+        if (OS_NAME.startsWith("Mac")) {
+            // TODO - once we have real support, this might have to be more granular
+            return MACOS;
+        }
 
-        // if (OS_NAME.startsWith("Linux")) {
-        //     if (isPiSBC()) {
-        //         if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
-        //             return LINUX_RASPBIAN32;
-        //         } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
-        //             return LINUX_RASPBIAN64;
-        //         } else {
-        //             // Unknown/exotic installation
-        //             return UNKNOWN;
-        //         }
-        //     } else if (isJetsonSBC()) {
-        //         if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
-        //             // TODO - do we need to check OS version?
-        //             return LINUX_AARCH64;
-        //         } else {
-        //             // Unknown/exotic installation
-        //             return UNKNOWN;
-        //         }
-        //     } else if (OS_ARCH.equals("amd64") || OS_ARCH.equals("x86_64")) {
-        //         return LINUX_64;
-        //     } else if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
-        //         return LINUX_32;
-        //     } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
-        //         // TODO - os detection needed?
-        //         if (isRK3588()) {
-        //             return LINUX_RK3588_64;
-        //         } else if (isQCS6490()) {
-        //             return LINUX_QCS6490;
+        if (OS_NAME.startsWith("Linux")) {
+            if (isPiSBC()) {
+                if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
+                    return LINUX_RASPBIAN32;
+                } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
+                    return LINUX_RASPBIAN64;
+                } else {
+                    // Unknown/exotic installation
+                    return UNKNOWN;
+                }
+            } else if (isJetsonSBC()) {
+                if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
+                    // TODO - do we need to check OS version?
+                    return LINUX_AARCH64;
+                } else {
+                    // Unknown/exotic installation
+                    return UNKNOWN;
+                }
+            } else if (OS_ARCH.equals("amd64") || OS_ARCH.equals("x86_64")) {
+                return LINUX_64;
+            } else if (OS_ARCH.equals("x86") || OS_ARCH.equals("i386")) {
+                return LINUX_32;
+            } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
+                // TODO - os detection needed?
+                if (isRK3588()) {
+                    return LINUX_RK3588_64;
+                } else if (isQCS6490()) {
+                    return LINUX_QCS6490;
 
-        //         } else {
-        //             return LINUX_AARCH64;
-        //         }
-        //     } else if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
-        //         return LINUX_ARM32;
-        //     } else {
-        //         // Unknown or otherwise unsupported platform
-        //         return Platform.UNKNOWN;
-        //     }
-        // }
+                } else {
+                    return LINUX_AARCH64;
+                }
+            } else if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
+                return LINUX_ARM32;
+            } else {
+                // Unknown or otherwise unsupported platform
+                return Platform.UNKNOWN;
+            }
+        }
 
-        // // If we fall through all the way to here,
-        // return Platform.UNKNOWN;
+        // If we fall through all the way to here,
+        return Platform.UNKNOWN;
     }
 
     // Check for various known SBC types
@@ -274,7 +271,7 @@ public enum Platform {
     }
 
     private static boolean isRubik() {
-        return fileHasText("/proc/device-tree/model", "Rubik");
+        return fileHasText("/proc/device-tree/model", "RUBIK");
     }
 
     static String getLinuxDeviceTreeModel() {
