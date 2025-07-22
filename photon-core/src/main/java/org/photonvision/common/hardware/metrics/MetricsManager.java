@@ -244,6 +244,19 @@ public class MetricsManager {
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
+
+        // Check that the hostname hasn't changed
+        if (!metricPublisher.getTopic().getName().equals(CameraServerJNI.getHostname())) {
+            logger.warn("Metrics publisher name does not match hostname! Reinitializing publisher...");
+            metricPublisher.close();
+            metricPublisher =
+                    NetworkTablesManager.getInstance()
+                            .kRootTable
+                            .getSubTable("/metrics")
+                            .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
+                            .publish();
+        }
+
         var metrics =
                 new DeviceMetrics(
                         this.getCpuTemp(),
