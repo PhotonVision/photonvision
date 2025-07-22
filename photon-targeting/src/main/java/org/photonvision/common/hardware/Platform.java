@@ -55,7 +55,7 @@ public enum Platform {
             "Linux AARCH 64-bit with QCS6490",
             Platform::getLinuxDeviceTreeModel,
             "linuxarm64",
-            true,
+            false,
             OSType.LINUX,
             true), // QCS6490 SBCs
     LINUX_AARCH64(
