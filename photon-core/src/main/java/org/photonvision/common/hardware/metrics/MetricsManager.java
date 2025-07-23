@@ -244,9 +244,13 @@ public class MetricsManager {
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
+        logger.debug("Hostname: " + CameraServerJNI.getHostname());
+        logger.debug(metricPublisher.getTopic().getName());
+
+        String[] topicParts = metricPublisher.getTopic().getName().split("/");
 
         // Check that the hostname hasn't changed
-        if (!metricPublisher.getTopic().getName().equals(CameraServerJNI.getHostname())) {
+        if (!CameraServerJNI.getHostname().equals(topicParts[topicParts.length - 1])) {
             logger.warn("Metrics publisher name does not match hostname! Reinitializing publisher...");
             metricPublisher.close();
             metricPublisher =
