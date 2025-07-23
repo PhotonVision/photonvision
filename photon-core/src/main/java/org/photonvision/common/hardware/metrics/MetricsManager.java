@@ -244,8 +244,6 @@ public class MetricsManager {
 
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
-        logger.debug("Hostname: " + CameraServerJNI.getHostname());
-        logger.debug(metricPublisher.getTopic().getName());
 
         String[] topicParts = metricPublisher.getTopic().getName().split("/");
 
