@@ -1,10 +1,9 @@
-import shutil
-import sys
-import platform
-import urllib.request
-import subprocess
-from urllib.parse import urlparse
 import os
+import platform
+import subprocess
+import sys
+import urllib.request
+from urllib.parse import urlparse
 
 CHUNK_SIZE = 8192
 
@@ -31,39 +30,46 @@ wheel_versions = {
 
 supported_arch = list(wheel_versions.keys())
 
+
 def get_filename_from_url(url):
     parsed = urlparse(url)
     filename = os.path.basename(parsed.path)
     if not filename:
-        filename = "" # never gonna get here
+        filename = ""  # never gonna get here
     return filename
+
 
 if __name__ == "__main__":
     arch = platform.machine()
 
     if not arch in supported_arch:
-        print(f"Unsupported architecture {arch}. Must be one of the following: {supported_arch}")
+        print(
+            f"Unsupported architecture {arch}. Must be one of the following: {supported_arch}"
+        )
 
     current_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     supported_versions = list(wheel_versions[arch])
-    
+
     if sys.version_info.major < 3:
         print(f"Must have at least python version {supported_versions[0]}")
     elif not current_version in supported_versions:
-        print(f"Unsupported python version {current_version}, supported python versions are: {supported_versions}")
-    
-    
+        print(
+            f"Unsupported python version {current_version}, supported python versions are: {supported_versions}"
+        )
+
     download_url = wheel_versions[arch][current_version]
     wheel_name = get_filename_from_url(download_url)
-    
+
     print(f"Downloading RKNN Toolkit2 wheel: {wheel_name}")
-    with urllib.request.urlopen(download_url) as response, open(wheel_name, 'wb') as out_file:
-            while True:
-                chunk = response.read(CHUNK_SIZE)
-                if not chunk:
-                    break
-                out_file.write(chunk)
-    print("Download completed, now running pip install")    
+    with urllib.request.urlopen(download_url) as response, open(
+        wheel_name, "wb"
+    ) as out_file:
+        while True:
+            chunk = response.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            out_file.write(chunk)
+    print("Download completed, now running pip install")
 
     try:
         subprocess.run(["pip", "install", wheel_name]).check_returncode()

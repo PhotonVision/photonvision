@@ -1,7 +1,7 @@
-import subprocess
-import sys
 import argparse
 import os.path
+import subprocess
+import sys
 
 yolo_git_repos = {
     "yolov5": "https://github.com/airockchip/yolov5",
@@ -26,18 +26,18 @@ def check_git_installed():
 
 def run_onnx_conversion(version, model_path):
     rc_repo = yolo_git_repos[version]
-    
+
     if rc_repo is None:
         # achievement: how did we get here?
         print(
-            f"Invalid yolo version \"{version}\" must be one of the following {comma_sep_yolo_versions}"
+            f'Invalid yolo version "{version}" must be one of the following {comma_sep_yolo_versions}'
         )
 
     if os.path.exists(ultralytics_folder_name):
         print("Existing Rockchip Repo detected, no install required")
     else:
         print("Cloning Rockchip repo...")
-        
+
         try:
             subprocess.run(
                 ["git", "clone", rc_repo, ultralytics_folder_name]
@@ -46,27 +46,28 @@ def run_onnx_conversion(version, model_path):
             print("Failed to clone rockchip repo, see error output below")
             print(e.output)
             sys.exit(1)
-        
+
     print("Running pip install...")
-    try: 
-      subprocess.run(["pip", "install", "-e", ultralytics_folder_name]).check_returncode()
+    try:
+        subprocess.run(
+            ["pip", "install", "-e", ultralytics_folder_name]
+        ).check_returncode()
     except subprocess.CalledProcessError as e:
-      print("Pip install rockchip repo failed, see error output")
-      print(e.output)
-      sys.exit(1)
-        
+        print("Pip install rockchip repo failed, see error output")
+        print(e.output)
+        sys.exit(1)
+
     from ultralytics import YOLO
 
     model = YOLO(model_path)
     model.export(format="rknn")
-    
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Generate valid ONNX file for yolo model"
     )
-    
+
     parser.add_argument(
         "-v",
         "--version",
@@ -74,7 +75,7 @@ if __name__ == "__main__":
         required=True,
         help=(f"YOLO version to use. Must be one of: {comma_sep_yolo_versions}"),
     )
-    
+
     parser.add_argument(
         "-m",
         "--model_path",

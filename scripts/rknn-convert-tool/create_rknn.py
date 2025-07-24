@@ -1,12 +1,13 @@
-import subprocess
-import sys
-import random
 import argparse
 import os
+import random
+import sys
+
 from rknn.api import RKNN
 
 image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp")
 DEFAULT_PLATFORM = "rk3588"
+
 
 def list_img_dir(img_dir):
     return [
@@ -86,7 +87,10 @@ def get_image_list(num_imgs, image_dir):
 def run_rknn_conversion(
     img_list_txt, disable_quant, model_path, rknn_output, verbose_logging
 ):
-    rknn = RKNN(verbose=verbose_logging, verbose_file=("rknn_convert.log" if verbose_logging else None))
+    rknn = RKNN(
+        verbose=verbose_logging,
+        verbose_file=("rknn_convert.log" if verbose_logging else None),
+    )
 
     rknn.config(
         mean_values=[[0, 0, 0]],
