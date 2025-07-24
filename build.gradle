@@ -41,7 +41,7 @@ ext {
     libcameraDriverVersion = "v2025.0.3"
     rknnVersion = "dev-v2025.0.0-1-g33b6263"
     // TODO: Update this to a release version before merging
-    rubikVersion = "dev-390ee8f"
+    rubikVersion = "dev-52e062c"
     frcYear = "2025"
     mrcalVersion = "v2025.0.0";
 

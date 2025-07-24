@@ -36,7 +36,7 @@ dependencies {
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
-    implementation("org.photonvision:rubik_jni-jni:$rubikVersion") {
+    implementation("org.photonvision:rubik_jni-jni:$rubikVersion:linuxarm64") {
         transitive = false
     }
     implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
