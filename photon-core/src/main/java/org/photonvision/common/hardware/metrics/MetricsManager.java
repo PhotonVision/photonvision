@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware.metrics;
 
 import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -245,10 +246,9 @@ public class MetricsManager {
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
 
-        String[] topicParts = metricPublisher.getTopic().getName().split("/");
-
         // Check that the hostname hasn't changed
-        if (!CameraServerJNI.getHostname().equals(topicParts[topicParts.length - 1])) {
+        if (!CameraServerJNI.getHostname()
+                .equals(NetworkTable.basenameKey(metricPublisher.getTopic().getName()))) {
             logger.warn("Metrics publisher name does not match hostname! Reinitializing publisher...");
             metricPublisher.close();
             metricPublisher =
