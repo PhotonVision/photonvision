@@ -107,11 +107,13 @@ public class ObjectDetectionPipeline
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
 
+        // TODO: use a switch statement to update by backend
+
         // ***************** change based on backend ***********************
 
-        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
+        CVPipeResult<List<NeuralNetworkPipeResult>> neuralNetworkResult =
                 objectDetectorPipe.run(frame.colorImage);
-        sumPipeNanosElapsed += rknnResult.nanosElapsed;
+        sumPipeNanosElapsed += neuralNetworkResult.nanosElapsed;
 
         var names = objectDetectorPipe.getClassNames();
 
@@ -119,7 +121,7 @@ public class ObjectDetectionPipeline
 
         // ***************** change based on backend ***********************
 
-        var filterContoursResult = filterContoursPipe.run(rknnResult.output);
+        var filterContoursResult = filterContoursPipe.run(neuralNetworkResult.output);
         sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
