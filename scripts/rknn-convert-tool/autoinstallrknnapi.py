@@ -1,11 +1,14 @@
-import os
-import platform
-import subprocess
+import shutil
 import sys
+import platform
 import urllib.request
+import subprocess
 from urllib.parse import urlparse
+import os
 
 CHUNK_SIZE = 8192
+CONTENT_LENGTH_HEADER = "Content-Length"
+PROGRESS_BAR_SIZE = 70
 
 wheel_versions = {
     "arm64": {
@@ -64,11 +67,23 @@ if __name__ == "__main__":
     with urllib.request.urlopen(download_url) as response, open(
         wheel_name, "wb"
     ) as out_file:
+        total_size = int(response.getheader(CONTENT_LENGTH_HEADER).strip())
+        downloaded_chunks = 0
+
         while True:
             chunk = response.read(CHUNK_SIZE)
             if not chunk:
                 break
             out_file.write(chunk)
+            downloaded_chunks += len(chunk)
+            ratio = downloaded_chunks / total_size
+            done = int(PROGRESS_BAR_SIZE * ratio)
+            sys.stdout.write(
+                f"\r[{'=' * done}{' ' * (PROGRESS_BAR_SIZE - done)}] {(ratio * 100):.2f}%   "
+            )
+            sys.stdout.flush()
+
+    print()
     print("Download completed, now running pip install")
 
     try:

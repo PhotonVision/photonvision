@@ -1,7 +1,7 @@
-import argparse
-import os.path
 import subprocess
 import sys
+import argparse
+import os.path
 
 yolo_git_repos = {
     "yolov5": "https://github.com/airockchip/yolov5",
@@ -50,12 +50,14 @@ def run_onnx_conversion(version, model_path):
     print("Running pip install...")
     try:
         subprocess.run(
-            ["pip", "install", "-e", ultralytics_folder_name]
+            ["pip", "install", "-e", ultralytics_folder_name, "onnx"]
         ).check_returncode()
     except subprocess.CalledProcessError as e:
         print("Pip install rockchip repo failed, see error output")
         print(e.output)
         sys.exit(1)
+
+    sys.path.insert(0, os.path.abspath(ultralytics_folder_name))
 
     from ultralytics import YOLO
 
