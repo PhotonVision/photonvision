@@ -95,14 +95,14 @@ onBeforeMount(() => {
 <template>
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
-      <span>Stats</span>
+      <span>Metrics</span>
       <v-btn variant="text" @click="fetchMetrics">
         <v-icon start class="open-icon">mdi-reload</v-icon>
         Last Fetched: {{ metricsLastFetched }}
       </v-btn>
     </v-card-title>
     <v-card-text class="pt-0 pb-3">
-      <v-card-subtitle class="pa-0" style="font-size: 16px">General Metrics</v-card-subtitle>
+      <v-card-subtitle class="pa-0" style="font-size: 16px">General</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>
           <tr>
@@ -139,7 +139,7 @@ onBeforeMount(() => {
       </v-table>
     </v-card-text>
     <v-card-text class="pt-4">
-      <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px">Hardware Metrics</v-card-subtitle>
+      <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px">Hardware</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>
           <tr>
@@ -186,10 +186,12 @@ onBeforeMount(() => {
 }
 
 $stats-table-border: rgba(255, 255, 255, 0.5);
+$stats-table-inner: rgba(255, 255, 255, 0.1);
 
 .t {
   border-top: 1px solid $stats-table-border;
   border-right: 1px solid $stats-table-border;
+  border-bottom: 1px solid $stats-table-inner !important;
 }
 
 .b {
@@ -201,12 +203,14 @@ $stats-table-border: rgba(255, 255, 255, 0.5);
   border-top: 1px solid $stats-table-border;
   border-left: 1px solid $stats-table-border;
   border-right: 1px solid $stats-table-border;
+  border-bottom: 1px solid $stats-table-inner !important;
   border-top-left-radius: 5px;
 }
 
 .tr {
   border-top: 1px solid $stats-table-border;
   border-right: 1px solid $stats-table-border;
+  border-bottom: 1px solid $stats-table-inner !important;
   border-top-right-radius: 5px;
 }
 
@@ -234,8 +238,6 @@ $stats-table-border: rgba(255, 255, 255, 0.5);
 
 .metric-item-title {
   font-size: 18px !important;
-  text-decoration: underline;
-  text-decoration-color: #ffd843;
 }
 
 .v-table {
@@ -257,7 +259,7 @@ $stats-table-border: rgba(255, 255, 255, 0.5);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

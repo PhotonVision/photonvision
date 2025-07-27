@@ -87,30 +87,30 @@ if (!is_demo) {
 }
 
 ::-webkit-scrollbar-track {
-  background: #232c37;
+  background: rgb(var(--v-theme-background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #ffd843;
+  background-color: rgb(var(--v-theme-accent));
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #e4c33c;
+  background-color: rgb(var(--v-theme-primary));
 }
 
 .main-container {
-  // background-color: #232c37;
   padding: 0 !important;
 }
 
+// TODO: WHAT IS THIS??
 .v-overlay__scrim {
   background-color: #202020;
 }
 
-#title {
-  color: #ffd843;
-}
+// #title {
+//   color: #ffd843;
+// }
 div.v-layout {
   overflow: unset !important;
 }

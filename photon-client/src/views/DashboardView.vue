@@ -122,10 +122,10 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       max-width="800"
       dark
     >
-      <v-card flat color="primary">
-        <v-card-title>Setup some cameras to get started!</v-card-title>
+      <v-card flat color="surface">
+        <v-card-title>Set up some cameras to get started!</v-card-title>
         <v-card-text class="pt-0">
-          No cameras activated - head to the <router-link to="/cameraConfigs">Camera matching tab</router-link> to set
+          No cameras activated - head to the <router-link to="/cameraConfigs" color="primary">Camera matching tab</router-link> to set
           some up!
         </v-card-text>
       </v-card>
@@ -135,17 +135,16 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <style scoped>
 a:link {
-  color: #ffd843;
   background-color: transparent;
   text-decoration: none;
 }
+/* TODO: FIX VISITED COLOR TO MATCH ORIGINAL PRIMARY */
 a:visited {
   color: #ffd843;
   background-color: transparent;
   text-decoration: none;
 }
 a:hover {
-  color: pink;
   background-color: transparent;
   text-decoration: underline;
 }

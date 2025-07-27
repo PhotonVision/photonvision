@@ -7,6 +7,9 @@ import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import axios from "axios";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
@@ -199,14 +202,14 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
-        <v-btn block size="small" color="secondary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings">
+        <v-btn block size="small" color="primary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
           <v-icon start> mdi-content-save </v-icon>
           Save Changes
         </v-btn>
       </v-col>
       <v-col cols="6" class="pa-0 pl-2">
-        <v-btn block size="small" color="error" @click="() => (showDeleteCamera = true)">
-          <v-icon start> mdi-trash-can-outline </v-icon>
+        <v-btn block size="small" color="error" @click="() => (showDeleteCamera = true)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
+          <v-icon start> mdi-delete </v-icon>
           Delete Camera
         </v-btn>
       </v-col>

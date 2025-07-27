@@ -591,7 +591,7 @@ const handleBulkImport = () => {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

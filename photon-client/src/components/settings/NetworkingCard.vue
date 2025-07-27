@@ -7,6 +7,9 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
@@ -274,8 +277,8 @@ watchEffect(() => {
         <v-divider class="mt-10px pb-5" />
       </v-form>
       <v-btn
-        color="accent"
-        :variant="!settingsValid || !settingsHaveChanged() ? 'tonal' : 'elevated'"
+        color="primary"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"

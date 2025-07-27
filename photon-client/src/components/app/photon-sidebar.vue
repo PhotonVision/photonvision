@@ -23,7 +23,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 
 <template>
   <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
-    <v-list nav color="accent">
+    <v-list nav color="primary">
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
         <template #prepend>
@@ -91,7 +91,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
         >
           <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
             NetworkTables server running for
-            <span class="text-accent">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
+            <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
           </v-list-item-title>
           <v-list-item-title
             v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
@@ -100,8 +100,8 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
             style="flex-direction: column; display: flex"
           >
             NetworkTables Server Connected!
-            <span class="text-accent">
-              {{ useStateStore().ntConnectionStatus.address }}
+            <span class="text-primary">
+              {{ useStateStore().ntConnectionStatus.address }} sdfsdfsdf
             </span>
           </v-list-item-title>
           <v-list-item-title

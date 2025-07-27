@@ -67,7 +67,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   }
 
   tbody :hover td {
-    background-color: #005281 !important;
+    // background-color: #005281 !important;
   }
 
   ::-webkit-scrollbar {
@@ -82,7 +82,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

@@ -15,6 +15,9 @@ import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const settingsValid = ref(true);
 
@@ -329,6 +332,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="If enabled, Photon will use the old OpenCV pattern for calibration."
               :label-cols="4"
             />
+            <!-- TODO: CLEAN UP MRCAL BANNERS -->
             <div class="pb-5 pt-10px">
               <v-banner
                 v-if="useSettingsStore().general.mrCalWorking"
@@ -442,9 +446,10 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             Too many corners. Finish calibration now!
           </v-banner>
         </div>
+        <!-- TODO: TEST CALIBRATION -->
         <div v-if="isCalibrating" class="d-flex justify-center align-center pt-10px pb-5">
           <v-chip
-            variant="flat"
+            variant="elevated"
             label
             :color="useStateStore().calibrationData.hasEnoughImages ? 'secondary' : 'grey-darken-2'"
           >
@@ -457,7 +462,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-btn
               size="small"
               block
-              color="accent"
+              color="lightBlue"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
@@ -469,7 +475,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-btn
               size="small"
               block
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'accent' : 'error'"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :color="useStateStore().calibrationData.hasEnoughImages ? 'primary' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
@@ -484,7 +491,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <div class="pt-5">
           <v-btn
-            color="secondary"
+            color="photonYellow"
             size="small"
             block
             variant="outlined"
@@ -554,14 +561,11 @@ th {
   text-align: center;
   width: 100%;
 
-  th,
-  td {
-    // background-color: #006492 !important;
+  th, td {
     font-size: 1rem !important;
   }
 
   tbody :hover td {
-    // background-color: #005281 !important;
     cursor: pointer;
   }
 
@@ -577,7 +581,7 @@ th {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

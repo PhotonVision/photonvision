@@ -2,6 +2,9 @@
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const value = defineModel<number[]>();
 
@@ -27,18 +30,20 @@ const processingMode = computed<number>({
         <p style="color: white">Processing Mode</p>
         <v-btn-toggle v-model="processingMode" mandatory base-color="surface-variant" class="fill w-100">
           <v-btn
-            color="toggle"
+            color="lightBlue"
             :disabled="!useCameraSettingsStore().hasConnected"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
             prepend-icon="mdi-square-outline"
           >
             <span>2D</span>
           </v-btn>
           <v-btn
-            color="toggle"
+            color="lightBlue"
             :disabled="
               !useCameraSettingsStore().hasConnected || !useCameraSettingsStore().isCurrentVideoFormatCalibrated
             "
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
             prepend-icon="mdi-cube-outline"
           >
@@ -51,11 +56,11 @@ const processingMode = computed<number>({
       <v-col class="pa-4 pt-0">
         <p style="color: white">Stream Display</p>
         <v-btn-toggle v-model="value" :multiple="true" mandatory base-color="surface-variant" class="fill w-100">
-          <v-btn color="toggle" class="fill w-50">
+          <v-btn color="lightBlue" class="fill w-50" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
             <v-icon start class="mode-btn-icon">mdi-import</v-icon>
             <span class="mode-btn-label">Raw</span>
           </v-btn>
-          <v-btn color="toggle" class="fill w-50">
+          <v-btn color="lightBlue" class="fill w-50" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
             <v-icon start class="mode-btn-icon">mdi-export</v-icon>
             <span class="mode-btn-label">Processed</span>
           </v-btn>
@@ -72,7 +77,7 @@ const processingMode = computed<number>({
 
 .mode-btn-label,
 .mode-btn-label > * {
-  color: white;
+  /* color: white; */
 }
 
 th {

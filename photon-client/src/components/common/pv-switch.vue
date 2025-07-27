@@ -14,7 +14,7 @@ withDefaults(
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
     <v-col :cols="switchCols || 12 - labelCols" class="d-flex align-center pr-0">
-      <v-switch v-model="value" :disabled="disabled" color="accent" hide-details density="compact" />
+      <v-switch v-model="value" :disabled="disabled" color="primary" hide-details density="compact" />
     </v-col>
   </div>
 </template>

@@ -74,7 +74,7 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
-    <v-card class="dialog-container pa-5" color="primary" flat>
+    <v-card class="dialog-container pa-5" color="surface" flat>
       <!-- Logs header -->
       <v-row class="pb-3">
         <v-col cols="4">
@@ -117,10 +117,11 @@ document.addEventListener("keydown", (e) => {
               clearable
               hide-details="auto"
               prepend-icon="mdi-magnify"
-              color="accent"
+              color="primary"
               label="Search"
               variant="underlined"
             />
+            <!-- TODO: CLEAN THIS UP -->
             <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
             <v-btn icon variant="flat" @click="timeInput = undefined">
               <v-icon>mdi-close-circle-outline</v-icon>
@@ -129,7 +130,7 @@ document.addEventListener("keydown", (e) => {
           <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
             <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
               {{ getLogLevelFromIndex(level)
-              }}<v-switch v-model="selectedLogLevels[level]" class="pl-2" hide-details color="#ffd843"></v-switch>
+              }}<v-switch v-model="selectedLogLevels[level]" class="pl-2" hide-details color="rgb(var(--v-theme-primary))"></v-switch>
             </div>
           </v-col>
         </v-row>
@@ -170,7 +171,7 @@ document.addEventListener("keydown", (e) => {
   /* Dialog data size - options */
   height: calc(100% - 56px);
   padding: 10px;
-  background-color: #232c37 !important;
+  background-color: rgb(var(--v-theme-logsBackground)) !important;
   border-radius: 5px;
 }
 

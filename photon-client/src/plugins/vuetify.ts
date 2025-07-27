@@ -3,9 +3,8 @@ import "@mdi/font/css/materialdesignicons.css";
 import type { ThemeDefinition } from "vuetify/lib/composables/theme";
 import { createVuetify } from "vuetify";
 
-const commonColors = { error: "#b80000", info: "#2196F3", success: "#4CAF50", warning: "#FFC107" };
 
-const ThemeColors = {
+const CommonColors = {
   photonBlue: "#006492",
   photonYellow: "#FFD843",
   lightBlue: "#39A4D5",
@@ -18,13 +17,22 @@ const ThemeColors = {
 const DarkTheme: ThemeDefinition = {
   dark: true,
   colors: {
-    background: ThemeColors.darkGray,
-    surface: ThemeColors.gray,
-    sidebar: ThemeColors.darkGray,
+    background: CommonColors.darkGray,
+    sidebar: CommonColors.darkGray,
 
-    primary: ThemeColors.lightBlue,
-    secondary: ThemeColors.photonYellow,
-    accent: ThemeColors.lightBlue,
+    surface: CommonColors.gray,
+    primary: CommonColors.lightBlue,
+    secondary: CommonColors.photonYellow,
+    accent: CommonColors.photonBlue,
+
+    toggle: CommonColors.photonBlue,
+    logsBackground: CommonColors.darkGray,
+
+
+    photonYellow: CommonColors.photonYellow,
+    lightBlue: CommonColors.lightBlue,
+
+
 
 
     // Card/info background
@@ -32,30 +40,37 @@ const DarkTheme: ThemeDefinition = {
     "on-surface-variant": "#f0f0f0",
 
 
-    toggle: "#006492",
-
-    // Misc/mismatches between themes
-
-    ...{ error: "#9b0000", info: "#2196F3", success: "#4CAF50", warning: "#FFC107" } //b80000
+    error: "#ff2e2e", //b80000
+    info: "#2196F3",
+    success: "#4CAF50",
+    warning: "#FFC107"
   }
 };
 
 const LightTheme: ThemeDefinition = {
   dark: false,
   colors: {
-    background: ThemeColors.lightGray,
-    surface: ThemeColors.photonBlue,
-    sidebar: ThemeColors.photonBlue,
+    background: CommonColors.lightGray,
+    sidebar: CommonColors.photonBlue,
 
-    primary: ThemeColors.photonBlue,
-    secondary: ThemeColors.lightBlue,
-    accent: ThemeColors.photonYellow,
+    surface: CommonColors.photonBlue,
+    primary: CommonColors.photonYellow,
+    secondary: CommonColors.lightBlue,
+    accent: CommonColors.photonYellow,
+
+    toggle: CommonColors.lightBlue,
+    logsBackground: CommonColors.lightGray,
+
+    photonYellow: CommonColors.photonYellow,
+    lightBlue: CommonColors.lightBlue,
+
+
+
 
     "surface-variant": "#358AB0",
-    "surface-light": ThemeColors.photonYellow,
-    toggle: "#39A4D5",
+    "surface-light": CommonColors.photonYellow,
 
-    ...commonColors
+    ...{ error: "#b80000", info: "#2196F3", success: "#4CAF50", warning: "#FFC107" }
   },
   variables: { "medium-emphasis-opacity": 1, "high-emphasis-opacity": 1 }
 };

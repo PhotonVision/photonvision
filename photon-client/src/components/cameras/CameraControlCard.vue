@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 interface SnapshotMetadata {
   snapshotName: string;
@@ -91,10 +94,10 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card color="surface">
+  <v-card color="surface" class="rounded-12">
     <v-card-title>Camera Control</v-card-title>
     <v-card-text class="pt-0">
-      <v-btn color="accent" @click="fetchSnapshots">
+      <v-btn color="lightBlue" @click="fetchSnapshots" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
         <v-icon start class="open-icon"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>
@@ -194,7 +197,7 @@ const expanded = ref([]);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

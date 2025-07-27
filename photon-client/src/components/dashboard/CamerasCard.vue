@@ -45,7 +45,7 @@ const performanceRecommendation = computed<string>(() => {
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
-        :color="fpsTooLow ? 'error' : 'accent'"
+        :color="fpsTooLow ? 'error' : 'primary'"
         style="font-size: 1rem; padding: 0; margin: 0"
         variant="text"
       >

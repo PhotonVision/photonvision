@@ -17,6 +17,9 @@ import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
 const host = inject<string>("backendHost");
@@ -97,7 +100,7 @@ const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-
+// TODO: FIX THEMING ON POPUPS
   axios
     .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
     .then(() => {
@@ -291,7 +294,7 @@ const openExportSettingsPrompt = () => {
         lg="4"
         class="pr-0"
       >
-        <v-card color="primary">
+        <v-card color="surface" class="rounded-12">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
@@ -361,8 +364,9 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
-                  color="secondary"
+                  color="lightBlue"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -376,8 +380,9 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="text-black"
-                  color="accent"
+                  color="photonYellow"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   :loading="deactivatingModule"
                   @click="deactivateModule(module.uniqueName)"
                 >
@@ -385,7 +390,7 @@ const openExportSettingsPrompt = () => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
+                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -394,7 +399,7 @@ const openExportSettingsPrompt = () => {
         </v-card>
       </v-col>
 
-      <!-- Disabled modules -->
+      <!-- Deactivated modules -->
       <v-col
         v-for="module in disabledVisionModules"
         :key="`disabled-${module.uniqueName}`"
@@ -403,7 +408,7 @@ const openExportSettingsPrompt = () => {
         lg="4"
         class="pr-0"
       >
-        <v-card class="pr-0" color="primary">
+        <v-card class="pr-0 rounded-12" color="surface">
           <v-card-title>{{ module.nickname }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text class="pt-3">
@@ -439,8 +444,9 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
-                  color="secondary"
+                  color="lightBlue"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -454,8 +460,9 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="text-black"
-                  color="accent"
+                  color="photonYellow"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   :loading="activatingModule"
                   @click="activateModule(module.uniqueName)"
                 >
@@ -463,7 +470,7 @@ const openExportSettingsPrompt = () => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
+                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
                   <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
@@ -474,7 +481,7 @@ const openExportSettingsPrompt = () => {
 
       <!-- Unassigned cameras -->
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
-        <v-card class="pr-0" color="primary">
+        <v-card class="pr-0 rounded-12" color="surface">
           <v-card-title>
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
@@ -489,16 +496,17 @@ const openExportSettingsPrompt = () => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera, false)">
+                <v-btn color="lightBlue" style="width: 100%" @click="setCameraView(camera, false)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
                 <v-btn
                   class="text-black"
-                  color="accent"
+                  color="photonYellow"
                   style="width: 100%"
                   :loading="assigningCamera"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="assignCamera(camera)"
                 >
                   Activate
@@ -517,7 +525,7 @@ const openExportSettingsPrompt = () => {
           class="pl-6 pr-6 d-flex flex-column justify-center"
           style="background-color: transparent; height: 100%"
         >
-          <v-card-text class="d-flex flex-column align-center justify-center">
+          <v-card-text class="d-flex flex-column align-center justify-center" style="flex-grow: 0;">
             <v-icon size="64" color="primary">mdi-plus</v-icon>
           </v-card-text>
           <v-card-title>Additional plugged in cameras will display here!</v-card-title>
@@ -527,7 +535,7 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" flat color="primary">
+      <v-card v-if="viewingCamera[0] !== null" flat color="surface">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
           <v-btn variant="text" @click="setCameraView(null, null)">
@@ -552,7 +560,7 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="primary" flat>
+      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="surface" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text class="pb-10px">
           <v-row class="align-center">
@@ -560,7 +568,7 @@ const openExportSettingsPrompt = () => {
               <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
-              <v-btn color="secondary" block @click="openExportSettingsPrompt">
+              <v-btn color="lightBlue" block @click="openExportSettingsPrompt" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
                 <v-icon start class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
@@ -588,6 +596,7 @@ const openExportSettingsPrompt = () => {
             color="error"
             :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
             :loading="deletingCamera"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="deleteThisCamera(cameraToDelete.uniqueName)"
           >
             <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
@@ -615,7 +624,7 @@ td {
 }
 
 .v-table {
-  background-color: #006492 !important;
+  /* background-color: #006492 !important; */
 }
 
 .active-status {
@@ -631,7 +640,7 @@ td {
 }
 
 a:hover {
-  color: pink;
+  /* color: pink; */
   background-color: transparent;
   text-decoration: underline;
 }

@@ -4,6 +4,9 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -90,13 +93,13 @@ const calibrationImageURL = (index: number) =>
 </script>
 
 <template>
-  <v-card color="primary" dark>
+  <v-card color="surface" dark>
     <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
       <v-col cols="12" md="6">
         <v-card-title class="pa-0"> Calibration Details </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn color="secondary" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
+        <v-btn color="lightBlue" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
           <v-icon start> mdi-import</v-icon>
           <span>Import</span>
         </v-btn>
@@ -110,10 +113,11 @@ const calibrationImageURL = (index: number) =>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
         <v-btn
-          color="secondary"
+          color="lightBlue"
           :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
           @click="openExportCalibrationPrompt"
+           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         >
           <v-icon start>mdi-export</v-icon>
           <span>Export</span>
@@ -132,8 +136,8 @@ const calibrationImageURL = (index: number) =>
     <v-card-text v-if="!currentCalibrationCoeffs">
       <v-banner
         rounded
-        bg-color="secondary"
-        color="secondary"
+        bg-color="accent"
+        color="accent"
         text-color="white"
         class="pt-3 pb-3"
         density="compact"
@@ -288,7 +292,7 @@ const calibrationImageURL = (index: number) =>
 
 <style scoped>
 .v-data-table {
-  background-color: #006492 !important;
+  /* background-color: #006492 !important; */
 }
 .snapshot-preview {
   max-width: 55%;
