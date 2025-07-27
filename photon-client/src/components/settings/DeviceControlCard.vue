@@ -298,7 +298,7 @@ const nukePhotonConfigDirectory = () => {
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
-                  <v-btn color="accent" :disabled="importFile === null" @click="handleSettingsImport">
+                  <v-btn color="primary" :disabled="importFile === null" @click="handleSettingsImport":variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
                   </v-btn>
@@ -358,9 +358,9 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
       </v-row>
     </div>
-
+<!-- TODO: CHANGE NUKE ICON, SEEMS UNPROFESSIONAL -->
     <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card color="primary" flat>
+      <v-card color="surface" flat>
         <v-card-title style="display: flex; justify-content: center">
           <span class="open-label">
             <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
@@ -374,7 +374,7 @@ const nukePhotonConfigDirectory = () => {
               <span> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
-              <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
+              <v-btn color="primary" style="float: right" @click="openExportSettingsPrompt" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
                 <v-icon start class="open-icon"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
@@ -399,6 +399,7 @@ const nukePhotonConfigDirectory = () => {
         <v-card-text class="pt-10px">
           <v-btn
             color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
             @click="nukePhotonConfigDirectory"
           >

@@ -66,7 +66,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
         <v-list-item
           v-if="mdAndUp"
           link
-          :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
+          :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-sunglasses' : 'mdi-moon-waning-crescent'"
           @click="theme.global.name.value = theme.global.name.value === 'LightTheme' ? 'DarkTheme' : 'LightTheme'"
         >
           <v-list-item-title>Theme</v-list-item-title>

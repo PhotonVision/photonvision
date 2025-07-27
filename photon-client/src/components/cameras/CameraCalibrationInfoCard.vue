@@ -91,7 +91,7 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 </script>
-
+<!-- TODO: CHECK ON THIS -->
 <template>
   <v-card color="surface" dark>
     <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
@@ -134,6 +134,7 @@ const calibrationImageURL = (index: number) =>
       >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
     >
     <v-card-text v-if="!currentCalibrationCoeffs">
+      <!-- TODO: FIX -->
       <v-banner
         rounded
         bg-color="accent"

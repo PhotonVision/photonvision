@@ -391,7 +391,7 @@ const openExportSettingsPrompt = () => {
               </v-col>
               <v-col cols="6" md="3">
                 <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-                  <v-icon>mdi-trash-can-outline</v-icon>
+                  <v-icon>mdi-delete</v-icon>
                 </v-btn>
               </v-col>
             </v-row>
@@ -557,7 +557,7 @@ const openExportSettingsPrompt = () => {
         </v-card-text>
       </v-card>
     </v-dialog>
-
+<!-- TODO WTFFFFFF COME ON MAN I HOPE I DIDNT DO THIS -->
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" width="800">
       <v-card v-if="cameraToDelete !== null" class="dialog-container" color="surface" flat>

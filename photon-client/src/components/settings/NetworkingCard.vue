@@ -156,6 +156,7 @@ watchEffect(() => {
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
+        <!-- TODO: FIX BANNERS -->
         <v-banner
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           rounded

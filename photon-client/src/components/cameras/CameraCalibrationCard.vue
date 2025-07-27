@@ -217,7 +217,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3 rounded-12" color="surface" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <v-card-text v-show="!isCalibrating">
-        <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibration</v-card-subtitle>
+        <v-card-subtitle class="pt-0 pl-0 pr-0 text-white">Current Calibrations</v-card-subtitle>
         <v-table fixed-header height="100%" density="compact">
           <thead>
             <tr>
@@ -515,6 +515,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </v-card-text>
           </template>
           <!-- No result reported yet -->
+           <!-- TODO: VERIFY THEME (ACCENT) -->
           <template v-else-if="calibSuccess === undefined">
             <v-progress-circular indeterminate :size="70" :width="8" color="accent" />
             <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>

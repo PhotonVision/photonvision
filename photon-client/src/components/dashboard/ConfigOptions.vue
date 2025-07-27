@@ -113,10 +113,11 @@ const onBeforeTabUpdate = () => {
 
 <template>
   <v-row no-gutters class="tabGroups">
+    <!-- TODO: FIX FOR THEME, MAYBE CLEAN UP? -->
     <template v-if="!useCameraSettingsStore().hasConnected">
       <v-col cols="12">
         <v-card color="error">
-          <v-card-title class="text-white">
+          <v-card-title>
             Camera has not connected. Please check your connection and try again.
           </v-card-title>
         </v-card>

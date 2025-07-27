@@ -221,6 +221,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-text class="pt-0 pb-10px">
           <v-row class="align-center">
             <v-col cols="12" md="6">
+              <!-- TODO: WTF????? -->
               <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">

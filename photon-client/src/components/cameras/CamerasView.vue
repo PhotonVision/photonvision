@@ -55,7 +55,7 @@ const fpsTooLow = computed<boolean>(() => {
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
-          color="accent"
+          color="primary"
           density="compact"
           hide-details="auto"
         />
