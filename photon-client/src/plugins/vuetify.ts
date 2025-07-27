@@ -5,50 +5,55 @@ import { createVuetify } from "vuetify";
 
 const commonColors = { error: "#b80000", info: "#2196F3", success: "#4CAF50", warning: "#FFC107" };
 
+const ThemeColors = {
+  photonBlue: "#006492",
+  photonYellow: "#FFD843",
+  lightBlue: "#39A4D5",
+  darkGray: "#151515",
+  gray: "#1c232c",
+  lightGray: "#232C37"
+};
+
+
 const DarkTheme: ThemeDefinition = {
   dark: true,
   colors: {
-    // Blue primary
-    primary: "#39A4D5", // 006492
+    background: ThemeColors.darkGray,
+    surface: ThemeColors.gray,
+    sidebar: ThemeColors.darkGray,
 
-    // Yellow secondary
-    secondary: "#FFD843",
+    primary: ThemeColors.lightBlue,
+    secondary: ThemeColors.photonYellow,
+    accent: ThemeColors.lightBlue,
 
-    // Near-black background
-    background: "#151515", // 232C37 (old) 121212 (very dark)
-    "on-background": "",
 
     // Card/info background
-    surface: "#232C37",
     "surface-variant": "#485b70",
     "on-surface-variant": "#f0f0f0",
 
-    // Lighter blue
-    accent: "#39A4D5",
 
     toggle: "#006492",
 
     // Misc/mismatches between themes
-    sidebar: "#151515",
 
-    ...{ error: "#b80000", info: "#2196F3", success: "#4CAF50", warning: "#FFC107" }
+    ...{ error: "#9b0000", info: "#2196F3", success: "#4CAF50", warning: "#FFC107" } //b80000
   }
 };
 
 const LightTheme: ThemeDefinition = {
   dark: false,
   colors: {
-    background: "#232C37",
-    primary: "#006492",
-    surface: "#006492",
-    secondary: "#39A4D5",
-    "surface-variant": "#358AB0",
-    accent: "#FFD843",
-    "surface-light": "#FFD843",
-    toggle: "#39A4D5",
+    background: ThemeColors.lightGray,
+    surface: ThemeColors.photonBlue,
+    sidebar: ThemeColors.photonBlue,
 
-    // Misc/mismatches between themes
-    sidebar: "#006492",
+    primary: ThemeColors.photonBlue,
+    secondary: ThemeColors.lightBlue,
+    accent: ThemeColors.photonYellow,
+
+    "surface-variant": "#358AB0",
+    "surface-light": ThemeColors.photonYellow,
+    toggle: "#39A4D5",
 
     ...commonColors
   },

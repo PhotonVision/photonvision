@@ -342,7 +342,7 @@ const nukePhotonConfigDirectory = () => {
       <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12">
-          <v-btn color="secondary" @click="() => (showFactoryReset = true)">
+          <v-btn color="error" @click="() => (showFactoryReset = true)">
             <v-icon start class="open-icon"> mdi-skull-crossbones </v-icon>
             <span class="open-icon">
               {{

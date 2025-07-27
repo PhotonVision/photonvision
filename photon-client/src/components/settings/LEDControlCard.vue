@@ -4,7 +4,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" color="surface">
     <v-card-title class="pb-10px">LED Control</v-card-title>
     <v-card-text>
       <pv-slider
