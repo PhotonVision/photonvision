@@ -1,8 +1,7 @@
 # Notebook
 
-For the installation script found in the first cell of the RKNN conversion
-notebook, please make sure that `GITHUB_URL` is a permalink to the repository with the commit that has the 
-RKNN scripts, and the `SCRIPTS_FOLDER` is the path to the `create_onnx.py`, `autoinstallrknnapi.py`, `create_rknn.py` 
-starting from the repo's root directory. 
+In the first cell of the RKNN conversion notebook, the installation script uses a structured list of dictionaries to define the download URLs and filenames for required scripts. Each dictionary includes a `url` (a permalink to a specific commit) and the corresponding `filename`.
 
-Make sure that all scripts required for the notebook are in the same folder. 
+Please ensure that all URLs in this array use permalinks—that is, links pointing to a specific commit hash rather than a branch name (e.g., main). This guarantees that the correct version of each script is always fetched, and prevents unexpected changes if the repository is updated in the future.
+
+You typically won’t need to update these permalinks unless one of the referenced scripts is modified. In that case, update the commit hash in the URLs accordingly.

@@ -12,22 +12,22 @@ PROGRESS_BAR_SIZE = 70
 
 wheel_versions = {
     "arm64": {
-        "3.6": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-        "3.7": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-        "3.8": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-        "3.9": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-        "3.10": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-        "3.11": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
-        "3.12": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.6": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp36-cp36m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.7": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp37-cp37m-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.8": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.9": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.10": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.11": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
+        "3.12": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/arm64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl",
     },
     "x86_64": {
-        "3.6": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "3.7": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "3.8": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "3.9": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "3.10": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "3.11": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
-        "3.12": "https://github.com/airockchip/rknn-toolkit2/raw/refs/heads/master/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.6": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp36-cp36m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.7": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.8": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.9": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.10": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.11": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+        "3.12": "https://github.com/airockchip/rknn-toolkit2/raw/42aa1d426c0a9e0869b6374edba009f7208a1926/rknn-toolkit2/packages/x86_64/rknn_toolkit2-2.3.2-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
     },
 }
 
