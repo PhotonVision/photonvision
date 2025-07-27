@@ -316,7 +316,7 @@ public class PhotonPoseEstimator {
      * Add robot heading data to buffer. Must be called periodically for the
      * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
      *
-     * @param timestampSeconds timestamp of the robot heading data.
+     * @param timestampSeconds Timestamp of the robot heading data.
      * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
      *     coordinates.
      */
@@ -328,7 +328,7 @@ public class PhotonPoseEstimator {
      * Add robot heading data to buffer. Must be called periodically for the
      * <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
      *
-     * @param timestampSeconds timestamp of the robot heading data.
+     * @param timestampSeconds Timestamp of the robot heading data.
      * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
      *     coordinates.
      */
@@ -340,7 +340,20 @@ public class PhotonPoseEstimator {
      * Clears all heading data in the buffer, and adds a new seed. Useful for preventing estimates
      * from utilizing heading data provided prior to a pose or rotation reset.
      *
-     * @param timestampSeconds timestamp of the robot heading data.
+     * @param timestampSeconds Timestamp of the robot heading data.
+     * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
+     *     coordinates.
+     */
+    public void resetHeadingData(double timestampSeconds, Rotation3d heading) {
+        headingBuffer.clear();
+        addHeadingData(timestampSeconds, heading);
+    }
+
+    /**
+     * Clears all heading data in the buffer, and adds a new seed. Useful for preventing estimates
+     * from utilizing heading data provided prior to a pose or rotation reset.
+     *
+     * @param timestampSeconds Timestamp of the robot heading data.
      * @param heading Field-relative robot heading at given timestamp. Standard WPILIB field
      *     coordinates.
      */
