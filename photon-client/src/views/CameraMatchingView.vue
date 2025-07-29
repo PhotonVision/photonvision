@@ -567,7 +567,7 @@ const openExportSettingsPrompt = () => {
         <v-card-text v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
-        <v-card-text v-else-if="camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
+        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
           <v-alert
             class="mb-3"
             color="photonYellow"
