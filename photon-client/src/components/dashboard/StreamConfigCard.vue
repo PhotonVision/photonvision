@@ -87,11 +87,6 @@ const processingMode = computed<number>({
   background-color: #191919 !important;
 }
 
-.mode-btn-label,
-.mode-btn-label > * {
-  /* color: white; */
-}
-
 th {
   width: 80px;
   text-align: center;

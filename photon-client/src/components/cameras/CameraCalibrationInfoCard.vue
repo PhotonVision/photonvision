@@ -292,9 +292,6 @@ const calibrationImageURL = (index: number) =>
 </template>
 
 <style scoped>
-.v-data-table {
-  /* background-color: #006492 !important; */
-}
 .snapshot-preview {
   max-width: 55%;
 }

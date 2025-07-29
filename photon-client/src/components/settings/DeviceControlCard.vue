@@ -266,7 +266,6 @@ const nukePhotonConfigDirectory = () => {
           <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
         </v-col>
       </v-row>
-      <!-- <v-divider class="mt-3 pb-3" /> -->
       <v-row>
         <v-col cols="12" sm="6">
           <v-btn
@@ -375,7 +374,6 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-col>
       </v-row>
-      <!-- <v-divider class="mt-3 pb-3" /> -->
       <v-row>
         <v-col cols="12">
           <v-btn

@@ -401,7 +401,7 @@ const handleBulkImport = () => {
                     @click="() => (confirmDeleteDialog = { show: true, model })"
                     title="Delete Model"
                   >
-                    <v-icon>mdi-delete</v-icon>
+                    <v-icon>mdi-trash-can-outline</v-icon>
                   </v-btn>
                 </td>
                 <td class="text-right">

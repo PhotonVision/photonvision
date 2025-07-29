@@ -53,21 +53,15 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
   width: 100%;
   height: 100%;
   text-align: center;
-  // background-color: #006492 !important;
 
   th,
   td {
-    // background-color: #006492 !important;
     font-size: 1rem !important;
     color: white !important;
   }
 
   td {
     font-family: monospace !important;
-  }
-
-  tbody :hover td {
-    // background-color: #005281 !important;
   }
 
   ::-webkit-scrollbar {

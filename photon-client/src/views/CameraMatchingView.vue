@@ -639,10 +639,6 @@ td {
   text-wrap-mode: wrap !important;
 }
 
-.v-table {
-  /* background-color: #006492 !important; */
-}
-
 .active-status {
   color: rgb(14, 240, 14);
   background-color: transparent;
@@ -656,7 +652,6 @@ td {
 }
 
 a:hover {
-  /* color: pink; */
   background-color: transparent;
   text-decoration: underline;
 }

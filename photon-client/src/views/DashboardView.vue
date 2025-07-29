@@ -151,7 +151,4 @@ a:active {
   background-color: transparent;
   text-decoration: none;
 }
-/* .v-alert {
-  border-radius: 12px;
-} */
 </style>

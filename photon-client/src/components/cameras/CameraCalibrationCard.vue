@@ -286,7 +286,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :disabled="isCalibrating"
             />
             <pv-select
-              v-if="boardType != CalibrationBoardTypes.Charuco"
+              v-if="boardType !== CalibrationBoardTypes.Charuco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
               label="Decimation"
               tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
@@ -297,7 +297,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               "
             />
             <pv-select
-              v-if="boardType == CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.Charuco"
               v-model="tagFamily"
               label="Tag Family"
               tooltip="Dictionary of aruco markers on the charuco board"
@@ -314,7 +314,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :label-cols="4"
             />
             <pv-number-input
-              v-if="boardType == CalibrationBoardTypes.Charuco"
+              v-if="boardType === CalibrationBoardTypes.Charuco"
               v-model="markerSizeIn"
               label="Marker Size (in)"
               tooltip="Size of the tag markers in inches must be smaller than pattern spacing"

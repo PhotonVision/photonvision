@@ -110,8 +110,4 @@ if (!is_demo) {
 div.v-layout {
   overflow: unset !important;
 }
-
-.v-card.rounded-lg {
-  border-radius: 12px !important;
-}
 </style>
