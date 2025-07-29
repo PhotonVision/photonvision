@@ -370,6 +370,23 @@ public class NeuralNetworkModelManager {
     public void extractModels() {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
+        // Get the shipped properties for the models
+        HashMap<Family, NeuralNetworkPropertyManager> shippedProperties =
+                getShippedProperties(modelsDirectory);
+
+        // Sum properties from shipped models
+        NeuralNetworkPropertyManager mergedProperties =
+                supportedBackends.stream()
+                        .filter(shippedProperties::containsKey)
+                        .map(shippedProperties::get)
+                        .reduce(new NeuralNetworkPropertyManager(), NeuralNetworkPropertyManager::sum);
+
+        // Used for checking if the model to be extracted is supported for this architecture
+        ArrayList<String> supportedModelFileNames = new ArrayList<String>();
+        for (ModelProperties model : mergedProperties.getModels()) {
+            supportedModelFileNames.add(model.modelPath().getFileName().toString());
+        }
+
         if (!modelsDirectory.exists() && !modelsDirectory.mkdirs()) {
             throw new RuntimeException("Failed to create directory: " + modelsDirectory);
         }
@@ -389,7 +406,10 @@ public class NeuralNetworkModelManager {
                     Path outputPath =
                             modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
 
-                    if (Files.exists(outputPath)) {
+                    // Check if the file already exists or if it is a supported model file
+                    if (Files.exists(outputPath)
+                            || !supportedModelFileNames.contains(
+                                    entry.getName().substring(entry.getName().lastIndexOf('/') + 1))) {
                         logger.info("Skipping extraction of DNN resource: " + entry.getName());
                         continue;
                     }
@@ -406,15 +426,6 @@ public class NeuralNetworkModelManager {
         } catch (IOException | URISyntaxException e) {
             logger.error("Error extracting models", e);
         }
-
-        // Stream through the supported backends and sum their properties
-        HashMap<Family, NeuralNetworkPropertyManager> shippedProperties =
-                getShippedProperties(modelsDirectory);
-        NeuralNetworkPropertyManager mergedProperties =
-                supportedBackends.stream()
-                        .filter(shippedProperties::containsKey)
-                        .map(shippedProperties::get)
-                        .reduce(new NeuralNetworkPropertyManager(), NeuralNetworkPropertyManager::sum);
 
         // Combine with existing properties
         ConfigManager.getInstance()
