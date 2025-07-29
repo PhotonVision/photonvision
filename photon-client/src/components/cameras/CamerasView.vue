@@ -32,7 +32,12 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card rounded-12" color="surface" dark>
+  <v-card
+    id="camera-settings-camera-view-card"
+    class="camera-settings-camera-view-card rounded-12"
+    color="surface"
+    dark
+  >
     <v-card-title class="justify-space-between align-content-center pt-0 pb-0">
       <div class="d-flex flex-wrap align-center pt-4 pb-4">
         <span class="mr-4" style="white-space: nowrap"> Cameras </span>
@@ -42,7 +47,10 @@ const fpsTooLow = computed<boolean>(() => {
           :color="fpsTooLow ? 'error' : 'transparent'"
           style="font-size: 1rem; padding: 0; margin: 0"
         >
-          <span class="pr-1" :style="{ color: fpsTooLow ? 'rgb(var(--v-theme-error))' : 'rgb(var(--v-theme-primary))' }">
+          <span
+            class="pr-1"
+            :style="{ color: fpsTooLow ? 'rgb(var(--v-theme-error))' : 'rgb(var(--v-theme-primary))' }"
+          >
             &nbsp;{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
             {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
           </span>
@@ -93,19 +101,19 @@ const fpsTooLow = computed<boolean>(() => {
         <v-btn
           color="lightBlue"
           class="fill"
-           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon start class="mode-btn-icon">mdi-import</v-icon>
+          <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
           color="lightBlue"
           class="fill"
-           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon start class="mode-btn-icon">mdi-export</v-icon>
+          <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>

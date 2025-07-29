@@ -34,8 +34,10 @@ const processingMode = computed<number>({
             :disabled="!useCameraSettingsStore().hasConnected"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
-            prepend-icon="mdi-square-outline"
           >
+            <template #prepend>
+              <v-icon size="large">mdi-square-outline</v-icon>
+            </template>
             <span>2D</span>
           </v-btn>
           <v-btn
@@ -45,8 +47,10 @@ const processingMode = computed<number>({
             "
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
-            prepend-icon="mdi-cube-outline"
           >
+            <template #prepend>
+              <v-icon size="large">mdi-cube-outline</v-icon>
+            </template>
             <span>3D</span>
           </v-btn>
         </v-btn-toggle>
@@ -56,12 +60,20 @@ const processingMode = computed<number>({
       <v-col class="pa-4 pt-0">
         <p style="color: white">Stream Display</p>
         <v-btn-toggle v-model="value" :multiple="true" mandatory base-color="surface-variant" class="fill w-100">
-          <v-btn color="lightBlue" class="fill w-50" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-            <v-icon start class="mode-btn-icon">mdi-import</v-icon>
+          <v-btn
+            color="lightBlue"
+            class="fill w-50"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          >
+            <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
             <span class="mode-btn-label">Raw</span>
           </v-btn>
-          <v-btn color="lightBlue" class="fill w-50" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-            <v-icon start class="mode-btn-icon">mdi-export</v-icon>
+          <v-btn
+            color="lightBlue"
+            class="fill w-50"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          >
+            <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
             <span class="mode-btn-label">Processed</span>
           </v-btn>
         </v-btn-toggle>

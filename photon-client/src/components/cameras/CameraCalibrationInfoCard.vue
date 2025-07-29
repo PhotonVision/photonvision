@@ -91,7 +91,6 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 </script>
-<!-- TODO: CHECK ON THIS -->
 <template>
   <v-card color="surface" dark>
     <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
@@ -99,8 +98,13 @@ const calibrationImageURL = (index: number) =>
         <v-card-title class="pa-0"> Calibration Details </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn color="lightBlue" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-          <v-icon start> mdi-import</v-icon>
+        <v-btn
+          color="lightBlue"
+          style="width: 100%"
+          @click="openUploadPhotonCalibJsonPrompt"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        >
+          <v-icon start size="large"> mdi-import</v-icon>
           <span>Import</span>
         </v-btn>
         <input
@@ -117,9 +121,9 @@ const calibrationImageURL = (index: number) =>
           :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
           @click="openExportCalibrationPrompt"
-           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         >
-          <v-icon start>mdi-export</v-icon>
+          <v-icon start size="large">mdi-export</v-icon>
           <span>Export</span>
         </v-btn>
         <a
@@ -134,18 +138,14 @@ const calibrationImageURL = (index: number) =>
       >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
     >
     <v-card-text v-if="!currentCalibrationCoeffs">
-      <!-- TODO: FIX -->
-      <v-banner
-        rounded
-        bg-color="accent"
-        color="accent"
-        text-color="white"
+      <v-alert
         class="pt-3 pb-3"
+        color="primary"
         density="compact"
+        text="The selected video format has not been calibrated."
         icon="mdi-alert-circle-outline"
-      >
-        The selected video format has not been calibrated.
-      </v-banner>
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      />
     </v-card-text>
     <v-card-text class="pt-0">
       <v-table density="compact" style="width: 100%">

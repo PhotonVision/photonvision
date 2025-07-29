@@ -97,7 +97,7 @@ onBeforeMount(() => {
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Metrics</span>
       <v-btn variant="text" @click="fetchMetrics">
-        <v-icon start class="open-icon">mdi-reload</v-icon>
+        <v-icon start class="open-icon" size="large">mdi-reload</v-icon>
         Last Fetched: {{ metricsLastFetched }}
       </v-btn>
     </v-card-title>
@@ -241,12 +241,6 @@ $stats-table-inner: rgba(255, 255, 255, 0.1);
 }
 
 .v-table {
-  :hover {
-    tbody > tr {
-      // background-color: #005281 !important;
-    }
-  }
-
   ::-webkit-scrollbar {
     width: 0;
     height: 0.55em;

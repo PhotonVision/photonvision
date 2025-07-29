@@ -97,19 +97,36 @@ const expanded = ref([]);
   <v-card color="surface" class="rounded-12">
     <v-card-title>Camera Control</v-card-title>
     <v-card-text class="pt-0">
-      <v-btn color="lightBlue" @click="fetchSnapshots" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-        <v-icon start class="open-icon"> mdi-folder </v-icon>
+      <v-btn
+        color="lightBlue"
+        @click="fetchSnapshots"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+      >
+        <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>
     </v-card-text>
     <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card color="primary" flat>
-        <v-card-title> View Saved Frame Snapshots </v-card-title>
-        <v-divider />
-        <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
-          There are no snapshots saved
+      <v-card color="surface" flat>
+        <v-card-title> Saved Frame Snapshots </v-card-title>
+        <v-card-text v-if="imgData.length === 0" class="pt-0">
+          <v-alert
+            color="lightBlue"
+            density="compact"
+            text="There are currently no saved snapshots."
+            icon="mdi-information-outline"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          />
         </v-card-text>
-        <v-card-text v-else>
+        <v-card-text v-else class="pt-0">
+          <v-alert
+            closable
+            color="lightBlue"
+            density="compact"
+            text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
+            icon="mdi-information-outline"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          />
           <v-data-table
             v-model:expanded="expanded"
             :headers="[
@@ -154,10 +171,6 @@ const expanded = ref([]);
               </div>
             </template>
           </v-data-table>
-          <span
-            >Snapshot Timestamps may be incorrect as they depend on when the coprocessor was last connected to the
-            internet</span
-          >
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -173,16 +186,10 @@ const expanded = ref([]);
 }
 .v-table {
   text-align: center;
-  background-color: #006492 !important;
 
   th,
   td {
-    background-color: #005281 !important;
     font-size: 1rem !important;
-  }
-
-  tbody :hover tr {
-    background-color: #005281 !important;
   }
 
   ::-webkit-scrollbar {

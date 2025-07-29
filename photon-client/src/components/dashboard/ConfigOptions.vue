@@ -15,6 +15,9 @@ import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useDisplay } from "vuetify/lib/composables/display";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 interface ConfigOption {
   tabName: string;
@@ -113,15 +116,14 @@ const onBeforeTabUpdate = () => {
 
 <template>
   <v-row no-gutters class="tabGroups">
-    <!-- TODO: FIX FOR THEME, MAYBE CLEAN UP? -->
     <template v-if="!useCameraSettingsStore().hasConnected">
-      <v-col cols="12">
-        <v-card color="error">
-          <v-card-title>
-            Camera has not connected. Please check your connection and try again.
-          </v-card-title>
-        </v-card>
-      </v-col>
+      <v-alert
+        color="error"
+        density="compact"
+        text="Camera is not connected. Please check your connection and try again."
+        icon="mdi-alert-circle-outline"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      />
     </template>
     <template v-else>
       <v-col

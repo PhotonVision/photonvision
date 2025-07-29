@@ -238,8 +238,6 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     value: cameraUniqueName
   }))
 );
-
-// TODO: check back on delete pipeline dialog verbiage
 </script>
 
 <template>
@@ -340,7 +338,12 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             </v-list-item>
             <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
-                <pv-icon color="red-darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
+                <pv-icon
+                  color="red-darken-2"
+                  :right="true"
+                  icon-name="mdi-trash-can-outline"
+                  tooltip="Delete pipeline"
+                />
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -392,7 +395,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           />
         </v-card-text>
         <v-card-actions class="pr-5 pt-10px pb-5">
-          <v-btn color="lightBlue" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'" @click="cancelPipelineCreation"> Cancel </v-btn>
+          <v-btn
+            color="lightBlue"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="cancelPipelineCreation"
+          >
+            Cancel
+          </v-btn>
           <v-btn
             color="photonYellow"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -409,10 +418,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-title class="pb-0">Delete Pipeline</v-card-title>
         <v-card-text>
           Are you sure you want to delete
-          <span style="color: white">"{{
-            useCameraSettingsStore().currentPipelineSettings.pipelineNickname
-          }}"</span
-          >? This cannot be undone.
+          <span style="color: white">"{{ useCameraSettingsStore().currentPipelineSettings.pipelineNickname }}"</span>?
+          This cannot be undone.
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
           <v-btn
@@ -423,7 +430,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           >
             Cancel
           </v-btn>
-          <v-btn color="error" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'" @click="confirmDeleteCurrentPipeline">
+          <v-btn
+            color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="confirmDeleteCurrentPipeline"
+          >
             Delete
           </v-btn>
         </v-card-actions>
@@ -438,10 +449,19 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           settings.
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
-          <v-btn color="lightBlue" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'" class="text-black" @click="cancelChangePipelineType">
+          <v-btn
+            color="lightBlue"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            class="text-black"
+            @click="cancelChangePipelineType"
+          >
             Cancel
           </v-btn>
-          <v-btn color="photonYellow" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'" @click="confirmChangePipelineType">
+          <v-btn
+            color="photonYellow"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="confirmChangePipelineType"
+          >
             Confirm
           </v-btn>
         </v-card-actions>

@@ -103,14 +103,10 @@ if (!is_demo) {
   padding: 0 !important;
 }
 
-// TODO: WHAT IS THIS??
 .v-overlay__scrim {
-  background-color: #202020;
+  background-color: #111111;
 }
 
-// #title {
-//   color: #ffd843;
-// }
 div.v-layout {
   overflow: unset !important;
 }

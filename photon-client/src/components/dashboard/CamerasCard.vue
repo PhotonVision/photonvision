@@ -46,11 +46,10 @@ const performanceRecommendation = computed<string>(() => {
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
         :color="fpsTooLow ? 'error' : 'primary'"
-        style="font-size: 1rem; padding: 0; margin: 0"
+        style="font-size: 1.1rem; padding: 0; margin: 0"
         variant="text"
       >
-        <span class="pr-1"
-          >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
+        <span class="pr-1">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
         ><span>{{ performanceRecommendation }}</span>
       </v-chip>
       <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">

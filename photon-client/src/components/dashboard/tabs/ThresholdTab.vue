@@ -194,13 +194,20 @@ const interactiveCols = computed(() =>
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
             >
-              <v-icon start> mdi-minus </v-icon>
+              <v-icon start size="large"> mdi-minus </v-icon>
               Shrink Range
             </v-btn>
           </v-col>
           <v-col cols="4" class="pl-0 pr-0">
-            <v-btn color="primary" class="text-black" size="small" block @click="enableColorPicking(1)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-              <v-icon start> mdi-plus-minus </v-icon>
+            <v-btn
+              color="primary"
+              class="text-black"
+              size="small"
+              block
+              @click="enableColorPicking(1)"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            >
+              <v-icon start size="large"> mdi-plus-minus </v-icon>
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
             </v-btn>
           </v-col>
@@ -213,14 +220,21 @@ const interactiveCols = computed(() =>
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
             >
-              <v-icon start> mdi-plus </v-icon>
+              <v-icon start size="large"> mdi-plus </v-icon>
               Expand Range
             </v-btn>
           </v-col>
         </template>
         <template v-else>
           <v-card-text class="pa-0 pt-3 pb-3">
-            <v-btn block color="primary" class="text-black" size="small" @click="disableColorPicking" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
+            <v-btn
+              block
+              color="primary"
+              class="text-black"
+              size="small"
+              @click="disableColorPicking"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            >
               Cancel
             </v-btn>
           </v-card-text>

@@ -82,7 +82,7 @@ document.addEventListener("keydown", (e) => {
         </v-col>
         <v-col class="align-self-center pl-3" style="text-align: right">
           <v-btn variant="text" color="white" @click="handleLogExport">
-            <v-icon start class="menu-icon"> mdi-download </v-icon>
+            <v-icon start class="menu-icon" size="large"> mdi-download </v-icon>
             <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -95,11 +95,11 @@ document.addEventListener("keydown", (e) => {
             />
           </v-btn>
           <v-btn variant="text" color="white" @click="handleLogClear">
-            <v-icon start class="menu-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="menu-icon" size="large"> mdi-trash-can-outline </v-icon>
             <span class="menu-label">Clear Client Logs</span>
           </v-btn>
           <v-btn variant="text" color="white" @click="() => (useStateStore().showLogModal = false)">
-            <v-icon start class="menu-icon"> mdi-close </v-icon>
+            <v-icon start class="menu-icon" size="large"> mdi-close </v-icon>
             <span class="menu-label">Close</span>
           </v-btn>
         </v-col>
@@ -110,7 +110,7 @@ document.addEventListener("keydown", (e) => {
       <div class="dialog-data">
         <!-- Log view options -->
         <v-row no-gutters class="pt-4 pt-md-0" style="display: flex; justify-content: space-between">
-          <v-col cols="12" md="7" style="display: flex; align-items: center">
+          <v-col cols="12" md="7" style="display: flex; align-items: center" class="pr-3">
             <v-text-field
               v-model="searchQuery"
               density="compact"
@@ -121,16 +121,20 @@ document.addEventListener("keydown", (e) => {
               label="Search"
               variant="underlined"
             />
-            <!-- TODO: CLEAN THIS UP -->
             <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
             <v-btn icon variant="flat" @click="timeInput = undefined">
-              <v-icon>mdi-close-circle-outline</v-icon>
+              <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-col>
           <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
             <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
               {{ getLogLevelFromIndex(level)
-              }}<v-switch v-model="selectedLogLevels[level]" class="pl-2" hide-details color="rgb(var(--v-theme-primary))"></v-switch>
+              }}<v-switch
+                v-model="selectedLogLevels[level]"
+                class="pl-2"
+                hide-details
+                color="rgb(var(--v-theme-primary))"
+              ></v-switch>
             </div>
           </v-col>
         </v-row>

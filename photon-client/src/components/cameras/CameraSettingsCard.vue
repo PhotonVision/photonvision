@@ -202,44 +202,40 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
-        <v-btn block size="small" color="primary" :disabled="!settingsHaveChanged()" @click="saveCameraSettings" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-          <v-icon start> mdi-content-save </v-icon>
+        <v-btn
+          block
+          size="small"
+          color="primary"
+          :disabled="!settingsHaveChanged()"
+          @click="saveCameraSettings"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        >
+          <v-icon start size="large"> mdi-content-save </v-icon>
           Save Changes
         </v-btn>
       </v-col>
       <v-col cols="6" class="pa-0 pl-2">
-        <v-btn block size="small" color="error" @click="() => (showDeleteCamera = true)" :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'">
-          <v-icon start> mdi-delete </v-icon>
+        <v-btn
+          block
+          size="small"
+          color="error"
+          @click="() => (showDeleteCamera = true)"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        >
+          <v-icon start size="large"> mdi-trash-can-outline </v-icon>
           Delete Camera
         </v-btn>
       </v-col>
     </v-card-text>
 
     <v-dialog v-model="showDeleteCamera" width="800">
-      <v-card color="primary" flat>
+      <v-card color="surface" flat>
         <v-card-title> Delete {{ useCameraSettingsStore().currentCameraSettings.nickname }}? </v-card-title>
         <v-card-text class="pt-0 pb-10px">
-          <v-row class="align-center">
-            <v-col cols="12" md="6">
-              <!-- TODO: WTF????? -->
-              <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon start class="open-icon"> mdi-export </v-icon>
-                <span class="open-label">Backup Settings</span>
-                <a
-                  ref="exportSettings"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/settings/photonvision_config.zip`"
-                  download="photonvision-settings.zip"
-                  target="_blank"
-                />
-              </v-btn>
-            </v-col>
-          </v-row>
+          Are you sure you want to delete "{{ useCameraSettingsStore().currentCameraSettings.nickname }}"? This cannot
+          be undone.
         </v-card-text>
-        <v-card-text class="pt-0 pb-0">
+        <v-card-text class="pt-0 pb-10px">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
@@ -247,20 +243,28 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text class="pt-10px">
+        <v-card-actions class="pa-5 pt-0">
           <v-btn
-            block
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="primary"
+            class="text-black"
+            @click="showDeleteCamera = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
             color="error"
             :disabled="
               yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
             "
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             :loading="deletingCamera"
             @click="deleteThisCamera"
           >
-            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">DELETE (UNRECOVERABLE)</span>
+            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
+            <span class="open-label">Delete</span>
           </v-btn>
-        </v-card-text>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-card>

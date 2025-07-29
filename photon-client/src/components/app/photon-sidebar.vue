@@ -5,6 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useRoute } from "vue-router";
 import { useDisplay, useTheme } from "vuetify";
+import { onBeforeMount } from "vue";
 
 const compact = computed<boolean>({
   get: () => {
@@ -17,6 +18,19 @@ const compact = computed<boolean>({
 const { mdAndUp } = useDisplay();
 
 const theme = useTheme();
+
+const changeTheme = () => {
+  const newTheme = theme.global.name.value === "LightTheme" ? "DarkTheme" : "LightTheme";
+  theme.global.name.value = newTheme;
+  localStorage.setItem("theme", newTheme);
+};
+
+onBeforeMount(() => {
+  const storedTheme = localStorage.getItem("theme");
+  if (storedTheme) {
+    theme.global.name.value = storedTheme;
+  }
+});
 
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </script>
@@ -66,29 +80,37 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
         <v-list-item
           v-if="mdAndUp"
           link
-          :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-sunglasses' : 'mdi-moon-waning-crescent'"
-          @click="theme.global.name.value = theme.global.name.value === 'LightTheme' ? 'DarkTheme' : 'LightTheme'"
-        >
-          <v-list-item-title>Theme</v-list-item-title>
-        </v-list-item>
-
-        <v-list-item
-          v-if="mdAndUp"
-          link
           :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
           @click="() => (compact = !compact)"
         >
-          <v-list-item-title>Compact Mode</v-list-item-title>
+          <v-list-item-title>Compact</v-list-item-title>
         </v-list-item>
         <v-list-item
-          :prepend-icon="
-            useSettingsStore().network.runNTServer
-              ? 'mdi-server'
-              : useStateStore().ntConnectionStatus.connected
-                ? 'mdi-robot'
-                : 'mdi-robot-off'
-          "
+          link
+          :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'"
+          @click="changeTheme"
         >
+          <v-list-item-title>Theme</v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="
+                useSettingsStore().network.runNTServer
+                  ? 'mdi-server'
+                  : useStateStore().ntConnectionStatus.connected
+                    ? 'mdi-robot'
+                    : 'mdi-robot-off'
+              "
+              :color="
+                useSettingsStore().network.runNTServer
+                  ? '#00ff00'
+                  : useStateStore().ntConnectionStatus.connected
+                    ? '#00ff00'
+                    : '#ff0000'
+              "
+            />
+          </template>
           <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
             NetworkTables server running for
             <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
@@ -100,9 +122,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
             style="flex-direction: column; display: flex"
           >
             NetworkTables Server Connected!
-            <span class="text-primary">
-              {{ useStateStore().ntConnectionStatus.address }} sdfsdfsdf
-            </span>
+            <span class="text-primary"> {{ useStateStore().ntConnectionStatus.address }} </span>
           </v-list-item-title>
           <v-list-item-title
             v-else
@@ -113,10 +133,15 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
             Not connected to NetworkTables Server!
           </v-list-item-title>
         </v-list-item>
-
-        <v-list-item :prepend-icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'">
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
+              :color="useStateStore().backendConnected ? '#00ff00' : '#ff0000'"
+            />
+          </template>
           <v-list-item-title v-show="!renderCompact" class="text-wrap">
-            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
+            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
           </v-list-item-title>
         </v-list-item>
       </v-list>
@@ -125,17 +150,6 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </template>
 
 <style scoped>
-/* .v-navigation-drawer {
-  margin: 12px !important;
-  width: calc(256px - 24px) !important;
-  height: calc(100% - 24px) !important;
-  border-radius: 12px;
-}
-
-.v-navigation-drawer--rail {
-  width: calc(56px - 24px) !important;
-} */
-
 .v-navigation-drawer {
   border: none;
 }
