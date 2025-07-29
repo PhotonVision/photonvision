@@ -236,7 +236,7 @@ class PhotonPoseEstimator:
         self, timestampSeconds: wpimath.units.seconds, heading: Rotation2d | Rotation3d
     ) -> None:
         """
-        Add robot heading data to buffer. Must be called periodically for the <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
+        Add robot heading data to buffer. Must be called periodically for the **PNP_DISTANCE_TRIG_SOLVE** strategy.
 
         :param timestampSeconds :timestamp of the robot heading data
         :param heading: field-relative robot heading at given timestamp
