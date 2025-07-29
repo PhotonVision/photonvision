@@ -426,12 +426,12 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
-        receiveTimeMicros = self._timestampFunc() * 1e6
+        publishTimestampMicros = self._timestampFunc() * 1e6
         return PhotonPipelineResult(
-            ntReceiveTimestampMicros=int(receiveTimeMicros + 10),
+            ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
-                captureTimestampMicros=int(receiveTimeMicros - latency * 1e6),
-                publishTimestampMicros=int(receiveTimeMicros),
+                captureTimestampMicros=int(publishTimestampMicros - latency * 1e6),
+                publishTimestampMicros=int(publishTimestampMicros),
                 sequenceID=self.heartbeatCounter,
                 # Pretend like we heard a pong recently
                 timeSinceLastPong=int(np.random.uniform(950, 1050)),
