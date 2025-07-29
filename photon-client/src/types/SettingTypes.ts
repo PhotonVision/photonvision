@@ -25,17 +25,17 @@ export interface ObjectDetectionModelProperties {
 }
 
 export interface MetricData {
-  cpuTemp?: string;
-  cpuUtil?: string;
-  cpuMem?: string;
-  gpuMem?: string;
-  ramUtil?: string;
-  gpuMemUtil?: string;
+  cpuTemp?: number;
+  cpuUtil?: number;
   cpuThr?: string;
-  cpuUptime?: string;
-  diskUtilPct?: string;
-  npuUsage?: string;
+  ramMem?: number;
+  ramUtil?: number;
+  gpuMem?: number;
+  gpuMemUtil?: number;
+  diskUtilPct?: number;
+  npuUsage?: number[];
   ipAddress?: string;
+  uptime?: number;
 }
 
 export enum NetworkConnectionType {
