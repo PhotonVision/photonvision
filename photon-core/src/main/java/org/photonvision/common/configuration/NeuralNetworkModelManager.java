@@ -274,14 +274,19 @@ public class NeuralNetworkModelManager {
     }
 
     // Do checking later on, when we create the model object
-    private void loadModel(ModelProperties properties) {
+    private void loadModel(Path path) {
         if (models == null) {
             models = new HashMap<>();
         }
 
+        ModelProperties properties =
+                ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().getModel(path);
+
         if (properties == null) {
             logger.error(
-                    "Model properties are null, this could mean the models config was unable to be found in the database");
+                    "Model properties are null. This could mean the config for model "
+                            + path
+                            + " was unable to be found in the database.");
             return;
         }
 
@@ -337,13 +342,7 @@ public class NeuralNetworkModelManager {
         try {
             Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
-                    .forEach(
-                            path ->
-                                    loadModel(
-                                            ConfigManager.getInstance()
-                                                    .getConfig()
-                                                    .neuralNetworkPropertyManager()
-                                                    .getModel(path)));
+                    .forEach(path -> loadModel(path));
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
