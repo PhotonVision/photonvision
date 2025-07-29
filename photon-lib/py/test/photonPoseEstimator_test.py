@@ -16,9 +16,6 @@
 ###############################################################################
 
 import wpimath.units
-from robotpy_apriltag import AprilTag, AprilTagFieldLayout
-from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
-
 from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
 from photonlibpy.estimation import TargetModel
 from photonlibpy.simulation import PhotonCameraSim, SimCameraProperties, VisionTargetSim
@@ -29,6 +26,8 @@ from photonlibpy.targeting import (
 )
 from photonlibpy.targeting.multiTargetPNPResult import MultiTargetPNPResult, PnpResult
 from photonlibpy.targeting.photonPipelineResult import PhotonPipelineResult
+from robotpy_apriltag import AprilTag, AprilTagFieldLayout
+from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
 
 
 class PhotonCameraInjector(PhotonCamera):

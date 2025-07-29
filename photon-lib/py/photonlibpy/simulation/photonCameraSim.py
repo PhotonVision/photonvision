@@ -42,7 +42,9 @@ class PhotonCameraSim:
         ),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
-        timestampFunc: typing.Callable[[], wpimath.units.seconds] = wpilib.Timer.getFPGATimestamp,
+        timestampFunc: typing.Callable[
+            [], wpimath.units.seconds
+        ] = wpilib.Timer.getFPGATimestamp,
     ):
         """Constructs a handle for simulating :class:`.PhotonCamera` values. Processing simulated targets
         through this class will change the associated PhotonCamera's results.
