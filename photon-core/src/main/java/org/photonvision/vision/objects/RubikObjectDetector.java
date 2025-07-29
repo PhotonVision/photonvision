@@ -41,7 +41,7 @@ public class RubikObjectDetector implements ObjectDetector {
     private AtomicBoolean released = new AtomicBoolean(false);
 
     /** Pointer to the native object */
-    private final long objHandle;
+    private final long[] ptrs;
 
     private final RubikModel model;
 
@@ -65,8 +65,9 @@ public class RubikObjectDetector implements ObjectDetector {
         this.inputSize = inputSize;
 
         // Create the detector
-        objHandle = RubikJNI.create(model.modelFile.getPath().toString());
-        if (objHandle <= 0) {
+        ptrs = RubikJNI.create(model.modelFile.getPath().toString());
+
+        if (!isValid()) {
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
         }
@@ -98,10 +99,11 @@ public class RubikObjectDetector implements ObjectDetector {
      */
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
-        if (objHandle <= 0) {
-            // Report error and make sure to include the model name
-            logger.error("Detector is not initialized! Model: " + model.modelFile.getName());
-            return List.of();
+        if (!isValid()) {
+            logger.error(
+                    "Detector is not initialized, and so it can't be released! Model: "
+                            + model.modelFile.getName());
+            return null;
         }
 
         // Resize the frame to the input size of the model
@@ -114,7 +116,7 @@ public class RubikObjectDetector implements ObjectDetector {
         }
 
         // Detect objects in the letterboxed frame
-        var results = RubikJNI.detect(objHandle, letterboxed.getNativeObjAddr(), boxThresh);
+        var results = RubikJNI.detect(ptrs[0], letterboxed.getNativeObjAddr(), boxThresh);
 
         letterboxed.release();
 
@@ -133,15 +135,23 @@ public class RubikObjectDetector implements ObjectDetector {
     public void release() {
         // Checks if the atomic is 'false', and if so, sets it to 'true'
         if (released.compareAndSet(false, true)) {
-            if (objHandle <= 0) {
+            if (!isValid()) {
                 logger.error(
                         "Detector is not initialized, and so it can't be released! Model: "
                                 + model.modelFile.getName());
                 return;
             }
-
-            RubikJNI.destroy(objHandle);
+            RubikJNI.destroy(ptrs);
             logger.debug("Released detector for model " + model.modelFile.getName());
         }
+    }
+
+    private boolean isValid() {
+        for (long ptr : ptrs) {
+            if (ptr <= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }
