@@ -18,6 +18,7 @@
 from time import sleep
 
 import ntcore
+
 from photonlibpy import PhotonCamera
 from photonlibpy.photonCamera import setVersionCheckEnabled
 

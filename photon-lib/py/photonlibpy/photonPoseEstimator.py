@@ -20,8 +20,18 @@ from typing import Optional
 
 import hal
 import wpilib
+import wpimath.units
 from robotpy_apriltag import AprilTagFieldLayout
-from wpimath.geometry import Pose2d, Pose3d, Transform3d
+from wpimath.geometry import (
+    Pose2d,
+    Pose3d,
+    Rotation2d,
+    Rotation3d,
+    Transform3d,
+    Translation2d,
+    Translation3d,
+)
+from wpimath.interpolation import TimeInterpolatableRotation2dBuffer
 
 from .estimatedRobotPose import EstimatedRobotPose
 from .photonCamera import PhotonCamera
@@ -58,6 +68,17 @@ class PoseStrategy(enum.Enum):
     """
     Use all visible tags to compute a single pose estimate.
     This runs on the RoboRIO, and can take a lot of time.
+    """
+
+    PNP_DISTANCE_TRIG_SOLVE = enum.auto()
+    """
+    Use distance data from best visible tag to compute a Pose. This runs on
+    the RoboRIO in order to access the robot's yaw heading, and MUST have
+    addHeadingData called every frame so heading data is up-to-date.
+
+    Produces a Pose2d in estimatedRobotPose (0 for z, roll, pitch).
+
+    See https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98
     """
 
 
@@ -98,6 +119,7 @@ class PhotonPoseEstimator:
         self._poseCacheTimestampSeconds = -1.0
         self._lastPose: Optional[Pose3d] = None
         self._referencePose: Optional[Pose3d] = None
+        self._headingBuffer = TimeInterpolatableRotation2dBuffer(1)
 
         # Usage reporting
         hal.report(
@@ -210,6 +232,32 @@ class PhotonPoseEstimator:
         if oldObj != newObj and oldObj is not None and oldObj is not newObj:
             self._invalidatePoseCache()
 
+    def addHeadingData(
+        self, timestampSeconds: wpimath.units.seconds, heading: Rotation2d | Rotation3d
+    ) -> None:
+        """
+        Add robot heading data to buffer. Must be called periodically for the <b>PNP_DISTANCE_TRIG_SOLVE</b> strategy.
+
+        :param timestampSeconds :timestamp of the robot heading data
+        :param heading: field-relative robot heading at given timestamp
+        """
+        if isinstance(heading, Rotation3d):
+            heading = heading.toRotation2d()
+        self._headingBuffer.addSample(timestampSeconds, heading)
+
+    def resetHeadingData(
+        self, timestampSeconds: wpimath.units.seconds, heading: Rotation2d | Rotation3d
+    ) -> None:
+        """
+        Clears all heading data in the buffer, and adds a new seed. Useful for preventing estimates
+        from utilizing heading data provided prior to a pose or rotation reset.
+
+        :param timestampSeconds: timestamp of the robot heading data
+        :param  heading: field-relative robot heading at given timestamp
+        """
+        self._headingBuffer.clear()
+        self.addHeadingData(timestampSeconds, heading)
+
     def update(
         self, cameraResult: Optional[PhotonPipelineResult] = None
     ) -> Optional[EstimatedRobotPose]:
@@ -263,6 +311,8 @@ class PhotonPoseEstimator:
             estimatedPose = self._lowestAmbiguityStrategy(cameraResult)
         elif strat is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR:
             estimatedPose = self._multiTagOnCoprocStrategy(cameraResult)
+        elif strat is PoseStrategy.PNP_DISTANCE_TRIG_SOLVE:
+            estimatedPose = self._pnpDistanceTrigSolveStrategy(cameraResult)
         else:
             wpilib.reportError(
                 "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", False
@@ -273,6 +323,52 @@ class PhotonPoseEstimator:
             self._lastPose = None
 
         return estimatedPose
+
+    def _pnpDistanceTrigSolveStrategy(
+        self, result: PhotonPipelineResult
+    ) -> Optional[EstimatedRobotPose]:
+        if (bestTarget := result.getBestTarget()) is None:
+            return None
+
+        if (
+            headingSample := self._headingBuffer.sample(result.getTimestampSeconds())
+        ) is None:
+            return None
+
+        if (tagPose := self._fieldTags.getTagPose(bestTarget.fiducialId)) is None:
+            return None
+
+        camToTagTranslation = (
+            Translation3d(
+                bestTarget.getBestCameraToTarget().translation().norm(),
+                Rotation3d(
+                    0,
+                    -wpimath.units.degreesToRadians(bestTarget.getPitch()),
+                    -wpimath.units.degreesToRadians(bestTarget.getYaw()),
+                ),
+            )
+            .rotateBy(self.robotToCamera.rotation())
+            .toTranslation2d()
+            .rotateBy(headingSample)
+        )
+
+        fieldToCameraTranslation = (
+            tagPose.toPose2d().translation() - camToTagTranslation
+        )
+        camToRobotTranslation: Translation2d = -(
+            self.robotToCamera.translation().toTranslation2d()
+        )
+        camToRobotTranslation = camToRobotTranslation.rotateBy(headingSample)
+        robotPose = Pose2d(
+            fieldToCameraTranslation + camToRobotTranslation, headingSample
+        )
+
+        return EstimatedRobotPose(
+            Pose3d(robotPose),
+            result.getTimestampSeconds(),
+            result.getTargets(),
+            PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
+        )
 
     def _multiTagOnCoprocStrategy(
         self, result: PhotonPipelineResult
