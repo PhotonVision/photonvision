@@ -81,4 +81,8 @@ public class RknnModel implements Model {
         return new RknnObjectDetector(
                 this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
     }
+
+    public String toString() {
+        return "RknnModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
+    }
 }
