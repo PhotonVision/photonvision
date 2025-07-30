@@ -232,6 +232,11 @@ public class Main {
         try {
             if (Platform.isRK3588()) {
                 RknnDetectorJNI.forceLoad();
+                if (RknnDetectorJNI.getInstance().isLoaded()) {
+                    logger.info("RknnDetectorJNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load RknnDetectorJNI!");
+                }
             } else {
                 logger.error("Platform does not support RKNN based machine learning!");
             }
@@ -241,6 +246,11 @@ public class Main {
         try {
             if (Platform.isQCS6490()) {
                 RubikDetectorJNI.forceLoad();
+                if (RubikDetectorJNI.getInstance().isLoaded()) {
+                    logger.info("RubikDetectorJNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load RubikDetectorJNI!");
+                }
             } else {
                 logger.error("Platform does not support Rubik based machine learning!");
             }
