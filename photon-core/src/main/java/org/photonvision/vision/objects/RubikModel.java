@@ -81,4 +81,8 @@ public class RubikModel implements Model {
         return new RubikObjectDetector(
                 this, new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
     }
+
+    public String toString() {
+        return "RubikModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
+    }
 }
