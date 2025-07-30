@@ -38,7 +38,10 @@ public class RubikDetectorJNI extends PhotonJNICommon {
     public static synchronized void forceLoad() throws IOException {
         TestUtils.loadLibraries();
 
-        forceLoad(getInstance(), RubikDetectorJNI.class, List.of("rubik_jni", "libQnnTFLiteDelegate"));
+        forceLoad(
+                getInstance(),
+                RubikDetectorJNI.class,
+                List.of("tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"));
     }
 
     @Override
