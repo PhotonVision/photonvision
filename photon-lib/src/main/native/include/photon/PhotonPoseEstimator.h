@@ -29,6 +29,7 @@
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <frc/interpolation/TimeInterpolatableBuffer.h>
 #include <opencv2/core/mat.hpp>
 
 #include "photon/PhotonCamera.h"
@@ -47,6 +48,7 @@ enum PoseStrategy {
   AVERAGE_BEST_TARGETS,
   MULTI_TAG_PNP_ON_COPROCESSOR,
   MULTI_TAG_PNP_ON_RIO,
+  PNP_DISTANCE_TRIG_SOLVE,
 };
 
 struct EstimatedRobotPose {
@@ -173,6 +175,57 @@ class PhotonPoseEstimator {
   inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
   /**
+   * Add robot heading data to the buffer. Must be called periodically for the
+   * PNP_DISTANCE_TRIG_SOLVE strategy.
+   * The side effects of this method are only used for the
+   * PNP_DISTANCE_TRIG_SOLVE strategy.
+   *
+   * @param timestamp timestamp of the heading data
+   * @param heading Field-relative heading at the given timestamp. In the
+   * standard WPILIB coordinates.
+   */
+  inline void AddHeadingData(units::second_t timestamp,
+                             frc::Rotation2d heading) {
+    this->headingBuffer.AddSample(timestamp, heading);
+  }
+
+  /**
+   * Add robot heading data to the buffer. Must be called periodically for the
+   * PNP_DISTANCE_TRIG_SOLVE strategy.
+   * The side effects of this method are only used for the
+   * PNP_DISTANCE_TRIG_SOLVE strategy.
+   *
+   * @param timestamp timestamp of the heading data
+   * @param heading Field-relative heading at the given timestamp. In the
+   * standard WPILIB coordinates.
+   */
+  inline void AddHeadingData(units::second_t timestamp,
+                             frc::Rotation3d heading) {
+    AddHeadingData(timestamp, heading.ToRotation2d());
+  }
+
+  /**
+   * Reset the heading data, and then add robot heading data to the buffer life
+   * AddHeadingData. Used for the PNP_DISTANCE_TRIG_SOLVE strategy, and won't
+   * have any effect for other strategies
+   */
+  inline void ResetHeadingData(units::second_t timestamp,
+                               frc::Rotation2d heading) {
+    headingBuffer.Clear();
+    AddHeadingData(timestamp, heading);
+  }
+
+  /**
+   * Reset the heading data, and then add robot heading data to the buffer life
+   * AddHeadingData. Used for the PNP_DISTANCE_TRIG_SOLVE strategy, and won't
+   * have any effect for other strategies
+   */
+  inline void ResetHeadingData(units::second_t timestamp,
+                               frc::Rotation3d heading) {
+    ResetHeadingData(timestamp, heading.ToRotation2d());
+  }
+
+  /**
    * Update the pose estimator. If updating multiple times per loop, you should
    * call this exactly once per new result, in order of increasing result
    * timestamp.
@@ -199,6 +252,8 @@ class PhotonPoseEstimator {
   frc::Pose3d referencePose;
 
   units::second_t poseCacheTimestamp;
+
+  frc::TimeInterpolatableBuffer<frc::Rotation2d> headingBuffer;
 
   inline static int InstanceCount = 1;
 
@@ -277,6 +332,16 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result,
       std::optional<PhotonCamera::CameraMatrix> camMat,
       std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
+
+  /**
+   * Return the pose calculation using the best visible tag and the robot's
+   * heading
+   *
+   * @return the estimated position of the robot in the FCS and the estimated
+   * timestamp of this estimation
+   */
+  std::optional<EstimatedRobotPose> PnpDistanceTrigSolveStrategy(
+      PhotonPipelineResult result);
 
   /**
    * Return the average of the best target poses using ambiguity as weight.
