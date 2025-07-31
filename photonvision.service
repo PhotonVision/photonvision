@@ -1,7 +1,6 @@
 [Unit]
 Description=Photonvision
 After=imx296_driver.service
-Requires=imx296_driver.service
 
 [Service]
 ExecStart=java -jar /home/nvidia/Documents/photonvision/photon-server/build/libs/photonvision-dev-Unknown-linuxarm64.jar
