@@ -154,15 +154,10 @@ def test_lowestAmbiguityStrategy():
 def test_pnpDistanceTrigSolve():
     aprilTags = fakeAprilTagFieldLayout()
     cameraOne = PhotonCameraInjector()
-    now: wpimath.units.seconds = 10
-    latency: wpimath.units.seconds = 1  # Must be < now
+    latencySecs: wpimath.units.seconds = 1
+    fakeTimestampSecs: wpimath.units.seconds = 9 + latencySecs
 
-    def fpgaTimestamp() -> wpimath.units.seconds:
-        return now
-
-    cameraOneSim = PhotonCameraSim(
-        cameraOne, SimCameraProperties.PERFECT_90DEG(), timestampFunc=fpgaTimestamp
-    )
+    cameraOneSim = PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())
     simTargets = [
         VisionTargetSim(tag.pose, TargetModel.AprilTag36h11(), tag.ID)
         for tag in aprilTags.getTags()
@@ -189,11 +184,14 @@ def test_pnpDistanceTrigSolve():
 
     realPose = Pose3d(7.3, 4.42, 0, Rotation3d(0, 0, 2.197))  # Pose to compare with
     result = cameraOneSim.process(
-        latency, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
     assert bestTarget.fiducialId == 0
+    assert result.ntReceiveTimestampMicros > 0
+    # Make test independent of the FPGA time.
+    result.ntReceiveTimestampMicros = fakeTimestampSecs * 1e6
 
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
@@ -207,16 +205,19 @@ def test_pnpDistanceTrigSolve():
     assertEquals(0.0, pose.z, 0.01)
 
     # Straight on
-    now += 60
+    fakeTimestampSecs += 60
     straightOnTestTransform = Transform3d(0, 0, 3, Rotation3d())
     estimator.robotToCamera = straightOnTestTransform
     realPose = Pose3d(4.81, 2.38, 0, Rotation3d(0, 0, 2.818))  # Pose to compare with
     result = cameraOneSim.process(
-        latency, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
     assert bestTarget.fiducialId == 0
+    assert result.ntReceiveTimestampMicros > 0
+    # Make test independent of the FPGA time.
+    result.ntReceiveTimestampMicros = fakeTimestampSecs * 1e6
 
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()

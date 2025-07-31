@@ -5,7 +5,6 @@ import cscore as cs
 import cv2 as cv
 import numpy as np
 import wpilib
-import wpimath.units
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Transform3d
 from wpimath.units import meters, seconds
@@ -42,9 +41,6 @@ class PhotonCameraSim:
         ),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
-        timestampFunc: typing.Callable[
-            [], wpimath.units.seconds
-        ] = wpilib.Timer.getFPGATimestamp,
     ):
         """Constructs a handle for simulating :class:`.PhotonCamera` values. Processing simulated targets
         through this class will change the associated PhotonCamera's results.
@@ -60,7 +56,6 @@ class PhotonCameraSim:
                                      PhotonVision GUI.
         :param maxSightRangeMeters:  Maximum distance at which the target is illuminated to your camera.
                                      Note that minimum target area of the image is separate from this.
-        :param timestampFunc:        Function to use to get FPGA timestamps (for testing)
         """
 
         self.minTargetAreaPercent: float = 0.0
@@ -71,8 +66,7 @@ class PhotonCameraSim:
         # TODO switch this back to default True when the functionality is enabled
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
-        self._timestampFunc = timestampFunc
-        self.nextNtEntryTime = timestampFunc()
+        self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
         self.tagLayout = tagLayout
 
         self.cam = camera
@@ -188,7 +182,7 @@ class PhotonCameraSim:
                   ready
         """
         # check if this camera is ready for another frame update
-        now = self._timestampFunc()
+        now = wpilib.Timer.getFPGATimestamp()
         timestamp = 0.0
         iter = 0
         # prepare next latest update
@@ -426,7 +420,7 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
-        publishTimestampMicros = self._timestampFunc() * 1e6
+        publishTimestampMicros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
             ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
@@ -453,7 +447,7 @@ class PhotonCameraSim:
         :param receiveTimestamp: The (sim) timestamp when this result was read by NT in microseconds. If not passed image capture time is assumed be (current time - latency)
         """
         if receiveTimestamp_us is None:
-            receiveTimestamp_us = self._timestampFunc() * 1e6
+            receiveTimestamp_us = wpilib.Timer.getFPGATimestamp() * 1e6
         receiveTimestamp_us = int(receiveTimestamp_us)
 
         self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp_us)
