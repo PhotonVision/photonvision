@@ -38,6 +38,8 @@
 #include "photon/PhotonCamera.h"
 #include "photon/PhotonPoseEstimator.h"
 #include "photon/dataflow/structures/Packet.h"
+#include "photon/simulation/PhotonCameraSim.h"
+#include "photon/simulation/SimCameraProperties.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
@@ -304,6 +306,85 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
   EXPECT_NEAR(.9, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(1, units::unit_cast<double>(pose.Z()), .01);
+}
+
+TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+  photon::PhotonCameraSim cameraOneSim = photon::PhotonCameraSim(
+      &cameraOne, photon::SimCameraProperties::PERFECT_90DEG());
+
+  std::vector<photon::VisionTargetSim> targets;
+  targets.reserve(tags.size());
+  for (const auto& tag : tags) {
+    targets.push_back(
+        photon::VisionTargetSim(tag.pose, photon::kAprilTag36h11, tag.ID));
+  }
+
+  /* real pose of the robot base to test against */
+  frc::Pose3d realPose =
+      frc::Pose3d(7.3_m, 4.42_m, 0_m, frc::Rotation3d(0_rad, 0_rad, 2.197_rad));
+
+  /* Compound Rolled + Pitched + Yaw */
+
+  frc::Transform3d compoundTestTransform = frc::Transform3d(
+      -12_in, -11_in, 3_m, frc::Rotation3d(37_deg, 6_deg, 60_deg));
+
+  photon::PhotonPoseEstimator estimator(
+      aprilTags, photon::PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
+
+  photon::PhotonPipelineResult result = cameraOneSim.Process(
+      1_ms, realPose.TransformBy(estimator.GetRobotToCameraTransform()),
+      targets);
+  cameraOne.test = true;
+  cameraOne.testResult = {result};
+  cameraOne.testResult[0].SetReceiveTimestamp(17_s);
+
+  estimator.AddHeadingData(result.GetTimestamp(), realPose.Rotation());
+
+  std::optional<photon::EstimatedRobotPose> estimatedPose;
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  ASSERT_TRUE(estimatedPose);
+  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+
+  EXPECT_NEAR(units::unit_cast<double>(realPose.X()),
+              units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(units::unit_cast<double>(realPose.Y()),
+              units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(units::unit_cast<double>(realPose.Z()),
+              units::unit_cast<double>(pose.Z()), .01);
+
+  /* Straight on */
+
+  frc::Transform3d straightOnTestTransform =
+      frc::Transform3d(0_m, 0_m, 3_m, frc::Rotation3d(0_rad, 0_rad, 0_rad));
+  estimator.SetRobotToCameraTransform(straightOnTestTransform);
+  realPose = frc::Pose3d(4.81_m, 2.38_m, 0_m,
+                         frc::Rotation3d(0_rad, 0_rad, 2.818_rad));
+  result = cameraOneSim.Process(
+      1_ms, realPose.TransformBy(estimator.GetRobotToCameraTransform()),
+      targets);
+  cameraOne.testResult = {result};
+  cameraOne.testResult[0].SetReceiveTimestamp(18_s);
+
+  estimator.AddHeadingData(result.GetTimestamp(), realPose.Rotation());
+
+  estimatedPose = std::nullopt;
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  ASSERT_TRUE(estimatedPose);
+  pose = estimatedPose.value().estimatedPose;
+
+  EXPECT_NEAR(units::unit_cast<double>(realPose.X()),
+              units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(units::unit_cast<double>(realPose.Y()),
+              units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(units::unit_cast<double>(realPose.Z()),
+              units::unit_cast<double>(pose.Z()), .01);
 }
 
 TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
