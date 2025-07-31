@@ -18,8 +18,6 @@
 package org.photonvision.vision.frame.provider;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import jni.Gstreamer; // TODO (charlie) refactor?
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
@@ -44,31 +42,6 @@ class releaseCapThread extends Thread {
   }
 }
 
-// class readCapThread extends Thread {
-//   private long cap;
-//   private long mat;
-//   private Lock lock;
-//
-//   public readCapThread(long cap, long mat, Lock lock) {
-//     this.cap = cap;
-//     this.mat = mat;
-//     this.lock = lock;
-//   }
-//
-//   public void run() {
-//     while (true) {
-//       lock.lock();
-//       Gstreamer.readMat(cap, mat);
-//       lock.unlock();
-//       // cooked
-//       try {
-//         Thread.sleep(5); // Sleep for 5 milliseconds
-//       } catch (InterruptedException e) {
-//         e.printStackTrace();
-//       }
-//     }
-//   }
-// }
 
 public class GstreamerFrameProvider extends FrameProvider {
   private final GstreamerSettables settables;
@@ -76,7 +49,6 @@ public class GstreamerFrameProvider extends FrameProvider {
   private Mat readMat = new Mat();
   private long start;
   private long end;
-  private final Lock lock = new ReentrantLock();
 
   public GstreamerFrameProvider(GstreamerSettables visionSettables, String pipeline) {
     this.settables = visionSettables;
@@ -91,8 +63,6 @@ public class GstreamerFrameProvider extends FrameProvider {
     cap = Gstreamer.initCam(pipeline);
     current.addShutdownHook(new releaseCapThread(cap));
 
-    // Thread readThread = new readCapThread(cap, readMat.nativeObj, lock);
-    // readThread.start();
     onCameraConnected();
   }
 
@@ -119,8 +89,9 @@ public class GstreamerFrameProvider extends FrameProvider {
 
     end = MathUtils.wpiNanoTime();
     long latency = (end - start);
-    System.out.println("Camera latency " + latency / 1000_000);
-    System.out.println("Pipeline latency " + pipeline_latency / 1000_000);
+    // System.out.println("Camera latency " + latency / 1000_000);
+    //
+    // System.out.println("Pipeline latency " + pipeline_latency / 1000_000);
 
     ++sequenceID;
 

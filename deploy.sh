@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Configuration
+# # Configuration
 REMOTE_USER="nvidia"
 REMOTE_HOST="10.9.71.101"
 REMOTE_REPO_PATH="/home/nvidia/Documents/photonvision"
@@ -17,7 +17,9 @@ fi
 
 # Push the branch to the remote
 echo "Pushing branch '$BRANCH' to '$REMOTE_NAME'..."
-git push "$REMOTE_NAME" "$BRANCH"
+git push "$REMOTE_NAME" "$BRANCH" "-f"
+
+ssh "$REMOTE_USER@$REMOTE_HOST" -f "export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64 && cd $REMOTE_REPO_PATH && ./gradlew shadowJar && echo "nvidia" | sudo -S systemctl restart photonvision.service"
 
 echo "✅ Deployment to $REMOTE_HOST complete."
 
