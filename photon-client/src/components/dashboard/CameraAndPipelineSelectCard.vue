@@ -172,9 +172,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "AprilTagCuda", value: WebsocketPipelineType.AprilTagCuda },
     { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
-  if (useSettingsStore().general.supportedBackends.length > 0) {
-    pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
-  }
+  pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
 
   if (useCameraSettingsStore().isDriverMode) {
     pipelineTypes.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
