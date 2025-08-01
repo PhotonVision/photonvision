@@ -4,6 +4,7 @@ project(OpenCV_GStreamer_Capture)
 # Set C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Find OpenCV
 find_package(OpenCV REQUIRED)

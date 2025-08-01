@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'java-library'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17) // Specify Java version here
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.6.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs "src/main/resources", "build/natives/lib"
+        }
+    }
+}
+
+compileJava {
+    options.compilerArgs += [
+        "-h",
+        file("src/main/include")
+    ]
+}
+
+task compileJNI {
+    dependsOn compileJava
+
+    doLast {
+        exec {
+            commandLine 'sh', '-c', 'mkdir -p build/natives && cd build/natives && cmake ../.. && make'
+        }
+    }
+}
+
+clean.doFirst {
+    delete fileTree('src/main/include') {
+        include 'jni_*.h'
+    }
+}
+
+processResources {
+    dependsOn compileJNI
+}
+
+tasks.withType(Test) {
+    systemProperty "java.library.path", "build/natives/lib"
+    testLogging.showStandardStreams = false
+}

@@ -34,7 +34,6 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     ledMode = false;
     confidence = .9;
     nms = .45;
-    model =
-        NeuralNetworkModelManager.getInstance().getDefaultModel().map(Model::getName).orElse("");
+    model = "model";
   }
 }
