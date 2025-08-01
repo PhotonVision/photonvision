@@ -126,7 +126,7 @@ public class RubikObjectDetector implements ObjectDetector {
         }
 
         // Detect objects in the letterboxed frame
-        var results = RubikJNI.detect(ptrs[0], letterboxed.getNativeObjAddr(), boxThresh);
+        var results = RubikJNI.detect(ptrs[0], letterboxed.getNativeObjAddr(), boxThresh, nmsThresh);
 
         letterboxed.release();
 
