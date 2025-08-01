@@ -401,7 +401,7 @@ const handleBulkImport = () => {
                     @click="() => (confirmDeleteDialog = { show: true, model })"
                     title="Delete Model"
                   >
-                    <v-icon>mdi-delete</v-icon>
+                    <v-icon>mdi-trash-can-outline</v-icon>
                   </v-btn>
                 </td>
                 <td class="text-right">
@@ -591,7 +591,7 @@ const handleBulkImport = () => {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

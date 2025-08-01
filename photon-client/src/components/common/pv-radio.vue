@@ -30,7 +30,7 @@ withDefaults(
           v-for="(radioName, index) in list"
           :key="index"
           :value="index"
-          color="#ffd843"
+          color="rgb(var(--v-theme-primary))"
           :label="radioName"
           :model-value="index"
           :disabled="disabled"

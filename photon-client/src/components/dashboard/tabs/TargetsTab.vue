@@ -200,7 +200,7 @@ const resetCurrentBuffer = () => {
           >Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </v-card-subtitle>
-        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" variant="flat" @click="resetCurrentBuffer"
+        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" variant="elevated" @click="resetCurrentBuffer"
           >Reset Samples</v-btn
         >
         <v-table density="compact">
@@ -274,7 +274,6 @@ th {
   padding-right: 8px !important;
 }
 .v-table {
-  background-color: #006492 !important;
   width: 100%;
   font-size: 1rem !important;
 
@@ -313,7 +312,7 @@ th {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }
