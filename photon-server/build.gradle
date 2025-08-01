@@ -45,7 +45,7 @@ tasks.register('copyClientUIToResources', Copy) {
 }
 
 tasks.register("buildAndCopyUI") {
-    dependsOn "npm_run_build"
+    dependsOn "pnpm_run_build"
     finalizedBy "copyClientUIToResources"
 }
 
