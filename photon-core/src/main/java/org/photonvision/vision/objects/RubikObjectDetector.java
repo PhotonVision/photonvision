@@ -41,7 +41,7 @@ public class RubikObjectDetector implements ObjectDetector {
     private AtomicBoolean released = new AtomicBoolean(false);
 
     /** Pointer to the native object */
-    private final long[] ptrs;
+    private final long ptr;
 
     private final RubikModel model;
 
@@ -66,7 +66,7 @@ public class RubikObjectDetector implements ObjectDetector {
 
         // Create the detector
         try {
-            ptrs = RubikJNI.create(model.modelFile.getPath().toString());
+            ptr = RubikJNI.create(model.modelFile.getPath().toString());
         } catch (Exception e) {
             logger.error("Failed to create detector from path " + model.modelFile.getPath(), e);
             throw new RuntimeException(
@@ -126,7 +126,7 @@ public class RubikObjectDetector implements ObjectDetector {
         }
 
         // Detect objects in the letterboxed frame
-        var results = RubikJNI.detect(ptrs[0], letterboxed.getNativeObjAddr(), boxThresh);
+        var results = RubikJNI.detect(ptr, letterboxed.getNativeObjAddr(), boxThresh, nmsThresh);
 
         letterboxed.release();
 
@@ -151,17 +151,12 @@ public class RubikObjectDetector implements ObjectDetector {
                                 + model.modelFile.getName());
                 return;
             }
-            RubikJNI.destroy(ptrs);
+            RubikJNI.destroy(ptr);
             logger.debug("Released detector for model " + model.modelFile.getName());
         }
     }
 
     private boolean isValid() {
-        for (long ptr : ptrs) {
-            if (ptr <= 0) {
-                return false;
-            }
-        }
-        return true;
+        return ptr != 0;
     }
 }
