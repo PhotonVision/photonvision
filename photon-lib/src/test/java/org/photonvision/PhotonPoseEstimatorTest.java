@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
@@ -69,6 +70,7 @@ import org.photonvision.targeting.TargetCorner;
 
 class PhotonPoseEstimatorTest {
     static AprilTagFieldLayout aprilTags;
+    @AutoClose final PhotonCameraInjector cameraOne = new PhotonCameraInjector();
 
     @BeforeAll
     public static void init() throws UnsatisfiedLinkError, IOException {
@@ -96,7 +98,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void testLowestAmbiguityStrategy() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
@@ -182,7 +183,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void testClosestToCameraHeightStrategy() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
@@ -271,7 +271,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void closestToReferencePoseStrategy() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
@@ -361,7 +360,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void closestToLastPose() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
@@ -526,7 +524,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void pnpDistanceTrigSolve() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         List<VisionTargetSim> simTargets =
                 aprilTags.getTags().stream()
                         .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
@@ -588,7 +585,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void cacheIsInvalidated() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         var result =
                 new PhotonPipelineResult(
                         0,
@@ -656,7 +652,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void averageBestPoses() {
-        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         0,
@@ -745,8 +740,7 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void testMultiTagOnRioFallback() {
-        PhotonCameraInjector camera = new PhotonCameraInjector();
-        camera.result =
+        cameraOne.result =
                 new PhotonPipelineResult(
                         0,
                         11 * 1_000_000,
@@ -799,7 +793,7 @@ class PhotonPoseEstimatorTest {
                 new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_PNP_ON_RIO, Transform3d.kZero);
         estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(camera.result);
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update(cameraOne.result);
         Pose3d pose = estimatedPose.get().estimatedPose;
         // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
         assertAll(
