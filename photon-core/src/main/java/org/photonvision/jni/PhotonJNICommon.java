@@ -32,9 +32,9 @@ public abstract class PhotonJNICommon {
 
     protected static Logger logger = null;
 
-    protected static synchronized void forceLoad(
+    protected static synchronized boolean forceLoad(
             PhotonJNICommon instance, Class<?> clazz, List<String> libraries) throws IOException {
-        if (instance.isLoaded()) return;
+        if (instance.isLoaded()) return true;
         if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
 
         for (var libraryName : libraries) {
@@ -46,7 +46,7 @@ public abstract class PhotonJNICommon {
 
                 if (in == null) {
                     instance.setLoaded(false);
-                    return;
+                    return false;
                 }
 
                 // It's important that we don't mangle the names of these files on Windows at least
@@ -70,14 +70,15 @@ public abstract class PhotonJNICommon {
                 e.printStackTrace();
                 // logger.error(System.getProperty("java.library.path"));
                 instance.setLoaded(false);
-                return;
+                return false;
             }
         }
         instance.setLoaded(true);
+        return instance.isLoaded();
     }
 
-    protected static synchronized void forceLoad(
+    protected static synchronized boolean forceLoad(
             PhotonJNICommon instance, Class<?> clazz, String libraryName) throws IOException {
-        forceLoad(instance, clazz, List.of(libraryName));
+        return forceLoad(instance, clazz, List.of(libraryName));
     }
 }

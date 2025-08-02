@@ -223,14 +223,22 @@ public class Main {
 
         try {
             if (Platform.isRaspberryPi()) {
-                LibCameraJNILoader.forceLoad();
+                if (LibCameraJNILoader.forceLoad()) {
+                    logger.info("libcamera-JNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load libcamera-JNI!");
+                }
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
         try {
             if (Platform.isRK3588()) {
-                RknnDetectorJNI.forceLoad();
+                if (RknnDetectorJNI.forceLoad()) {
+                    logger.info("RKNN-JNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load RKNN-JNI!");
+                }
             } else {
                 logger.error("Platform does not support RKNN based machine learning!");
             }
@@ -238,7 +246,11 @@ public class Main {
             logger.error("Failed to load rknn-JNI!", e);
         }
         try {
-            MrCalJNILoader.forceLoad();
+            if (MrCalJNILoader.forceLoad()) {
+                logger.info("mrcal-JNI loaded successfully.");
+            } else {
+                logger.error("Failed to load mrcal-JNI!");
+            }
         } catch (IOException e) {
             logger.warn(
                     "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
