@@ -23,17 +23,17 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 
-public class RknnModel implements Model {
+public class RubikModel implements Model {
     public final File modelFile;
     public final ModelProperties properties;
 
     /**
-     * rknn model constructor.
+     * Rubik model constructor.
      *
      * @param properties The properties of the model.
      * @throws IllegalArgumentException
      */
-    public RknnModel(ModelProperties properties) throws IllegalArgumentException {
+    public RubikModel(ModelProperties properties) throws IllegalArgumentException {
         modelFile = new File(properties.modelPath().toString());
         if (!modelFile.exists()) {
             throw new IllegalArgumentException("Model file does not exist: " + modelFile);
@@ -47,8 +47,8 @@ public class RknnModel implements Model {
             throw new IllegalArgumentException("Resolution must be greater than 0");
         }
 
-        if (properties.family() != Family.RKNN) {
-            throw new IllegalArgumentException("Model family must be RKNN");
+        if (properties.family() != Family.RUBIK) {
+            throw new IllegalArgumentException("Model family must be RUBIK");
         }
 
         if (properties.version() != Version.YOLOV5
@@ -78,11 +78,11 @@ public class RknnModel implements Model {
     }
 
     public ObjectDetector load() {
-        return new RknnObjectDetector(
-                this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
+        return new RubikObjectDetector(
+                this, new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
     }
 
     public String toString() {
-        return "RknnModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
+        return "RubikModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
     }
 }

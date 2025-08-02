@@ -46,6 +46,7 @@ public abstract class PhotonJNICommon {
 
                 if (in == null) {
                     instance.setLoaded(false);
+                    logger.error("Couldn't find shared object " + nativeLibName);
                     return;
                 }
 
