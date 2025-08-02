@@ -71,13 +71,13 @@ public class ArucoPoseEstimatorPipe
 
     @Override
     protected AprilTagPoseEstimate process(ArucoDetectionResult in) {
-        // We receive 2d corners as (BL, BR, TR, TL) but we want (BR, BL, TL, TR)
+        // We receive 2d corners as (TL, TR, BR, BL) but we want (BR, BL, TL, TR)
         double[] xCorn = in.getXCorners();
         double[] yCorn = in.getYCorners();
-        imagePoints.put(0, 0, new float[] {(float) xCorn[1], (float) yCorn[1]});
-        imagePoints.put(1, 0, new float[] {(float) xCorn[0], (float) yCorn[0]});
-        imagePoints.put(2, 0, new float[] {(float) xCorn[3], (float) yCorn[3]});
-        imagePoints.put(3, 0, new float[] {(float) xCorn[2], (float) yCorn[2]});
+        imagePoints.put(0, 0, new float[] {(float) xCorn[2], (float) yCorn[2]});
+        imagePoints.put(1, 0, new float[] {(float) xCorn[3], (float) yCorn[3]});
+        imagePoints.put(2, 0, new float[] {(float) xCorn[0], (float) yCorn[0]});
+        imagePoints.put(3, 0, new float[] {(float) xCorn[1], (float) yCorn[1]});
 
         float[] reprojErrors = new float[2];
         // very rarely the solvepnp solver returns NaN results, so we retry with slight noise added
