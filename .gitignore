@@ -147,3 +147,5 @@ photon-server/src/main/resources/web/*
 node_modules
 dist
 components.d.ts
+
+*.ipk
