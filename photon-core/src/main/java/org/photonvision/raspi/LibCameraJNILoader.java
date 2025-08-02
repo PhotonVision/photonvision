@@ -31,8 +31,8 @@ public class LibCameraJNILoader {
     private static boolean libraryLoaded = false;
     private static final Logger logger = new Logger(LibCameraJNILoader.class, LogGroup.Camera);
 
-    public static synchronized void forceLoad() throws IOException {
-        if (libraryLoaded) return;
+    public static synchronized boolean forceLoad() throws IOException {
+        if (libraryLoaded) return true;
 
         var libraryName = "photonlibcamera";
 
@@ -46,7 +46,7 @@ public class LibCameraJNILoader {
             if (in == null) {
                 logger.error("Failed to find internal native library at path " + resourcePath);
                 libraryLoaded = false;
-                return;
+                return false;
             }
 
             // It's important that we don't mangle the names of these files on Windows at least
@@ -71,6 +71,7 @@ public class LibCameraJNILoader {
             // logger.error(System.getProperty("java.library.path"));
         }
         libraryLoaded = true;
+        return libraryLoaded;
     }
 
     public static boolean isSupported() {

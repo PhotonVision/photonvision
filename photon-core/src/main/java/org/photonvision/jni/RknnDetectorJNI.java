@@ -35,10 +35,10 @@ public class RknnDetectorJNI extends PhotonJNICommon {
         return instance;
     }
 
-    public static synchronized void forceLoad() throws IOException {
+    public static synchronized boolean forceLoad() throws IOException {
         TestUtils.loadLibraries();
 
-        forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
+        return forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
     }
 
     @Override

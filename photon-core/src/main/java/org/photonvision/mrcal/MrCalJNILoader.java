@@ -37,14 +37,14 @@ public class MrCalJNILoader extends PhotonJNICommon {
         return instance;
     }
 
-    public static synchronized void forceLoad() throws IOException {
+    public static synchronized boolean forceLoad() throws IOException {
         // Force load opencv
         TestUtils.loadLibraries();
 
         // Library naming is dumb and has "lib" appended for Windows when it ought not to
         if (Platform.isWindows()) {
             // Order is correct to match dependencies of libraries
-            forceLoad(
+            return forceLoad(
                     MrCalJNILoader.getInstance(),
                     MrCalJNILoader.class,
                     List.of(
@@ -62,11 +62,7 @@ public class MrCalJNILoader extends PhotonJNICommon {
                             "mrcal_jni"));
         } else {
             // Nothing else to do on linux
-            forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
-        }
-
-        if (!MrCalJNILoader.getInstance().isLoaded()) {
-            throw new IOException("Unable to load mrcal JNI!");
+            return forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
         }
     }
 
