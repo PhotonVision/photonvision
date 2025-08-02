@@ -103,9 +103,10 @@ public class VideoSimUtil {
      * @param id The fiducial id of the desired tag
      */
     private static Mat get36h11TagImage(int id) {
-        RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
-        return new Mat(
-                frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
+        try (RawFrame frame = AprilTag.generate36h11AprilTagImage(id)) {
+            return new Mat(
+                    frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
+        }
     }
 
     /** Gets the points representing the marker(black square) corners. */
