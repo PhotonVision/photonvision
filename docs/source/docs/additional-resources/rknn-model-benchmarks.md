@@ -1,9 +1,9 @@
-## RKNN Benchmark
+# RKNN Benchmarks
 
-### Description
+## Description
 This benchmark compares the performance of four object detection models—YOLOv5, YOLOv5u, YOLOv8, and YOLOv11—on the [COCO 2017 Validation Set](http://images.cocodataset.org/zips/val2017.zip). The primary goal is to evaluate and compare their inference speeds and detection accuracy when deployed on the Orange Pi 5 with RK3588 using int8 quantization.
 
-### Methodology
+## Methodology
 - **Dataset**: [COCO 2017 Validation Set](http://images.cocodataset.org/zips/val2017.zip) (5,000 images)
 
 - **Platform**: Orange Pi 5 with RK3588
@@ -14,9 +14,10 @@ This benchmark compares the performance of four object detection models—YOLOv5
 
 - All models were benchmarked using consistent preprocessing and runtime environments to ensure fair comparison.
 
-### Results
+## Results
+&nbsp;
 
-#### YOLOv5
+### YOLOv5
 
 | OpType          | CPU Time (μs)           | NPU Time (μs)            | Total Time (μs)           | Time Ratio (%)         | Number of Times Called |
 |----------------|-------------------------|---------------------------|----------------------------|-------------------------|-------------|
@@ -31,7 +32,7 @@ This benchmark compares the performance of four object detection models—YOLOv5
 | InputOperator  | 8.6406 ± 1.7897         | 0.0000 ± 0.0000           | 8.6406 ± 1.7897            | 0.0596 ± 0.0150         | 1           |
 | **Total**      | **115.2428 ± 16.1637**  | **14918.8476 ± 1735.4529**| **15034.0904 ± 1734.2830** |                         | **93**       |
 
-#### YOLOv5u
+### YOLOv5u
 | OpType          | CPU Time (μs)           | NPU Time (μs)            | Total Time (μs)           | Time Ratio (%)         | Number of Times Called |
 |----------------|-------------------------|---------------------------|----------------------------|-------------------------|-------------|
 | ConvExSwish    | 0.0000 ± 0.0000         | 16828.2438 ± 1332.7291    | 16828.2438 ± 1332.7291     | 83.0440 ± 1.6108        | 69          |
@@ -91,23 +92,23 @@ mAP of each model:
 
 | Metric | YOLOv5     | YOLOv5u    | YOLOv8     | YOLOv11    |
 |--------|------------|------------|------------|------------|
-| mAP    | 0.2243     | 0.2745     | 0.3051     | 0.3251     |
-| mAP50  | 0.3538     | 0.3834     | 0.4145     | 0.4406     |
-| mAP75  | 0.2432     | 0.2997     | 0.3349     | 0.3568     |
-| mAP85  | 0.3054     | 0.3472     | 0.3867     | 0.4068     |
-| mAP95  | 0.3708     | 0.4822     | 0.5483     | 0.5858     |
+| **mAP**    | 0.2243     | 0.2745     | 0.3051     | 0.3251     |
+| **mAP50**  | 0.3538     | 0.3834     | 0.4145     | 0.4406     |
+| **mAP75**  | 0.2432     | 0.2997     | 0.3349     | 0.3568     |
+| **mAP85**  | 0.3054     | 0.3472     | 0.3867     | 0.4068     |
+| **mAP95**  | 0.3708     | 0.4822     | 0.5483     | 0.5858     |
 
 Model run times and number of calls:
 
 | Model   | TotalTime (μs)         | Number of Processing Calls |
 |---------|------------------------|----------------------------|
-| YOLOv5  | 15034.0904 ± 1734.2830 | 93                         |
-| YOLOv5u | 20301.5584 ± 1965.8794 | 113                        |
-| YOLOv8  | 17256.5178 ± 1986.7732 | 108                        |
-| YOLOv11 | 22988.6754 ± 2355.9731 | 148                        |
+| **YOLOv5**  | 15034.0904 ± 1734.2830 | 93                         |
+| **YOLOv5u** | 20301.5584 ± 1965.8794 | 113                        |
+| **YOLOv8**  | 17256.5178 ± 1986.7732 | 108                        |
+| **YOLOv11** | 22988.6754 ± 2355.9731 | 148                        |
 
 
-### Conclusion
+## Conclusion
 
 The benchmark reveals a clear performance trade-off between inference time and detection accuracy:
 
