@@ -5,11 +5,11 @@ This benchmark compares the performance of four object detection models: YOLOv5,
 
 ## Methodology
 - **Dataset**: [COCO 2017 Validation Set](http://images.cocodataset.org/zips/val2017.zip) (5,000 images)
--
+
 - **Platform**: Orange Pi 5 with RK3588
--
+
 - **Quantization**: int8 using 20 randomly selected images from the validation set
--
+
 - **Framework**: RKNN Toolkit 2
 
 ## Operator-Level Benchmark Results
@@ -122,4 +122,4 @@ The benchmark reveals a clear performance trade-off between inference time and d
 
 - **YOLOv5u** improves accuracy compared to YOLOv5 but falls behind YOLOv8 in both speed and detection quality.
 
-When choosing a model for edge devices like the Orange Pi 5, it’s important to weigh how much latency your system can tolerate versus how much accuracy you need. A faster model may give quicker results, while a more accurate one may offer better detection reliability—but at the cost of speed.
+When choosing a model for edge devices like the Orange Pi 5, it’s important to weigh how much latency your system can tolerate versus how much accuracy you need. A faster model may give quicker results, while a more accurate one may offer better detection reliability, but at the cost of speed.
