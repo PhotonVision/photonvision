@@ -1,8 +1,8 @@
-import subprocess
-import sys
-import random
 import argparse
 import os
+import random
+import sys
+
 from rknn.api import RKNN
 
 image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp")
@@ -209,10 +209,13 @@ if __name__ == "__main__":
         with open(args.img_dataset_txt, "w") as set_file:
             set_file.writelines(f"{img}\n" for img in img_list)
 
-    run_rknn_conversion(
-        args.img_dataset_txt,
-        args.disable_quantize,
-        args.model_path,
-        args.rknn_output,
-        args.verbose,
-    )
+    try:
+        run_rknn_conversion(
+            args.img_dataset_txt,
+            args.disable_quantize,
+            args.model_path,
+            args.rknn_output,
+            args.verbose,
+        )
+    except SystemExit:
+        print("RKNN Conversion failed, see output above")

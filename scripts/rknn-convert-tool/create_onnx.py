@@ -1,7 +1,7 @@
-import subprocess
-import sys
 import argparse
 import os.path
+import subprocess
+import sys
 
 # This will work for all models that don't use anchors (e.g. all YOLO models except YOLOv5/v7)
 # This includes YOLOv5u
@@ -17,9 +17,21 @@ ultralytics_folder_name_yolov5 = "airockchip_yolo_pkg_yolov5"
 ultralytics_default_folder_name = "airockchip_yolo_pkg"
 
 
-def print_bad_model_msg():
-    print("This is usually due to passing in the wrong model version.")
-    print("Please make sure you have the right model version and try again.")
+bad_model_msg = """
+This is usually due to passing in the wrong model version.
+Please make sure you have the right model version and try again.
+"""
+
+
+# idk how else to make Google Colab display this nicely
+class IncorrectModelError(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+
+def print_bad_model_msg(cause):
+    print(f"{cause}{bad_model_msg}")
 
 
 def check_git_installed():
@@ -43,7 +55,7 @@ def check_or_clone_rockchip_repo(repo_url, repo_name=ultralytics_default_folder_
         except subprocess.CalledProcessError as e:
             print("Failed to clone Rockchip repo, see error output below")
             print(e.output)
-            exit(1)
+            sys.exit(1)
 
 
 def run_pip_install_or_else_exit(args):
@@ -89,24 +101,17 @@ def run_onnx_conversion_yolov5(model_path):
         output_string = (e.stdout or "") + (e.stderr or "")
         print(output_string)
 
-        is_bad_model = False
-
         if "ModuleNotFoundError" in output_string and "ultralytics" in output_string:
-            print(
+            print_bad_model_msg(
                 "It seems the YOLOv5 repo could not find an ultralytics installation."
             )
-            is_bad_model = True
         elif (
             "AttributeError" in output_string
             and "_register_detect_seperate" in output_string
         ):
-            print("It seems that you received a model attribute error.")
-            is_bad_model = True
+            print_bad_model_msg("It seems that you received a model attribute error.")
 
-        if is_bad_model:
-            print_bad_model_msg()
-
-        exit(1)
+        sys.exit(1)
 
 
 def run_onnx_conversion_no_anchor(model_path):
@@ -122,13 +127,14 @@ def run_onnx_conversion_no_anchor(model_path):
         model = YOLO(model_abs_path)
         model.export(format="rknn")
     except TypeError as e:
-        print(e)
-        print()
-        print()
         if "originally trained" in str(e):
-            print("Ultralytics has detected that this model is invalid.")
-            print_bad_model_msg()
-        exit(1)
+            print_bad_model_msg(
+                "Ultralytics has detected that this model is a YOLOv5 model."
+            )
+        else:
+            print(e)
+
+        sys.exit(1)
 
 
 if __name__ == "__main__":
@@ -155,11 +161,14 @@ if __name__ == "__main__":
 
     check_git_installed()
 
-    if args.version.lower() == "yolov5":
-        run_onnx_conversion_yolov5(args.model_path)
-    else:
-        run_onnx_conversion_no_anchor(args.model_path)
+    try:
+        if args.version.lower() == "yolov5":
+            run_onnx_conversion_yolov5(args.model_path)
+        else:
+            run_onnx_conversion_no_anchor(args.model_path)
 
-    print(
-        "Model export finished. Please use the generated ONNX file to convert to RKNN."
-    )
+        print(
+            "Model export finished. Please use the generated ONNX file to convert to RKNN."
+        )
+    except SystemExit:
+        print("Model export failed. Please see output above.")
