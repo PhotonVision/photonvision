@@ -46,6 +46,7 @@ public abstract class PhotonJNICommon {
 
                 if (in == null) {
                     instance.setLoaded(false);
+                    logger.error("Failed to find internal native library " + nativeLibName);
                     return false;
                 }
 
