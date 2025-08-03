@@ -5,6 +5,9 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 import pvInput from "@/components/common/pv-input.vue";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const showImportDialog = ref(false);
 const showInfo = ref({ show: false, model: {} as ObjectDetectionModelProperties });
@@ -270,12 +273,17 @@ const handleBulkImport = () => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3" color="surface">
     <v-card-title>Object Detection</v-card-title>
     <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" class="justify-center" @click="() => (showImportDialog = true)">
+          <v-btn
+            color="photonYellow"
+            class="justify-center"
+            @click="() => (showImportDialog = true)"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          >
             <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Model</span>
           </v-btn>
@@ -292,7 +300,7 @@ const handleBulkImport = () => {
               }
             "
           >
-            <v-card color="primary" dark>
+            <v-card color="surface" dark>
               <v-card-title class="pb-0">Import New Object Detection Model</v-card-title>
               <v-card-text>
                 Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
@@ -316,7 +324,7 @@ const handleBulkImport = () => {
                     :items="['YOLOv5', 'YOLOv8', 'YOLO11']"
                   />
                   <v-btn
-                    color="secondary"
+                    color="photonYellow"
                     width="100%"
                     :disabled="
                       importModelFile === null ||
@@ -326,8 +334,9 @@ const handleBulkImport = () => {
                       importVersion === null
                     "
                     @click="handleImport()"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   >
-                    <v-icon start class="open-icon"> mdi-import </v-icon>
+                    <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
                   </v-btn>
                 </div>
@@ -336,20 +345,31 @@ const handleBulkImport = () => {
           </v-dialog>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" class="justify-center" @click="() => (showBulkImportDialog = true)">
+          <v-btn
+            color="photonYellow"
+            class="justify-center"
+            @click="() => (showBulkImportDialog = true)"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          >
             <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Bulk Import</span>
           </v-btn>
           <v-dialog v-model="showBulkImportDialog" width="600">
-            <v-card color="primary" dark>
+            <v-card color="surface" dark>
               <v-card-title class="pb-0">Import Multiple Object Detection Models</v-card-title>
               <v-card-text>
                 Upload a zip file containing multiple object detection models to this device. Note this zip file should
                 only come from a previous export of object detection models.
                 <div class="pa-5 pb-0">
                   <v-file-input v-model="importFile" variant="underlined" label="Zip File" accept=".zip" />
-                  <v-btn color="secondary" width="100%" :disabled="importFile === null" @click="handleBulkImport()">
-                    <v-icon start class="open-icon"> mdi-import </v-icon>
+                  <v-btn
+                    color="photonYellow"
+                    width="100%"
+                    :disabled="importFile === null"
+                    @click="handleBulkImport()"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  >
+                    <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
                     <span class="open-label">Bulk Import</span>
                   </v-btn>
                 </div>
@@ -358,7 +378,11 @@ const handleBulkImport = () => {
           </v-dialog>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="openExportPrompt">
+          <v-btn
+            color="lightBlue"
+            @click="openExportPrompt"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          >
             <v-icon start class="open-icon"> mdi-export </v-icon>
             <span class="open-label">Export Models</span>
           </v-btn>
@@ -371,7 +395,11 @@ const handleBulkImport = () => {
           />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="error" @click="() => (showNukeDialog = true)">
+          <v-btn
+            color="error"
+            @click="() => (showNukeDialog = true)"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          >
             <v-icon left class="open-icon"> mdi-trash </v-icon>
             <span class="open-label">Clear and reset models</span>
           </v-btn>
@@ -400,43 +428,64 @@ const handleBulkImport = () => {
                     color="error"
                     @click="() => (confirmDeleteDialog = { show: true, model })"
                     title="Delete Model"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   >
-                    <v-icon>mdi-trash-can-outline</v-icon>
+                    <v-icon size="large">mdi-trash-can-outline</v-icon>
                   </v-btn>
                 </td>
                 <td class="text-right">
                   <v-btn
                     icon
                     small
-                    color="primary"
+                    color="photonYellow"
                     @click="() => (showRenameDialog = { show: true, model, newName: '' })"
                     title="Rename Model"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   >
-                    <v-icon>mdi-pencil</v-icon>
+                    <v-icon size="large">mdi-pencil</v-icon>
                   </v-btn>
                 </td>
                 <td class="text-right">
-                  <v-btn icon small color="info" @click="() => (showInfo = { show: true, model })">
-                    <v-icon>mdi-information</v-icon>
+                  <v-btn
+                    icon
+                    small
+                    color="lightBlue"
+                    @click="() => (showInfo = { show: true, model })"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  >
+                    <v-icon size="large">mdi-information</v-icon>
                   </v-btn>
                 </td>
               </tr>
             </tbody>
           </v-table>
+
           <v-dialog v-model="confirmDeleteDialog.show" width="600">
-            <v-card color="primary" dark>
+            <v-card color="surface" dark>
               <v-card-title>Delete Object Detection Model</v-card-title>
               <v-card-text class="pt-0">
                 Are you sure you want to delete the model {{ confirmDeleteDialog.model.nickname }}?
                 <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-                  <v-btn variant="elevated" color="error" @click="deleteModel(confirmDeleteDialog.model)">Delete</v-btn>
-                  <v-btn variant="elevated" @click="confirmDeleteDialog.show = false" color="secondary">Cancel</v-btn>
+                  <v-btn
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    @click="confirmDeleteDialog.show = false"
+                    color="lightBlue"
+                  >
+                    Cancel
+                  </v-btn>
+                  <v-btn
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    color="error"
+                    @click="deleteModel(confirmDeleteDialog.model)"
+                  >
+                    Delete
+                  </v-btn>
                 </v-card-actions>
               </v-card-text>
             </v-card>
           </v-dialog>
           <v-dialog v-model="showRenameDialog.show" width="600">
-            <v-card color="primary" dark>
+            <v-card color="surface" dark>
               <v-card-title>Rename Object Detection Model</v-card-title>
               <v-card-text class="pt-0">
                 Enter a new name for the model {{ showRenameDialog.model.nickname }}:
@@ -445,22 +494,32 @@ const handleBulkImport = () => {
                 </div>
                 <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
                   <v-btn
-                    variant="elevated"
-                    color="secondary"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    @click="showRenameDialog.show = false"
+                    color="error"
+                    >Cancel</v-btn
+                  >
+                  <v-btn
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    color="photonYellow"
                     @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</v-btn
                   >
-                  <v-btn variant="elevated" @click="showRenameDialog.show = false" color="error">Cancel</v-btn>
                 </v-card-actions>
               </v-card-text>
             </v-card>
           </v-dialog>
           <v-dialog v-model="showInfo.show" width="600">
-            <v-card color="primary" dark>
+            <v-card color="surface" dark>
               <v-card-title>Object Detection Model Info</v-card-title>
               <v-card-text class="pt-0">
-                <v-btn color="secondary" width="100%" @click="openExportIndividualModelPrompt">
-                  <v-icon left class="open-icon"> mdi-export </v-icon>
+                <v-btn
+                  color="lightBlue"
+                  width="100%"
+                  @click="openExportIndividualModelPrompt"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                >
+                  <v-icon left class="open-icon" size="large"> mdi-export </v-icon>
                   <span class="open-label">Export Model</span>
                 </v-btn>
                 <a
@@ -486,12 +545,12 @@ const handleBulkImport = () => {
     </div>
 
     <v-dialog v-model="showNukeDialog" width="800" dark>
-      <v-card color="primary" flat>
+      <v-card color="surface" flat>
         <v-card-title style="display: flex; justify-content: center">
           <span class="open-label">
-            <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+            <v-icon end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
             Clear and Reset Object Detection Models
-            <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+            <v-icon end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
           </span>
         </v-card-title>
         <v-card-text class="pt-0 pb-10px">
@@ -500,8 +559,13 @@ const handleBulkImport = () => {
               <span> This will delete ALL OF YOUR MODELS and re-extract the default models. </span>
             </v-col>
             <v-col cols="12" md="6">
-              <v-btn color="secondary" style="float: right" @click="openExportPrompt">
-                <v-icon start class="open-icon"> mdi-export </v-icon>
+              <v-btn
+                color="photonYellow"
+                style="float: right"
+                @click="openExportPrompt"
+                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              >
+                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
                 <span class="open-label">Backup Models</span>
                 <a
                   ref="exportModels"
@@ -528,8 +592,9 @@ const handleBulkImport = () => {
             width="100%"
             :disabled="yesDeleteMyModelsText.toLowerCase() !== expected.toLowerCase()"
             @click="nukeModels"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
-            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
             <span class="open-label">
               {{ $vuetify.display.mdAndUp ? "Delete models, I have backed up what I need" : "Delete Models" }}
             </span>
@@ -561,11 +626,9 @@ const handleBulkImport = () => {
   width: 100%;
   height: 100%;
   text-align: center;
-  background-color: #006492 !important;
 
   th,
   td {
-    background-color: #006492 !important;
     font-size: 1rem !important;
     color: white !important;
     text-align: center !important;
@@ -573,10 +636,6 @@ const handleBulkImport = () => {
 
   td {
     font-family: monospace !important;
-  }
-
-  tbody :hover td {
-    background-color: #005281 !important;
   }
 
   ::-webkit-scrollbar {

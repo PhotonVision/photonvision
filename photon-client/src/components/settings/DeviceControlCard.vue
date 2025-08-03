@@ -391,9 +391,9 @@ const nukePhotonConfigDirectory = () => {
       <v-card color="surface" flat>
         <v-card-title style="display: flex; justify-content: center">
           <span class="open-label">
-            <v-icon end color="red" class="open-icon ma-1">mdi-alert-outline</v-icon>
+            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
             Factory Reset PhotonVision
-            <v-icon end color="red" class="open-icon ma-1">mdi-alert-outline</v-icon>
+            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
           </span>
         </v-card-title>
         <v-card-text class="pt-0 pb-10px">
