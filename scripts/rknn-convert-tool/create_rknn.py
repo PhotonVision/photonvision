@@ -8,6 +8,7 @@ from rknn.api import RKNN
 image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp")
 DEFAULT_PLATFORM = "rk3588"
 
+
 def list_img_dir(img_dir):
     return [
         os.path.abspath(os.path.join(img_dir, f))
@@ -86,7 +87,10 @@ def get_image_list(num_imgs, image_dir):
 def run_rknn_conversion(
     img_list_txt, disable_quant, model_path, rknn_output, verbose_logging
 ):
-    rknn = RKNN(verbose=verbose_logging, verbose_file=("rknn_convert.log" if verbose_logging else None))
+    rknn = RKNN(
+        verbose=verbose_logging,
+        verbose_file=("rknn_convert.log" if verbose_logging else None),
+    )
 
     rknn.config(
         mean_values=[[0, 0, 0]],
@@ -148,8 +152,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-dq",
         "--disable_quantize",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Whether to skip quantization (default: False)",
     )
 
@@ -170,8 +173,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-vb",
         "--verbose",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Whether to enable verbose logging",
     )
 
