@@ -369,7 +369,7 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
-                  color="lightBlue"
+                  color="buttonPassive"
                   style="width: 100%"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
@@ -385,7 +385,7 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="text-black"
-                  color="photonYellow"
+                  color="buttonActive"
                   style="width: 100%"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   :loading="deactivatingModule"
@@ -455,7 +455,7 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
-                  color="lightBlue"
+                  color="buttonPassive"
                   style="width: 100%"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
@@ -471,7 +471,7 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="text-black"
-                  color="photonYellow"
+                  color="buttonActive"
                   style="width: 100%"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   :loading="activatingModule"
@@ -514,7 +514,7 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="6" class="pr-0">
                 <v-btn
-                  color="lightBlue"
+                  color="buttonPassive"
                   style="width: 100%"
                   @click="setCameraView(camera, false)"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -525,7 +525,7 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6">
                 <v-btn
                   class="text-black"
-                  color="photonYellow"
+                  color="buttonActive"
                   style="width: 100%"
                   :loading="assigningCamera"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -570,7 +570,7 @@ const openExportSettingsPrompt = () => {
         <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
           <v-alert
             class="mb-3"
-            color="photonYellow"
+            color="buttonActive"
             density="compact"
             text="A different camera may have been connected to this device! Compare the following information carefully."
             icon="mdi-information-outline"

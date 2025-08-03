@@ -263,7 +263,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               closable
               density="compact"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
-              :color="useSettingsStore().general.mrCalWorking ? 'lightBlue' : 'error'"
+              :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
               :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
               :text="
                 useSettingsStore().general.mrCalWorking
@@ -434,7 +434,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           <v-chip
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
             label
-            :color="useStateStore().calibrationData.hasEnoughImages ? 'lightBlue' : 'light-grey'"
+            :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'"
           >
             Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
             {{ useStateStore().calibrationData.minimumImageCount }}
@@ -442,7 +442,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <div>
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             size="small"
             block
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -467,7 +467,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-btn
               size="small"
               block
-              color="photonYellow"
+              color="buttonActive"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
@@ -483,7 +483,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'photonYellow' : 'error'"
+              :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >

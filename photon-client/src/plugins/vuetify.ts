@@ -26,8 +26,8 @@ const DarkTheme: ThemeDefinition = {
     toggle: CommonColors.photonBlue,
     logsBackground: CommonColors.darkGray,
 
-    photonYellow: CommonColors.photonYellow,
-    lightBlue: CommonColors.lightBlue,
+    buttonActive: CommonColors.photonYellow,
+    buttonPassive: CommonColors.lightBlue,
 
     "surface-variant": "#485b70",
     "on-surface-variant": "#f0f0f0",
@@ -53,8 +53,8 @@ const LightTheme: ThemeDefinition = {
     toggle: CommonColors.lightBlue,
     logsBackground: CommonColors.lightGray,
 
-    photonYellow: CommonColors.photonYellow,
-    lightBlue: CommonColors.lightBlue,
+    buttonActive: CommonColors.photonYellow,
+    buttonPassive: CommonColors.lightBlue,
 
     "surface-variant": "#358AB0",
     "surface-light": CommonColors.photonYellow,

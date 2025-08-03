@@ -99,7 +99,7 @@ const fpsTooLow = computed<boolean>(() => {
         base-color="surface-variant"
       >
         <v-btn
-          color="lightBlue"
+          color="buttonPassive"
           class="fill"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
@@ -108,7 +108,7 @@ const fpsTooLow = computed<boolean>(() => {
           <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
-          color="lightBlue"
+          color="buttonPassive"
           class="fill"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"

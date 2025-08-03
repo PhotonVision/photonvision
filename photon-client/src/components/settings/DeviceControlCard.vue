@@ -236,7 +236,7 @@ const nukePhotonConfigDirectory = () => {
       <v-row>
         <v-col cols="12" lg="4" md="6">
           <v-btn
-            color="photonYellow"
+            color="buttonActive"
             @click="restartProgram"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -246,7 +246,7 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
         <v-col cols="12" lg="4" md="6">
           <v-btn
-            color="photonYellow"
+            color="buttonActive"
             @click="restartDevice"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -256,7 +256,7 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
         <v-col cols="12" lg="4">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             @click="openOfflineUpdatePrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -269,7 +269,7 @@ const nukePhotonConfigDirectory = () => {
       <v-row>
         <v-col cols="12" sm="6">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             @click="() => (showImportDialog = true)"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -329,7 +329,7 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             @click="openExportSettingsPrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -346,7 +346,7 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             @click="openExportLogsPrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -365,7 +365,7 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             @click="useStateStore().showLogModal = true"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >

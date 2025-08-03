@@ -134,7 +134,7 @@ const onBeforeTabUpdate = () => {
         @vue:before-update="onBeforeTabUpdate"
       >
         <v-card color="surface" height="100%" class="pr-5 pl-5 rounded-12">
-          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="surface" height="48" slider-color="photonYellow">
+          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="surface" height="48" slider-color="buttonActive">
             <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
               {{ tabConfig.tabName }}
             </v-tab>

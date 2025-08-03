@@ -99,7 +99,7 @@ const calibrationImageURL = (index: number) =>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
         <v-btn
-          color="lightBlue"
+          color="buttonPassive"
           style="width: 100%"
           @click="openUploadPhotonCalibJsonPrompt"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -117,7 +117,7 @@ const calibrationImageURL = (index: number) =>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
         <v-btn
-          color="lightBlue"
+          color="buttonPassive"
           :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
           @click="openExportCalibrationPrompt"

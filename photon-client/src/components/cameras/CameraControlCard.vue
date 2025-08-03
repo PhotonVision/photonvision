@@ -98,7 +98,7 @@ const expanded = ref([]);
     <v-card-title>Camera Control</v-card-title>
     <v-card-text class="pt-0">
       <v-btn
-        color="lightBlue"
+        color="buttonPassive"
         @click="fetchSnapshots"
         :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
       >
@@ -111,7 +111,7 @@ const expanded = ref([]);
         <v-card-title> Saved Frame Snapshots </v-card-title>
         <v-card-text v-if="imgData.length === 0" class="pt-0">
           <v-alert
-            color="lightBlue"
+            color="buttonPassive"
             density="compact"
             text="There are currently no saved snapshots."
             icon="mdi-information-outline"
@@ -121,7 +121,7 @@ const expanded = ref([]);
         <v-card-text v-else class="pt-0">
           <v-alert
             closable
-            color="lightBlue"
+            color="buttonPassive"
             density="compact"
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
             icon="mdi-information-outline"

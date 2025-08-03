@@ -126,7 +126,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         <v-card-title>Set up some cameras to get started!</v-card-title>
         <v-card-text class="pt-0">
           No cameras activated - head to the
-          <router-link to="/cameraConfigs" color="photonYellow">camera matching tab</router-link> to set some up!
+          <router-link to="/cameraConfigs" color="buttonActive">camera matching tab</router-link> to set some up!
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -139,7 +139,7 @@ a:link {
   text-decoration: none;
 }
 a:visited {
-  color: rgb(var(--v-theme-photonYellow));
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }

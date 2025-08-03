@@ -279,7 +279,7 @@ const handleBulkImport = () => {
       <v-row>
         <v-col cols="12" sm="6">
           <v-btn
-            color="photonYellow"
+            color="buttonActive"
             class="justify-center"
             @click="() => (showImportDialog = true)"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -324,7 +324,7 @@ const handleBulkImport = () => {
                     :items="['YOLOv5', 'YOLOv8', 'YOLO11']"
                   />
                   <v-btn
-                    color="photonYellow"
+                    color="buttonActive"
                     width="100%"
                     :disabled="
                       importModelFile === null ||
@@ -346,7 +346,7 @@ const handleBulkImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn
-            color="photonYellow"
+            color="buttonActive"
             class="justify-center"
             @click="() => (showBulkImportDialog = true)"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -363,7 +363,7 @@ const handleBulkImport = () => {
                 <div class="pa-5 pb-0">
                   <v-file-input v-model="importFile" variant="underlined" label="Zip File" accept=".zip" />
                   <v-btn
-                    color="photonYellow"
+                    color="buttonActive"
                     width="100%"
                     :disabled="importFile === null"
                     @click="handleBulkImport()"
@@ -379,7 +379,7 @@ const handleBulkImport = () => {
         </v-col>
         <v-col cols="12" sm="6">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             @click="openExportPrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -437,7 +437,7 @@ const handleBulkImport = () => {
                   <v-btn
                     icon
                     small
-                    color="photonYellow"
+                    color="buttonActive"
                     @click="() => (showRenameDialog = { show: true, model, newName: '' })"
                     title="Rename Model"
                     :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -449,7 +449,7 @@ const handleBulkImport = () => {
                   <v-btn
                     icon
                     small
-                    color="lightBlue"
+                    color="buttonPassive"
                     @click="() => (showInfo = { show: true, model })"
                     :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   >
@@ -469,7 +469,7 @@ const handleBulkImport = () => {
                   <v-btn
                     :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                     @click="confirmDeleteDialog.show = false"
-                    color="lightBlue"
+                    color="buttonPassive"
                   >
                     Cancel
                   </v-btn>
@@ -501,7 +501,7 @@ const handleBulkImport = () => {
                   >
                   <v-btn
                     :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="photonYellow"
+                    color="buttonActive"
                     @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</v-btn
                   >
@@ -514,7 +514,7 @@ const handleBulkImport = () => {
               <v-card-title>Object Detection Model Info</v-card-title>
               <v-card-text class="pt-0">
                 <v-btn
-                  color="lightBlue"
+                  color="buttonPassive"
                   width="100%"
                   @click="openExportIndividualModelPrompt"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -560,7 +560,7 @@ const handleBulkImport = () => {
             </v-col>
             <v-col cols="12" md="6">
               <v-btn
-                color="photonYellow"
+                color="buttonActive"
                 style="float: right"
                 @click="openExportPrompt"
                 :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"

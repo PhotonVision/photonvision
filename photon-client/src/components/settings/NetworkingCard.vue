@@ -248,7 +248,7 @@ watchEffect(() => {
         />
         <v-alert
           v-if="tempSettingsStruct.runNTServer"
-          color="photonYellow"
+          color="buttonActive"
           density="compact"
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           icon="mdi-information-outline"
@@ -264,7 +264,7 @@ watchEffect(() => {
         />
         <v-alert
           v-if="tempSettingsStruct.shouldPublishProto"
-          color="photonYellow"
+          color="buttonActive"
           density="compact"
           text="This mode is intended for debugging and may reduce performance; it should be off for field use."
           icon="mdi-information-outline"

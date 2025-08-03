@@ -30,7 +30,7 @@ const processingMode = computed<number>({
         <p style="color: white">Processing Mode</p>
         <v-btn-toggle v-model="processingMode" mandatory base-color="surface-variant" class="fill w-100">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             :disabled="!useCameraSettingsStore().hasConnected"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
@@ -41,7 +41,7 @@ const processingMode = computed<number>({
             <span>2D</span>
           </v-btn>
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             :disabled="
               !useCameraSettingsStore().hasConnected || !useCameraSettingsStore().isCurrentVideoFormatCalibrated
             "
@@ -61,7 +61,7 @@ const processingMode = computed<number>({
         <p style="color: white">Stream Display</p>
         <v-btn-toggle v-model="value" :multiple="true" mandatory base-color="surface-variant" class="fill w-100">
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             class="fill w-50"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >
@@ -69,7 +69,7 @@ const processingMode = computed<number>({
             <span class="mode-btn-label">Raw</span>
           </v-btn>
           <v-btn
-            color="lightBlue"
+            color="buttonPassive"
             class="fill w-50"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           >

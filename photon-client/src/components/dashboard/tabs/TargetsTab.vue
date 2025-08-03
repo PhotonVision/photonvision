@@ -204,7 +204,7 @@ const resetCurrentBuffer = () => {
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </v-card-subtitle>
         <v-btn
-          color="photonYellow"
+          color="buttonActive"
           class="mb-4 mt-1"
           style="width: min-content"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
