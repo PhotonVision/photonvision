@@ -129,8 +129,6 @@ def run_onnx_conversion_no_anchor(model_path):
             print("Ultralytics has detected that this model is invalid.")
             print_bad_model_msg()
         exit(1)
-    except:
-        exit(1)
 
 
 if __name__ == "__main__":
