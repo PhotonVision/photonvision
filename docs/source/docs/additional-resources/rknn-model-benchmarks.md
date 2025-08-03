@@ -1,94 +1,97 @@
 # RKNN Benchmarks
 
 ## Description
-This benchmark compares the performance of four object detection models—YOLOv5, YOLOv5u, YOLOv8, and YOLOv11—on the [COCO 2017 Validation Set](http://images.cocodataset.org/zips/val2017.zip). The primary goal is to evaluate and compare their inference speeds and detection accuracy when deployed on the Orange Pi 5 with RK3588 using int8 quantization.
+This benchmark compares the performance of four object detection models: YOLOv5, YOLOv5u, YOLOv8, and YOLOv11 on the [COCO 2017 Validation Set](http://images.cocodataset.org/zips/val2017.zip). The main purpose is to assess and compare the inference speed and detection accuracy of these models when deployed on the Orange Pi devices using the RKNN framework and int8 quantization.
 
 ## Methodology
 - **Dataset**: [COCO 2017 Validation Set](http://images.cocodataset.org/zips/val2017.zip) (5,000 images)
-
+-
 - **Platform**: Orange Pi 5 with RK3588
-
+-
 - **Quantization**: int8 using 20 randomly selected images from the validation set
-
+-
 - **Framework**: RKNN Toolkit 2
 
-- All models were benchmarked using consistent preprocessing and runtime environments to ensure fair comparison.
+## Operator-Level Benchmark Results
 
-## Results
-&nbsp;
+The following tables break down the average CPU time, NPU time, and total execution time (in microseconds) for each operator used by the models. Each value represents the mean ± standard deviation across 5,000 inferences.
 
 ### YOLOv5
 
-| OpType          | CPU Time (μs)           | NPU Time (μs)            | Total Time (μs)           | Time Ratio (%)         | Number of Times Called |
-|----------------|-------------------------|---------------------------|----------------------------|-------------------------|-------------|
-| ConvExSwish    | 0.0000 ± 0.0000         | 10968.8144 ± 1125.9973    | 10968.8144 ± 1125.9973     | 73.0624 ± 0.9429        | 57          |
-| ConvSigmoid    | 0.0000 ± 0.0000         | 1243.4860 ± 67.6628       | 1243.4860 ± 67.6628        | 8.3324 ± 0.5668         | 3           |
-| Concat         | 0.0000 ± 0.0000         | 1080.6754 ± 259.4036      | 1080.6754 ± 259.4036       | 7.0912 ± 0.8707         | 13          |
-| Conv           | 0.0000 ± 0.0000         | 732.1466 ± 29.4241        | 732.1466 ± 29.4241         | 4.9159 ± 0.4179         | 1           |
-| Add            | 0.0000 ± 0.0000         | 473.7118 ± 131.4796       | 473.7118 ± 131.4796        | 3.0972 ± 0.5030         | 7           |
-| MaxPool        | 0.0000 ± 0.0000         | 272.4042 ± 110.5195       | 272.4042 ± 110.5195        | 1.7567 ± 0.5131         | 6           |
-| Resize         | 0.0000 ± 0.0000         | 147.6092 ± 38.8864        | 147.6092 ± 38.8864         | 0.9666 ± 0.1450         | 2           |
-| OutputOperator | 106.6022 ± 15.0000      | 0.0000 ± 0.0000           | 106.6022 ± 15.0000         | 0.7190 ± 0.1313         | 3           |
-| InputOperator  | 8.6406 ± 1.7897         | 0.0000 ± 0.0000           | 8.6406 ± 1.7897            | 0.0596 ± 0.0150         | 1           |
-| **Total**      | **115.2428 ± 16.1637**  | **14918.8476 ± 1735.4529**| **15034.0904 ± 1734.2830** |                         | **93**       |
+| OpType          | CPU Time (μs)       | NPU Time (μs)         | Total Time (μs)        | Time Ratio (%)      | Number of Times Called |
+|-----------------|---------------------|----------------------|-----------------------|---------------------|-----------------------|
+| ConvExSwish     | 0.00 ± 0.00         | 10968.81 ± 1126.00   | 10968.81 ± 1126.00    | 73.06 ± 0.94        | 57                    |
+| ConvSigmoid     | 0.00 ± 0.00         | 1243.49 ± 67.66      | 1243.49 ± 67.66       | 8.33 ± 0.57         | 3                     |
+| Concat          | 0.00 ± 0.00         | 1080.68 ± 259.40     | 1080.68 ± 259.40      | 7.09 ± 0.87         | 13                    |
+| Conv            | 0.00 ± 0.00         | 732.15 ± 29.42       | 732.15 ± 29.42        | 4.92 ± 0.42         | 1                     |
+| Add             | 0.00 ± 0.00         | 473.71 ± 131.48      | 473.71 ± 131.48       | 3.10 ± 0.50         | 7                     |
+| MaxPool         | 0.00 ± 0.00         | 272.40 ± 110.52      | 272.40 ± 110.52       | 1.76 ± 0.51         | 6                     |
+| Resize          | 0.00 ± 0.00         | 147.61 ± 38.89       | 147.61 ± 38.89        | 0.97 ± 0.15         | 2                     |
+| OutputOperator  | 106.60 ± 15.00      | 0.00 ± 0.00          | 106.60 ± 15.00        | 0.72 ± 0.13         | 3                     |
+| InputOperator   | 8.64 ± 1.79         | 0.00 ± 0.00          | 8.64 ± 1.79           | 0.06 ± 0.02         | 1                     |
+| **Total**       | **115.24 ± 16.16**  | **14918.85 ± 1735.45**| **15034.09 ± 1734.28**|                     | **93**                |
 
 ### YOLOv5u
-| OpType          | CPU Time (μs)           | NPU Time (μs)            | Total Time (μs)           | Time Ratio (%)         | Number of Times Called |
-|----------------|-------------------------|---------------------------|----------------------------|-------------------------|-------------|
-| ConvExSwish    | 0.0000 ± 0.0000         | 16828.2438 ± 1332.7291    | 16828.2438 ± 1332.7291     | 83.0440 ± 1.6108        | 69          |
-| Concat         | 0.0000 ± 0.0000         | 1265.9360 ± 250.2417      | 1265.9360 ± 250.2417       | 6.1722 ± 0.6867         | 13          |
-| ConvSigmoid    | 0.0000 ± 0.0000         | 613.8768 ± 62.9660        | 613.8768 ± 62.9660         | 3.0258 ± 0.1510         | 3           |
-| Add            | 0.0000 ± 0.0000         | 553.7464 ± 131.1744       | 553.7464 ± 131.1744        | 2.6927 ± 0.4369         | 7           |
-| Conv           | 0.0000 ± 0.0000         | 298.6142 ± 72.7158        | 298.6142 ± 72.7158         | 1.4536 ± 0.2530         | 3           |
-| ConvClip       | 0.0000 ± 0.0000         | 256.0216 ± 64.4750        | 256.0216 ± 64.4750         | 1.2446 ± 0.2283         | 3           |
-| MaxPool        | 0.0000 ± 0.0000         | 178.6820 ± 58.7247        | 178.6820 ± 58.7247         | 0.8625 ± 0.2261         | 3           |
-| Resize         | 0.0000 ± 0.0000         | 170.8654 ± 40.1374        | 170.8654 ± 40.1374         | 0.8311 ± 0.1313         | 2           |
-| OutputOperator | 126.8850 ± 16.5305      | 0.0000 ± 0.0000           | 126.8850 ± 16.5305         | 0.6303 ± 0.1023         | 9           |
-| InputOperator  | 8.6872 ± 1.4511         | 0.0000 ± 0.0000           | 8.6872 ± 1.4511            | 0.0432 ± 0.0084         | 1           |
-| **Total**      | **135.5722 ± 17.5109**  | **20165.9862 ± 1963.7014**| **20301.5584 ± 1965.8794** |                         | **113**     |
+
+| OpType          | CPU Time (μs)       | NPU Time (μs)         | Total Time (μs)        | Time Ratio (%)      | Number of Times Called |
+|-----------------|---------------------|----------------------|-----------------------|---------------------|-----------------------|
+| ConvExSwish     | 0.00 ± 0.00         | 16828.24 ± 1332.73   | 16828.24 ± 1332.73    | 83.04 ± 1.61        | 69                    |
+| Concat          | 0.00 ± 0.00         | 1265.94 ± 250.24     | 1265.94 ± 250.24      | 6.17 ± 0.69         | 13                    |
+| ConvSigmoid     | 0.00 ± 0.00         | 613.88 ± 62.97       | 613.88 ± 62.97        | 3.03 ± 0.15         | 3                     |
+| Add             | 0.00 ± 0.00         | 553.75 ± 131.17      | 553.75 ± 131.17       | 2.69 ± 0.44         | 7                     |
+| Conv            | 0.00 ± 0.00         | 298.61 ± 72.72       | 298.61 ± 72.72        | 1.45 ± 0.25         | 3                     |
+| ConvClip        | 0.00 ± 0.00         | 256.02 ± 64.48       | 256.02 ± 64.48        | 1.24 ± 0.23         | 3                     |
+| MaxPool         | 0.00 ± 0.00         | 178.68 ± 58.72       | 178.68 ± 58.72        | 0.86 ± 0.23         | 3                     |
+| Resize          | 0.00 ± 0.00         | 170.87 ± 40.14       | 170.87 ± 40.14        | 0.83 ± 0.13         | 2                     |
+| OutputOperator  | 126.89 ± 16.53      | 0.00 ± 0.00          | 126.89 ± 16.53        | 0.63 ± 0.10         | 9                     |
+| InputOperator   | 8.69 ± 1.45         | 0.00 ± 0.00          | 8.69 ± 1.45           | 0.04 ± 0.01         | 1                     |
+| **Total**       | **135.57 ± 17.51**  | **20165.99 ± 1963.70**| **20301.56 ± 1965.88**|                     | **113**               |
 
 ### YOLOv8
 
-| OpType          | CPUTime (μs)           | NPUTime (μs)               | TotalTime (μs)             | TimeRatio (%)    | Number of Times Called |
-|-----------------|------------------------|----------------------------|----------------------------|------------------|------------|
-| ConvExSwish     | 0.0000 ± 0.0000        | 13017.0354 ± 1165.7590     | 13017.0354 ± 1165.7590     | 75.6553 ± 1.9562 | 57         |
-| Concat          | 0.0000 ± 0.0000        | 1489.9438 ± 257.2214       | 1489.9438 ± 257.2214       | 8.5790 ± 0.5314  | 13         |
-| Split           | 0.0000 ± 0.0000        | 681.4716 ± 166.6193        | 681.4716 ± 166.6193        | 3.8923 ± 0.5252  | 8          |
-| ConvSigmoid     | 0.0000 ± 0.0000        | 596.0784 ± 75.0117         | 596.0784 ± 75.0117         | 3.4547 ± 0.1831  | 3          |
-| Add             | 0.0000 ± 0.0000        | 443.5986 ± 118.0517        | 443.5986 ± 118.0517        | 2.5299 ± 0.4119  | 6          |
-| Conv            | 0.0000 ± 0.0000        | 269.6090 ± 78.6457         | 269.6090 ± 78.6457         | 1.5352 ± 0.2962  | 3          |
-| Resize          | 0.0000 ± 0.0000        | 236.7884 ± 37.7401         | 236.7884 ± 37.7401         | 1.3662 ± 0.0818  | 2          |
-| ConvClip        | 0.0000 ± 0.0000        | 231.8182 ± 68.4416         | 231.8182 ± 68.4416         | 1.3197 ± 0.2663  | 3          |
-| MaxPool         | 0.0000 ± 0.0000        | 156.8480 ± 56.9400         | 156.8480 ± 56.9400         | 0.8852 ± 0.2333  | 3          |
-| OutputOperator  | 124.8610 ± 20.7386     | 0.0000 ± 0.0000            | 124.8610 ± 20.7386         | 0.7326 ± 0.1464  | 9          |
-| InputOperator   | 8.4654 ± 1.6569        | 0.0000 ± 0.0000            | 8.4654 ± 1.6569            | 0.0502 ± 0.0122  | 1          |
-| **Total**           | **133.3264 ± 21.9546** | **17123.1914 ± 1985.7238** | **17256.5178 ± 1986.7732** |                  | **108**        |
+| OpType          | CPU Time (μs)       | NPU Time (μs)         | Total Time (μs)        | Time Ratio (%)      | Number of Times Called |
+|-----------------|---------------------|----------------------|-----------------------|---------------------|-----------------------|
+| ConvExSwish     | 0.00 ± 0.00         | 13017.04 ± 1165.76   | 13017.04 ± 1165.76    | 75.66 ± 1.96        | 57                    |
+| Concat          | 0.00 ± 0.00         | 1489.94 ± 257.22     | 1489.94 ± 257.22      | 8.58 ± 0.53         | 13                    |
+| Split           | 0.00 ± 0.00         | 681.47 ± 166.62      | 681.47 ± 166.62       | 3.89 ± 0.53         | 8                     |
+| ConvSigmoid     | 0.00 ± 0.00         | 596.08 ± 75.01       | 596.08 ± 75.01        | 3.45 ± 0.18         | 3                     |
+| Add             | 0.00 ± 0.00         | 443.60 ± 118.05      | 443.60 ± 118.05       | 2.53 ± 0.41         | 6                     |
+| Conv            | 0.00 ± 0.00         | 269.61 ± 78.65       | 269.61 ± 78.65        | 1.54 ± 0.30         | 3                     |
+| Resize          | 0.00 ± 0.00         | 236.79 ± 37.74       | 236.79 ± 37.74        | 1.37 ± 0.08         | 2                     |
+| ConvClip        | 0.00 ± 0.00         | 231.82 ± 68.44       | 231.82 ± 68.44        | 1.32 ± 0.27         | 3                     |
+| MaxPool         | 0.00 ± 0.00         | 156.85 ± 56.94       | 156.85 ± 56.94        | 0.89 ± 0.23         | 3                     |
+| OutputOperator  | 124.86 ± 20.74      | 0.00 ± 0.00          | 124.86 ± 20.74        | 0.73 ± 0.15         | 9                     |
+| InputOperator   | 8.47 ± 1.66         | 0.00 ± 0.00          | 8.47 ± 1.66           | 0.05 ± 0.01         | 1                     |
+| **Total**       | **133.33 ± 21.95**  | **17123.19 ± 1985.72**| **17256.52 ± 1986.77**  |                     | **108**               |
 
 ---
 
 ### YOLOv11
 
-| OpType          | CPUTime (μs)           | NPUTime (μs)               | TotalTime (μs)             | TimeRatio (%)    | Number of Times Called |
-|-----------------|------------------------|----------------------------|----------------------------|------------------|------------|
-| ConvExSwish     | 0.0000 ± 0.0000        | 16034.0000 ± 1331.9527     | 16034.0000 ± 1331.9527     | 69.9019 ± 1.5469 | 77         |
-| Concat          | 0.0000 ± 0.0000        | 1888.8872 ± 293.9925       | 1888.8872 ± 293.9925       | 8.1686 ± 0.5069  | 17         |
-| exSDPAttention  | 0.0000 ± 0.0000        | 1210.8758 ± 17.7283        | 1210.8758 ± 17.7283        | 5.3206 ± 0.5233  | 1          |
-| Split           | 0.0000 ± 0.0000        | 908.3042 ± 183.9160        | 908.3042 ± 183.9160        | 3.9086 ± 0.4507  | 10         |
-| Add             | 0.0000 ± 0.0000        | 871.6440 ± 212.7915        | 871.6440 ± 212.7915        | 3.7324 ± 0.6026  | 12         |
-| ConvSigmoid     | 0.0000 ± 0.0000        | 617.6050 ± 59.6144         | 617.6050 ± 59.6144         | 2.6932 ± 0.1581  | 3          |
-| Conv            | 0.0000 ± 0.0000        | 419.7188 ± 89.8841         | 419.7188 ± 89.8841         | 1.8045 ± 0.2375  | 5          |
-| Resize          | 0.0000 ± 0.0000        | 272.0918 ± 49.9142         | 272.0918 ± 49.9142         | 1.1758 ± 0.1240  | 2          |
-| ConvClip        | 0.0000 ± 0.0000        | 260.0816 ± 59.1174         | 260.0816 ± 59.1174         | 1.1197 ± 0.1809  | 3          |
-| MaxPool         | 0.0000 ± 0.0000        | 181.9318 ± 53.3246         | 181.9318 ± 53.3246         | 0.7768 ± 0.1754  | 3          |
-| OutputOperator  | 131.4758 ± 22.9268     | 0.0000 ± 0.0000            | 131.4758 ± 22.9268         | 0.5769 ± 0.1180  | 9          |
-| ConvAdd         | 0.0000 ± 0.0000        | 126.7852 ± 35.2763         | 126.7852 ± 35.2763         | 0.5421 ± 0.1132  | 2          |
-| Reshape         | 0.0000 ± 0.0000        | 56.6096 ± 18.0317          | 56.6096 ± 18.0317          | 0.2412 ± 0.0613  | 3          |
-| InputOperator   | 8.6646 ± 1.5914        | 0.0000 ± 0.0000            | 8.6646 ± 1.5914            | 0.0391 ± 0.0085  | 1          |
-| **Total**           | **140.1404 ± 24.2614** | **22848.5350 ± 2351.9458** | **22988.6754 ± 2355.9731** |                  | **148**        |
+| OpType          | CPU Time (μs)       | NPU Time (μs)         | Total Time (μs)        | Time Ratio (%)      | Number of Times Called |
+|-----------------|---------------------|----------------------|-----------------------|---------------------|-----------------------|
+| ConvExSwish     | 0.00 ± 0.00         | 16034.00 ± 1331.95   | 16034.00 ± 1331.95    | 69.90 ± 1.55        | 77                    |
+| Concat          | 0.00 ± 0.00         | 1888.89 ± 293.99     | 1888.89 ± 293.99      | 8.17 ± 0.51         | 17                    |
+| exSDPAttention  | 0.00 ± 0.00         | 1210.88 ± 17.73      | 1210.88 ± 17.73       | 5.32 ± 0.52         | 1                     |
+| Split           | 0.00 ± 0.00         | 908.30 ± 183.92      | 908.30 ± 183.92       | 3.91 ± 0.45         | 10                    |
+| Add             | 0.00 ± 0.00         | 871.64 ± 212.79      | 871.64 ± 212.79       | 3.73 ± 0.60         | 12                    |
+| ConvSigmoid     | 0.00 ± 0.00         | 617.61 ± 59.61       | 617.61 ± 59.61        | 2.69 ± 0.16         | 3                     |
+| Conv            | 0.00 ± 0.00         | 419.72 ± 89.88       | 419.72 ± 89.88        | 1.80 ± 0.24         | 5                     |
+| Resize          | 0.00 ± 0.00         | 272.09 ± 49.91       | 272.09 ± 49.91        | 1.18 ± 0.12         | 2                     |
+| ConvClip        | 0.00 ± 0.00         | 260.08 ± 59.12       | 260.08 ± 59.12        | 1.12 ± 0.18         | 3                     |
+| MaxPool         | 0.00 ± 0.00         | 181.93 ± 53.32       | 181.93 ± 53.32        | 0.78 ± 0.18         | 3                     |
+| OutputOperator  | 131.48 ± 22.93      | 0.00 ± 0.00          | 131.48 ± 22.93        | 0.58 ± 0.12         | 9                     |
+| ConvAdd         | 0.00 ± 0.00         | 126.79 ± 35.28       | 126.79 ± 35.28        | 0.54 ± 0.11         | 2                     |
+| Reshape         | 0.00 ± 0.00         | 56.61 ± 18.03        | 56.61 ± 18.03         | 0.24 ± 0.06         | 3                     |
+| InputOperator   | 8.66 ± 1.59         | 0.00 ± 0.00          | 8.66 ± 1.59           | 0.04 ± 0.01         | 1                     |
+| **Total**       | **140.14 ± 24.26**  | **22848.54 ± 2351.95**| **22988.68 ± 2355.97**|                     | **148**               |
 
-### Overall Results
 
-mAP of each model:
+## Model Summary and Accuracy Metrics
+
+The table below summarizes the mean average precision (mAP) and total inference time for each model. These metrics provide a high-level view of how each model performs in terms of both detection accuracy and runtime efficiency.
+
+### Mean Average Precision (mAP) by Model
 
 | Metric | YOLOv5     | YOLOv5u    | YOLOv8     | YOLOv11    |
 |--------|------------|------------|------------|------------|
@@ -98,26 +101,25 @@ mAP of each model:
 | **mAP85**  | 0.3054     | 0.3472     | 0.3867     | 0.4068     |
 | **mAP95**  | 0.3708     | 0.4822     | 0.5483     | 0.5858     |
 
-Model run times and number of calls:
+### Model Execution Time and Call Frequency
 
-| Model   | TotalTime (μs)         | Number of Processing Calls |
+| Model   | Total Time (μs)         | Number of Processing Calls |
 |---------|------------------------|----------------------------|
-| **YOLOv5**  | 15034.0904 ± 1734.2830 | 93                         |
-| **YOLOv5u** | 20301.5584 ± 1965.8794 | 113                        |
-| **YOLOv8**  | 17256.5178 ± 1986.7732 | 108                        |
-| **YOLOv11** | 22988.6754 ± 2355.9731 | 148                        |
-
+| **YOLOv5**  | 15034.09 ± 1734.28 | 93                         |
+| **YOLOv5u** | 20301.56 ± 1965.88 | 113                        |
+| **YOLOv8**  | 17256.52 ± 1986.77 | 108                        |
+| **YOLOv11** | 22988.68 ± 2355.97 | 148                        |
 
 ## Conclusion
 
 The benchmark reveals a clear performance trade-off between inference time and detection accuracy:
 
-- **YOLOv5** is the fastest model with the lowest total inference time, making it ideal for real-time applications where speed is critical but accuracy isn't critical.
+- **YOLOv5** is the fastest model with the lowest total inference time, making it well-suited for situations where speed is more important than high detection precision.
 
-- **YOLOv11** achieves the highest mAP across all IoU thresholds, demonstrating improved detection precision at the cost of the longest inference time.
+- **YOLOv11** achieves the highest accuracy (mAP) across all IoU thresholds but comes with the longest inference time, which may limit its use in real-time applications.
 
-- **YOLOv8** offers a strong balance between speed and accuracy, outperforming YOLOv5u in both metrics.
+- **YOLOv8** offers a strong balance between speed and accuracy, making it a practical choice when both factors matter.
 
-- **YOLOv5u**, while slightly slower than YOLOv8, still offers a noticeable accuracy boost over the original YOLOv5.
+- **YOLOv5u** improves accuracy compared to YOLOv5 but falls behind YOLOv8 in both speed and detection quality.
 
-For deployment on edge compute devices like the Orange Pi 5, its best to consider the tradeoffs between speed and accuracy based on your requirements.
+When choosing a model for edge devices like the Orange Pi 5, it’s important to weigh how much latency your system can tolerate versus how much accuracy you need. A faster model may give quicker results, while a more accurate one may offer better detection reliability—but at the cost of speed.
