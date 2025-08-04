@@ -305,12 +305,13 @@ const handleBulkImport = () => {
               <v-card-title class="pb-0">Import New Object Detection Model</v-card-title>
               <v-card-text>
                 Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
-                640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to
                 <span v-if="useSettingsStore().general.supportedBackends?.includes('RKNN')"
-                  >`.rknn` format for RK3588 CPUs</span
+                  >640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588
+                  CPUs</span
                 >
                 <span v-else-if="useSettingsStore().general.supportedBackends?.includes('RUBIK')"
-                  >`.tflite` format for QCS6490 compatible backends</span
+                  >640x640 YOLOv8 and YOLOv11 models trained and converted to `.tflite` format for QCS6490 compatible
+                  backends</span
                 >
                 <span v-else>
                   if you're seeing this, something broke; please file a ticket and tell us the details of your
@@ -337,7 +338,11 @@ const handleBulkImport = () => {
                     v-model="importVersion"
                     variant="underlined"
                     label="Model Version"
-                    :items="['YOLOv5', 'YOLOv8', 'YOLO11']"
+                    :items="
+                      useSettingsStore().general.supportedBackends?.includes('RKNN')
+                        ? ['YOLOv5', 'YOLOv8', 'YOLO11']
+                        : ['YOLOv8', 'YOLO11']
+                    "
                   />
                   <v-btn
                     color="buttonActive"

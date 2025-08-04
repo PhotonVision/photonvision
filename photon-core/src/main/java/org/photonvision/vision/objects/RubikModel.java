@@ -51,10 +51,8 @@ public class RubikModel implements Model {
             throw new IllegalArgumentException("Model family must be RUBIK");
         }
 
-        if (properties.version() != Version.YOLOV5
-                && properties.version() != Version.YOLOV8
-                && properties.version() != Version.YOLOV11) {
-            throw new IllegalArgumentException("Model version must be YOLOV5, YOLOV8, or YOLOV11");
+        if (properties.version() != Version.YOLOV8 && properties.version() != Version.YOLOV11) {
+            throw new IllegalArgumentException("Model version must be YOLOV8 or YOLOV11");
         }
 
         this.properties = properties;
