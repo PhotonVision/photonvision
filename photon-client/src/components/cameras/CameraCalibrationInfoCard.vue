@@ -101,8 +101,8 @@ const calibrationImageURL = (index: number) =>
         <v-btn
           color="buttonPassive"
           style="width: 100%"
-          @click="openUploadPhotonCalibJsonPrompt"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="openUploadPhotonCalibJsonPrompt"
         >
           <v-icon start size="large"> mdi-import</v-icon>
           <span>Import</span>
@@ -120,8 +120,8 @@ const calibrationImageURL = (index: number) =>
           color="buttonPassive"
           :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
-          @click="openExportCalibrationPrompt"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="openExportCalibrationPrompt"
         >
           <v-icon start size="large">mdi-export</v-icon>
           <span>Export</span>

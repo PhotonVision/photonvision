@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
 </script>
 
 <template>

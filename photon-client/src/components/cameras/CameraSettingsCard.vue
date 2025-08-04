@@ -4,7 +4,7 @@ import PvInput from "@/components/common/pv-input.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref, watchEffect } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import axios from "axios";
 import { useTheme } from "vuetify";
@@ -112,13 +112,6 @@ watchEffect(() => {
 });
 
 const showDeleteCamera = ref(false);
-
-const address = inject<string>("backendHost");
-const exportSettings = ref();
-const openExportSettingsPrompt = () => {
-  exportSettings.value.click();
-};
-
 const yesDeleteMySettingsText = ref("");
 const deletingCamera = ref(false);
 const deleteThisCamera = () => {
@@ -207,8 +200,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           size="small"
           color="primary"
           :disabled="!settingsHaveChanged()"
-          @click="saveCameraSettings"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="saveCameraSettings"
         >
           <v-icon start size="large"> mdi-content-save </v-icon>
           Save Changes
@@ -219,8 +212,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           block
           size="small"
           color="error"
-          @click="() => (showDeleteCamera = true)"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="() => (showDeleteCamera = true)"
         >
           <v-icon start size="large"> mdi-trash-can-outline </v-icon>
           Delete Camera

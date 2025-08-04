@@ -22,7 +22,6 @@ import { useTheme } from "vuetify";
 const theme = useTheme();
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
-const host = inject<string>("backendHost");
 
 const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
@@ -275,10 +274,6 @@ const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettin
   cameraToDelete.value = camera;
 };
 const yesDeleteMySettingsText = ref("");
-const exportSettings = ref();
-const openExportSettingsPrompt = () => {
-  exportSettings.value.click();
-};
 </script>
 
 <template>
@@ -399,8 +394,8 @@ const openExportSettingsPrompt = () => {
                   class="pa-0"
                   color="error"
                   style="width: 100%"
-                  @click="setCameraDeleting(module)"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="setCameraDeleting(module)"
                 >
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -485,8 +480,8 @@ const openExportSettingsPrompt = () => {
                   class="pa-0"
                   color="error"
                   style="width: 100%"
-                  @click="setCameraDeleting(module)"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="setCameraDeleting(module)"
                 >
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -516,8 +511,8 @@ const openExportSettingsPrompt = () => {
                 <v-btn
                   color="buttonPassive"
                   style="width: 100%"
-                  @click="setCameraView(camera, false)"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="setCameraView(camera, false)"
                 >
                   <span>Details</span>
                 </v-btn>

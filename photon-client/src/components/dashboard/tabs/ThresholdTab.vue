@@ -204,8 +204,8 @@ const interactiveCols = computed(() =>
               class="text-black"
               size="small"
               block
-              @click="enableColorPicking(1)"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="enableColorPicking(1)"
             >
               <v-icon start size="large"> mdi-plus-minus </v-icon>
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
@@ -232,8 +232,8 @@ const interactiveCols = computed(() =>
               color="primary"
               class="text-black"
               size="small"
-              @click="disableColorPicking"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="disableColorPicking"
             >
               Cancel
             </v-btn>

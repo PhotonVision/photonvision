@@ -237,8 +237,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" lg="4" md="6">
           <v-btn
             color="buttonActive"
-            @click="restartProgram"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="restartProgram"
           >
             <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
             <span class="open-label">Restart PhotonVision</span>
@@ -247,8 +247,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" lg="4" md="6">
           <v-btn
             color="buttonActive"
-            @click="restartDevice"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="restartDevice"
           >
             <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
             <span class="open-label">Restart Device</span>
@@ -257,8 +257,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" lg="4">
           <v-btn
             color="buttonPassive"
-            @click="openOfflineUpdatePrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="openOfflineUpdatePrompt"
           >
             <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
             <span class="open-label">Offline Update</span>
@@ -270,8 +270,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" sm="6">
           <v-btn
             color="buttonPassive"
-            @click="() => (showImportDialog = true)"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="() => (showImportDialog = true)"
           >
             <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
             <span class="open-label">Import Settings</span>
@@ -306,8 +306,8 @@ const nukePhotonConfigDirectory = () => {
                     style="width: 100%"
                   />
                   <v-file-input
-                    class="pb-5"
                     v-model="importFile"
+                    class="pb-5"
                     variant="underlined"
                     :disabled="importType === undefined"
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
@@ -316,8 +316,8 @@ const nukePhotonConfigDirectory = () => {
                   <v-btn
                     color="primary"
                     :disabled="importFile === null"
-                    @click="handleSettingsImport"
                     :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    @click="handleSettingsImport"
                   >
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
@@ -330,8 +330,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" sm="6">
           <v-btn
             color="buttonPassive"
-            @click="openExportSettingsPrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="openExportSettingsPrompt"
           >
             <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
             <span class="open-label">Export Settings</span>
@@ -347,8 +347,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" sm="6">
           <v-btn
             color="buttonPassive"
-            @click="openExportLogsPrompt"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="openExportLogsPrompt"
           >
             <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
             <span class="open-label">Download logs</span>
@@ -366,8 +366,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12" sm="6">
           <v-btn
             color="buttonPassive"
-            @click="useStateStore().showLogModal = true"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="useStateStore().showLogModal = true"
           >
             <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
             <span class="open-label">View logs</span>
@@ -378,8 +378,8 @@ const nukePhotonConfigDirectory = () => {
         <v-col cols="12">
           <v-btn
             color="error"
-            @click="() => (showFactoryReset = true)"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="() => (showFactoryReset = true)"
           >
             <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
             <span class="open-icon"> Factory Reset PhotonVision </span>
@@ -405,8 +405,8 @@ const nukePhotonConfigDirectory = () => {
               <v-btn
                 color="primary"
                 style="float: right"
-                @click="openExportSettingsPrompt"
                 :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                @click="openExportSettingsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>

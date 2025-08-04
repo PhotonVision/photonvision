@@ -99,8 +99,8 @@ const expanded = ref([]);
     <v-card-text class="pt-0">
       <v-btn
         color="buttonPassive"
-        @click="fetchSnapshots"
         :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        @click="fetchSnapshots"
       >
         <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
