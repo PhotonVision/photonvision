@@ -36,7 +36,7 @@ or alternatively download the source code from GitHub and extract the zip:
 In the photon-client directory:
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Build and Copy UI to Java Source
@@ -64,7 +64,7 @@ In the root directory:
 In the photon-client directory:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
