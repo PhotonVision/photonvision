@@ -8,6 +8,7 @@ apply from: "${rootDir}/shared/common.gradle"
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
 
 def nativeConfigName = 'wpilibNatives'
+
 def nativeConfig = configurations.create(nativeConfigName)
 
 def nativeTasks = wpilibTools.createExtractionTasks {
