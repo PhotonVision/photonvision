@@ -15,6 +15,9 @@ import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { useDisplay } from "vuetify/lib/composables/display";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 interface ConfigOption {
   tabName: string;
@@ -22,46 +25,16 @@ interface ConfigOption {
 }
 
 const allTabs = Object.freeze({
-  inputTab: {
-    tabName: "Input",
-    component: InputTab
-  },
-  thresholdTab: {
-    tabName: "Threshold",
-    component: ThresholdTab
-  },
-  contoursTab: {
-    tabName: "Contours",
-    component: ContoursTab
-  },
-  apriltagTab: {
-    tabName: "AprilTag",
-    component: AprilTagTab
-  },
-  arucoTab: {
-    tabName: "Aruco",
-    component: ArucoTab
-  },
-  objectDetectionTab: {
-    tabName: "Object Detection",
-    component: ObjectDetectionTab
-  },
-  outputTab: {
-    tabName: "Output",
-    component: OutputTab
-  },
-  targetsTab: {
-    tabName: "Targets",
-    component: TargetsTab
-  },
-  pnpTab: {
-    tabName: "PnP",
-    component: PnPTab
-  },
-  map3dTab: {
-    tabName: "3D",
-    component: Map3DTab
-  }
+  inputTab: { tabName: "Input", component: InputTab },
+  thresholdTab: { tabName: "Threshold", component: ThresholdTab },
+  contoursTab: { tabName: "Contours", component: ContoursTab },
+  apriltagTab: { tabName: "AprilTag", component: AprilTagTab },
+  arucoTab: { tabName: "Aruco", component: ArucoTab },
+  objectDetectionTab: { tabName: "Object Detection", component: ObjectDetectionTab },
+  outputTab: { tabName: "Output", component: OutputTab },
+  targetsTab: { tabName: "Targets", component: TargetsTab },
+  pnpTab: { tabName: "PnP", component: PnPTab },
+  map3dTab: { tabName: "3D", component: Map3DTab }
 });
 
 const selectedTabs = ref([0, 0, 0, 0]);
@@ -144,13 +117,13 @@ const onBeforeTabUpdate = () => {
 <template>
   <v-row no-gutters class="tabGroups">
     <template v-if="!useCameraSettingsStore().hasConnected">
-      <v-col cols="12">
-        <v-card color="error">
-          <v-card-title class="text-white">
-            Camera has not connected. Please check your connection and try again.
-          </v-card-title>
-        </v-card>
-      </v-col>
+      <v-alert
+        color="error"
+        density="compact"
+        text="Camera is not connected. Please check your connection and try again."
+        icon="mdi-alert-circle-outline"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      />
     </template>
     <template v-else>
       <v-col
@@ -160,8 +133,8 @@ const onBeforeTabUpdate = () => {
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
         @vue:before-update="onBeforeTabUpdate"
       >
-        <v-card color="primary" height="100%" class="pr-5 pl-5">
-          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="primary" height="48" slider-color="accent">
+        <v-card color="surface" height="100%" class="pr-5 pl-5 rounded-12">
+          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="surface" height="48" slider-color="buttonActive">
             <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
               {{ tabConfig.tabName }}
             </v-tab>

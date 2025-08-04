@@ -17,9 +17,11 @@ import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
-const host = inject<string>("backendHost");
 
 const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
@@ -97,7 +99,6 @@ const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-
   axios
     .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
     .then(() => {
@@ -273,10 +274,6 @@ const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettin
   cameraToDelete.value = camera;
 };
 const yesDeleteMySettingsText = ref("");
-const exportSettings = ref();
-const openExportSettingsPrompt = () => {
-  exportSettings.value.click();
-};
 </script>
 
 <template>
@@ -291,7 +288,7 @@ const openExportSettingsPrompt = () => {
         lg="4"
         class="pr-0"
       >
-        <v-card color="primary">
+        <v-card color="surface" class="rounded-12">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
           <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
@@ -307,12 +304,24 @@ const openExportSettingsPrompt = () => {
           <v-card-text class="pt-3">
             <v-table density="compact">
               <tbody>
-                <tr>
-                  <td>Streams:</td>
+                <tr
+                  v-if="
+                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+                    useStateStore().backendResults[module.uniqueName]
+                  "
+                >
+                  <td style="width: 50%">Frames Processed</td>
                   <td>
-                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
-                    /
-                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
+                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
+                      useStateStore().backendResults[module.uniqueName].fps
+                    }}
+                    FPS)
+                  </td>
+                </tr>
+                <tr v-else>
+                  <td>Name</td>
+                  <td>
+                    {{ module.nickname }}
                   </td>
                 </tr>
                 <tr>
@@ -328,18 +337,12 @@ const openExportSettingsPrompt = () => {
                     }}
                   </td>
                 </tr>
-                <tr
-                  v-if="
-                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-                    useStateStore().backendResults[module.uniqueName]
-                  "
-                >
-                  <td style="width: 50%">Frames Processed</td>
+                <tr>
+                  <td>Streams:</td>
                   <td>
-                    {{ useStateStore().backendResults[module.uniqueName].sequenceID }} ({{
-                      useStateStore().backendResults[module.uniqueName].fps
-                    }}
-                    FPS)
+                    <a :href="formatUrl(module.stream.inputPort)" target="_blank" class="stream-link"> Input </a>
+                    /
+                    <a :href="formatUrl(module.stream.outputPort)" target="_blank" class="stream-link"> Output </a>
                   </td>
                 </tr>
               </tbody>
@@ -361,8 +364,9 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
-                  color="secondary"
+                  color="buttonPassive"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -376,8 +380,9 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="text-black"
-                  color="accent"
+                  color="buttonActive"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   :loading="deactivatingModule"
                   @click="deactivateModule(module.uniqueName)"
                 >
@@ -385,8 +390,14 @@ const openExportSettingsPrompt = () => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
-                  <v-icon>mdi-trash-can-outline</v-icon>
+                <v-btn
+                  class="pa-0"
+                  color="error"
+                  style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="setCameraDeleting(module)"
+                >
+                  <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
             </v-row>
@@ -394,7 +405,7 @@ const openExportSettingsPrompt = () => {
         </v-card>
       </v-col>
 
-      <!-- Disabled modules -->
+      <!-- Deactivated modules -->
       <v-col
         v-for="module in disabledVisionModules"
         :key="`disabled-${module.uniqueName}`"
@@ -403,8 +414,8 @@ const openExportSettingsPrompt = () => {
         lg="4"
         class="pr-0"
       >
-        <v-card class="pr-0" color="primary">
-          <v-card-title>{{ module.nickname }}</v-card-title>
+        <v-card class="pr-0 rounded-12" color="surface">
+          <v-card-title>{{ module.cameraQuirks.baseName }}</v-card-title>
           <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
           <v-card-text class="pt-3">
             <v-table density="compact">
@@ -412,16 +423,12 @@ const openExportSettingsPrompt = () => {
                 <tr>
                   <td>Name</td>
                   <td>
-                    {{ module.cameraQuirks.baseName }}
+                    {{ module.nickname }}
                   </td>
                 </tr>
                 <tr>
                   <td>Pipelines</td>
                   <td>{{ module.pipelineNicknames.join(", ") }}</td>
-                </tr>
-                <tr>
-                  <td>Connected</td>
-                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
                 </tr>
                 <tr>
                   <td>Calibrations</td>
@@ -432,6 +439,10 @@ const openExportSettingsPrompt = () => {
                     }}
                   </td>
                 </tr>
+                <tr>
+                  <td>Connected</td>
+                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
+                </tr>
               </tbody>
             </v-table>
           </v-card-text>
@@ -439,8 +450,9 @@ const openExportSettingsPrompt = () => {
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
                 <v-btn
-                  color="secondary"
+                  color="buttonPassive"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -454,8 +466,9 @@ const openExportSettingsPrompt = () => {
               <v-col cols="6" md="5" class="pr-0">
                 <v-btn
                   class="text-black"
-                  color="accent"
+                  color="buttonActive"
                   style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   :loading="activatingModule"
                   @click="activateModule(module.uniqueName)"
                 >
@@ -463,8 +476,14 @@ const openExportSettingsPrompt = () => {
                 </v-btn>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn class="pa-0" color="error" style="width: 100%" @click="setCameraDeleting(module)">
-                  <v-icon>mdi-trash-can-outline</v-icon>
+                <v-btn
+                  class="pa-0"
+                  color="error"
+                  style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="setCameraDeleting(module)"
+                >
+                  <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
             </v-row>
@@ -474,7 +493,7 @@ const openExportSettingsPrompt = () => {
 
       <!-- Unassigned cameras -->
       <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
-        <v-card class="pr-0" color="primary">
+        <v-card class="pr-0 rounded-12" color="surface">
           <v-card-title>
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
@@ -489,16 +508,22 @@ const openExportSettingsPrompt = () => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn color="secondary" style="width: 100%" @click="setCameraView(camera, false)">
+                <v-btn
+                  color="buttonPassive"
+                  style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="setCameraView(camera, false)"
+                >
                   <span>Details</span>
                 </v-btn>
               </v-col>
               <v-col cols="6">
                 <v-btn
                   class="text-black"
-                  color="accent"
+                  color="buttonActive"
                   style="width: 100%"
                   :loading="assigningCamera"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="assignCamera(camera)"
                 >
                   Activate
@@ -517,7 +542,7 @@ const openExportSettingsPrompt = () => {
           class="pl-6 pr-6 d-flex flex-column justify-center"
           style="background-color: transparent; height: 100%"
         >
-          <v-card-text class="d-flex flex-column align-center justify-center">
+          <v-card-text class="d-flex flex-column align-center justify-center" style="flex-grow: 0">
             <v-icon size="64" color="primary">mdi-plus</v-icon>
           </v-card-text>
           <v-card-title>Additional plugged in cameras will display here!</v-card-title>
@@ -527,21 +552,25 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera details modal -->
     <v-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" flat color="primary">
+      <v-card v-if="viewingCamera[0] !== null" flat color="surface">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
           <v-btn variant="text" @click="setCameraView(null, null)">
-            <v-icon>mdi-close-thick</v-icon>
+            <v-icon size="x-large">mdi-close</v-icon>
           </v-btn>
         </v-card-title>
         <v-card-text v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
         <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
-          <v-banner rounded bg-color="error" text-color="white" icon="mdi-information-outline" class="mb-3">
-            It looks like a different camera may have been connected to this device! Compare the following information
-            carefully.
-          </v-banner>
+          <v-alert
+            class="mb-3"
+            color="buttonActive"
+            density="compact"
+            text="A different camera may have been connected to this device! Compare the following information carefully."
+            icon="mdi-information-outline"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          />
           <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
         <v-card-text v-else>
@@ -552,29 +581,12 @@ const openExportSettingsPrompt = () => {
 
     <!-- Camera delete modal -->
     <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="primary" flat>
+      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="surface" flat>
         <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
         <v-card-text class="pb-10px">
-          <v-row class="align-center">
-            <v-col cols="12" md="6">
-              <span class="text-white"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn color="secondary" block @click="openExportSettingsPrompt">
-                <v-icon start class="open-icon"> mdi-export </v-icon>
-                <span class="open-label">Backup Settings</span>
-                <a
-                  ref="exportSettings"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="`http://${host}/api/settings/photonvision_config.zip`"
-                  download="photonvision-settings.zip"
-                  target="_blank"
-                />
-              </v-btn>
-            </v-col>
-          </v-row>
+          Are you sure you want to delete "{{ cameraToDelete.nickname }}"? This cannot be undone.
         </v-card-text>
-        <v-card-text class="pt-0 pb-0">
+        <v-card-text class="pt-0 pb-10px">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
@@ -582,18 +594,26 @@ const openExportSettingsPrompt = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text class="pt-10px">
+        <v-card-actions class="pa-5 pt-0">
           <v-btn
-            block
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="primary"
+            class="text-black"
+            @click="cameraToDelete = null"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
             color="error"
             :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
             :loading="deletingCamera"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="deleteThisCamera(cameraToDelete.uniqueName)"
           >
-            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">DELETE (UNRECOVERABLE)</span>
+            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
+            <span class="open-label">Delete</span>
           </v-btn>
-        </v-card-text>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </div>
@@ -614,10 +634,6 @@ td {
   text-wrap-mode: wrap !important;
 }
 
-.v-table {
-  background-color: #006492 !important;
-}
-
 .active-status {
   color: rgb(14, 240, 14);
   background-color: transparent;
@@ -631,7 +647,6 @@ td {
 }
 
 a:hover {
-  color: pink;
   background-color: transparent;
   text-decoration: underline;
 }
