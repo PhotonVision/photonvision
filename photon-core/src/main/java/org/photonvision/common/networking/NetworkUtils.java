@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -202,5 +203,50 @@ public class NetworkUtils {
             e.printStackTrace();
         }
         return String.join(", ", addresses);
+    }
+
+    public static String getMacAddress() {
+        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
+            // This is a silly heuristic to find a network interface that PV might be using. It looks like
+            // it works pretty well, but Hyper-V adapters still show up in the list. But we're using MAC
+            // address as a semi-unique identifier, not as a source of truth, so this should be fine.
+            // Hyper-V adapters seem to show up near the end of the list anyways, so it's super likely
+            // we'll find the right adapter anyways
+            try {
+                for (var iface : NetworkInterface.networkInterfaces().toList()) {
+                    if (iface.isUp() && !iface.isVirtual() && !iface.isLoopback()) {
+                        byte[] mac = iface.getHardwareAddress();
+                        if (mac == null) {
+                            logger.error("No MAC address found for " + iface.getDisplayName());
+                        }
+                        return formatMacAddress(mac);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Error getting MAC address:", e);
+            }
+            return "";
+        }
+        try {
+            byte[] mac = NetworkInterface.getByName(config.networkManagerIface).getHardwareAddress();
+            if (mac == null) {
+                logger.error("No MAC address found for " + config.networkManagerIface);
+                return "";
+            }
+            return formatMacAddress(mac);
+        } catch (Exception e) {
+            logger.error("Error getting MAC address for " + config.networkManagerIface, e);
+            return "";
+        }
+    }
+
+    private static String formatMacAddress(byte[] mac) {
+        StringBuilder sb = new StringBuilder(17);
+        sb.append(String.format("%02X", mac[0]));
+        for (int i = 1; i < mac.length; i++) {
+            sb.append(String.format("-%02X", mac[i]));
+        }
+        return sb.toString();
     }
 }

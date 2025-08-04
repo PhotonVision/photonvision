@@ -10,6 +10,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
+
   build-client:
     name: "PhotonClient Build"
     defaults:
@@ -44,6 +52,7 @@ jobs:
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
+    needs: [validation]
 
     steps:
       - name: Checkout code
@@ -71,6 +80,7 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
+    needs: [validation]
     steps:
       # Checkout code.
       - name: Checkout code
@@ -89,7 +99,7 @@ jobs:
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --stacktrace
+        run: ./gradlew testHeadless --stacktrace
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
       - name: Publish Coverage Report
@@ -130,6 +140,7 @@ jobs:
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
     runs-on: ubuntu-22.04
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -174,6 +185,7 @@ jobs:
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -185,7 +197,7 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
-      - run: ./gradlew photon-targeting:build photon-lib:build -i
+      - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
@@ -217,6 +229,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -226,7 +239,7 @@ jobs:
           git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
-        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
+        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
       - name: Publish
         run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:

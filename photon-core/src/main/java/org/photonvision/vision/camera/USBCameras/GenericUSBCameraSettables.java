@@ -25,9 +25,11 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.PixelFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -287,11 +289,14 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         var sortedList =
                 videoModesList.stream()
                         .distinct() // remove redundant video mode entries
-                        .sorted(((a, b) -> (a.width + a.height) - (b.width + b.height)))
-                        .toList();
+                        .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                        .collect(Collectors.toList());
+        // The ordering is usually more logical when done like this. It typically puts higher FPSes
+        // closer to the bottom.
+        Collections.reverse(sortedList);
 
-        for (VideoMode videoMode : sortedList) {
-            videoModes.put(sortedList.indexOf(videoMode), videoMode);
+        for (int i = 0; i < sortedList.size(); i++) {
+            videoModes.put(i, sortedList.get(i));
         }
 
         // If after all that we still have no video modes, not much we can do besides

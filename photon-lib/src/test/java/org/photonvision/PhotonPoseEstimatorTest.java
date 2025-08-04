@@ -27,6 +27,7 @@ package org.photonvision;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -526,63 +527,63 @@ class PhotonPoseEstimatorTest {
     @Test
     void pnpDistanceTrigSolve() {
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
-        PhotonCameraSim cameraOneSim =
-                new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG());
-
         List<VisionTargetSim> simTargets =
                 aprilTags.getTags().stream()
                         .map((AprilTag x) -> new VisionTargetSim(x.pose, TargetModel.kAprilTag36h11, x.ID))
                         .toList();
+        try (PhotonCameraSim cameraOneSim =
+                new PhotonCameraSim(cameraOne, SimCameraProperties.PERFECT_90DEG())) {
+            /* Compound Rolled + Pitched + Yaw */
+            Transform3d compoundTestTransform =
+                    new Transform3d(
+                            -Units.inchesToMeters(12),
+                            -Units.inchesToMeters(11),
+                            3,
+                            new Rotation3d(
+                                    Units.degreesToRadians(37),
+                                    Units.degreesToRadians(6),
+                                    Units.degreesToRadians(60)));
 
-        /* Compound Rolled + Pitched + Yaw */
+            var estimator =
+                    new PhotonPoseEstimator(
+                            aprilTags, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
 
-        Transform3d compoundTestTransform =
-                new Transform3d(
-                        -Units.inchesToMeters(12),
-                        -Units.inchesToMeters(11),
-                        3,
-                        new Rotation3d(
-                                Units.degreesToRadians(37), Units.degreesToRadians(6), Units.degreesToRadians(60)));
+            /* this is the real pose of the robot base we test against */
+            var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
+            PhotonPipelineResult result =
+                    cameraOneSim.process(
+                            1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+            var bestTarget = result.getBestTarget();
+            assertNotNull(bestTarget);
+            assertEquals(0, bestTarget.fiducialId);
 
-        var estimator =
-                new PhotonPoseEstimator(
-                        aprilTags, PoseStrategy.PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
+            estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+            var estimatedPose = estimator.update(result);
 
-        /* this is the real pose of the robot base we test against */
-        var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
-        PhotonPipelineResult result =
-                cameraOneSim.process(
-                        1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
+            var pose = estimatedPose.get().estimatedPose;
+            assertEquals(realPose.getX(), pose.getX(), .01);
+            assertEquals(realPose.getY(), pose.getY(), .01);
+            assertEquals(0.0, pose.getZ(), .01);
 
-        estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+            /* Straight on */
+            Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, Rotation3d.kZero);
 
-        var estimatedPose = estimator.update(result);
-        var pose = estimatedPose.get().estimatedPose;
+            estimator.setRobotToCameraTransform(straightOnTestTransform);
 
-        assertEquals(realPose.getX(), pose.getX(), .01);
-        assertEquals(realPose.getY(), pose.getY(), .01);
-        assertEquals(0.0, pose.getZ(), .01);
+            /* Pose to compare with */
+            realPose = new Pose3d(4.81, 2.38, 0, new Rotation3d(0, 0, 2.818));
+            result =
+                    cameraOneSim.process(
+                            1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
 
-        /* Straight on */
+            estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
+            estimatedPose = estimator.update(result);
 
-        Transform3d straightOnTestTransform = new Transform3d(0, 0, 3, new Rotation3d(0, 0, 0));
-
-        estimator.setRobotToCameraTransform(straightOnTestTransform);
-
-        /* Pose to compare with */
-        realPose = new Pose3d(4.81, 2.38, 0, new Rotation3d(0, 0, 2.818));
-        result =
-                cameraOneSim.process(
-                        1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets);
-
-        estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
-
-        estimatedPose = estimator.update(result);
-        pose = estimatedPose.get().estimatedPose;
-
-        assertEquals(realPose.getX(), pose.getX(), .01);
-        assertEquals(realPose.getY(), pose.getY(), .01);
-        assertEquals(0.0, pose.getZ(), .01);
+            pose = estimatedPose.get().estimatedPose;
+            assertEquals(realPose.getX(), pose.getX(), .01);
+            assertEquals(realPose.getY(), pose.getY(), .01);
+            assertEquals(0.0, pose.getZ(), .01);
+        }
     }
 
     @Test

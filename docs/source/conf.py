@@ -147,7 +147,7 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 linkcheck_ignore = [
     R"https://www.raspberrypi.com/software/",
     R"http://10\..+",
-    R"https://gnu.org/",
+    R"https://www.gnu.org/",
 ]
 
 token = os.environ.get("GITHUB_TOKEN", None)

@@ -10,6 +10,8 @@ export interface GeneralSettings {
   mrCalWorking: boolean;
   availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
+  conflictingHostname: boolean;
+  conflictingCameras: string;
 }
 
 export interface ObjectDetectionModelProperties {
@@ -23,17 +25,17 @@ export interface ObjectDetectionModelProperties {
 }
 
 export interface MetricData {
-  cpuTemp?: string;
-  cpuUtil?: string;
-  cpuMem?: string;
-  gpuMem?: string;
-  ramUtil?: string;
-  gpuMemUtil?: string;
+  cpuTemp?: number;
+  cpuUtil?: number;
   cpuThr?: string;
-  cpuUptime?: string;
-  diskUtilPct?: string;
-  npuUsage?: string;
+  ramMem?: number;
+  ramUtil?: number;
+  gpuMem?: number;
+  gpuMemUtil?: number;
+  diskUtilPct?: number;
+  npuUsage?: number[];
   ipAddress?: string;
+  uptime?: number;
 }
 
 export enum NetworkConnectionType {
@@ -288,17 +290,20 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     {
       resolution: { width: 1920, height: 1080 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 0
     },
     {
       resolution: { width: 1280, height: 720 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 1
     },
     {
       resolution: { width: 640, height: 480 },
       fps: 30,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 2
     }
   ],
   completeCalibrations: [

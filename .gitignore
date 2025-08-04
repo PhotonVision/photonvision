@@ -5,7 +5,8 @@ __pycache__/
 
 /.vs
 backend/settings/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 # Docs
 _build
 # Compiled class file

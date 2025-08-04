@@ -58,6 +58,13 @@ public enum Platform {
             false,
             OSType.LINUX,
             true),
+    LINUX_QCS6490(
+            "Linux AARCH 64-bit with QCS6490",
+            Platform::getLinuxDeviceTreeModel,
+            "linuxarm64",
+            true,
+            OSType.LINUX,
+            true), // QCS6490 SBCs
     LINUX_AARCH64(
             "Linux AARCH64",
             Platform::getLinuxDeviceTreeModel,
@@ -136,6 +143,10 @@ public enum Platform {
         return sysCore.exists() | fileHasText("/etc/os-release", "systemcore");
     }
 
+    public static boolean isQCS6490() {
+        return isRubik();
+    }
+
     public static boolean isRaspberryPi() {
         return currentPlatform.isPi;
     }
@@ -174,6 +185,7 @@ public enum Platform {
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
     private static final String UnknownDeviceModelString = "Unknown";
 
+    // TODO: add rubik, but waiting for more info on architecture
     public static Platform getCurrentPlatform() {
         String OS_NAME;
         if (Platform.OS_NAME != null) {
@@ -233,6 +245,9 @@ public enum Platform {
                 // TODO - os detection needed?
                 if (isRK3588()) {
                     return LINUX_RK3588_64;
+                } else if (isQCS6490()) {
+                    return LINUX_QCS6490;
+
                 } else {
                     return LINUX_AARCH64;
                 }
@@ -268,6 +283,10 @@ public enum Platform {
     private static boolean isJetsonSBC() {
         // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
         return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
+    }
+
+    private static boolean isRubik() {
+        return fileHasText("/proc/device-tree/model", "Rubik");
     }
 
     static String getLinuxDeviceTreeModel() {
