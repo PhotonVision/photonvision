@@ -103,11 +103,9 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
                     : 'mdi-robot-off'
               "
               :color="
-                useSettingsStore().network.runNTServer
+                useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
                   ? '#00ff00'
-                  : useStateStore().ntConnectionStatus.connected
-                    ? '#00ff00'
-                    : '#ff0000'
+                  : '#ff0000'
               "
             />
           </template>
