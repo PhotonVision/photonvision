@@ -137,6 +137,8 @@ An architecture override is required to specify the deploy target's architecture
 
 The `deploy` command is tested against Raspberry Pi coprocessors. Other similar coprocessors may work too.
 
+The `deploy` command also supports a custom username and password, via the `user` and `password` flags. If you want to build the UI while deploying, pass in the `withBuildAndCopyUI` flag.
+
 ### Using PhotonLib Builds
 
 The build process automatically generates a vendordep JSON of your local build at `photon-lib/build/generated/vendordeps/photonlib.json`.
