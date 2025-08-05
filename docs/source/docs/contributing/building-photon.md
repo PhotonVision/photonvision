@@ -12,7 +12,11 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 22.15.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+ The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+
+**pnpm:**
+
+ [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
 ## Compiling Instructions
 
@@ -197,7 +201,7 @@ Similarly, a local instance of PhotonVision can be debugged in the same way usin
 
 Set up a VSCode configuration in {code}`launch.json`
 
-```
+```json
 {
    // Use IntelliSense to learn about possible attributes.
    // Hover to view descriptions of existing attributes.
