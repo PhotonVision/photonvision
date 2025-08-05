@@ -16,31 +16,35 @@ comma_sep_yolo_versions = ", ".join(valid_yolo_versions)
 ultralytics_folder_name_yolov5 = "airockchip_yolo_pkg_yolov5"
 ultralytics_default_folder_name = "airockchip_yolo_pkg"
 
-
 bad_model_msg = """
 This is usually due to passing in the wrong model version.
 Please make sure you have the right model version and try again.
 """
 
-
-# idk how else to make Google Colab display this nicely
-class IncorrectModelError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-
 def print_bad_model_msg(cause):
     print(f"{cause}{bad_model_msg}")
 
 
+def run_and_exit_with_error(cmd, error_msg, enable_error_output=True):
+  try:
+    if enable_error_output:
+      subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True).check_returncode()
+    else:
+      subprocess.run(cmd).check_returncode()
+  except subprocess.CalledProcessError as e:
+    print(error_msg)
+    
+    if enable_error_output:
+      print(e.stdout)
+    
+    sys.exit(1)
+
+
 def check_git_installed():
-    try:
-        subprocess.run(["git", "--version"]).check_returncode()
-    except:
-        print("Git is not installed or not found in your PATH.")
-        print("Please install Git from https://git-scm.com/downloads and try again.")
-        sys.exit(1)
+    run_and_exit_with_error(["git", "--version"], 
+  """Git is not installed or not found in your PATH.
+Please install Git from https://git-scm.com/downloads and try again."""
+    )
 
 
 def check_or_clone_rockchip_repo(repo_url, repo_name=ultralytics_default_folder_name):
@@ -50,24 +54,12 @@ def check_or_clone_rockchip_repo(repo_url, repo_name=ultralytics_default_folder_
         )
     else:
         print(f'Cloning Rockchip repo to "{repo_name}"')
-        try:
-            subprocess.run(["git", "clone", repo_url, repo_name]).check_returncode()
-        except subprocess.CalledProcessError as e:
-            print("Failed to clone Rockchip repo, see error output below")
-            print(e.output)
-            sys.exit(1)
+        run_and_exit_with_error(["git", "clone", repo_url, repo_name], "Failed to clone Rockchip repo, please see error output")
 
 
 def run_pip_install_or_else_exit(args):
     print("Running pip install...")
-
-    try:
-        subprocess.run(["pip", "install"] + args).check_returncode()
-    except subprocess.CalledProcessError as e:
-        print("Pip install rockchip repo failed, see error output")
-        print(e.output)
-        sys.exit(1)
-
+    run_and_exit_with_error(["pip", "install"] + args, "Pip install rockchip repo failed, please see error output")
 
 def run_onnx_conversion_yolov5(model_path):
     check_or_clone_rockchip_repo(yolov5_repo, ultralytics_folder_name_yolov5)
@@ -93,24 +85,26 @@ def run_onnx_conversion_yolov5(model_path):
                 "--include",
                 "onnx",
             ],
-            capture_output=True,
-            text=True,
+            stderr=subprocess.STDOUT,
+            stdout=subprocess.PIPE,
+            universal_newlines=True,
         ).check_returncode()
     except subprocess.CalledProcessError as e:
-        print("Failed to run YOLOv5 export, see output below")
-        output_string = (e.stdout or "") + (e.stderr or "")
-        print(output_string)
+        print("Failed to run YOLOv5 export, please see error output")
 
-        if "ModuleNotFoundError" in output_string and "ultralytics" in output_string:
+        if "ModuleNotFoundError" in e.stdout and "ultralytics" in e.stdout:
             print_bad_model_msg(
                 "It seems the YOLOv5 repo could not find an ultralytics installation."
             )
         elif (
-            "AttributeError" in output_string
-            and "_register_detect_seperate" in output_string
+            "AttributeError" in e.stdout
+            and "_register_detect_seperate" in e.stdout
         ):
             print_bad_model_msg("It seems that you received a model attribute error.")
-
+        else:
+          print("Unknown Error when converting:")
+          print(e.stdout)
+          
         sys.exit(1)
 
 
@@ -132,7 +126,7 @@ def run_onnx_conversion_no_anchor(model_path):
                 "Ultralytics has detected that this model is a YOLOv5 model."
             )
         else:
-            print(e)
+            raise e
 
         sys.exit(1)
 
