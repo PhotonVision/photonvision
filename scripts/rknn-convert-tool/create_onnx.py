@@ -21,29 +21,36 @@ This is usually due to passing in the wrong model version.
 Please make sure you have the right model version and try again.
 """
 
+
 def print_bad_model_msg(cause):
     print(f"{cause}{bad_model_msg}")
 
 
 def run_and_exit_with_error(cmd, error_msg, enable_error_output=True):
-  try:
-    if enable_error_output:
-      subprocess.run(cmd, stderr=subprocess.STDOUT, stdout=subprocess.PIPE, universal_newlines=True).check_returncode()
-    else:
-      subprocess.run(cmd).check_returncode()
-  except subprocess.CalledProcessError as e:
-    print(error_msg)
-    
-    if enable_error_output:
-      print(e.stdout)
-    
-    sys.exit(1)
+    try:
+        if enable_error_output:
+            subprocess.run(
+                cmd,
+                stderr=subprocess.STDOUT,
+                stdout=subprocess.PIPE,
+                universal_newlines=True,
+            ).check_returncode()
+        else:
+            subprocess.run(cmd).check_returncode()
+    except subprocess.CalledProcessError as e:
+        print(error_msg)
+
+        if enable_error_output:
+            print(e.stdout)
+
+        sys.exit(1)
 
 
 def check_git_installed():
-    run_and_exit_with_error(["git", "--version"], 
-  """Git is not installed or not found in your PATH.
-Please install Git from https://git-scm.com/downloads and try again."""
+    run_and_exit_with_error(
+        ["git", "--version"],
+        """Git is not installed or not found in your PATH.
+Please install Git from https://git-scm.com/downloads and try again.""",
     )
 
 
@@ -54,12 +61,19 @@ def check_or_clone_rockchip_repo(repo_url, repo_name=ultralytics_default_folder_
         )
     else:
         print(f'Cloning Rockchip repo to "{repo_name}"')
-        run_and_exit_with_error(["git", "clone", repo_url, repo_name], "Failed to clone Rockchip repo, please see error output")
+        run_and_exit_with_error(
+            ["git", "clone", repo_url, repo_name],
+            "Failed to clone Rockchip repo, please see error output",
+        )
 
 
 def run_pip_install_or_else_exit(args):
     print("Running pip install...")
-    run_and_exit_with_error(["pip", "install"] + args, "Pip install rockchip repo failed, please see error output")
+    run_and_exit_with_error(
+        ["pip", "install"] + args,
+        "Pip install rockchip repo failed, please see error output",
+    )
+
 
 def run_onnx_conversion_yolov5(model_path):
     check_or_clone_rockchip_repo(yolov5_repo, ultralytics_folder_name_yolov5)
@@ -96,15 +110,12 @@ def run_onnx_conversion_yolov5(model_path):
             print_bad_model_msg(
                 "It seems the YOLOv5 repo could not find an ultralytics installation."
             )
-        elif (
-            "AttributeError" in e.stdout
-            and "_register_detect_seperate" in e.stdout
-        ):
+        elif "AttributeError" in e.stdout and "_register_detect_seperate" in e.stdout:
             print_bad_model_msg("It seems that you received a model attribute error.")
         else:
-          print("Unknown Error when converting:")
-          print(e.stdout)
-          
+            print("Unknown Error when converting:")
+            print(e.stdout)
+
         sys.exit(1)
 
 
