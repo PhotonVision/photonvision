@@ -44,8 +44,13 @@ tasks.register('copyClientUIToResources', Copy) {
     into "${projectDir}/src/main/resources/web/"
 }
 
-tasks.register("buildAndCopyUI") {
-    dependsOn "pnpm_run_build"
+tasks.register('buildClient', PnpmTask) {
+    args = ["build"]
+    dependsOn "pnpmInstall"
+}
+
+tasks.register('buildAndCopyUI') {
+    dependsOn "buildClient"
     finalizedBy "copyClientUIToResources"
 }
 
