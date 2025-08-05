@@ -8,6 +8,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
+import { LightTheme, DarkTheme } from "@/plugins/vuetify";
 
 const theme = useTheme();
 
@@ -18,6 +19,13 @@ const resetTempSettingsStruct = () => {
 };
 
 const settingsValid = ref(true);
+const showThemeConfig = ref(false);
+
+const getCurrentThemeValue = (colorType: string): string => {
+  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
+  const defaultTheme = theme.global.name.value === "LightTheme" ? LightTheme : DarkTheme;
+  return localStorage.getItem(`${themeType}-${colorType}`) ?? defaultTheme.colors![colorType]!;
+};
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-99999 (5 digits)
@@ -139,7 +147,13 @@ watchEffect(() => {
 
 <template>
   <v-card class="mb-3 rounded-12" color="surface">
-    <v-card-title>Global Settings</v-card-title>
+    <v-card-title style="display: flex; justify-content: space-between">
+      <span>Global Settings</span>
+      <v-btn variant="text" @click="() => (showThemeConfig = true)">
+        <v-icon size="x-large">mdi-palette-outline</v-icon>
+        Theme
+      </v-btn>
+    </v-card-title>
     <div class="pa-5 pt-0">
       <v-divider class="pb-2" />
       <v-card-title class="pl-0 pt-3 pb-10px">Networking</v-card-title>
@@ -282,6 +296,38 @@ watchEffect(() => {
         Save
       </v-btn>
     </div>
+    <v-dialog v-model="showThemeConfig" width="800" dark>
+      <v-card color="surface" flat>
+        <v-card-title> Theme Configuration </v-card-title>
+        <v-card-text class="pt-0 pb-10px">
+          <v-row>
+            <v-col>
+              Primary
+              <v-color-picker
+                mode="hex"
+                :modes="['hex']"
+                :model-value="getCurrentThemeValue('primary')"
+              ></v-color-picker>
+            </v-col>
+            <v-col>2</v-col>
+          </v-row>
+          <v-row>
+            <v-col>1</v-col>
+            <v-col>2</v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions class="pa-5 pt-0">
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="buttonPassive"
+            class="text-black"
+            @click="showThemeConfig = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 

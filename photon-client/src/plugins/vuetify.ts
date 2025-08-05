@@ -12,7 +12,7 @@ const CommonColors = {
   lightGray: "#232C37"
 };
 
-const DarkTheme: ThemeDefinition = {
+export const DarkTheme: ThemeDefinition = {
   dark: true,
   colors: {
     background: CommonColors.darkGray,
@@ -39,7 +39,7 @@ const DarkTheme: ThemeDefinition = {
   }
 };
 
-const LightTheme: ThemeDefinition = {
+export const LightTheme: ThemeDefinition = {
   dark: false,
   colors: {
     background: CommonColors.lightGray,

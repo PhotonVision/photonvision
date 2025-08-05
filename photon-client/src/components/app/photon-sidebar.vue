@@ -6,6 +6,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useRoute } from "vue-router";
 import { useDisplay, useTheme } from "vuetify";
 import { onBeforeMount } from "vue";
+import { DarkTheme, LightTheme } from "@/plugins/vuetify";
 
 const compact = computed<boolean>({
   get: () => {
@@ -18,11 +19,36 @@ const compact = computed<boolean>({
 const { mdAndUp } = useDisplay();
 
 const theme = useTheme();
-
-const changeTheme = () => {
+localStorage.setItem("darkPrimary", "#00ff00");
+const toggleTheme = () => {
   const newTheme = theme.global.name.value === "LightTheme" ? "DarkTheme" : "LightTheme";
   theme.global.name.value = newTheme;
   localStorage.setItem("theme", newTheme);
+
+  restoreThemeConfig();
+};
+
+const restoreThemeConfig = () => {
+  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
+  const defaultTheme = theme.global.name.value === "LightTheme" ? LightTheme : DarkTheme;
+
+  const customBackground = localStorage.getItem(`${themeType}-background`);
+  const customPrimary = localStorage.getItem(`${themeType}-primary`);
+  const customSecondary = localStorage.getItem(`${themeType}-secondary`);
+  const customAccent = localStorage.getItem(`${themeType}-accent`);
+
+  theme.themes.value[theme.global.name.value].colors.background = customBackground ?? defaultTheme.colors!.background!;
+  theme.themes.value[theme.global.name.value].colors.sidebar = customBackground ?? defaultTheme.colors!.sidebar!;
+
+  theme.themes.value[theme.global.name.value].colors.primary = customPrimary ?? defaultTheme.colors!.primary!;
+  theme.themes.value[theme.global.name.value].colors.buttonActive = customPrimary ?? defaultTheme.colors!.buttonActive!;
+
+  theme.themes.value[theme.global.name.value].colors.secondary = customSecondary ?? defaultTheme.colors!.secondary!;
+  theme.themes.value[theme.global.name.value].colors.buttonPassive =
+    customSecondary ?? defaultTheme.colors!.buttonPassive!;
+
+  theme.themes.value[theme.global.name.value].colors.accent = customAccent ?? defaultTheme.colors!.accent!;
+  theme.themes.value[theme.global.name.value].colors.toggle = customAccent ?? defaultTheme.colors!.toggle!;
 };
 
 onBeforeMount(() => {
@@ -30,6 +56,7 @@ onBeforeMount(() => {
   if (storedTheme) {
     theme.global.name.value = storedTheme;
   }
+  restoreThemeConfig();
 });
 
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
@@ -88,7 +115,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
         <v-list-item
           link
           :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'"
-          @click="changeTheme"
+          @click="toggleTheme"
         >
           <v-list-item-title>Theme</v-list-item-title>
         </v-list-item>
