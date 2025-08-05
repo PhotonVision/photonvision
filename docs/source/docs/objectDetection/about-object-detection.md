@@ -35,11 +35,13 @@ Photonvision will letterbox your camera frame to 640x640. This means that if you
 
 ## Training Custom Models
 
-:::{warning}
-Power users only. This requires some setup, such as obtaining your own dataset and installing various tools. It's additionally advised to have a general knowledge of ML before attempting to train your own model. Additionally, this is not officially supported by Photonvision, and any problems that may arise are not attributable to Photonvision.
-:::
+PhotonVision now ships with a [Python Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/rknn-convert-tool/rknn_conversion.ipynb) that you can use in [Google Colab](https://colab.research.google.com) or in a local environment. In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rknn_conversion.ipynb` notebook without needing to manually download anything.
 
-Before beginning, it is necessary to install the [rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2). Then, install the relevant [Ultralytics repository](https://github.com/airockchip?tab=repositories&q=yolo&type=&language=&sort=) from this list. After training your model, export it to `rknn`. This will give you an `onnx` file, formatted for conversion. Copy this file to the relevant folder in [rknn_model_zoo](https://github.com/airockchip/rknn_model_zoo), and use the conversion script located there to convert it. If necessary, modify the script to provide the path to your training database for quantization.
+The notebook walks you through downloading and using the necessary scripts for RKNN conversion, making it easy to convert your model. While the scripts are used directly within the notebook with the full setup provided, advanced users may also choose to run them independently outside the notebook.
+
+:::{note}
+Running the scripts outside the notebook is entirely optional and intended for users who prefer working in their own environment without the notebook.
+:::
 
 ## Managing Custom Models
 
