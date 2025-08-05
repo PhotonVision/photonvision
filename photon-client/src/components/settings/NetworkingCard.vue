@@ -8,7 +8,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
-import { LightTheme, DarkTheme } from "@/plugins/vuetify";
+import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
 
 const theme = useTheme();
 
@@ -19,13 +19,8 @@ const resetTempSettingsStruct = () => {
 };
 
 const settingsValid = ref(true);
-const showThemeConfig = ref(false);
 
-const getCurrentThemeValue = (colorType: string): string => {
-  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
-  const defaultTheme = theme.global.name.value === "LightTheme" ? LightTheme : DarkTheme;
-  return localStorage.getItem(`${themeType}-${colorType}`) ?? defaultTheme.colors![colorType]!;
-};
+const showThemeConfig = ref(false);
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-99999 (5 digits)
@@ -298,22 +293,55 @@ watchEffect(() => {
     </div>
     <v-dialog v-model="showThemeConfig" width="800" dark>
       <v-card color="surface" flat>
-        <v-card-title> Theme Configuration </v-card-title>
+        <v-card-title class="text-center">Theme Configuration</v-card-title>
         <v-card-text class="pt-0 pb-10px">
           <v-row>
-            <v-col>
+            <v-col class="text-center">
               Primary
               <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                :model-value="getCurrentThemeValue('primary')"
+                :model-value="getThemeColor(theme, 'primary')"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
               ></v-color-picker>
             </v-col>
-            <v-col>2</v-col>
+            <v-col class="text-center">
+              Secondary
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                :model-value="getThemeColor(theme, 'secondary')"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
+              ></v-color-picker>
+            </v-col>
           </v-row>
           <v-row>
-            <v-col>1</v-col>
-            <v-col>2</v-col>
+            <v-col class="text-center">
+              Accent
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                :model-value="getThemeColor(theme, 'accent')"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'accent', hex)"
+              ></v-color-picker>
+            </v-col>
+            <v-col class="text-center">
+              Background
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                :model-value="getThemeColor(theme, 'background')"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
+              ></v-color-picker>
+            </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
@@ -324,6 +352,14 @@ watchEffect(() => {
             @click="showThemeConfig = false"
           >
             Close
+          </v-btn>
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="buttonActive"
+            class="text-black"
+            @click="() => resetTheme(theme)"
+          >
+            Reset Default
           </v-btn>
         </v-card-actions>
       </v-card>
