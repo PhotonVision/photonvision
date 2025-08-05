@@ -21,6 +21,17 @@ const resetTempSettingsStruct = () => {
 const settingsValid = ref(true);
 
 const showThemeConfig = ref(false);
+const backgroundColor = ref("");
+const primaryColor = ref("");
+const secondaryColor = ref("");
+const accentColor = ref("");
+
+const loadCurrentColors = () => {
+  backgroundColor.value = getThemeColor(theme, "background");
+  primaryColor.value = getThemeColor(theme, "primary");
+  secondaryColor.value = getThemeColor(theme, "secondary");
+  accentColor.value = getThemeColor(theme, "accent");
+};
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-99999 (5 digits)
@@ -144,7 +155,15 @@ watchEffect(() => {
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Global Settings</span>
-      <v-btn variant="text" @click="() => (showThemeConfig = true)">
+      <v-btn
+        variant="text"
+        @click="
+          () => {
+            loadCurrentColors();
+            showThemeConfig = true;
+          }
+        "
+      >
         <v-icon size="x-large">mdi-palette-outline</v-icon>
         Theme
       </v-btn>
@@ -303,7 +322,7 @@ watchEffect(() => {
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                :model-value="getThemeColor(theme, 'primary')"
+                v-model:model-value="primaryColor"
                 v-on:update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
               ></v-color-picker>
             </v-col>
@@ -314,7 +333,7 @@ watchEffect(() => {
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                :model-value="getThemeColor(theme, 'secondary')"
+                v-model:model-value="secondaryColor"
                 v-on:update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
               ></v-color-picker>
             </v-col>
@@ -327,7 +346,7 @@ watchEffect(() => {
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                :model-value="getThemeColor(theme, 'accent')"
+                v-model:model-value="accentColor"
                 v-on:update:model-value="(hex) => setThemeColor(theme, 'accent', hex)"
               ></v-color-picker>
             </v-col>
@@ -338,7 +357,7 @@ watchEffect(() => {
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                :model-value="getThemeColor(theme, 'background')"
+                v-model:model-value="backgroundColor"
                 v-on:update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
               ></v-color-picker>
             </v-col>
@@ -357,7 +376,12 @@ watchEffect(() => {
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             color="buttonActive"
             class="text-black"
-            @click="() => resetTheme(theme)"
+            @click="
+              () => {
+                resetTheme(theme);
+                loadCurrentColors();
+              }
+            "
           >
             Reset Default
           </v-btn>
