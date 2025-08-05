@@ -3,7 +3,7 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
-import { inject, onBeforeMount, watch } from "vue";
+import { inject, onBeforeMount } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
