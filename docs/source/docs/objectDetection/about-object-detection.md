@@ -33,7 +33,7 @@ The same area, aspect ratio, and target orientation/sort parameters from {ref}`r
 
 Photonvision will letterbox your camera frame to 640x640. This means that if you select a resolution that is larger than 640 it will be scaled down to fit inside a 640x640 frame with black bars if needed. Smaller frames will be scaled up with black bars if needed.
 
-## Training Custom Models
+## Converting Custom Models
 
 PhotonVision now ships with a [Python Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/rknn-convert-tool/rknn_conversion.ipynb) that you can use in [Google Colab](https://colab.research.google.com) or in a local environment. In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rknn_conversion.ipynb` notebook without needing to manually download anything.
 
