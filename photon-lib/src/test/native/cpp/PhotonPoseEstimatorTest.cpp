@@ -412,12 +412,41 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
   EXPECT_NEAR((15_s - 3_ms).to<double>(),
               estimatedPose.value().timestamp.to<double>(), 1e-6);
 
-  // And again -- now pose cache should be empty
+  // And again -- pose cache should result in returning std::nullopt
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.Update(result);
   }
 
   EXPECT_FALSE(estimatedPose);
+
+  // If the camera produces a result that is > 1 micro second later,
+  // the pose cache should not be hit.
+  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(16));
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  EXPECT_NEAR((16_s - 3_ms).to<double>(),
+              estimatedPose.value().timestamp.to<double>(), 1e-6);
+
+  // And again -- pose cache should result in returning std::nullopt
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  EXPECT_FALSE(estimatedPose);
+
+  // Setting ReferencePose should also clear the cache
+  estimator.SetReferencePose(frc::Pose3d(units::meter_t(1), units::meter_t(2),
+                                         units::meter_t(3), frc::Rotation3d()));
+
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  ASSERT_TRUE(estimatedPose);
+  EXPECT_NEAR((16_s - 3_ms).to<double>(),
+              estimatedPose.value().timestamp.to<double>(), 1e-6);
 }
 
 TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
