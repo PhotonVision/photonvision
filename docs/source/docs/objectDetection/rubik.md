@@ -17,3 +17,9 @@ Only quantized models are supported, so take care when exporting to select the o
 PhotonVision now ships with a [Python Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/rubik_conversion.ipynb) that you can use in [Google Colab](https://colab.research.google.com) or in a local environment. In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rubik_conversion.ipynb` notebook without needing to manually download anything.
 
 Please ensure that the model you are attempting to convert is among the {ref}`supported models <docs/objectDetection/rubik:Supported Models>` and using the PyTorch format.
+
+## Benchmarking
+
+Before you can perform benchmarking, it's necessary to install `tensorflow-lite-qcom-apps` with apt.
+
+By SSHing into your Rubik Pi and running this command, replacing `PATH/TO/MODEL` with the path to your model, `benchmark_model --graph=src/test/resources/yolov8nCoco.tflite --external_delegate_path=/usr/lib/libQnnTFLiteDelegate.so --external_delegate_options=backend_type:htp --external_delegate_options=htp_use_conv_hmx:1 --external_delegate_options=htp_performance_mode:2` you can determine how long it takes for inference to be performed with your model.
