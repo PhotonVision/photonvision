@@ -61,92 +61,92 @@ public class NeuralNetworkModelManager {
      * This function stores the properties of the shipped object detection models. It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
      */
-    private HashMap<Family, NeuralNetworkPropertyManager> getShippedProperties(File modelsDirectory) {
-        HashMap<Family, NeuralNetworkPropertyManager> familyProperties = new HashMap<>();
+    private NeuralNetworkPropertyManager getShippedProperties(File modelsDirectory) {
         NeuralNetworkPropertyManager nnProps = new NeuralNetworkPropertyManager();
 
-        LinkedList<String> cocoLabels = new LinkedList<String>(
-            List.of(
-                    "person",
-                    "bicycle",
-                    "car",
-                    "motorcycle",
-                    "airplane",
-                    "bus",
-                    "train",
-                    "truck",
-                    "boat",
-                    "traffic light",
-                    "fire hydrant",
-                    "stop sign",
-                    "parking meter",
-                    "bench",
-                    "bird",
-                    "cat",
-                    "dog",
-                    "horse",
-                    "sheep",
-                    "cow",
-                    "elephant",
-                    "bear",
-                    "zebra",
-                    "giraffe",
-                    "backpack",
-                    "umbrella",
-                    "handbag",
-                    "tie",
-                    "suitcase",
-                    "frisbee",
-                    "skis",
-                    "snowboard",
-                    "sports ball",
-                    "kite",
-                    "baseball bat",
-                    "baseball glove",
-                    "skateboard",
-                    "surfboard",
-                    "tennis racket",
-                    "bottle",
-                    "wine glass",
-                    "cup",
-                    "fork",
-                    "knife",
-                    "spoon",
-                    "bowl",
-                    "banana",
-                    "apple",
-                    "sandwich",
-                    "orange",
-                    "broccoli",
-                    "carrot",
-                    "hot dog",
-                    "pizza",
-                    "donut",
-                    "cake",
-                    "chair",
-                    "couch",
-                    "potted plant",
-                    "bed",
-                    "dining table",
-                    "toilet",
-                    "tv",
-                    "laptop",
-                    "mouse",
-                    "remote",
-                    "keyboard",
-                    "cell phone",
-                    "microwave",
-                    "oven",
-                    "toaster",
-                    "sink",
-                    "refrigerator",
-                    "book",
-                    "clock",
-                    "vase",
-                    "scissors",
-                    "teddy bear",
-                    "hair drier",
-                    "toothbrush"));
+        LinkedList<String> cocoLabels =
+                new LinkedList<String>(
+                        List.of(
+                                "person",
+                                "bicycle",
+                                "car",
+                                "motorcycle",
+                                "airplane",
+                                "bus",
+                                "train",
+                                "truck",
+                                "boat",
+                                "traffic light",
+                                "fire hydrant",
+                                "stop sign",
+                                "parking meter",
+                                "bench",
+                                "bird",
+                                "cat",
+                                "dog",
+                                "horse",
+                                "sheep",
+                                "cow",
+                                "elephant",
+                                "bear",
+                                "zebra",
+                                "giraffe",
+                                "backpack",
+                                "umbrella",
+                                "handbag",
+                                "tie",
+                                "suitcase",
+                                "frisbee",
+                                "skis",
+                                "snowboard",
+                                "sports ball",
+                                "kite",
+                                "baseball bat",
+                                "baseball glove",
+                                "skateboard",
+                                "surfboard",
+                                "tennis racket",
+                                "bottle",
+                                "wine glass",
+                                "cup",
+                                "fork",
+                                "knife",
+                                "spoon",
+                                "bowl",
+                                "banana",
+                                "apple",
+                                "sandwich",
+                                "orange",
+                                "broccoli",
+                                "carrot",
+                                "hot dog",
+                                "pizza",
+                                "donut",
+                                "cake",
+                                "chair",
+                                "couch",
+                                "potted plant",
+                                "bed",
+                                "dining table",
+                                "toilet",
+                                "tv",
+                                "laptop",
+                                "mouse",
+                                "remote",
+                                "keyboard",
+                                "cell phone",
+                                "microwave",
+                                "oven",
+                                "toaster",
+                                "sink",
+                                "refrigerator",
+                                "book",
+                                "clock",
+                                "vase",
+                                "scissors",
+                                "teddy bear",
+                                "hair drier",
+                                "toothbrush"));
 
         // Add RKNN models here as needed
         nnProps.addModelProperties(
@@ -158,9 +158,6 @@ public class NeuralNetworkModelManager {
                         480,
                         Family.RKNN,
                         Version.YOLOV8));
-        familyProperties.put(Family.RKNN, nnProps);
-
-        nnProps.clear();
 
         // Add RUBIK models here as needed
         nnProps.addModelProperties(
@@ -172,9 +169,8 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RUBIK,
                         Version.YOLOV8));
-        familyProperties.put(Family.RUBIK, nnProps);
 
-        return familyProperties;
+        return nnProps;
     }
 
     /**
@@ -371,20 +367,20 @@ public class NeuralNetworkModelManager {
     public void extractModels() {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
-        // Get the shipped properties for the models
-        HashMap<Family, NeuralNetworkPropertyManager> shippedProperties =
-                getShippedProperties(modelsDirectory);
-
-        // Sum properties from shipped models
-        NeuralNetworkPropertyManager mergedProperties =
-                supportedBackends.stream()
-                        .filter(shippedProperties::containsKey)
-                        .map(shippedProperties::get)
-                        .reduce(new NeuralNetworkPropertyManager(), NeuralNetworkPropertyManager::sum);
+        // Filter shippedProprties by supportedBackends
+        NeuralNetworkPropertyManager supportedProperties = new NeuralNetworkPropertyManager();
+        for (ModelProperties model : getShippedProperties(modelsDirectory).getModels()) {
+            if (supportedBackends.contains(model.family())) {
+                supportedProperties.addModelProperties(model);
+            } else {
+                logger.warn(
+                        "Skipping model " + model.nickname() + " as it is not supported on this platform.");
+            }
+        }
 
         // Used for checking if the model to be extracted is supported for this architecture
         ArrayList<String> supportedModelFileNames = new ArrayList<String>();
-        for (ModelProperties model : mergedProperties.getModels()) {
+        for (ModelProperties model : supportedProperties.getModels()) {
             supportedModelFileNames.add(model.modelPath().getFileName().toString());
         }
 
@@ -432,7 +428,7 @@ public class NeuralNetworkModelManager {
         ConfigManager.getInstance()
                 .getConfig()
                 .setNeuralNetworkProperties(
-                        mergedProperties.sum(
+                        supportedProperties.sum(
                                 ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
     }
 
