@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -321,8 +322,8 @@ public class NeuralNetworkModelManager {
 
         models = new HashMap<>();
 
-        try {
-            Files.walk(modelsDirectory.toPath())
+        try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
+            files
                     .filter(Files::isRegularFile)
                     .forEach(
                             path ->
@@ -405,8 +406,8 @@ public class NeuralNetworkModelManager {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         if (modelsDirectory.exists()) {
-            try {
-                Files.walk(modelsDirectory.toPath())
+            try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
+                files
                         .sorted((a, b) -> b.compareTo(a))
                         .forEach(
                                 path -> {
