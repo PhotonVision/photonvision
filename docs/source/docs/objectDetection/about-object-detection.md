@@ -33,6 +33,8 @@ The same area, aspect ratio, and target orientation/sort parameters from {ref}`r
 
 Photonvision will letterbox your camera frame to 640x640. This means that if you select a resolution that is larger than 640 it will be scaled down to fit inside a 640x640 frame with black bars if needed. Smaller frames will be scaled up with black bars if needed.
 
+It is recommended that you select a resolution that results in the smaller dimension being just greater than, or equal to, 640. Anything above this will not see any increased performance.
+
 ## Custom Models
 
 For information regarding converting custom models and supported models for each platform, refer to the page detailing information about your specific coprocessor.
