@@ -310,8 +310,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
 
 TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
-  photon::PhotonCameraSim cameraOneSim = photon::PhotonCameraSim(
-      &cameraOne, photon::SimCameraProperties::PERFECT_90DEG());
+  cameraOne.test = true;
 
   std::vector<photon::VisionTargetSim> targets;
   targets.reserve(tags.size());
@@ -319,23 +318,23 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
     targets.push_back(
         photon::VisionTargetSim(tag.pose, photon::kAprilTag36h11, tag.ID));
   }
-
-  /* real pose of the robot base to test against */
-  frc::Pose3d realPose =
-      frc::Pose3d(7.3_m, 4.42_m, 0_m, frc::Rotation3d(0_rad, 0_rad, 2.197_rad));
+  photon::PhotonCameraSim cameraOneSim = photon::PhotonCameraSim(
+      &cameraOne, photon::SimCameraProperties::PERFECT_90DEG());
 
   /* Compound Rolled + Pitched + Yaw */
-
   frc::Transform3d compoundTestTransform = frc::Transform3d(
       -12_in, -11_in, 3_m, frc::Rotation3d(37_deg, 6_deg, 60_deg));
 
   photon::PhotonPoseEstimator estimator(
       aprilTags, photon::PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
 
+  /* real pose of the robot base to test against */
+  frc::Pose3d realPose =
+      frc::Pose3d(7.3_m, 4.42_m, 0_m, frc::Rotation3d(0_rad, 0_rad, 2.197_rad));
+
   photon::PhotonPipelineResult result = cameraOneSim.Process(
       1_ms, realPose.TransformBy(estimator.GetRobotToCameraTransform()),
       targets);
-  cameraOne.test = true;
   cameraOne.testResult = {result};
   cameraOne.testResult[0].SetReceiveTimestamp(17_s);
 
@@ -357,9 +356,9 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
               units::unit_cast<double>(pose.Z()), .01);
 
   /* Straight on */
-
   frc::Transform3d straightOnTestTransform =
       frc::Transform3d(0_m, 0_m, 3_m, frc::Rotation3d(0_rad, 0_rad, 0_rad));
+
   estimator.SetRobotToCameraTransform(straightOnTestTransform);
   realPose = frc::Pose3d(4.81_m, 2.38_m, 0_m,
                          frc::Rotation3d(0_rad, 0_rad, 2.818_rad));
