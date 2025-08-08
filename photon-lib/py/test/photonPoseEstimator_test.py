@@ -15,6 +15,8 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
+from test import testUtil
+
 import wpimath.units
 from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
 from photonlibpy.estimation import TargetModel
@@ -191,7 +193,7 @@ def test_pnpDistanceTrigSolve():
     assert bestTarget.fiducialId == 0
     assert result.ntReceiveTimestampMicros > 0
     # Make test independent of the FPGA time.
-    result.ntReceiveTimestampMicros = fakeTimestampSecs * 1e6
+    result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
@@ -217,7 +219,7 @@ def test_pnpDistanceTrigSolve():
     assert bestTarget.fiducialId == 0
     assert result.ntReceiveTimestampMicros > 0
     # Make test independent of the FPGA time.
-    result.ntReceiveTimestampMicros = fakeTimestampSecs * 1e6
+    result.ntReceiveTimestampMicros = int(fakeTimestampSecs * 1e6)
 
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
@@ -289,8 +291,36 @@ def test_multiTagOnCoprocStrategy():
 def test_cacheIsInvalidated():
     aprilTags = fakeAprilTagFieldLayout()
     cameraOne = PhotonCameraInjector()
+
+    estimator = PhotonPoseEstimator(
+        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, Transform3d()
+    )
+
+    # Initial state, expect no timestamp.
+    assertEquals(-1, estimator._poseCacheTimestampSeconds)
+
+    # First result is 17s after epoch start.
+    timestamps = testUtil.PipelineTimestamps(captureTimestampMicros=17_000_000)
+    latencySecs = timestamps.pipelineLatencySecs()
+
+    # No targets, expect empty result
+    cameraOne.result = PhotonPipelineResult(
+        timestamps.receiveTimestampMicros(),
+        metadata=timestamps.toPhotonPipelineMetadata(),
+    )
+    estimatedPose = estimator.update()
+
+    assert estimatedPose is None
+    assertEquals(
+        timestamps.receiveTimestampMicros() * 1e-6 - latencySecs,
+        estimator._poseCacheTimestampSeconds,
+        1e-3,
+    )
+
+    # Set actual result
+    timestamps.incrementTimeMicros(2_500_000)
     result = PhotonPipelineResult(
-        int(20 * 1e6),
+        timestamps.receiveTimestampMicros(),
         [
             PhotonTrackedTarget(
                 3.0,
@@ -315,31 +345,21 @@ def test_cacheIsInvalidated():
                 0.7,
             )
         ],
-        metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
+        metadata=timestamps.toPhotonPipelineMetadata(),
     )
-
-    estimator = PhotonPoseEstimator(
-        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, Transform3d()
-    )
-
-    # Empty result, expect empty result
-    cameraOne.result = PhotonPipelineResult(0)
-    estimatedPose = estimator.update()
-    assert estimatedPose is None
-
-    # Set actual result
     cameraOne.result = result
     estimatedPose = estimator.update()
     assert estimatedPose is not None
-    assertEquals(20, estimatedPose.timestampSeconds, 0.01)
-    assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
+    expectedTimestamp = timestamps.receiveTimestampMicros() * 1e-6 - latencySecs
+    assertEquals(expectedTimestamp, estimatedPose.timestampSeconds, 1e-3)
+    assertEquals(expectedTimestamp, estimator._poseCacheTimestampSeconds, 1e-3)
 
     # And again -- pose cache should mean this is empty
     cameraOne.result = result
     estimatedPose = estimator.update()
     assert estimatedPose is None
     # Expect the old timestamp to still be here
-    assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
+    assertEquals(expectedTimestamp, estimator._poseCacheTimestampSeconds, 1e-3)
 
     # Set new field layout -- right after, the pose cache timestamp should be -1
     estimator.fieldTags = AprilTagFieldLayout([AprilTag()], 0, 0)
@@ -350,8 +370,14 @@ def test_cacheIsInvalidated():
 
     assert estimatedPose is not None
 
-    assertEquals(20, estimatedPose.timestampSeconds, 0.01)
-    assertEquals(20 - 2e-3, estimator._poseCacheTimestampSeconds, 1e-3)
+    assertEquals(expectedTimestamp, estimatedPose.timestampSeconds, 1e-3)
+    assertEquals(expectedTimestamp, estimator._poseCacheTimestampSeconds, 1e-3)
+
+    # Setting a value from None to a non-None should invalidate the cache.
+    assert estimator.referencePose is None
+    estimator.referencePose = Pose3d(3, 3, 3, Rotation3d())
+
+    assertEquals(-1, estimator._poseCacheTimestampSeconds)
 
 
 def assertEquals(expected, actual, epsilon=0.0):

@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -38,11 +39,13 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.io.IOException;
@@ -592,8 +595,8 @@ class PhotonPoseEstimatorTest {
         var result =
                 new PhotonPipelineResult(
                         0,
-                        20000000,
-                        1100000,
+                        20_000_000,
+                        1_100_000,
                         1024,
                         List.of(
                                 new PhotonTrackedTarget(
@@ -624,6 +627,9 @@ class PhotonPoseEstimatorTest {
                         PoseStrategy.AVERAGE_BEST_TARGETS,
                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
+        // Initial state, expect no timestamp
+        assertEquals(-1, estimator.poseCacheTimestampSeconds);
+
         // Empty result, expect empty result
         cameraOne.result = new PhotonPipelineResult();
         cameraOne.result.metadata.captureTimestampMicros = (long) (1 * 1e6);
@@ -652,6 +658,12 @@ class PhotonPoseEstimatorTest {
         estimatedPose = estimator.update(cameraOne.result);
         assertEquals(20, estimatedPose.get().timestampSeconds, .01);
         assertEquals(20, estimator.poseCacheTimestampSeconds);
+
+        // Setting a value from None to a non-None should invalidate the cache
+        assertNull(estimator.getReferencePose());
+        assertEquals(20, estimator.poseCacheTimestampSeconds);
+        estimator.setReferencePose(new Pose2d(new Translation2d(1, 2), Rotation2d.kZero));
+        assertEquals(-1, estimator.poseCacheTimestampSeconds, "wtf");
     }
 
     @Test
