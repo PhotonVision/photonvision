@@ -178,7 +178,7 @@ class PhotonPoseEstimator {
    * Add robot heading data to the buffer. Must be called periodically for the
    * PNP_DISTANCE_TRIG_SOLVE strategy.
    *
-   * @param timestamp timestamp of the robot heading data
+   * @param timestamp Timestamp of the robot heading data.
    * @param heading Field-relative heading at the given timestamp. Standard
    * WPILIB field coordinates.
    */
@@ -191,7 +191,7 @@ class PhotonPoseEstimator {
    * Add robot heading data to the buffer. Must be called periodically for the
    * PNP_DISTANCE_TRIG_SOLVE strategy.
    *
-   * @param timestamp timestamp of the robot heading data
+   * @param timestamp Timestamp of the robot heading data.
    * @param heading Field-relative heading at the given timestamp. Standard
    * WPILIB coordinates.
    */
