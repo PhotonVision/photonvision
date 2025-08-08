@@ -180,9 +180,9 @@ class PhotonPoseEstimator {
    * The side effects of this method are only used for the
    * PNP_DISTANCE_TRIG_SOLVE strategy.
    *
-   * @param timestamp timestamp of the heading data
-   * @param heading Field-relative heading at the given timestamp. In the
-   * standard WPILIB coordinates.
+   * @param timestamp timestamp of the robot heading data
+   * @param heading Field-relative heading at the given timestamp. Standard
+   * WPILIB field coordinates.
    */
   inline void AddHeadingData(units::second_t timestamp,
                              frc::Rotation2d heading) {
@@ -195,9 +195,9 @@ class PhotonPoseEstimator {
    * The side effects of this method are only used for the
    * PNP_DISTANCE_TRIG_SOLVE strategy.
    *
-   * @param timestamp timestamp of the heading data
-   * @param heading Field-relative heading at the given timestamp. In the
-   * standard WPILIB coordinates.
+   * @param timestamp timestamp of the robot heading data
+   * @param heading Field-relative heading at the given timestamp. Standard
+   * WPILIB coordinates.
    */
   inline void AddHeadingData(units::second_t timestamp,
                              frc::Rotation3d heading) {
