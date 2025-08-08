@@ -205,9 +205,13 @@ class PhotonPoseEstimator {
   }
 
   /**
-   * Reset the heading data, and then add robot heading data to the buffer life
-   * AddHeadingData. Used for the PNP_DISTANCE_TRIG_SOLVE strategy, and won't
-   * have any effect for other strategies
+   * Clears all heading data in the buffer, and adds a new seed. Useful for
+   * preventing estimates from utilizing heading data provided prior to a pose
+   * or rotation reset.
+   *
+   * @param timestamp Timestamp of the robot heading data.
+   * @param heading Field-relative robot heading at given timestamp. Standard
+   * WPILIB field coordinates.
    */
   inline void ResetHeadingData(units::second_t timestamp,
                                frc::Rotation2d heading) {
@@ -216,9 +220,13 @@ class PhotonPoseEstimator {
   }
 
   /**
-   * Reset the heading data, and then add robot heading data to the buffer life
-   * AddHeadingData. Used for the PNP_DISTANCE_TRIG_SOLVE strategy, and won't
-   * have any effect for other strategies
+   * Clears all heading data in the buffer, and adds a new seed. Useful for
+   * preventing estimates from utilizing heading data provided prior to a pose
+   * or rotation reset.
+   *
+   * @param timestamp Timestamp of the robot heading data.
+   * @param heading Field-relative robot heading at given timestamp. Standard
+   * WPILIB field coordinates.
    */
   inline void ResetHeadingData(units::second_t timestamp,
                                frc::Rotation3d heading) {
