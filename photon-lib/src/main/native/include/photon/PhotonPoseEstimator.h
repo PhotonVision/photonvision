@@ -177,8 +177,6 @@ class PhotonPoseEstimator {
   /**
    * Add robot heading data to the buffer. Must be called periodically for the
    * PNP_DISTANCE_TRIG_SOLVE strategy.
-   * The side effects of this method are only used for the
-   * PNP_DISTANCE_TRIG_SOLVE strategy.
    *
    * @param timestamp timestamp of the robot heading data
    * @param heading Field-relative heading at the given timestamp. Standard
@@ -191,8 +189,6 @@ class PhotonPoseEstimator {
 
   /**
    * Add robot heading data to the buffer. Must be called periodically for the
-   * PNP_DISTANCE_TRIG_SOLVE strategy.
-   * The side effects of this method are only used for the
    * PNP_DISTANCE_TRIG_SOLVE strategy.
    *
    * @param timestamp timestamp of the robot heading data
