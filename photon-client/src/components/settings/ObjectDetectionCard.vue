@@ -8,8 +8,6 @@ import pvInput from "@/components/common/pv-input.vue";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
-
-//TODO: set import type to be dynamic based on supported backends
 const showImportDialog = ref(false);
 const showInfo = ref({ show: false, model: {} as ObjectDetectionModelProperties });
 const confirmDeleteDialog = ref({ show: false, model: {} as ObjectDetectionModelProperties });
@@ -323,7 +321,13 @@ const handleBulkImport = () => {
                     v-model="importModelFile"
                     variant="underlined"
                     label="Model File"
-                    accept=".rknn,.tflite"
+                    :accept="
+                      useSettingsStore().general.supportedBackends?.includes('RKNN')
+                        ? '.rknn'
+                        : useSettingsStore().general.supportedBackends?.includes('RUBIK')
+                          ? '.tflite'
+                          : ''
+                    "
                   />
                   <v-text-field
                     v-model="importLabels"
