@@ -66,6 +66,18 @@ public class NetworkUtils {
         }
     }
 
+    public static boolean nmcliIsInstalled() {
+        var shell = new ShellExec(true, false);
+        try {
+            shell.executeBashCommand("nmcli --version");
+
+            return shell.getExitCode() == 0;
+        } catch (IOException e) {
+            logger.error("Could not query nmcli version", e);
+            return false;
+        }
+    }
+
     private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
     private static long lastReadTimestamp = 0;
 
