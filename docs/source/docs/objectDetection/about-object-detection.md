@@ -18,7 +18,7 @@ This model output means that while its fairly easy to say that "this rectangle p
 
 ## Tuning and Filtering
 
-Compared to other pipelines, object detection exposes very few tuning handles. The Confidence slider changes the minimum confidence that the model needs to have in a given detection to consider it valid, as a number between 0 and 1 (with 0 meaning completely uncertain and 1 meaning maximally certain). The Non-Maximum Suppresion (NMS) Threshold slider is used to filter out overlapping detections. Lower values mean more detections are allowed through, but may result in false positives. It's generally recommended that teams leave this set at the default, unless they find they're unable to get usable results with solely the Confidence slider.
+Compared to other pipelines, object detection exposes very few tuning handles. The Confidence slider changes the minimum confidence that the model needs to have in a given detection to consider it valid, as a number between 0 and 1 (with 0 meaning completely uncertain and 1 meaning maximally certain). The Non-Maximum Suppresion (NMS) Threshold slider is used to filter out overlapping detections. Higher values mean more detections are allowed through, but may result in false positives. It's generally recommended that teams leave this set at the default, unless they find they're unable to get usable results with solely the Confidence slider.
 
 ```{raw} html
 <video width="85%" controls>
