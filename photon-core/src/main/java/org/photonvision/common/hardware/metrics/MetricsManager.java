@@ -242,8 +242,6 @@ public class MetricsManager {
     }
 
     public void publishMetrics() {
-        logger.debug("Publishing Metrics...");
-
         // Check that the hostname hasn't changed
         if (!CameraServerJNI.getHostname()
                 .equals(NetworkTable.basenameKey(metricPublisher.getTopic().getName()))) {
