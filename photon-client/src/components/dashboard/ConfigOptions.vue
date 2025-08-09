@@ -151,6 +151,11 @@ const onBeforeTabUpdate = () => {
 </template>
 
 <style>
+.v-slide-group {
+  transition-duration: 0.28s;
+  transition-property: box-shadow, opacity, background;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
 .v-slide-group__next--disabled,
 .v-slide-group__prev--disabled {
   display: none !important;

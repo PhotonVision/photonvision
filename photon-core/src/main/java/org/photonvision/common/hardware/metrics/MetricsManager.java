@@ -280,7 +280,7 @@ public class MetricsManager {
 
     public synchronized String execute(String command) {
         try {
-            runCommand.executeBashCommand(command);
+            runCommand.executeBashCommand(command, true, false);
             return runCommand.getOutput();
         } catch (Exception e) {
             StringWriter sw = new StringWriter();

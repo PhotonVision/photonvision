@@ -182,8 +182,10 @@ const startCalibration = () => {
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
+const calibEndpointFail = ref(false);
 const endCalibration = () => {
   calibSuccess.value = undefined;
+  calibEndpointFail.value = false;
 
   if (!useStateStore().calibrationData.hasEnoughImages) {
     calibCanceled.value = true;
@@ -196,7 +198,13 @@ const endCalibration = () => {
     .then(() => {
       calibSuccess.value = true;
     })
-    .catch(() => {
+    .catch((e) => {
+      if (e.response) {
+        // Server returned a status code
+      } else if (e.request) {
+        // Something went wrong. Unsure if calibration actually worked
+        calibEndpointFail.value = true;
+      }
       calibSuccess.value = false;
     })
     .finally(() => {
@@ -524,6 +532,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 )?.name
               }}!
             </v-card-text>
+          </template>
+          <template v-else-if="calibEndpointFail">
+            <v-icon color="gray" size="70"> mdi-help-circle-outline </v-icon>
+            <v-card-text
+              >Unable to determine if calibration was successful. Refresh this page and manually check if calibration
+              was successful.</v-card-text
+            >
           </template>
           <template v-else>
             <v-icon color="red" size="70"> mdi-close </v-icon>

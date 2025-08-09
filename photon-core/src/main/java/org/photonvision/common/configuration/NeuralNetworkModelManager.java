@@ -148,7 +148,6 @@ public class NeuralNetworkModelManager {
                                 "hair drier",
                                 "toothbrush"));
 
-        // Add RKNN models here as needed
         nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "algaeV1-640-640-yolov8n.rknn"),
@@ -159,8 +158,17 @@ public class NeuralNetworkModelManager {
                         Family.RKNN,
                         Version.YOLOV8));
 
-        // Add RUBIK models here as needed
         nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.rknn"),
+                        "COCO",
+                        cocoLabels,
+                        640,
+                        640,
+                        Family.RKNN,
+                        Version.YOLOV8));
+      
+              nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.tflite"),
                         "COCO",

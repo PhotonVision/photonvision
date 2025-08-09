@@ -4,7 +4,7 @@
 
 PhotonVision supports object detection using neural network accelerator hardware, commonly known as an NPU. The two coprocessors currently supported are the {ref}`Orange Pi 5 <docs/objectDetection/opi:Orange Pi 5 (and variants) Object Detection>` and the {ref}`Rubik Pi 3 <docs/objectDetection/rubik:Rubik Pi 3 Object Detection>`.
 
-For the 2025 season, PhotonVision ships with a pretrained ALGAE model. A model to detect coral is not currently stable, and interested teams should ask in the Photonvision discord.
+PhotonVision currently ships with a model trained on the [COCO dataset](https://cocodataset.org/) by [Ultralytics](https://github.com/ultralytics/ultralytics) (this model is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html)). This model is meant to be used for testing and other miscellaneous purposes. It is not meant to be used in competition. For the 2025 post-season, PhotonVision also ships with a pretrained ALGAE model. A model to detect coral is available in the PhotonVision discord, but will not be distributed with PhotonVision.
 
 ## Tracking Objects
 
@@ -18,7 +18,7 @@ This model output means that while its fairly easy to say that "this rectangle p
 
 ## Tuning and Filtering
 
-Compared to other pipelines, object detection exposes very few tuning handles. The Confidence slider changes the minimum confidence that the model needs to have in a given detection to consider it valid, as a number between 0 and 1 (with 0 meaning completely uncertain and 1 meaning maximally certain).
+Compared to other pipelines, object detection exposes very few tuning handles. The Confidence slider changes the minimum confidence that the model needs to have in a given detection to consider it valid, as a number between 0 and 1 (with 0 meaning completely uncertain and 1 meaning maximally certain). The Non-Maximum Suppresion (NMS) Threshold slider is used to filter out overlapping detections. Lower values mean more detections are allowed through, but may result in false positives. It's generally recommended that teams leave this set at the default, unless they find they're unable to get usable results with solely the Confidence slider.
 
 ```{raw} html
 <video width="85%" controls>
