@@ -210,7 +210,7 @@ public class NetworkManager {
         }
     }
 
-    void setConnectionStatic(NetworkConfig config) {
+    private void setConnectionStatic(NetworkConfig config) {
         String connName = "static-" + config.networkManagerIface;
 
         if (config.staticIp.isBlank()) {
