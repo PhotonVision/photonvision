@@ -302,13 +302,20 @@ const handleBulkImport = () => {
             <v-card color="surface" dark>
               <v-card-title class="pb-0">Import New Object Detection Model</v-card-title>
               <v-card-text>
-                
                 <span v-if="useSettingsStore().general.supportedBackends?.includes('RKNN')"
-                  >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY 640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 SOCs are currently supporter!</span>
+                  >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
+                  640x640 YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 SOCs are
+                  currently supporter!</span
+                >
                 <span v-else-if="useSettingsStore().general.supportedBackends?.includes('RUBIK')"
-                  >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY 640x640 YOLOv8 and YOLOv11 models trained and converted to `.tflite` format for QCS6490 compatible backends are currently supported! </span>
+                  >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
+                  640x640 YOLOv8 and YOLOv11 models trained and converted to `.tflite` format for QCS6490 compatible
+                  backends are currently supported!
+                </span>
                 <span v-else>
-                  If you're seeing this, something broke; please file a ticket and tell us the details of your situation.</span>
+                  If you're seeing this, something broke; please file a ticket and tell us the details of your
+                  situation.</span
+                >
                 <div class="pa-5 pb-0">
                   <v-file-input
                     v-model="importModelFile"

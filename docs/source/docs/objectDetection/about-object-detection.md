@@ -39,13 +39,13 @@ It is recommended that you select a resolution that results in the smaller dimen
 
 For information regarding converting custom models and supported models for each platform, refer to the page detailing information about your specific coprocessor.
 
- - {ref}`Orange Pi 5 <docs/objectDetection/opi:Orange Pi 5 (and variants) Object Detection>`
- - {ref}`Rubik Pi 3 <docs/objectDetection/rubik:Rubik Pi 3 Object Detection>`
+- {ref}`Orange Pi 5 <docs/objectDetection/opi:Orange Pi 5 (and variants) Object Detection>`
+- {ref}`Rubik Pi 3 <docs/objectDetection/rubik:Rubik Pi 3 Object Detection>`
 
- ### Training Custom Models
+### Training Custom Models
 
 PhotonVision does not offer any support for training custom models, only conversion. For information on which models are supported for a given coprocessor, use the links above.
 
- ### Managing Custom Models
+### Managing Custom Models
 
 Custom models can now be managed from the Object Detection tab in settings. You can upload a custom model by clicking the "Upload Model" button, selecting your model file, and filling out the property fields. Models can also be exported, both individually and in bulk. Models exported in bulk can be imported using the `import bulk` button. Models exported individually must be re-imported as an individual model, and all the relevant metadata is stored in the filename of the model.
