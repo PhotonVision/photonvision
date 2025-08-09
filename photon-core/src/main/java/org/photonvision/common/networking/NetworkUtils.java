@@ -69,8 +69,7 @@ public class NetworkUtils {
     public static boolean nmcliIsInstalled() {
         var shell = new ShellExec(true, false);
         try {
-            shell.executeBashCommand(
-                    "nmcli --version");
+            shell.executeBashCommand("nmcli --version");
 
             return shell.getExitCode() == 0;
         } catch (IOException e) {
