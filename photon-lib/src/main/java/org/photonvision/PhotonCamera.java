@@ -58,7 +58,7 @@ import org.photonvision.timesync.TimeSyncSingleton;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
-    private static int InstanceCount = 0;
+    private static int InstanceCount = 1;
     public static final String kTableName = "photonvision";
     private static final String PHOTON_ALERT_GROUP = "PhotonAlerts";
 
@@ -195,11 +195,18 @@ public class PhotonCamera implements AutoCloseable {
                     + ">>> but you are using WPILib "
                     + WPILibVersion.Version
                     + """
-                    >>>                                          \s
+                    \n>>>                                          \s
                     >>> This is neither tested nor supported.    \s
-                    >>> You MUST update PhotonVision,            \s
-                    >>> PhotonLib, or both.                      \s
-                    >>> Verify the output of `./gradlew dependencies`
+                    >>> You MUST update WPILib, PhotonLib, or both.
+                    >>> Check `./gradlew dependencies` and ensure\s
+                    >>> all mentions of OpenCV match the version \s
+                    >>> that PhotonLib was built for. If you find a
+                    >>> a mismatched version in a dependency, you\s
+                    >>> must take steps to update the version of \s
+                    >>> OpenCV used in that dependency. If you do\s
+                    >>> not control that dependency and an updated\s
+                    >>> version is not available, contact the    \s
+                    >>> developers of that dependency.           \s
                     >>>                                          \s
                     >>> Your code will now crash.                \s
                     >>> We hope your day gets better.            \s
@@ -232,11 +239,18 @@ public class PhotonCamera implements AutoCloseable {
                     + ">>> but you are using OpenCV "
                     + Core.VERSION
                     + """
-                    >>>                                          \s
+                    \n>>>                                          \s
                     >>> This is neither tested nor supported.    \s
-                    >>> You MUST update PhotonVision,            \s
-                    >>> PhotonLib, or both.                      \s
-                    >>> Verify the output of `./gradlew dependencies`
+                    >>> You MUST update WPILib, PhotonLib, or both.
+                    >>> Check `./gradlew dependencies` and ensure\s
+                    >>> all mentions of OpenCV match the version \s
+                    >>> that PhotonLib was built for. If you find a
+                    >>> a mismatched version in a dependency, you\s
+                    >>> must take steps to update the version of \s
+                    >>> OpenCV used in that dependency. If you do\s
+                    >>> not control that dependency and an updated\s
+                    >>> version is not available, contact the    \s
+                    >>> developers of that dependency.           \s
                     >>>                                          \s
                     >>> Your code will now crash.                \s
                     >>> We hope your day gets better.            \s

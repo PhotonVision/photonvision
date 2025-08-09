@@ -210,7 +210,7 @@ public class Calibrate3dPipeline
         broadcastState();
     }
 
-    private void broadcastState() {
+    public void broadcastState() {
         var state =
                 SerializationUtils.objectToHashMap(
                         new UICalibrationData(

@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.photonvision.UnitTestUtils.waitForCondition;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
@@ -48,7 +47,10 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -60,6 +62,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PhotonCameraTest {
     // A test-scoped, local-only NT instance
     NetworkTableInstance inst = null;
@@ -76,6 +79,7 @@ class PhotonCameraTest {
         HAL.initialize(500, 0);
 
         inst = NetworkTableInstance.create();
+        assertTrue(inst.isValid());
         inst.stopClient();
         inst.stopServer();
         inst.startLocal();
@@ -105,6 +109,7 @@ class PhotonCameraTest {
 
     // Just a smoketest for dev use -- don't run by default
     @Test
+    @Order(3)
     public void testTimeSyncServerWithPhotonCamera() throws InterruptedException, IOException {
         load_wpilib();
         PhotonTargetingJniLoader.load();
@@ -189,12 +194,10 @@ class PhotonCameraTest {
      * check
      */
     @ParameterizedTest
+    @Order(2)
     @MethodSource("testNtOffsets")
     public void testRestartingRobotAndCoproc(
             int robotStart, int coprocStart, int robotRestart, int coprocRestart) throws Throwable {
-        // See #1574 - test flakey, disabled until we address this
-        assumeTrue(false);
-
         var robotNt = NetworkTableInstance.create();
         var coprocNt = NetworkTableInstance.create();
 
@@ -304,6 +307,7 @@ class PhotonCameraTest {
     }
 
     @Test
+    @Order(1) // Alerts can't be reset, need to run this test first to have a clean slate
     public void testAlerts() throws InterruptedException {
         // GIVEN a fresh NT instance
 

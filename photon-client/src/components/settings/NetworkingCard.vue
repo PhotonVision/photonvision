@@ -7,6 +7,9 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
@@ -83,16 +86,10 @@ const saveGeneralSettings = () => {
   useSettingsStore()
     .updateGeneralSettings(payload)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = {
-        ...useSettingsStore().network,
-        ...Object.assign({}, tempSettingsStruct.value)
-      };
+      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
     })
     .catch((error) => {
       resetTempSettingsStruct();
@@ -124,9 +121,14 @@ const saveGeneralSettings = () => {
     });
 };
 
-const currentNetworkInterfaceIndex = computed<number>({
-  get: () => useSettingsStore().networkInterfaceNames.indexOf(useSettingsStore().network.networkManagerIface || ""),
-  set: (v) => (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+const currentNetworkInterfaceIndex = computed<number | undefined>({
+  get: () => {
+    const index = useSettingsStore().networkInterfaceNames.indexOf(
+      useSettingsStore().network.networkManagerIface || ""
+    );
+    return index === -1 ? undefined : index;
+  },
+  set: (v) => v && (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });
 
 watchEffect(() => {
@@ -136,11 +138,11 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card dark class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Global Settings</v-card-title>
-    <div class="pa-6 pt-0">
-      <v-divider class="pb-3" />
-      <v-card-title class="pl-0 pt-3 pb-3">Networking</v-card-title>
+  <v-card class="mb-3 rounded-12" color="surface">
+    <v-card-title>Global Settings</v-card-title>
+    <div class="pa-5 pt-0">
+      <v-divider class="pb-2" />
+      <v-card-title class="pl-0 pt-3 pb-10px">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -154,16 +156,15 @@ watchEffect(() => {
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
-        <v-banner
+        <v-alert
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
-          rounded
+          class="pt-3 pb-3"
           color="error"
-          text-color="white"
-          style="margin: 10px 0"
+          density="compact"
+          text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
           icon="mdi-alert-circle-outline"
-        >
-          The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
-        </v-banner>
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.connectionType"
@@ -202,8 +203,8 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pt-3 pb-3">Advanced Networking</v-card-title>
+        <v-divider class="mt-10px pb-2" />
+        <v-card-title class="pl-0 pt-3 pb-10px">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -225,57 +226,55 @@ watchEffect(() => {
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
-        <v-banner
+        <v-alert
           v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
             useSettingsStore().network.canManage &&
             !useSettingsStore().network.networkingDisabled
           "
-          rounded
+          class="pt-3 pb-3"
           color="error"
-          text-color="white"
-          icon="mdi-information-outline"
-        >
-          Photon cannot detect any wired connections! Please send program logs to the developers for help.
-        </v-banner>
+          density="compact"
+          text="Cannot detect any wired connections! Send program logs to the developers for help."
+          icon="mdi-alert-circle-outline"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           :label-cols="4"
         />
-        <v-banner
+        <v-alert
           v-if="tempSettingsStruct.runNTServer"
-          rounded
-          color="error"
-          text-color="white"
+          color="buttonActive"
+          density="compact"
+          text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           icon="mdi-information-outline"
-        >
-          This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
-        </v-banner>
-        <v-divider class="mt-3 pb-3" />
-        <v-card-title class="pl-0 pt-3 pb-3">Miscellaneous</v-card-title>
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
+        <v-divider class="mt-10px pb-2" />
+        <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
           :label-cols="4"
         />
-        <v-banner
+        <v-alert
           v-if="tempSettingsStruct.shouldPublishProto"
-          rounded
-          color="error"
-          text-color="white"
+          color="buttonActive"
+          density="compact"
+          text="This mode is intended for debugging and may reduce performance; it should be off for field use."
           icon="mdi-information-outline"
-        >
-          This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
-          this mode.
-        </v-banner>
-        <v-divider class="mt-3 mb-6" />
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
+        <v-divider class="mt-10px pb-5" />
       </v-form>
       <v-btn
-        color="accent"
+        color="primary"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
@@ -287,7 +286,7 @@ watchEffect(() => {
 </template>
 
 <style>
-.v-banner__wrapper {
-  padding: 6px !important;
+.mt-10px {
+  margin-top: 10px !important;
 }
 </style>

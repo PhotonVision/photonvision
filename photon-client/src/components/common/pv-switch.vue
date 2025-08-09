@@ -1,34 +1,11 @@
 <script setup lang="ts">
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { computed } from "vue";
 
-const props = withDefaults(
-  defineProps<{
-    label?: string;
-    tooltip?: string;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    value: boolean;
-    disabled?: boolean;
-    labelCols?: number;
-    switchCols?: number;
-    dense?: boolean;
-  }>(),
-  {
-    disabled: false,
-    labelCols: 2,
-    switchCols: 8,
-    dense: false
-  }
+const value = defineModel<boolean>();
+withDefaults(
+  defineProps<{ label?: string; tooltip?: string; disabled?: boolean; labelCols?: number; switchCols?: number }>(),
+  { disabled: false, labelCols: 2, switchCols: 8 }
 );
-
-const emit = defineEmits<{
-  (e: "input", value: boolean): void;
-}>();
-
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
 </script>
 
 <template>
@@ -37,12 +14,13 @@ const localValue = computed({
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
     <v-col :cols="switchCols || 12 - labelCols" class="d-flex align-center pr-0">
-      <v-switch v-model="localValue" dark :disabled="disabled" color="#ffd843" hide-details="auto" class="pb-1" />
+      <v-switch v-model="value" :disabled="disabled" color="primary" hide-details density="compact" />
     </v-col>
   </div>
 </template>
 <style scoped>
-.v-input--selection-controls {
-  margin-top: 0px;
+.v-col {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
 }
 </style>
