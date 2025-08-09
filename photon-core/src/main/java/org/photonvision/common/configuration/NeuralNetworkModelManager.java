@@ -167,8 +167,8 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RKNN,
                         Version.YOLOV8));
-      
-              nnProps.addModelProperties(
+
+        nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.tflite"),
                         "COCO",
@@ -412,9 +412,9 @@ public class NeuralNetworkModelManager {
                             modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
 
                     // Check if the file already exists or if it is a supported model file
-                    if (Files.exists(outputPath)
-                            || !supportedModelFileNames.contains(
-                                    entry.getName().substring(entry.getName().lastIndexOf('/') + 1))) {
+                    if ((Files.exists(outputPath))
+                            || !(entry.getName().endsWith("txt") || supportedModelFileNames.contains(
+                                    entry.getName().substring(entry.getName().lastIndexOf('/') + 1)))) {
                         logger.info("Skipping extraction of DNN resource: " + entry.getName());
                         continue;
                     }
