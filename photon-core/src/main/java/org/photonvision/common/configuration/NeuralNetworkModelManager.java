@@ -170,6 +170,16 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "algae-coral-yolov8s.tflite"),
+                        "Algae Coral v8s",
+                        new LinkedList<String>(List.of("Algae", "Coral")),
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV8));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.tflite"),
                         "COCO",
                         cocoLabels,
@@ -413,8 +423,9 @@ public class NeuralNetworkModelManager {
 
                     // Check if the file already exists or if it is a supported model file
                     if ((Files.exists(outputPath))
-                            || !(entry.getName().endsWith("txt") || supportedModelFileNames.contains(
-                                    entry.getName().substring(entry.getName().lastIndexOf('/') + 1)))) {
+                            || !(entry.getName().endsWith("txt")
+                                    || supportedModelFileNames.contains(
+                                            entry.getName().substring(entry.getName().lastIndexOf('/') + 1)))) {
                         logger.info("Skipping extraction of DNN resource: " + entry.getName());
                         continue;
                     }
