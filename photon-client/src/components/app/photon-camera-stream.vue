@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { computed, inject, ref, onBeforeUnmount } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import loadingImage from "@/assets/images/loading.svg";
-import type { StyleValue } from "vue/types/jsx";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import loadingImage from "@/assets/images/loading-transparent.svg";
+import type { StyleValue } from "vue";
 import PvIcon from "@/components/common/pv-icon.vue";
+import type { UiCameraConfiguration } from "@/types/SettingTypes";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
   id: string;
+  cameraSettings: UiCameraConfiguration;
 }>();
 
 const emptyStreamSrc = "//:0";
 const streamSrc = computed<string>(() => {
-  const port =
-    useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  const port = props.cameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
   if (!useStateStore().backendConnected || port === 0) {
     return emptyStreamSrc;
@@ -32,8 +33,12 @@ const streamStyle = computed<StyleValue>(() => {
 });
 
 const containerStyle = computed<StyleValue>(() => {
-  const resolution = useCameraSettingsStore().currentVideoFormat.resolution;
-  const rotation = useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode;
+  if (props.cameraSettings.validVideoFormats.length === 0) {
+    return { aspectRatio: "1/1" };
+  }
+  const resolution =
+    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex].resolution;
+  const rotation = props.cameraSettings.pipelineSettings.inputImageRotationMode;
   if (rotation === 1 || rotation === 3) {
     return {
       aspectRatio: `${resolution.height}/${resolution.width}`
@@ -69,6 +74,16 @@ const handleFullscreenRequest = () => {
 };
 
 const mjpgStream: any = ref(null);
+
+const handleStreamError = () => {
+  if (streamSrc.value && streamSrc.value !== emptyStreamSrc) {
+    console.error("Error loading stream:", streamSrc.value, " Trying again.");
+    setTimeout(() => {
+      mjpgStream.value.src = streamSrc.value;
+    }, 100);
+  }
+};
+
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
   mjpgStream.value["src"] = emptyStreamSrc;
@@ -79,7 +94,6 @@ onBeforeUnmount(() => {
   <div class="stream-container" :style="containerStyle">
     <img :src="loadingImage" class="stream-loading" />
     <img
-      v-show="streamSrc !== emptyStreamSrc"
       :id="id"
       ref="mjpgStream"
       class="stream-video"
@@ -87,6 +101,7 @@ onBeforeUnmount(() => {
       :src="streamSrc"
       :alt="streamDesc"
       :style="streamStyle"
+      @error="handleStreamError"
     />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
@@ -116,18 +131,25 @@ onBeforeUnmount(() => {
   display: flex;
   position: relative;
   width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  justify-content: center;
+  align-items: center;
 }
 
 .stream-loading {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  width: 25%;
+  height: 25%;
+  object-fit: contain;
 }
 
 .stream-video {
   position: absolute;
   width: 100%;
   height: 100%;
+  object-fit: contain;
 }
 
 .stream-overlay {

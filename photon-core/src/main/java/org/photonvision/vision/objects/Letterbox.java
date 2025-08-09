@@ -90,14 +90,15 @@ public class Letterbox {
 
         for (var t : unscaled) {
             var scale = 1.0 / this.scale;
-            var boundingBox = t.bbox;
+            var boundingBox = t.bbox();
             double x = (boundingBox.x - this.dx) * scale;
             double y = (boundingBox.y - this.dy) * scale;
             double width = boundingBox.width * scale;
             double height = boundingBox.height * scale;
 
             ret.add(
-                    new NeuralNetworkPipeResult(new Rect2d(x, y, width, height), t.classIdx, t.confidence));
+                    new NeuralNetworkPipeResult(
+                            new Rect2d(x, y, width, height), t.classIdx(), t.confidence()));
         }
 
         return ret;

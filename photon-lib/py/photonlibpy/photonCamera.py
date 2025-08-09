@@ -18,6 +18,7 @@
 from enum import Enum
 from typing import List
 
+import hal
 import ntcore
 
 # magical import to make serde stuff work
@@ -27,6 +28,7 @@ from wpilib import RobotController, Timer
 
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
+from .timesync.timeSyncServer import inst
 from .version import PHOTONLIB_VERSION  # type: ignore[import-untyped]
 
 
@@ -47,6 +49,8 @@ def setVersionCheckEnabled(enabled: bool):
 
 
 class PhotonCamera:
+    instance_count = 1
+
     def __init__(self, cameraName: str):
         """Constructs a PhotonCamera from the name of the camera.
 
@@ -103,6 +107,16 @@ class PhotonCamera:
 
         self._prevHeartbeat = 0
         self._prevHeartbeatChangeTime = Timer.getFPGATimestamp()
+
+        # Start the time sync server
+        inst.start()
+
+        # Usage reporting
+        hal.report(
+            hal.tResourceType.kResourceType_PhotonCamera.value,
+            PhotonCamera.instance_count,
+        )
+        PhotonCamera.instance_count += 1
 
     def getAllUnreadResults(self) -> List[PhotonPipelineResult]:
         """

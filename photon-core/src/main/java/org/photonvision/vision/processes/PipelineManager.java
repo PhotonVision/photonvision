@@ -90,19 +90,16 @@ public class PipelineManager {
      * @return The gotten settings of the pipeline whose index was provided.
      */
     public CVPipelineSettings getPipelineSettings(int index) {
-        if (index < 0) {
-            switch (index) {
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline.getSettings();
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline.getSettings();
+        return switch (index) {
+            case DRIVERMODE_INDEX -> driverModePipeline.getSettings();
+            case CAL_3D_INDEX -> calibration3dPipeline.getSettings();
+            default -> {
+                for (var setting : userPipelineSettings) {
+                    if (setting.pipelineIndex == index) yield setting;
+                }
+                yield null;
             }
-        }
-
-        for (var setting : userPipelineSettings) {
-            if (setting.pipelineIndex == index) return setting;
-        }
-        return null;
+        };
     }
 
     /**
@@ -112,19 +109,16 @@ public class PipelineManager {
      * @return the nickname of the pipeline whose index was provided.
      */
     public String getPipelineNickname(int index) {
-        if (index < 0) {
-            switch (index) {
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline.getSettings().pipelineNickname;
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline.getSettings().pipelineNickname;
+        return switch (index) {
+            case DRIVERMODE_INDEX -> driverModePipeline.getSettings().pipelineNickname;
+            case CAL_3D_INDEX -> calibration3dPipeline.getSettings().pipelineNickname;
+            default -> {
+                for (var setting : userPipelineSettings) {
+                    if (setting.pipelineIndex == index) yield setting.pipelineNickname;
+                }
+                yield null;
             }
-        }
-
-        for (var setting : userPipelineSettings) {
-            if (setting.pipelineIndex == index) return setting.pipelineNickname;
-        }
-        return null;
+        };
     }
 
     /**
@@ -156,17 +150,12 @@ public class PipelineManager {
      */
     public CVPipeline getCurrentPipeline() {
         updatePipelineFromRequested();
-        if (currentPipelineIndex < 0) {
-            switch (currentPipelineIndex) {
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline;
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline;
-            }
-        }
-
-        // Just return the current user pipeline, we're not on aa built-in one
-        return currentUserPipeline;
+        return switch (currentPipelineIndex) {
+            case CAL_3D_INDEX -> calibration3dPipeline;
+            case DRIVERMODE_INDEX -> driverModePipeline;
+                // Just return the current user pipeline, we're not on a built-in one
+            default -> currentUserPipeline;
+        };
     }
 
     /**
@@ -241,41 +230,38 @@ public class PipelineManager {
      * recreation after changing pipeline type
      */
     private void recreateUserPipeline() {
-        // Cleanup potential old native resources before swapping over from a user
-        // pipeline
+        // Cleanup potential old native resources before swapping over from a user pipeline
         if (currentUserPipeline != null && !(currentPipelineIndex < 0)) {
             currentUserPipeline.release();
         }
 
         var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
         switch (desiredPipelineSettings.pipelineType) {
-            case Reflective:
+            case Reflective -> {
                 logger.debug("Creating Reflective pipeline");
                 currentUserPipeline =
                         new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
-                break;
-            case ColoredShape:
+            }
+            case ColoredShape -> {
                 logger.debug("Creating ColoredShape pipeline");
                 currentUserPipeline =
                         new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
-                break;
-            case AprilTag:
+            }
+            case AprilTag -> {
                 logger.debug("Creating AprilTag pipeline");
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
-                break;
-
-            case Aruco:
+            }
+            case Aruco -> {
                 logger.debug("Creating Aruco Pipeline");
                 currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
-                break;
-            case ObjectDetection:
+            }
+            case ObjectDetection -> {
                 logger.debug("Creating ObjectDetection Pipeline");
                 currentUserPipeline =
                         new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
-            default:
-                // Can be calib3d or drivermode, both of which are special cases
-                break;
+            }
+            case Calib3d, DriverMode -> {}
         }
     }
 
@@ -342,44 +328,22 @@ public class PipelineManager {
     }
 
     private CVPipelineSettings createSettingsForType(PipelineType type, String nickname) {
-        CVPipelineSettings newSettings;
-        switch (type) {
-            case Reflective:
-                {
-                    var added = new ReflectivePipelineSettings();
-                    added.pipelineNickname = nickname;
-                    return added;
-                }
-            case ColoredShape:
-                {
-                    var added = new ColoredShapePipelineSettings();
-                    added.pipelineNickname = nickname;
-                    return added;
-                }
-            case AprilTag:
-                {
-                    var added = new AprilTagPipelineSettings();
-                    added.pipelineNickname = nickname;
-                    return added;
-                }
-            case Aruco:
-                {
-                    var added = new ArucoPipelineSettings();
-                    added.pipelineNickname = nickname;
-                    return added;
-                }
-            case ObjectDetection:
-                {
-                    var added = new ObjectDetectionPipelineSettings();
-                    added.pipelineNickname = nickname;
-                    return added;
-                }
-            default:
-                {
-                    logger.error("Got invalid pipeline type: " + type);
-                    return null;
-                }
+        CVPipelineSettings settings =
+                switch (type) {
+                    case Reflective -> new ReflectivePipelineSettings();
+                    case ColoredShape -> new ColoredShapePipelineSettings();
+                    case AprilTag -> new AprilTagPipelineSettings();
+                    case Aruco -> new ArucoPipelineSettings();
+                    case ObjectDetection -> new ObjectDetectionPipelineSettings();
+                    case Calib3d, DriverMode -> {
+                        logger.error("Got invalid pipeline type: " + type);
+                        yield null;
+                    }
+                };
+        if (settings != null) {
+            settings.pipelineNickname = nickname;
         }
+        return settings;
     }
 
     private void addPipelineInternal(CVPipelineSettings settings) {

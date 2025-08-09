@@ -29,12 +29,19 @@
 #include <utility>
 #include <vector>
 
+#include <frc/apriltag/AprilTagFieldLayout.h>
+#include <frc/apriltag/AprilTagFields.h>
+
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
-    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG()) {}
+    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
+                      frc::AprilTagFieldLayout::LoadField(
+                          frc::AprilTagField::kDefaultField)) {}
+
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
-                                 const SimCameraProperties& props)
-    : prop(props), cam(camera) {
+                                 const SimCameraProperties& props,
+                                 const frc::AprilTagFieldLayout& tagLayout)
+    : prop{props}, cam{camera}, tagLayout{tagLayout} {
   SetMinTargetAreaPixels(kDefaultMinAreaPx);
   videoSimRaw =
       frc::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
@@ -46,6 +53,7 @@ PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
   ts.subTable = cam->GetCameraTable();
   ts.UpdateEntries();
 }
+
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
                                  const SimCameraProperties& props,
                                  double minTargetAreaPercent,
@@ -203,7 +211,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
     std::optional<photon::PnpResult> pnpSim = std::nullopt;
     if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
-      pnpSim = OpenCVHelp::SolvePNP_SQPNP(
+      pnpSim = OpenCVHelp::SolvePNP_Square(
           prop.GetIntrinsics(), prop.GetDistCoeffs(),
           tgt.GetModel().GetVertices(), noisyTargetCorners);
     }
@@ -327,7 +335,6 @@ PhotonPipelineResult PhotonCameraSim::Process(
     }
   }
 
-  heartbeatCounter++;
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
                              units::microsecond_t{latency}.to<int64_t>(),
@@ -380,6 +387,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
   ts.cameraDistortionPublisher.Set(distortionView, ReceiveTimestamp);
 
   ts.heartbeatPublisher.Set(heartbeatCounter, ReceiveTimestamp);
+  heartbeatCounter++;
 
   ts.subTable->GetInstance().Flush();
 }

@@ -52,6 +52,9 @@ public class ArucoPoseEstimatorPipe
     // reprojection error of solvepnp estimations
     private final Mat reprojectionErrors = Mat.zeros(2, 1, CvType.CV_32F);
 
+    // Tag corner locations in object space - order matters for ippe_square
+    MatOfPoint3f objectPoints = new MatOfPoint3f();
+
     private final int kNaNRetries = 1;
 
     private Translation3d tvecToTranslation3d(Mat mat) {
@@ -81,10 +84,10 @@ public class ArucoPoseEstimatorPipe
         for (int i = 0; i < kNaNRetries + 1; i++) {
             // SolvePnP with SOLVEPNP_IPPE_SQUARE solver
             Calib3d.solvePnPGeneric(
-                    params.objectPoints,
+                    objectPoints,
                     imagePoints,
-                    params.calibration.getCameraIntrinsicsMat(),
-                    params.calibration.getDistCoeffsMat(),
+                    params.calibration().getCameraIntrinsicsMat(),
+                    params.calibration().getDistCoeffsMat(),
                     rvecs,
                     tvecs,
                     false,
@@ -116,6 +119,19 @@ public class ArucoPoseEstimatorPipe
 
     @Override
     public void setParams(ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams newParams) {
+        // exact equality check OK here, the number shouldn't change
+        if (this.params == null || this.params.tagSize() != newParams.tagSize()) {
+            var tagSize = newParams.tagSize();
+
+            // This order is relevant for SOLVEPNP_IPPE_SQUARE
+            // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL, TR)
+            objectPoints.fromArray(
+                    new Point3(-tagSize / 2, tagSize / 2, 0),
+                    new Point3(tagSize / 2, tagSize / 2, 0),
+                    new Point3(tagSize / 2, -tagSize / 2, 0),
+                    new Point3(-tagSize / 2, -tagSize / 2, 0));
+        }
+
         super.setParams(newParams);
     }
 
@@ -131,24 +147,7 @@ public class ArucoPoseEstimatorPipe
         reprojectionErrors.release();
     }
 
-    public static class ArucoPoseEstimatorPipeParams {
-        final CameraCalibrationCoefficients calibration;
-        final double tagSize;
-        // object vertices defined by tag size
-        final MatOfPoint3f objectPoints;
-
-        public ArucoPoseEstimatorPipeParams(CameraCalibrationCoefficients cal, double tagSize) {
-            this.calibration = cal;
-            this.tagSize = tagSize;
-
-            // This order is relevant for SOLVEPNP_IPPE_SQUARE
-            // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL, TR)
-            objectPoints =
-                    new MatOfPoint3f(
-                            new Point3(-tagSize / 2, tagSize / 2, 0),
-                            new Point3(tagSize / 2, tagSize / 2, 0),
-                            new Point3(tagSize / 2, -tagSize / 2, 0),
-                            new Point3(-tagSize / 2, -tagSize / 2, 0));
-        }
-    }
+    // object vertices defined by tag size
+    public static record ArucoPoseEstimatorPipeParams(
+            CameraCalibrationCoefficients calibration, double tagSize) {}
 }

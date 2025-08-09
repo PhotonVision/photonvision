@@ -412,13 +412,85 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
   EXPECT_NEAR((15_s - 3_ms).to<double>(),
               estimatedPose.value().timestamp.to<double>(), 1e-6);
 
-  // And again -- now pose cache should be empty
+  // And again -- pose cache should result in returning std::nullopt
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.Update(result);
   }
 
   EXPECT_FALSE(estimatedPose);
+
+  // If the camera produces a result that is > 1 micro second later,
+  // the pose cache should not be hit.
+  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(16));
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  EXPECT_NEAR((16_s - 3_ms).to<double>(),
+              estimatedPose.value().timestamp.to<double>(), 1e-6);
+
+  // And again -- pose cache should result in returning std::nullopt
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  EXPECT_FALSE(estimatedPose);
+
+  // Setting ReferencePose should also clear the cache
+  estimator.SetReferencePose(frc::Pose3d(units::meter_t(1), units::meter_t(2),
+                                         units::meter_t(3), frc::Rotation3d()));
+
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+
+  ASSERT_TRUE(estimatedPose);
+  EXPECT_NEAR((16_s - 3_ms).to<double>(),
+              estimatedPose.value().timestamp.to<double>(), 1e-6);
 }
+
+TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+
+  std::vector<photon::PhotonTrackedTarget> targets{
+      photon::PhotonTrackedTarget{
+          3.0, -4.0, 9.0, 4.0, 0, -1, -1.f,
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          0.7, corners, detectedCorners},
+      photon::PhotonTrackedTarget{
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
+          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.3, corners, detectedCorners}};
+
+  cameraOne.test = true;
+  cameraOne.testResult = {photon::PhotonPipelineResult{
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
+
+  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
+                                        frc::Transform3d{});
+
+  std::optional<photon::EstimatedRobotPose> estimatedPose;
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.Update(result);
+  }
+  ASSERT_TRUE(estimatedPose);
+  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+
+  // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
+  EXPECT_NEAR(11, units::unit_cast<double>(estimatedPose.value().timestamp),
+              .02);
+  EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(3, units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2, units::unit_cast<double>(pose.Z()), .01);
+}
+
 TEST(PhotonPoseEstimatorTest, CopyResult) {
   std::vector<photon::PhotonTrackedTarget> targets{};
 

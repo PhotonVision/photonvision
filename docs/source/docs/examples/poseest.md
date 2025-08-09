@@ -1,6 +1,6 @@
 # Using WPILib Pose Estimation, Simulation, and PhotonVision Together
 
-The following example comes from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/master/photonlib-java-examples/poseest)/[C++](https://github.com/PhotonVision/photonvision/tree/master/photonlib-cpp-examples/poseest)/[Python](https://github.com/PhotonVision/photonvision/tree/master/photonlib-python-examples/poseest)).  Full code is available at that links.
+The following example comes from the PhotonLib example repository ([Java](https://github.com/PhotonVision/photonvision/tree/main/photonlib-java-examples/poseest)/[C++](https://github.com/PhotonVision/photonvision/tree/main/photonlib-cpp-examples/poseest)/[Python](https://github.com/PhotonVision/photonvision/tree/main/photonlib-python-examples/poseest)).  Full code is available at that links.
 
 ## Knowledge and Equipment Needed
 
@@ -205,7 +205,9 @@ During simulation, we periodically update the simulated vision system.
 
 The rest is done behind the scenes.
 
-```{image} images/poseest_demo.gif
-:alt: Simulated swerve drive and vision system working together in teleoperated mode.
-:width: 1200
+```{raw} html
+<video width="85%" controls>
+    <source src="../../_static/assets/poseest_demo.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
 ```

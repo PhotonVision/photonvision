@@ -4,8 +4,8 @@ apply plugin: 'jacoco'
 apply plugin: 'com.google.protobuf'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 def baseArtifactId = nativeName
@@ -113,7 +113,9 @@ test {
     testLogging {
         events "failed"
         exceptionFormat "full"
+        showStandardStreams = true
     }
+    forkEvery = 1
     finalizedBy jacocoTestReport
 }
 

@@ -1,4 +1,5 @@
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 export enum PipelineType {
   DriverMode = 1,
@@ -11,8 +12,7 @@ export enum PipelineType {
 
 export enum AprilTagFamily {
   Family36h11 = 0,
-  Family25h9 = 1,
-  Family16h5 = 2
+  Family16h5 = 1
 }
 
 export enum RobotOffsetPointMode {
@@ -28,7 +28,8 @@ export enum TargetModel {
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
   AprilTag6in_16h5 = 5,
-  AprilTag6p5in_36h11 = 6
+  AprilTag6p5in_36h11 = 6,
+  ReefscapeAlgae = 7
 }
 
 export interface PipelineSettings {
@@ -296,8 +297,9 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   confidence: number;
   nms: number;
   box_thresh: number;
-  model: string;
+  model: ObjectDetectionModelProperties;
 }
+
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
 > &
@@ -313,7 +315,7 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   confidence: 0.9,
   nms: 0.45,
   box_thresh: 0.25,
-  model: ""
+  model: {} as ObjectDetectionModelProperties
 };
 
 export interface Calibration3dPipelineSettings extends PipelineSettings {

@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
@@ -67,8 +66,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         this.configuration = configuration;
         this.camera = camera;
 
-        getAllVideoModes();
-
+        // TODO - how should this work post-refactor???
         if (!configuration.cameraQuirks.hasQuirk(CameraQuirk.StickyFPS)) {
             if (!videoModes.isEmpty()) {
                 setVideoMode(videoModes.get(0)); // fixes double FPS set
@@ -91,15 +89,18 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 findProperty(
                         "raw_exposure_absolute", "raw_exposure_time_absolute", "exposure", "raw_Exposure");
 
-        // Photonvision needs to be able to control auto exposure. Make sure we can
-        // first.
-        var autoExpProp = findProperty("exposure_auto", "auto_exposure");
-
-        if (expProp.isPresent()) {
+        if (expProp.isEmpty()) {
+            logger.warn("Could not find exposure property");
+            return;
+        } else {
             exposureAbsProp = expProp.get();
             this.minExposure = exposureAbsProp.getMin();
             this.maxExposure = exposureAbsProp.getMax();
         }
+
+        // Photonvision needs to be able to control auto exposure. Make sure we can
+        // first.
+        var autoExpProp = findProperty("exposure_auto", "auto_exposure");
 
         if (autoExpProp.isPresent()) {
             autoExposureProp = autoExpProp.get();
@@ -262,55 +263,57 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
     }
 
+    private void cacheVideoModes() {
+        videoModes = new HashMap<>();
+        List<VideoMode> videoModesList = new ArrayList<>();
+        try {
+            for (VideoMode videoMode : camera.enumerateVideoModes()) {
+                // Filter grey modes
+                if (videoMode.pixelFormat == PixelFormat.kGray
+                        || videoMode.pixelFormat == PixelFormat.kUnknown) {
+                    continue;
+                }
+
+                if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100) && videoMode.fps > 100) {
+                    continue;
+                }
+
+                videoModesList.add(videoMode);
+            }
+        } catch (Exception e) {
+            logger.error("Exception while enumerating video modes!", e);
+            videoModesList = List.of();
+        }
+
+        // Sort by resolution
+        var sortedList =
+                videoModesList.stream()
+                        .distinct() // remove redundant video mode entries
+                        .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                        .collect(Collectors.toList());
+        // The ordering is usually more logical when done like this. It typically puts higher FPSes
+        // closer to the bottom.
+        Collections.reverse(sortedList);
+
+        for (int i = 0; i < sortedList.size(); i++) {
+            videoModes.put(i, sortedList.get(i));
+        }
+
+        // If after all that we still have no video modes, not much we can do besides
+        // throw up our hands
+        if (videoModes.isEmpty()) {
+            logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
+        }
+    }
+
     @Override
     public HashMap<Integer, VideoMode> getAllVideoModes() {
-        if (videoModes == null) {
-            videoModes = new HashMap<>();
-            List<VideoMode> videoModesList = new ArrayList<>();
-            try {
-                VideoMode[] modes;
-
-                modes = camera.enumerateVideoModes();
-
-                for (VideoMode videoMode : modes) {
-                    // Filter grey modes
-                    if (videoMode.pixelFormat == PixelFormat.kGray
-                            || videoMode.pixelFormat == PixelFormat.kUnknown) {
-                        continue;
-                    }
-
-                    if (configuration.cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {
-                        if (videoMode.fps > 100) {
-                            continue;
-                        }
-                    }
-
-                    videoModesList.add(videoMode);
-                }
-            } catch (Exception e) {
-                logger.error("Exception while enumerating video modes!", e);
-                videoModesList = List.of();
-            }
-
-            // Sort by resolution
-            var sortedList =
-                    videoModesList.stream()
-                            .distinct() // remove redundant video mode entries
-                            .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                            .collect(Collectors.toList());
-            Collections.reverse(sortedList);
-
-            // On vendor cameras, respect blacklisted indices
-            var indexBlacklist =
-                    ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
-            for (int badIdx : indexBlacklist) {
-                sortedList.remove(badIdx);
-            }
-
-            for (VideoMode videoMode : sortedList) {
-                videoModes.put(sortedList.indexOf(videoMode), videoMode);
-            }
+        if (!cameraPropertiesCached) {
+            // Device hasn't connected at least once, best I can do is given up
+            logger.warn("Device hasn't connected, cannot enumerate video modes");
+            return new HashMap<>();
         }
+
         return videoModes;
     }
 
@@ -371,5 +374,22 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     @Override
     public double getMinWhiteBalanceTemp() {
         return minWhiteBalanceTemp;
+    }
+
+    @Override
+    public void onCameraConnected() {
+        super.onCameraConnected();
+
+        logger.info("Caching cscore properties");
+
+        // Now that our device is actually connected, we can enumerate properties/video
+        // modes
+        setUpExposureProperties();
+        setUpWhiteBalanceProperties();
+        cacheVideoModes();
+
+        setAllCamDefaults();
+
+        calculateFrameStaticProps();
     }
 }

@@ -102,17 +102,18 @@ public class Server {
                                     });
                         });
 
-        /*Web Socket Events for Data Exchange */
+        /* Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
                 ws -> {
                     ws.onConnect(dsHandler::onConnect);
                     ws.onClose(dsHandler::onClose);
+                    ws.onError(e -> logger.error(e.toString(), e.error()));
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 
-        /*API Events*/
+        /* API Events */
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
@@ -136,10 +137,25 @@ public class Server {
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
         app.post("/api/utils/nukeConfigDirectory", RequestHandler::onNukeConfigDirectory);
         app.post("/api/utils/nukeOneCamera", RequestHandler::onNukeOneCamera);
+        app.post("/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
+        app.post("/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
+        app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
+
+        // Object detection
+        app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
+        app.post(
+                "/api/objectdetection/bulkimport", RequestHandler::onBulkImportObjectDetectionModelRequest);
+        app.get("/api/objectdetection/export", RequestHandler::onExportObjectDetectionModelsRequest);
+        app.get(
+                "/api/objectdetection/exportIndividual",
+                RequestHandler::onExportIndividualObjectDetectionModelRequest);
+        app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
+        app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
+        app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
 
         app.start(port);
     }

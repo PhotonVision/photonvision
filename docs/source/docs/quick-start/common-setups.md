@@ -1,49 +1,46 @@
 # Common Hardware Setups
 
+PhotonVision requires dedicated hardware, above and beyond a roboRIO. This page lists hardware that is frequently used with PhotonVision.
+
 ## Coprocessors
+
+- Orange Pi 5 4GB
+  - Supports up to 2 object detection streams, along with 2 AprilTag streams at 1280x800 (30fps).
+- Raspberry Pi 5 2GB
+  - Supports up to 2 AprilTag streams at 1280x800 (30fps).
 
 :::{note}
 The Orange Pi 5 is the only currently supported device for object detection.
 :::
 
-- Orange Pi 5 4GB
-  - Able to process two object detection streams at once while also processing 1 to 2 AprilTag streams at 1280x800 (30fps).
-- Raspberry Pi 5 2GB
-  - A good cheaper option. Doesn't support object detection. Able to process 2 AprilTag streams at 1280x800 (30fps).
-
 ## SD Cards
 
-:::{important}
-It is highly recommended that you use an industrial micro SD card, as they offer far greater protection against corruption from improper shutdowns, like most cards
-face every time the robot is turned off.
-:::
-
 - 8GB or larger micro SD card
-  - Many teams have found that an industrial micro sd card are much more stable in competition. One example is the SanDisk industrial 16GB micro SD card.
+
+:::{important}
+Industrial grade SD cards from major manufacturers are recommended for robotics applications. For example: Sandisk SDSDQAF3-016G-I .
+:::
 
 ## Cameras
 
-- AprilTag
+Innomaker and Arducam are common manufacturers of hardware designed specifically for vision processing.
 
-  - Innomaker or Arducam OV9281 UVC USB cameras.
+- AprilTag Detection
+  - OV9281
 
 - Object Detection
-
-  - Arducam OV9782 works well with its global shutter.
-  - Most other fixed-focus color UVC USB webcams.
+  - OV9782
 
 - Driver Camera
   - OV9281
   - OV9782
-  - Pi Camera Module V1 {ref}`(More setup info)<docs/hardware/picamconfig:Pi Camera Configuration>`
-  - Most other fixed-focus UVC USB webcams
+  - Pi Camera Module V1 {ref}`(More setup info)<docs/camera-specific-configuration/picamconfig:Pi Camera Configuration>`
+
+Feel free to get started with any color webcam you have sitting around.
 
 ## Power
 
 - Pololu S13V30F5 Regulator
-
-  - Wide power range input. Recommended by many teams.
-
 - Redux Robotics Zinc-V Regulator
 
-  - Recently released for the 2025 season, offering reliable and easy integration.
+See {ref}`(Selecting Hardware)<docs/hardware/selecting-hardware:Selecting Hardware>` for info on why these are recommended.

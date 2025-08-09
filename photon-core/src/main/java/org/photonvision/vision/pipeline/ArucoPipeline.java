@@ -85,19 +85,22 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         // 2023/other: best guess is 6in
         double tagWidth = Units.inchesToMeters(6);
         TargetModel tagModel = TargetModel.kAprilTag16h5;
-        switch (settings.tagFamily) {
-            case kTag36h11:
-                // 2024 tag, 6.5in
-                params.tagFamily = Objdetect.DICT_APRILTAG_36h11;
-                tagWidth = Units.inchesToMeters(6.5);
-                tagModel = TargetModel.kAprilTag36h11;
-                break;
-            case kTag25h9:
-                params.tagFamily = Objdetect.DICT_APRILTAG_25h9;
-                break;
-            default:
-                params.tagFamily = Objdetect.DICT_APRILTAG_16h5;
-        }
+
+        params.tagFamily =
+                switch (settings.tagFamily) {
+                    case kTag36h11 -> {
+                        // 2024 tag, 6.5in
+                        tagWidth = Units.inchesToMeters(6.5);
+                        tagModel = TargetModel.kAprilTag36h11;
+                        yield Objdetect.DICT_APRILTAG_36h11;
+                    }
+                    case kTag16h5 -> {
+                        // 2024 tag, 6.5in
+                        tagWidth = Units.inchesToMeters(6);
+                        tagModel = TargetModel.kAprilTag16h5;
+                        yield Objdetect.DICT_APRILTAG_16h5;
+                    }
+                };
 
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
         settings.threshWinSizes.setFirst(threshMinSize);
@@ -142,8 +145,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
-        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
-        tagDetectionPipeResult = arucoDetectionPipe.run(frame.processedImage);
+        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult =
+                arucoDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         // If we want to debug the thresholding steps, draw the first step to the color image
@@ -160,14 +163,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             // Populate target list for multitag
             // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
             // not be necessary.)
-            TrackedTarget target =
+
+            targetList.add(
                     new TrackedTarget(
                             detection,
                             null,
                             new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties));
-
-            targetList.add(target);
+                                    false, null, null, null, null, frameStaticProperties)));
         }
 
         // Do multi-tag pose estimation

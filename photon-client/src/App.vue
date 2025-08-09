@@ -34,11 +34,14 @@ if (!is_demo) {
       if (data.updatePipelineResult !== undefined) {
         useStateStore().updateBackendResultsFromWebsocket(data.updatePipelineResult);
       }
-      if (data.mutatePipelineSettings !== undefined && data.cameraIndex !== undefined) {
-        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraIndex);
+      if (data.mutatePipelineSettings !== undefined && data.cameraUniqueName !== undefined) {
+        useCameraSettingsStore().changePipelineSettingsInStore(data.mutatePipelineSettings, data.cameraUniqueName);
       }
       if (data.calibrationData !== undefined) {
         useStateStore().updateCalibrationStateValuesFromWebsocket(data.calibrationData);
+      }
+      if (data.visionSourceManager !== undefined) {
+        useStateStore().updateDiscoveredCameras(data.visionSourceManager);
       }
     },
     () => {
@@ -55,9 +58,9 @@ if (!is_demo) {
     <v-main>
       <v-container class="main-container" fluid fill-height>
         <v-layout>
-          <v-flex>
+          <v-container class="align-start pa-0 ma-0" fluid>
             <router-view />
-          </v-flex>
+          </v-container>
         </v-layout>
       </v-container>
     </v-main>
@@ -68,9 +71,11 @@ if (!is_demo) {
 </template>
 
 <style lang="scss">
-@import "vuetify/src/styles/settings/_variables";
+@use "@/assets/styles/settings";
+@use "@/assets/styles/variables";
+@use "sass:map";
 
-@media #{map-get($display-breakpoints, 'md-and-down')} {
+@media #{map.get(settings.$display-breakpoints, 'md-and-down')} {
   html {
     font-size: 14px !important;
   }
@@ -82,24 +87,27 @@ if (!is_demo) {
 }
 
 ::-webkit-scrollbar-track {
-  background: #232c37;
+  background: rgb(var(--v-theme-background));
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #ffd843;
+  background-color: rgb(var(--v-theme-accent));
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #e4c33c;
+  background-color: rgb(var(--v-theme-primary));
 }
 
 .main-container {
-  background-color: #232c37;
   padding: 0 !important;
 }
 
-#title {
-  color: #ffd843;
+.v-overlay__scrim {
+  background-color: #111111;
+}
+
+div.v-layout {
+  overflow: unset !important;
 }
 </style>

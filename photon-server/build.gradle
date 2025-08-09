@@ -1,10 +1,7 @@
-plugins {
-    id "application"
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-    id "com.github.node-gradle.node" version "7.0.1"
-    id "org.hidetake.ssh" version "2.11.2"
-    id 'edu.wpi.first.WpilibTools' version '1.3.0'
-}
+apply plugin: "org.hidetake.ssh"
+apply plugin: "com.github.node-gradle.node"
+apply plugin: 'com.gradleup.shadow'
+apply plugin: "application"
 
 apply from: "${rootDir}/shared/common.gradle"
 
@@ -47,8 +44,13 @@ tasks.register('copyClientUIToResources', Copy) {
     into "${projectDir}/src/main/resources/web/"
 }
 
-tasks.register("buildAndCopyUI") {
-    dependsOn "npm_run_build"
+tasks.register('buildClient', PnpmTask) {
+    args = ["build"]
+    dependsOn "pnpmInstall"
+}
+
+tasks.register('buildAndCopyUI') {
+    dependsOn "buildClient"
     finalizedBy "copyClientUIToResources"
 }
 

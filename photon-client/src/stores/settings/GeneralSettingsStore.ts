@@ -10,14 +10,13 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
-import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout: AprilTagFieldLayout;
+  currentFieldLayout;
 }
 
 export const useSettingsStore = defineStore("settings", {
@@ -28,8 +27,10 @@ export const useSettingsStore = defineStore("settings", {
       hardwareModel: undefined,
       hardwarePlatform: undefined,
       mrCalWorking: true,
-      availableModels: {},
-      supportedBackends: []
+      availableModels: [],
+      supportedBackends: [],
+      conflictingHostname: false,
+      conflictingCameras: ""
     },
     network: {
       ntServerAddress: "",
@@ -46,8 +47,7 @@ export const useSettingsStore = defineStore("settings", {
           devName: "eth0"
         }
       ],
-      networkingDisabled: false,
-      matchCamerasOnlyByPath: false
+      networkingDisabled: false
     },
     lighting: {
       supported: true,
@@ -56,14 +56,15 @@ export const useSettingsStore = defineStore("settings", {
     metrics: {
       cpuTemp: undefined,
       cpuUtil: undefined,
-      cpuMem: undefined,
-      gpuMem: undefined,
-      ramUtil: undefined,
-      gpuMemUtil: undefined,
       cpuThr: undefined,
-      cpuUptime: undefined,
+      ramMem: undefined,
+      ramUtil: undefined,
+      gpuMem: undefined,
+      gpuMemUtil: undefined,
       diskUtilPct: undefined,
-      npuUsage: undefined
+      npuUsage: undefined,
+      ipAddress: undefined,
+      uptime: undefined
     },
     currentFieldLayout: {
       field: {
@@ -89,14 +90,15 @@ export const useSettingsStore = defineStore("settings", {
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
         cpuUtil: data.cpuUtil || undefined,
-        cpuMem: data.cpuMem || undefined,
-        gpuMem: data.gpuMem || undefined,
-        ramUtil: data.ramUtil || undefined,
-        gpuMemUtil: data.gpuMemUtil || undefined,
         cpuThr: data.cpuThr || undefined,
-        cpuUptime: data.cpuUptime || undefined,
+        ramMem: data.ramMem || undefined,
+        ramUtil: data.ramUtil || undefined,
+        gpuMem: data.gpuMem || undefined,
+        gpuMemUtil: data.gpuMemUtil || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
-        npuUsage: data.npuUsage || undefined
+        npuUsage: data.npuUsage || undefined,
+        ipAddress: data.ipAddress || undefined,
+        uptime: data.uptime || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
@@ -107,7 +109,9 @@ export const useSettingsStore = defineStore("settings", {
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
         availableModels: data.general.availableModels || undefined,
-        supportedBackends: data.general.supportedBackends || []
+        supportedBackends: data.general.supportedBackends || [],
+        conflictingHostname: data.general.conflictingHostname || false,
+        conflictingCameras: data.general.conflictingCameras || ""
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;

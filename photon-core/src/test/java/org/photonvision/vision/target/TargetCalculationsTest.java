@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,7 +24,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,7 +41,6 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculationsTest {
-
     private static Size imageSize = new Size(1280, 720);
     private static Point imageCenterPoint =
             new Point(imageSize.width / 2.0 - 0.5, imageSize.height / 2.0 - 0.5);
@@ -316,9 +315,9 @@ public class TargetCalculationsTest {
         Point crosshairPointOutside =
                 TargetCalculations.calculateDualOffsetCrosshair(dualOffsetValues, 1);
 
-        Assertions.assertEquals(expectedHalfway.x, crosshairPointHalfway.x);
-        Assertions.assertEquals(expectedHalfway.y, crosshairPointHalfway.y);
-        Assertions.assertEquals(expectedOutside.x, crosshairPointOutside.x);
-        Assertions.assertEquals(expectedOutside.y, crosshairPointOutside.y);
+        assertEquals(expectedHalfway.x, crosshairPointHalfway.x);
+        assertEquals(expectedHalfway.y, crosshairPointHalfway.y);
+        assertEquals(expectedOutside.x, crosshairPointOutside.x);
+        assertEquals(expectedOutside.y, crosshairPointOutside.y);
     }
 }

@@ -287,7 +287,7 @@ public class Calibrate3dPipeTest {
     }
 
     /**
-     * Uses a given camera coefficientss matrix set to "undistort" every image file found in a given
+     * Uses a given camera coefficients matrix set to "undistort" every image file found in a given
      * directory and display them. Provides an easy way to visually debug the results of the
      * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
      * usually be left active in tests.
@@ -304,7 +304,10 @@ public class Calibrate3dPipeTest {
                 Mat raw = Imgcodecs.imread(file.getAbsolutePath());
                 Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
                 Calib3d.undistort(
-                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.distCoeffs.getAsMat());
+                        raw,
+                        undistorted,
+                        cal.cameraIntrinsics.getAsMatOfDouble(),
+                        cal.distCoeffs.getAsMatOfDouble());
                 TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
                 raw.release();
                 undistorted.release();

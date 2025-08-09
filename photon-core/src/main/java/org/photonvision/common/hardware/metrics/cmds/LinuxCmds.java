@@ -21,20 +21,20 @@ import org.photonvision.common.configuration.HardwareConfig;
 
 public class LinuxCmds extends CmdBase {
     public void initCmds(HardwareConfig config) {
-        // CPU
-        cpuMemoryCommand = "free -m | awk 'FNR == 2 {print $2}'";
-
         // TODO: boards have lots of thermal devices. Hard to pick the CPU
 
+        // CPU
         cpuUtilizationCommand =
                 "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
 
-        cpuUptimeCommand = "uptime -p | cut -c 4-";
+        // Uptime
+        uptimeCommand = "cat /proc/uptime | cut -d ' ' -f1";
 
         // RAM
-        ramUsageCommand = "free -m | awk 'FNR == 2 {print $3}'";
+        ramMemCommand = "free -m | awk 'FNR == 2 {print $2}'";
+        ramUtilCommand = "free -m | awk 'FNR == 2 {print $3}'";
 
         // Disk
-        diskUsageCommand = "df ./ --output=pcent | tail -n +2";
+        diskUsageCommand = "df ./ --output=pcent | tail -n +2 | tr -d '%'";
     }
 }
