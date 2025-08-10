@@ -604,4 +604,4 @@ jobs:
           vendordep_file: ${{ github.workspace }}/photonlib-${{ github.ref_name }}.json
           pr_title: Update photonlib to ${{ github.ref_name }}
           pr_branch: photonlib-${{ github.ref_name }}
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.repository == 'PhotonVision/photonvision' && startsWith(github.ref, 'refs/tags/v')
