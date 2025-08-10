@@ -99,7 +99,7 @@ public class NetworkUtils {
             }
         }
         if (!ret.equals(allInterfaces)) {
-            if (ret.isEmpty()){
+            if (ret.isEmpty()) {
                 logger.error("Unable to identify network interfaces!");
             } else {
                 logger.debug("Found network interfaces: " + ret);
