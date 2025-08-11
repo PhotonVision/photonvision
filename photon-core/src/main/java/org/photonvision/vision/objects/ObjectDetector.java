@@ -60,6 +60,7 @@ public interface ObjectDetector extends Releasable {
 
     /**
      * Checks if the model is quantized
+     *
      * @return true if the model is quantized, false if not
      */
     public boolean isQuantized();

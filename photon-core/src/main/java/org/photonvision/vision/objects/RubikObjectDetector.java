@@ -140,7 +140,6 @@ public class RubikObjectDetector implements ObjectDetector {
                         .toList());
     }
 
-
     // TODO: replace with actual quantization check
     @Override
     public boolean isQuantized() {
