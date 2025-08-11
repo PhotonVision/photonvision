@@ -301,7 +301,7 @@ public class NetworkTablesManager {
         }
 
         if (conflictingHostname != this.conflictingHostname
-                || conflictingCameras.toString().equals(this.conflictingCameras)) {
+                || !conflictingCameras.toString().equals(this.conflictingCameras)) {
             // Only publish the conflict status when it's changed to prevent the settings cards from being
             // forcibly reset
             DataChangeService.getInstance()
