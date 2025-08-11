@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +31,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
-
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -75,8 +73,7 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    private record CommonCameraUniqueName(String cameraUniqueName) {
-    }
+    private record CommonCameraUniqueName(String cameraUniqueName) {}
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -391,8 +388,7 @@ public class RequestHandler {
     }
 
     private record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {
-    }
+            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
@@ -458,7 +454,7 @@ public class RequestHandler {
                 var out = Files.createTempFile("photonvision-logs", "zip").toFile();
 
                 try {
-                    ZipUtil.packEntries(new File[]{tempPath.toFile(), tempPath2.toFile()}, out);
+                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -521,8 +517,7 @@ public class RequestHandler {
     }
 
     private record DataCalibrationImportRequest(
-            String cameraUniqueName, CameraCalibrationCoefficients calibration) {
-    }
+            String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
@@ -579,7 +574,7 @@ public class RequestHandler {
                         case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
-                        // Add more versions as necessary for new models
+                            // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);
                             ctx.result("The provided version was not valid");
@@ -667,22 +662,24 @@ public class RequestHandler {
                 modelFile.content().transferTo(out);
             }
 
-            ModelProperties modelProperties = new ModelProperties(
-                    modelPath,
-                    modelFile.filename().replaceAll("." + modelFileExtension, ""),
-                    labels,
-                    width,
-                    height,
-                    family,
-                    version);
+            ModelProperties modelProperties =
+                    new ModelProperties(
+                            modelPath,
+                            modelFile.filename().replaceAll("." + modelFileExtension, ""),
+                            labels,
+                            width,
+                            height,
+                            family,
+                            version);
 
             ObjectDetector objDetector = null;
 
             try {
-                objDetector = switch (family) {
-                    case RUBIK -> new RubikModel(modelProperties).load();
-                    case RKNN -> new RknnModel(modelProperties).load();
-                };
+                objDetector =
+                        switch (family) {
+                            case RUBIK -> new RubikModel(modelProperties).load();
+                            case RKNN -> new RknnModel(modelProperties).load();
+                        };
 
                 if (!objDetector.isQuantized()) {
                     ctx.status(400);
@@ -851,8 +848,7 @@ public class RequestHandler {
         }
     }
 
-    private record DeleteObjectDetectionModelRequest(String modelPath) {
-    }
+    private record DeleteObjectDetectionModelRequest(String modelPath) {}
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
@@ -912,8 +908,7 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {
-    }
+    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
@@ -980,8 +975,7 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
-    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {
-    }
+    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
@@ -1289,8 +1283,7 @@ public class RequestHandler {
         }
     }
 
-    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {
-    }
+    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
