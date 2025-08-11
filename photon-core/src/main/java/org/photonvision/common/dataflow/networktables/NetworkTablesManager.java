@@ -300,20 +300,21 @@ public class NetworkTablesManager {
             }
         }
 
-        // Publish the conflict status
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
-
-        conflictAlert.setText(
-                conflictingHostname
-                        ? "Hostname conflict detected for " + hostname + "!"
-                        : ""
-                                + (conflictingCameras.isEmpty()
-                                        ? ""
-                                        : " Camera name conflict detected: " + conflictingCameras.toString() + "!"));
+        if (conflictingHostname != this.conflictingHostname
+                || conflictingCameras.toString().equals(this.conflictingCameras)) {
+            // Only publish the conflict status when it's changed to prevent the settings cards from being
+            // forcibly reset
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+        }
+        if (conflictingHostname) {
+            conflictAlert.setText("Hostname conflict detected for " + hostname + "!");
+        } else if (!conflictingCameras.isEmpty()) {
+            conflictAlert.setText("Camera name conflict detected: " + conflictingCameras + "!");
+        }
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
         SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;
