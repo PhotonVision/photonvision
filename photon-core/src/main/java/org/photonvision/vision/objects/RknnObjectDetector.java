@@ -133,6 +133,11 @@ public class RknnObjectDetector implements ObjectDetector {
                         .toList());
     }
 
+    @Override
+    public boolean isQuantized() {
+        return RknnJNI.isQuantized(objPointer);
+    }
+
     /** Thread-safe method to release the detector. */
     @Override
     public void release() {

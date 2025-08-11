@@ -57,4 +57,10 @@ public interface ObjectDetector extends Releasable {
      *     empty list if the detector is not initialized or if no objects are detected.
      */
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh);
+
+    /**
+     * Checks if the model is quantized
+     * @return true if the model is quantized, false if not
+     */
+    public boolean isQuantized();
 }
