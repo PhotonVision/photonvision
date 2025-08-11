@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
+
 import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -58,6 +60,9 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.objects.ObjectDetector;
+import org.photonvision.vision.objects.RknnModel;
+import org.photonvision.vision.objects.RubikModel;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -70,7 +75,8 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
-    private record CommonCameraUniqueName(String cameraUniqueName) {}
+    private record CommonCameraUniqueName(String cameraUniqueName) {
+    }
 
     public static void onSettingsImportRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
@@ -385,7 +391,8 @@ public class RequestHandler {
     }
 
     private record CameraSettingsRequest(
-            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {}
+            double fov, HashMap<CameraQuirk, Boolean> quirksToChange, String cameraUniqueName) {
+    }
 
     public static void onCameraSettingsRequest(Context ctx) {
         try {
@@ -451,7 +458,7 @@ public class RequestHandler {
                 var out = Files.createTempFile("photonvision-logs", "zip").toFile();
 
                 try {
-                    ZipUtil.packEntries(new File[] {tempPath.toFile(), tempPath2.toFile()}, out);
+                    ZipUtil.packEntries(new File[]{tempPath.toFile(), tempPath2.toFile()}, out);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -514,7 +521,8 @@ public class RequestHandler {
     }
 
     private record DataCalibrationImportRequest(
-            String cameraUniqueName, CameraCalibrationCoefficients calibration) {}
+            String cameraUniqueName, CameraCalibrationCoefficients calibration) {
+    }
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
@@ -571,7 +579,7 @@ public class RequestHandler {
                         case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
-                            // Add more versions as necessary for new models
+                        // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);
                             ctx.result("The provided version was not valid");
@@ -659,18 +667,42 @@ public class RequestHandler {
                 modelFile.content().transferTo(out);
             }
 
+            ModelProperties modelProperties = new ModelProperties(
+                    modelPath,
+                    modelFile.filename().replaceAll("." + modelFileExtension, ""),
+                    labels,
+                    width,
+                    height,
+                    family,
+                    version);
+
+            ObjectDetector objDetector = null;
+
+            try {
+                objDetector = switch (family) {
+                    case RUBIK -> new RubikModel(modelProperties).load();
+                    case RKNN -> new RknnModel(modelProperties).load();
+                };
+
+                if (!objDetector.isQuantized()) {
+                    ctx.status(400);
+                    ctx.result("Failed to load object detection model: model must be quantized!");
+                    return;
+                }
+            } catch (Exception e) {
+                ctx.status(400);
+                ctx.result("Failed to load object detection model: " + e.getMessage());
+                logger.error("Failed to load object detection model", e);
+            } finally {
+                if (objDetector != null) {
+                    objDetector.release();
+                }
+            }
+
             ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .addModelProperties(
-                            new ModelProperties(
-                                    modelPath,
-                                    modelFile.filename().replaceAll("." + modelFileExtension, ""),
-                                    labels,
-                                    width,
-                                    height,
-                                    family,
-                                    version));
+                    .addModelProperties(modelProperties);
 
             logger.debug(
                     ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().toString());
@@ -819,7 +851,8 @@ public class RequestHandler {
         }
     }
 
-    private record DeleteObjectDetectionModelRequest(String modelPath) {}
+    private record DeleteObjectDetectionModelRequest(String modelPath) {
+    }
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
@@ -879,7 +912,8 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {
+    }
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
@@ -946,7 +980,8 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 204 : 500);
     }
 
-    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {}
+    private record CameraNicknameChangeRequest(String name, String cameraUniqueName) {
+    }
 
     public static void onCameraNicknameChangeRequest(Context ctx) {
         try {
@@ -1254,7 +1289,8 @@ public class RequestHandler {
         }
     }
 
-    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {}
+    private record AssignUnmatchedCamera(PVCameraInfo cameraInfo) {
+    }
 
     public static void onAssignUnmatchedCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
