@@ -680,13 +680,7 @@ public class RequestHandler {
                             case RUBIK -> new RubikModel(modelProperties).load();
                             case RKNN -> new RknnModel(modelProperties).load();
                         };
-
-                if (!objDetector.isQuantized()) {
-                    ctx.status(400);
-                    ctx.result("Failed to load object detection model: model must be quantized!");
-                    return;
-                }
-            } catch (Exception e) {
+            } catch (RuntimeException e) {
                 ctx.status(400);
                 ctx.result("Failed to load object detection model: " + e.getMessage());
                 logger.error("Failed to load object detection model", e);
