@@ -80,6 +80,8 @@ public class RubikObjectDetector implements ObjectDetector {
                             + ". Please ensure the model is valid and compatible with the Rubik backend.");
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
+        } else if (!RubikJNI.isQuantized(ptr)) {
+            throw new UnsupportedOperationException("Model must be quantized.");
         }
 
         logger.debug("Created detector for model " + model.modelFile.getName());
@@ -138,12 +140,6 @@ public class RubikObjectDetector implements ObjectDetector {
                 List.of(results).stream()
                         .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
                         .toList());
-    }
-
-    // TODO: replace with actual quantization check
-    @Override
-    public boolean isQuantized() {
-        return true;
     }
 
     /** Thread-safe method to release the detector. */

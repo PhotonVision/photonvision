@@ -74,6 +74,8 @@ public class RknnObjectDetector implements ObjectDetector {
         if (objPointer <= 0) {
             throw new RuntimeException(
                     "Failed to create detector from path " + model.modelFile.getPath());
+        } else if (!RknnJNI.isQuantized(objPointer)) {
+            throw new UnsupportedOperationException("Model must be quantized.");
         }
 
         logger.debug("Created detector for model " + model.modelFile.getName());
@@ -131,11 +133,6 @@ public class RknnObjectDetector implements ObjectDetector {
                 List.of(results).stream()
                         .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
                         .toList());
-    }
-
-    @Override
-    public boolean isQuantized() {
-        return RknnJNI.isQuantized(objPointer);
     }
 
     /** Thread-safe method to release the detector. */
