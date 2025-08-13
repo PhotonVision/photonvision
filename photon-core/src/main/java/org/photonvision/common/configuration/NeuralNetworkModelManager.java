@@ -226,8 +226,18 @@ public class NeuralNetworkModelManager {
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
     public enum Family {
-        RKNN,
-        RUBIK
+        RKNN(".rknn"),
+        RUBIK(".tflite");
+
+        private final String fileExtension;
+
+        private Family(String fileExtension) {
+            this.fileExtension = fileExtension;
+        }
+
+        public String extension() {
+            return fileExtension;
+        }
     }
 
     public enum Version {
@@ -358,7 +368,11 @@ public class NeuralNetworkModelManager {
         try {
             Files.walk(modelsDirectory.toPath())
                     .filter(Files::isRegularFile)
-                    .forEach(path -> loadModel(path));
+                    .filter(
+                            path ->
+                                    supportedBackends.stream()
+                                            .anyMatch(family -> path.toString().endsWith(family.extension())))
+                    .forEach(this::loadModel);
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
