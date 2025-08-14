@@ -683,7 +683,15 @@ public class RequestHandler {
             } catch (RuntimeException e) {
                 ctx.status(400);
                 ctx.result("Failed to load object detection model: " + e.getMessage());
+
+                try {
+                    Files.deleteIfExists(modelPath);
+                } catch (IOException ex) {
+                    e.addSuppressed(ex);
+                }
+
                 logger.error("Failed to load object detection model", e);
+                return;
             } finally {
                 if (objDetector != null) {
                     objDetector.release();
