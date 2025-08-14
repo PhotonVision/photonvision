@@ -693,6 +693,9 @@ public class RequestHandler {
                 logger.error("Failed to load object detection model", e);
                 return;
             } finally {
+                // this finally block will run regardless of what happens in try/catch
+                // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
+                // for a summary on how finally works
                 if (objDetector != null) {
                     objDetector.release();
                 }
