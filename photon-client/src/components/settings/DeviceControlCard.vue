@@ -133,7 +133,6 @@ const openExportSettingsPrompt = () => {
 enum ImportType {
   AllSettings,
   HardwareConfig,
-  HardwareSettings,
   NetworkConfig,
   ApriltagFieldLayout
 }
@@ -150,9 +149,6 @@ const handleSettingsImport = () => {
   switch (importType.value) {
     case ImportType.HardwareConfig:
       settingsEndpoint = "/hardwareConfig";
-      break;
-    case ImportType.HardwareSettings:
-      settingsEndpoint = "/hardwareSettings";
       break;
     case ImportType.NetworkConfig:
       settingsEndpoint = "/networkConfig";

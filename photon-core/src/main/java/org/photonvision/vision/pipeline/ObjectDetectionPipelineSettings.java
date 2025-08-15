@@ -32,7 +32,6 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         this.outputShowMultipleTargets = true;
         cameraExposureRaw = 20;
         cameraAutoExposure = false;
-        ledMode = false;
         confidence = .9;
         nms = .45;
         model =

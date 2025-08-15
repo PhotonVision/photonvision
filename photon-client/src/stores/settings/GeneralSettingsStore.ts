@@ -7,7 +7,6 @@ import type {
   NetworkSettings
 } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
-import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
 
@@ -119,17 +118,6 @@ export const useSettingsStore = defineStore("settings", {
     },
     updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);
-    },
-    /**
-     * Modify the brightness of the LEDs.
-     *
-     * @param brightness brightness to set [0, 100]
-     */
-    changeLEDBrightness(brightness: number) {
-      const payload = {
-        enabledLEDPercentage: brightness
-      };
-      useStateStore().websocket?.send(payload, true);
     }
   }
 });

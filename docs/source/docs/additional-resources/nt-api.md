@@ -54,17 +54,3 @@ Images are returned as part of the .zip package from the "Export" operation in t
 :::{warning}
 If you manage to make calls to these commands faster than 500ms (between calls), additional photos will not be captured.
 :::
-
-### Global Entries
-
-These entries are global, meaning that they should be called on the main `photonvision` table.
-
-| Key       | Type  | Description                                              |
-| --------- | ----- | -------------------------------------------------------- |
-| `ledMode` | `int` | Sets the LED Mode (-1: default, 0: off, 1: on, 2: blink) |
-
-:::{warning}
-Setting the LED mode to -1 (default) when `multiple` cameras are connected may result in unexpected behavior. {ref}`This is a known limitation of PhotonVision. <docs/troubleshooting/common-errors:LED Control>`
-
-Single camera operation should work without issue.
-:::
