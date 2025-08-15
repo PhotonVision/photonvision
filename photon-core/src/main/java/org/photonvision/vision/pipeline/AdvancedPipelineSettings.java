@@ -31,10 +31,6 @@ import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TargetOrientation;
 
 public class AdvancedPipelineSettings extends CVPipelineSettings {
-    public AdvancedPipelineSettings() {
-        ledMode = true;
-    }
-
     public IntegerCouple hsvHue = new IntegerCouple(50, 180);
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);

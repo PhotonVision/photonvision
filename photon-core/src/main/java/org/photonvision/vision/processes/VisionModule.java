@@ -34,11 +34,9 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
-import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -79,7 +77,6 @@ public class VisionModule {
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
-    private final StatusLEDConsumer statusLEDsConsumer;
     protected final QuirkyCamera cameraQuirks;
 
     protected TrackedTarget lastPipelineResultBestTarget;
@@ -146,11 +143,8 @@ public class VisionModule {
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
-        statusLEDsConsumer =
-                new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
-        addResultConsumer(statusLEDsConsumer);
         addResultConsumer(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
@@ -163,14 +157,6 @@ public class VisionModule {
             var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV();
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
-        }
-
-        // Configure LED's if supported by the underlying hardware
-        if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
-            HardwareManager.getInstance()
-                    .visionLED
-                    .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
-            setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
         saveAndBroadcastAll();
@@ -324,7 +310,6 @@ public class VisionModule {
         outputFrameSaver.close();
 
         changeSubscriberHandle.stop();
-        setVisionLEDs(false);
     }
 
     public void setFov(double fov) {
@@ -355,7 +340,6 @@ public class VisionModule {
 
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
-        setVisionLEDs(!isDriverMode);
         setPipeline(
                 isDriverMode ? PipelineManager.DRIVERMODE_INDEX : pipelineManager.getRequestedIndex());
         saveAndBroadcastAll();
@@ -486,26 +470,10 @@ public class VisionModule {
                         settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
                     }
 
-                    setVisionLEDs(pipelineSettings.ledMode);
-
                     settables.getConfiguration().currentPipelineIndex = pipelineManager.getRequestedIndex();
                 });
 
         return true;
-    }
-
-    private boolean camShouldControlLEDs() {
-        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use
-        // for
-        // vision processing, and should command stuff to the LED's.
-        // TODO: Make LED control a property of the camera itself and controllable in
-        // the UI.
-        return isVendorCamera();
-    }
-
-    private void setVisionLEDs(boolean on) {
-        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
-            HardwareManager.getInstance().visionLED.setState(on);
     }
 
     public void saveModule() {

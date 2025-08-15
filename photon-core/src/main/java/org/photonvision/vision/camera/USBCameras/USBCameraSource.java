@@ -236,11 +236,6 @@ public class USBCameraSource extends VisionSource {
     }
 
     @Override
-    public boolean hasLEDs() {
-        return false; // Assume USB cameras do not have photonvision-controlled LEDs
-    }
-
-    @Override
     public void release() {
         CameraServer.removeCamera(camera.getName());
         camera.close();

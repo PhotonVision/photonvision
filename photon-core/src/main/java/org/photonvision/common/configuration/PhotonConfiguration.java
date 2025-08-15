@@ -25,7 +25,6 @@ import org.photonvision.vision.processes.VisionSource;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;
-    private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
     private AprilTagFieldLayout atfl;
     private NeuralNetworkPropertyManager neuralNetworkProperties;
@@ -33,28 +32,19 @@ public class PhotonConfiguration {
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
-            HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
             NeuralNetworkPropertyManager neuralNetworkProperties) {
-        this(
-                hardwareConfig,
-                hardwareSettings,
-                networkConfig,
-                atfl,
-                neuralNetworkProperties,
-                new HashMap<>());
+        this(hardwareConfig, networkConfig, atfl, neuralNetworkProperties, new HashMap<>());
     }
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
-            HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
             NeuralNetworkPropertyManager neuralNetworkProperties,
             HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
-        this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.neuralNetworkProperties = neuralNetworkProperties;
         this.cameraConfigurations = cameraConfigurations;
@@ -64,7 +54,6 @@ public class PhotonConfiguration {
     public PhotonConfiguration() {
         this(
                 new HardwareConfig(),
-                new HardwareSettings(),
                 new NetworkConfig(),
                 new AprilTagFieldLayout(List.of(), 0, 0),
                 new NeuralNetworkPropertyManager());
@@ -76,10 +65,6 @@ public class PhotonConfiguration {
 
     public NetworkConfig getNetworkConfig() {
         return networkConfig;
-    }
-
-    public HardwareSettings getHardwareSettings() {
-        return hardwareSettings;
     }
 
     public AprilTagFieldLayout getApriltagFieldLayout() {
@@ -134,8 +119,6 @@ public class PhotonConfiguration {
     public String toString() {
         return "PhotonConfiguration [\n  hardwareConfig="
                 + hardwareConfig
-                + "\n  hardwareSettings="
-                + hardwareSettings
                 + "\n  networkConfig="
                 + networkConfig
                 + "\n  atfl="

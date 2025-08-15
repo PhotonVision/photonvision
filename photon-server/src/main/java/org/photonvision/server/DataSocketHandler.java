@@ -38,7 +38,6 @@ import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
@@ -165,9 +164,6 @@ public class DataSocketHandler {
                                             cameraUniqueName,
                                             context));
                         }
-                        case SMT_CHANGEBRIGHTNESS ->
-                                HardwareManager.getInstance()
-                                        .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
                         case SMT_DUPLICATEPIPELINE -> {
                             var pipeIndex = (Integer) entryValue;
 

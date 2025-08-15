@@ -8,5 +8,4 @@ getting-target-data
 using-target-data
 robot-pose-estimator
 driver-mode-pipeline-index
-controlling-led
 ```

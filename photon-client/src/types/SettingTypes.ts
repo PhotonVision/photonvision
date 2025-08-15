@@ -115,11 +115,6 @@ export interface VsmState {
   allConnectedCameras: PVCameraInfo[];
 }
 
-export interface LightingSettings {
-  supported: boolean;
-  brightness: number;
-}
-
 export enum LogLevel {
   ERROR = 0,
   WARN = 1,

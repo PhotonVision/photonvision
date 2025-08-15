@@ -51,7 +51,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Core;
-import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.timesync.TimeSyncSingleton;
@@ -68,8 +67,8 @@ public class PhotonCamera implements AutoCloseable {
     BooleanSubscriber driverModeSubscriber;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
-    IntegerPublisher pipelineIndexRequest, ledModeRequest;
-    IntegerSubscriber pipelineIndexState, ledModeState;
+    IntegerPublisher pipelineIndexRequest;
+    IntegerSubscriber pipelineIndexState;
     IntegerSubscriber heartbeatSubscriber;
     DoubleArraySubscriber cameraIntrinsicsSubscriber;
     DoubleArraySubscriber cameraDistortionSubscriber;
@@ -86,8 +85,6 @@ public class PhotonCamera implements AutoCloseable {
         outputSaveImgEntry.close();
         pipelineIndexRequest.close();
         pipelineIndexState.close();
-        ledModeRequest.close();
-        ledModeState.close();
         pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
@@ -154,8 +151,6 @@ public class PhotonCamera implements AutoCloseable {
         cameraDistortionSubscriber =
                 cameraTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
 
-        ledModeRequest = rootPhotonTable.getIntegerTopic("ledModeRequest").publish();
-        ledModeState = rootPhotonTable.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = rootPhotonTable.getStringTopic("version").subscribe("");
 
         // Existing is enough to make this multisubscriber do its thing
@@ -410,30 +405,6 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setPipelineIndex(int index) {
         pipelineIndexRequest.set(index);
-    }
-
-    /**
-     * Returns the current LED mode.
-     *
-     * @return The current LED mode.
-     */
-    public VisionLEDMode getLEDMode() {
-        int value = (int) ledModeState.get(-1);
-        return switch (value) {
-            case 0 -> VisionLEDMode.kOff;
-            case 1 -> VisionLEDMode.kOn;
-            case 2 -> VisionLEDMode.kBlink;
-            default -> VisionLEDMode.kDefault;
-        };
-    }
-
-    /**
-     * Sets the LED mode.
-     *
-     * @param led The mode to set to.
-     */
-    public void setLED(VisionLEDMode led) {
-        ledModeRequest.set(led.value);
     }
 
     /**

@@ -15,7 +15,6 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
-from enum import Enum
 from typing import List
 
 import hal
@@ -30,14 +29,6 @@ from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
 from .timesync.timeSyncServer import inst
 from .version import PHOTONLIB_VERSION  # type: ignore[import-untyped]
-
-
-class VisionLEDMode(Enum):
-    kDefault = -1
-    kOff = 0
-    kOn = 1
-    kBlink = 2
-
 
 _lastVersionTimeCheck = 0.0
 _VERSION_CHECK_ENABLED = True
@@ -90,12 +81,6 @@ class PhotonCamera:
             -1
         )
 
-        self._ledModeRequest = photonvision_root_table.getIntegerTopic(
-            "ledModeRequest"
-        ).publish()
-        self._ledModeState = photonvision_root_table.getIntegerTopic(
-            "ledModeState"
-        ).subscribe(-1)
         self.versionEntry = photonvision_root_table.getStringTopic("version").subscribe(
             ""
         )
@@ -221,23 +206,6 @@ class PhotonCamera:
         :param index: The active pipeline index.
         """
         self._pipelineIndexRequest.set(index)
-
-    def getLEDMode(self) -> VisionLEDMode:
-        """Returns the current LED mode.
-
-        :returns: The current LED mode.
-        """
-
-        mode = self._ledModeState.get()
-        return VisionLEDMode(mode)
-
-    def setLEDMode(self, led: VisionLEDMode) -> None:
-        """Sets the LED mode.
-
-        :param led: The mode to set to.
-        """
-
-        self._ledModeRequest.set(led.value)
 
     def getName(self) -> str:
         """Returns the name of the camera. This will return the same value that was given to the

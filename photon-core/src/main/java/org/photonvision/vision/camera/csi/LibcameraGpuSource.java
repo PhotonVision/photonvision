@@ -99,11 +99,6 @@ public class LibcameraGpuSource extends VisionSource {
     }
 
     @Override
-    public boolean hasLEDs() {
-        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins().size() > 0);
-    }
-
-    @Override
     public void release() {
         frameProvider.release();
         frameProvider = null;

@@ -46,13 +46,11 @@ class LegacyConfigProvider extends ConfigProvider {
     private static final Logger logger = new Logger(LegacyConfigProvider.class, LogGroup.General);
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
-    public static final String HW_SET_FNAME = "hardwareSettings.json";
     public static final String NET_SET_FNAME = "networkSettings.json";
     public static final String ATFL_SET_FNAME = "apriltagFieldLayout.json";
 
     private PhotonConfiguration config;
     private final File hardwareConfigFile;
-    private final File hardwareSettingsFile;
     private final File networkConfigFile;
     private final File camerasFolder;
     private final File apriltagFieldLayoutFile;
@@ -87,8 +85,6 @@ class LegacyConfigProvider extends ConfigProvider {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
         this.hardwareConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), HW_CFG_FNAME).toUri());
-        this.hardwareSettingsFile =
-                new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
         this.networkConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
         this.apriltagFieldLayoutFile =
@@ -121,7 +117,6 @@ class LegacyConfigProvider extends ConfigProvider {
         }
 
         HardwareConfig hardwareConfig;
-        HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
         AprilTagFieldLayout atfl = null;
 
@@ -140,23 +135,6 @@ class LegacyConfigProvider extends ConfigProvider {
         } else {
             logger.info("Hardware config does not exist! Loading defaults");
             hardwareConfig = new HardwareConfig();
-        }
-
-        if (hardwareSettingsFile.exists()) {
-            try {
-                hardwareSettings =
-                        JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
-                if (hardwareSettings == null) {
-                    logger.error("Could not deserialize hardware settings! Loading defaults");
-                    hardwareSettings = new HardwareSettings();
-                }
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware settings! Loading defaults");
-                hardwareSettings = new HardwareSettings();
-            }
-        } else {
-            logger.info("Hardware settings does not exist! Loading defaults");
-            hardwareSettings = new HardwareSettings();
         }
 
         if (networkConfigFile.exists()) {
@@ -215,7 +193,6 @@ class LegacyConfigProvider extends ConfigProvider {
         this.config =
                 new PhotonConfiguration(
                         hardwareConfig,
-                        hardwareSettings,
                         networkConfig,
                         atfl,
                         new NeuralNetworkPropertyManager(),
@@ -231,11 +208,6 @@ class LegacyConfigProvider extends ConfigProvider {
             JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
-        }
-        try {
-            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
-        } catch (IOException e) {
-            logger.error("Could not save hardware config!", e);
         }
 
         // save all of our cameras
@@ -432,10 +404,6 @@ class LegacyConfigProvider extends ConfigProvider {
         return this.hardwareConfigFile.toPath();
     }
 
-    public Path getHardwareSettingsFile() {
-        return this.hardwareSettingsFile.toPath();
-    }
-
     public Path getNetworkConfigFile() {
         return this.networkConfigFile.toPath();
     }
@@ -447,11 +415,6 @@ class LegacyConfigProvider extends ConfigProvider {
     @Override
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
         return FileUtils.replaceFile(uploadPath, this.getHardwareConfigFile());
-    }
-
-    @Override
-    public boolean saveUploadedHardwareSettings(Path uploadPath) {
-        return FileUtils.replaceFile(uploadPath, this.getHardwareSettingsFile());
     }
 
     @Override

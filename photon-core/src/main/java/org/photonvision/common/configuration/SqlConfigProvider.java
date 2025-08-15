@@ -54,7 +54,6 @@ public class SqlConfigProvider extends ConfigProvider {
     static class GlobalKeys {
         static final String NETWORK_CONFIG = "networkConfig";
         static final String HARDWARE_CONFIG = "hardwareConfig";
-        static final String HARDWARE_SETTINGS = "hardwareSettings";
         static final String ATFL_CONFIG_FILE = "apriltagFieldLayout";
         static final String NEURAL_NETWORK_PROPERTIES = "neuralNetworkProperties";
     }
@@ -261,7 +260,6 @@ public class SqlConfigProvider extends ConfigProvider {
 
         synchronized (m_mutex) {
             HardwareConfig hardwareConfig;
-            HardwareSettings hardwareSettings;
             NetworkConfig networkConfig;
             AprilTagFieldLayout atfl;
             NeuralNetworkPropertyManager nnProps;
@@ -273,15 +271,6 @@ public class SqlConfigProvider extends ConfigProvider {
             } catch (IOException e) {
                 logger.error("Could not deserialize hardware config! Loading defaults", e);
                 hardwareConfig = new HardwareConfig();
-            }
-
-            try {
-                hardwareSettings =
-                        JacksonUtils.deserialize(
-                                getOneConfigFile(conn, GlobalKeys.HARDWARE_SETTINGS), HardwareSettings.class);
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware settings! Loading defaults", e);
-                hardwareSettings = new HardwareSettings();
             }
 
             try {
@@ -330,9 +319,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 logger.error("SQL Err closing connection while loading: ", e);
             }
 
-            this.config =
-                    new PhotonConfiguration(
-                            hardwareConfig, hardwareSettings, networkConfig, atfl, nnProps, cams);
+            this.config = new PhotonConfiguration(hardwareConfig, networkConfig, atfl, nnProps, cams);
         }
     }
 
@@ -452,7 +439,6 @@ public class SqlConfigProvider extends ConfigProvider {
     // on.
     // Thank you for coming to my TED talk.
     private boolean skipSavingHWCfg = false;
-    private boolean skipSavingHWSet = false;
     private boolean skipSavingNWCfg = false;
     private boolean skipSavingAPRTG = false;
     private boolean skipSavingNNProps = false;
@@ -467,15 +453,6 @@ public class SqlConfigProvider extends ConfigProvider {
                     String.format(
                             "REPLACE INTO %s (%s, %s) VALUES (?,?);",
                             Tables.GLOBAL, Columns.GLB_FILENAME, Columns.GLB_CONTENTS);
-
-            if (!skipSavingHWSet) {
-                statement1 = conn.prepareStatement(sqlString);
-                addFile(
-                        statement1,
-                        GlobalKeys.HARDWARE_SETTINGS,
-                        JacksonUtils.serializeToString(config.getHardwareSettings()));
-                statement1.executeUpdate();
-            }
 
             if (!skipSavingNWCfg) {
                 statement2 = conn.prepareStatement(sqlString);
@@ -569,12 +546,6 @@ public class SqlConfigProvider extends ConfigProvider {
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
         skipSavingHWCfg = true;
         return saveOneFile(GlobalKeys.HARDWARE_CONFIG, uploadPath);
-    }
-
-    @Override
-    public boolean saveUploadedHardwareSettings(Path uploadPath) {
-        skipSavingHWSet = true;
-        return saveOneFile(GlobalKeys.HARDWARE_SETTINGS, uploadPath);
     }
 
     @Override

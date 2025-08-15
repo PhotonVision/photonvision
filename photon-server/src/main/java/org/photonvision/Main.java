@@ -325,7 +325,6 @@ public class Main {
         VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");
-        HardwareManager.getInstance().setRunning(true);
         Server.initialize(DEFAULT_WEBPORT);
     }
 }

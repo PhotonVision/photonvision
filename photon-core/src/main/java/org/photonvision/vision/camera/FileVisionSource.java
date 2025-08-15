@@ -88,11 +88,6 @@ public class FileVisionSource extends VisionSource {
     }
 
     @Override
-    public boolean hasLEDs() {
-        return false; // Assume USB cameras do not have photonvision-controlled LEDs
-    }
-
-    @Override
     public void release() {
         frameProvider.release();
     }

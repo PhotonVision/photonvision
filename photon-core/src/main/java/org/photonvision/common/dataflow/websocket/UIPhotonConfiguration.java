@@ -47,9 +47,6 @@ public class UIPhotonConfiguration {
                                 c.getNetworkConfig(),
                                 NetworkUtils.getAllActiveWiredInterfaces(),
                                 NetworkManager.getInstance().networkingIsDisabled),
-                        new UILightingConfig(
-                                c.getHardwareSettings().ledBrightnessPercentage,
-                                !c.getHardwareConfig().ledPins().isEmpty()),
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
                                 // TODO add support for other types of GPU accel

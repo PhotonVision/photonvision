@@ -186,49 +186,6 @@ public class RequestHandler {
         }
     }
 
-    public static void onHardwareSettingsRequest(Context ctx) {
-        var file = ctx.uploadedFile("data");
-
-        if (file == null) {
-            ctx.status(400);
-            ctx.result(
-                    "No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
-            logger.error(
-                    "No File was sent with the request. Make sure that the hardware settings json is sent at the key 'data'");
-            return;
-        }
-
-        if (!file.extension().contains("json")) {
-            ctx.status(400);
-            ctx.result(
-                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
-            logger.error(
-                    "The uploaded file was not of type 'json'. The uploaded file should be a .json file.");
-            return;
-        }
-
-        // Create a temp file
-        var tempFilePath = handleTempFileCreation(file);
-
-        if (tempFilePath.isEmpty()) {
-            ctx.status(500);
-            ctx.result("There was an error while creating a temporary copy of the file");
-            logger.error("There was an error while creating a temporary copy of the file");
-            return;
-        }
-
-        if (ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.get().toPath())) {
-            ctx.status(200);
-            ctx.result("Successfully saved the uploaded hardware settings, rebooting...");
-            logger.info("Successfully saved the uploaded hardware settings, rebooting...");
-            restartProgram();
-        } else {
-            ctx.status(500);
-            ctx.result("There was an error while saving the uploaded hardware settings");
-            logger.error("There was an error while saving the uploaded hardware settings");
-        }
-    }
-
     public static void onNetworkConfigRequest(Context ctx) {
         var file = ctx.uploadedFile("data");
 
