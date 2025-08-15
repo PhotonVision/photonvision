@@ -605,16 +605,13 @@ public class RequestHandler {
                 return;
             }
 
-            String modelFileExtension = "";
             NeuralNetworkModelManager.Family family;
 
             switch (Platform.getCurrentPlatform()) {
                 case LINUX_QCS6490:
-                    modelFileExtension = "tflite";
                     family = NeuralNetworkModelManager.Family.RUBIK;
                     break;
                 case LINUX_RK3588_64:
-                    modelFileExtension = "rknn";
                     family = NeuralNetworkModelManager.Family.RKNN;
                     break;
                 default:
@@ -625,19 +622,19 @@ public class RequestHandler {
             }
 
             // If adding additional platforms, check platform matches
-            if (!modelFile.extension().contains(modelFileExtension)) {
+            if (!modelFile.extension().contains(family.extension())) {
                 ctx.status(400);
                 ctx.result(
                         "The uploaded file was not of type '"
-                                + modelFileExtension
+                                + family.extension()
                                 + "'. The uploaded file should be a ."
-                                + modelFileExtension
+                                + family.extension()
                                 + " file.");
                 logger.error(
                         "The uploaded file was not of type '"
-                                + modelFileExtension
+                                + family.extension()
                                 + "'. The uploaded file should be a ."
-                                + modelFileExtension
+                                + family.extension()
                                 + " file.");
                 return;
             }
@@ -665,7 +662,7 @@ public class RequestHandler {
                     .addModelProperties(
                             new ModelProperties(
                                     modelPath,
-                                    modelFile.filename().replaceAll("." + modelFileExtension, ""),
+                                    modelFile.filename().replaceAll("." + family.extension(), ""),
                                     labels,
                                     width,
                                     height,
