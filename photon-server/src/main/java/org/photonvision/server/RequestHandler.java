@@ -333,14 +333,10 @@ public class RequestHandler {
             return;
         }
 
-        try {
-            Path filePath =
-                    Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
-            File targetFile = new File(filePath.toString());
-            var stream = new FileOutputStream(targetFile);
-
-            file.content().transferTo(stream);
-            stream.close();
+        Path targetPath =
+                Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+        try (InputStream fileSteam = file.content()) {
+            Files.copy(fileSteam, targetPath);
 
             ctx.status(200);
             ctx.result(
@@ -652,8 +648,8 @@ public class RequestHandler {
                 return;
             }
 
-            try (FileOutputStream out = new FileOutputStream(modelPath.toFile())) {
-                modelFile.content().transferTo(out);
+            try (InputStream modelFileStream = modelFile.content()) {
+                Files.copy(modelFileStream, modelPath);
             }
 
             ConfigManager.getInstance()
