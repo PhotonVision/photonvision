@@ -58,6 +58,9 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.objects.ObjectDetector;
+import org.photonvision.vision.objects.RknnModel;
+import org.photonvision.vision.objects.RubikModel;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -656,18 +659,49 @@ public class RequestHandler {
                 modelFile.content().transferTo(out);
             }
 
+            ModelProperties modelProperties =
+                    new ModelProperties(
+                            modelPath,
+                            modelFile.filename().replaceAll("." + family.extension(), ""),
+                            labels,
+                            width,
+                            height,
+                            family,
+                            version);
+
+            ObjectDetector objDetector = null;
+
+            try {
+                objDetector =
+                        switch (family) {
+                            case RUBIK -> new RubikModel(modelProperties).load();
+                            case RKNN -> new RknnModel(modelProperties).load();
+                        };
+            } catch (RuntimeException e) {
+                ctx.status(400);
+                ctx.result("Failed to load object detection model: " + e.getMessage());
+
+                try {
+                    Files.deleteIfExists(modelPath);
+                } catch (IOException ex) {
+                    e.addSuppressed(ex);
+                }
+
+                logger.error("Failed to load object detection model", e);
+                return;
+            } finally {
+                // this finally block will run regardless of what happens in try/catch
+                // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
+                // for a summary on how finally works
+                if (objDetector != null) {
+                    objDetector.release();
+                }
+            }
+
             ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .addModelProperties(
-                            new ModelProperties(
-                                    modelPath,
-                                    modelFile.filename().replaceAll("." + family.extension(), ""),
-                                    labels,
-                                    width,
-                                    height,
-                                    family,
-                                    version));
+                    .addModelProperties(modelProperties);
 
             logger.debug(
                     ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().toString());
