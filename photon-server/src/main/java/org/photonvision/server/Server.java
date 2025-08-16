@@ -118,7 +118,6 @@ public class Server {
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
         app.post("/api/settings/hardwareConfig", RequestHandler::onHardwareConfigRequest);
-        app.post("/api/settings/hardwareSettings", RequestHandler::onHardwareSettingsRequest);
         app.post("/api/settings/networkConfig", RequestHandler::onNetworkConfigRequest);
         app.post("/api/settings/aprilTagFieldLayout", RequestHandler::onAprilTagFieldLayoutRequest);
         app.post("/api/settings/general", RequestHandler::onGeneralSettingsRequest);

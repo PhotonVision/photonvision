@@ -18,24 +18,13 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record HardwareConfig(
         String deviceName,
         String deviceLogoPath,
         String supportURL,
-        // LED control
-
-        ArrayList<Integer> ledPins,
-        String ledSetCommand,
-        boolean ledsCanDim,
-        ArrayList<Integer> ledBrightnessRange,
-        String ledDimCommand,
-        String ledBlinkCommand,
-        ArrayList<Integer> statusRGBPins,
         // Metrics
-
         String cpuTempCommand,
         String cpuMemoryCommand,
         String cpuUtilCommand,
@@ -54,13 +43,6 @@ public record HardwareConfig(
                 "", // deviceName
                 "", // deviceLogoPath
                 "", // supportURL
-                new ArrayList<>(), // ledPins
-                "", // ledSetCommand
-                false, // ledsCanDim
-                new ArrayList<>(), // ledBrightnessRange
-                "", // ledDimCommand
-                "", // ledBlinkCommand
-                new ArrayList<>(), // statusRGBPins
                 "", // cpuTempCommand
                 "", // cpuMemoryCommand
                 "", // cpuUtilCommand
@@ -92,7 +74,6 @@ public record HardwareConfig(
                 || cpuUptimeCommand != ""
                 || gpuMemoryCommand != ""
                 || ramUtilCommand != ""
-                || ledBlinkCommand != ""
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
     }

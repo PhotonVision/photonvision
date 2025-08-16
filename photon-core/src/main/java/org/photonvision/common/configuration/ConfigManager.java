@@ -42,7 +42,6 @@ public class ConfigManager {
     private static ConfigManager INSTANCE;
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
-    public static final String HW_SET_FNAME = "hardwareSettings.json";
     public static final String NET_SET_FNAME = "networkSettings.json";
 
     final File configDirectoryFile;
@@ -309,10 +308,6 @@ public class ConfigManager {
 
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
         return m_provider.saveUploadedHardwareConfig(uploadPath);
-    }
-
-    public boolean saveUploadedHardwareSettings(Path uploadPath) {
-        return m_provider.saveUploadedHardwareSettings(uploadPath);
     }
 
     public boolean saveUploadedNetworkConfig(Path uploadPath) {
