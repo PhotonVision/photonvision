@@ -665,13 +665,13 @@ public class RequestHandler {
                             modelFile.filename().replaceAll("." + family.extension(), ""),
                             labels,
                             width,
-            ObjectDetector objDetector = null;
-
-            try {
                             height,
                             family,
                             version);
 
+            ObjectDetector objDetector = null;
+
+            try {
                 objDetector =
                         switch (family) {
                             case RUBIK -> new RubikModel(modelProperties).load();
