@@ -108,14 +108,6 @@ jobs:
         run: ./gradlew testHeadless --stacktrace
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
-      - name: Publish Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
-      - name: Publish Core Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-22.04
