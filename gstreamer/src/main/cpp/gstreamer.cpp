@@ -44,7 +44,7 @@ JNIEXPORT void JNICALL Java_jni_Gstreamer_getGrayScale(JNIEnv* env,
   cv::Mat* raw = reinterpret_cast<cv::Mat*>(praw);
   cv::Mat* processed = reinterpret_cast<cv::Mat*>(pprocessed);
 
-  // std::cout << "Grayscaling" << std::endl;
+  std::cout << "Grayscaling" << std::endl;
 
   if (!raw || raw->empty()) {
     // Make a black image of size 1456x1088
@@ -53,7 +53,7 @@ JNIEXPORT void JNICALL Java_jni_Gstreamer_getGrayScale(JNIEnv* env,
     cv::cvtColor(*raw, *processed, cv::COLOR_BGR2GRAY);
   }
 
-  // std::cout << "Done" << std::endl;
+  std::cout << "Done" << std::endl;
 }
 
 JNIEXPORT void JNICALL Java_jni_Gstreamer_releaseCam(JNIEnv* env, jclass clazz,

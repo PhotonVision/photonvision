@@ -154,10 +154,12 @@ public class NeuralNetworkModelManager {
 
     // Check if the model exists in any supported backend
     for (NeuralNetworkBackend backend : supportedBackends) {
+      if (models.containsKey(backend)) {
         Optional<Model> model =
             models.get(backend).stream().filter(m -> m.getName().equals(modelName)).findFirst();
         if (model.isPresent()) {
           return model;
+        }
       }
     }
 

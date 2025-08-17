@@ -133,7 +133,7 @@ const validNewPipelineTypes = computed(() => {
     { name: "AprilTagCuda", value: WebsocketPipelineType.AprilTagCuda },
     { name: "Aruco", value: WebsocketPipelineType.Aruco }
   ];
-  if (useSettingsStore().general.supportedBackends.length >= 0) {
+  if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
   }
   return pipelineTypes;

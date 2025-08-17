@@ -81,8 +81,8 @@ const handleImport = async () => {
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
-  const { availableModels } = useSettingsStore().general;
-  return Object.values(availableModels).flat();
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
 });
 </script>
 

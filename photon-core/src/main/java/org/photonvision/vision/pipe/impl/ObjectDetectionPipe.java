@@ -17,12 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect2d;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
@@ -30,48 +27,42 @@ import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
-import jni.NerualNetwork;
 
 public class ObjectDetectionPipe
-    extends CVPipe<CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
+    extends CVPipe<
+        CVMat, List<NeuralNetworkPipeResult>, ObjectDetectionPipe.ObjectDetectionPipeParams>
     implements Releasable {
-  // private ObjectDetector detector;
-  private long model;
+  private ObjectDetector detector;
 
   public ObjectDetectionPipe() {
-    model = NerualNetwork.initModel("models/yolo11n.engine");
+    Optional<Model> defaultModel = NeuralNetworkModelManager.getInstance().getDefaultModel();
+    detector = defaultModel.map(Model::load).orElse(NullModel.getInstance());
   }
 
   @Override
   protected List<NeuralNetworkPipeResult> process(CVMat in) {
     // Check if the model has changed
+    if (detector.getModel() != params.model()) {
+      detector.release();
+      detector = params.model().load();
+    }
+
     Mat frame = in.getMat();
     if (frame.empty()) {
-      System.exit(0);
       return List.of();
     }
-    float[] detections = NerualNetwork.runModel(model, frame.nativeObj);
-    ArrayList<NeuralNetworkPipeResult> output = new ArrayList<>();
-    for (int i = 0; i < 10; i++){
-      if (detections[i * 6 + 5] != 0){
-        output.add(new NeuralNetworkPipeResult(new Rect2d(new Point(detections[i * 6 + 0], detections[i * 6 + 1]), new Point(detections[i * 6 + 2], detections[i * 6 + 3])), 10, detections[i * 6 + 4]));
-      }
-    }
 
-    System.out.println(detections);
-    System.out.println("giving dumb result");
-    return output;
-
+    return detector.detect(in.getMat(), params.nms(), params.confidence());
   }
 
-  public static record ObjectDetectionPipeParams(double confidence, double nms, Model model) {
-  }
+  public static record ObjectDetectionPipeParams(double confidence, double nms, Model model) {}
 
   public List<String> getClassNames() {
-    return new ArrayList<String>();
+    return detector.getClasses();
   }
 
   @Override
   public void release() {
+    detector.release();
   }
 }

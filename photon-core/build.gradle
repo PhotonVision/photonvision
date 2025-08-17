@@ -43,7 +43,6 @@ dependencies {
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
-    implementation project(':nerual-network')
     implementation project(':gstreamer')
 
     // Only include mrcal natives on platforms that we build for
