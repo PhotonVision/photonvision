@@ -25,8 +25,7 @@ public enum PipelineType {
     ColoredShape(1, ColoredShapePipeline.class),
     AprilTag(2, AprilTagPipeline.class),
     Aruco(3, ArucoPipeline.class),
-    ObjectDetection(4, ObjectDetectionPipeline.class),
-    AprilTagCuda(5, AprilTagCudaPipeline.class);
+    ObjectDetection(4, ObjectDetectionPipeline.class);
 
     public final int baseIndex;
     public final Class clazz;

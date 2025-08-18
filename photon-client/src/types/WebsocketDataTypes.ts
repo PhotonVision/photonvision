@@ -115,6 +115,5 @@ export enum WebsocketPipelineType {
   ColoredShape = 1,
   AprilTag = 2,
   Aruco = 3,
-  ObjectDetection = 4,
-  AprilTagCuda = 5
+  ObjectDetection = 4
 }
