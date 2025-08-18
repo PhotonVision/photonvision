@@ -360,9 +360,9 @@ public class PipelineManager {
                 return added;
             }
             case AprilTagCuda -> {
-                    var added = new AprilTagCudaPipelineSettings();
-                    added.pipelineNickname = nickname;
-                    return added;
+                var added = new AprilTagCudaPipelineSettings();
+                added.pipelineNickname = nickname;
+                return added;
             }
             case Calib3d, DriverMode -> {
                 logger.error("Got invalid pipeline type: " + type);

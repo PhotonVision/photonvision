@@ -18,13 +18,12 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
+import org.opencv.core.Mat;
+import org.photonvision.jni.GpuDetectorJNI;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
-import org.photonvision.jni.GpuDetectorJNI;
-import org.opencv.core.Mat;
 
 public class AprilTagDetectionCudaPipe
         extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionCudaPipeParams>
@@ -35,7 +34,7 @@ public class AprilTagDetectionCudaPipe
     public AprilTagDetectionCudaPipe() {
         super();
 
-	handle = m_cudadetector.createGpuDetector(640,480); // just a guess
+        handle = m_cudadetector.createGpuDetector(640, 480); // just a guess
     }
 
     @Override
@@ -56,22 +55,22 @@ public class AprilTagDetectionCudaPipe
     @Override
     public void setParams(AprilTagDetectionCudaPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
-		if( newParams.cameraCalibrationCoefficients == null ) return;
+            if (newParams.cameraCalibrationCoefficients == null) return;
 
-		final Mat cameraMatrix = newParams.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
-		final Mat distCoeffs = newParams.cameraCalibrationCoefficients.getDistCoeffsMat();
-		if(cameraMatrix == null || distCoeffs == null) return;
-		var cx = cameraMatrix.get(0, 2)[0];
-		var cy = cameraMatrix.get(1, 2)[0];
-		var fx = cameraMatrix.get(0, 0)[0];
-		var fy = cameraMatrix.get(1, 1)[0];
-		var k1 = distCoeffs.get(0, 0)[0];
-		var k2 = distCoeffs.get(0, 1)[0];
-		var k3 = distCoeffs.get(0, 4)[0];
-		var p1 = distCoeffs.get(0, 2)[0];
-		var p2 = distCoeffs.get(0, 3)[0];
+            final Mat cameraMatrix = newParams.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
+            final Mat distCoeffs = newParams.cameraCalibrationCoefficients.getDistCoeffsMat();
+            if (cameraMatrix == null || distCoeffs == null) return;
+            var cx = cameraMatrix.get(0, 2)[0];
+            var cy = cameraMatrix.get(1, 2)[0];
+            var fx = cameraMatrix.get(0, 0)[0];
+            var fy = cameraMatrix.get(1, 1)[0];
+            var k1 = distCoeffs.get(0, 0)[0];
+            var k2 = distCoeffs.get(0, 1)[0];
+            var k3 = distCoeffs.get(0, 4)[0];
+            var p1 = distCoeffs.get(0, 2)[0];
+            var p2 = distCoeffs.get(0, 3)[0];
 
-	    m_cudadetector.setparams(handle,fx,cx,fy,cy,k1,k2,p1,p2,k3);
+            m_cudadetector.setparams(handle, fx, cx, fy, cy, k1, k2, p1, p2, k3);
         }
 
         super.setParams(newParams);
@@ -79,7 +78,7 @@ public class AprilTagDetectionCudaPipe
 
     @Override
     public void release() {
-	m_cudadetector.destroyGpuDetector(handle);
-	m_cudadetector = null;
+        m_cudadetector.destroyGpuDetector(handle);
+        m_cudadetector = null;
     }
 }

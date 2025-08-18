@@ -37,7 +37,6 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionCudaPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionCudaPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
@@ -49,7 +48,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-public class AprilTagCudaPipeline extends CVPipeline<CVPipelineResult, AprilTagCudaPipelineSettings> {
+public class AprilTagCudaPipeline
+        extends CVPipeline<CVPipelineResult, AprilTagCudaPipelineSettings> {
     private final AprilTagDetectionCudaPipe aprilTagDetectionPipe = new AprilTagDetectionCudaPipe();
     private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
             new AprilTagPoseEstimatorPipe();
@@ -88,7 +88,9 @@ public class AprilTagCudaPipeline extends CVPipeline<CVPipelineResult, AprilTagC
         config.refineEdges = settings.refineEdges;
         config.quadSigma = (float) settings.blur;
         config.quadDecimate = settings.decimate;
-        aprilTagDetectionPipe.setParams(new AprilTagDetectionCudaPipeParams(settings.tagFamily, config, frameStaticProperties.cameraCalibration));
+        aprilTagDetectionPipe.setParams(
+                new AprilTagDetectionCudaPipeParams(
+                        settings.tagFamily, config, frameStaticProperties.cameraCalibration));
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
