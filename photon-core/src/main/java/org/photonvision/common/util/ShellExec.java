@@ -60,7 +60,7 @@ public class ShellExec {
      * @return process exit code
      */
     public int executeBashCommand(String command, boolean wait) throws IOException {
-        return executeBashCommand(command, true, true);
+        return executeBashCommand(command, wait, true);
     }
 
     /**
@@ -145,8 +145,9 @@ public class ShellExec {
         exitCode = 0;
         if (wait) {
             try {
-                process.waitFor();
-                exitCode = process.exitValue();
+                exitCode = process.waitFor();
+                errorGobbler.join();
+                outputGobbler.join();
             } catch (InterruptedException ignored) {
             }
         }

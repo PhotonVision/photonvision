@@ -11,7 +11,7 @@ When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physic
 :::{tab-item} New Radio (2025 - present)
 
 ```{danger}
-Ensure that the radio's DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature may electrically destroy your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/getting-started/passive-power-over-ethernet-poe-for-downstream-devices)
+Ensure that the radio's DIP switches 1 and 2 are turned off; otherwise, the radio PoE feature may electrically destroy your coprocessor. [More info.](https://frc-radio.vivid-hosting.net/overview/wiring-your-radio#power-over-ethernet-poe-for-downstream-devices)
 ```
 
 ```{image} images/networking-diagram-vividhosting.png
@@ -54,17 +54,21 @@ Only use a static IP when connected to the **robot radio**, and never when testi
 5. Change your IP to Static.
 6. Set your coprocessor's IP address to “10.TE.AM.11”. More information on IP format can be found [here](https://docs.wpilib.org/en/stable/docs/networking/networking-introduction/ip-configurations.html#on-the-field-static-configuration).
 7. Click the “Save” button.
-8. Set your roboRIO to the following static IP address: “10.TE.AM.2”. This can be done via the [roboRIO web dashboard](https://docs.wpilib.org/en/stable/docs/software/roborio-info/roborio-web-dashboard.html#roborio-web-dashboard).
 
 Power-cycle your robot and then you will now be access the PhotonVision dashboard at `10.TE.AM.11:5800`.
 
 ```{image} images/static.png
 :alt: Correctly set static IP
 ```
+
 The "team number" field will accept (in addition to a team number) an IP address or hostname. This is useful for testing PhotonVision on the same computer as a simulated robot program;
 you can set the team number to "localhost", and PhotonVision will send data to the network tables in the simulated robot.
 
 ## Port Forwarding
+
+:::{note}
+If you are using a VH-109 radio (2025 and later, excluding China and Taiwan), you should not use port forwarding. Instead, tether to the dedicated DS ethernet port on the VH-109. The VH-109 does not exhibit the issues found in the OM5P radio with multiple ports, and with a dedicated DS port, it provides more realistic match conditions and removes the need to tether over USB.
+:::
 
 If you would like to access your Ethernet-connected vision device from a computer when tethered to the USB port on the roboRIO, you can use [WPILib's](https://docs.wpilib.org/en/stable/docs/networking/networking-utilities/portforwarding.html) `PortForwarder`.
 
@@ -91,3 +95,7 @@ The address in the code above (`photonvision.local`) is the hostname of the copr
 ## Camera Stream Ports
 
 The camera streams start at 1181 with two ports for each camera (ex. 1181 and 1182 for camera one, 1183 and 1184 for camera two, etc.). The easiest way to identify the port of the camera that you want is by double clicking on the stream, which opens it in a separate page. The port will be listed below the stream.
+
+:::{warning}
+If your camera stream isn't sent to the same port as it's originally found on, its stream will not be visible in the UI.
+:::

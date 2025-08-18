@@ -51,6 +51,13 @@ public enum Platform {
             false,
             OSType.LINUX,
             true),
+    LINUX_QCS6490(
+            "Linux AARCH 64-bit with QCS6490",
+            Platform::getLinuxDeviceTreeModel,
+            "linuxarm64",
+            false,
+            OSType.LINUX,
+            true), // QCS6490 SBCs
     LINUX_AARCH64(
             "Linux AARCH64",
             Platform::getLinuxDeviceTreeModel,
@@ -121,7 +128,11 @@ public enum Platform {
     }
 
     public static boolean isRK3588() {
-        return Platform.isOrangePi() || Platform.isCoolPi4b();
+        return Platform.isOrangePi() || Platform.isCoolPi4b() || Platform.isRock5C();
+    }
+
+    public static boolean isQCS6490() {
+        return isRubik();
     }
 
     public static boolean isRaspberryPi() {
@@ -221,8 +232,11 @@ public enum Platform {
                 return LINUX_32;
             } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
                 // TODO - os detection needed?
-                if (isOrangePi()) {
+                if (isRK3588()) {
                     return LINUX_RK3588_64;
+                } else if (isQCS6490()) {
+                    return LINUX_QCS6490;
+
                 } else {
                     return LINUX_AARCH64;
                 }
@@ -247,6 +261,10 @@ public enum Platform {
         return fileHasText("/proc/device-tree/model", "Orange Pi 5");
     }
 
+    private static boolean isRock5C() {
+        return fileHasText("/proc/device-tree/model", "ROCK 5C");
+    }
+
     private static boolean isCoolPi4b() {
         return fileHasText("/proc/device-tree/model", "CoolPi 4B");
     }
@@ -254,6 +272,10 @@ public enum Platform {
     private static boolean isJetsonSBC() {
         // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
         return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
+    }
+
+    private static boolean isRubik() {
+        return fileHasText("/proc/device-tree/model", "RUBIK");
     }
 
     static String getLinuxDeviceTreeModel() {

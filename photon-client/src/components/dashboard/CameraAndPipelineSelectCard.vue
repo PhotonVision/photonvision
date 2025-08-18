@@ -8,6 +8,9 @@ import PvIcon from "@/components/common/pv-icon.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
   useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
@@ -53,10 +56,7 @@ const saveCameraNameEdit = (newName: string) => {
   useCameraSettingsStore()
     .changeCameraNickname(newName, false)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        color: "success",
-        message: response.data.text || response.data
-      });
+      useStateStore().showSnackbarMessage({ color: "success", message: response.data.text || response.data });
       useCameraSettingsStore().currentCameraSettings.nickname = newName;
     })
     .catch((error) => {
@@ -246,15 +246,15 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 </script>
 
 <template>
-  <v-card color="primary">
-    <v-row style="padding: 20px 12px 0 30px">
+  <v-card color="surface" class="rounded-12">
+    <v-row no-gutters class="pl-4 pt-2 pb-0">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isCameraNameEdit"
           v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
           :items="wrappedCameras"
-          @input="changeCurrentCameraUniqueName"
+          @update:modelValue="changeCurrentCameraUniqueName"
         />
         <pv-input
           v-else
@@ -275,7 +275,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :disabled="checkCameraName(currentCameraName) !== true"
             @click="() => saveCameraNameEdit(currentCameraName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelCameraNameEdit" />
+          <pv-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelCameraNameEdit" />
         </div>
         <pv-icon
           v-else
@@ -286,11 +286,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         />
       </v-col>
     </v-row>
-    <v-row style="padding: 0 12px 0 30px">
+    <v-row no-gutters class="pl-4 pb-0 pt-0">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-if="!isPipelineNameEdit"
-          :value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
+          :model-value="useCameraSettingsStore().currentCameraSettings.currentPipelineIndex"
           label="Pipeline"
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="
@@ -299,7 +299,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineNamesWrapper"
-          @input="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
+          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
         />
         <pv-input
           v-else
@@ -319,31 +319,36 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             :disabled="checkPipelineName(currentPipelineName) !== true"
             @click="() => savePipelineNameEdit(currentPipelineName)"
           />
-          <pv-icon icon-name="mdi-cancel" color="red darken-2" @click="cancelPipelineNameEdit" />
+          <pv-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelPipelineNameEdit" />
         </div>
-        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset-y nudge-bottom="7" auto>
-          <template #activator="{ on }">
-            <v-icon color="#c5c5c5" v-on="on" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
+        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset="7">
+          <template #activator="{ props }">
+            <v-icon color="#c5c5c5" v-bind="props" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
           </template>
-          <v-list dark dense color="primary">
+          <v-list density="compact" color="primary">
             <v-list-item @click="startPipelineNameEdit">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
               </v-list-item-title>
             </v-list-item>
+            <v-list-item @click="duplicateCurrentPipeline">
+              <v-list-item-title>
+                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
+              </v-list-item-title>
+            </v-list-item>
             <v-list-item @click="showCreatePipelineDialog">
               <v-list-item-title>
-                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
+                <pv-icon color="green" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
-                <pv-icon color="red darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
-              </v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="duplicateCurrentPipeline">
-              <v-list-item-title>
-                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
+                <pv-icon
+                  color="red-darken-2"
+                  :right="true"
+                  icon-name="mdi-trash-can-outline"
+                  tooltip="Delete pipeline"
+                />
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -358,7 +363,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         />
       </v-col>
     </v-row>
-    <v-row style="padding: 0 12px 24px 30px">
+    <v-row no-gutters class="pl-4 pt-0 pb-4">
       <v-col cols="10" class="pa-0">
         <pv-select
           v-model="currentPipelineType"
@@ -370,78 +375,100 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineTypesWrapper"
-          @input="showPipelineTypeChangeDialog = true"
+          @update:modelValue="showPipelineTypeChangeDialog = true"
         />
       </v-col>
     </v-row>
-    <v-dialog v-model="showPipelineCreationDialog" dark persistent width="500">
-      <v-card dark color="primary">
-        <v-card-title> Create New Pipeline </v-card-title>
-        <v-card-text>
+    <v-dialog v-model="showPipelineCreationDialog" persistent width="500">
+      <v-card color="surface">
+        <v-card-title class="pb-0"> Create New Pipeline </v-card-title>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="newPipelineName"
             placeholder="Pipeline Name"
-            :label-cols="3"
-            :input-cols="12 - 3"
+            :label-cols="4"
+            :input-cols="12 - 4"
             label="Pipeline Name"
             :rules="[(v) => checkPipelineName(v)]"
           />
           <pv-select
             v-model="newPipelineType"
-            :select-cols="12 - 3"
+            :select-cols="12 - 4"
             label="Tracking Type"
             tooltip="Pipeline type, which changes the type of processing that will happen on input frames"
             :items="validNewPipelineTypes"
           />
         </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
+        <v-card-actions class="pr-5 pt-10px pb-5">
           <v-btn
-            color="#ffd843"
-            class="black--text"
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="cancelPipelineCreation"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             :disabled="checkPipelineName(newPipelineName) !== true"
             @click="createNewPipeline"
           >
-            Save
+            Create
           </v-btn>
-          <v-btn color="error" @click="cancelPipelineCreation"> Cancel </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showPipelineDeletionConfirmationDialog" dark width="500">
-      <v-card dark color="primary">
-        <v-card-title> Pipeline Deletion Confirmation </v-card-title>
+    <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
+      <v-card color="surface">
+        <v-card-title class="pb-0">Delete Pipeline</v-card-title>
         <v-card-text>
-          Are you sure you want to delete the pipeline
-          <b style="color: white; font-weight: bold">{{
-            useCameraSettingsStore().currentPipelineSettings.pipelineNickname
-          }}</b
-          >? This cannot be undone.
+          Are you sure you want to delete
+          <span style="color: white">"{{ useCameraSettingsStore().currentPipelineSettings.pipelineNickname }}"</span>?
+          This cannot be undone.
         </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" class="black--text" @click="showPipelineDeletionConfirmationDialog = false">
-            No, take me back
+        <v-card-actions class="pa-5 pt-0">
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="primary"
+            class="text-black"
+            @click="showPipelineDeletionConfirmationDialog = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="confirmDeleteCurrentPipeline"
+          >
+            Delete
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
-      <v-card color="primary" dark>
-        <v-card-title>Change Pipeline Type</v-card-title>
+      <v-card color="surface" dark>
+        <v-card-title class="pb-0">Change Pipeline Type</v-card-title>
         <v-card-text>
           Are you sure you want to change the current pipeline type? This will cause all the pipeline settings to be
           overwritten and they will be lost. If this isn't what you want, duplicate this pipeline first or export
           settings.
         </v-card-text>
-        <v-divider />
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="error" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" class="black--text" @click="cancelChangePipelineType"> No, take me back </v-btn>
+        <v-card-actions class="pa-5 pt-0">
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            class="text-black"
+            @click="cancelChangePipelineType"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="confirmChangePipelineType"
+          >
+            Confirm
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

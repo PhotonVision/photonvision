@@ -1,0 +1,58 @@
+name: Website
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  rsync:
+    name: Build and Sync Files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - name: Install packages
+        run: pnpm i --frozen-lockfile
+        working-directory: website
+      - name: Build project
+        run: pnpm run build
+        working-directory: website
+      - uses: up9cloud/action-rsync@v1.4
+        if: github.ref == 'refs/heads/main'
+        env:
+          HOST: ${{ secrets.WEBMASTER_SSH_HOST }}
+          USER: ${{ secrets.WEBMASTER_SSH_USERNAME }}
+          KEY: ${{secrets.WEBMASTER_SSH_KEY}}
+          SOURCE: website/dist/*
+          TARGET: /var/www/html/photonvision-website
+
+  format-check:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - name: Install Packages
+        run: pnpm i --frozen-lockfile
+        working-directory: website
+      - name: Run Formatting Check
+        run: pnpm prettier -c .
+        working-directory: website

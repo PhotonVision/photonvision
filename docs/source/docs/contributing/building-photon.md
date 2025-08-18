@@ -12,17 +12,11 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 18.20.4 to Node 20.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
+ The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
 
-```bash
-nvm install 20
-```
+**pnpm:**
 
-so that it instead reads
-
-```javascript
-nvm install 18.20.4
-```
+ [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
 ## Compiling Instructions
 
@@ -46,7 +40,7 @@ or alternatively download the source code from GitHub and extract the zip:
 In the photon-client directory:
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Build and Copy UI to Java Source
@@ -68,6 +62,16 @@ In the root directory:
 
       ``gradlew buildAndCopyUI``
 ```
+
+### Using hot reload on the UI
+
+In the photon-client directory:
+
+```bash
+pnpm run dev
+```
+
+This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
 
 ### Build and Run PhotonVision
 
@@ -197,7 +201,7 @@ Similarly, a local instance of PhotonVision can be debugged in the same way usin
 
 Set up a VSCode configuration in {code}`launch.json`
 
-```
+```json
 {
    // Use IntelliSense to learn about possible attributes.
    // Hover to view descriptions of existing attributes.
@@ -273,3 +277,9 @@ Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from 
 ```
 ~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```
+
+#### MacOS Builds
+
+MacOS builds are not published to releases as MacOS is not an officially
+supported platform. However, MacOS builds are still available from the MacOS
+build action, which can be found [here](https://github.com/PhotonVision/photonvision/actions/workflows/build.yml).

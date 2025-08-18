@@ -420,14 +420,15 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
-        now_micros = wpilib.Timer.getFPGATimestamp() * 1e6
+        publishTimestampMicros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
+            ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
-                int(now_micros - latency * 1e6),
-                int(now_micros),
-                self.heartbeatCounter,
+                captureTimestampMicros=int(publishTimestampMicros - latency * 1e6),
+                publishTimestampMicros=int(publishTimestampMicros),
+                sequenceID=self.heartbeatCounter,
                 # Pretend like we heard a pong recently
-                int(np.random.uniform(950, 1050)),
+                timeSinceLastPong=int(np.random.uniform(950, 1050)),
             ),
             targets=detectableTgts,
             multitagResult=multiTagResults,
@@ -477,11 +478,11 @@ class PhotonCameraSim:
 
         intrinsics = self.prop.getIntrinsics()
         intrinsicsView = intrinsics.flatten().tolist()
-        self.ts.cameraIntrinsicsPublisher.set(intrinsicsView, receiveTimestamp_us)
+        self.ts.cameraIntrinsicsPublisher.set(list(intrinsicsView), receiveTimestamp_us)
 
         distortion = self.prop.getDistCoeffs()
         distortionView = distortion.flatten().tolist()
-        self.ts.cameraDistortionPublisher.set(distortionView, receiveTimestamp_us)
+        self.ts.cameraDistortionPublisher.set(list(distortionView), receiveTimestamp_us)
 
         self.ts.heartbeatPublisher.set(self.heartbeatCounter, receiveTimestamp_us)
         self.heartbeatCounter += 1

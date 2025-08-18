@@ -90,19 +90,16 @@ public class PipelineManager {
      * @return The gotten settings of the pipeline whose index was provided.
      */
     public CVPipelineSettings getPipelineSettings(int index) {
-        if (index < 0) {
-            switch (index) {
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline.getSettings();
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline.getSettings();
+        return switch (index) {
+            case DRIVERMODE_INDEX -> driverModePipeline.getSettings();
+            case CAL_3D_INDEX -> calibration3dPipeline.getSettings();
+            default -> {
+                for (var setting : userPipelineSettings) {
+                    if (setting.pipelineIndex == index) yield setting;
+                }
+                yield null;
             }
-        }
-
-        for (var setting : userPipelineSettings) {
-            if (setting.pipelineIndex == index) return setting;
-        }
-        return null;
+        };
     }
 
     /**
@@ -112,19 +109,16 @@ public class PipelineManager {
      * @return the nickname of the pipeline whose index was provided.
      */
     public String getPipelineNickname(int index) {
-        if (index < 0) {
-            switch (index) {
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline.getSettings().pipelineNickname;
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline.getSettings().pipelineNickname;
+        return switch (index) {
+            case DRIVERMODE_INDEX -> driverModePipeline.getSettings().pipelineNickname;
+            case CAL_3D_INDEX -> calibration3dPipeline.getSettings().pipelineNickname;
+            default -> {
+                for (var setting : userPipelineSettings) {
+                    if (setting.pipelineIndex == index) yield setting.pipelineNickname;
+                }
+                yield null;
             }
-        }
-
-        for (var setting : userPipelineSettings) {
-            if (setting.pipelineIndex == index) return setting.pipelineNickname;
-        }
-        return null;
+        };
     }
 
     /**
@@ -156,17 +150,12 @@ public class PipelineManager {
      */
     public CVPipeline getCurrentPipeline() {
         updatePipelineFromRequested();
-        if (currentPipelineIndex < 0) {
-            switch (currentPipelineIndex) {
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline;
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline;
-            }
-        }
-
-        // Just return the current user pipeline, we're not on aa built-in one
-        return currentUserPipeline;
+        return switch (currentPipelineIndex) {
+            case CAL_3D_INDEX -> calibration3dPipeline;
+            case DRIVERMODE_INDEX -> driverModePipeline;
+                // Just return the current user pipeline, we're not on a built-in one
+            default -> currentUserPipeline;
+        };
     }
 
     /**
@@ -380,9 +369,7 @@ public class PipelineManager {
                 return null;
             }
         }
-
-        // This can never happen, this is here to satisfy the compiler.
-        throw new IllegalStateException("Got impossible pipeline type: " + type);
+        return settings;
     }
 
     private void addPipelineInternal(CVPipelineSettings settings) {

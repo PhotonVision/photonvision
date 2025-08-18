@@ -44,8 +44,6 @@ dependencies {
 
     implementation "commons-io:commons-io:2.11.0"
     implementation "commons-cli:commons-cli:1.5.0"
-    implementation "org.apache.commons:commons-lang3:3.12.0"
-    implementation "org.apache.commons:commons-collections4:4.4"
     implementation "org.apache.commons:commons-exec:1.3"
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
@@ -66,42 +64,13 @@ tasks.register('testHeadless', Test) {
     group = "verification"
     systemProperty("java.awt.headless", "true")
     useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
     exclude '**/*BenchmarkTest*'
     workingDir = "../"
-}
-
-tasks.register('generateJavaDocs', Javadoc) {
-    source = sourceSets.main.allJava
-    classpath = sourceSets.main.compileClasspath
-    destinationDir = file("${projectDir}/build/docs")
-
-    options.addBooleanOption("Xdoclint:html,missing,reference,syntax", true)
-    options.addBooleanOption('html5', true)
-
-    if (JavaVersion.current().isJava8Compatible() && project.hasProperty('docWarningsAsErrors')) {
-        // Treat javadoc warnings as errors.
-        //
-        // The second argument '-quiet' is a hack. The one parameter
-        // addStringOption() doesn't work, so we add '-quiet', which is added
-        // anyway by gradle. See https://github.com/gradle/gradle/issues/2354.
-        //
-        // See JDK-8200363 (https://bugs.openjdk.java.net/browse/JDK-8200363)
-        // for information about the nonstandard -Xwerror option. JDK 15+ has
-        // -Werror.
-        options.addStringOption('Xwerror', '-quiet')
-    }
-
-    if (JavaVersion.current().isJava11Compatible()) {
-        if (!JavaVersion.current().isJava12Compatible()) {
-            options.addBooleanOption('-no-module-directories', true)
-        }
-        doLast {
-            // This is a work-around for https://bugs.openjdk.java.net/browse/JDK-8211194. Can be removed once that issue is fixed on JDK's side
-            // Since JDK 11, package-list is missing from javadoc output files and superseded by element-list file, but a lot of external tools still need it
-            // Here we generate this file manually
-            new File(destinationDir, 'package-list').text = new File(destinationDir, 'element-list').text
-        }
-    }
 }
 
 jacoco {

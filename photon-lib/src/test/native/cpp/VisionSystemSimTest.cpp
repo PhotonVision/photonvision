@@ -220,7 +220,6 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg, units::radian_t{3 * std::numbers::pi / 4}}};
-  frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{GetParam() * -1.0}};
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -231,8 +230,8 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
       targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
 
   // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
-  robotPose =
-      frc::Pose2d{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{GetParam()}};
+  frc::Pose2d robotPose{frc::Translation2d{10_m, 0_m},
+                        frc::Rotation2d{GetParam()}};
   visionSysSim.Update(robotPose);
 
   const auto result = camera.GetLatestResult();
@@ -509,6 +508,10 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
 
   auto camResults = camera.GetLatestResult();
   auto targetSpan = camResults.GetTargets();
+
+  // We need to see at least one target
+  ASSERT_GT(targetSpan.size(), static_cast<size_t>(0));
+
   std::vector<photon::PhotonTrackedTarget> targets;
   for (photon::PhotonTrackedTarget tar : targetSpan) {
     targets.push_back(tar);
