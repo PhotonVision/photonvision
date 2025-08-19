@@ -113,7 +113,7 @@ Running the following command under the root directory will build the jar under 
 
 ### Build and Run PhotonVision on a Raspberry Pi Coprocessor
 
-As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor.
+As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor. It uses [deploy-utils](https://github.com/wpilibsuite/deploy-utils/blob/main/README.md), so it works very similarly to deploys on robot projects.
 
 An architecture override is required to specify the deploy target's architecture.
 
