@@ -2,8 +2,8 @@
 
 _Time to complete: 5 minutes_
 
-MicroSD cards are not the best storage solution for the environments FRC robots face.
-In particular, they are not secured to the orange pi very well.
+microSD cards are not the best storage solution for the environments FRC robots face.
+In particular, they are not secured to the Orange Pi very well.
 Teams have had the microSD card pop out during competition, disabling their vision processor.
 
 The Orange Pi supports an M.2 SSD that can be secured with a screw.
@@ -22,17 +22,13 @@ Follow the {ref}`Quick-Start <docs/quick-start/quick-install:Quick Install>` ins
 :::{note}
 
 You will need access to your Orange Pi's console.
-You can access the console directly by plugging in a keyboard to a USB port and connecting the Orange Pi to an external monitor through its HDMI port, or via SSH (default username is `pi`, default password is `raspberry`):
-
-```
-ssh pi@photonvision.local
-```
+You can access the console directly by plugging in a keyboard to a USB port and connecting the Orange Pi to an external monitor through its HDMI port, or {ref}`via SSH <docs/troubleshooting/unix-commands:SSH>`.
 
 :::
 
 ## Installing PhotonVision on an SSD
 
-The following instructions are taken from the `ubuntu-rockchip` [wiki](https://github.com/Joshua-Riek/ubuntu-rockchip/wiki/Ubuntu-24.04-LTS#install-u-boot-to-the-spi-flash).
+The following instructions are taken from the `ubuntu-rockchip` [wiki](https://github.com/Joshua-Riek/ubuntu-rockchip/wiki/Ubuntu-24.04-LTS#install-u-boot-to-the-spi-flash). These only
 
 ### 0. Install the SSD into your Orange Pi
 
@@ -45,23 +41,25 @@ Reboot the Orange Pi after installing.
 
 Booting directly from a USB or NVMe requires flashing U-Boot to the SPI, simply enter the below command:
 
-```
-pi@photonvision:~$ sudo u-boot-install-mtd
+```bash
+sudo u-boot-install-mtd
 ```
 
 ### 2. Install PhotonVision onto an NVMe from Linux
 
 This will copy the installation of PhotonVision from the SD card to the SSD.
-```
-pi@photonvision:~$ sudo ubuntu-rockchip-install /dev/nvme0n1
+
+```bash
+sudo ubuntu-rockchip-install /dev/nvme0n1
 ```
 
 ### 3. Shutdown
-```
-pi@photonvision:~$ sudo shutdown -h now
+
+```bash
+sudo shutdown -h now
 ```
 
 ### 4. Remove SD card and turn on
 
 Remove the microSD card from the Orange Pi, then power it back on.
-It helps to connect the orange pi to a display during boot to verify the boot sequence.
+It helps to connect the Orange Pi to a display during boot to verify the boot sequence.
