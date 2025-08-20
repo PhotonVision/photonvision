@@ -26,6 +26,7 @@ package org.photonvision.simulation;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
@@ -38,7 +39,6 @@ import java.util.Map;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -62,7 +62,7 @@ public class VideoSimUtil {
     private static double fieldWidth = 8.0137;
 
     static {
-        OpenCVHelp.forceLoadOpenCV();
+        OpenCvLoader.forceStaticLoad();
 
         // create Mats of 10x10 apriltag images
         for (int i = 0; i < VideoSimUtil.kNumTags36h11; i++) {
@@ -84,34 +84,36 @@ public class VideoSimUtil {
      * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
      * actual top-left corner.
      *
+     * <p>Order of corners returned is: [BL, BR, TR, TL]
+     *
      * @param size Size of image
      */
     public static Point[] getImageCorners(Size size) {
         return new Point[] {
-            new Point(-0.5, -0.5),
-            new Point(size.width - 0.5, -0.5),
+            new Point(-0.5, size.height - 0.5),
             new Point(size.width - 0.5, size.height - 0.5),
-            new Point(-0.5, size.height - 0.5)
+            new Point(size.width - 0.5, -0.5),
+            new Point(-0.5, -0.5)
         };
     }
 
     /**
      * Gets the 10x10 (grayscale) image of a specific 36h11 AprilTag.
      *
+     * <p>WARNING: This creates a {@link RawFrame} instance but does not close it, which would result
+     * in a resource leak if the {@link Mat} is garbage-collected. Unfortunately, closing the {@code
+     * RawFrame} inside this function would delete the underlying data that backs the {@code
+     * ByteBuffer} that is passed to the {@code Mat} constructor (see comments on <a
+     * href="https://github.com/PhotonVision/photonvision/pull/2023">PR 2023</a> for details).
+     * Luckily, this method is private and is (as of Aug 2025) only used to populate the {@link
+     * #kTag36h11Images} static map at static-initialization time.
+     *
      * @param id The fiducial id of the desired tag
      */
     private static Mat get36h11TagImage(int id) {
         RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
-
-        var buf = frame.getData();
-        byte[] arr = new byte[buf.remaining()];
-        buf.get(arr);
-        // frame.close();
-
-        var mat = new MatOfByte(arr).reshape(1, 10).submat(new Rect(0, 0, 10, 10));
-        mat.dump();
-
-        return mat;
+        return new Mat(
+                frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
     }
 
     /** Gets the points representing the marker(black square) corners. */

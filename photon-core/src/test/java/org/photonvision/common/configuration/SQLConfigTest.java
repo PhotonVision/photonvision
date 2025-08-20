@@ -20,41 +20,26 @@ package org.photonvision.common.configuration;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
+import edu.wpi.first.cscore.UsbCameraInfo;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraQuirk;
-import org.photonvision.vision.camera.CameraType;
-import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
-    private static Path tmpDir;
+    @TempDir private static Path tmpDir;
 
     @BeforeAll
     public static void init() {
         TestUtils.loadLibraries();
-        try {
-            tmpDir = Files.createTempDirectory("SQLConfigTest");
-        } catch (IOException e) {
-            System.out.println("Couldn't create temporary directory, using current directory");
-            tmpDir = Path.of("jdbc_test", "temp");
-        }
-    }
-
-    @AfterAll
-    public static void cleanUp() throws IOException {
-        Files.walk(tmpDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
     }
 
     @Test
@@ -76,26 +61,18 @@ public class SQLConfigTest {
 
         cfgLoader.load();
 
-        var testcamcfg =
+        var testCamCfg =
                 new CameraConfiguration(
-                        "basename",
-                        "a_unique_name",
-                        "a_nick_name",
-                        69,
-                        "a/path/idk",
-                        CameraType.UsbCamera,
-                        QuirkyCamera.getQuirkyCamera(-1, -1),
-                        List.of(),
-                        0,
-                        -1,
-                        -1);
-        testcamcfg.pipelineSettings =
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(0, "/dev/videoN", "some_name", new String[0], -1, 01)));
+
+        testCamCfg.pipelineSettings =
                 List.of(
                         new ReflectivePipelineSettings(),
                         new AprilTagPipelineSettings(),
                         new ColoredShapePipelineSettings());
 
-        cfgLoader.getConfig().addCameraConfig(testcamcfg);
+        cfgLoader.getConfig().addCameraConfig(testCamCfg);
         cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
         cfgLoader.saveToDisk();
 

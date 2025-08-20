@@ -12,17 +12,11 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 18.20.4 to Node 20.0.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).  However, modify this line
+ The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
 
-```bash
-nvm install 20
-```
+**pnpm:**
 
-so that it instead reads
-
-```javascript
-nvm install 18.20.4
-```
+ [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
 ## Compiling Instructions
 
@@ -46,7 +40,7 @@ or alternatively download the source code from GitHub and extract the zip:
 In the photon-client directory:
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Build and Copy UI to Java Source
@@ -68,6 +62,16 @@ In the root directory:
 
       ``gradlew buildAndCopyUI``
 ```
+
+### Using hot reload on the UI
+
+In the photon-client directory:
+
+```bash
+pnpm run dev
+```
+
+This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
 
 ### Build and Run PhotonVision
 
@@ -167,36 +171,37 @@ repositories {
 }
 ```
 
+### VSCode Test Runner Extension
+
+With the VSCode [Extension Pack for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack), you can get the Test Runner for Java and Gradle for Java extensions. This lets you easily run specific tests through the IDE:
+
+```{image} assets/vscode-runner-tests.png
+:alt: An image showing how unit tests can be ran in VSCode through the Test Runner for Java extension.
+```
+
+To correctly run PhotonVision tests this way, you must [delegate the tests to Gradle](https://code.visualstudio.com/docs/java/java-build#_delegate-tests-to-gradle). Debugging tests like this will [**not** currently](https://github.com/microsoft/build-server-for-gradle/issues/119) collect outputs.
+
 ### Debugging PhotonVision Running Locally
 
-One way is by running the program using gradle with the {code}`--debug-jvm` flag. Run the program with {code}`./gradlew run --debug-jvm`, and attach to it with VSCode by adding the following to {code}`launch.json`. Note args can be passed with {code}`--args="foobar"`.
+Unit tests can instead be debugged through the ``test`` Gradle task for a specific subproject in VSCode, found in the Gradle tab:
 
-```
-{
-   // Use IntelliSense to learn about possible attributes.
-   // Hover to view descriptions of existing attributes.
-   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-   "version": "0.2.0",
-   "configurations": [
-      {
-            "type": "java",
-            "name": "Attach to Remote Program",
-            "request": "attach",
-            "hostName": "localhost",
-            "port": "5005",
-            "projectName": "photon-core",
-      }
-   ]
-}
+```{image} assets/vscode-gradle-tests.png
+:alt: An image showing how unit tests can be debugged in VSCode through the Gradle for Java extension.
 ```
 
-PhotonVision can also be run using the gradle tasks plugin with {code}`"args": "--debug-jvm"` added to launch.json.
+However, this will run all tests in a subproject.
+
+Similarly, a local instance of PhotonVision can be debugged in the same way using the Gradle ``run`` task. In both cases, additional arguments can be specified:
+
+```{image} assets/vscode-gradle-args.png
+:alt: An image showing how VSCode gradle tasks can specify additional arguments.
+```
 
 ### Debugging PhotonVision Running on a CoProcessor
 
 Set up a VSCode configuration in {code}`launch.json`
 
-```
+```json
 {
    // Use IntelliSense to learn about possible attributes.
    // Hover to view descriptions of existing attributes.
@@ -272,3 +277,9 @@ Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from 
 ```
 ~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```
+
+#### MacOS Builds
+
+MacOS builds are not published to releases as MacOS is not an officially
+supported platform. However, MacOS builds are still available from the MacOS
+build action, which can be found [here](https://github.com/PhotonVision/photonvision/actions/workflows/build.yml).

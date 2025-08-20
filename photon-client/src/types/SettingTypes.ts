@@ -1,5 +1,6 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
 import type { Pose3d } from "@/types/PhotonTrackingTypes";
+import type { WebsocketCameraSettingsUpdate } from "./WebsocketDataTypes";
 
 export interface GeneralSettings {
   version?: string;
@@ -7,21 +8,34 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
-  availableModels: Record<string, string[]>;
+  availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
+  conflictingHostname: boolean;
+  conflictingCameras: string;
+}
+
+export interface ObjectDetectionModelProperties {
+  modelPath: string;
+  nickname: string;
+  labels: string[];
+  resolutionWidth: number;
+  resolutionHeight: number;
+  family: "RKNN" | "RUBIK";
+  version: "YOLOV5" | "YOLOV8" | "YOLOV11";
 }
 
 export interface MetricData {
-  cpuTemp?: string;
-  cpuUtil?: string;
-  cpuMem?: string;
-  gpuMem?: string;
-  ramUtil?: string;
-  gpuMemUtil?: string;
+  cpuTemp?: number;
+  cpuUtil?: number;
   cpuThr?: string;
-  cpuUptime?: string;
-  diskUtilPct?: string;
-  npuUsage?: string;
+  ramMem?: number;
+  ramUtil?: number;
+  gpuMem?: number;
+  gpuMemUtil?: number;
+  diskUtilPct?: number;
+  npuUsage?: number[];
+  ipAddress?: string;
+  uptime?: number;
 }
 
 export enum NetworkConnectionType {
@@ -48,13 +62,58 @@ export interface NetworkSettings {
   setDHCPcommand?: string;
   networkInterfaceNames: NetworkInterfaceType[];
   networkingDisabled: boolean;
-  matchCamerasOnlyByPath: boolean;
 }
 
 export type ConfigurableNetworkSettings = Omit<
   NetworkSettings,
   "canManage" | "networkInterfaceNames" | "networkingDisabled"
 >;
+
+export interface PVCameraInfoBase {
+  /*
+  Huge hack. In Jackson, this is set based on the underlying type -- this
+  then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
+  */
+  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+}
+
+export interface PVUsbCameraInfo {
+  dev: number;
+  name: string;
+  otherPaths: string[];
+  path: string;
+  vendorId: number;
+  productId: number;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+export interface PVCSICameraInfo {
+  baseName: string;
+  path: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+export interface PVFileCameraInfo {
+  path: string;
+  name: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+
+// This camera info will only ever hold one of its members - the others should be undefined.
+export class PVCameraInfo {
+  PVUsbCameraInfo: PVUsbCameraInfo | undefined;
+  PVCSICameraInfo: PVCSICameraInfo | undefined;
+  PVFileCameraInfo: PVFileCameraInfo | undefined;
+}
+
+export interface VsmState {
+  disabledConfigs: WebsocketCameraSettingsUpdate[];
+  allConnectedCameras: PVCameraInfo[];
+}
 
 export interface LightingSettings {
   supported: boolean;
@@ -172,7 +231,9 @@ export interface QuirkyCamera {
   quirks: Record<ValidQuirks, boolean>;
 }
 
-export interface CameraSettings {
+export interface UiCameraConfiguration {
+  cameraPath: string;
+
   nickname: string;
   uniqueName: string;
 
@@ -201,6 +262,10 @@ export interface CameraSettings {
 
   minWhiteBalanceTemp: number;
   maxWhiteBalanceTemp: number;
+
+  matchedCameraInfo: PVCameraInfo;
+  isConnected: boolean;
+  hasConnected: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -208,7 +273,9 @@ export interface CameraSettingsChangeRequest {
   quirksToChange: Record<ValidQuirks, boolean>;
 }
 
-export const PlaceholderCameraSettings: CameraSettings = {
+export const PlaceholderCameraSettings: UiCameraConfiguration = {
+  cameraPath: "/dev/null",
+
   nickname: "Placeholder Camera",
   uniqueName: "Placeholder Name",
   fov: {
@@ -223,17 +290,20 @@ export const PlaceholderCameraSettings: CameraSettings = {
     {
       resolution: { width: 1920, height: 1080 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 0
     },
     {
       resolution: { width: 1280, height: 720 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 1
     },
     {
       resolution: { width: 640, height: 480 },
       fps: 30,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 2
     }
   ],
   completeCalibrations: [
@@ -307,7 +377,18 @@ export const PlaceholderCameraSettings: CameraSettings = {
   minExposureRaw: 1,
   maxExposureRaw: 100,
   minWhiteBalanceTemp: 2000,
-  maxWhiteBalanceTemp: 10000
+  maxWhiteBalanceTemp: 10000,
+  matchedCameraInfo: {
+    PVFileCameraInfo: {
+      name: "Foobar",
+      path: "/dev/foobar",
+      uniquePath: "/dev/foobar2"
+    },
+    PVCSICameraInfo: undefined,
+    PVUsbCameraInfo: undefined
+  },
+  isConnected: true,
+  hasConnected: true
 };
 
 export enum CalibrationBoardTypes {

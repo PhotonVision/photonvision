@@ -11,6 +11,8 @@ modifiableFileExclude {
   \.webp$
   \.ico$
   \.rknn$
+  \.tflite$
   \.svg$
+  \.woff2$
   gradlew
 }

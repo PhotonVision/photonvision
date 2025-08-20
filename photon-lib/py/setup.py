@@ -4,7 +4,9 @@ import subprocess
 from setuptools import find_packages, setup
 
 gitDescribeResult = (
-    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
+    subprocess.check_output(
+        ["git", "describe", "--tags", "--match=v*", "--exclude=*rc*", "--always"]
+    )
     .decode("utf-8")
     .strip()
 )
@@ -18,7 +20,7 @@ m = re.search(
 # which should be PEP440 compliant
 if m:
     versionString = m.group(0)
-    # Hack -- for strings like v2024.1.1, do NOT add matruity/suffix
+    # Hack -- for strings like v2024.1.1, do NOT add maturity/suffix
     if len(m.group(2)) > 0:
         print("using beta group matcher")
         prefix = m.group(1)
@@ -29,7 +31,7 @@ if m:
         split = gitDescribeResult.split("-")
         if len(split) == 3:
             year, commits, sha = split
-            # Chop off leading v from "v2024.1.2", and use "post" for commits to master since
+            # Chop off leading v from "v2024.1.2", and use "post" for commits to main since
             versionString = f"{year[1:]}post{commits}"
             print("using dev release " + versionString)
         else:
@@ -59,11 +61,11 @@ setup(
     version=versionString,
     install_requires=[
         "numpy~=2.1",
-        "wpilib<2026,>=2025.0.0b1",
-        "robotpy-wpimath<2026,>=2025.0.0b1",
-        "robotpy-apriltag<2026,>=2025.0.0b1",
-        "robotpy-cscore<2026,>=2025.0.0b1",
-        "pyntcore<2026,>=2025.0.0b1",
+        "wpilib<2026,>=2025.3.2",
+        "robotpy-wpimath<2026,>=2025.3.2",
+        "robotpy-apriltag<2026,>=2025.3.2",
+        "robotpy-cscore<2026,>=2025.3.2",
+        "pyntcore<2026,>=2025.3.2",
         "opencv-python;platform_machine!='roborio'",
     ],
     description=descriptionStr,
@@ -71,4 +73,7 @@ setup(
     author="Photonvision Development Team",
     long_description="A Pure-python implementation of PhotonLib",
     long_description_content_type="text/markdown",
+    classifiers=[
+        "License :: OSI Approved :: MIT License",
+    ],
 )

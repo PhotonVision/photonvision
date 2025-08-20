@@ -50,41 +50,23 @@ public class FindPolygonPipe
 
     private CVShape getShape(Contour in) {
         int corners = getCorners(in);
-
-        /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
-        meaning any shape not fitting in those predefined shapes must be a custom shape.
-        */
-        if (ContourShape.fromSides(corners) == null) {
-            return new CVShape(in, ContourShape.Custom);
-        }
-        switch (ContourShape.fromSides(corners)) {
-            case Circle:
-                return new CVShape(in, ContourShape.Circle);
-            case Triangle:
-                return new CVShape(in, ContourShape.Triangle);
-            case Quadrilateral:
-                return new CVShape(in, ContourShape.Quadrilateral);
-        }
-
-        return new CVShape(in, ContourShape.Custom);
+        return new CVShape(in, ContourShape.fromSides(corners));
     }
 
     private int getCorners(Contour contour) {
         var approx =
                 contour.getApproxPolyDp(
-                        (100 - params.accuracyPercentage) / 100.0 * Imgproc.arcLength(contour.getMat2f(), true),
+                        (100 - params.accuracyPercentage())
+                                / 100.0
+                                * Imgproc.arcLength(contour.getMat2f(), true),
                         true);
 
         // The height of the resultant approximation is the number of vertices
         return (int) approx.size().height;
     }
 
-    public static class FindPolygonPipeParams {
-        private final double accuracyPercentage;
-
-        // Should be a value between 0-100
-        public FindPolygonPipeParams(double accuracyPercentage) {
-            this.accuracyPercentage = accuracyPercentage;
-        }
-    }
+    /**
+     * @param accuracyPercentage Accuracy percentage, 0-100
+     */
+    public static record FindPolygonPipeParams(double accuracyPercentage) {}
 }

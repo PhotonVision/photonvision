@@ -6,10 +6,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
-defineProps<{
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[];
-}>();
+const value = defineModel<number[]>();
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -42,50 +39,47 @@ const performanceRecommendation = computed<string>(() => {
 </script>
 
 <template>
-  <v-card color="primary" height="100%" style="display: flex; flex-direction: column" dark>
-    <v-row>
-      <v-col class="align-self-center text-no-wrap">
-        <v-card-title>Cameras</v-card-title>
-      </v-col>
-      <v-col class="align-self-center" style="text-align: right; margin-right: 12px; padding-left: 24px">
-        <v-chip
-          label
-          :color="fpsTooLow ? 'error' : 'transparent'"
-          :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-          style="font-size: 1rem; padding: 0; margin: 0"
-        >
-          <span class="pr-1"
-            >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
-          ><span>{{ performanceRecommendation }}</span>
-        </v-chip>
-      </v-col>
-      <v-col
-        class="align-self-center"
-        style="
-          width: min-content;
-          flex-grow: 0;
-          display: flex;
-          justify-content: flex-end;
-          margin-right: 24px;
-          padding: 0;
-        "
+  <v-card color="surface" height="100%" class="d-flex flex-column rounded-12" dark>
+    <v-card-title class="justify-space-between align-center pt-1 pb-1 d-flex">
+      <span>Cameras</span>
+      <v-chip
+        v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
+        label
+        :color="fpsTooLow ? 'error' : 'primary'"
+        style="font-size: 1.1rem; padding: 0; margin: 0"
+        variant="text"
       >
-        <v-switch
-          v-model="driverMode"
-          :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-          label="Driver Mode"
-          style="margin: 0; padding: 0; padding-left: 18px; margin-top: 14px"
-          color="accent"
+        <span class="pr-1">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
+        ><span>{{ performanceRecommendation }}</span>
+      </v-chip>
+      <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
+        <span class="pr-1"> Camera not connected </span>
+      </v-chip>
+      <v-switch
+        v-model="driverMode"
+        :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
+        label="Driver Mode"
+        color="primary"
+        hide-details="auto"
+      />
+    </v-card-title>
+    <v-divider class="ml-3 mr-3" />
+    <v-row class="stream-viewer-container pa-3 align-center">
+      <v-col v-if="value?.includes(0)" class="stream-view">
+        <photon-camera-stream
+          id="input-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
+          stream-type="Raw"
+          style="width: 100%; height: auto"
         />
       </v-col>
-    </v-row>
-    <v-divider style="border-color: white" />
-    <v-row class="stream-viewer-container pa-3">
-      <v-col v-if="value.includes(0)" class="stream-view">
-        <photon-camera-stream id="input-camera-stream" stream-type="Raw" style="width: 100%; height: auto" />
-      </v-col>
-      <v-col v-if="value.includes(1)" class="stream-view">
-        <photon-camera-stream id="output-camera-stream" stream-type="Processed" style="width: 100%; height: auto" />
+      <v-col v-if="value?.includes(1)" class="stream-view">
+        <photon-camera-stream
+          id="output-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
+          stream-type="Processed"
+          style="width: 100%; height: auto"
+        />
       </v-col>
     </v-row>
   </v-card>

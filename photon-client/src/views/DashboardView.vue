@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import CamerasCard from "@/components/dashboard/CamerasCard.vue";
 import CameraAndPipelineSelectCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
 import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -37,11 +41,70 @@ const cameraViewType = computed<number[]>({
     );
   }
 });
+
+const arducamWarningShown = computed<boolean>(() => {
+  return Object.values(useCameraSettingsStore().cameras).some(
+    (c) =>
+      c.cameraQuirks?.quirks?.ArduCamCamera === true &&
+      !(
+        c.cameraQuirks?.quirks?.ArduOV2311Controls === true ||
+        c.cameraQuirks?.quirks?.ArduOV9281Controls === true ||
+        c.cameraQuirks?.quirks?.ArduOV9782Controls === true
+      )
+  );
+});
+
+const conflictingHostnameShown = computed<boolean>(() => {
+  return useSettingsStore().general.conflictingHostname;
+});
+
+const conflictingCameraShown = computed<boolean>(() => {
+  return useSettingsStore().general.conflictingCameras.length > 0;
+});
+
+const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-row no-gutters align="center" justify="center">
+    <v-alert
+      v-if="arducamWarningShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span>
+        Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="conflictingHostnameShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span>
+        Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="conflictingCameraShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span
+        >Conflicting camera name(s) detected! Please change the name(s) of
+        {{ useSettingsStore().general.conflictingCameras }}!
+      </span>
+    </v-alert>
+    <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
       </v-col>
@@ -51,5 +114,42 @@ const cameraViewType = computed<number[]>({
       </v-col>
     </v-row>
     <PipelineConfigCard />
+
+    <!-- TODO - not sure this belongs here -->
+    <v-dialog
+      v-if="useCameraSettingsStore().needsCameraConfiguration"
+      v-model="showCameraSetupDialog"
+      max-width="800"
+      dark
+    >
+      <v-card flat color="surface">
+        <v-card-title>Set up some cameras to get started!</v-card-title>
+        <v-card-text class="pt-0">
+          No cameras activated - head to the
+          <router-link to="/cameraConfigs">camera matching tab</router-link> to set some up!
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
+
+<style scoped>
+a:link {
+  color: rgb(var(--v-theme-buttonActive));
+  background-color: transparent;
+  text-decoration: none;
+}
+a:visited {
+  color: rgb(var(--v-theme-buttonActive));
+  background-color: transparent;
+  text-decoration: none;
+}
+a:hover {
+  background-color: transparent;
+  text-decoration: underline;
+}
+a:active {
+  background-color: transparent;
+  text-decoration: none;
+}
+</style>

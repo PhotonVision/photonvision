@@ -24,9 +24,12 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PhotonVersionTest {
@@ -50,10 +53,15 @@ public class PhotonVersionTest {
 
     @Test
     public void testVersion() {
-        Assertions.assertTrue(versionMatches("v2021.1.6", "v2021.1.6"));
-        Assertions.assertTrue(versionMatches("dev-v2021.1.6", "v2021.1.6"));
-        Assertions.assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
-        Assertions.assertFalse(versionMatches("", "v2021.1.6"));
-        Assertions.assertFalse(versionMatches("v2021.1.6", ""));
+        assertTrue(versionMatches("v2021.1.6", "v2021.1.6"));
+        assertTrue(versionMatches("dev-v2021.1.6", "v2021.1.6"));
+        assertTrue(versionMatches("dev-v2021.1.6-5-gca49ea50", "v2021.1.6"));
+        assertFalse(versionMatches("", "v2021.1.6"));
+        assertFalse(versionMatches("v2021.1.6", ""));
+    }
+
+    @Test
+    public void testNominalDeps() {
+        assertDoesNotThrow(PhotonCamera::verifyDependencies);
     }
 }

@@ -1,28 +1,21 @@
 name: Lint and Format
 
 on:
-  # Run on pushes to master and pushed tags, and on pull requests against master, but ignore the docs folder
+  # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ master ]
-    tags:
-      - 'v*'
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
   pull_request:
-    branches: [ master ]
-    paths:
-      - '**'
-      - '!docs/**'
-      - '.github/**'
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
 jobs:
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
   wpiformat:
     name: "wpiformat"
     runs-on: ubuntu-22.04
@@ -32,13 +25,13 @@ jobs:
         run: |
           git fetch --prune --unshallow
           git checkout -b pr
-          git branch -f master origin/master
+          git branch -f main origin/main
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
           python-version: 3.11
       - name: Install wpiformat
-        run: pip3 install wpiformat==2024.45
+        run: pip3 install wpiformat==2025.34
       - name: Run
         run: wpiformat
       - name: Check output
@@ -53,6 +46,7 @@ jobs:
         if: ${{ failure() }}
   javaformat:
     name: "Java Formatting"
+    needs: [validation]
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -73,16 +67,22 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm i --frozen-lockfile
       - name: Check Linting
-        run: npm run lint-ci
+        run: pnpm run lint-ci
       - name: Check Formatting
-        run: npm run format-ci
+        run: pnpm run format-ci
   server-index:
     name: "Check server index.html not changed"
     runs-on: ubuntu-22.04
@@ -92,6 +92,6 @@ jobs:
         run: |
           git fetch --prune --unshallow
           git checkout -b pr
-          git branch -f master origin/master
+          git branch -f main origin/main
       - name: Check index.html not changed
-        run: git --no-pager diff --exit-code origin/master photon-server/src/main/resources/web/index.html
+        run: git --no-pager diff --exit-code origin/main photon-server/src/main/resources/web/index.html

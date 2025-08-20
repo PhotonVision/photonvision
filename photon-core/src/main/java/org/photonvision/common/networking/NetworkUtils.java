@@ -18,11 +18,12 @@
 package org.photonvision.common.networking;
 
 import java.io.IOException;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -52,30 +53,32 @@ public class NetworkUtils {
         }
     }
 
-    public static class NMDeviceInfo {
+    /**
+     * Contains data about network devices retrieved from "nmcli device show"
+     *
+     * @param connName The human-readable name used by "nmcli con"
+     * @param devName The underlying device name, used by dhclient
+     * @param nmType The NetworkManager device type
+     */
+    public static record NMDeviceInfo(String connName, String devName, NMType nmType) {
         public NMDeviceInfo(String c, String d, String type) {
-            connName = c;
-            devName = d;
-            nmType = NMType.typeForString(type);
-        }
-
-        public final String connName; // Human-readable name used by "nmcli con"
-        public final String devName; // underlying device, used by dhclient
-        public final NMType nmType;
-
-        @Override
-        public String toString() {
-            return "NMDeviceInfo [connName="
-                    + connName
-                    + ", devName="
-                    + devName
-                    + ", nmType="
-                    + nmType
-                    + "]";
+            this(c, d, NMType.typeForString(type));
         }
     }
 
-    private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
+    public static boolean nmcliIsInstalled() {
+        var shell = new ShellExec(true, false);
+        try {
+            shell.executeBashCommand("nmcli --version");
+
+            return shell.getExitCode() == 0;
+        } catch (IOException e) {
+            logger.error("Could not query nmcli version", e);
+            return false;
+        }
+    }
+
+    private static List<NMDeviceInfo> allInterfaces = null;
     private static long lastReadTimestamp = 0;
 
     public static List<NMDeviceInfo> getAllInterfaces() {
@@ -85,56 +88,68 @@ public class NetworkUtils {
 
         var ret = new ArrayList<NMDeviceInfo>();
 
-        if (!Platform.isLinux()) {
-            // Can only determine interface name on Linux, give up
-            return ret;
-        }
-
-        try {
-            var shell = new ShellExec(true, false);
-            shell.executeBashCommand(
-                    "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show");
-            String out = shell.getOutput();
-            if (out == null) {
-                return new ArrayList<>();
+        if (Platform.isLinux()) {
+            String out = null;
+            try {
+                var shell = new ShellExec(true, false);
+                shell.executeBashCommand(
+                        "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, false);
+                out = shell.getOutput();
+            } catch (IOException e) {
+                logger.error("IO Exception occured when calling nmcli to get network interfaces!", e);
             }
-            Pattern pattern =
-                    Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
-            Matcher matcher = pattern.matcher(out);
-            while (matcher.find()) {
-                if (!matcher.group(2).equals("lo")) {
-                    // only include non-loopback devices
-                    ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+            if (out != null) {
+                Pattern pattern =
+                        Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+                Matcher matcher = pattern.matcher(out);
+                while (matcher.find()) {
+                    if (!matcher.group(2).equals("lo")) {
+                        // only include non-loopback devices
+                        ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+                    }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Could not get active network interfaces!", e);
         }
-
-        logger.debug("Found network interfaces: " + ret);
-
-        allInterfaces = ret;
+        if (!ret.equals(allInterfaces)) {
+            if (ret.isEmpty()) {
+                logger.error("Unable to identify network interfaces!");
+            } else {
+                logger.debug("Found network interfaces: " + ret);
+            }
+            allInterfaces = ret;
+        }
         return ret;
     }
 
+    /**
+     * Returns an immutable list of active network interfaces.
+     *
+     * @return The list.
+     */
     public static List<NMDeviceInfo> getAllActiveInterfaces() {
         // Seems like if an interface exists but isn't actually connected, the connection name will be
         // an empty string. Check here and only return connections with non-empty names
-        return getAllInterfaces().stream()
-                .filter(it -> !it.connName.trim().isEmpty())
-                .collect(Collectors.toList());
+        return getAllInterfaces().stream().filter(it -> !it.connName.trim().isEmpty()).toList();
     }
 
+    /**
+     * Returns an immutable list of all wired network interfaces.
+     *
+     * @return The list.
+     */
     public static List<NMDeviceInfo> getAllWiredInterfaces() {
         return getAllInterfaces().stream()
                 .filter(it -> it.nmType.equals(NMType.NMTYPE_ETHERNET))
-                .collect(Collectors.toList());
+                .toList();
     }
 
+    /**
+     * Returns an immutable list of all wired and active network interfaces.
+     *
+     * @return The list.
+     */
     public static List<NMDeviceInfo> getAllActiveWiredInterfaces() {
-        return getAllWiredInterfaces().stream()
-                .filter(it -> !it.connName.isBlank())
-                .collect(Collectors.toList());
+        return getAllWiredInterfaces().stream().filter(it -> !it.connName.isBlank()).toList();
     }
 
     public static NMDeviceInfo getNMinfoForConnName(String connName) {
@@ -156,15 +171,95 @@ public class NetworkUtils {
         return null;
     }
 
+    public static String getActiveConnection(String devName) {
+        var shell = new ShellExec(true, true);
+        try {
+            shell.executeBashCommand(
+                    "nmcli -g GENERAL.CONNECTION dev show \"" + devName + "\"", true, false);
+            return shell.getOutput().strip();
+        } catch (Exception e) {
+            logger.error("Exception from nmcli!");
+        }
+        return "";
+    }
+
     public static boolean connDoesNotExist(String connName) {
         var shell = new ShellExec(true, true);
         try {
-            // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
-            shell.executeBashCommand("nmcli -f GENERAL.STATE connection show \"" + connName + "\"");
+            shell.executeBashCommand(
+                    "nmcli -g GENERAL.STATE connection show \"" + connName + "\"", true, false);
             return (shell.getExitCode() == 10);
         } catch (Exception e) {
             logger.error("Exception from nmcli!");
         }
         return false;
+    }
+
+    public static String getIPAddresses(String iFaceName) {
+        if (iFaceName == null || iFaceName.isBlank()) {
+            return "";
+        }
+        List<String> addresses = new ArrayList<String>();
+        try {
+            var iFace = NetworkInterface.getByName(iFaceName);
+            if (iFace != null && iFace.isUp()) {
+                for (var addr : iFace.getInterfaceAddresses()) {
+                    var addrStr = addr.getAddress().toString();
+                    if (addrStr.startsWith("/")) {
+                        addrStr = addrStr.substring(1);
+                    }
+                    addrStr = addrStr + "/" + addr.getNetworkPrefixLength();
+                    addresses.add(addrStr);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return String.join(", ", addresses);
+    }
+
+    public static String getMacAddress() {
+        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
+            // This is a silly heuristic to find a network interface that PV might be using. It looks like
+            // it works pretty well, but Hyper-V adapters still show up in the list. But we're using MAC
+            // address as a semi-unique identifier, not as a source of truth, so this should be fine.
+            // Hyper-V adapters seem to show up near the end of the list anyways, so it's super likely
+            // we'll find the right adapter anyways
+            try {
+                for (var iface : NetworkInterface.networkInterfaces().toList()) {
+                    if (iface.isUp() && !iface.isVirtual() && !iface.isLoopback()) {
+                        byte[] mac = iface.getHardwareAddress();
+                        if (mac == null) {
+                            logger.error("No MAC address found for " + iface.getDisplayName());
+                        }
+                        return formatMacAddress(mac);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Error getting MAC address:", e);
+            }
+            return "";
+        }
+        try {
+            byte[] mac = NetworkInterface.getByName(config.networkManagerIface).getHardwareAddress();
+            if (mac == null) {
+                logger.error("No MAC address found for " + config.networkManagerIface);
+                return "";
+            }
+            return formatMacAddress(mac);
+        } catch (Exception e) {
+            logger.error("Error getting MAC address for " + config.networkManagerIface, e);
+            return "";
+        }
+    }
+
+    private static String formatMacAddress(byte[] mac) {
+        StringBuilder sb = new StringBuilder(17);
+        sb.append(String.format("%02X", mac[0]));
+        for (int i = 1; i < mac.length; i++) {
+            sb.append(String.format("-%02X", mac[i]));
+        }
+        return sb.toString();
     }
 }

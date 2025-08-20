@@ -27,8 +27,10 @@ public class UINetConfig extends NetworkConfig {
         super(config);
         this.networkInterfaceNames = networkInterfaceNames;
         this.networkingDisabled = networkingDisabled;
+        this.canManage = this.deviceCanManageNetwork();
     }
 
     public List<NMDeviceInfo> networkInterfaceNames;
     public boolean networkingDisabled;
+    public boolean canManage;
 }

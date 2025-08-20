@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -25,8 +26,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -34,6 +33,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.FrameProvider;
@@ -90,6 +90,9 @@ public class VisionModuleManagerTest {
         public void remakeSettables() {
             return;
         }
+
+        @Override
+        public void release() {}
     }
 
     private static class TestSettables extends VisionSourceSettables {
@@ -166,7 +169,9 @@ public class VisionModuleManagerTest {
     public void setupManager() {
         ConfigManager.getInstance().load();
 
-        var conf = new CameraConfiguration("Foo", "Bar");
+        var vmm = new VisionModuleManager();
+
+        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
         var ffp =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
@@ -174,17 +179,17 @@ public class VisionModuleManagerTest {
 
         var testSource = new TestSource(ffp, conf);
 
-        var modules = VisionModuleManager.getInstance().addSources(List.of(testSource));
+        var module = vmm.addSource(testSource);
         var module0DataConsumer = new TestDataConsumer();
 
-        VisionModuleManager.getInstance().visionModules.get(0).addResultConsumer(module0DataConsumer);
+        module.addResultConsumer(module0DataConsumer);
 
-        modules.forEach(VisionModule::start);
+        module.start();
 
         sleep(1500);
 
-        Assertions.assertNotNull(module0DataConsumer.result);
-        printTestResults(module0DataConsumer.result);
+        assertNotNull(module0DataConsumer.result);
+        TestUtils.printTestResults(module0DataConsumer.result);
     }
 
     @Test
@@ -193,7 +198,7 @@ public class VisionModuleManagerTest {
 
         var vmm = new VisionModuleManager();
 
-        var conf = new CameraConfiguration("Foo", "Bar");
+        var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo", "Bar"));
         conf.streamIndex = 1;
         var ffp =
                 new FileFrameProvider(
@@ -201,7 +206,7 @@ public class VisionModuleManagerTest {
                         TestUtils.WPI2019Image.FOV);
         var testSource = new TestSource(ffp, conf);
 
-        var conf2 = new CameraConfiguration("Foo2", "Bar");
+        var conf2 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo2", "Bar2"));
         conf2.streamIndex = 0;
         var ffp2 =
                 new FileFrameProvider(
@@ -209,7 +214,7 @@ public class VisionModuleManagerTest {
                         TestUtils.WPI2019Image.FOV);
         var testSource2 = new TestSource(ffp2, conf2);
 
-        var conf3 = new CameraConfiguration("Foo3", "Bar");
+        var conf3 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Foo3", "Bar3"));
         conf3.streamIndex = 0;
         var ffp3 =
                 new FileFrameProvider(
@@ -218,25 +223,21 @@ public class VisionModuleManagerTest {
         var testSource3 = new TestSource(ffp3, conf3);
 
         // Arducam OV9281 UC844 raspberry pi test.
-        var conf4 = new CameraConfiguration("Left", "dev/video1");
+        var conf4 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Left", "/dev/video1"));
         USBCameraSource usbSimulation = new MockUsbCameraSource(conf4, 0x6366, 0x0c45);
 
-        var conf5 = new CameraConfiguration("Right", "dev/video2");
+        var conf5 = new CameraConfiguration(PVCameraInfo.fromFileInfo("Right", "/dev/video2"));
         USBCameraSource usbSimulation2 = new MockUsbCameraSource(conf5, 0x6366, 0x0c45);
 
         var modules =
-                vmm.addSources(
-                        List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2));
+                List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
+                        .map(vmm::addSource)
+                        .toList();
 
         System.out.println(
                 Arrays.toString(
-                        modules.stream()
-                                .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
-                                .toArray()));
-        var idxs =
-                modules.stream()
-                        .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
-                        .collect(Collectors.toList());
+                        modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
+        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
         assertTrue(usbSimulation.equals(usbSimulation));
         assertTrue(!usbSimulation.equals(usbSimulation2));
@@ -246,13 +247,6 @@ public class VisionModuleManagerTest {
         assertTrue(idxs.contains(2));
         assertTrue(idxs.contains(3));
         assertTrue(idxs.contains(4));
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.print(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
     }
 
     private void sleep(int millis) {

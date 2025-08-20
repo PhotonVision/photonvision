@@ -78,7 +78,11 @@ This diagram shows how to use the recommended regulator to power a coprocessor.
 
 Pigtails can be purchased from many sources we recommend [(USB C)](https://ctr-electronics.com/products/usb-type-c-wire-breakout?_pos=19&_sid=bf06b6a6b&_ss=r) [(Micro USB)](https://ctr-electronics.com/products/usb-micro-power-wire-breakout?pr_prod_strat=e5_desc&pr_rec_id=10bf36ce7&pr_rec_pid=7863771070637&pr_ref_pid=7863771103405&pr_seq=uniform)
 
-## Coprocessor with Passive POE (Pi with SnakeEyes and Limelight)
+## Limelight
+
+Follow the wiring instructions located in the [Limelight Documentation](https://docs.limelightvision.io/) for your Limelight model.
+
+## Coprocessor with Passive POE (Pi with SnakeEyes)
 
 1. Plug the [passive POE injector](https://www.revrobotics.com/rev-11-1210/) into the coprocessor and wire it to PDP/PDH (NOT the VRM).
 2. Add a breaker to relevant slot in your PDP/PDH

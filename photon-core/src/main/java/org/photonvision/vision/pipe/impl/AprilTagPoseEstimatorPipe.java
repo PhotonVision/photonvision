@@ -57,8 +57,8 @@ public class AprilTagPoseEstimatorPipe
         Calib3d.undistortImagePoints(
                 temp,
                 temp,
-                params.calibration.getCameraIntrinsicsMat(),
-                params.calibration.getDistCoeffsMat());
+                params.calibration().getCameraIntrinsicsMat(),
+                params.calibration().getDistCoeffsMat());
 
         // Save out undistorted corners
         corners = temp.toArray();
@@ -82,13 +82,13 @@ public class AprilTagPoseEstimatorPipe
                         in.getCenterY(),
                         fixedCorners);
 
-        return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters);
+        return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters());
     }
 
     @Override
     public void setParams(AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams newParams) {
-        if (this.params == null || !this.params.equals(newParams)) {
-            m_poseEstimator.setConfig(newParams.config);
+        if (this.params == null || !this.params.config().equals(newParams.config())) {
+            m_poseEstimator.setConfig(newParams.config());
         }
 
         super.setParams(newParams);
@@ -99,37 +99,6 @@ public class AprilTagPoseEstimatorPipe
         temp.release();
     }
 
-    public static class AprilTagPoseEstimatorPipeParams {
-        final AprilTagPoseEstimator.Config config;
-        final CameraCalibrationCoefficients calibration;
-        final int nIters;
-
-        public AprilTagPoseEstimatorPipeParams(
-                Config config, CameraCalibrationCoefficients cal, int nIters) {
-            this.config = config;
-            this.nIters = nIters;
-            this.calibration = cal;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((config == null) ? 0 : config.hashCode());
-            result = prime * result + nIters;
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            AprilTagPoseEstimatorPipeParams other = (AprilTagPoseEstimatorPipeParams) obj;
-            if (config == null) {
-                if (other.config != null) return false;
-            } else if (!config.equals(other.config)) return false;
-            return nIters == other.nIters;
-        }
-    }
+    public static record AprilTagPoseEstimatorPipeParams(
+            Config config, CameraCalibrationCoefficients calibration, int nIters) {}
 }
