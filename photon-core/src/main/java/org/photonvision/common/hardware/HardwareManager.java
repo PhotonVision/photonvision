@@ -54,9 +54,6 @@ public class HardwareManager {
                 .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
-
-        // Start hardware metrics thread (Disabled until implemented)
-        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     private void onJvmExit() {
