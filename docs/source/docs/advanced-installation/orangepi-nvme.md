@@ -6,6 +6,10 @@ microSD cards are not the best storage solution for the environments FRC robots 
 In particular, they are not secured to the Orange Pi very well.
 Teams have had the microSD card pop out during competition, disabling their vision processor.
 
+:::{important}
+Industrial grade SD cards, like the one mentioned in {ref}`Common Hardware Setups <docs/quick-start/common-setups:SD Cards>`, still work excellently. You do not need to use an NVMe SSD.
+:::
+
 The Orange Pi supports an M.2 SSD that can be secured with a screw.
 The two supported drive sizes are _2230_ and _2242_.
 The mounting hole is 3.5 mm in diameter, so an M3 or #4 bolt will fit well.
@@ -28,7 +32,7 @@ You can access the console directly by plugging in a keyboard to a USB port and 
 
 ## Installing PhotonVision on an SSD
 
-The following instructions are taken from the `ubuntu-rockchip` [wiki](https://github.com/Joshua-Riek/ubuntu-rockchip/wiki/Ubuntu-24.04-LTS#install-u-boot-to-the-spi-flash). These only
+The following instructions are taken from the `ubuntu-rockchip` [wiki](https://github.com/Joshua-Riek/ubuntu-rockchip/wiki/Ubuntu-24.04-LTS#install-u-boot-to-the-spi-flash).
 
 ### 0. Install the SSD into your Orange Pi
 
@@ -44,6 +48,8 @@ Booting directly from a USB or NVMe requires flashing U-Boot to the SPI, simply 
 ```bash
 sudo u-boot-install-mtd
 ```
+
+This enables booting off an NVMe SSD. Once this step is complete, you can simply image an NVMe SSD with a PhotonVision image using something like a USB M.2 adapter, and install the SSD onto the Orange Pi without needing the following steps. If you do not have a way to image an NVMe SSD, read on to copy the image on the microSD card to the SSD.
 
 ### 2. Install PhotonVision onto an NVMe from Linux
 
