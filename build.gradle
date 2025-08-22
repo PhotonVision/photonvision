@@ -11,7 +11,6 @@ plugins {
     id "org.ysb33r.doxygen" version "1.0.4" apply false
     id 'com.gradleup.shadow' version '8.3.4' apply false
     id "com.github.node-gradle.node" version "7.0.1" apply false
-    id "org.hidetake.ssh" version "2.11.2" apply false
 }
 
 allprojects {
