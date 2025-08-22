@@ -84,7 +84,7 @@ public class USBCameraSource extends VisionSource {
         }
 
         if (getCameraConfiguration().cameraQuirks.hasQuirks()) {
-            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks);
+            logger.info("Quirky camera detected: " + getCameraConfiguration().cameraQuirks.baseName);
         }
 
         var cameraBroken = getCameraConfiguration().cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken);
@@ -147,6 +147,7 @@ public class USBCameraSource extends VisionSource {
             logger.debug("Using Arducam OV9782 Settables");
             settables = new ArduOV9782CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.InnoOV9281Controls)) {
+            logger.debug("Using Innovision OV9782 Settables");
             settables = new InnoOV9281CameraSettables(config, camera);
         } else if (quirks.hasQuirk(CameraQuirk.See3Cam_24CUG)) {
             settables = new See3Cam24CUGSettables(config, camera);

@@ -88,5 +88,14 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
+    <pv-switch
+      v-model="currentPipelineSettings.cudaAcceleration"
+      :switch-cols="interactiveCols"
+      label="CUDA Acceleration"
+      tooltip="Use CUDA acceleration for AprilTag detection, requires a compatible NVIDIA GPU and the CUDA version of OpenCV"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ cudaAcceleration: value }, false)
+      "
+    />
   </div>
 </template>
