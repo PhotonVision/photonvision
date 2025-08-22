@@ -44,7 +44,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         targetModel = TargetModel.kAprilTag6p5in_36h11;
         cameraExposureRaw = 20;
         cameraAutoExposure = false;
-        ledMode = false;
     }
 
     @Override

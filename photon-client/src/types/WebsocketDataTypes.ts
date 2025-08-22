@@ -1,7 +1,6 @@
 import type {
   CameraCalibrationResult,
   GeneralSettings,
-  LightingSettings,
   LogLevel,
   MetricData,
   NetworkSettings,
@@ -20,7 +19,6 @@ export interface WebsocketLogMessage {
 }
 export interface WebsocketSettingsUpdate {
   general: Required<GeneralSettings>;
-  lighting: Required<LightingSettings>;
   networkSettings: NetworkSettings;
   atfl: AprilTagFieldLayout;
 }

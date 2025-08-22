@@ -137,7 +137,7 @@ public class ConfigTest {
     @Test
     public void testJacksonHandlesOldVersions() throws IOException {
         var str =
-                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
+                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[]}";
         File tempFile = File.createTempFile("test", ".json");
         tempFile.deleteOnExit();
         var writer = new FileWriter(tempFile);
@@ -153,7 +153,7 @@ public class ConfigTest {
     @Test
     public void testJacksonAddUSBVIDPID() throws IOException {
         var str =
-                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"usbVID\":3, \"usbPID\":4, \"cameraLEDs\":[]}";
+                "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"usbVID\":3, \"usbPID\":4}";
         File tempFile = File.createTempFile("test", ".json");
         tempFile.deleteOnExit();
         var writer = new FileWriter(tempFile);

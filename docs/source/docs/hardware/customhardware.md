@@ -2,34 +2,9 @@
 
 ## Configuration
 
-By default, PhotonVision attempts to make minimal assumptions of the hardware it runs on. However, it may be configured to enable custom LED control, branding, and other functionality.
+By default, PhotonVision attempts to make minimal assumptions of the hardware it runs on. However, it may be configured to enable branding and other functionality.
 
 `hardwareConfig.json` is the location for this configuration. It is included when settings are exported, and can be uploaded as part of a .zip, or on its own.
-
-## LED Support
-
-For Raspberry-Pi based hardware, PhotonVision can use [PiGPIO](https://abyz.me.uk/rpi/pigpio/) to control IO pins. The mapping of which pins control which LED's is part of the hardware config. The pins are active-high: set high when LED's are commanded on, and set low when commanded off.
-
-```{eval-rst}
-.. tab-set-code::
-   .. code-block:: json
-
-      {
-        "ledPins" : [ 13 ],
-        "ledSetCommand" : "",
-        "ledsCanDim" : true,
-        "ledPWMRange" : [ 0, 100 ],
-        "ledPWMSetRange" : "",
-        "ledPWMFrequency" : 0,
-        "ledDimCommand" : "",
-        "ledBlinkCommand" : "",
-        "statusRGBPins" : [ ],
-      }
-```
-
-:::{note}
-No hardware boards with status RGB LED pins or non-dimming LED's have been tested yet. Please reach out to the development team if these features are desired, they can assist with configuration and testing.
-:::
 
 ## Hardware Interaction Commands
 
@@ -100,15 +75,6 @@ Here is a complete example `hardwareConfig.json`:
         "deviceName" : "Blinky McBlinkface",
         "deviceLogoPath" : "",
         "supportURL" : "https://www.youtube.com/watch?v=b-CvLWbfZhU",
-        "ledPins" : [2, 13],
-        "ledSetCommand" : "",
-        "ledsCanDim" : true,
-        "ledPWMRange" : [ 0, 100 ],
-        "ledPWMSetRange" : "",
-        "ledPWMFrequency" : 0,
-        "ledDimCommand" : "",
-        "ledBlinkCommand" : "",
-        "statusRGBPins" : [ ],
         "cpuTempCommand" : "",
         "cpuMemoryCommand" : "",
         "cpuUtilCommand" : "",

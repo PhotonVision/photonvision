@@ -186,8 +186,6 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetIntegerTopic("pipelineIndexRequest").Publish()),
       pipelineIndexSub(
           rootTable->GetIntegerTopic("pipelineIndexState").Subscribe(0)),
-      ledModePub(mainTable->GetIntegerTopic("ledMode").Publish()),
-      ledModeSub(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
       cameraIntrinsicsSubscriber(
           rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
@@ -337,14 +335,6 @@ void PhotonCamera::SetPipelineIndex(int index) { pipelineIndexPub.Set(index); }
 
 int PhotonCamera::GetPipelineIndex() const {
   return static_cast<int>(pipelineIndexSub.Get());
-}
-
-LEDMode PhotonCamera::GetLEDMode() const {
-  return static_cast<LEDMode>(static_cast<int>(ledModeSub.Get()));
-}
-
-void PhotonCamera::SetLEDMode(LEDMode mode) {
-  ledModePub.Set(static_cast<int>(mode));
 }
 
 const std::string_view PhotonCamera::GetCameraName() const {
