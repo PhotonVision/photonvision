@@ -82,8 +82,16 @@ deploy {
                     } else {
                         address = "photonvision.local"
                     }
-                    user = "pi"
-                    password = "raspberry"
+                    if (project.hasProperty('tgtUser')) {
+                        user = tgtUser
+                    } else {
+                        user = "pi"
+                    }
+                    if (project.hasProperty('tgtPw')) {
+                        password = tgtPw
+                    } else {
+                        password = "raspberry"
+                    }
                 }
             }
             artifacts {
