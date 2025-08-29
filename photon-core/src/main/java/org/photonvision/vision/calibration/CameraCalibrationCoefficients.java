@@ -116,6 +116,8 @@ public class CameraCalibrationCoefficients implements Releasable {
         double p1 = getDistCoeffsMat().get(0, 2)[0];
         double p2 = getDistCoeffsMat().get(0, 3)[0];
 
+        Size rotatedImageSize = null;
+
         // A bunch of horrifying opaque rotation black magic. See image-rotation.md for more details.
         switch (rotation) {
             case DEG_0:
@@ -136,6 +138,9 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, -p1);
 
+                // The rotated image size is the same as the unrotated image size, but the width and height
+                // are flipped
+                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
                 break;
             case DEG_180_CCW:
                 // CX
@@ -147,6 +152,9 @@ public class CameraCalibrationCoefficients implements Releasable {
                 rotatedDistCoeffs.put(0, 2, -p1);
                 // P2
                 rotatedDistCoeffs.put(0, 3, -p2);
+
+                // The rotated image size is the same as the unrotated image size
+                rotatedImageSize = unrotatedImageSize;
                 break;
             case DEG_90_CCW:
                 // FX
@@ -164,6 +172,9 @@ public class CameraCalibrationCoefficients implements Releasable {
                 // P2
                 rotatedDistCoeffs.put(0, 3, p1);
 
+                // The rotated image size is the same as the unrotated image size, but the width and height
+                // are flipped
+                rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
                 break;
         }
 
@@ -173,8 +184,6 @@ public class CameraCalibrationCoefficients implements Releasable {
 
         rotatedIntrinsics.release();
         rotatedDistCoeffs.release();
-
-        var rotatedImageSize = new Size(unrotatedImageSize.height, unrotatedImageSize.width);
 
         return new CameraCalibrationCoefficients(
                 rotatedImageSize,
@@ -189,7 +198,7 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonIgnore
     public Mat getCameraIntrinsicsMat() {
-        return cameraIntrinsics.getAsMat();
+        return cameraIntrinsics.getAsMatOfDouble();
     }
 
     @JsonIgnore

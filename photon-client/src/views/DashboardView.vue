@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import CamerasCard from "@/components/dashboard/CamerasCard.vue";
 import CameraAndPipelineSelectCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
 import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
 import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings } from "@/types/SettingTypes";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -39,14 +42,6 @@ const cameraViewType = computed<number[]>({
   }
 });
 
-// TODO - deduplicate with needsCamerasConfigured
-const warningShown = computed<boolean>(() => {
-  return (
-    Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    useCameraSettingsStore().cameras["Placeholder Name"] === PlaceholderCameraSettings
-  );
-});
-
 const arducamWarningShown = computed<boolean>(() => {
   return Object.values(useCameraSettingsStore().cameras).some(
     (c) =>
@@ -58,24 +53,58 @@ const arducamWarningShown = computed<boolean>(() => {
       )
   );
 });
+
+const conflictingHostnameShown = computed<boolean>(() => {
+  return useSettingsStore().general.conflictingHostname;
+});
+
+const conflictingCameraShown = computed<boolean>(() => {
+  return useSettingsStore().general.conflictingCameras.length > 0;
+});
+
+const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-banner
+    <v-alert
       v-if="arducamWarningShown"
-      v-model="arducamWarningShown"
-      rounded
-      color="error"
-      dark
       class="mb-3"
+      color="error"
+      density="compact"
       icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span>
+        Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="conflictingHostnameShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span>
+        Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="conflictingCameraShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
     >
       <span
-        >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+        >Conflicting camera name(s) detected! Please change the name(s) of
+        {{ useSettingsStore().general.conflictingCameras }}!
       </span>
-    </v-banner>
-    <v-row no-gutters align="center" justify="center">
+    </v-alert>
+    <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
       </v-col>
@@ -87,11 +116,17 @@ const arducamWarningShown = computed<boolean>(() => {
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog v-if="warningShown" v-model="warningShown" :persistent="false" max-width="800" dark>
-      <v-card dark flat color="primary">
-        <v-card-title>Setup some cameras to get started!</v-card-title>
-        <v-card-text>
-          No cameras activated - head to the <a href="#/cameraConfigs">Camera matching tab</a> to set some up!
+    <v-dialog
+      v-if="useCameraSettingsStore().needsCameraConfiguration"
+      v-model="showCameraSetupDialog"
+      max-width="800"
+      dark
+    >
+      <v-card flat color="surface">
+        <v-card-title>Set up some cameras to get started!</v-card-title>
+        <v-card-text class="pt-0">
+          No cameras activated - head to the
+          <router-link to="/cameraConfigs">camera matching tab</router-link> to set some up!
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -100,23 +135,20 @@ const arducamWarningShown = computed<boolean>(() => {
 
 <style scoped>
 a:link {
-  color: #ffd843;
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }
 a:visited {
-  color: #ffd843;
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }
 a:hover {
-  color: pink;
   background-color: transparent;
   text-decoration: underline;
 }
-
 a:active {
-  color: yellow;
   background-color: transparent;
   text-decoration: none;
 }

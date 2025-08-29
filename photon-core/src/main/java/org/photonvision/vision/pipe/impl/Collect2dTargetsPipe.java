@@ -41,12 +41,12 @@ public class Collect2dTargetsPipe
 
         var calculationParams =
                 new TrackedTarget.TargetCalculationParameters(
-                        params.targetOrientation == TargetOrientation.Landscape,
-                        params.targetOffsetPointEdge,
-                        params.robotOffsetPointMode,
-                        params.robotOffsetSinglePoint,
-                        params.dualOffsetValues,
-                        params.frameStaticProperties);
+                        params.targetOrientation() == TargetOrientation.Landscape,
+                        params.targetOffsetPointEdge(),
+                        params.robotOffsetPointMode(),
+                        params.robotOffsetSinglePoint(),
+                        params.dualOffsetValues(),
+                        params.frameStaticProperties());
 
         for (PotentialTarget target : in) {
             targets.add(new TrackedTarget(target, calculationParams, target.shape));
@@ -55,27 +55,11 @@ public class Collect2dTargetsPipe
         return targets;
     }
 
-    public static class Collect2dTargetsParams {
-        private final RobotOffsetPointMode robotOffsetPointMode;
-        private final Point robotOffsetSinglePoint;
-        private final DualOffsetValues dualOffsetValues;
-        private final TargetOffsetPointEdge targetOffsetPointEdge;
-        private final TargetOrientation targetOrientation;
-        private final FrameStaticProperties frameStaticProperties;
-
-        public Collect2dTargetsParams(
-                RobotOffsetPointMode robotOffsetPointMode,
-                Point robotOffsetSinglePoint,
-                DualOffsetValues dualOffsetValues,
-                TargetOffsetPointEdge targetOffsetPointEdge,
-                TargetOrientation orientation,
-                FrameStaticProperties frameStaticProperties) {
-            this.frameStaticProperties = frameStaticProperties;
-            this.robotOffsetPointMode = robotOffsetPointMode;
-            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
-            this.dualOffsetValues = dualOffsetValues;
-            this.targetOffsetPointEdge = targetOffsetPointEdge;
-            targetOrientation = orientation;
-        }
-    }
+    public static record Collect2dTargetsParams(
+            RobotOffsetPointMode robotOffsetPointMode,
+            Point robotOffsetSinglePoint,
+            DualOffsetValues dualOffsetValues,
+            TargetOffsetPointEdge targetOffsetPointEdge,
+            TargetOrientation targetOrientation,
+            FrameStaticProperties frameStaticProperties) {}
 }

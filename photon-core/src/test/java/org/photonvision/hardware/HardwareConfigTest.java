@@ -17,11 +17,11 @@
 
 package org.photonvision.hardware;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -34,11 +34,10 @@ public class HardwareConfigTest {
             System.out.println("Loading Hardware configs...");
             var config =
                     new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
-            assertEquals(config.deviceName, "PhotonVision");
-            assertEquals(config.deviceLogoPath, "photonvision.png");
-            assertEquals(config.supportURL, "https://support.photonvision.com");
-            Assertions.assertArrayEquals(
-                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
+            assertEquals(config.deviceName(), "PhotonVision");
+            assertEquals(config.deviceLogoPath(), "photonvision.png");
+            assertEquals(config.supportURL(), "https://support.photonvision.com");
+            assertArrayEquals(config.ledPins().stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
             CustomGPIO.setConfig(config);
 
         } catch (IOException e) {

@@ -15,6 +15,11 @@ import ApriltagControlCard from "@/components/settings/ApriltagControlCard.vue";
     <NetworkingCard />
     <ObjectDetectionCard v-if="useSettingsStore().general.supportedBackends.length > 0" />
     <LightingControlCard v-if="useSettingsStore().lighting.supported" />
-    <ApriltagControlCard />
+    <Suspense>
+      <!-- Allows us to import three js when it's actually needed  -->
+      <ApriltagControlCard />
+
+      <template #fallback> Loading... </template>
+    </Suspense>
   </div>
 </template>

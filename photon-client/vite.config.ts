@@ -1,32 +1,22 @@
 import { fileURLToPath, URL } from "node:url";
 
 import { defineConfig } from "vite";
-import Vue2 from "@vitejs/plugin-vue2";
-import Components from "unplugin-vue-components/vite";
-import { VuetifyResolver } from "unplugin-vue-components/resolvers";
+import vue from "@vitejs/plugin-vue";
+import vuetify from "vite-plugin-vuetify";
 
 export default defineConfig({
   base: "./",
   plugins: [
-    Vue2(),
-    Components({
-      resolvers: [VuetifyResolver()],
-      dts: true,
-      transformer: "vue2",
-      types: [
-        {
-          from: "vue-router",
-          names: ["RouterLink", "RouterView"]
-        }
-      ],
-      version: 2.7
+    vue(),
+    vuetify({
+      styles: {
+        configFile: "src/assets/styles/settings.scss"
+      }
     })
   ],
   css: {
     preprocessorOptions: {
-      sass: {
-        additionalData: ["@import \"@/assets/styles/variables.scss\"", ""].join("\n")
-      }
+      sass: {}
     }
   },
   resolve: {
@@ -35,6 +25,9 @@ export default defineConfig({
     }
   },
   build: {
+    rollupOptions: {
+      external: ["html2canvas", "dompurify", "canvg"]
+    },
     sourcemap: true
   }
 });

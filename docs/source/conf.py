@@ -47,9 +47,6 @@ ogp_site_url = "https://docs.photonvision.org/en/latest/"
 ogp_site_name = "PhotonVision Documentation"
 ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/main/source/assets/RectLogo.png"
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
-
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
@@ -70,6 +67,10 @@ html_title = "PhotonVision Docs"
 html_theme = "furo"
 html_favicon = "assets/RoundLogo.png"
 
+# Specify canonical root
+# This tells search engines that this domain is preferred
+html_baseurl = "https://docs.photonvision.org/en/latest/"
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -87,6 +88,9 @@ pygments_style = "sphinx"
 
 html_theme_options = {
     "sidebar_hide_name": True,
+    "top_of_page_buttons": ["view", "edit"],
+    "source_edit_link": "https://github.com/PhotonVision/photonvision/edit/main/docs/source/{filename}",
+    "source_view_link": "https://github.com/PhotonVision/photonvision/blob/main/docs/source/{filename}",
     "light_logo": "assets/PhotonVision-Header-onWhite.png",
     "dark_logo": "assets/PhotonVision-Header-noBG.png",
     "light_css_variables": {
@@ -144,7 +148,11 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 
 # Excluded links for linkcheck
 # These should be periodically checked by hand to ensure that they are still functional
-linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..+"]
+linkcheck_ignore = [
+    R"https://www.raspberrypi.com/software/",
+    R"http://10\..+",
+    R"https://www.gnu.org/",
+]
 
 token = os.environ.get("GITHUB_TOKEN", None)
 if token:

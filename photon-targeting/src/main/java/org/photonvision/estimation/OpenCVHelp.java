@@ -17,7 +17,7 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -54,14 +54,12 @@ public final class OpenCVHelp {
     private static final Rotation3d NWU_TO_EDN;
     private static final Rotation3d EDN_TO_NWU;
 
-    // Creating a cscore object is sufficient to load opencv, per
-    // https://www.chiefdelphi.com/t/unsatisfied-link-error-when-simulating-java-robot-code-using-opencv/426731/4
-    private static CvSink dummySink = null;
-
+    /**
+     * @deprecated Replaced by {@link OpenCvLoader#forceStaticLoad()}
+     */
+    @Deprecated(since = "2025", forRemoval = true)
     public static void forceLoadOpenCV() {
-        if (dummySink != null) return;
-        dummySink = new CvSink("ignored");
-        dummySink.close();
+        OpenCvLoader.forceStaticLoad();
     }
 
     static {

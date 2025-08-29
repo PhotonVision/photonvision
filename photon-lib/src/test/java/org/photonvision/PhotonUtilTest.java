@@ -24,9 +24,10 @@
 
 package org.photonvision;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PhotonUtilTest {
@@ -40,7 +41,7 @@ class PhotonUtilTest {
         var dist =
                 PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
 
-        Assertions.assertEquals(3.464, dist, 0.01);
+        assertEquals(3.464, dist, 0.01);
 
         camHeight = 1;
         targetHeight = 2;
@@ -49,7 +50,7 @@ class PhotonUtilTest {
 
         dist =
                 PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
-        Assertions.assertEquals(5.671, dist, 0.01);
+        assertEquals(5.671, dist, 0.01);
     }
 
     @Test
@@ -75,9 +76,9 @@ class PhotonUtilTest {
                         fieldToTarget,
                         cameraToRobot);
 
-        Assertions.assertEquals(-3.464, fieldToRobot.getX(), 0.1);
-        Assertions.assertEquals(0, fieldToRobot.getY(), 0.1);
-        Assertions.assertEquals(0, fieldToRobot.getRotation().getDegrees(), 0.1);
+        assertEquals(-3.464, fieldToRobot.getX(), 0.1);
+        assertEquals(0, fieldToRobot.getY(), 0.1);
+        assertEquals(0, fieldToRobot.getRotation().getDegrees(), 0.1);
     }
 
     @Test
@@ -94,8 +95,8 @@ class PhotonUtilTest {
                         new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162)),
                         new Rotation2d());
         var currentPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-        Assertions.assertEquals(4.0, fieldToRobot.getX());
-        Assertions.assertEquals(
+        assertEquals(4.0, fieldToRobot.getX());
+        assertEquals(
                 Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
                 PhotonUtils.getYawToPose(currentPose, targetPose).getDegrees());
     }

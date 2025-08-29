@@ -44,6 +44,9 @@
 #include "opencv2/core/utility.hpp"
 #include "photon/dataflow/structures/Packet.h"
 
+static constexpr units::second_t WARN_DEBOUNCE_SEC = 5_s;
+static constexpr units::second_t HEARTBEAT_DEBOUNCE_SEC = 500_ms;
+
 inline void verifyDependencies() {
   if (!(std::string_view{GetWPILibVersion()} ==
         std::string_view{photon::PhotonVersion::wpilibTargetVersion})) {
@@ -66,9 +69,16 @@ inline void verifyDependencies() {
     bfw +=
         "\n>>>                                          \n"
         ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update PhotonVision,            \n"
-        ">>> PhotonLib, or both.                      \n"
-        ">>> Verify the output of `./gradlew dependencies` \n"
+        ">>> You MUST update WPILib, PhotonLib, or both.\n"
+        ">>> Check `./gradlew dependencies` and ensure\n"
+        ">>> all mentions of WPILib match the version \n"
+        ">>> that PhotonLib was built for. If you find a"
+        ">>> a mismatched version in a dependency, you\n"
+        ">>> must take steps to update the version of \n"
+        ">>> WPILib used in that dependency. If you do\n"
+        ">>> not control that dependency and an updated\n"
+        ">>> version is not available, contact the    \n"
+        ">>> developers of that dependency.           \n"
         ">>>                                          \n"
         ">>> Your code will now crash.                \n"
         ">>> We hope your day gets better.            \n"
@@ -101,9 +111,16 @@ inline void verifyDependencies() {
     bfw +=
         "\n>>>                                          \n"
         ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update PhotonVision,            \n"
-        ">>> PhotonLib, or both.                      \n"
-        ">>> Verify the output of `./gradlew dependencies` \n"
+        ">>> You MUST update WPILib, PhotonLib, or both.\n"
+        ">>> Check `./gradlew dependencies` and ensure\n"
+        ">>> all mentions of OpenCV match the version \n"
+        ">>> that PhotonLib was built for. If you find a"
+        ">>> a mismatched version in a dependency, you\n"
+        ">>> must take steps to update the version of \n"
+        ">>> OpenCV used in that dependency. If you do\n"
+        ">>> not control that dependency and an updated\n"
+        ">>> version is not available, contact the    \n"
+        ">>> developers of that dependency.           \n"
         ">>>                                          \n"
         ">>> Your code will now crash.                \n"
         ">>> We hope your day gets better.            \n"
@@ -137,6 +154,7 @@ namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
+static const std::string PHOTON_ALERT_GROUP{"PhotonAlerts"};
 bool PhotonCamera::VERSION_CHECK_ENABLED = true;
 
 void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
@@ -179,9 +197,16 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
+      heartbeatSubscriber(
+          rootTable->GetIntegerTopic("heartbeat").Subscribe(-1)),
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
-      cameraName(cameraName) {
+      cameraName(cameraName),
+      disconnectAlert(PHOTON_ALERT_GROUP,
+                      std::string{"PhotonCamera '"} + std::string{cameraName} +
+                          "' is disconnected.",
+                      frc::Alert::AlertType::kWarning),
+      timesyncAlert(PHOTON_ALERT_GROUP, "", frc::Alert::AlertType::kWarning) {
   verifyDependencies();
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
@@ -217,6 +242,8 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Create the new result;
   PhotonPipelineResult result = packet.Unpack<PhotonPipelineResult>();
 
+  CheckTimeSyncOrWarn(result);
+
   result.SetReceiveTimestamp(now);
 
   return result;
@@ -229,6 +256,7 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
 
   // Prints warning if not connected
   VerifyVersion();
+  UpdateDisconnectAlert();
 
   const auto changes = rawBytesEntry.ReadQueue();
 
@@ -247,6 +275,8 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
     photon::Packet packet{value.value};
     auto result = packet.Unpack<PhotonPipelineResult>();
 
+    CheckTimeSyncOrWarn(result);
+
     // TODO: NT4 timestamps are still not to be trusted. But it's the best we
     // can do until we can make time sync more reliable.
     result.SetReceiveTimestamp(units::microsecond_t(value.time) -
@@ -256,6 +286,37 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
   }
 
   return ret;
+}
+
+void PhotonCamera::UpdateDisconnectAlert() {
+  disconnectAlert.Set(!IsConnected());
+}
+
+void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
+  if (result.metadata.timeSinceLastPong > 5L * 1000000L) {
+    std::string warningText =
+        "PhotonVision coprocessor at path " + path +
+        " is not connected to the TimeSyncServer? It's been " +
+        std::to_string(result.metadata.timeSinceLastPong / 1e6) +
+        "s since the coprocessor last heard a pong.";
+
+    timesyncAlert.SetText(warningText);
+    timesyncAlert.Set(true);
+
+    if (frc::Timer::GetFPGATimestamp() <
+        (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
+      prevTimeSyncWarnTime = frc::Timer::GetFPGATimestamp();
+
+      FRC_ReportWarning(
+          warningText +
+          "\n\nCheck /photonvision/.timesync/{{COPROCESSOR_HOSTNAME}} for more "
+          "information.");
+    }
+  } else {
+    // Got a valid packet, reset the last time
+    prevTimeSyncWarnTime = 0_s;
+    timesyncAlert.Set(false);
+  }
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
@@ -288,6 +349,24 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 
 const std::string_view PhotonCamera::GetCameraName() const {
   return cameraName;
+}
+
+bool PhotonCamera::IsConnected() {
+  auto currentHeartbeat = heartbeatSubscriber.Get();
+  auto now = frc::Timer::GetFPGATimestamp();
+
+  if (currentHeartbeat < 0) {
+    // we have never heard from the camera
+    return false;
+  }
+
+  if (currentHeartbeat != prevHeartbeatValue) {
+    // New heartbeat value from the coprocessor
+    prevHeartbeatChangeTime = now;
+    prevHeartbeatValue = currentHeartbeat;
+  }
+
+  return (now - prevHeartbeatChangeTime) < HEARTBEAT_DEBOUNCE_SEC;
 }
 
 std::optional<PhotonCamera::CameraMatrix> PhotonCamera::GetCameraMatrix() {

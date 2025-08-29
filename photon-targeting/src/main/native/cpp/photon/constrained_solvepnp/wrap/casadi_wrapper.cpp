@@ -66,12 +66,10 @@ struct Problem {
 };
 
 static std::optional<Problem> createProblem(int numTags, bool heading_free) {
-#define MAKE_P(tags, suffix)                                   \
-  Problem {                                                    \
-    tags, heading_free, calc_J_##tags##_tags_heading_##suffix, \
-        calc_gradJ_##tags##_tags_heading_##suffix,             \
-        calc_hessJ_##tags##_tags_heading_##suffix              \
-  }
+#define MAKE_P(tags, suffix)                                         \
+  Problem{tags, heading_free, calc_J_##tags##_tags_heading_##suffix, \
+          calc_gradJ_##tags##_tags_heading_##suffix,                 \
+          calc_hessJ_##tags##_tags_heading_##suffix}
 #define MAKE_CASE(n) \
   case n:            \
     return heading_free ? MAKE_P(n, free) : MAKE_P(n, fixed);
@@ -122,10 +120,6 @@ struct ProblemState {
   const casadi_real* argv[] = {&x[0],                     \
                                &x[1],                     \
                                &x[2],                     \
-                               &cameraCal.fx,             \
-                               &cameraCal.fy,             \
-                               &cameraCal.cx,             \
-                               &cameraCal.cy,             \
                                robot2camera.data(),       \
                                field2points.data(),       \
                                point_observations.data(), \
@@ -181,6 +175,14 @@ constrained_solvepnp::do_optimization(
     // TODO find a new error code
     return wpi::unexpected{
         sleipnir::SolverExitCondition::kNonfiniteInitialCostOrConstraints};
+  }
+
+  // rescale observations to homogenous pixel coordinates
+  for (int i = 0; i < point_observations.cols(); ++i) {
+    point_observations(0, i) =
+        (point_observations(0, i) - cameraCal.cx) / cameraCal.fx;
+    point_observations(1, i) =
+        (point_observations(1, i) - cameraCal.cy) / cameraCal.fy;
   }
 
   if constexpr (VERBOSE) {

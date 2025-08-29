@@ -4,6 +4,9 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -88,16 +91,20 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 </script>
-
 <template>
-  <v-card color="primary" dark>
-    <div class="d-flex flex-wrap pr-md-3">
+  <v-card color="surface" dark>
+    <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
       <v-col cols="12" md="6">
-        <v-card-title class="pl-3 pb-0 pb-md-4"> Calibration Details </v-card-title>
+        <v-card-title class="pa-0"> Calibration Details </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn color="secondary" style="width: 100%" @click="openUploadPhotonCalibJsonPrompt">
-          <v-icon left> mdi-import</v-icon>
+        <v-btn
+          color="buttonPassive"
+          style="width: 100%"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="openUploadPhotonCalibJsonPrompt"
+        >
+          <v-icon start size="large"> mdi-import</v-icon>
           <span>Import</span>
         </v-btn>
         <input
@@ -110,12 +117,13 @@ const calibrationImageURL = (index: number) =>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
         <v-btn
-          color="secondary"
+          color="buttonPassive"
           :disabled="!currentCalibrationCoeffs"
           style="width: 100%"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           @click="openExportCalibrationPrompt"
         >
-          <v-icon left>mdi-export</v-icon>
+          <v-icon start size="large">mdi-export</v-icon>
           <span>Export</span>
         </v-btn>
         <a
@@ -126,16 +134,21 @@ const calibrationImageURL = (index: number) =>
         />
       </v-col>
     </div>
-    <v-card-title class="pt-0 pb-3"
+    <v-card-title class="pt-0 pb-0"
       >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
     >
     <v-card-text v-if="!currentCalibrationCoeffs">
-      <v-banner rounded color="secondary" text-color="white" class="mt-3" icon="mdi-alert-circle-outline">
-        The selected video format has not been calibrated.
-      </v-banner>
+      <v-alert
+        class="pt-3 pb-3"
+        color="primary"
+        density="compact"
+        text="The selected video format has not been calibrated."
+        icon="mdi-alert-circle-outline"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      />
     </v-card-text>
-    <v-card-text>
-      <v-simple-table dense style="width: 100%">
+    <v-card-text class="pt-0">
+      <v-table density="compact" style="width: 100%">
         <template #default>
           <thead>
             <tr>
@@ -238,25 +251,36 @@ const calibrationImageURL = (index: number) =>
             </tr>
           </tbody>
         </template>
-      </v-simple-table>
+      </v-table>
     </v-card-text>
-    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
-    <v-card-text v-if="currentCalibrationCoeffs">
+    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0 pb-0">Individual Observations</v-card-title>
+    <v-card-text v-if="currentCalibrationCoeffs" class="pt-0">
       <v-data-table
-        dense
+        density="compact"
         style="width: 100%"
         :headers="[
-          { text: 'Observation Id', value: 'index' },
-          { text: 'Mean Reprojection Error', value: 'mean' },
-          { text: '', value: 'data-table-expand' }
+          { title: 'Observation Id', key: 'index' },
+          { title: 'Mean Reprojection Error', key: 'mean' },
+          { title: '', key: 'data-table-expand' }
         ]"
         :items="getObservationDetails()"
-        item-key="index"
+        item-value="index"
         show-expand
-        expand-icon="mdi-eye"
       >
-        <template #expanded-item="{ headers, item }">
-          <td :colspan="headers.length">
+        <template #item.data-table-expand="{ internalItem, toggleExpand }">
+          <v-btn
+            icon="mdi-eye"
+            class="text-none"
+            color="medium-emphasis"
+            size="small"
+            variant="text"
+            slim
+            @click="toggleExpand(internalItem)"
+          ></v-btn>
+        </template>
+
+        <template #expanded-row="{ columns, item }">
+          <td :colspan="columns.length">
             <div style="display: flex; justify-content: center; width: 100%">
               <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
             </div>
@@ -268,9 +292,6 @@ const calibrationImageURL = (index: number) =>
 </template>
 
 <style scoped>
-.v-data-table {
-  background-color: #006492 !important;
-}
 .snapshot-preview {
   max-width: 55%;
 }

@@ -91,6 +91,7 @@ docs/description
 docs/quick-start/index
 docs/hardware/index
 docs/advanced-installation/index
+docs/camera-specific-configuration/index
 ```
 
 ```{toctree}
@@ -102,6 +103,7 @@ docs/pipelines/index
 docs/apriltag-pipelines/index
 docs/reflectiveAndShape/index
 docs/objectDetection/index
+docs/driver-mode/index
 docs/calibration/calibration
 ```
 
@@ -125,6 +127,7 @@ docs/troubleshooting/index
 docs/additional-resources/best-practices
 docs/additional-resources/config
 docs/additional-resources/nt-api
+docs/benchmarks/index
 docs/contributing/index
 ```
 

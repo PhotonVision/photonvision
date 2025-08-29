@@ -1,6 +1,19 @@
 <script setup lang="ts">
 import { PVCameraInfo } from "@/types/SettingTypes";
-import _ from "lodash";
+
+function isEqual<T>(a: T, b: T): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  const bothAreObjects = a && b && typeof a === "object" && typeof b === "object";
+
+  return (
+    bothAreObjects &&
+    Object.keys(a).length === Object.keys(b).length &&
+    Object.entries(a).every(([k, v]) => isEqual(v, b[k as keyof T]))
+  );
+}
 
 const { saved, current } = defineProps({
   saved: {
@@ -29,7 +42,7 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
 
 <template>
   <div>
-    <v-simple-table dense :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr>
           <th></th>
@@ -105,14 +118,14 @@ const cameraInfoFor = (camera: PVCameraInfo): any => {
         </tr>
         <tr
           v-if="cameraInfoFor(saved).otherPaths !== undefined && cameraInfoFor(saved).otherPaths !== null"
-          :class="!_.isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? 'mismatch' : ''"
+          :class="isEqual(cameraInfoFor(saved).otherPaths, cameraInfoFor(current).otherPaths) ? '' : 'mismatch'"
         >
           <td>Other Paths:</td>
           <td>{{ cameraInfoFor(saved).otherPaths }}</td>
           <td>{{ cameraInfoFor(current).otherPaths }}</td>
         </tr>
       </tbody>
-    </v-simple-table>
+    </v-table>
   </div>
 </template>
 

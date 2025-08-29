@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -60,10 +62,10 @@ public class ReflectivePipelineTest {
         CVPipelineResult pipelineResult;
 
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResults(pipelineResult);
 
-        Assertions.assertTrue(pipelineResult.hasTargets());
-        Assertions.assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
+        assertTrue(pipelineResult.hasTargets());
+        assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
 
         TestUtils.showImage(pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output");
     }
@@ -84,7 +86,7 @@ public class ReflectivePipelineTest {
                         TestUtils.WPI2020Image.FOV);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        printTestResults(pipelineResult);
+        TestUtils.printTestResults(pipelineResult);
 
         TestUtils.showImage(
                 pipelineResult.inputAndOutputFrame.processedImage.getMat(), "Pipeline output");
@@ -95,7 +97,7 @@ public class ReflectivePipelineTest {
 
         while (true) {
             CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-            printTestResults(pipelineResult);
+            TestUtils.printTestResults(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();
             int postRelease = CVMat.getMatCount();
@@ -122,12 +124,5 @@ public class ReflectivePipelineTest {
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
         continuouslyRunPipeline(frameProvider.get(), settings);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.print(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
     }
 }

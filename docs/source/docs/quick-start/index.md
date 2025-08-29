@@ -7,7 +7,7 @@ common-setups
 quick-install
 wiring
 networking
-arducam-cameras
+camera-matching
 camera-calibration
 quick-configure
 ```

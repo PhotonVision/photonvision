@@ -145,8 +145,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
-        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
-        tagDetectionPipeResult = arucoDetectionPipe.run(frame.processedImage);
+        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult =
+                arucoDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         // If we want to debug the thresholding steps, draw the first step to the color image
@@ -163,14 +163,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             // Populate target list for multitag
             // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
             // not be necessary.)
-            TrackedTarget target =
+
+            targetList.add(
                     new TrackedTarget(
                             detection,
                             null,
                             new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties));
-
-            targetList.add(target);
+                                    false, null, null, null, null, frameStaticProperties)));
         }
 
         // Do multi-tag pose estimation

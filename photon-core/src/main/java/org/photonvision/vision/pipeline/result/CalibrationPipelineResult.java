@@ -18,14 +18,13 @@
 package org.photonvision.vision.pipeline.result;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CalibrationPipelineResult extends CVPipelineResult {
     private static List<TrackedTarget> cornersToTarget(List<List<Point>> corners) {
-        return corners.stream().map(TrackedTarget::new).collect(Collectors.toList());
+        return corners.stream().map(TrackedTarget::new).toList();
     }
 
     public CalibrationPipelineResult(

@@ -21,20 +21,21 @@ import org.photonvision.common.configuration.HardwareConfig;
 
 public class CmdBase {
     // CPU
-    public String cpuMemoryCommand = "";
     public String cpuTemperatureCommand = "";
     public String cpuUtilizationCommand = "";
     public String cpuThrottleReasonCmd = "";
-    public String cpuUptimeCommand = "";
+    // RAM
+    public String ramMemCommand = "";
+    public String ramUtilCommand = "";
     // GPU
-    public String gpuMemoryCommand = "";
-    public String gpuMemUsageCommand = "";
+    public String gpuMemCommand = "";
+    public String gpuMemUtilCommand = "";
     // NPU
     public String npuUsageCommand = "";
-    // RAM
-    public String ramUsageCommand = "";
     // Disk
     public String diskUsageCommand = "";
+    // Uptime
+    public String uptimeCommand = "";
 
     public void initCmds(HardwareConfig config) {
         // default - do nothing

@@ -86,7 +86,7 @@ Each pipeline result has a `hasTargets()`/`HasTargets()` (Java and C++ respectiv
 ```
 
 :::{warning}
-In Java/C++, You must *always* check if the result has a target via `hasTargets()`/`HasTargets()` before getting targets or else you may get a null pointer exception. Further, you must use the same result in every subsequent call in that loop.
+In Java/C++, You must _always_ check if the result has a target via `hasTargets()`/`HasTargets()` before getting targets or else you may get a null pointer exception. Further, you must use the same result in every subsequent call in that loop.
 :::
 
 ## Getting a List of Targets
@@ -140,7 +140,7 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
 
 ## Getting Data From A Target
 
-- double `getYaw()`/`GetYaw()`: The yaw of the target in degrees (positive right).
+- double `getYaw()`/`GetYaw()`: The yaw of the target in degrees (positive left).
 - double `getPitch()`/`GetPitch()`: The pitch of the target in degrees (positive up).
 - double `getArea()`/`GetArea()`: The area (how much of the camera feed the bounding box takes up) as a percent (0-100).
 - double `getSkew()`/`GetSkew()`: The skew of the target in degrees (counter-clockwise positive).

@@ -28,6 +28,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Pair;
@@ -94,7 +95,7 @@ public class PhotonCameraSim implements AutoCloseable {
     private boolean videoSimProcEnabled = true;
 
     static {
-        OpenCVHelp.forceLoadOpenCV();
+        OpenCvLoader.forceStaticLoad();
     }
 
     @Override

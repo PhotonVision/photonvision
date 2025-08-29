@@ -53,9 +53,9 @@ public class PathManager {
 
     public static final String LOG_PREFIX = "photonvision-";
     public static final String LOG_EXT = ".log";
-    public static final String LOG_DATE_TIME_FORMAT = "yyyy-M-d_hh-mm-ss";
+    public static final String LOG_DATE_TIME_FORMAT = "yyyy-MM-dd_HH-mm-ss";
 
-    public String taToLogFname(TemporalAccessor date) {
+    public static String taToLogFname(TemporalAccessor date) {
         var dateString = DateTimeFormatter.ofPattern(LOG_DATE_TIME_FORMAT).format(date);
         return LOG_PREFIX + dateString + LOG_EXT;
     }

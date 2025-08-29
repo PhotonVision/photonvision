@@ -22,17 +22,18 @@ import org.photonvision.common.configuration.HardwareConfig;
 public class FileCmds extends CmdBase {
     @Override
     public void initCmds(HardwareConfig config) {
-        cpuMemoryCommand = config.cpuMemoryCommand;
-        cpuTemperatureCommand = config.cpuTempCommand;
-        cpuUtilizationCommand = config.cpuUtilCommand;
-        cpuThrottleReasonCmd = config.cpuThrottleReasonCmd;
-        cpuUptimeCommand = config.cpuUptimeCommand;
+        cpuTemperatureCommand = config.cpuTempCommand();
+        cpuUtilizationCommand = config.cpuUtilCommand();
+        cpuThrottleReasonCmd = config.cpuThrottleReasonCmd();
 
-        gpuMemoryCommand = config.gpuMemoryCommand;
-        gpuMemUsageCommand = config.gpuMemUsageCommand;
+        ramMemCommand = config.cpuMemoryCommand();
+        ramUtilCommand = config.ramUtilCommand();
 
-        diskUsageCommand = config.diskUsageCommand;
+        gpuMemCommand = config.gpuMemoryCommand();
+        gpuMemUtilCommand = config.gpuMemUsageCommand();
 
-        ramUsageCommand = config.ramUtilCommand;
+        diskUsageCommand = config.diskUsageCommand();
+
+        uptimeCommand = config.cpuUptimeCommand();
     }
 }

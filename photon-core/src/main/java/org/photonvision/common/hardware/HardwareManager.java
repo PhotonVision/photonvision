@@ -76,6 +76,9 @@ public class HardwareManager {
         this.metricsManager = new MetricsManager();
         this.metricsManager.setConfig(hardwareConfig);
 
+        TimedTaskManager.getInstance()
+                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
+
         ledModeRequest =
                 NetworkTablesManager.getInstance()
                         .kRootTable
@@ -94,22 +97,22 @@ public class HardwareManager {
         }
 
         statusLED =
-                hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                hardwareConfig.statusRGBPins().size() == 3
+                        ? new StatusLED(hardwareConfig.statusRGBPins())
                         : null;
 
         if (statusLED != null) {
             TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
         }
 
-        var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
+        var hasBrightnessRange = hardwareConfig.ledBrightnessRange().size() == 2;
         visionLED =
-                hardwareConfig.ledPins.isEmpty()
+                hardwareConfig.ledPins().isEmpty()
                         ? null
                         : new VisionLED(
-                                hardwareConfig.ledPins,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
-                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                hardwareConfig.ledPins(),
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange().get(0) : 0,
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange().get(1) : 100,
                                 pigpioSocket,
                                 ledModeState::set);
 
@@ -158,7 +161,7 @@ public class HardwareManager {
             }
         }
         try {
-            return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
+            return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand()) == 0;
         } catch (IOException e) {
             logger.error("Could not restart device!", e);
             return false;
@@ -220,10 +223,6 @@ public class HardwareManager {
         }
 
         blinkCounter++;
-    }
-
-    public HardwareConfig getConfig() {
-        return hardwareConfig;
     }
 
     public void publishMetrics() {

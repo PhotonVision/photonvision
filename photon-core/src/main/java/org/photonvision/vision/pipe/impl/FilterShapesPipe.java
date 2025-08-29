@@ -48,40 +48,20 @@ public class FilterShapesPipe
     }
 
     private boolean shouldRemove(CVShape shape) {
-        return shape.shape != params.desiredShape
-                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea * 100.0
-                        > params.maxArea
-                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea * 100.0
-                        < params.minArea
-                || shape.contour.getPerimeter() > params.maxPeri
-                || shape.contour.getPerimeter() < params.minPeri;
+        return shape.shape != params.desiredShape()
+                || shape.contour.getArea() / params.frameStaticProperties().imageArea * 100.0
+                        > params.maxArea()
+                || shape.contour.getArea() / params.frameStaticProperties().imageArea * 100.0
+                        < params.minArea()
+                || shape.contour.getPerimeter() > params.maxPeri()
+                || shape.contour.getPerimeter() < params.minPeri();
     }
 
-    public static class FilterShapesPipeParams {
-        private final ContourShape desiredShape;
-        private final FrameStaticProperties frameStaticProperties;
-        private final double minArea;
-        private final double maxArea;
-        private final double minPeri;
-        private final double maxPeri;
-
-        public FilterShapesPipeParams(
-                ContourShape desiredShape,
-                double minArea,
-                double maxArea,
-                double minPeri,
-                double maxPeri,
-                FrameStaticProperties frameStaticProperties) {
-            this.desiredShape = desiredShape;
-            this.minArea = minArea;
-            this.maxArea = maxArea;
-            this.minPeri = minPeri;
-            this.maxPeri = maxPeri;
-            this.frameStaticProperties = frameStaticProperties;
-        }
-
-        public FrameStaticProperties getFrameStaticProperties() {
-            return frameStaticProperties;
-        }
-    }
+    public static record FilterShapesPipeParams(
+            ContourShape desiredShape,
+            double minArea,
+            double maxArea,
+            double minPeri,
+            double maxPeri,
+            FrameStaticProperties frameStaticProperties) {}
 }
