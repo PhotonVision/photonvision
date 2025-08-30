@@ -3,7 +3,7 @@
 $default-font: "Prompt", sans-serif !default;
 $body-font-family: $default-font;
 $heading-font-family: $default-font;
-$body-background: #282c34;
+$body-background: rgb(var(--v-theme-background));
 
 body {
   background: $body-background;
@@ -21,11 +21,7 @@ html {
   > table
   > tbody
   > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
-  background: #005281 !important;
-}
-
-.v-banner {
-  padding: 4px !important;
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .v-card-title,
@@ -71,4 +67,8 @@ html {
 
 .pa-10px {
   padding: 10px !important;
+}
+
+.rounded-12 {
+  border-radius: 12px;
 }

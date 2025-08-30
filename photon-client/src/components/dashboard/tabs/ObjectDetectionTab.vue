@@ -85,6 +85,17 @@ const selectedModel = computed({
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)
       "
     />
+    <pv-slider
+      v-model="currentPipelineSettings.nms"
+      class="pt-2"
+      :slider-cols="interactiveCols"
+      label="NMS Threshold"
+      tooltip="The Non-Maximum Suppression threshold used to filter out overlapping detections. Higher values mean more detections are allowed through, but may result in false positives."
+      :min="0"
+      :max="1"
+      :step="0.01"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ nms: value }, false)"
+    />
     <pv-range-slider
       v-model="contourArea"
       label="Area"

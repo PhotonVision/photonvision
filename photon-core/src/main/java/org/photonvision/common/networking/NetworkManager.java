@@ -73,6 +73,12 @@ public class NetworkManager {
             return;
         }
 
+        if (!NetworkUtils.nmcliIsInstalled()) {
+            logger.error("Cannot manage network without nmcli!");
+            this.networkingIsDisabled = true;
+            return;
+        }
+
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {

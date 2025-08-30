@@ -55,6 +55,7 @@ public class NetworkTablesManager {
 
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
+    // The coprocessors table should only be used for operations/data related to MAC address
     public final String kCoprocTableName = "coprocessors";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
@@ -299,20 +300,21 @@ public class NetworkTablesManager {
             }
         }
 
-        // Publish the conflict status
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
-
-        conflictAlert.setText(
-                conflictingHostname
-                        ? "Hostname conflict detected for " + hostname + "!"
-                        : ""
-                                + (conflictingCameras.isEmpty()
-                                        ? ""
-                                        : " Camera name conflict detected: " + conflictingCameras.toString() + "!"));
+        if (conflictingHostname != this.conflictingHostname
+                || !conflictingCameras.toString().equals(this.conflictingCameras)) {
+            // Only publish the conflict status when it's changed to prevent the settings cards from being
+            // forcibly reset
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+        }
+        if (conflictingHostname) {
+            conflictAlert.setText("Hostname conflict detected for " + hostname + "!");
+        } else if (!conflictingCameras.isEmpty()) {
+            conflictAlert.setText("Camera name conflict detected: " + conflictingCameras + "!");
+        }
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
         SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;

@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware.metrics;
 
 import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -45,7 +46,7 @@ public class MetricsManager {
 
     ProtobufPublisher<DeviceMetrics> metricPublisher =
             NetworkTablesManager.getInstance()
-                    .kCoprocTable
+                    .kRootTable
                     .getSubTable("/metrics")
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
@@ -223,9 +224,7 @@ public class MetricsManager {
      */
     public String getIpAddress() {
         String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
-        logger.debug("Requesting IP addresses for \"" + dev + "\"");
         String addr = NetworkUtils.getIPAddresses(dev);
-        logger.debug("Got value \"" + addr + "\"");
         return addr;
     }
 
@@ -243,7 +242,19 @@ public class MetricsManager {
     }
 
     public void publishMetrics() {
-        logger.debug("Publishing Metrics...");
+        // Check that the hostname hasn't changed
+        if (!CameraServerJNI.getHostname()
+                .equals(NetworkTable.basenameKey(metricPublisher.getTopic().getName()))) {
+            logger.warn("Metrics publisher name does not match hostname! Reinitializing publisher...");
+            metricPublisher.close();
+            metricPublisher =
+                    NetworkTablesManager.getInstance()
+                            .kRootTable
+                            .getSubTable("/metrics")
+                            .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
+                            .publish();
+        }
+
         var metrics =
                 new DeviceMetrics(
                         this.getCpuTemp(),
@@ -265,7 +276,7 @@ public class MetricsManager {
 
     public synchronized String execute(String command) {
         try {
-            runCommand.executeBashCommand(command);
+            runCommand.executeBashCommand(command, true, false);
             return runCommand.getOutput();
         } catch (Exception e) {
             StringWriter sw = new StringWriter();

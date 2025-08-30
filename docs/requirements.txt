@@ -24,7 +24,7 @@ pbr==6.1.1
 pipreqs==0.5.0
 Pygments==2.19.1
 PyYAML==6.0.2
-requests==2.32.3
+requests==2.32.4
 restructuredtext-lint==1.4.0
 roman-numerals-py==3.1.0
 setuptools==80.3.1
@@ -49,10 +49,10 @@ sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 sphinxext-opengraph==0.10.0
 sphinxext-remoteliteralinclude==0.5.0
-starlette==0.46.2
+starlette==0.47.2
 stevedore==5.4.1
 typing_extensions==4.13.2
-urllib3==2.4.0
+urllib3==2.5.0
 uvicorn==0.34.2
 watchfiles==1.0.5
 websockets==15.0.1

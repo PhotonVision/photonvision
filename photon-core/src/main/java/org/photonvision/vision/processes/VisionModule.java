@@ -395,6 +395,7 @@ public class VisionModule {
         settings.cameraAutoExposure = true;
 
         setPipeline(PipelineManager.CAL_3D_INDEX);
+        pipelineManager.calibration3dPipeline.broadcastState();
     }
 
     public void saveInputSnapshot() {

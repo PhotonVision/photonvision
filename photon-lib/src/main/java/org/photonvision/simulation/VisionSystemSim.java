@@ -122,6 +122,7 @@ public class VisionSystemSim {
      * @return If the camera was present and removed
      */
     public boolean removeCamera(PhotonCameraSim cameraSim) {
+        @SuppressWarnings("resource")
         boolean success = camSimMap.remove(cameraSim.getCamera().getName()) != null;
         camTrfMap.remove(cameraSim);
         return success;

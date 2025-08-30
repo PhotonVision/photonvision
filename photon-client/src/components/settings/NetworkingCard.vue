@@ -7,6 +7,9 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
@@ -83,16 +86,10 @@ const saveGeneralSettings = () => {
   useSettingsStore()
     .updateGeneralSettings(payload)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = {
-        ...useSettingsStore().network,
-        ...Object.assign({}, tempSettingsStruct.value)
-      };
+      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
     })
     .catch((error) => {
       resetTempSettingsStruct();
@@ -141,7 +138,7 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
+  <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title>Global Settings</v-card-title>
     <div class="pa-5 pt-0">
       <v-divider class="pb-2" />
@@ -159,16 +156,15 @@ watchEffect(() => {
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
-        <v-banner
+        <v-alert
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
-          rounded
-          bg-color="error"
-          text-color="white"
-          style="margin: 10px 0"
+          class="pt-3 pb-3"
+          color="error"
+          density="compact"
+          text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
           icon="mdi-alert-circle-outline"
-        >
-          The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
-        </v-banner>
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.connectionType"
@@ -230,35 +226,34 @@ watchEffect(() => {
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
-        <v-banner
+        <v-alert
           v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
             useSettingsStore().network.canManage &&
             !useSettingsStore().network.networkingDisabled
           "
-          rounded
-          bg-color="error"
-          text-color="white"
-          icon="mdi-information-outline"
-        >
-          Photon cannot detect any wired connections! Please send program logs to the developers for help.
-        </v-banner>
+          class="pt-3 pb-3"
+          color="error"
+          density="compact"
+          text="Cannot detect any wired connections! Send program logs to the developers for help."
+          icon="mdi-alert-circle-outline"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           :label-cols="4"
         />
-        <v-banner
+        <v-alert
           v-if="tempSettingsStruct.runNTServer"
-          rounded
-          bg-color="error"
-          text-color="white"
+          color="buttonActive"
+          density="compact"
+          text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           icon="mdi-information-outline"
-        >
-          This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
-        </v-banner>
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <v-divider class="mt-10px pb-2" />
         <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
         <pv-switch
@@ -267,21 +262,19 @@ watchEffect(() => {
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
           :label-cols="4"
         />
-        <v-banner
+        <v-alert
           v-if="tempSettingsStruct.shouldPublishProto"
-          rounded
-          bg-color="error"
-          text-color="white"
+          color="buttonActive"
+          density="compact"
+          text="This mode is intended for debugging and may reduce performance; it should be off for field use."
           icon="mdi-information-outline"
-        >
-          This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
-          this mode.
-        </v-banner>
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <v-divider class="mt-10px pb-5" />
       </v-form>
       <v-btn
-        color="accent"
-        :variant="!settingsValid || !settingsHaveChanged() ? 'tonal' : 'elevated'"
+        color="primary"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
@@ -295,8 +288,5 @@ watchEffect(() => {
 <style>
 .mt-10px {
   margin-top: 10px !important;
-}
-.v-banner__wrapper {
-  padding: 6px !important;
 }
 </style>

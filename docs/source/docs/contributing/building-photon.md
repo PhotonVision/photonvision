@@ -12,7 +12,11 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 22.15.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+ The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+
+**pnpm:**
+
+ [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
 ## Compiling Instructions
 
@@ -36,7 +40,7 @@ or alternatively download the source code from GitHub and extract the zip:
 In the photon-client directory:
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Build and Copy UI to Java Source
@@ -64,7 +68,7 @@ In the root directory:
 In the photon-client directory:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
@@ -109,7 +113,7 @@ Running the following command under the root directory will build the jar under 
 
 ### Build and Run PhotonVision on a Raspberry Pi Coprocessor
 
-As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor.
+As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor. It uses [deploy-utils](https://github.com/wpilibsuite/deploy-utils/blob/main/README.md), so it works very similarly to deploys on robot projects.
 
 An architecture override is required to specify the deploy target's architecture.
 
@@ -197,7 +201,7 @@ Similarly, a local instance of PhotonVision can be debugged in the same way usin
 
 Set up a VSCode configuration in {code}`launch.json`
 
-```
+```json
 {
    // Use IntelliSense to learn about possible attributes.
    // Hover to view descriptions of existing attributes.

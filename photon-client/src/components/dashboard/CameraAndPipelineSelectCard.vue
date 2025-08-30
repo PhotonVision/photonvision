@@ -8,6 +8,9 @@ import PvIcon from "@/components/common/pv-icon.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
   useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
@@ -53,10 +56,7 @@ const saveCameraNameEdit = (newName: string) => {
   useCameraSettingsStore()
     .changeCameraNickname(newName, false)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        color: "success",
-        message: response.data.text || response.data
-      });
+      useStateStore().showSnackbarMessage({ color: "success", message: response.data.text || response.data });
       useCameraSettingsStore().currentCameraSettings.nickname = newName;
     })
     .catch((error) => {
@@ -241,7 +241,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 </script>
 
 <template>
-  <v-card color="primary">
+  <v-card color="surface" class="rounded-12">
     <v-row no-gutters class="pl-4 pt-2 pb-0">
       <v-col cols="10" class="pa-0">
         <pv-select
@@ -326,19 +326,24 @@ const wrappedCameras = computed<SelectItem[]>(() =>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
               </v-list-item-title>
             </v-list-item>
+            <v-list-item @click="duplicateCurrentPipeline">
+              <v-list-item-title>
+                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
+              </v-list-item-title>
+            </v-list-item>
             <v-list-item @click="showCreatePipelineDialog">
               <v-list-item-title>
-                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
+                <pv-icon color="green" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
-                <pv-icon color="red-darken-2" :right="true" icon-name="mdi-delete" tooltip="Delete pipeline" />
-              </v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="duplicateCurrentPipeline">
-              <v-list-item-title>
-                <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
+                <pv-icon
+                  color="red-darken-2"
+                  :right="true"
+                  icon-name="mdi-trash-can-outline"
+                  tooltip="Delete pipeline"
+                />
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -370,7 +375,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       </v-col>
     </v-row>
     <v-dialog v-model="showPipelineCreationDialog" persistent width="500">
-      <v-card color="primary">
+      <v-card color="surface">
         <v-card-title class="pb-0"> Create New Pipeline </v-card-title>
         <v-card-text class="pt-0 pb-0">
           <pv-input
@@ -391,42 +396,52 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </v-card-text>
         <v-card-actions class="pr-5 pt-10px pb-5">
           <v-btn
-            color="#ffd843"
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="cancelPipelineCreation"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             :disabled="checkPipelineName(newPipelineName) !== true"
-            variant="flat"
             @click="createNewPipeline"
           >
-            Save
+            Create
           </v-btn>
-          <v-btn color="error" variant="elevated" @click="cancelPipelineCreation"> Cancel </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
-      <v-card color="primary">
-        <v-card-title class="pb-0">Pipeline Deletion Confirmation</v-card-title>
+      <v-card color="surface">
+        <v-card-title class="pb-0">Delete Pipeline</v-card-title>
         <v-card-text>
-          Are you sure you want to delete the pipeline
-          <b style="color: white; font-weight: bold">{{
-            useCameraSettingsStore().currentPipelineSettings.pipelineNickname
-          }}</b
-          >? This cannot be undone.
+          Are you sure you want to delete
+          <span style="color: white">"{{ useCameraSettingsStore().currentPipelineSettings.pipelineNickname }}"</span>?
+          This cannot be undone.
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
-          <v-btn variant="flat" color="error" @click="confirmDeleteCurrentPipeline"> Yes, I'm sure </v-btn>
           <v-btn
-            variant="flat"
-            color="#ffd843"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="primary"
             class="text-black"
             @click="showPipelineDeletionConfirmationDialog = false"
           >
-            No, take me back
+            Cancel
+          </v-btn>
+          <v-btn
+            color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="confirmDeleteCurrentPipeline"
+          >
+            Delete
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
     <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
-      <v-card color="primary" dark>
+      <v-card color="surface" dark>
         <v-card-title class="pb-0">Change Pipeline Type</v-card-title>
         <v-card-text>
           Are you sure you want to change the current pipeline type? This will cause all the pipeline settings to be
@@ -434,9 +449,20 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           settings.
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
-          <v-btn color="error" variant="elevated" @click="confirmChangePipelineType"> Yes, I'm sure </v-btn>
-          <v-btn color="#ffd843" variant="elevated" class="text-black" @click="cancelChangePipelineType">
-            No, take me back
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            class="text-black"
+            @click="cancelChangePipelineType"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="confirmChangePipelineType"
+          >
+            Confirm
           </v-btn>
         </v-card-actions>
       </v-card>

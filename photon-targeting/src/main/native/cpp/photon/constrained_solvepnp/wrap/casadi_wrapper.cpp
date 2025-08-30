@@ -66,12 +66,10 @@ struct Problem {
 };
 
 static std::optional<Problem> createProblem(int numTags, bool heading_free) {
-#define MAKE_P(tags, suffix)                                   \
-  Problem {                                                    \
-    tags, heading_free, calc_J_##tags##_tags_heading_##suffix, \
-        calc_gradJ_##tags##_tags_heading_##suffix,             \
-        calc_hessJ_##tags##_tags_heading_##suffix              \
-  }
+#define MAKE_P(tags, suffix)                                         \
+  Problem{tags, heading_free, calc_J_##tags##_tags_heading_##suffix, \
+          calc_gradJ_##tags##_tags_heading_##suffix,                 \
+          calc_hessJ_##tags##_tags_heading_##suffix}
 #define MAKE_CASE(n) \
   case n:            \
     return heading_free ? MAKE_P(n, free) : MAKE_P(n, fixed);
