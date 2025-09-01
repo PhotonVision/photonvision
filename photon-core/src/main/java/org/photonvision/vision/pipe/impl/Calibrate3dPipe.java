@@ -400,7 +400,7 @@ public class Calibrate3dPipe
             }
             var img_pts_reprojected_list = img_pts_reprojected.toList();
 
-            var reprojectionError = new ArrayList<Point>();
+            var reprojectionError = new ArrayList<Point>(img_pts_reprojected_list.size());
             for (int j = 0; j < img_pts_reprojected_list.size(); j++) {
                 // error = (measured - expected)
                 var measured = img_pts_reprojected_list.get(j);
