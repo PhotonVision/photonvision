@@ -37,7 +37,7 @@ public class Collect2dTargetsPipe
      */
     @Override
     protected List<TrackedTarget> process(List<PotentialTarget> in) {
-        List<TrackedTarget> targets = new ArrayList<>();
+        List<TrackedTarget> targets = new ArrayList<>(in.size());
 
         var calculationParams =
                 new TrackedTarget.TargetCalculationParameters(
