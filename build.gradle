@@ -11,7 +11,6 @@ plugins {
     id "org.ysb33r.doxygen" version "1.0.4" apply false
     id 'com.gradleup.shadow' version '8.3.4' apply false
     id "com.github.node-gradle.node" version "7.0.1" apply false
-    id "org.hidetake.ssh" version "2.11.2" apply false
 }
 
 allprojects {
@@ -39,7 +38,8 @@ ext {
     openCVversion = "4.10.0-3"
     javalinVersion = "5.6.2"
     libcameraDriverVersion = "v2025.0.3"
-    rknnVersion = "dev-v2025.0.0-1-g33b6263"
+    rknnVersion = "dev-v2025.0.0-5-g666c0c6"
+    rubikVersion = "dev-v2025.1.0-8-g067a316"
     frcYear = "2025"
     mrcalVersion = "v2025.0.0";
 
@@ -101,7 +101,7 @@ spotless {
 }
 
 wrapper {
-    gradleVersion '8.11'
+    gradleVersion '8.14.3'
 }
 
 ext.getCurrentArch = {

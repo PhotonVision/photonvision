@@ -224,9 +224,7 @@ public class MetricsManager {
      */
     public String getIpAddress() {
         String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
-        logger.debug("Requesting IP addresses for \"" + dev + "\"");
         String addr = NetworkUtils.getIPAddresses(dev);
-        logger.debug("Got value \"" + addr + "\"");
         return addr;
     }
 
@@ -244,8 +242,6 @@ public class MetricsManager {
     }
 
     public void publishMetrics() {
-        logger.debug("Publishing Metrics...");
-
         // Check that the hostname hasn't changed
         if (!CameraServerJNI.getHostname()
                 .equals(NetworkTable.basenameKey(metricPublisher.getTopic().getName()))) {
@@ -280,7 +276,7 @@ public class MetricsManager {
 
     public synchronized String execute(String command) {
         try {
-            runCommand.executeBashCommand(command);
+            runCommand.executeBashCommand(command, true, false);
             return runCommand.getOutput();
         } catch (Exception e) {
             StringWriter sw = new StringWriter();

@@ -12,7 +12,11 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 22.15.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+ The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+
+**pnpm:**
+
+ [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
 ## Compiling Instructions
 
@@ -109,7 +113,7 @@ Running the following command under the root directory will build the jar under 
 
 ### Build and Run PhotonVision on a Raspberry Pi Coprocessor
 
-As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor.
+As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor. It uses [deploy-utils](https://github.com/wpilibsuite/deploy-utils/blob/main/README.md), so it works very similarly to deploys on robot projects.
 
 An architecture override is required to specify the deploy target's architecture.
 
@@ -197,7 +201,7 @@ Similarly, a local instance of PhotonVision can be debugged in the same way usin
 
 Set up a VSCode configuration in {code}`launch.json`
 
-```
+```json
 {
    // Use IntelliSense to learn about possible attributes.
    // Hover to view descriptions of existing attributes.

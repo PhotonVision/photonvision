@@ -229,7 +229,7 @@ class PhotonPoseEstimator:
         self._poseCacheTimestampSeconds = -1.0
 
     def _checkUpdate(self, oldObj, newObj) -> None:
-        if oldObj != newObj and oldObj is not None and oldObj is not newObj:
+        if oldObj != newObj:
             self._invalidatePoseCache()
 
     def addHeadingData(

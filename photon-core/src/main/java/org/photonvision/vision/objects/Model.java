@@ -30,4 +30,6 @@ public interface Model {
     public Family getFamily();
 
     public ModelProperties getProperties();
+
+    public String toString();
 }

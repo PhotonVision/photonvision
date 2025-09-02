@@ -108,14 +108,6 @@ jobs:
         run: ./gradlew testHeadless --stacktrace
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
-      - name: Publish Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
-      - name: Publish Core Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-22.04
@@ -538,7 +530,7 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
   release:
-    needs: [build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
@@ -596,18 +588,12 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  dispatch:
-    name: dispatch
-    needs: [build-photonlib-vendorjson, release]
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: peter-evans/repository-dispatch@v3
-        if: |
-          github.repository == 'PhotonVision/photonvision' &&
-          startsWith(github.ref, 'refs/tags/v')
+      - name: Create Vendor JSON Repo PR
+        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
         with:
+          repo: PhotonVision/vendor-json-repo
           token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
-          repository: PhotonVision/vendor-json-repo
-          event-type: tag
-          client-payload: '{"run_id": "${{ github.run_id }}", "package_version": "${{ github.ref_name }}"}'
+          vendordep_file: ${{ github.workspace }}/photonlib-${{ github.ref_name }}.json
+          pr_title: Update photonlib to ${{ github.ref_name }}
+          pr_branch: photonlib-${{ github.ref_name }}
+        if: github.repository == 'PhotonVision/photonvision' && startsWith(github.ref, 'refs/tags/v')

@@ -55,7 +55,7 @@ public enum Platform {
             "Linux AARCH 64-bit with QCS6490",
             Platform::getLinuxDeviceTreeModel,
             "linuxarm64",
-            true,
+            false,
             OSType.LINUX,
             true), // QCS6490 SBCs
     LINUX_AARCH64(
@@ -173,7 +173,6 @@ public enum Platform {
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
     private static final String UnknownDeviceModelString = "Unknown";
 
-    // TODO: add rubik, but waiting for more info on architecture
     public static Platform getCurrentPlatform() {
         String OS_NAME;
         if (Platform.OS_NAME != null) {
@@ -272,7 +271,7 @@ public enum Platform {
     }
 
     private static boolean isRubik() {
-        return fileHasText("/proc/device-tree/model", "Rubik");
+        return fileHasText("/proc/device-tree/model", "RUBIK");
     }
 
     static String getLinuxDeviceTreeModel() {
