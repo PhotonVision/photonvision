@@ -47,7 +47,9 @@ export const restoreThemeConfig = (theme: ThemeInstance) => {
   const customSurface = localStorage.getItem(`${themeType}-surface`);
 
   theme.themes.value[theme.global.name.value].colors.background = customBackground ?? defaultTheme.colors!.background!;
-  theme.themes.value[theme.global.name.value].colors.sidebar = customBackground ?? defaultTheme.colors!.sidebar!;
+  theme.themes.value[theme.global.name.value].colors.sidebar = theme.themes.value[theme.global.name.value].dark
+    ? (customBackground ?? defaultTheme.colors!.sidebar!)
+    : (customSurface ?? defaultTheme.colors!.sidebar!);
 
   theme.themes.value[theme.global.name.value].colors.primary = customPrimary ?? defaultTheme.colors!.primary!;
   theme.themes.value[theme.global.name.value].colors.buttonActive = customPrimary ?? defaultTheme.colors!.buttonActive!;

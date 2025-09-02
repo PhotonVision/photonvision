@@ -8,7 +8,7 @@ import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 import { useTheme } from "vuetify";
-import { restoreThemeConfig } from "./lib/ThemeManager";
+import { restoreThemeConfig } from "@/lib/ThemeManager";
 
 const is_demo = import.meta.env.MODE === "demo";
 if (!is_demo) {
