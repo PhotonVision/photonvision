@@ -24,13 +24,13 @@ const showThemeConfig = ref(false);
 const backgroundColor = ref("");
 const primaryColor = ref("");
 const secondaryColor = ref("");
-const accentColor = ref("");
+const surfaceColor = ref("");
 
 const loadCurrentColors = () => {
   backgroundColor.value = getThemeColor(theme, "background");
   primaryColor.value = getThemeColor(theme, "primary");
   secondaryColor.value = getThemeColor(theme, "secondary");
-  accentColor.value = getThemeColor(theme, "accent");
+  surfaceColor.value = getThemeColor(theme, "surface");
 };
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
@@ -169,8 +169,7 @@ watchEffect(() => {
       </v-btn>
     </v-card-title>
     <div class="pa-5 pt-0">
-      <v-divider class="pb-2" />
-      <v-card-title class="pl-0 pt-3 pb-10px">Networking</v-card-title>
+      <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -231,7 +230,6 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="mt-10px pb-2" />
         <v-card-title class="pl-0 pt-3 pb-10px">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -282,7 +280,6 @@ watchEffect(() => {
           icon="mdi-information-outline"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
         />
-        <v-divider class="mt-10px pb-2" />
         <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
@@ -298,10 +295,10 @@ watchEffect(() => {
           icon="mdi-information-outline"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
         />
-        <v-divider class="mt-10px pb-5" />
       </v-form>
       <v-btn
         color="primary"
+        class="mt-3"
         :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
@@ -314,6 +311,30 @@ watchEffect(() => {
       <v-card color="surface" flat>
         <v-card-title class="text-center">Theme Configuration</v-card-title>
         <v-card-text class="pt-0 pb-10px">
+          <v-row>
+            <v-col class="text-center">
+              Background
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                v-model:model-value="backgroundColor"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
+              ></v-color-picker>
+            </v-col>
+            <v-col class="text-center">
+              Surface
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                v-model:model-value="surfaceColor"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
+              ></v-color-picker>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col class="text-center">
               Primary
@@ -335,30 +356,6 @@ watchEffect(() => {
                 :modes="['hex']"
                 v-model:model-value="secondaryColor"
                 v-on:update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
-              ></v-color-picker>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col class="text-center">
-              Accent
-              <v-color-picker
-                class="ma-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                v-model:model-value="accentColor"
-                v-on:update:model-value="(hex) => setThemeColor(theme, 'accent', hex)"
-              ></v-color-picker>
-            </v-col>
-            <v-col class="text-center">
-              Background
-              <v-color-picker
-                class="ma-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                v-model:model-value="backgroundColor"
-                v-on:update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
               ></v-color-picker>
             </v-col>
           </v-row>

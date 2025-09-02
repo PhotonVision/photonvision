@@ -6,7 +6,7 @@ export const resetTheme = (theme: ThemeInstance) => {
   localStorage.removeItem(`${themeType}-background`);
   localStorage.removeItem(`${themeType}-primary`);
   localStorage.removeItem(`${themeType}-secondary`);
-  localStorage.removeItem(`${themeType}-accent`);
+  localStorage.removeItem(`${themeType}-surface`);
 
   restoreThemeConfig(theme);
 };
@@ -44,7 +44,7 @@ export const restoreThemeConfig = (theme: ThemeInstance) => {
   const customBackground = localStorage.getItem(`${themeType}-background`);
   const customPrimary = localStorage.getItem(`${themeType}-primary`);
   const customSecondary = localStorage.getItem(`${themeType}-secondary`);
-  const customAccent = localStorage.getItem(`${themeType}-accent`);
+  const customSurface = localStorage.getItem(`${themeType}-surface`);
 
   theme.themes.value[theme.global.name.value].colors.background = customBackground ?? defaultTheme.colors!.background!;
   theme.themes.value[theme.global.name.value].colors.sidebar = customBackground ?? defaultTheme.colors!.sidebar!;
@@ -56,7 +56,8 @@ export const restoreThemeConfig = (theme: ThemeInstance) => {
   theme.themes.value[theme.global.name.value].colors.buttonPassive =
     customSecondary ?? defaultTheme.colors!.buttonPassive!;
 
-  theme.themes.value[theme.global.name.value].colors.accent = customAccent ?? defaultTheme.colors!.accent!;
-  theme.themes.value[theme.global.name.value].colors.toggle = customAccent ?? defaultTheme.colors!.toggle!;
-  console.log("restored theme:", storedTheme);
+  theme.themes.value[theme.global.name.value].colors.accent = customSecondary ?? defaultTheme.colors!.accent!;
+  theme.themes.value[theme.global.name.value].colors.toggle = customSecondary ?? defaultTheme.colors!.toggle!;
+
+  theme.themes.value[theme.global.name.value].colors.surface = customSurface ?? defaultTheme.colors!.surface!;
 };
