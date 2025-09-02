@@ -56,7 +56,7 @@ export const LightTheme: ThemeDefinition = {
     buttonActive: CommonColors.photonYellow,
     buttonPassive: CommonColors.lightBlue,
 
-    "surface-variant": "#358AB0",
+    "surface-variant": "#8f8f8fff",
 
     error: "#b80000",
     info: "#2196F3",
