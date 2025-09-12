@@ -100,6 +100,14 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install mrcal deps
         run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
