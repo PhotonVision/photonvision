@@ -17,33 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: gradle/actions/wrapper-validation@v4
-
-  build-client:
-    name: "PhotonClient Build"
-    defaults:
-      run:
-        working-directory: photon-client
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: photon-client/pnpm-lock.yaml
-      - name: Install Dependencies
-        run: pnpm i --frozen-lockfile
-      - name: Build Production Client
-        run: pnpm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: built-client
-          path: photon-client/dist/
   build-examples:
 
     strategy:
@@ -284,7 +257,7 @@ jobs:
           path: output/*.zip
 
   build-package:
-    needs: [build-client, build-gradle, build-offline-docs]
+    needs: [build-gradle, build-offline-docs]
 
     strategy:
       fail-fast: false
@@ -324,21 +297,19 @@ jobs:
           java-version: 17
           distribution: temurin
           architecture: ${{ matrix.architecture }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
-      - run: |
-          rm -rf photon-server/src/main/resources/web/*
-          mkdir -p photon-server/src/main/resources/web/docs
-        if: ${{ (matrix.os) != 'windows-latest' }}
-      - run: |
-          del photon-server\src\main\resources\web\*.*
-          mkdir photon-server\src\main\resources\web\docs
-        if: ${{ (matrix.os) == 'windows-latest' }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: built-client
-          path: photon-server/src/main/resources/web/
       - uses: actions/download-artifact@v4
         with:
           name: built-docs
