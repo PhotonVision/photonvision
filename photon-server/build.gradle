@@ -23,10 +23,11 @@ application {
 
 jar {
     from file("$rootDir/LICENSE")
-    dependsOn "buildAndCopyUI"
 }
 
 shadowJar {
+    dependsOn 'buildAndCopyUI'
+
     archiveBaseName = "photonvision"
     archiveVersion = project.version as String
     archiveClassifier.set(wpilibTools.currentPlatform.platformName)
@@ -54,6 +55,10 @@ tasks.register('buildClient', PnpmTask) {
 tasks.register('buildAndCopyUI') {
     dependsOn "buildClient"
     finalizedBy "copyClientUIToResources"
+}
+
+processResources {
+    dependsOn copyClientUIToResources
 }
 
 run {
