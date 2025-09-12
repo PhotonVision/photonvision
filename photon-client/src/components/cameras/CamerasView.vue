@@ -90,14 +90,7 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-text>
     <v-card-text class="pt-0">
-      <v-btn-toggle
-        v-model="value"
-        :multiple="true"
-        mandatory
-        class="fill"
-        style="width: 100%"
-        base-color="surface-variant"
-      >
+      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
         <v-btn
           color="buttonPassive"
           class="fill"

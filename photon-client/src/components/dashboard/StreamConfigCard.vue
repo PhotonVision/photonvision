@@ -28,7 +28,7 @@ const processingMode = computed<number>({
     <v-row class="pa-3 pb-0 align-center">
       <v-col class="pa-4">
         <p style="color: white">Processing Mode</p>
-        <v-btn-toggle v-model="processingMode" mandatory base-color="surface-variant" class="fill w-100">
+        <v-btn-toggle v-model="processingMode" mandatory class="fill w-100">
           <v-btn
             color="buttonPassive"
             :disabled="!useCameraSettingsStore().hasConnected"
@@ -59,7 +59,7 @@ const processingMode = computed<number>({
     <v-row class="pa-3 pt-0 align-center">
       <v-col class="pa-4 pt-0">
         <p style="color: white">Stream Display</p>
-        <v-btn-toggle v-model="value" :multiple="true" mandatory base-color="surface-variant" class="fill w-100">
+        <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill w-100">
           <v-btn
             color="buttonPassive"
             class="fill w-50"

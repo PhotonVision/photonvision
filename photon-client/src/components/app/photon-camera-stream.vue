@@ -2,10 +2,10 @@
 import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import loadingImage from "@/assets/images/loading-transparent.svg";
 import type { StyleValue } from "vue";
 import PvIcon from "@/components/common/pv-icon.vue";
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
+import PvLoading from "@/components/common/pv-loading.vue";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="stream-container" :style="containerStyle">
-    <img :src="loadingImage" class="stream-loading" />
+    <pv-loading class="stream-loading" />
     <img
       :id="id"
       ref="mjpgStream"

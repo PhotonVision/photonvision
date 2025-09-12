@@ -5,7 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useRoute } from "vue-router";
 import { useDisplay, useTheme } from "vuetify";
-import { onBeforeMount } from "vue";
+import { toggleTheme } from "@/lib/ThemeManager";
 
 const compact = computed<boolean>({
   get: () => {
@@ -18,19 +18,6 @@ const compact = computed<boolean>({
 const { mdAndUp } = useDisplay();
 
 const theme = useTheme();
-
-const changeTheme = () => {
-  const newTheme = theme.global.name.value === "LightTheme" ? "DarkTheme" : "LightTheme";
-  theme.global.name.value = newTheme;
-  localStorage.setItem("theme", newTheme);
-};
-
-onBeforeMount(() => {
-  const storedTheme = localStorage.getItem("theme");
-  if (storedTheme) {
-    theme.global.name.value = storedTheme;
-  }
-});
 
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </script>
@@ -88,7 +75,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
         <v-list-item
           link
           :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'"
-          @click="changeTheme"
+          @click="() => toggleTheme(theme)"
         >
           <v-list-item-title>Theme</v-list-item-title>
         </v-list-item>
