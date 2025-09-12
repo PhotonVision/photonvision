@@ -23,6 +23,7 @@ application {
 
 jar {
     from file("$rootDir/LICENSE")
+    dependsOn "buildAndCopyUI"
 }
 
 shadowJar {
@@ -44,6 +45,8 @@ tasks.register('copyClientUIToResources', Copy) {
 }
 
 tasks.register('buildClient', PnpmTask) {
+    inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")
+    outputs.dir file("${projectDir}/../photon-client/dist")
     args = ["build"]
     dependsOn "pnpmInstall"
 }
