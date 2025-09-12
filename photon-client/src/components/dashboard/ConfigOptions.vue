@@ -25,16 +25,46 @@ interface ConfigOption {
 }
 
 const allTabs = Object.freeze({
-  inputTab: { tabName: "Input", component: InputTab },
-  thresholdTab: { tabName: "Threshold", component: ThresholdTab },
-  contoursTab: { tabName: "Contours", component: ContoursTab },
-  apriltagTab: { tabName: "AprilTag", component: AprilTagTab },
-  arucoTab: { tabName: "Aruco", component: ArucoTab },
-  objectDetectionTab: { tabName: "Object Detection", component: ObjectDetectionTab },
-  outputTab: { tabName: "Output", component: OutputTab },
-  targetsTab: { tabName: "Targets", component: TargetsTab },
-  pnpTab: { tabName: "PnP", component: PnPTab },
-  map3dTab: { tabName: "3D", component: Map3DTab }
+  inputTab: {
+    tabName: "Input",
+    component: InputTab
+  },
+  thresholdTab: {
+    tabName: "Threshold",
+    component: ThresholdTab
+  },
+  contoursTab: {
+    tabName: "Contours",
+    component: ContoursTab
+  },
+  apriltagTab: {
+    tabName: "AprilTag",
+    component: AprilTagTab
+  },
+  arucoTab: {
+    tabName: "Aruco",
+    component: ArucoTab
+  },
+  objectDetectionTab: {
+    tabName: "Object Detection",
+    component: ObjectDetectionTab
+  },
+  outputTab: {
+    tabName: "Output",
+    component: OutputTab
+  },
+  targetsTab: {
+    tabName: "Targets",
+    component: TargetsTab
+  },
+  pnpTab: {
+    tabName: "PnP",
+    component: PnPTab
+  },
+  map3dTab: {
+    tabName: "3D",
+    component: Map3DTab
+  }
 });
 
 const selectedTabs = ref([0, 0, 0, 0]);

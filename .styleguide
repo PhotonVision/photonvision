@@ -39,3 +39,7 @@ includeOtherLibs {
   ^units/
   ^wpi/
 }
+
+licenseUpdateExclude {
+  photon-core/src/main/java/org/photonvision/jni/GpuDetectorJNI.java
+}
