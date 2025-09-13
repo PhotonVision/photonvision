@@ -38,7 +38,5 @@ public abstract class VisionSource implements Releasable {
 
     public abstract boolean isVendorCamera();
 
-    public abstract boolean hasLEDs();
-
     public abstract void remakeSettables();
 }

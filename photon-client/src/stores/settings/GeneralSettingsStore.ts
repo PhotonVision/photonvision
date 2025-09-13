@@ -1,20 +1,12 @@
 import { defineStore } from "pinia";
-import type {
-  ConfigurableNetworkSettings,
-  GeneralSettings,
-  LightingSettings,
-  MetricData,
-  NetworkSettings
-} from "@/types/SettingTypes";
+import type { ConfigurableNetworkSettings, GeneralSettings, MetricData, NetworkSettings } from "@/types/SettingTypes";
 import { NetworkConnectionType } from "@/types/SettingTypes";
-import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
-  lighting: LightingSettings;
   metrics: MetricData;
   currentFieldLayout;
 }
@@ -48,10 +40,6 @@ export const useSettingsStore = defineStore("settings", {
         }
       ],
       networkingDisabled: false
-    },
-    lighting: {
-      supported: true,
-      brightness: 0
     },
     metrics: {
       cpuTemp: undefined,
@@ -113,23 +101,11 @@ export const useSettingsStore = defineStore("settings", {
         conflictingHostname: data.general.conflictingHostname || false,
         conflictingCameras: data.general.conflictingCameras || ""
       };
-      this.lighting = data.lighting;
       this.network = data.networkSettings;
       this.currentFieldLayout = data.atfl;
     },
     updateGeneralSettings(payload: Required<ConfigurableNetworkSettings>) {
       return axios.post("/settings/general", payload);
-    },
-    /**
-     * Modify the brightness of the LEDs.
-     *
-     * @param brightness brightness to set [0, 100]
-     */
-    changeLEDBrightness(brightness: number) {
-      const payload = {
-        enabledLEDPercentage: brightness
-      };
-      useStateStore().websocket?.send(payload, true);
     }
   }
 });

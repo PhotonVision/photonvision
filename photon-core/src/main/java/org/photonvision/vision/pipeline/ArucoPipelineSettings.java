@@ -49,6 +49,5 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
         targetModel = TargetModel.kAprilTag6p5in_36h11;
         cameraExposureRaw = 20;
         cameraAutoExposure = true;
-        ledMode = false;
     }
 }
