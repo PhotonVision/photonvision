@@ -26,6 +26,8 @@ jar {
 }
 
 shadowJar {
+    dependsOn 'buildAndCopyUI'
+
     archiveBaseName = "photonvision"
     archiveVersion = project.version as String
     archiveClassifier.set(wpilibTools.currentPlatform.platformName)
@@ -44,6 +46,8 @@ tasks.register('copyClientUIToResources', Copy) {
 }
 
 tasks.register('buildClient', PnpmTask) {
+    inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")
+    outputs.dir file("${projectDir}/../photon-client/dist")
     args = ["build"]
     dependsOn "pnpmInstall"
 }
@@ -51,6 +55,10 @@ tasks.register('buildClient', PnpmTask) {
 tasks.register('buildAndCopyUI') {
     dependsOn "buildClient"
     finalizedBy "copyClientUIToResources"
+}
+
+processResources {
+    dependsOn copyClientUIToResources
 }
 
 run {
