@@ -12,7 +12,7 @@ const CommonColors = {
   lightGray: "#232C37"
 };
 
-const DarkTheme: ThemeDefinition = {
+export const DarkTheme: ThemeDefinition = {
   dark: true,
   colors: {
     background: CommonColors.darkGray,
@@ -39,7 +39,7 @@ const DarkTheme: ThemeDefinition = {
   }
 };
 
-const LightTheme: ThemeDefinition = {
+export const LightTheme: ThemeDefinition = {
   dark: false,
   colors: {
     background: CommonColors.lightGray,
@@ -56,8 +56,7 @@ const LightTheme: ThemeDefinition = {
     buttonActive: CommonColors.photonYellow,
     buttonPassive: CommonColors.lightBlue,
 
-    "surface-variant": "#358AB0",
-    "surface-light": CommonColors.photonYellow,
+    "surface-variant": "#8f8f8fff",
 
     error: "#b80000",
     info: "#2196F3",

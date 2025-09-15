@@ -41,6 +41,8 @@ Note that these are case sensitive!
     * linuxarm64
     * linuxathena
 - `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
+- `-PtgtUser`: Specifies custom username for `./gradlew deploy` to SSH into
+- `-PtgtPw`: Specifies custom password for `./gradlew deploy` to SSH into
 - `-Pprofile`: enables JVM profiling
 - `-PwithSanitizers`: On Linux, enables `-fsanitize=address,undefined,leak`
 

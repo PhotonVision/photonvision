@@ -3,10 +3,12 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
-import { inject } from "vue";
+import { inject, onBeforeMount } from "vue";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
+import { useTheme } from "vuetify";
+import { restoreThemeConfig } from "@/lib/ThemeManager";
 
 const is_demo = import.meta.env.MODE === "demo";
 if (!is_demo) {
@@ -50,6 +52,11 @@ if (!is_demo) {
   );
   useStateStore().$patch({ websocket: websocket });
 }
+
+const theme = useTheme();
+onBeforeMount(() => {
+  restoreThemeConfig(theme);
+});
 </script>
 
 <template>
