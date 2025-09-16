@@ -8,7 +8,7 @@ gradle.allprojects {
         def stdout = new ByteArrayOutputStream()
         String tagIsh
         try {
-            exec {
+            Project.getProviders().exec {
                 commandLine 'git', 'describe', '--tags', "--match=v*"
                 standardOutput = stdout
             }
