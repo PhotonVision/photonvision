@@ -1,8 +1,6 @@
 "backend":
-  - all:
-      - changed-files:
-          - any-glob-to-any-file: [photon-core/**, photon-server/**]
-          - all-globs-to-all-files: "!photon-server/src/main/resources/web/index.html"
+  - changed-files:
+      - any-glob-to-any-file: [photon-core/**, photon-server/**]
 "documentation":
   - changed-files:
       - any-glob-to-any-file: [docs/**, photon-docs/**]

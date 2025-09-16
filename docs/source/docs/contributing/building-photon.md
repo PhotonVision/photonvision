@@ -43,26 +43,6 @@ In the photon-client directory:
 pnpm install
 ```
 
-### Build and Copy UI to Java Source
-
-In the root directory:
-
-```{eval-rst}
-.. tab-set::
-
-   .. tab-item:: Linux
-
-      ``./gradlew buildAndCopyUI``
-
-   .. tab-item:: macOS
-
-      ``./gradlew buildAndCopyUI``
-
-   .. tab-item:: Windows (cmd)
-
-      ``gradlew buildAndCopyUI``
-```
-
 ### Using hot reload on the UI
 
 In the photon-client directory:
