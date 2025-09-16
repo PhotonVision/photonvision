@@ -139,7 +139,6 @@ std::vector<Marker>  MarkerDetector::_detect(const cv::Mat &img, unsigned int ma
     /////////////////// compute marker candidates by detecting contours
     std::vector<std::vector<cv::Point>> contours;
     std::vector<cv::Point> approxCurve;
-    cv::RNG rand;
     cv::findContours(thresImage, contours, cv::noArray(), cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
     cv::Mat bits(8,8,CV_8UC1);
     ///////////////// for each contour, approx to a rectangle and check bits inside
@@ -158,9 +157,9 @@ std::vector<Marker>  MarkerDetector::_detect(const cv::Mat &img, unsigned int ma
         marker=sort(marker);
         ////// extract the code. Obtain the intensities of the bits using  homography
         for(int i=0;i<int(maxAttemptsPerCandidate) && marker.id==-1;i++){
-            //if not first attempt, we may wanna produce small random alteration of the corners
+            //if not first attempt, we may wanna produce small alteration of the corners
             auto marker2=marker;
-            if( i!=0) for(int c=0;c<4;c++) {marker2[c].x+=rand.gaussian(0.75);marker2[c].y+=rand.gaussian(0.75);}//if not first, alter corner location
+            if( i!=0) for(int c=0;c<4;c++) {marker2[c].x+=0.001f;marker2[c].y+=0.001f;}//if not first, alter corner location
             int pixelSum=0;
             _private::Homographer hom(marker2);
             for(int r=0;r<bits.rows;r++){
