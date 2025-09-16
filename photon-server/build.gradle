@@ -14,8 +14,8 @@ dependencies {
     implementation "org.slf4j:slf4j-simple:2.0.7"
 }
 
-group 'org.photonvision'
-version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
+group = 'org.photonvision'
+version  = versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 application {
     mainClass = 'org.photonvision.Main'
