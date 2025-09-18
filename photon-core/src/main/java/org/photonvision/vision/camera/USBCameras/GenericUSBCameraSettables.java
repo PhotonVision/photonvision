@@ -83,6 +83,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     }
 
     protected void setUpExposureProperties() {
+        logger.debug("start usb setupexposure");
         // Photonvision needs to be able to control absolute exposure. Make sure we can
         // first.
         var expProp =
@@ -231,7 +232,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     @Override
     public void setBrightness(int brightness) {
         try {
-            camera.setBrightness(brightness);
+            softSet("brightness", brightness);
             this.lastBrightness = brightness;
         } catch (VideoException e) {
             logger.error("Failed to set camera brightness!", e);
