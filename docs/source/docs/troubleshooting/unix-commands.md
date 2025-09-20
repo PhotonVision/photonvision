@@ -122,11 +122,13 @@ systemctl status photonvision
 View the PhotonVision logs:
 
 ```
-journalctl -u photonvision
+journalctl --output cat -u photonvision
 ```
 
 View the PhotonVision logs in real-time:
 
 ```
-journalctl -u photonvision -f
+journalctl --output cat -u photonvision -f
 ```
+
+`--output cat` is used to prevent journalctl from printing its own timestamps, because we log our own timestamps.
