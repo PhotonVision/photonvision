@@ -21,7 +21,7 @@ export interface ObjectDetectionModelProperties {
   resolutionWidth: number;
   resolutionHeight: number;
   family: "RKNN" | "RUBIK";
-  version: "YOLOV5" | "YOLOV8" | "YOLOV11";
+  version: "YOLOV5" | "YOLOV8" | "YOLOV11" | "YOLOV11OBB";
 }
 
 export interface MetricData {

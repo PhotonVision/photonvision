@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect2d;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
@@ -86,19 +88,25 @@ public class Letterbox {
      * @return The resized detections
      */
     public List<NeuralNetworkPipeResult> resizeDetections(List<NeuralNetworkPipeResult> unscaled) {
-        var ret = new ArrayList<NeuralNetworkPipeResult>();
+        var ret = new ArrayList<NeuralNetworkPipeResult>(unscaled.size());
 
         for (var t : unscaled) {
             var scale = 1.0 / this.scale;
             var boundingBox = t.bbox();
-            double x = (boundingBox.x - this.dx) * scale;
-            double y = (boundingBox.y - this.dy) * scale;
-            double width = boundingBox.width * scale;
-            double height = boundingBox.height * scale;
+
+            double cx = (boundingBox.center.x - this.dx) * scale;
+            double cy = (boundingBox.center.y - this.dy) * scale;
+            double width = boundingBox.size.width * scale;
+            double height = boundingBox.size.height * scale;
+
+            Point center = new Point(cx, cy);
+            Size size = new Size(width, height);
+
+            // angle is unchanged from letterbox transformation
 
             ret.add(
                     new NeuralNetworkPipeResult(
-                            new Rect2d(x, y, width, height), t.classIdx(), t.confidence()));
+                            new RotatedRect(center, size, boundingBox.angle), t.classIdx(), t.confidence()));
         }
 
         return ret;
