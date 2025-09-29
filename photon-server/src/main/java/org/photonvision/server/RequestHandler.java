@@ -571,6 +571,7 @@ public class RequestHandler {
                         case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
+                        case "YOLO11OBB" -> NeuralNetworkModelManager.Version.YOLOV11OBB;
                             // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);

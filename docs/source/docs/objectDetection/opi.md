@@ -6,7 +6,7 @@ PhotonVision runs object detection on the Orange Pi 5 by use of the RKNN model a
 
 ## Supported models
 
-PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 SOCs! Other models require different post-processing code and will NOT work.
+PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, YOLOv11, and YOLOv11OBB models trained and converted to `.rknn` format for RK3588 SOCs! Other models require different post-processing code and will NOT work.
 
 ## Converting Custom Models
 
