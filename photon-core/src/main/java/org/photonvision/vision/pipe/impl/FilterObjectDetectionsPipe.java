@@ -22,6 +22,7 @@ import java.util.List;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.target.TargetCalculations;
 
 public class FilterObjectDetectionsPipe
         extends CVPipe<
@@ -42,15 +43,16 @@ public class FilterObjectDetectionsPipe
 
     private void filterContour(NeuralNetworkPipeResult contour) {
         var boc = contour.bbox();
-
+        
         // Area filtering
-        double areaPercentage = boc.area() / params.frameStaticProperties().imageArea * 100.0;
+        double areaPercentage = boc.size.area() / params.frameStaticProperties().imageArea * 100.0;
         double minAreaPercentage = params.area().getFirst();
         double maxAreaPercentage = params.area().getSecond();
         if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;
 
-        // Aspect ratio filtering; much simpler since always axis-aligned
-        double aspectRatio = boc.width / boc.height;
+        // Aspect Ratio Filtering.
+        double aspectRatio =
+                TargetCalculations.getAspectRatio(boc, params.isLandscape());
         if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
 
         m_filteredContours.add(contour);

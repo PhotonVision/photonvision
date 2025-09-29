@@ -53,8 +53,9 @@ public class RknnModel implements Model {
 
         if (properties.version() != Version.YOLOV5
                 && properties.version() != Version.YOLOV8
-                && properties.version() != Version.YOLOV11) {
-            throw new IllegalArgumentException("Model version must be YOLOV5, YOLOV8, or YOLOV11");
+                && properties.version() != Version.YOLOV11
+                && properties.version() != Version.YOLOV11OBB) {
+            throw new IllegalArgumentException("Model version must be YOLOV5, YOLOV8, YOLOV11, or YOLOV11OBB");
         }
 
         this.properties = properties;
