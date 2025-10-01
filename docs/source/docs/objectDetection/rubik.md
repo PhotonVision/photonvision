@@ -7,7 +7,7 @@ PhotonVision runs object detection on the Rubik Pi 3 by use of [TensorflowLite](
 ## Supported models
 
 :::{warning}
-The Ultralytics version used by the Qualcomm AIHub is `8.2.0`. Using any version after this may not work.
+The Ultralytics version used by the Qualcomm AIHub is `8.3.204`. Using any version after this may not work.
 :::
 
 PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv8 and YOLOv11 models trained and converted to `.tflite` format for QCS6490 SOCs! Other models require different post-processing code and will NOT work.
