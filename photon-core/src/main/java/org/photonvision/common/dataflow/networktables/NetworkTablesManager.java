@@ -325,7 +325,7 @@ public class NetworkTablesManager {
         if (config.runNTServer) {
             setServerMode();
         } else {
-            setClientMode(config.ntServerAddress);
+            setClientMode(config);
         }
 
         m_timeSync.setConfig(config);
@@ -337,17 +337,19 @@ public class NetworkTablesManager {
         return m_timeSync.getOffset();
     }
 
-    private void setClientMode(String ntServerAddress) {
+    private void setClientMode(NetworkConfig config) {
         ntInstance.stopServer();
-        ntInstance.startClient4(ConfigManager.getInstance().getConfig().getNetworkConfig().hostname);
+        ntInstance.stopClient();
+        logger.debug("Starting NT Client with hostname: " + config.hostname);
+        ntInstance.startClient4(config.hostname);
         try {
-            int t = Integer.parseInt(ntServerAddress);
+            int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
             if (!m_isRetryingConnection)
-                logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
-            ntInstance.setServer(ntServerAddress);
+                logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
+            ntInstance.setServer(config.ntServerAddress);
         }
         ntInstance.startDSClient();
         broadcastVersion();

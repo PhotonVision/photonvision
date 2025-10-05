@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSource;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.PlatformUtils;
 import org.photonvision.common.logging.LogGroup;
@@ -167,6 +168,10 @@ public class NetworkManager {
                                         oldHostname, hostname));
 
                 shell.executeBashCommand("systemctl restart avahi-daemon.service");
+
+                // This resets the NetworkTables config to use the new hostname as the client ID
+                NetworkTablesManager.getInstance()
+                        .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
                 var success = setHostnameRetCode == 0 && addHostRetCode == 0;
                 if (!success) {
