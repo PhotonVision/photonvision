@@ -61,14 +61,17 @@ To compile and run the project, issue the following command in the root director
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew run``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew run``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew run``
 ```
@@ -79,14 +82,17 @@ Running the following command under the root directory will build the jar under 
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew shadowJar``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew shadowJar``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew shadowJar``
 ```
@@ -101,18 +107,21 @@ An architecture override is required to specify the deploy target's architecture
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew clean``
 
       ``./gradlew deploy -PArchOverride=linuxarm64``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew clean``
 
       ``./gradlew deploy -PArchOverride=linuxarm64``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew clean``
 
@@ -131,14 +140,17 @@ The photonlib source can be published to your local maven repository after build
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew publishToMavenLocal``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew publishToMavenLocal``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew publishToMavenLocal``
 ```
