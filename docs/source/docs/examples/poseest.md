@@ -133,7 +133,7 @@ Then, we add configure the simulated vision system to match the camera system be
       :linenos:
       :lineno-start: 53
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 ```

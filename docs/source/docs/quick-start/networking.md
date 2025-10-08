@@ -75,15 +75,15 @@ If you would like to access your Ethernet-connected vision device from a compute
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: Java
+    .. code-block:: java
 
         PortForwarder.add(5800, "photonvision.local", 5800);
 
-    .. code-block:: C++
+    .. code-block:: c++
 
         wpi::PortForwarder::GetInstance().Add(5800, "photonvision.local", 5800);
 
-    .. code-block:: Python
+    .. code-block:: python
 
         # Coming Soon!
 ```

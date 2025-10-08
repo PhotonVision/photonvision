@@ -28,7 +28,7 @@ This multi-target pose estimate can be accessed using PhotonLib. We suggest usin
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: Java
+    .. code-block:: java
 
         var results = camera.getAllUnreadResults();
         for (var result : results) {
@@ -39,7 +39,7 @@ This multi-target pose estimate can be accessed using PhotonLib. We suggest usin
         }
 
 
-    .. code-block:: C++
+    .. code-block:: c++
 
       auto results = camera.GetAllUnreadResults();
       for (auto &result : results)
@@ -51,7 +51,7 @@ This multi-target pose estimate can be accessed using PhotonLib. We suggest usin
       }
 
 
-    .. code-block:: Python
+    .. code-block:: python
 
       results = camera.getAllUnreadResults()
       for result in results:
