@@ -517,8 +517,34 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
+  build-rubik-image:
+    needs: [build-package]
+
+    # if: ${{ github.event_name != 'pull_request' }}
+
+    runs-on: ubuntu-24.04
+    name: "Build image - Rubik Pi 3"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar-LinuxArm64
+      - name: Generate image
+        run: |
+          wget https://github.com/ramalamadingdong/photon-image-modifier/blob/rubik-pi-image/mount_rubikpi3.sh
+          chmod +x mount_rubikpi3.sh
+          ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_rubikpi3.tar.xz scripts/armrunner.sh
+      - uses: actions/upload-artifact@v4
+        name: Upload image
+        with:
+          name: image-rubikpi3
+          path: photonvision*.xz
   release:
-    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-image, build-rubik-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
