@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -340,8 +341,9 @@ public class NetworkTablesManager {
     private void setClientMode(NetworkConfig config) {
         ntInstance.stopServer();
         ntInstance.stopClient();
-        logger.debug("Starting NT Client with hostname: " + config.hostname);
-        ntInstance.startClient4(config.hostname);
+        String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
+        logger.debug("Starting NT Client with hostname: " + hostname);
+        ntInstance.startClient4(hostname);
         try {
             int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
