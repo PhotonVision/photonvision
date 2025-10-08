@@ -13,7 +13,7 @@ import DeviceCard from "@/components/settings/DeviceCard.vue";
   <div class="pa-3">
     <DeviceCard />
     <!-- <MetricsCard /> -->
-    <DeviceControlCard />
+    <!-- <DeviceControlCard /> -->
     <NetworkingCard />
     <ObjectDetectionCard v-if="useSettingsStore().general.supportedBackends.length > 0" />
     <LightingControlCard v-if="useSettingsStore().lighting.supported" />
