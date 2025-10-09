@@ -61,7 +61,7 @@ jobs:
   #       run: ./gradlew build
   build-gradle:
     name: "Gradle Build"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       # Checkout code.
@@ -85,7 +85,7 @@ jobs:
         with:
           node-version: 22
       - name: Install mrcal deps
-        run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
+        run: sudo add-apt-repository -y -S 'deb http://security.ubuntu.com/ubuntu jammy main universe' && sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
@@ -360,6 +360,7 @@ jobs:
           name: ${{ matrix.artifact-name }}
       # On linux, install mrcal packages
       - run: |
+          sudo add-apt-repository -y -S 'deb http://security.ubuntu.com/ubuntu jammy main universe'
           sudo apt-get update
           sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
         if: ${{ (matrix.os) == 'ubuntu-24.04' }}
