@@ -535,7 +535,7 @@ jobs:
           name: jar-LinuxArm64
       - name: Generate image
         run: |
-          wget https://github.com/ramalamadingdong/photon-image-modifier/blob/rubik-pi-image/mount_rubikpi3.sh
+          wget https://raw.githubusercontent.com/ramalamadingdong/photon-image-modifier/rubik-pi-image/mount_rubikpi3.sh
           chmod +x mount_rubikpi3.sh
           ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/actions/runs/18353218249/artifacts/4218745516 scripts/armrunner.sh
       - uses: actions/upload-artifact@v4
