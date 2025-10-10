@@ -520,7 +520,7 @@ jobs:
   build-rubik-image:
     needs: [build-package]
 
-    # if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
     runs-on: ubuntu-24.04
     name: "Build image - Rubik Pi 3"
@@ -535,7 +535,7 @@ jobs:
           name: jar-LinuxArm64
       - name: Generate image
         run: |
-          wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/95ec180fbd1447a8d2e36b654d1981e65c187dff/mount_rubikpi3.sh
+          wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
           chmod +x mount_rubikpi3.sh
           ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
       - uses: actions/upload-artifact@v4
