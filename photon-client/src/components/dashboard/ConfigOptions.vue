@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, getCurrentInstance, onBeforeUpdate, ref } from "vue";
+import { computed, ref } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -14,6 +14,10 @@ import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
+import { useDisplay } from "vuetify/lib/composables/display";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 interface ConfigOption {
   tabName: string;
@@ -21,58 +25,25 @@ interface ConfigOption {
 }
 
 const allTabs = Object.freeze({
-  inputTab: {
-    tabName: "Input",
-    component: InputTab
-  },
-  thresholdTab: {
-    tabName: "Threshold",
-    component: ThresholdTab
-  },
-  contoursTab: {
-    tabName: "Contours",
-    component: ContoursTab
-  },
-  apriltagTab: {
-    tabName: "AprilTag",
-    component: AprilTagTab
-  },
-  arucoTab: {
-    tabName: "Aruco",
-    component: ArucoTab
-  },
-  objectDetectionTab: {
-    tabName: "Object Detection",
-    component: ObjectDetectionTab
-  },
-  outputTab: {
-    tabName: "Output",
-    component: OutputTab
-  },
-  targetsTab: {
-    tabName: "Targets",
-    component: TargetsTab
-  },
-  pnpTab: {
-    tabName: "PnP",
-    component: PnPTab
-  },
-  map3dTab: {
-    tabName: "3D",
-    component: Map3DTab
-  }
+  inputTab: { tabName: "Input", component: InputTab },
+  thresholdTab: { tabName: "Threshold", component: ThresholdTab },
+  contoursTab: { tabName: "Contours", component: ContoursTab },
+  apriltagTab: { tabName: "AprilTag", component: AprilTagTab },
+  arucoTab: { tabName: "Aruco", component: ArucoTab },
+  objectDetectionTab: { tabName: "Object Detection", component: ObjectDetectionTab },
+  outputTab: { tabName: "Output", component: OutputTab },
+  targetsTab: { tabName: "Targets", component: TargetsTab },
+  pnpTab: { tabName: "PnP", component: PnPTab },
+  map3dTab: { tabName: "3D", component: Map3DTab }
 });
 
 const selectedTabs = ref([0, 0, 0, 0]);
-const getTabGroups = (): ConfigOption[][] => {
-  const smAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.smAndDown || false;
-  const mdAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false;
-  const lgAndDown = getCurrentInstance()?.proxy.$vuetify.breakpoint.lgAndDown || false;
-  const xl = getCurrentInstance()?.proxy.$vuetify.breakpoint.xl || false;
+const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
 
-  if (smAndDown || useCameraSettingsStore().isDriverMode || (mdAndDown && !useStateStore().sidebarFolded)) {
+const getTabGroups = (): ConfigOption[][] => {
+  if (smAndDown.value || useCameraSettingsStore().isDriverMode) {
     return [Object.values(allTabs)];
-  } else if (mdAndDown || !useStateStore().sidebarFolded) {
+  } else if (mdAndDown.value || !useStateStore().sidebarFolded) {
     return [
       [
         allTabs.inputTab,
@@ -85,7 +56,7 @@ const getTabGroups = (): ConfigOption[][] => {
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
-  } else if (lgAndDown) {
+  } else if (lgAndDown.value) {
     return [
       [allTabs.inputTab],
       [
@@ -98,7 +69,7 @@ const getTabGroups = (): ConfigOption[][] => {
       ],
       [allTabs.targetsTab, allTabs.pnpTab, allTabs.map3dTab]
     ];
-  } else if (xl) {
+  } else if (xl.value) {
     return [
       [allTabs.inputTab],
       [allTabs.thresholdTab],
@@ -135,45 +106,40 @@ const tabGroups = computed<ConfigOption[][]>(() => {
     .filter((it) => it.length); // Remove empty tab groups
 });
 
-onBeforeUpdate(() => {
+const onBeforeTabUpdate = () => {
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
     selectedTabs.value[0] = 0;
   }
-});
+};
 </script>
 
 <template>
   <v-row no-gutters class="tabGroups">
     <template v-if="!useCameraSettingsStore().hasConnected">
-      <v-col cols="12">
-        <v-card color="error">
-          <v-card-title class="white--text">
-            Camera has not connected. Please check your connection and try again.
-          </v-card-title>
-        </v-card>
-      </v-col>
+      <v-alert
+        color="error"
+        density="compact"
+        text="Camera is not connected. Please check your connection and try again."
+        icon="mdi-alert-circle-outline"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      />
     </template>
     <template v-else>
       <v-col
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
+        :cols="tabGroupIndex == 1 && useCameraSettingsStore().currentPipelineSettings.doMultiTarget ? 7 : ''"
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
+        @vue:before-update="onBeforeTabUpdate"
       >
-        <v-card color="primary" height="100%" class="pr-4 pl-4">
-          <v-tabs
-            v-model="selectedTabs[tabGroupIndex]"
-            grow
-            background-color="primary"
-            dark
-            height="48"
-            slider-color="accent"
-          >
+        <v-card color="surface" height="100%" class="pr-5 pl-5 rounded-12">
+          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="surface" height="48" slider-color="buttonActive">
             <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
               {{ tabConfig.tabName }}
             </v-tab>
           </v-tabs>
-          <div class="pl-2 pr-2 pt-3 pb-3">
+          <div class="pt-10px pb-10px">
             <KeepAlive>
               <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
             </KeepAlive>
@@ -185,6 +151,11 @@ onBeforeUpdate(() => {
 </template>
 
 <style>
+.v-slide-group {
+  transition-duration: 0.28s;
+  transition-property: box-shadow, opacity, background;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
 .v-slide-group__next--disabled,
 .v-slide-group__prev--disabled {
   display: none !important;

@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
+import java.util.stream.Stream;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -213,7 +214,12 @@ class LegacyConfigProvider extends ConfigProvider {
 
         this.config =
                 new PhotonConfiguration(
-                        hardwareConfig, hardwareSettings, networkConfig, atfl, cameraConfigurations);
+                        hardwareConfig,
+                        hardwareSettings,
+                        networkConfig,
+                        atfl,
+                        new NeuralNetworkPropertyManager(),
+                        cameraConfigurations);
     }
 
     @Override
@@ -277,9 +283,8 @@ class LegacyConfigProvider extends ConfigProvider {
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs() {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
-        try {
-            var subdirectories =
-                    Files.list(camerasFolder.toPath()).filter(f -> f.toFile().isDirectory()).toList();
+        try (Stream<Path> files = Files.list(camerasFolder.toPath())) {
+            var subdirectories = files.filter(f -> f.toFile().isDirectory()).toList();
 
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
@@ -320,9 +325,11 @@ class LegacyConfigProvider extends ConfigProvider {
                 // Load pipelines by mapping the files within the pipelines subdir
                 // to their deserialized equivalents
                 var pipelineSubdirectory = Path.of(subdir.toString(), "pipelines");
-                List<CVPipelineSettings> settings =
-                        pipelineSubdirectory.toFile().exists()
-                                ? Files.list(pipelineSubdirectory)
+                List<CVPipelineSettings> settings = Collections.emptyList();
+                if (pipelineSubdirectory.toFile().exists()) {
+                    try (Stream<Path> subdirectoryFiles = Files.list(pipelineSubdirectory)) {
+                        settings =
+                                subdirectoryFiles
                                         .filter(p -> p.toFile().isFile())
                                         .map(
                                                 p -> {
@@ -345,8 +352,9 @@ class LegacyConfigProvider extends ConfigProvider {
                                                     return null;
                                                 })
                                         .filter(Objects::nonNull)
-                                        .toList()
-                                : Collections.emptyList();
+                                        .toList();
+                    }
+                }
 
                 loadedConfig.driveModeSettings = driverMode;
                 loadedConfig.addPipelineSettings(settings);
@@ -480,5 +488,13 @@ class LegacyConfigProvider extends ConfigProvider {
 
     public void unloadCameraConfigs() {
         this.config.getCameraConfigurations().clear();
+    }
+
+    @Override
+    public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
+        // I'm not implementing this cause nobody with the legacy config is gonna have one of these
+
+        System.exit(1);
+        return false;
     }
 }

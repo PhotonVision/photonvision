@@ -7,14 +7,13 @@ export interface SelectItem {
   value: string | number;
   disabled?: boolean;
 }
+const value = defineModel<string | number | undefined>({ required: true });
 
 const props = withDefaults(
   defineProps<{
     label?: string;
     tooltip?: string;
     selectCols?: number;
-    // TODO fully update v-model usage in custom components on Vue3 update
-    value: any;
     disabled?: boolean;
     items: string[] | number[] | SelectItem[];
   }>(),
@@ -23,15 +22,6 @@ const props = withDefaults(
     disabled: false
   }
 );
-
-const emit = defineEmits<{
-  (e: "input", value: string): void;
-}>();
-
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
 
 // Computed in case items changes
 const items = computed<SelectItem[]>(() => {
@@ -50,21 +40,20 @@ const items = computed<SelectItem[]>(() => {
 
 <template>
   <div class="d-flex">
-    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0">
+    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0 pt-10px pb-10px">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col :cols="selectCols" class="d-flex align-center pr-0">
+    <v-col :cols="selectCols" class="d-flex align-center pr-0 pt-10px pb-10px">
       <v-select
-        v-model="localValue"
+        v-model="value"
         :items="items"
-        item-text="name"
+        item-title="name"
         item-value="value"
-        item-disabled="disabled"
-        dark
-        color="accent"
-        item-color="secondary"
+        item-props.disabled="disabled"
         :disabled="disabled"
         hide-details="auto"
+        variant="underlined"
+        density="compact"
       />
     </v-col>
   </div>

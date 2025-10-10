@@ -56,7 +56,10 @@ public class ObjectDetectionPipeline
     @Override
     protected void setPipeParamsImpl() {
         Optional<Model> selectedModel =
-                NeuralNetworkModelManager.getInstance().getModel(settings.model);
+                settings.model != null
+                        ? NeuralNetworkModelManager.getInstance()
+                                .getModel(settings.model.modelPath().toString())
+                        : Optional.empty();
 
         // If the desired model couldn't be found, log an error and try to use the default model
         if (selectedModel.isEmpty()) {
@@ -104,19 +107,15 @@ public class ObjectDetectionPipeline
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
 
-        // ***************** change based on backend ***********************
-
-        CVPipeResult<List<NeuralNetworkPipeResult>> rknnResult =
+        CVPipeResult<List<NeuralNetworkPipeResult>> neuralNetworkResult =
                 objectDetectorPipe.run(frame.colorImage);
-        sumPipeNanosElapsed += rknnResult.nanosElapsed;
+        sumPipeNanosElapsed += neuralNetworkResult.nanosElapsed;
 
         var names = objectDetectorPipe.getClassNames();
 
         frame.colorImage.getMat().copyTo(frame.processedImage.getMat());
 
-        // ***************** change based on backend ***********************
-
-        var filterContoursResult = filterContoursPipe.run(rknnResult.output);
+        var filterContoursResult = filterContoursPipe.run(neuralNetworkResult.output);
         sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =

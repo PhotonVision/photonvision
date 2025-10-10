@@ -1,7 +1,13 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+cd -- "$(dirname -- "$0")"
+
 # Uninstall if it already was installed
 python3 -m pip uninstall -y photonlibpy
 
 # Build wheel
+python3 -m pip install wheel
 python3 setup.py bdist_wheel
 
 # Install whatever wheel was made

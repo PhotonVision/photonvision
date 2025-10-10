@@ -5,20 +5,11 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
 
-const props = defineProps<{
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[];
-}>();
+const theme = useTheme();
 
-const emit = defineEmits<{
-  (e: "input", value: number[]): void;
-}>();
-
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
+const value = defineModel<number[]>({ required: true });
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -41,38 +32,39 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
-    <v-card-title class="justify-space-between align-content-center pa-0 pl-6 pr-6">
-      <div class="d-flex flex-wrap pt-4 pb-4">
-        <div>
-          <span class="mr-4" style="white-space: nowrap"> Cameras </span>
-        </div>
-        <div>
-          <v-chip
-            v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
-            label
-            :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-            style="font-size: 1rem; padding: 0; margin: 0"
+  <v-card
+    id="camera-settings-camera-view-card"
+    class="camera-settings-camera-view-card rounded-12"
+    color="surface"
+    dark
+  >
+    <v-card-title class="justify-space-between align-content-center pt-0 pb-0">
+      <div class="d-flex flex-wrap align-center pt-4 pb-4">
+        <span class="mr-4" style="white-space: nowrap"> Cameras </span>
+        <v-chip
+          v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
+          label
+          :color="fpsTooLow ? 'error' : 'transparent'"
+          style="font-size: 1rem; padding: 0; margin: 0"
+        >
+          <span
+            class="pr-1"
+            :style="{ color: fpsTooLow ? 'rgb(var(--v-theme-error))' : 'rgb(var(--v-theme-primary))' }"
           >
-            <span class="pr-1">
-              {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
-              {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
-            </span>
-          </v-chip>
-          <v-chip v-else label color="transparent" text-color="red" style="font-size: 1rem; padding: 0; margin: 0">
-            <span class="pr-1">Camera not connected</span>
-          </v-chip>
-        </div>
-      </div>
-      <div class="d-flex align-center">
+            &nbsp;{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+            {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
+          </span>
+        </v-chip>
+        <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
+          <span class="pr-1">Camera not connected</span>
+        </v-chip>
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
-          color="accent"
-          class="pt-2 pb-2"
+          color="primary"
+          density="compact"
           hide-details="auto"
         />
       </div>
@@ -98,21 +90,23 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-text>
     <v-card-text class="pt-0">
-      <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
+      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
         <v-btn
-          color="secondary"
+          color="buttonPassive"
           class="fill"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+          <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
-          color="secondary"
+          color="buttonPassive"
           class="fill"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+          <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>
@@ -123,7 +117,6 @@ const fpsTooLow = computed<boolean>(() => {
 <style scoped>
 .v-btn-toggle.fill {
   width: 100%;
-  height: 100%;
 }
 .v-btn-toggle.fill > .v-btn {
   width: 50%;
@@ -132,10 +125,6 @@ const fpsTooLow = computed<boolean>(() => {
 th {
   width: 80px;
   text-align: center;
-}
-
-.v-input--switch {
-  margin-top: 0;
 }
 
 .stream-container {

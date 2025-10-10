@@ -18,77 +18,71 @@
 package org.photonvision.vision.objects;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 import org.opencv.core.Size;
-import org.photonvision.common.configuration.NeuralNetworkModelManager;
-import org.photonvision.jni.RknnObjectDetector;
-import org.photonvision.rknn.RknnJNI;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 
 public class RknnModel implements Model {
     public final File modelFile;
-    public final RknnJNI.ModelVersion version;
-    public final List<String> labels;
-    public final Size inputSize;
-
-    /**
-     * Determines the model version based on the model's filename.
-     *
-     * <p>"yolov5" -> "YOLO_V5"
-     *
-     * <p>"yolov8" -> "YOLO_V8"
-     *
-     * <p>"yolov11" -> "YOLO_V11"
-     *
-     * @param modelName The model's filename
-     * @return The model version
-     */
-    private static RknnJNI.ModelVersion getModelVersion(String modelName)
-            throws IllegalArgumentException {
-        if (modelName.contains("yolov5")) {
-            return RknnJNI.ModelVersion.YOLO_V5;
-        } else if (modelName.contains("yolov8")) {
-            return RknnJNI.ModelVersion.YOLO_V8;
-        } else if (modelName.contains("yolov11")) {
-            return RknnJNI.ModelVersion.YOLO_V11;
-        } else {
-            throw new IllegalArgumentException("Unknown model version for model " + modelName);
-        }
-    }
+    public final ModelProperties properties;
 
     /**
      * rknn model constructor.
      *
-     * @param modelFile path to model on disk. Format: `name-width-height-model.rknn`
-     * @param labels path to labels file on disk
+     * @param properties The properties of the model.
      * @throws IllegalArgumentException
      */
-    public RknnModel(File modelFile, String labels) throws IllegalArgumentException, IOException {
-        this.modelFile = modelFile;
-
-        // parseRKNNName throws an IllegalArgumentException if the model name is invalid
-        String[] parts = NeuralNetworkModelManager.parseRKNNName(modelFile.getName());
-
-        this.version = getModelVersion(parts[3]);
-
-        int width = Integer.parseInt(parts[1]);
-        int height = Integer.parseInt(parts[2]);
-        this.inputSize = new Size(width, height);
-
-        try {
-            this.labels = Files.readAllLines(Paths.get(labels));
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Failed to read labels file " + labels, e);
+    public RknnModel(ModelProperties properties) throws IllegalArgumentException {
+        modelFile = new File(properties.modelPath().toString());
+        if (!modelFile.exists()) {
+            throw new IllegalArgumentException("Model file does not exist: " + modelFile);
         }
+
+        if (properties.labels() == null || properties.labels().isEmpty()) {
+            throw new IllegalArgumentException("Labels must be provided");
+        }
+
+        if (properties.resolutionWidth() <= 0 || properties.resolutionHeight() <= 0) {
+            throw new IllegalArgumentException("Resolution must be greater than 0");
+        }
+
+        if (properties.family() != Family.RKNN) {
+            throw new IllegalArgumentException("Model family must be RKNN");
+        }
+
+        if (properties.version() != Version.YOLOV5
+                && properties.version() != Version.YOLOV8
+                && properties.version() != Version.YOLOV11) {
+            throw new IllegalArgumentException("Model version must be YOLOV5, YOLOV8, or YOLOV11");
+        }
+
+        this.properties = properties;
     }
 
-    public String getName() {
-        return modelFile.getName();
+    /** Return the unique identifier for the model. In this case, it's the model's path. */
+    public String getUID() {
+        return properties.modelPath().toString();
+    }
+
+    public String getNickname() {
+        return properties.nickname();
+    }
+
+    public Family getFamily() {
+        return properties.family();
+    }
+
+    public ModelProperties getProperties() {
+        return properties;
     }
 
     public ObjectDetector load() {
-        return new RknnObjectDetector(this, inputSize);
+        return new RknnObjectDetector(
+                this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
+    }
+
+    public String toString() {
+        return "RknnModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
     }
 }
