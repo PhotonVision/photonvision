@@ -339,7 +339,7 @@ public class RequestHandler {
         Path targetPath =
                 Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
         try (InputStream fileSteam = file.content()) {
-            Files.copy(fileSteam, targetPath);
+            Files.copy(fileSteam, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
             ctx.status(200);
             ctx.result(
@@ -652,7 +652,7 @@ public class RequestHandler {
             }
 
             try (InputStream modelFileStream = modelFile.content()) {
-                Files.copy(modelFileStream, modelPath);
+                Files.copy(modelFileStream, modelPath, StandardCopyOption.REPLACE_EXISTING);
             }
 
             ModelProperties modelProperties =
