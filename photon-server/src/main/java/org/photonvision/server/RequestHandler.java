@@ -435,7 +435,7 @@ public class RequestHandler {
             // dmesg = output all kernel logs since current boot
             // cat /var/log/kern.log = output all kernel logs since first boot
             shell.executeBashCommand(
-                    "journalctl -a --output cat -u photonvision.service > "
+                    "journalctl -a --output cat -u photonvision.service | sed -E 's/\\x1B\\[(0|30|31|32|33|34|35|36|37)m//g' >"
                             + tempPath.toAbsolutePath()
                             + " && dmesg > "
                             + tempPath2.toAbsolutePath());
