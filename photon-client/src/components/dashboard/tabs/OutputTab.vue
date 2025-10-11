@@ -7,6 +7,9 @@ import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useDisplay } from "vuetify";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const isTagPipeline = computed(
   () =>
@@ -132,16 +135,20 @@ const interactiveCols = computed(() =>
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
       class="metrics-table mt-3 mb-3"
     >
-      <tr>
-        <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
-          {{ item.header }}
-        </th>
-      </tr>
-      <tr>
-        <td v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item">
-          {{ item.value }}
-        </td>
-      </tr>
+      <thead>
+        <tr>
+          <th v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item metric-item-title">
+            {{ item.header }}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td v-for="(item, itemIndex) in offsetPoints" :key="itemIndex" class="metric-item">
+            {{ item.value }}
+          </td>
+        </tr>
+      </tbody>
     </table>
     <div
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
@@ -155,8 +162,9 @@ const interactiveCols = computed(() =>
           <v-btn
             size="small"
             block
-            color="accent"
+            color="primary"
             class="text-black"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
           >
             Take Point
@@ -166,7 +174,8 @@ const interactiveCols = computed(() =>
           <v-btn
             size="small"
             block
-            color="yellow-darken-3"
+            color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
           >
             Clear All Points
@@ -181,8 +190,9 @@ const interactiveCols = computed(() =>
           <v-btn
             size="small"
             block
-            color="accent"
+            color="primary"
             class="text-black"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
           >
             Take First Point
@@ -192,8 +202,9 @@ const interactiveCols = computed(() =>
           <v-btn
             size="small"
             block
-            color="accent"
+            color="primary"
             class="text-black"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
           >
             Take Second Point
@@ -203,7 +214,8 @@ const interactiveCols = computed(() =>
           <v-btn
             size="small"
             block
-            color="yellow-darken-3"
+            color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
           >
             Clear All Points
@@ -234,6 +246,6 @@ const interactiveCols = computed(() =>
 .metric-item-title {
   font-size: 18px;
   text-decoration: underline;
-  text-decoration-color: #ffd843;
+  text-decoration-color: rgb(var(--v-theme-primary));
 }
 </style>

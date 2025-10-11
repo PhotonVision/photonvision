@@ -195,11 +195,18 @@ public class PhotonCamera implements AutoCloseable {
                     + ">>> but you are using WPILib "
                     + WPILibVersion.Version
                     + """
-                    >>>                                          \s
+                    \n>>>                                          \s
                     >>> This is neither tested nor supported.    \s
-                    >>> You MUST update PhotonVision,            \s
-                    >>> PhotonLib, or both.                      \s
-                    >>> Verify the output of `./gradlew dependencies`
+                    >>> You MUST update WPILib, PhotonLib, or both.
+                    >>> Check `./gradlew dependencies` and ensure\s
+                    >>> all mentions of OpenCV match the version \s
+                    >>> that PhotonLib was built for. If you find a
+                    >>> a mismatched version in a dependency, you\s
+                    >>> must take steps to update the version of \s
+                    >>> OpenCV used in that dependency. If you do\s
+                    >>> not control that dependency and an updated\s
+                    >>> version is not available, contact the    \s
+                    >>> developers of that dependency.           \s
                     >>>                                          \s
                     >>> Your code will now crash.                \s
                     >>> We hope your day gets better.            \s
@@ -232,11 +239,18 @@ public class PhotonCamera implements AutoCloseable {
                     + ">>> but you are using OpenCV "
                     + Core.VERSION
                     + """
-                    >>>                                          \s
+                    \n>>>                                          \s
                     >>> This is neither tested nor supported.    \s
-                    >>> You MUST update PhotonVision,            \s
-                    >>> PhotonLib, or both.                      \s
-                    >>> Verify the output of `./gradlew dependencies`
+                    >>> You MUST update WPILib, PhotonLib, or both.
+                    >>> Check `./gradlew dependencies` and ensure\s
+                    >>> all mentions of OpenCV match the version \s
+                    >>> that PhotonLib was built for. If you find a
+                    >>> a mismatched version in a dependency, you\s
+                    >>> must take steps to update the version of \s
+                    >>> OpenCV used in that dependency. If you do\s
+                    >>> not control that dependency and an updated\s
+                    >>> version is not available, contact the    \s
+                    >>> developers of that dependency.           \s
                     >>>                                          \s
                     >>> Your code will now crash.                \s
                     >>> We hope your day gets better.            \s
@@ -272,11 +286,10 @@ public class PhotonCamera implements AutoCloseable {
         verifyVersion();
         updateDisconnectAlert();
 
-        List<PhotonPipelineResult> ret = new ArrayList<>();
-
         // Grab the latest results. We don't care about the timestamps from NT - the metadata header has
         // this, latency compensated by the Time Sync Client
         var changes = resultSubscriber.getAllChanges();
+        List<PhotonPipelineResult> ret = new ArrayList<>(changes.size());
         for (var c : changes) {
             var result = c.value;
             checkTimeSyncOrWarn(result);

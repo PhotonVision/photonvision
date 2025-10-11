@@ -182,6 +182,61 @@ class PhotonPoseEstimator {
   inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
   /**
+   * Add robot heading data to the buffer. Must be called periodically for the
+   * PNP_DISTANCE_TRIG_SOLVE strategy.
+   *
+   * @param timestamp Timestamp of the robot heading data.
+   * @param heading Field-relative heading at the given timestamp. Standard
+   * WPILIB field coordinates.
+   */
+  inline void AddHeadingData(units::second_t timestamp,
+                             frc::Rotation2d heading) {
+    this->headingBuffer.AddSample(timestamp, heading);
+  }
+
+  /**
+   * Add robot heading data to the buffer. Must be called periodically for the
+   * PNP_DISTANCE_TRIG_SOLVE strategy.
+   *
+   * @param timestamp Timestamp of the robot heading data.
+   * @param heading Field-relative heading at the given timestamp. Standard
+   * WPILIB coordinates.
+   */
+  inline void AddHeadingData(units::second_t timestamp,
+                             frc::Rotation3d heading) {
+    AddHeadingData(timestamp, heading.ToRotation2d());
+  }
+
+  /**
+   * Clears all heading data in the buffer, and adds a new seed. Useful for
+   * preventing estimates from utilizing heading data provided prior to a pose
+   * or rotation reset.
+   *
+   * @param timestamp Timestamp of the robot heading data.
+   * @param heading Field-relative robot heading at given timestamp. Standard
+   * WPILIB field coordinates.
+   */
+  inline void ResetHeadingData(units::second_t timestamp,
+                               frc::Rotation2d heading) {
+    headingBuffer.Clear();
+    AddHeadingData(timestamp, heading);
+  }
+
+  /**
+   * Clears all heading data in the buffer, and adds a new seed. Useful for
+   * preventing estimates from utilizing heading data provided prior to a pose
+   * or rotation reset.
+   *
+   * @param timestamp Timestamp of the robot heading data.
+   * @param heading Field-relative robot heading at given timestamp. Standard
+   * WPILIB field coordinates.
+   */
+  inline void ResetHeadingData(units::second_t timestamp,
+                               frc::Rotation3d heading) {
+    ResetHeadingData(timestamp, heading.ToRotation2d());
+  }
+
+  /**
    * Update the pose estimator. If updating multiple times per loop, you should
    * call this exactly once per new result, in order of increasing result
    * timestamp.
@@ -223,6 +278,8 @@ class PhotonPoseEstimator {
   frc::TimeInterpolatableBuffer<units::radian_t> headingBuffer{1_s};
 
   units::second_t poseCacheTimestamp;
+
+  frc::TimeInterpolatableBuffer<frc::Rotation2d> headingBuffer;
 
   inline static int InstanceCount = 1;
 
@@ -302,6 +359,16 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result,
       std::optional<PhotonCamera::CameraMatrix> camMat,
       std::optional<PhotonCamera::DistortionMatrix> distCoeffs);
+
+  /**
+   * Return the pose calculation using the best visible tag and the robot's
+   * heading
+   *
+   * @return the estimated position of the robot in the FCS and the estimated
+   * timestamp of this estimation
+   */
+  std::optional<EstimatedRobotPose> PnpDistanceTrigSolveStrategy(
+      PhotonPipelineResult result);
 
   /**
    * Return the average of the best target poses using ambiguity as weight.

@@ -300,7 +300,7 @@ public class VisionSourceManager {
                 .filter(c -> !(String.join("", c.otherPaths()).contains("csi-video")))
                 .filter(c -> !c.name().equals("unicam"))
                 .forEach(cameraInfos::add);
-        if (LibCameraJNILoader.isSupported()) {
+        if (LibCameraJNILoader.getInstance().isSupported()) {
             // find all CSI cameras (Raspberry Pi cameras)
             Stream.of(LibCameraJNI.getCameraNames())
                     .map(

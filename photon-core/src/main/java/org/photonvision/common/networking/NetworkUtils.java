@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -65,7 +66,19 @@ public class NetworkUtils {
         }
     }
 
-    private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
+    public static boolean nmcliIsInstalled() {
+        var shell = new ShellExec(true, false);
+        try {
+            shell.executeBashCommand("nmcli --version");
+
+            return shell.getExitCode() == 0;
+        } catch (IOException e) {
+            logger.error("Could not query nmcli version", e);
+            return false;
+        }
+    }
+
+    private static List<NMDeviceInfo> allInterfaces = null;
     private static long lastReadTimestamp = 0;
 
     public static List<NMDeviceInfo> getAllInterfaces() {
@@ -75,35 +88,36 @@ public class NetworkUtils {
 
         var ret = new ArrayList<NMDeviceInfo>();
 
-        if (!Platform.isLinux()) {
-            // Can only determine interface name on Linux, give up
-            return ret;
-        }
-
-        try {
-            var shell = new ShellExec(true, false);
-            shell.executeBashCommand(
-                    "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show");
-            String out = shell.getOutput();
-            if (out == null) {
-                return new ArrayList<>();
+        if (Platform.isLinux()) {
+            String out = null;
+            try {
+                var shell = new ShellExec(true, false);
+                shell.executeBashCommand(
+                        "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, false);
+                out = shell.getOutput();
+            } catch (IOException e) {
+                logger.error("IO Exception occured when calling nmcli to get network interfaces!", e);
             }
-            Pattern pattern =
-                    Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
-            Matcher matcher = pattern.matcher(out);
-            while (matcher.find()) {
-                if (!matcher.group(2).equals("lo")) {
-                    // only include non-loopback devices
-                    ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+            if (out != null) {
+                Pattern pattern =
+                        Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+                Matcher matcher = pattern.matcher(out);
+                while (matcher.find()) {
+                    if (!matcher.group(2).equals("lo")) {
+                        // only include non-loopback devices
+                        ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+                    }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Could not get active network interfaces!", e);
         }
-
-        logger.debug("Found network interfaces: " + ret);
-
-        allInterfaces = ret;
+        if (!ret.equals(allInterfaces)) {
+            if (ret.isEmpty()) {
+                logger.error("Unable to identify network interfaces!");
+            } else {
+                logger.debug("Found network interfaces: " + ret);
+            }
+            allInterfaces = ret;
+        }
         return ret;
     }
 
@@ -202,5 +216,50 @@ public class NetworkUtils {
             e.printStackTrace();
         }
         return String.join(", ", addresses);
+    }
+
+    public static String getMacAddress() {
+        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        if (config.networkManagerIface == null || config.networkManagerIface.isBlank()) {
+            // This is a silly heuristic to find a network interface that PV might be using. It looks like
+            // it works pretty well, but Hyper-V adapters still show up in the list. But we're using MAC
+            // address as a semi-unique identifier, not as a source of truth, so this should be fine.
+            // Hyper-V adapters seem to show up near the end of the list anyways, so it's super likely
+            // we'll find the right adapter anyways
+            try {
+                for (var iface : NetworkInterface.networkInterfaces().toList()) {
+                    if (iface.isUp() && !iface.isVirtual() && !iface.isLoopback()) {
+                        byte[] mac = iface.getHardwareAddress();
+                        if (mac == null) {
+                            logger.error("No MAC address found for " + iface.getDisplayName());
+                        }
+                        return formatMacAddress(mac);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Error getting MAC address:", e);
+            }
+            return "";
+        }
+        try {
+            byte[] mac = NetworkInterface.getByName(config.networkManagerIface).getHardwareAddress();
+            if (mac == null) {
+                logger.error("No MAC address found for " + config.networkManagerIface);
+                return "";
+            }
+            return formatMacAddress(mac);
+        } catch (Exception e) {
+            logger.error("Error getting MAC address for " + config.networkManagerIface, e);
+            return "";
+        }
+    }
+
+    private static String formatMacAddress(byte[] mac) {
+        StringBuilder sb = new StringBuilder(17);
+        sb.append(String.format("%02X", mac[0]));
+        for (int i = 1; i < mac.length; i++) {
+            sb.append(String.format("-%02X", mac[i]));
+        }
+        return sb.toString();
     }
 }

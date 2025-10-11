@@ -7,6 +7,9 @@ import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -64,38 +67,43 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-banner v-if="arducamWarningShown" rounded color="error" dark class="mb-3" icon="mdi-alert-circle-outline">
-      <span
-        >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+    <v-alert
+      v-if="arducamWarningShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span>
+        Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
       </span>
-    </v-banner>
-    <v-banner
+    </v-alert>
+    <v-alert
       v-if="conflictingHostnameShown"
-      rounded
-      bg-color="error"
-      color="error"
-      dark
       class="mb-3"
+      color="error"
+      density="compact"
       icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
     >
-      <span
-        >Conflicting Hostname Detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      <span>
+        Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
-    </v-banner>
-    <v-banner
+    </v-alert>
+    <v-alert
       v-if="conflictingCameraShown"
-      rounded
-      bg-color="error"
-      color="error"
-      dark
       class="mb-3"
+      color="error"
+      density="compact"
       icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
     >
       <span
-        >Conflicting Camera Name(s) Detected! Please change the name(s) of
+        >Conflicting camera name(s) detected! Please change the name(s) of
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
-    </v-banner>
+    </v-alert>
     <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
@@ -114,11 +122,11 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       max-width="800"
       dark
     >
-      <v-card flat color="primary">
-        <v-card-title>Setup some cameras to get started!</v-card-title>
-        <v-card-text>
-          No cameras activated - head to the <router-link to="/cameraConfigs">Camera matching tab</router-link> to set
-          some up!
+      <v-card flat color="surface">
+        <v-card-title>Set up some cameras to get started!</v-card-title>
+        <v-card-text class="pt-0">
+          No cameras activated - head to the
+          <router-link to="/cameraConfigs">camera matching tab</router-link> to set some up!
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -127,23 +135,20 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <style scoped>
 a:link {
-  color: #ffd843;
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }
 a:visited {
-  color: #ffd843;
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }
 a:hover {
-  color: pink;
   background-color: transparent;
   text-decoration: underline;
 }
-
 a:active {
-  color: yellow;
   background-color: transparent;
   text-decoration: none;
 }

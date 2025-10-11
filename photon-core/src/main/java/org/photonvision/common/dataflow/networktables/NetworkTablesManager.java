@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -43,7 +44,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
@@ -55,10 +56,14 @@ public class NetworkTablesManager {
 
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
-    private final String kCoprocTableName = "coprocessors";
+    // The coprocessors table should only be used for operations/data related to MAC address
+    public final String kCoprocTableName = "coprocessors";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
+    public final NetworkTable kCoprocTable = kRootTable.getSubTable(kCoprocTableName);
 
+    // This is used to subscribe to all coprocessor tables, so we can detect conflicts
+    @SuppressWarnings("unused")
     private final MultiSubscriber sub =
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
@@ -67,6 +72,7 @@ public class NetworkTablesManager {
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
+    private String currentMacAddress;
 
     private boolean m_isRetryingConnection = false;
 
@@ -233,8 +239,12 @@ public class NetworkTablesManager {
      * this table.
      */
     private void checkHostnameAndCameraNames() {
-        String MAC = NetworkManager.getInstance().getMACAddress();
-        if (MAC == null || MAC.isEmpty()) {
+        String mac = NetworkUtils.getMacAddress();
+        if (!mac.equals(currentMacAddress)) {
+            logger.debug("MAC address changed! New MAC address is " + mac + ", was " + currentMacAddress);
+            currentMacAddress = mac;
+        }
+        if (mac.isEmpty()) {
             logger.error("Cannot check hostname and camera names, MAC address is not set!");
             return;
         }
@@ -252,70 +262,60 @@ public class NetworkTablesManager {
                         .map(entry -> entry.getValue().nickname)
                         .toArray(String[]::new);
 
-        // Create a subtable under the photonvision root table
-        NetworkTable coprocTable = kRootTable.getSubTable(kCoprocTableName);
-
         // Create a subtable for this coprocessor using its MAC address
-        NetworkTable macTable = coprocTable.getSubTable(MAC);
+        NetworkTable macTable = kCoprocTable.getSubTable(mac);
 
         // Publish the hostname and camera names
         macTable.getEntry("hostname").setString(hostname);
         macTable.getEntry("cameraNames").setStringArray(cameraNames);
-        logger.debug("Published hostname and camera names to NT under MAC: " + MAC);
 
         boolean conflictingHostname = false;
         StringBuilder conflictingCameras = new StringBuilder();
 
         // Check for conflicts with other coprocessors
-        for (String key : coprocTable.getSubTables()) {
+        for (String key : kCoprocTable.getSubTables()) {
             // Check that key is formatted like a MAC address
             if (!key.matches("([0-9A-F]{2}-){5}[0-9A-F]{2}")) {
                 logger.warn("Skipping non-MAC key in conflict detection: " + key);
                 continue;
             }
+            if (key.equals(mac)) { // Skip our own entry
+                continue;
+            }
+            NetworkTable otherCoprocTable = kCoprocTable.getSubTable(key);
+            String otherHostname = otherCoprocTable.getEntry("hostname").getString("");
+            String[] otherCameraNames =
+                    otherCoprocTable.getEntry("cameraNames").getStringArray(new String[0]);
+            // Check for hostname conflicts
+            if (otherHostname.equals(hostname)) {
+                logger.warn("Hostname conflict detected with coprocessor " + key + ": " + hostname);
+                conflictingHostname = true;
+            }
 
-            if (!key.equals(MAC)) { // Skip our own entry
-                NetworkTable otherCoprocTable = coprocTable.getSubTable(key);
-                String otherHostname = otherCoprocTable.getEntry("hostname").getString("");
-                String[] otherCameraNames =
-                        otherCoprocTable.getEntry("cameraNames").getStringArray(new String[0]);
-                // Check for hostname conflicts
-                if (otherHostname.equals(hostname)) {
-                    logger.warn("Hostname conflict detected with coprocessor " + key + ": " + hostname);
-                    conflictingHostname = true;
-                }
-
-                // Check for camera name conflicts
-                for (String cameraName : cameraNames) {
-                    if (Arrays.stream(otherCameraNames).anyMatch(otherName -> otherName.equals(cameraName))) {
-                        logger.warn("Camera name conflict detected: " + cameraName);
-                        conflictingCameras.append(
-                                conflictingCameras.isEmpty() ? cameraName : ", " + cameraName);
-                    }
+            // Check for camera name conflicts
+            for (String cameraName : cameraNames) {
+                if (Arrays.stream(otherCameraNames).anyMatch(otherName -> otherName.equals(cameraName))) {
+                    logger.warn("Camera name conflict detected: " + cameraName);
+                    conflictingCameras.append(conflictingCameras.isEmpty() ? cameraName : ", " + cameraName);
                 }
             }
         }
 
-        boolean hasChanged =
-                this.conflictingHostname != conflictingHostname
-                        || !this.conflictingCameras.equals(conflictingCameras.toString());
-
-        // Publish the conflict status
-        if (hasChanged) {
+        if (conflictingHostname != this.conflictingHostname
+                || !conflictingCameras.toString().equals(this.conflictingCameras)) {
+            // Only publish the conflict status when it's changed to prevent the settings cards from being
+            // forcibly reset
             DataChangeService.getInstance()
                     .publishEvent(
                             new OutgoingUIEvent<>(
                                     "fullsettings",
                                     UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         }
-
-        conflictAlert.setText(
-                conflictingHostname
-                        ? "Hostname conflict detected for " + hostname + "!"
-                        : ""
-                                + (conflictingCameras.isEmpty()
-                                        ? ""
-                                        : " Camera name conflict detected: " + conflictingCameras.toString() + "!"));
+        if (conflictingHostname) {
+            conflictAlert.setText("Hostname conflict detected for " + hostname + "!");
+        } else if (!conflictingCameras.isEmpty()) {
+            conflictAlert.setText("Camera name conflict detected: " + conflictingCameras + "!");
+        }
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
         SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;
@@ -326,7 +326,7 @@ public class NetworkTablesManager {
         if (config.runNTServer) {
             setServerMode();
         } else {
-            setClientMode(config.ntServerAddress);
+            setClientMode(config);
         }
 
         m_timeSync.setConfig(config);
@@ -338,17 +338,20 @@ public class NetworkTablesManager {
         return m_timeSync.getOffset();
     }
 
-    private void setClientMode(String ntServerAddress) {
+    private void setClientMode(NetworkConfig config) {
         ntInstance.stopServer();
-        ntInstance.startClient4("photonvision");
+        ntInstance.stopClient();
+        String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
+        logger.debug("Starting NT Client with hostname: " + hostname);
+        ntInstance.startClient4(hostname);
         try {
-            int t = Integer.parseInt(ntServerAddress);
+            int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
             if (!m_isRetryingConnection)
-                logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
-            ntInstance.setServer(ntServerAddress);
+                logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
+            ntInstance.setServer(config.ntServerAddress);
         }
         ntInstance.startDSClient();
         broadcastVersion();

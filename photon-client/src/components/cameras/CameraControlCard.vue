@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 interface SnapshotMetadata {
   snapshotName: string;
@@ -91,22 +94,39 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card style="background-color: #006492">
+  <v-card color="surface" class="rounded-12">
     <v-card-title>Camera Control</v-card-title>
-    <v-card-text>
-      <v-btn color="secondary" @click="fetchSnapshots">
-        <v-icon start class="open-icon"> mdi-folder </v-icon>
+    <v-card-text class="pt-0">
+      <v-btn
+        color="buttonPassive"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        @click="fetchSnapshots"
+      >
+        <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
         <span class="open-label">Show Saved Snapshots</span>
       </v-btn>
     </v-card-text>
     <v-dialog v-model="showSnapshotViewerDialog">
-      <v-card class="pt-3 pl-5 pr-5" color="primary" flat>
-        <v-card-title> View Saved Frame Snapshots </v-card-title>
-        <v-divider />
-        <v-card-text v-if="imgData.length === 0" style="font-size: 18px; font-weight: 600" class="pt-4">
-          There are no snapshots saved
+      <v-card color="surface" flat>
+        <v-card-title> Saved Frame Snapshots </v-card-title>
+        <v-card-text v-if="imgData.length === 0" class="pt-0">
+          <v-alert
+            color="buttonPassive"
+            density="compact"
+            text="There are currently no saved snapshots."
+            icon="mdi-information-outline"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          />
         </v-card-text>
-        <div v-else class="pb-2">
+        <v-card-text v-else class="pt-0">
+          <v-alert
+            closable
+            color="buttonPassive"
+            density="compact"
+            text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
+            icon="mdi-information-outline"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          />
           <v-data-table
             v-model:expanded="expanded"
             :headers="[
@@ -151,11 +171,7 @@ const expanded = ref([]);
               </div>
             </template>
           </v-data-table>
-          <span
-            >Snapshot Timestamps may be incorrect as they depend on when the coprocessor was last connected to the
-            internet</span
-          >
-        </div>
+        </v-card-text>
       </v-card>
     </v-dialog>
   </v-card>
@@ -170,16 +186,10 @@ const expanded = ref([]);
 }
 .v-table {
   text-align: center;
-  background-color: #006492 !important;
 
   th,
   td {
-    background-color: #005281 !important;
     font-size: 1rem !important;
-  }
-
-  tbody :hover tr {
-    background-color: #005281 !important;
   }
 
   ::-webkit-scrollbar {
@@ -194,7 +204,7 @@ const expanded = ref([]);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

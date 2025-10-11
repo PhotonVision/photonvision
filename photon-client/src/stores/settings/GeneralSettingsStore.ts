@@ -56,15 +56,15 @@ export const useSettingsStore = defineStore("settings", {
     metrics: {
       cpuTemp: undefined,
       cpuUtil: undefined,
-      cpuMem: undefined,
-      gpuMem: undefined,
-      ramUtil: undefined,
-      gpuMemUtil: undefined,
       cpuThr: undefined,
-      cpuUptime: undefined,
+      ramMem: undefined,
+      ramUtil: undefined,
+      gpuMem: undefined,
+      gpuMemUtil: undefined,
       diskUtilPct: undefined,
       npuUsage: undefined,
-      ipAddress: undefined
+      ipAddress: undefined,
+      uptime: undefined
     },
     currentFieldLayout: {
       field: {
@@ -90,15 +90,15 @@ export const useSettingsStore = defineStore("settings", {
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
         cpuUtil: data.cpuUtil || undefined,
-        cpuMem: data.cpuMem || undefined,
-        gpuMem: data.gpuMem || undefined,
-        ramUtil: data.ramUtil || undefined,
-        gpuMemUtil: data.gpuMemUtil || undefined,
         cpuThr: data.cpuThr || undefined,
-        cpuUptime: data.cpuUptime || undefined,
+        ramMem: data.ramMem || undefined,
+        ramUtil: data.ramUtil || undefined,
+        gpuMem: data.gpuMem || undefined,
+        gpuMemUtil: data.gpuMemUtil || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
         npuUsage: data.npuUsage || undefined,
-        ipAddress: data.ipAddress || undefined
+        ipAddress: data.ipAddress || undefined,
+        uptime: data.uptime || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {

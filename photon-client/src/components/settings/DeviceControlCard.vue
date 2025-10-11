@@ -4,15 +4,15 @@ import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import axios from "axios";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const restartProgram = () => {
   axios
     .post("/utils/restartProgram")
     .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully sent program restart request",
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: "Successfully sent program restart request", color: "success" });
     })
     .catch((error) => {
       // This endpoint always return 204 regardless of outcome
@@ -98,10 +98,7 @@ const handleOfflineUpdate = () => {
       }
     })
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
     })
     .catch((error) => {
       if (error.response) {
@@ -170,14 +167,9 @@ const handleSettingsImport = () => {
   }
 
   axios
-    .post(`/settings${settingsEndpoint}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
+    .post(`/settings${settingsEndpoint}`, formData, { headers: { "Content-Type": "multipart/form-data" } })
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
     })
     .catch((error) => {
       if (error.response) {
@@ -238,35 +230,50 @@ const nukePhotonConfigDirectory = () => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pa-6">Device Control</v-card-title>
-    <div class="pa-6 pt-0">
+  <v-card class="mb-3 rounded-12" color="surface">
+    <v-card-title>Device Control</v-card-title>
+    <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" lg="4" md="6">
-          <v-btn color="error" @click="restartProgram">
-            <v-icon start class="open-icon"> mdi-restart </v-icon>
+          <v-btn
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="restartProgram"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
             <span class="open-label">Restart PhotonVision</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4" md="6">
-          <v-btn color="error" @click="restartDevice">
-            <v-icon start class="open-icon"> mdi-restart-alert </v-icon>
+          <v-btn
+            color="buttonActive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="restartDevice"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
             <span class="open-label">Restart Device</span>
           </v-btn>
         </v-col>
         <v-col cols="12" lg="4">
-          <v-btn color="secondary" @click="openOfflineUpdatePrompt">
-            <v-icon start class="open-icon"> mdi-upload </v-icon>
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="openOfflineUpdatePrompt"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
             <span class="open-label">Offline Update</span>
           </v-btn>
           <input ref="offlineUpdate" type="file" accept=".jar" style="display: none" @change="handleOfflineUpdate" />
         </v-col>
       </v-row>
-      <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="() => (showImportDialog = true)">
-            <v-icon start class="open-icon"> mdi-import </v-icon>
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="() => (showImportDialog = true)"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
             <span class="open-label">Import Settings</span>
           </v-btn>
           <v-dialog
@@ -279,11 +286,11 @@ const nukePhotonConfigDirectory = () => {
               }
             "
           >
-            <v-card color="primary" dark>
-              <v-card-title>Import Settings</v-card-title>
+            <v-card color="surface" dark>
+              <v-card-title class="pb-0">Import Settings</v-card-title>
               <v-card-text>
                 Upload and apply previously saved or exported PhotonVision settings to this device
-                <v-row class="mt-6 ml-4">
+                <div class="pa-5 pb-0">
                   <pv-select
                     v-model="importType"
                     label="Type"
@@ -298,28 +305,35 @@ const nukePhotonConfigDirectory = () => {
                     :select-cols="10"
                     style="width: 100%"
                   />
-                </v-row>
-                <v-row class="mt-6 ml-4 mr-8">
                   <v-file-input
                     v-model="importFile"
+                    class="pb-5"
+                    variant="underlined"
                     :disabled="importType === undefined"
                     :error-messages="importType === undefined ? 'Settings type not selected' : ''"
                     :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
                   />
-                </v-row>
-                <v-row class="mt-12 ml-8 mr-8 mb-1" style="display: flex; align-items: center; justify-content: center">
-                  <v-btn color="secondary" :disabled="importFile === null" @click="handleSettingsImport">
+                  <v-btn
+                    color="primary"
+                    :disabled="importFile === null"
+                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    @click="handleSettingsImport"
+                  >
                     <v-icon start class="open-icon"> mdi-import </v-icon>
                     <span class="open-label">Import Settings</span>
                   </v-btn>
-                </v-row>
+                </div>
               </v-card-text>
             </v-card>
           </v-dialog>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="openExportSettingsPrompt">
-            <v-icon start class="open-icon"> mdi-export </v-icon>
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="openExportSettingsPrompt"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
             <span class="open-label">Export Settings</span>
           </v-btn>
           <a
@@ -331,8 +345,12 @@ const nukePhotonConfigDirectory = () => {
           />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="openExportLogsPrompt">
-            <v-icon start class="open-icon"> mdi-download </v-icon>
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="openExportLogsPrompt"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
             <span class="open-label">Download logs</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -346,46 +364,51 @@ const nukePhotonConfigDirectory = () => {
           </v-btn>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn color="secondary" @click="useStateStore().showLogModal = true">
-            <v-icon start class="open-icon"> mdi-eye </v-icon>
-            <span class="open-label">View program logs</span>
+          <v-btn
+            color="buttonPassive"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="useStateStore().showLogModal = true"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
+            <span class="open-label">View logs</span>
           </v-btn>
         </v-col>
       </v-row>
-      <v-divider class="mt-3 pb-3" />
       <v-row>
         <v-col cols="12">
-          <v-btn color="error" @click="() => (showFactoryReset = true)">
-            <v-icon start class="open-icon"> mdi-skull-crossbones </v-icon>
-            <span class="open-icon">
-              {{
-                $vuetify.display.mdAndUp
-                  ? "Factory Reset PhotonVision and delete EVERYTHING"
-                  : "Factory Reset PhotonVision"
-              }}
-            </span>
+          <v-btn
+            color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="() => (showFactoryReset = true)"
+          >
+            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
+            <span class="open-icon"> Factory Reset PhotonVision </span>
           </v-btn>
         </v-col>
       </v-row>
     </div>
-
     <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card color="primary" class="pa-3" flat>
-        <v-card-title style="justify-content: center" class="pb-6">
+      <v-card color="surface" flat>
+        <v-card-title style="display: flex; justify-content: center">
           <span class="open-label">
-            <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
             Factory Reset PhotonVision
-            <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
           </span>
         </v-card-title>
-        <v-card-text class="pt-3">
+        <v-card-text class="pt-0 pb-10px">
           <v-row class="align-center text-white">
             <v-col cols="12" md="6">
-              <span class="mt-3"> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
+              <span> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
             </v-col>
             <v-col cols="12" md="6">
-              <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
-                <v-icon start class="open-icon"> mdi-export </v-icon>
+              <v-btn
+                color="primary"
+                style="float: right"
+                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                @click="openExportSettingsPrompt"
+              >
+                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
                 <span class="open-label">Backup Settings</span>
                 <a
                   ref="exportSettings"
@@ -398,7 +421,7 @@ const nukePhotonConfigDirectory = () => {
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 pb-0">
           <pv-input
             v-model="yesDeleteMySettingsText"
             :label="'Type &quot;' + expected + '&quot;:'"
@@ -406,13 +429,14 @@ const nukePhotonConfigDirectory = () => {
             :input-cols="6"
           />
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-10px">
           <v-btn
             color="error"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
             @click="nukePhotonConfigDirectory"
           >
-            <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
+            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
             <span class="open-label">
               {{ $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything" }}
             </span>

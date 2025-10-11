@@ -21,16 +21,16 @@ withDefaults(
 
 <template>
   <div class="d-flex">
-    <v-col :cols="12 - inputCols" class="d-flex align-center pl-0">
+    <v-col :cols="12 - inputCols" class="d-flex align-center pl-0 pt-10px pb-10px">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col :cols="inputCols" class="d-flex align-center pr-0">
-      <v-radio-group v-model="value" row:mandatory="true" hide-details="auto">
+    <v-col :cols="inputCols" class="pr-0 pt-10px pb-10px">
+      <v-radio-group v-model="value" row:mandatory="true" inline hide-details="auto">
         <v-radio
           v-for="(radioName, index) in list"
           :key="index"
           :value="index"
-          color="#ffd843"
+          color="rgb(var(--v-theme-primary))"
           :label="radioName"
           :model-value="index"
           :disabled="disabled"
@@ -39,9 +39,3 @@ withDefaults(
     </v-col>
   </div>
 </template>
-<style scoped>
-.v-input--radio-group {
-  padding-top: 0;
-  margin-top: 0;
-}
-</style>
