@@ -1,4 +1,4 @@
-apply plugin: 'edu.wpi.first.WpilibTools'
+apply plugin: 'org.photonvision.tools.WpilibTools'
 
 import java.nio.file.Path
 
