@@ -339,7 +339,7 @@ public class RequestHandler {
         Path targetPath =
                 Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
         try (InputStream fileSteam = file.content()) {
-            Files.copy(fileSteam, targetPath);
+            Files.copy(fileSteam, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
             ctx.status(200);
             ctx.result(
@@ -435,7 +435,7 @@ public class RequestHandler {
             // dmesg = output all kernel logs since current boot
             // cat /var/log/kern.log = output all kernel logs since first boot
             shell.executeBashCommand(
-                    "journalctl -u photonvision.service > "
+                    "journalctl -a --output cat -u photonvision.service | sed -E 's/\\x1B\\[(0|30|31|32|33|34|35|36|37)m//g' >"
                             + tempPath.toAbsolutePath()
                             + " && dmesg > "
                             + tempPath2.toAbsolutePath());
@@ -652,7 +652,7 @@ public class RequestHandler {
             }
 
             try (InputStream modelFileStream = modelFile.content()) {
-                Files.copy(modelFileStream, modelPath);
+                Files.copy(modelFileStream, modelPath, StandardCopyOption.REPLACE_EXISTING);
             }
 
             ModelProperties modelProperties =
