@@ -556,17 +556,6 @@ jobs:
             **/photonlib*.json
             **/photonlib*.zip
         if: github.event_name == 'push'
-      # Upload all jars and xz archives
-      - uses: softprops/action-gh-release@v2.4.0
-        with:
-          files: |
-            **/*.xz
-            **/*.jar
-            **/photonlib*.json
-            **/photonlib*.zip
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Vendor JSON Repo PR
         uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
         with:
