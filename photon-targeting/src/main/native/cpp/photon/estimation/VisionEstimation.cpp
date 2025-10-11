@@ -18,6 +18,7 @@
 #include "photon/estimation/VisionEstimation.h"
 
 #include <iostream>
+#include <vector>
 
 namespace photon {
 namespace VisionEstimation {
