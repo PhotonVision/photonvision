@@ -24,8 +24,8 @@
 #include <frc/apriltag/AprilTagFieldLayout.h>
 
 #include "TargetModel.h"
-#include "photon/targeting/PnpResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
+#include "photon/targeting/PnpResult.h"
 
 namespace photon {
 namespace VisionEstimation {
