@@ -17,17 +17,14 @@
 
 #pragma once
 
-#include <utility>
 #include <vector>
 
 #include <Eigen/Core>
 #include <frc/apriltag/AprilTag.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 
-#include "OpenCVHelp.h"
 #include "TargetModel.h"
-#include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
-#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PnpResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 
 namespace photon {
@@ -37,7 +34,7 @@ std::vector<frc::AprilTag> GetVisibleLayoutTags(
     const std::vector<PhotonTrackedTarget>& visTags,
     const frc::AprilTagFieldLayout& layout);
 
-std::optional<PnpResult> EstimateCamPosePNP(
+std::optional<photon::PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
