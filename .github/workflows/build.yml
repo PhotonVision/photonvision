@@ -557,19 +557,10 @@ jobs:
             **/photonlib*.zip
         if: github.event_name == 'push'
       # Upload all jars and xz archives
-      # Split into two uploads to work around max size limits in action-gh-releases
-      # https://github.com/softprops/action-gh-release/issues/353
-      - uses: softprops/action-gh-release@v2.0.9
+      - uses: softprops/action-gh-release@v2.4.0
         with:
           files: |
-            **/@(*orangepi5*|*rock5*).xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.9
-        with:
-          files: |
-            **/!(*orangepi5*|*rock5*).xz
+            **/*.xz
             **/*.jar
             **/photonlib*.json
             **/photonlib*.zip
