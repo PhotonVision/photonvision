@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -325,7 +326,7 @@ public class NetworkTablesManager {
         if (config.runNTServer) {
             setServerMode();
         } else {
-            setClientMode(config.ntServerAddress);
+            setClientMode(config);
         }
 
         m_timeSync.setConfig(config);
@@ -337,17 +338,20 @@ public class NetworkTablesManager {
         return m_timeSync.getOffset();
     }
 
-    private void setClientMode(String ntServerAddress) {
+    private void setClientMode(NetworkConfig config) {
         ntInstance.stopServer();
-        ntInstance.startClient4("photonvision");
+        ntInstance.stopClient();
+        String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
+        logger.debug("Starting NT Client with hostname: " + hostname);
+        ntInstance.startClient4(hostname);
         try {
-            int t = Integer.parseInt(ntServerAddress);
+            int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
             if (!m_isRetryingConnection)
-                logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
-            ntInstance.setServer(ntServerAddress);
+                logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
+            ntInstance.setServer(config.ntServerAddress);
         }
         ntInstance.startDSClient();
         broadcastVersion();
