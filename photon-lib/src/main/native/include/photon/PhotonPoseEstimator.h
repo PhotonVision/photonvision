@@ -257,14 +257,6 @@ class PhotonPoseEstimator {
       std::optional<ConstrainedSolvepnpParams> constrainedPnpParams =
           std::nullopt);
 
-  void AddHeadingData(units::second_t timestamp, frc::Rotation3d heading) {
-    AddHeadingData(timestamp, heading.ToRotation2d());
-  }
-
-  void AddHeadingData(units::second_t timestamp, frc::Rotation2d heading) {
-    headingBuffer.AddSample(timestamp, heading.Radians());
-  }
-
  private:
   frc::AprilTagFieldLayout aprilTags;
   PoseStrategy strategy;
@@ -274,8 +266,6 @@ class PhotonPoseEstimator {
 
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
-
-  frc::TimeInterpolatableBuffer<units::radian_t> headingBuffer{1_s};
 
   units::second_t poseCacheTimestamp;
 
@@ -378,9 +368,6 @@ class PhotonPoseEstimator {
    */
   std::optional<EstimatedRobotPose> AverageBestTargetsStrategy(
       PhotonPipelineResult result);
-
-  std::optional<EstimatedRobotPose> PnpDistanceTrigSolveStrategy(
-      photon::PhotonPipelineResult result);
 
   std::optional<EstimatedRobotPose> ConstrainedPnpStrategy(
       photon::PhotonPipelineResult result,

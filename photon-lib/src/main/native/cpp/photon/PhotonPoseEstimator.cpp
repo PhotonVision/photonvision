@@ -537,55 +537,6 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
                             AVERAGE_BEST_TARGETS};
 }
 
-std::optional<EstimatedRobotPose>
-PhotonPoseEstimator::PnpDistanceTrigSolveStrategy(
-    photon::PhotonPipelineResult result) {
-  photon::PhotonTrackedTarget bestTarget = result.GetBestTarget();
-
-  if (bestTarget.fiducialId == -1) {
-    return {};
-  }
-
-  if (!headingBuffer.Sample(result.GetTimestamp()).has_value()) {
-    return {};
-  }
-
-  frc::Rotation2d headingSample{
-      headingBuffer.Sample(result.GetTimestamp()).value()};
-
-  frc::Translation2d camToTagTranslation{
-      frc::Translation3d{
-          bestTarget.GetBestCameraToTarget().Translation().Norm(),
-          frc::Rotation3d{0_deg, -units::degree_t{bestTarget.GetPitch()},
-                          -units::degree_t{bestTarget.GetYaw()}}}
-          .RotateBy(m_robotToCamera.Rotation())
-          .ToTranslation2d()
-          .RotateBy(headingSample)};
-
-  std::optional<frc::Pose3d> tagPose =
-      aprilTags.GetTagPose(bestTarget.GetFiducialId());
-
-  if (!tagPose.has_value()) {
-    return {};
-  }
-
-  frc::Pose2d tagPose2d{tagPose->ToPose2d()};
-
-  frc::Translation2d fieldToCameraTranslation{tagPose2d.Translation() +
-                                              (-camToTagTranslation)};
-
-  frc::Translation2d camToRobotTranslation{
-      (-m_robotToCamera.Translation().ToTranslation2d())
-          .RotateBy(headingSample)};
-
-  frc::Pose2d robotPose{fieldToCameraTranslation + camToRobotTranslation,
-                        headingSample};
-
-  return EstimatedRobotPose{frc::Pose3d{robotPose}, result.GetTimestamp(),
-                            result.GetTargets(),
-                            PoseStrategy::PNP_DISTANCE_TRIG_SOLVE};
-}
-
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::ConstrainedPnpStrategy(
     photon::PhotonPipelineResult result,
     std::optional<photon::PhotonCamera::CameraMatrix> camMat,
