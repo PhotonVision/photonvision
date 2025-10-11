@@ -4,16 +4,6 @@ pluginManagement {
         gradlePluginPortal()
         maven {
             url = uri('https://maven.photonvision.org/releases')
-            mavenContent {
-                includeGroup "org.photonvision.tools"
-            }
-        }
-    }
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.toString() == 'org.photonvision.tools.WpilibTools') {
-                useModule('org.photonvision.tools:WPILibTools.gradle.plugin:' + requested.version)
-            }
         }
     }
 }
