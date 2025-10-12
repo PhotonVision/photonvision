@@ -513,8 +513,10 @@ public class RequestHandler {
 
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
-            DataCalibrationImportRequest request =
-                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+            // DataCalibrationImportRequest request =
+            //         kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+            DataCalibrationImportRequest request = 
+                kObjectMapper.readValue(ctx.req().getInputStream(), DataCalibrationImportRequest.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(

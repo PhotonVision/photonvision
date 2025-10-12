@@ -136,11 +136,13 @@ const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
 
 const fetchCalibrationData = async () => {
+  console.log("Fetching calibration data for camera:", props.cameraUniqueName, "at resolution:", props.resolution);
+
   isLoading.value = true;
   error.value = null;
 
   try {
-    const response = await axios.get('/api/settings/camera/getCalibration', {
+    const response = await axios.get('/settings/camera/getCalibration', {
       params: {
         cameraUniqueName: props.cameraUniqueName,
         width: props.resolution.width,
@@ -148,6 +150,7 @@ const fetchCalibrationData = async () => {
       }
     });
     calibrationData.value = response.data;
+    console.log("Received calibration data:", response);
   } catch (err) {
     console.error('Failed to fetch calibration data:', err);
     error.value = 'Failed to load calibration data';
@@ -231,7 +234,7 @@ onMounted(() => {
   referenceFrameCues.push(new AxesHelper(0.3));
 
   // Draw the Camera Body
-  const camSize = 0.1;
+  const camSize = 0.04;
   const camBodyGeometry = new BoxGeometry(camSize, camSize, camSize);
   const camLensGeometry = new ConeGeometry(camSize * 0.4, camSize * 0.8, 30);
   const camMaterial = new MeshNormalMaterial();
@@ -268,19 +271,20 @@ onMounted(() => {
     renderer.render(scene, camera);
   };
 
-  drawCalibration(calibrationData.value);
   animate();
 });
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onWindowResize);
 });
 watchEffect(() => {
+  console.log("Watch triggered, refetching calibration");
   drawCalibration(calibrationData.value);
 });
 
 watch(
   () => [props.cameraUniqueName, props.resolution.width, props.resolution.height],
   () => {
+    console.log("Camera or resolution changed, refetching calibration");
     fetchCalibrationData();
   }
 );
@@ -288,7 +292,7 @@ watch(
 
 <template>
   <div id="container" style="width: 100%">
-    <template v-if="calibrationData">
+    <!-- <template v-if="calibrationData"> -->
       <v-row>
         <v-col align-self="stretch" style="display: flex; justify-content: center">
           <canvas id="view" />
@@ -302,12 +306,12 @@ watch(
           <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
         </v-col>
       </v-row>
-    </template>
+    <!-- </template>
     <template v-else-if="isLoading">
       <v-progress-circular indeterminate color="primary" />
     </template>
     <template v-else-if="error">
       <v-alert type="error">{{ error }}</v-alert>
-    </template>
+    </template> -->
   </div>
 </template>
