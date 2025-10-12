@@ -1,10 +1,10 @@
 # Quick Installation Guide
 
 - For the following supported coprocessors
-  - RPi 3,4,5
-  - Orange Pi 5, 5B, 5 Pro
-  - Limelight 2, 2+, 3, 3G
-  - Rubik Pi 3
+  - {ref}`RPi 3,4,5 <docs/quick-start/quick-install/index: Raspberry Pi and Orange Pi Installation>`
+  - {ref}`Orange Pi 5, 5B, 5 Pro <docs/quick-start/quick-install/index: Raspberry Pi and Orange Pi Installation>`
+  - {ref}`Limelight 2, 2+, 3, 3G <docs/quick-start/quick-install/index: LimeLight Installation>`
+  - {ref}`Rubik Pi 3 <docs/quick-start/quick-install/index: Rubik Pi 3 Installation>`
 
 For installing on non-supported devices {ref}`see here. <docs/advanced-installation/sw_install/index:Software Installation>`
 
