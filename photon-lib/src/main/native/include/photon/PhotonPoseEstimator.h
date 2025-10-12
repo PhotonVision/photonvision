@@ -28,6 +28,7 @@
 
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
+#include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <frc/interpolation/TimeInterpolatableBuffer.h>
 #include <opencv2/core/mat.hpp>
@@ -48,7 +49,13 @@ enum PoseStrategy {
   AVERAGE_BEST_TARGETS,
   MULTI_TAG_PNP_ON_COPROCESSOR,
   MULTI_TAG_PNP_ON_RIO,
-  PNP_DISTANCE_TRIG_SOLVE,
+  CONSTRAINED_SOLVEPNP,
+  PNP_DISTANCE_TRIG_SOLVE
+};
+
+struct ConstrainedSolvepnpParams {
+  bool headingFree{false};
+  double headingScalingFactor{0.0};
 };
 
 struct EstimatedRobotPose {
@@ -239,11 +246,16 @@ class PhotonPoseEstimator {
    * Only required if doing multitag-on-rio, and may be nullopt otherwise.
    * @param distCoeffsData The camera calibration distortion coefficients. Only
    * required if doing multitag-on-rio, and may be nullopt otherwise.
+   * @param constrainedPnpParams Constrained SolvePNP params, if needed.
    */
   std::optional<EstimatedRobotPose> Update(
-      const PhotonPipelineResult& result,
-      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData = std::nullopt,
-      std::optional<PhotonCamera::DistortionMatrix> coeffsData = std::nullopt);
+      const photon::PhotonPipelineResult& result,
+      std::optional<photon::PhotonCamera::CameraMatrix> cameraMatrixData =
+          std::nullopt,
+      std::optional<photon::PhotonCamera::DistortionMatrix> coeffsData =
+          std::nullopt,
+      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams =
+          std::nullopt);
 
  private:
   frc::AprilTagFieldLayout aprilTags;
@@ -275,13 +287,14 @@ class PhotonPoseEstimator {
    */
   std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result,
                                            PoseStrategy strategy) {
-    return Update(result, std::nullopt, std::nullopt, strategy);
+    return Update(result, std::nullopt, std::nullopt, std::nullopt, strategy);
   }
 
   std::optional<EstimatedRobotPose> Update(
       const PhotonPipelineResult& result,
       std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
       std::optional<PhotonCamera::DistortionMatrix> coeffsData,
+      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams,
       PoseStrategy strategy);
 
   /**
@@ -355,6 +368,12 @@ class PhotonPoseEstimator {
    */
   std::optional<EstimatedRobotPose> AverageBestTargetsStrategy(
       PhotonPipelineResult result);
+
+  std::optional<EstimatedRobotPose> ConstrainedPnpStrategy(
+      photon::PhotonPipelineResult result,
+      std::optional<photon::PhotonCamera::CameraMatrix> camMat,
+      std::optional<photon::PhotonCamera::DistortionMatrix> distCoeffs,
+      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams);
 };
 
 }  // namespace photon
