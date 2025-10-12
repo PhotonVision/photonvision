@@ -29,6 +29,7 @@ import {
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import type { CameraCalibrationResult, CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 const props = defineProps<{
   cameraUniqueName: string;
@@ -282,7 +283,9 @@ watchEffect(() => {
 });
 
 watch(
-  () => [props.cameraUniqueName, props.resolution.width, props.resolution.height],
+  () => [props.cameraUniqueName, props.resolution.width, props.resolution.height,
+    useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
+  ],
   () => {
     console.log("Camera or resolution changed, refetching calibration");
     fetchCalibrationData();
