@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
@@ -142,9 +143,8 @@ public final class BoardObservation implements Cloneable {
         }
 
         var diag = Math.hypot(image.width(), image.height());
-        int thickness = (int) Math.max(diag * 1.0 / 400.0, 1);
+        int thickness = Core.FILLED;
         int r = (int) Math.max(diag * 4.0 / 500.0, 3);
-        var r2 = r / Math.sqrt(2);
         for (int i = 0; i < this.locationInImageSpace.size(); i++) {
             var c = locationInImageSpace.get(i);
 
@@ -160,10 +160,6 @@ public final class BoardObservation implements Cloneable {
                 color = ColorHelper.colorToScalar(Color.red);
             }
             Imgproc.circle(image, c, r, color, thickness);
-            Imgproc.line(
-                    image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color, thickness);
-            Imgproc.line(
-                    image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color, thickness);
         }
 
         return image;
