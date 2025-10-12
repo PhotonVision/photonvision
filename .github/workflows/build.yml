@@ -520,7 +520,7 @@ jobs:
   build-rubik-image:
     needs: [build-package]
 
-    # if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' }}
 
     runs-on: ubuntu-24.04
     name: "Build image - Rubik Pi 3"
