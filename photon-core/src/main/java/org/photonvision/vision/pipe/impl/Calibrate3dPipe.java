@@ -283,7 +283,7 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat =
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
-                // Pull optimised camera to board poses out from the JNI
+        // Pull optimised camera to board poses out from the JNI
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
         for (var o : result.optimizedPoses) {
