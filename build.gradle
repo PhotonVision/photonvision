@@ -41,8 +41,7 @@ ext {
     libcameraDriverVersion = "v2025.0.3"
     rknnVersion = "dev-v2025.0.0-1-g33b6263"
     frcYear = "2025"
-    mrcalVersion = "dev-v2025.0.0-10-g2cb7c198";
-
+    mrcalVersion = "dev-v2025.0.0-12-ge3921dec";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

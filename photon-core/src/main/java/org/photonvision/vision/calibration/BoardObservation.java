@@ -142,7 +142,7 @@ public final class BoardObservation implements Cloneable {
         }
 
         var diag = Math.hypot(image.width(), image.height());
-        int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
+        int thickness = (int) Math.max(diag * 1.0 / 400.0, 1);
         int r = (int) Math.max(diag * 4.0 / 500.0, 3);
         var r2 = r / Math.sqrt(2);
         for (int i = 0; i < this.locationInImageSpace.size(); i++) {

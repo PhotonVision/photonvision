@@ -283,7 +283,7 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat =
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
-        // Pull optimised camera to board poses out from the JNI
+                // Pull optimised camera to board poses out from the JNI
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
         for (var o : result.optimizedPoses) {
@@ -394,9 +394,19 @@ public class Calibrate3dPipe
 
             var reprojectionError = new ArrayList<Point>();
             for (int j = 0; j < img_pts_reprojected_list.size(); j++) {
+                // Outliers are not part of the calibration, so don't calculate error for them
+                if (!cornersUsed.get(snapshotId)[j]) {
+                    continue;
+                }
+
                 // error = (measured - expected)
                 var measured = img_pts_reprojected_list.get(j);
                 var expected = i_imgPts.get(j);
+                assert measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0
+                        : "Negative corner in reprojection error calc! Measured: "
+                                + measured
+                                + ", expected: "
+                                + expected;
                 var error = new Point(measured.x - expected.x, measured.y - expected.y);
                 reprojectionError.add(error);
             }
