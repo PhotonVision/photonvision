@@ -7,6 +7,7 @@ import {
   AxesHelper,
   BoxGeometry,
   BufferGeometry,
+  CameraHelper,
   Color,
   ConeGeometry,
   DoubleSide,
@@ -27,7 +28,7 @@ import {
   WebGLRenderer
 } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
-import type { CameraCalibrationResult, CvPoint3 } from "@/types/SettingTypes";
+import type { BoardObservation, CameraCalibrationResult, CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
@@ -41,40 +42,45 @@ let camera: PerspectiveCamera | undefined;
 let renderer: WebGLRenderer | undefined;
 let controls: TrackballControls | undefined;
 
-const createChessboard = (corners: CvPoint3[], isActive: boolean, cal: CameraCalibrationResult): Group => {
+const createChessboard = (obs: BoardObservation, isActive: boolean, cal: CameraCalibrationResult): Group => {
   const group = new Group();
 
-  if (corners.length === 0) return group;
+  if (obs.locationInImageSpace.length === 0) return group;
 
-  console.log("Creating chessboard with size:", cal.calobjectSize, "and spacing:", cal.calobjectSpacing);
+  // for (let i = 0; i < cal.calobjectSize.width; i++) {
+  //   for (let j = 0; j < cal.calobjectSize.height; j++) {
+  //     const isBlack = (i + j) % 2 === 0;
+  //     const color = isBlack ? 0x333333 : 0xeeeeee;
 
-  for (let i = 0; i < cal.calobjectSize.width; i++) {
-    for (let j = 0; j < cal.calobjectSize.height; j++) {
-      const isBlack = (i + j) % 2 === 0;
-      const color = isBlack ? 0x333333 : 0xeeeeee;
+  //     const squareGeom = new PlaneGeometry(cal.calobjectSpacing, cal.calobjectSpacing);
+  //     const squareMat = new MeshPhongMaterial({
+  //       color,
+  //       opacity: isActive ? 1.0 : 0.3,
+  //       transparent: !isActive,
+  //       side: DoubleSide
+  //     });
+  //     const square = new Mesh(squareGeom, squareMat);
 
-      const squareGeom = new PlaneGeometry(cal.calobjectSpacing, cal.calobjectSpacing);
-      const squareMat = new MeshPhongMaterial({
-        color,
-        opacity: isActive ? 1.0 : 0.3,
-        transparent: !isActive,
-        side: DoubleSide
-      });
-      const square = new Mesh(squareGeom, squareMat);
+  //     square.position.x = i * cal.calobjectSpacing;
+  //     square.position.y = j * cal.calobjectSpacing;
+  //     square.position.z = 0;
 
-      square.position.x = i * cal.calobjectSpacing;
-      square.position.y = j * cal.calobjectSpacing;
-      square.position.z = 0;
+  //     group.add(square);
+  //   }
+  // }
 
-      group.add(square);
-    }
-  }
 
   // Add corner spheres
-  corners.forEach((corner, idx) => {
-    const sphereGeom = new SphereGeometry(0.003, 8, 8);
+  obs.locationInObjectSpace.forEach((corner, idx) => {
+    if (corner.x < 0 || corner.y < 0) return;
+
+    isActive = !obs.cornersUsed[idx];
+
+    const color = obs.cornersUsed[idx] ? 0x00ff00 : 0xff0000;
+
+    const sphereGeom = new SphereGeometry(cal.calobjectSpacing / 8, 8, 8);
     const sphereMat = new MeshPhongMaterial({
-      color: 0xff5722,
+      color: color,
       opacity: isActive ? 1.0 : 0.5,
       transparent: !isActive
     });
@@ -87,7 +93,7 @@ const createChessboard = (corners: CvPoint3[], isActive: boolean, cal: CameraCal
 };
 
 let previousTargets: Object3D[] = [];
-const drawCalibration = (cal: CameraCalibrationResult | null, snapshotIndex: number = 1) => {
+const drawCalibration = (cal: CameraCalibrationResult | null) => {
   // Check here, since if we check in watchEffect this never gets called
   if (!cal || scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
     return;
@@ -98,16 +104,15 @@ const drawCalibration = (cal: CameraCalibrationResult | null, snapshotIndex: num
 
   // Draw all chessboards with transparency
   cal.observations.forEach((obs, idx) => {
-    const isActive = idx === snapshotIndex || true;
+    const isActive = true;
     const pose = obs.optimisedCameraToObject;
 
     // Create chessboard
-    const board = createChessboard(obs.locationInObjectSpace, isActive, cal);
+    const board = createChessboard(obs, isActive, cal);
     board.userData.isCalibrationObject = true;
 
     // Apply transform from camera to chessboard
     const pos = pose.translation;
-    console.log("Placing board at:", pos.x, pos.y, pos.z);
     board.position.set(pos.x, pos.y, pos.z);
 
     if (pose.rotation.quaternion) {
@@ -119,13 +124,27 @@ const drawCalibration = (cal: CameraCalibrationResult | null, snapshotIndex: num
 
     // Add coordinate frame for active board
     if (isActive) {
-      const frameAxes = new AxesHelper(0.15);
-      frameAxes.position.copy(board.position);
-      frameAxes.quaternion.copy(board.quaternion);
-      frameAxes.userData.isCalibrationObject = true;
-      previousTargets.push(frameAxes);
+      // const frameAxes = new AxesHelper(0.15);
+      // frameAxes.position.copy(board.position);
+      // frameAxes.quaternion.copy(board.quaternion);
+      // frameAxes.userData.isCalibrationObject = true;
+      // previousTargets.push(frameAxes);
     }
   });
+
+  // And show camera fov
+  const imageWidth = 1280;
+  const imageHeight = 720;
+  const focalLengthX = cal.cameraIntrinsics.data[0];
+  const focalLengthY = cal.cameraIntrinsics.data[4];
+  const fovY = 2 * Math.atan(imageHeight / (2 * focalLengthY)) * (180 / Math.PI);
+  const aspect = (imageWidth * focalLengthY) / (imageHeight * focalLengthX);
+
+  const calibCamera = new PerspectiveCamera(fovY, aspect, 0.1, 1.0);
+  calibCamera.rotateX(Math.PI); 
+  const helper = new CameraHelper(calibCamera);
+  helper.rotateZ(Math.PI);
+  previousTargets.push(helper);
 
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
