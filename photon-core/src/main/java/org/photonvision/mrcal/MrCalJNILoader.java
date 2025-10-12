@@ -48,17 +48,18 @@ public class MrCalJNILoader extends PhotonJNICommon {
                     MrCalJNILoader.getInstance(),
                     MrCalJNILoader.class,
                     List.of(
-                            "libamd",
-                            "libcamd",
-                            "libcolamd",
-                            "libccolamd",
+                            "suitesparseconfig",
+                            "amd",
+                            "camd",
+                            "colamd",
+                            "ccolamd",
                             "openblas",
-                            "libwinpthread-1",
-                            "libgcc_s_seh-1",
-                            "libquadmath-0",
-                            "libgfortran-5",
-                            "liblapack",
-                            "libcholmod",
+                            // "winpthread-1",
+                            // "libgcc_s_seh-1",
+                            // "libquadmath-0",
+                            // "libgfortran-5",
+                            // "liblapack",
+                            "cholmod",
                             "mrcal_jni"));
         } else {
             // Nothing else to do on linux

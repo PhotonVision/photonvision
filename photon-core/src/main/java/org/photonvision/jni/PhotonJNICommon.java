@@ -35,16 +35,18 @@ public abstract class PhotonJNICommon {
     protected static synchronized void forceLoad(
             PhotonJNICommon instance, Class<?> clazz, List<String> libraries) throws IOException {
         if (instance.isLoaded()) return;
-        if (logger == null) logger = new Logger(clazz, LogGroup.Camera);
+        if (logger == null) logger = new Logger(clazz, LogGroup.General);
 
         for (var libraryName : libraries) {
             try {
+                logger.info("Loading " + libraryName);
                 // We always extract the shared object (we could hash each so, but that's a lot of work)
                 var arch_name = Platform.getNativeLibraryFolderName();
                 var nativeLibName = System.mapLibraryName(libraryName);
                 var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
 
                 if (in == null) {
+                    logger.error("Could not find " + libraryName);
                     instance.setLoaded(false);
                     return;
                 }
@@ -70,6 +72,7 @@ public abstract class PhotonJNICommon {
                 e.printStackTrace();
                 // logger.error(System.getProperty("java.library.path"));
                 instance.setLoaded(false);
+                System.exit(-1);
                 return;
             }
         }
