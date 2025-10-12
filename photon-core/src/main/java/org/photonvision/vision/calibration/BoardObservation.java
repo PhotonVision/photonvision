@@ -134,6 +134,10 @@ public final class BoardObservation implements Cloneable {
         return img;
     }
 
+    /**
+     * Annotate the image with the detected corners, green for used, red for unused
+     * @return
+     */
     @JsonIgnore
     public Mat annotateImage() {
         var image = loadImage();
@@ -165,9 +169,12 @@ public final class BoardObservation implements Cloneable {
         return image;
     }
 
+    /**
+     * Mean reprojection error for this observation, skipping corners marked as unused
+     * @return
+     */
     @JsonIgnore
     double meanReprojectionError() {
-        // Mean reprojection error for this observation, skipping corners marked as unused
         return reprojectionErrors.stream()
                 .filter(pt -> cornersUsed[reprojectionErrors.indexOf(pt)])
                 .mapToDouble(pt -> Math.hypot(pt.x, pt.y))

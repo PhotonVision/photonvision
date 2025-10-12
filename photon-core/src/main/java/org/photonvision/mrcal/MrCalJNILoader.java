@@ -41,9 +41,9 @@ public class MrCalJNILoader extends PhotonJNICommon {
         // Force load opencv
         TestUtils.loadLibraries();
 
-        // Library naming is dumb and has "lib" appended for Windows when it ought not to
         if (Platform.isWindows()) {
             // Order is correct to match dependencies of libraries
+            // If we just extracted all of them and put them in PATH, windows might pick right. but idc
             forceLoad(
                     MrCalJNILoader.getInstance(),
                     MrCalJNILoader.class,
@@ -54,11 +54,6 @@ public class MrCalJNILoader extends PhotonJNICommon {
                             "colamd",
                             "ccolamd",
                             "openblas",
-                            // "winpthread-1",
-                            // "libgcc_s_seh-1",
-                            // "libquadmath-0",
-                            // "libgfortran-5",
-                            // "liblapack",
                             "cholmod",
                             "mrcal_jni"));
         } else {

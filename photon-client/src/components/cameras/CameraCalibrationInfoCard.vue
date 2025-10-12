@@ -4,6 +4,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -244,6 +245,12 @@ const calibrationImageURL = (index: number) =>
           </tbody>
         </template>
       </v-table>
+    </v-card-text>
+    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Camera->Board Transforms</v-card-title>
+    <v-card-text v-if="currentCalibrationCoeffs">
+      i , too
+      <PhotonCalibrationVisualizer :calibration="currentCalibrationCoeffs" />
+      am in this visualizer
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">
