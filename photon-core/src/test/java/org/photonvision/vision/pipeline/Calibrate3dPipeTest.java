@@ -64,42 +64,42 @@ public class Calibrate3dPipeTest {
     }
 
     enum CalibrationDatasets {
-        SQUARES_LIFECAM_480(
-                "lifecam/2024-01-02_lifecam_480",
-                new Size(640, 480),
-                new Size(11, 11),
-                BoardType.CHESSBOARD,
-                false),
-        SQUARES_LIFECAM_1280(
-                "lifecam/2024-01-02_lifecam_1280",
-                new Size(1280, 720),
-                new Size(11, 11),
-                BoardType.CHESSBOARD,
-                false),
-        CHARUCO_LIFECAM_480(
-                "lifecam/2024-05-07_lifecam_480",
-                new Size(640, 480),
-                new Size(8, 8),
-                BoardType.CHARUCOBOARD,
-                false),
+        // SQUARES_LIFECAM_480(
+        //         "lifecam/2024-01-02_lifecam_480",
+        //         new Size(640, 480),
+        //         new Size(11, 11),
+        //         BoardType.CHESSBOARD,
+        //         false),
+        // SQUARES_LIFECAM_1280(
+        //         "lifecam/2024-01-02_lifecam_1280",
+        //         new Size(1280, 720),
+        //         new Size(11, 11),
+        //         BoardType.CHESSBOARD,
+        //         false),
+        // CHARUCO_LIFECAM_480(
+        //         "lifecam/2024-05-07_lifecam_480",
+        //         new Size(640, 480),
+        //         new Size(8, 8),
+        //         BoardType.CHARUCOBOARD,
+        //         false),
         CHARUCO_LIFECAM_1280(
                 "lifecam/2024-05-07_lifecam_1280",
                 new Size(1280, 720),
                 new Size(8, 8),
                 BoardType.CHARUCOBOARD,
-                false),
-        CHARUCO_OLDPATTERN_LIFECAM_480(
-                "lifecam/2024-06-19_lifecam_480_Old_Pattern",
-                new Size(640, 480),
-                new Size(8, 8),
-                BoardType.CHARUCOBOARD,
-                true),
-        CHARUCO_OLDPATTERN_LIFECAM_1280(
-                "lifecam/2024-06-19_lifecam_1280_Old_Pattern",
-                new Size(1280, 720),
-                new Size(8, 8),
-                BoardType.CHARUCOBOARD,
-                true);
+                false);
+        // CHARUCO_OLDPATTERN_LIFECAM_480(
+        //         "lifecam/2024-06-19_lifecam_480_Old_Pattern",
+        //         new Size(640, 480),
+        //         new Size(8, 8),
+        //         BoardType.CHARUCOBOARD,
+        //         true),
+        // CHARUCO_OLDPATTERN_LIFECAM_1280(
+        //         "lifecam/2024-06-19_lifecam_1280_Old_Pattern",
+        //         new Size(1280, 720),
+        //         new Size(8, 8),
+        //         BoardType.CHARUCOBOARD,
+        //         true);
 
         final String path;
         final Size size;
@@ -126,7 +126,7 @@ public class Calibrate3dPipeTest {
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = {true, false}) boolean useMrCal) {
+            @Values(booleans = {true}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();

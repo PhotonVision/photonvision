@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
-import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -1026,28 +1025,14 @@ public class RequestHandler {
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from
-        // 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
         var jpegBytes = new MatOfByte();
-        Mat img = null;
-        try {
-            img =
-                    Imgcodecs.imread(
-                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-        if (img == null || img.empty()) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-
-        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        var mat = calList.observations.get(observationIdx).annotateImage();
+        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        mat.release();
 
         ctx.result(jpegBytes.toArray());
+
         jpegBytes.release();
 
         ctx.status(200);
