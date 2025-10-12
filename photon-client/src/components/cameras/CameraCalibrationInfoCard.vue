@@ -249,7 +249,7 @@ const calibrationImageURL = (index: number) =>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Camera->Board Transforms</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">
       i , too
-      <PhotonCalibrationVisualizer :calibration="currentCalibrationCoeffs" />
+      <PhotonCalibrationVisualizer :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName" :resolution="props.videoFormat.resolution" />
       am in this visualizer
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>

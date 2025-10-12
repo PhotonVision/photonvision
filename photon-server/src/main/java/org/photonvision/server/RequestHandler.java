@@ -639,6 +639,41 @@ public class RequestHandler {
         ctx.status(204);
     }
 
+
+    /**
+     * Get the calibration JSON for a specific observation. Excludes camera image data
+     * 
+     * This is excluded from UICalibrationCoefficients by default to save bandwidth on
+     * large calibrations
+     */
+    public static void onCalibrationJsonRequest(Context ctx) {
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        CameraCalibrationCoefficients calList =
+                VisionSourceManager.getInstance()
+                        .vmm
+                        .getModule(cameraUniqueName)
+                        .getStateAsCameraConfig()
+                        .calibrations
+                        .stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        ctx.json(calList);
+        ctx.status(200);
+    }
+
     public static void onCalibrationSnapshotRequest(Context ctx) {
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
         var width = Integer.parseInt(ctx.queryParam("width"));

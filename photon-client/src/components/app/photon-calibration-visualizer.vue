@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
-import { onBeforeUnmount, onMounted, watchEffect } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
 import {
   AmbientLight,
   ArrowHelper,
@@ -28,9 +28,11 @@ import {
 } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import type { CameraCalibrationResult, CvPoint3 } from "@/types/SettingTypes";
+import axios from "axios";
 
 const props = defineProps<{
-  calibration: CameraCalibrationResult;
+  cameraUniqueName: string;
+  resolution: { width: number; height: number };
 }>();
 
 let scene: Scene | undefined;
@@ -50,7 +52,7 @@ const createChessboard = (corners: CvPoint3[], isActive: boolean, cal: CameraCal
       const isBlack = (i + j) % 2 === 0;
       const color = isBlack ? 0x333333 : 0xeeeeee;
 
-      const squareGeom = new PlaneGeometry(0.03, 0.03);
+      const squareGeom = new PlaneGeometry(cal.calobjectSpacing, cal.calobjectSpacing);
       const squareMat = new MeshPhongMaterial({
         color,
         opacity: isActive ? 1.0 : 0.3,
@@ -84,9 +86,9 @@ const createChessboard = (corners: CvPoint3[], isActive: boolean, cal: CameraCal
 };
 
 let previousTargets: Object3D[] = [];
-const drawCalibration = (cal: CameraCalibrationResult, snapshotIndex: number = 1) => {
+const drawCalibration = (cal: CameraCalibrationResult | null, snapshotIndex: number = 1) => {
   // Check here, since if we check in watchEffect this never gets called
-  if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+  if (!cal || scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
     return;
   }
 
@@ -129,6 +131,31 @@ const drawCalibration = (cal: CameraCalibrationResult, snapshotIndex: number = 1
   }
 }
 
+const calibrationData: Ref<CameraCalibrationResult | null> = ref(null);
+const isLoading: Ref<boolean> = ref(true);
+const error: Ref<string | null> = ref(null);
+
+const fetchCalibrationData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const response = await axios.get('/api/settings/camera/getCalibration', {
+      params: {
+        cameraUniqueName: props.cameraUniqueName,
+        width: props.resolution.width,
+        height: props.resolution.height
+      }
+    });
+    calibrationData.value = response.data;
+  } catch (err) {
+    console.error('Failed to fetch calibration data:', err);
+    error.value = 'Failed to load calibration data';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const onWindowResize = () => {
   const container = document.getElementById("container");
   const canvas = document.getElementById("view");
@@ -149,9 +176,9 @@ const resetCamFirstPerson = () => {
   }
 
   controls.reset();
-  camera.position.set(0.2, 0, 0);
-  camera.up.set(0, 0, 1);
-  controls.target.set(4.0, 0.0, 0.0);
+  camera.position.set(0, 0, 0.2);
+  camera.up.set(0, -1, 0);
+  controls.target.set(0.0, 0.0, 1.0);
   controls.update();
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
@@ -163,9 +190,9 @@ const resetCamThirdPerson = () => {
   }
 
   controls.reset();
-  camera.position.set(-1.39, -1.09, 1.17);
-  camera.up.set(0, 0, 1);
-  controls.target.set(4.0, 0.0, 0.0);
+  camera.position.set(-.3, -0.2, -0.3);
+  camera.up.set(0, -1, 0);
+  controls.target.set(0.0, 0.0, 0.4);
   controls.update();
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
@@ -173,6 +200,9 @@ const resetCamThirdPerson = () => {
 };
 
 onMounted(() => {
+  // Grab data first off
+  fetchCalibrationData();
+
   scene = new Scene();
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
@@ -186,11 +216,11 @@ onMounted(() => {
 
   scene.background = new Color(0xa9a9a9);
 
-  // Add grid
-  const gridHelper = new GridHelper(2, 10, 0x444444, 0x222222);
-  gridHelper.rotateOnWorldAxis(new Vector3(1, 0, 0), Math.PI / 2);
-  gridHelper.position.z = -0.05;
-  scene.add(gridHelper);
+  // // Add grid
+  // const gridHelper = new GridHelper(2, 10, 0x444444, 0x222222);
+  // gridHelper.rotateOnWorldAxis(new Vector3(1, 0, 0), Math.PI / 2);
+  // gridHelper.position.z = -0.05;
+  // scene.add(gridHelper);
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
@@ -238,31 +268,46 @@ onMounted(() => {
     renderer.render(scene, camera);
   };
 
-  drawCalibration(props.calibration);
+  drawCalibration(calibrationData.value);
   animate();
 });
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onWindowResize);
 });
 watchEffect(() => {
-  drawCalibration(props.calibration);
+  drawCalibration(calibrationData.value);
 });
+
+watch(
+  () => [props.cameraUniqueName, props.resolution.width, props.resolution.height],
+  () => {
+    fetchCalibrationData();
+  }
+);
 </script>
 
 <template>
   <div id="container" style="width: 100%">
-    <v-row>
-      <v-col align-self="stretch" style="display: flex; justify-content: center">
-        <canvas id="view" />
-      </v-col>
-    </v-row>
-    <v-row style="margin-bottom: 24px">
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
-      </v-col>
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
-      </v-col>
-    </v-row>
+    <template v-if="calibrationData">
+      <v-row>
+        <v-col align-self="stretch" style="display: flex; justify-content: center">
+          <canvas id="view" />
+        </v-col>
+      </v-row>
+      <v-row style="margin-bottom: 24px">
+        <v-col style="display: flex; justify-content: center">
+          <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
+        </v-col>
+        <v-col style="display: flex; justify-content: center">
+          <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
+        </v-col>
+      </v-row>
+    </template>
+    <template v-else-if="isLoading">
+      <v-progress-circular indeterminate color="primary" />
+    </template>
+    <template v-else-if="error">
+      <v-alert type="error">{{ error }}</v-alert>
+    </template>
   </div>
 </template>
