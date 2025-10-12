@@ -20,6 +20,8 @@ package org.photonvision.vision.calibration;
 import java.util.List;
 import org.opencv.core.Size;
 
+import kotlin.streams.jdk8.StreamsKt;
+
 public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficients {
     public int numSnapshots;
 
@@ -49,12 +51,7 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
         this.numSnapshots = observations.size();
         this.meanErrors =
                 observations.stream()
-                        .map(
-                                it2 ->
-                                        it2.reprojectionErrors.stream()
-                                                .mapToDouble(it -> Math.hypot(it.x, it.y))
-                                                .average()
-                                                .orElse(0))
+                        .map(BoardObservation::meanReprojectionError)
                         .toList();
     }
 }

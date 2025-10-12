@@ -146,13 +146,19 @@ public final class BoardObservation implements Cloneable {
         int r = (int) Math.max(diag * 4.0 / 500.0, 3);
         var r2 = r / Math.sqrt(2);
         for (int i = 0; i < this.locationInImageSpace.size(); i++) {
+            var c = locationInImageSpace.get(i);
+
+            // -1, -1 means unused corner
+            if (c.x < 0 || c.y < 0) {
+                continue;
+            }
+
             Scalar color;
             if (cornersUsed[i]) {
                 color = ColorHelper.colorToScalar(Color.green);
             } else {
                 color = ColorHelper.colorToScalar(Color.red);
             }
-            var c = locationInImageSpace.get(i);
             Imgproc.circle(image, c, r, color, thickness);
             Imgproc.line(
                     image, new Point(c.x - r2, c.y - r2), new Point(c.x + r2, c.y + r2), color, thickness);
@@ -161,5 +167,15 @@ public final class BoardObservation implements Cloneable {
         }
 
         return image;
+    }
+
+    @JsonIgnore
+    double meanReprojectionError() {
+        // Mean reprojection error for this observation, skipping corners marked as unused
+        return reprojectionErrors.stream()
+                .filter(pt -> cornersUsed[reprojectionErrors.indexOf(pt)])
+                .mapToDouble(pt -> Math.hypot(pt.x, pt.y))
+                .average()
+                .orElse(0);
     }
 }
