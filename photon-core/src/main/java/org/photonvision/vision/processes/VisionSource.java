@@ -19,8 +19,9 @@ package org.photonvision.vision.processes;
 
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.opencv.Releasable;
 
-public abstract class VisionSource {
+public abstract class VisionSource implements Releasable {
     protected final CameraConfiguration cameraConfiguration;
 
     protected VisionSource(CameraConfiguration cameraConfiguration) {
@@ -36,4 +37,8 @@ public abstract class VisionSource {
     public abstract VisionSourceSettables getSettables();
 
     public abstract boolean isVendorCamera();
+
+    public abstract boolean hasLEDs();
+
+    public abstract void remakeSettables();
 }

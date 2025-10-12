@@ -25,7 +25,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.targeting.PNPResult;
+import org.photonvision.targeting.PnpResult;
 
 public class MultiTargetPNPResultProtoTest {
     @Test
@@ -38,9 +38,9 @@ public class MultiTargetPNPResultProtoTest {
 
         result =
                 new MultiTargetPNPResult(
-                        new PNPResult(
+                        new PnpResult(
                                 new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)), 0.1),
-                        List.of(1, 2, 3));
+                        List.of((short) 1, (short) 2, (short) 3));
         serializedResult = MultiTargetPNPResult.proto.createMessage();
         MultiTargetPNPResult.proto.pack(serializedResult, result);
         unpackedResult = MultiTargetPNPResult.proto.unpack(serializedResult);

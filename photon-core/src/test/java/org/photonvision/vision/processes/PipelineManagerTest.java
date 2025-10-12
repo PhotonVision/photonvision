@@ -17,20 +17,26 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 
 public class PipelineManagerTest {
+    @BeforeAll
+    public static void init() {
+        TestUtils.loadLibraries();
+    }
+
     @Test
     public void testUniqueName() {
-        TestUtils.loadLibraries();
-        PipelineManager manager =
-                new PipelineManager(new DriverModePipelineSettings(), List.of(), "meme_name");
+        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
         manager.addPipeline(PipelineType.Reflective, "Another");
 
         // We now have ["New Pipeline", "Another"]
@@ -57,6 +63,20 @@ public class PipelineManagerTest {
         for (int i = 2; i < 15; i++) {
             expected.add("Another (" + i + ")");
         }
-        Assertions.assertEquals(expected, nicks);
+        assertEquals(expected, nicks);
+    }
+
+    @Test
+    public void testChangeType() {
+        // hack since we try to publish to datachangeservice
+        ConfigManager.getInstance().load();
+
+        PipelineManager manager = new PipelineManager(new DriverModePipelineSettings(), List.of(), -1);
+        // add a reflective pipeline
+        manager.addPipeline(PipelineType.Reflective, "Another");
+        manager.setIndex(0);
+        manager.getCurrentPipeline();
+        // and change
+        manager.changePipelineType(PipelineType.Aruco.baseIndex);
     }
 }

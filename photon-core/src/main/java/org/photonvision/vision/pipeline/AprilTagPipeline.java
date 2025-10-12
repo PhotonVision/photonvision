@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
@@ -37,7 +38,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
@@ -86,7 +87,21 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         config.refineEdges = settings.refineEdges;
         config.quadSigma = (float) settings.blur;
         config.quadDecimate = settings.decimate;
-        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
+
+        var quadParams = new AprilTagDetector.QuadThresholdParameters();
+        // 5 was the default minClusterPixels in WPILib prior to 2025
+        // increasing it causes detection problems when decimate > 1
+        quadParams.minClusterPixels = 5;
+        // these are the same as the values in WPILib 2025
+        // setting them here to prevent upstream changes from changing behavior of the detector
+        quadParams.maxNumMaxima = 10;
+        quadParams.criticalAngle = 45 * Math.PI / 180.0;
+        quadParams.maxLineFitMSE = 10.0f;
+        quadParams.minWhiteBlackDiff = 5;
+        quadParams.deglitch = false;
+
+        aprilTagDetectionPipe.setParams(
+                new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
@@ -116,11 +131,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         if (frame.type != FrameThresholdType.GREYSCALE) {
             // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
-            return new CVPipelineResult(0, 0, List.of(), frame);
+            return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
-        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
-        tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
+                aprilTagDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
@@ -149,7 +164,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         }
 
         // Do multi-tag pose estimation
-        MultiTargetPNPResult multiTagResult = new MultiTargetPNPResult();
+        Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
             var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
@@ -167,20 +182,21 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 AprilTagPoseEstimate tagPoseEstimate = null;
                 // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
                 if (settings.doSingleTargetAlways
-                        || !multiTagResult.fiducialIDsUsed.contains(Integer.valueOf(detection.getId()))) {
+                        || !(multiTagResult.isPresent()
+                                && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
                     var poseResult = singleTagPoseEstimatorPipe.run(detection);
                     sumPipeNanosElapsed += poseResult.nanosElapsed;
                     tagPoseEstimate = poseResult.output;
                 }
 
                 // If single-tag estimation was not done, this is a multi-target tag from the layout
-                if (tagPoseEstimate == null) {
+                if (tagPoseEstimate == null && multiTagResult.isPresent()) {
                     // compute this tag's camera-to-tag transform using the multitag result
                     var tagPose = atfl.getTagPose(detection.getId());
                     if (tagPose.isPresent()) {
                         var camToTag =
                                 new Transform3d(
-                                        new Pose3d().plus(multiTagResult.estimatedPose.best), tagPose.get());
+                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
                         // match expected AprilTag coordinate system
                         camToTag =
                                 CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
@@ -219,6 +235,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+        return new CVPipelineResult(
+                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+    }
+
+    @Override
+    public void release() {
+        aprilTagDetectionPipe.release();
+        singleTagPoseEstimatorPipe.release();
+        super.release();
     }
 }

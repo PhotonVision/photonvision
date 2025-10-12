@@ -22,7 +22,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.vision.camera.LibcameraGpuSettables;
+import org.photonvision.vision.camera.csi.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -30,7 +30,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
 
-public class LibcameraGpuFrameProvider implements FrameProvider {
+public class LibcameraGpuFrameProvider extends FrameProvider {
     private final LibcameraGpuSettables settables;
 
     static final Logger logger = new Logger(LibcameraGpuFrameProvider.class, LogGroup.Camera);
@@ -40,6 +40,8 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
         var vidMode = settables.getCurrentVideoMode();
         settables.setVideoMode(vidMode);
+        this.cameraPropertiesCached =
+                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override
@@ -92,12 +94,16 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
             LibCameraJNI.releasePair(p_ptr);
 
+            // Know frame is good -- increment sequence
+            ++sequenceID;
+
             return new Frame(
+                    sequenceID,
                     colorMat,
                     processedMat,
                     type,
                     MathUtils.wpiNanoTime() - latency,
-                    settables.getFrameStaticProperties());
+                    settables.getFrameStaticProperties().rotate(settables.getRotation()));
         }
     }
 
@@ -115,17 +121,43 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
     public void requestHsvSettings(HSVParams params) {
         LibCameraJNI.setThresholds(
                 settables.r_ptr,
-                params.getHsvLower().val[0] / 180.0,
-                params.getHsvLower().val[1] / 255.0,
-                params.getHsvLower().val[2] / 255.0,
-                params.getHsvUpper().val[0] / 180.0,
-                params.getHsvUpper().val[1] / 255.0,
-                params.getHsvUpper().val[2] / 255.0,
-                params.getHueInverted());
+                params.hsvLower().val[0] / 180.0,
+                params.hsvLower().val[1] / 255.0,
+                params.hsvLower().val[2] / 255.0,
+                params.hsvUpper().val[0] / 180.0,
+                params.hsvUpper().val[1] / 255.0,
+                params.hsvUpper().val[2] / 255.0,
+                params.hueInverted());
     }
 
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         LibCameraJNI.setFramesToCopy(settables.r_ptr, copyInput, copyOutput);
+    }
+
+    @Override
+    public void release() {
+        synchronized (settables.CAMERA_LOCK) {
+            LibCameraJNI.stopCamera(settables.r_ptr);
+            LibCameraJNI.destroyCamera(settables.r_ptr);
+            settables.r_ptr = 0;
+        }
+    }
+
+    @Override
+    public boolean checkCameraConnected() {
+        String[] cameraNames = LibCameraJNI.getCameraNames();
+        for (String name : cameraNames) {
+            if (name.equals(settables.getConfiguration().getDevicePath())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // To our knowledge the camera is always connected (after boot) with csi cameras
+    @Override
+    public boolean isConnected() {
+        return checkCameraConnected();
     }
 }

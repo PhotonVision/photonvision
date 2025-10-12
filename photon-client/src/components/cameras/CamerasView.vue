@@ -6,19 +6,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
-const props = defineProps<{
-  // TODO fully update v-model usage in custom components on Vue3 update
-  value: number[];
-}>();
-
-const emit = defineEmits<{
-  (e: "input", value: number[]): void;
-}>();
-
-const localValue = computed({
-  get: () => props.value,
-  set: (v) => emit("input", v)
-});
+const value = defineModel<number[]>({ required: true });
 
 const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
@@ -41,74 +29,76 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card
-    id="camera-settings-camera-view-card"
-    class="camera-settings-camera-view-card mb-3 pb-3 pa-4"
-    color="primary"
-    dark
-  >
-    <v-card-title
-      class="pb-0 mb-2 pl-4 pt-1"
-      style="min-height: 50px; justify-content: space-between; align-content: center"
-    >
-      <div style="display: flex; flex-wrap: wrap">
+  <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
+    <v-card-title class="justify-space-between align-content-center pa-0 pl-6 pr-6">
+      <div class="d-flex flex-wrap pt-4 pb-4">
         <div>
           <span class="mr-4" style="white-space: nowrap"> Cameras </span>
         </div>
         <div>
           <v-chip
+            v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
             label
             :color="fpsTooLow ? 'error' : 'transparent'"
-            :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
             style="font-size: 1rem; padding: 0; margin: 0"
           >
-            <span class="pr-1">
+            <span class="pr-1" :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }">
               {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
               {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
             </span>
           </v-chip>
+          <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
+            <span class="pr-1">Camera not connected</span>
+          </v-chip>
         </div>
       </div>
-
-      <div>
+      <div class="d-flex align-center">
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
           color="accent"
-          class="pt-2"
+          class="pt-2 pb-2"
+          hide-details="auto"
         />
       </div>
     </v-card-title>
-    <div class="stream-container pb-4">
+    <v-card-text class="stream-container">
       <div class="stream">
         <photon-camera-stream
-          v-show="value.includes(0)"
+          v-if="value.includes(0)"
           id="input-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Raw"
           style="max-width: 100%"
         />
       </div>
       <div class="stream">
         <photon-camera-stream
-          v-show="value.includes(1)"
+          v-if="value.includes(1)"
           id="output-camera-stream"
+          :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Processed"
           style="max-width: 100%"
         />
       </div>
-    </div>
-    <v-divider />
-    <div class="pt-4">
-      <p style="color: white">Stream Display</p>
-      <v-btn-toggle v-model="localValue" :multiple="true" mandatory dark class="fill" style="width: 100%">
+    </v-card-text>
+    <v-card-text class="pt-0">
+      <v-btn-toggle
+        v-model="value"
+        :multiple="true"
+        mandatory
+        class="fill"
+        style="width: 100%"
+        base-color="surface-variant"
+      >
         <v-btn
           color="secondary"
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon left class="mode-btn-icon">mdi-import</v-icon>
+          <v-icon start class="mode-btn-icon">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
@@ -116,18 +106,17 @@ const fpsTooLow = computed<boolean>(() => {
           class="fill"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon left class="mode-btn-icon">mdi-export</v-icon>
+          <v-icon start class="mode-btn-icon">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>
-    </div>
+    </v-card-text>
   </v-card>
 </template>
 
 <style scoped>
 .v-btn-toggle.fill {
   width: 100%;
-  height: 100%;
 }
 .v-btn-toggle.fill > .v-btn {
   width: 50%;
@@ -136,6 +125,10 @@ const fpsTooLow = computed<boolean>(() => {
 th {
   width: 80px;
   text-align: center;
+}
+
+.v-input--switch {
+  margin-top: 0;
 }
 
 .stream-container {
@@ -149,8 +142,15 @@ th {
 .stream {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 
+@media only screen and (min-width: 960px) {
+  #camera-settings-camera-view-card {
+    position: sticky;
+    top: 12px;
+  }
+}
 @media only screen and (min-width: 512px) and (max-width: 960px) {
   .stream-container {
     flex-wrap: nowrap;

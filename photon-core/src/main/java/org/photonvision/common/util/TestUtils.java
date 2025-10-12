@@ -18,60 +18,22 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.cscore.CameraServerCvJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.WPIMathJNI;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
-import java.awt.*;
+import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
+import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class TestUtils {
-    private static boolean has_loaded = false;
-
     public static boolean loadLibraries() {
-        if (has_loaded) return true;
-
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        WPIMathJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    TestUtils.class,
-                    "wpiutiljni",
-                    "wpimathjni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    Core.NATIVE_LIBRARY_NAME,
-                    "cscorejni",
-                    "apriltagjni");
-
-            has_loaded = true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            has_loaded = false;
-        }
-
-        return has_loaded;
+        return WpilibLoader.loadLibraries();
     }
 
     @SuppressWarnings("unused")
@@ -90,7 +52,7 @@ public class TestUtils {
         kRocketPanelAngleDark48in(1.2192),
         kRocketPanelAngleDark60in(1.524);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -128,7 +90,7 @@ public class TestUtils {
         kRedLoading_084in(2.1336),
         kRedLoading_108in(2.7432);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -148,7 +110,7 @@ public class TestUtils {
         kBackAmpZone_117in,
         kSpeakerCenter_143in;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Path path;
 
@@ -167,7 +129,7 @@ public class TestUtils {
         k162_36_Straight,
         k383_60_Angle2;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Translation2d approxPose;
         public final Path path;
@@ -194,7 +156,7 @@ public class TestUtils {
         kTerminal12ft6in(Units.feetToMeters(12.5)),
         kTerminal22ft6in(Units.feetToMeters(22.5));
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -340,12 +302,12 @@ public class TestUtils {
         return getPowercellPath(testMode).resolve(image.path);
     }
 
-    public static Path getDotBoardImagesPath() {
-        return getResourcesFolderPath(false).resolve("calibrationBoardImages");
-    }
-
     public static Path getSquaresBoardImagesPath() {
         return getResourcesFolderPath(false).resolve("calibrationSquaresImg");
+    }
+
+    public static Path getCharucoBoardImagesPath() {
+        return getResourcesFolderPath(false).resolve("calibrationCharucoImg");
     }
 
     public static File getHardwareConfigJson() {
@@ -412,9 +374,27 @@ public class TestUtils {
         showImage(frame, DefaultTimeoutMillis);
     }
 
+    public static void printTestResults(CVPipelineResult pipelineResult) {
+        double fps = 1000 / pipelineResult.getLatencyMillis();
+        System.out.print(
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
+        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+    }
+
+    public static void printTestResultsWithLocation(CVPipelineResult pipelineResult) {
+        printTestResults(pipelineResult);
+        System.out.println(
+                "Found targets at "
+                        + pipelineResult.targets.stream().map(TrackedTarget::getBestCameraToTarget3d).toList());
+    }
+
     public static Path getTestMode2023ImagePath() {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
+    }
+
+    public static Path getConfigDirectoriesPath(boolean testMode) {
+        return getResourcesFolderPath(testMode).resolve("old_configs");
     }
 }

@@ -20,6 +20,7 @@ package org.photonvision.common.hardware.metrics;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -31,6 +32,7 @@ import org.photonvision.common.hardware.metrics.cmds.PiCmds;
 import org.photonvision.common.hardware.metrics.cmds.RK3588Cmds;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.ShellExec;
 
 public class MetricsManager {
@@ -119,6 +121,14 @@ public class MetricsManager {
         return safeExecute(cmds.ramUsageCommand);
     }
 
+    public String getIpAddress() {
+        String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+        logger.debug("Requesting IP addresses for \"" + dev + "\"");
+        String addr = NetworkUtils.getIPAddresses(dev);
+        logger.debug("Got value \"" + addr + "\"");
+        return addr;
+    }
+
     public void publishMetrics() {
         logger.debug("Publishing Metrics...");
         final var metrics = new HashMap<String, String>();
@@ -133,6 +143,7 @@ public class MetricsManager {
         metrics.put("gpuMemUtil", this.getMallocedMemory());
         metrics.put("diskUtilPct", this.getUsedDiskPct());
         metrics.put("npuUsage", this.getNpuUsage());
+        metrics.put("ipAddress", this.getIpAddress());
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }

@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,7 +60,8 @@ public class TrackedTargetTest {
                         new Point(imageSize.width / 2, imageSize.height / 2),
                         61,
                         34.3,
-                        imageSize.area());
+                        imageSize.area(),
+                        null);
 
         var trackedTarget = new TrackedTarget(pTarget, setting, null);
         // TODO change these hardcoded values

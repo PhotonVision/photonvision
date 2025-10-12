@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableEvent.Kind;
@@ -26,14 +27,15 @@ import edu.wpi.first.networktables.StringSubscriber;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
@@ -41,30 +43,41 @@ import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkTablesManager {
+    private static final Logger logger =
+            new Logger(NetworkTablesManager.class, LogGroup.NetworkTables);
+
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
     private final String kFieldLayoutName = "apriltag_field_layout";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
-
-    private final NTLogger m_ntLogger = new NTLogger();
 
     private boolean m_isRetryingConnection = false;
 
     private StringSubscriber m_fieldLayoutSubscriber =
             kRootTable.getStringTopic(kFieldLayoutName).subscribe("");
 
+    private final TimeSyncManager m_timeSync = new TimeSyncManager(kRootTable);
+
+    NTDriverStation ntDriverStation;
+
     private NetworkTablesManager() {
-        ntInstance.addLogger(255, 255, (event) -> {}); // to hide error messages
-        ntInstance.addConnectionListener(true, m_ntLogger); // to hide error messages
+        ntInstance.addLogger(
+                LogMessage.kInfo, LogMessage.kCritical, this::logNtMessage); // to hide error messages
+        ntInstance.addConnectionListener(true, this::checkNtConnectState); // to hide error messages
 
         ntInstance.addListener(
                 m_fieldLayoutSubscriber, EnumSet.of(Kind.kValueAll), this::onFieldLayoutChanged);
 
-        TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
+        ntDriverStation = new NTDriverStation(this.getNTInst());
 
         // Get the UI state in sync with the backend. NT should fire a callback when it first connects
         // to the robot
         broadcastConnectedStatus();
+    }
+
+    public void registerTimedTasks() {
+        m_timeSync.start();
+        TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
     }
 
     private static NetworkTablesManager INSTANCE;
@@ -74,44 +87,77 @@ public class NetworkTablesManager {
         return INSTANCE;
     }
 
-    private static final Logger logger = new Logger(NetworkTablesManager.class, LogGroup.General);
-
-    private static class NTLogger implements Consumer<NetworkTableEvent> {
-        private boolean hasReportedConnectionFailure = false;
-
-        @Override
-        public void accept(NetworkTableEvent event) {
-            var isConnEvent = event.is(Kind.kConnected);
-            var isDisconnEvent = event.is(Kind.kDisconnected);
-
-            if (!hasReportedConnectionFailure && isDisconnEvent) {
-                var msg =
-                        String.format(
-                                "NT lost connection to %s:%d! (NT version %d). Will retry in background.",
-                                event.connInfo.remote_ip,
-                                event.connInfo.remote_port,
-                                event.connInfo.protocol_version);
-                logger.error(msg);
-                HardwareManager.getInstance().setNTConnected(false);
-
-                hasReportedConnectionFailure = true;
-                getInstance().broadcastConnectedStatus();
-            } else if (isConnEvent && event.connInfo != null) {
-                var msg =
-                        String.format(
-                                "NT connected to %s:%d! (NT version %d)",
-                                event.connInfo.remote_ip,
-                                event.connInfo.remote_port,
-                                event.connInfo.protocol_version);
-                logger.info(msg);
-                HardwareManager.getInstance().setNTConnected(true);
-
-                hasReportedConnectionFailure = false;
-                ScriptManager.queueEvent(ScriptEventType.kNTConnected);
-                getInstance().broadcastVersion();
-                getInstance().broadcastConnectedStatus();
-            }
+    private void logNtMessage(NetworkTableEvent event) {
+        String levelmsg = "DEBUG";
+        LogLevel pvlevel = LogLevel.DEBUG;
+        if (event.logMessage.level >= LogMessage.kCritical) {
+            pvlevel = LogLevel.ERROR;
+            levelmsg = "CRITICAL";
+        } else if (event.logMessage.level >= LogMessage.kError) {
+            pvlevel = LogLevel.ERROR;
+            levelmsg = "ERROR";
+        } else if (event.logMessage.level >= LogMessage.kWarning) {
+            pvlevel = LogLevel.WARN;
+            levelmsg = "WARNING";
+        } else if (event.logMessage.level >= LogMessage.kInfo) {
+            pvlevel = LogLevel.INFO;
+            levelmsg = "INFO";
         }
+
+        logger.log(
+                "NT: "
+                        + levelmsg
+                        + " "
+                        + event.logMessage.level
+                        + ": "
+                        + event.logMessage.message
+                        + " ("
+                        + event.logMessage.filename
+                        + ":"
+                        + event.logMessage.line
+                        + ")",
+                pvlevel);
+    }
+
+    public void checkNtConnectState(NetworkTableEvent event) {
+        var isConnEvent = event.is(Kind.kConnected);
+        var isDisconnEvent = event.is(Kind.kDisconnected);
+
+        if (isDisconnEvent) {
+            var msg =
+                    String.format(
+                            "NT lost connection to %s:%d! (NT version %d). Will retry in background.",
+                            event.connInfo.remote_ip,
+                            event.connInfo.remote_port,
+                            event.connInfo.protocol_version);
+            logger.error(msg);
+            HardwareManager.getInstance().setNTConnected(false);
+
+            getInstance().broadcastConnectedStatus();
+        } else if (isConnEvent && event.connInfo != null) {
+            var msg =
+                    String.format(
+                            "NT connected to %s:%d! (NT version %d)",
+                            event.connInfo.remote_ip,
+                            event.connInfo.remote_port,
+                            event.connInfo.protocol_version);
+            logger.info(msg);
+            HardwareManager.getInstance().setNTConnected(true);
+
+            ScriptManager.queueEvent(ScriptEventType.kNTConnected);
+            getInstance().broadcastVersion();
+            getInstance().broadcastConnectedStatus();
+
+            m_timeSync.reportNtConnected();
+        } else if (isConnEvent) {
+            logger.warn("Got connection event with no connection info??");
+        } else {
+            logger.warn("Got a non-sensical connection message that is neither connect nor disconnect?");
+        }
+    }
+
+    public NetworkTableInstance getNTInst() {
+        return ntInstance;
     }
 
     private void onFieldLayoutChanged(NetworkTableEvent event) {
@@ -124,7 +170,8 @@ public class NetworkTablesManager {
             DataChangeService.getInstance()
                     .publishEvent(
                             new OutgoingUIEvent<>(
-                                    "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (IOException e) {
             logger.error("Error deserializing atfl!");
             logger.error(atfl_json);
@@ -164,7 +211,14 @@ public class NetworkTablesManager {
         } else {
             setClientMode(config.ntServerAddress);
         }
+
+        m_timeSync.setConfig(config);
+
         broadcastVersion();
+    }
+
+    public long getOffset() {
+        return m_timeSync.getOffset();
     }
 
     private void setClientMode(String ntServerAddress) {
@@ -206,5 +260,9 @@ public class NetworkTablesManager {
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
+    }
+
+    public long getTimeSinceLastPong() {
+        return m_timeSync.getTimeSinceLastPong();
     }
 }

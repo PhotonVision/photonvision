@@ -29,10 +29,12 @@ import org.opencv.objdetect.Objdetect;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
-        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
+        extends CVPipe<CVMat, List<ArucoDetectionResult>, ArucoDetectionPipeParams>
+        implements Releasable {
     // ArucoDetector wrapper class
     private final PhotonArucoDetector photonDetector = new PhotonArucoDetector();
 
@@ -57,13 +59,12 @@ public class ArucoDetectionPipe
             for (var detection : detections) {
                 double[] xCorners = detection.getXCorners();
                 double[] yCorners = detection.getYCorners();
-                Point[] cornerPoints =
-                        new Point[] {
-                            new Point(xCorners[0], yCorners[0]),
-                            new Point(xCorners[1], yCorners[1]),
-                            new Point(xCorners[2], yCorners[2]),
-                            new Point(xCorners[3], yCorners[3])
-                        };
+                Point[] cornerPoints = {
+                    new Point(xCorners[0], yCorners[0]),
+                    new Point(xCorners[1], yCorners[1]),
+                    new Point(xCorners[2], yCorners[2]),
+                    new Point(xCorners[3], yCorners[3])
+                };
                 double bltr =
                         Math.hypot(
                                 cornerPoints[2].x - cornerPoints[0].x, cornerPoints[2].y - cornerPoints[0].y);
@@ -99,6 +100,7 @@ public class ArucoDetectionPipe
     @Override
     public void setParams(ArucoDetectionPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
+            System.out.println("Changing tag family to " + newParams.tagFamily);
             photonDetector
                     .getDetector()
                     .setDictionary(Objdetect.getPredefinedDictionary(newParams.tagFamily));
@@ -130,5 +132,10 @@ public class ArucoDetectionPipe
         var pt1 = new Point(corner.x - windowSize, corner.y - windowSize);
         var pt2 = new Point(corner.x + windowSize, corner.y + windowSize);
         Imgproc.rectangle(outputMat, pt1, pt2, new Scalar(0, 0, 255), thickness);
+    }
+
+    @Override
+    public void release() {
+        photonDetector.release();
     }
 }

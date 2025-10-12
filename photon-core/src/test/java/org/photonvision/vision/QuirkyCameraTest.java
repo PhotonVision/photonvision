@@ -17,8 +17,9 @@
 
 package org.photonvision.vision;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.HashMap;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -29,24 +30,13 @@ public class QuirkyCameraTest {
         HashMap<CameraQuirk, Boolean> ps3EyeQuirks = new HashMap<>();
         ps3EyeQuirks.put(CameraQuirk.Gain, true);
         ps3EyeQuirks.put(CameraQuirk.FPSCap100, true);
+        ps3EyeQuirks.put(CameraQuirk.PsEyeControls, true);
         for (var q : CameraQuirk.values()) {
             ps3EyeQuirks.putIfAbsent(q, false);
         }
 
-        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415);
-        Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
-    }
-
-    @Test
-    public void picamTest() {
-        HashMap<CameraQuirk, Boolean> picamQuirks = new HashMap<>();
-        picamQuirks.put(CameraQuirk.PiCam, true);
-        for (var q : CameraQuirk.values()) {
-            picamQuirks.putIfAbsent(q, false);
-        }
-
-        QuirkyCamera picam = QuirkyCamera.getQuirkyCamera(-1, -1, "mmal service 16.1");
-        Assertions.assertEquals(picam.quirks, picamQuirks);
+        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x1415, 0x2000);
+        assertEquals(psEye.quirks, ps3EyeQuirks);
     }
 
     @Test
@@ -57,6 +47,6 @@ public class QuirkyCameraTest {
         }
 
         QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
-        Assertions.assertEquals(quirkless.quirks, noQuirks);
+        assertEquals(quirkless.quirks, noQuirks);
     }
 }

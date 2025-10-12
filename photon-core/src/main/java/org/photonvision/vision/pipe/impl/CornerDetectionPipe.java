@@ -62,19 +62,18 @@ public class CornerDetectionPipe
 
         // find the bl/br/tr/tl corners
         // first, min by left/right
-        var list_ = Arrays.asList(points);
-        list_.sort(leftRightComparator);
+        Arrays.sort(points, leftRightComparator);
         // of this, we now have left and right
         // sort to get top and bottom
-        var left = new ArrayList<>(List.of(list_.get(0), list_.get(1)));
-        left.sort(verticalComparator);
-        var right = new ArrayList<>(List.of(list_.get(2), list_.get(3)));
-        right.sort(verticalComparator);
+        Point[] left = {points[0], points[1]};
+        Arrays.sort(left, verticalComparator);
+        Point[] right = {points[2], points[3]};
+        Arrays.sort(right, verticalComparator);
 
-        var tl = left.get(0);
-        var bl = left.get(1);
-        var tr = right.get(0);
-        var br = right.get(1);
+        var tl = left[0];
+        var bl = left[1];
+        var tr = right[0];
+        var br = right[1];
 
         return List.of(bl, br, tr, tl);
     }
@@ -85,9 +84,7 @@ public class CornerDetectionPipe
      * @return The straight line distance between them.
      */
     private static double distanceBetween(Point a, Point b) {
-        double xDelta = a.x - b.x;
-        double yDelta = a.y - b.y;
-        return Math.sqrt(xDelta * xDelta + yDelta * yDelta);
+        return Math.hypot(a.x - b.x, a.y - b.y);
     }
 
     /**
@@ -121,12 +118,12 @@ public class CornerDetectionPipe
         var isOpen = !convexHull && target.hasSubContours();
         var peri = Imgproc.arcLength(targetContour, true);
         Imgproc.approxPolyDP(
-                targetContour, polyOutput, params.accuracyPercentage / 600.0 * peri, !isOpen);
+                targetContour, polyOutput, params.accuracyPercentage() / 600.0 * peri, !isOpen);
 
         // we must have at least 4 corners for this strategy to work.
         // If we are looking for an exact side count that is handled here too.
         var pointList = new ArrayList<>(polyOutput.toList());
-        if (pointList.size() < 4 || (params.exactSideCount && params.sideCount != pointList.size()))
+        if (pointList.size() < 4 || (params.exactSideCount() && params.sideCount() != pointList.size()))
             return null;
 
         target.setApproximateBoundingPolygon(polyOutput);
@@ -140,13 +137,11 @@ public class CornerDetectionPipe
         var compareDistToTr =
                 Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(2)));
 
-        // top left and top right are the poly corners closest to the bouding box tl and tr
+        // top left and top right are the poly corners closest to the bounding box tl and tr
         pointList.sort(compareDistToTl);
-        var tl = pointList.get(0);
-        pointList.remove(tl);
+        var tl = pointList.remove(0);
         pointList.sort(compareDistToTr);
-        var tr = pointList.get(0);
-        pointList.remove(tr);
+        var tr = pointList.remove(0);
 
         // at this point we look for points on the left/right of the center of the remaining points
         // and maximize their distance from the center of the min area rectangle
@@ -162,12 +157,13 @@ public class CornerDetectionPipe
         for (var p : pointList) {
             if (p.y
                     > target.m_mainContour.getBoundingRect().y
-                            + target.m_mainContour.getBoundingRect().height / 2.0)
+                            + target.m_mainContour.getBoundingRect().height / 2.0) {
                 if (p.x < averageXCoordinate) {
                     leftList.add(p);
                 } else {
                     rightList.add(p);
                 }
+            }
         }
         if (leftList.isEmpty() || rightList.isEmpty()) return null;
         leftList.sort(compareCenterDist);
@@ -177,29 +173,15 @@ public class CornerDetectionPipe
         return List.of(bl, br, tr, tl);
     }
 
-    public static class CornerDetectionPipeParameters {
-        private final DetectionStrategy cornerDetectionStrategy;
-
-        private final boolean calculateConvexHulls;
-        private final boolean exactSideCount;
-        private final int sideCount;
-
-        /** This number can be changed to change how "accurate" our approximate polygon must be. */
-        private final double accuracyPercentage;
-
-        public CornerDetectionPipeParameters(
-                DetectionStrategy cornerDetectionStrategy,
-                boolean calculateConvexHulls,
-                boolean exactSideCount,
-                int sideCount,
-                double accuracyPercentage) {
-            this.cornerDetectionStrategy = cornerDetectionStrategy;
-            this.calculateConvexHulls = calculateConvexHulls;
-            this.exactSideCount = exactSideCount;
-            this.sideCount = sideCount;
-            this.accuracyPercentage = accuracyPercentage;
-        }
-    }
+    /**
+     * @param accuracyPercentage Represents how "accurate" our approximate polygon must be.
+     */
+    public static record CornerDetectionPipeParameters(
+            DetectionStrategy cornerDetectionStrategy,
+            boolean calculateConvexHulls,
+            boolean exactSideCount,
+            int sideCount,
+            double accuracyPercentage) {}
 
     public enum DetectionStrategy {
         APPROX_POLY_DP_AND_EXTREME_CORNERS

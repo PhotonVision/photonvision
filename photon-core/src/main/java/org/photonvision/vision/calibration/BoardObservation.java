@@ -18,20 +18,20 @@
 package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
-import java.awt.Color;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import org.opencv.core.Mat;
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 
+// Ignore the previous calibration data that was stored in the json file.
 @JsonIgnoreProperties(ignoreUnknown = true)
 public final class BoardObservation implements Cloneable {
     // Expected feature 3d location in the camera frame
@@ -57,8 +57,9 @@ public final class BoardObservation implements Cloneable {
     @JsonProperty("snapshotName")
     public String snapshotName;
 
-    @JsonProperty("snapshotData")
-    public JsonImageMat snapshotData;
+    @JsonProperty("snapshotDataLocation")
+    @Nullable
+    public Path snapshotDataLocation;
 
     @JsonCreator
     public BoardObservation(
@@ -68,13 +69,13 @@ public final class BoardObservation implements Cloneable {
             @JsonProperty("optimisedCameraToObject") Pose3d optimisedCameraToObject,
             @JsonProperty("cornersUsed") boolean[] cornersUsed,
             @JsonProperty("snapshotName") String snapshotName,
-            @JsonProperty("snapshotData") JsonImageMat snapshotData) {
+            @JsonProperty("snapshotDataLocation") Path snapshotDataLocation) {
         this.locationInObjectSpace = locationInObjectSpace;
         this.locationInImageSpace = locationInImageSpace;
         this.reprojectionErrors = reprojectionErrors;
         this.optimisedCameraToObject = optimisedCameraToObject;
         this.snapshotName = snapshotName;
-        this.snapshotData = snapshotData;
+        this.snapshotDataLocation = snapshotDataLocation;
 
         // legacy migration -- we assume all points are inliers
         if (cornersUsed == null) {
@@ -98,8 +99,8 @@ public final class BoardObservation implements Cloneable {
                 + cornersUsed
                 + ", snapshotName="
                 + snapshotName
-                + ", snapshotData="
-                + snapshotData
+                + ", snapshotDataLocation="
+                + snapshotDataLocation
                 + "]";
     }
 

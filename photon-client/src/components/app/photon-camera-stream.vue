@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { computed, inject } from "vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import loadingImage from "@/assets/images/loading.svg";
-import type { StyleValue } from "vue/types/jsx";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import loadingImage from "@/assets/images/loading-transparent.svg";
+import type { StyleValue } from "vue";
 import PvIcon from "@/components/common/pv-icon.vue";
+import type { UiCameraConfiguration } from "@/types/SettingTypes";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
   id: string;
+  cameraSettings: UiCameraConfiguration;
 }>();
 
+const emptyStreamSrc = "//:0";
 const streamSrc = computed<string>(() => {
-  const port =
-    useCameraSettingsStore().currentCameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
+  const port = props.cameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
 
   if (!useStateStore().backendConnected || port === 0) {
-    return loadingImage;
+    return emptyStreamSrc;
   }
 
   return `http://${inject("backendHostname")}:${port}/stream.mjpg`;
@@ -24,14 +26,31 @@ const streamSrc = computed<string>(() => {
 const streamDesc = computed<string>(() => `${props.streamType} Stream View`);
 const streamStyle = computed<StyleValue>(() => {
   if (useStateStore().colorPickingMode) {
-    return { width: "100%", cursor: "crosshair" };
+    return { cursor: "crosshair" };
   }
 
-  return { width: "100%" };
+  return {};
+});
+
+const containerStyle = computed<StyleValue>(() => {
+  if (props.cameraSettings.validVideoFormats.length === 0) {
+    return { aspectRatio: "1/1" };
+  }
+  const resolution =
+    props.cameraSettings.validVideoFormats[props.cameraSettings.pipelineSettings.cameraVideoModeIndex].resolution;
+  const rotation = props.cameraSettings.pipelineSettings.inputImageRotationMode;
+  if (rotation === 1 || rotation === 3) {
+    return {
+      aspectRatio: `${resolution.height}/${resolution.width}`
+    };
+  }
+  return {
+    aspectRatio: `${resolution.width}/${resolution.height}`
+  };
 });
 
 const overlayStyle = computed<StyleValue>(() => {
-  if (useStateStore().colorPickingMode || streamSrc.value == loadingImage) {
+  if (useStateStore().colorPickingMode || streamSrc.value == emptyStreamSrc) {
     return { display: "none" };
   } else {
     return {};
@@ -53,11 +72,37 @@ const handleFullscreenRequest = () => {
   if (!stream) return;
   stream.requestFullscreen();
 };
+
+const mjpgStream: any = ref(null);
+
+const handleStreamError = () => {
+  if (streamSrc.value && streamSrc.value !== emptyStreamSrc) {
+    console.error("Error loading stream:", streamSrc.value, " Trying again.");
+    setTimeout(() => {
+      mjpgStream.value.src = streamSrc.value;
+    }, 100);
+  }
+};
+
+onBeforeUnmount(() => {
+  if (!mjpgStream.value) return;
+  mjpgStream.value["src"] = emptyStreamSrc;
+});
 </script>
 
 <template>
-  <div class="stream-container">
-    <img :id="id" crossorigin="anonymous" :src="streamSrc" :alt="streamDesc" :style="streamStyle" />
+  <div class="stream-container" :style="containerStyle">
+    <img :src="loadingImage" class="stream-loading" />
+    <img
+      :id="id"
+      ref="mjpgStream"
+      class="stream-video"
+      crossorigin="anonymous"
+      :src="streamSrc"
+      :alt="streamDesc"
+      :style="streamStyle"
+      @error="handleStreamError"
+    />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
         icon-name="mdi-camera-image"
@@ -83,7 +128,28 @@ const handleFullscreenRequest = () => {
 
 <style scoped>
 .stream-container {
+  display: flex;
   position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.stream-loading {
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  object-fit: contain;
+}
+
+.stream-video {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .stream-overlay {

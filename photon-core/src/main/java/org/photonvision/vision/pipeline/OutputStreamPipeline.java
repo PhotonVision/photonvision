@@ -17,14 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.Pair;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
@@ -56,28 +55,25 @@ public class OutputStreamPipeline {
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        var draw2DTargetsParams =
+        draw2dTargetsPipe.setParams(
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
                         settings.outputShouldDraw,
                         settings.outputShowMultipleTargets,
-                        settings.streamingFrameDivisor);
-        draw2dTargetsPipe.setParams(draw2DTargetsParams);
+                        settings.streamingFrameDivisor));
 
-        var draw2DAprilTagsParams =
+        draw2dAprilTagsPipe.setParams(
                 new Draw2dAprilTagsPipe.Draw2dAprilTagsParams(
                         settings.outputShouldDraw,
                         settings.outputShowMultipleTargets,
-                        settings.streamingFrameDivisor);
-        draw2dAprilTagsPipe.setParams(draw2DAprilTagsParams);
+                        settings.streamingFrameDivisor));
 
-        var draw2DArucoParams =
+        draw2dArucoPipe.setParams(
                 new Draw2dArucoPipe.Draw2dArucoParams(
                         settings.outputShouldDraw,
                         settings.outputShowMultipleTargets,
-                        settings.streamingFrameDivisor);
-        draw2dArucoPipe.setParams(draw2DArucoParams);
+                        settings.streamingFrameDivisor));
 
-        var draw2dCrosshairParams =
+        draw2dCrosshairPipe.setParams(
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
                         settings.offsetRobotOffsetMode,
@@ -85,38 +81,37 @@ public class OutputStreamPipeline {
                         dualOffsetValues,
                         frameStaticProperties,
                         settings.streamingFrameDivisor,
-                        settings.inputImageRotationMode);
-        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
+                        settings.inputImageRotationMode));
 
-        var draw3dTargetsParams =
+        draw3dTargetsPipe.setParams(
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
                         settings.targetModel,
-                        settings.streamingFrameDivisor);
-        draw3dTargetsPipe.setParams(draw3dTargetsParams);
+                        settings.streamingFrameDivisor));
 
-        var draw3dAprilTagsParams =
+        draw3dAprilTagsPipe.setParams(
                 new Draw3dAprilTagsPipe.Draw3dAprilTagsParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
                         settings.targetModel,
-                        settings.streamingFrameDivisor);
-        draw3dAprilTagsPipe.setParams(draw3dAprilTagsParams);
+                        settings.streamingFrameDivisor));
 
-        var draw3dArucoParams =
+        draw3dArucoPipe.setParams(
                 new Draw3dArucoPipe.Draw3dArucoParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        TargetModel.kAprilTag6in_16h5,
-                        settings.streamingFrameDivisor);
-        draw3dArucoPipe.setParams(draw3dArucoParams);
+                        settings.targetModel,
+                        settings.streamingFrameDivisor));
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
-        drawCalibrationPipe.setParams(
-                new DrawCalibrationPipe.DrawCalibrationPipeParams(settings.streamingFrameDivisor));
+        if (settings instanceof Calibration3dPipelineSettings pipelineSettings) {
+            drawCalibrationPipe.setParams(
+                    new DrawCalibrationPipe.DrawCalibrationPipeParams(
+                            pipelineSettings.streamingFrameDivisor, pipelineSettings.drawAllSnapshots));
+        }
     }
 
     public CVPipelineResult process(
@@ -233,6 +228,7 @@ public class OutputStreamPipeline {
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
+                inputAndOutputFrame.sequenceID,
                 sumPipeNanosElapsed,
                 fps, // Unused but here just in case
                 targetsToDraw,

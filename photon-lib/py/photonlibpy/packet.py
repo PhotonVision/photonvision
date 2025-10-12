@@ -1,10 +1,36 @@
+###############################################################################
+## Copyright (C) Photon Vision.
+###############################################################################
+## This program is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program.  If not, see <https://www.gnu.org/licenses/>.
+###############################################################################
+
 import struct
-from wpimath.geometry import Transform3d, Translation3d, Rotation3d, Quaternion
+from typing import Generic, Optional, Protocol, TypeVar
+
 import wpilib
+from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
+
+T = TypeVar("T")
+
+
+class Serde(Generic[T], Protocol):
+    def pack(self, value: T) -> "Packet": ...
+    def unpack(self, packet: "Packet") -> T: ...
 
 
 class Packet:
-    def __init__(self, data: bytes):
+    def __init__(self, data: bytes = b""):
         """
         * Constructs an empty packet.
         *
@@ -15,9 +41,9 @@ class Packet:
         self.readPos = 0
         self.outOfBytes = False
 
-    def clear(self):
+    def clear(self) -> None:
         """Clears the packet and resets the read and write positions."""
-        self.packetData = [0] * self.size
+        self.packetData = bytes(self.size)
         self.readPos = 0
         self.outOfBytes = False
 
@@ -67,7 +93,9 @@ class Packet:
         for _ in range(numBytes):
             intList.append(self._getNextByteAsInt())
 
-        # Interpret the bytes as a floating point number
+        # Interpret the bytes as the requested type.
+        # Note due to NT's byte order assumptions,
+        # we have to flip the order of intList
         value = struct.unpack(unpackFormat, bytes(intList))[0]
 
         return value
@@ -78,23 +106,39 @@ class Packet:
         *
         * @return A decoded byte from the packet.
         """
-        return self._decodeGeneric(">b", 1)
+        return self._decodeGeneric("<b", 1)
 
     def decode16(self) -> int:
         """
-        * Returns a single decoded byte from the packet.
+        * Returns a single decoded short from the packet.
         *
-        * @return A decoded byte from the packet.
+        * @return A decoded short from the packet.
         """
-        return self._decodeGeneric(">h", 2)
+        return self._decodeGeneric("<h", 2)
 
-    def decode32(self) -> int:
+    def decodeInt(self) -> int:
         """
         * Returns a decoded int (32 bytes) from the packet.
         *
         * @return A decoded int from the packet.
         """
-        return self._decodeGeneric(">l", 4)
+        return self._decodeGeneric("<l", 4)
+
+    def decodeFloat(self) -> float:
+        """
+        * Returns a decoded float from the packet.
+        *
+        * @return A decoded float from the packet.
+        """
+        return self._decodeGeneric("<f", 4)
+
+    def decodeLong(self) -> int:
+        """
+        * Returns a decoded int64 from the packet.
+        *
+        * @return A decoded int64 from the packet.
+        """
+        return self._decodeGeneric("<q", 8)
 
     def decodeDouble(self) -> float:
         """
@@ -102,7 +146,7 @@ class Packet:
         *
         * @return A decoded double from the packet.
         """
-        return self._decodeGeneric(">d", 8)
+        return self._decodeGeneric("<d", 8)
 
     def decodeBoolean(self) -> bool:
         """
@@ -115,12 +159,20 @@ class Packet:
     def decodeDoubleArray(self, length: int) -> list[float]:
         """
         * Returns a decoded array of floats from the packet.
-        *
-        * @return A decoded array of floats from the packet.
         """
         ret = []
         for _ in range(length):
             ret.append(self.decodeDouble())
+        return ret
+
+    def decodeShortList(self) -> list[int]:
+        """
+        * Returns a decoded array of shorts from the packet.
+        """
+        length = self.decode8()
+        ret = []
+        for _ in range(length):
+            ret.append(self.decode16())
         return ret
 
     def decodeTransform(self) -> Transform3d:
@@ -141,3 +193,123 @@ class Packet:
         rotation = Rotation3d(Quaternion(w, x, y, z))
 
         return Transform3d(translation, rotation)
+
+    def decodeList(self, serde: Serde[T]) -> list[T]:
+        retList = []
+        arr_len = self.decode8()
+        for _ in range(arr_len):
+            retList.append(serde.unpack(self))
+        return retList
+
+    def decodeOptional(self, serde: Serde[T]) -> Optional[T]:
+        if self.decodeBoolean():
+            return serde.unpack(self)
+        else:
+            return None
+
+    def _encodeGeneric(self, packFormat, value):
+        """
+        Append bytes to the packet data buffer.
+        """
+        self.packetData = self.packetData + struct.pack(packFormat, value)
+        self.size = len(self.packetData)
+
+    def encode8(self, value: int):
+        """
+        Encodes a single byte and appends it to the packet.
+        """
+        self._encodeGeneric("<b", value)
+
+    def encode16(self, value: int):
+        """
+        Encodes a short (2 bytes) and appends it to the packet.
+        """
+        self._encodeGeneric("<h", value)
+
+    def encodeInt(self, value: int):
+        """
+        Encodes an int (4 bytes) and appends it to the packet.
+        """
+        self._encodeGeneric("<l", value)
+
+    def encodeFloat(self, value: float):
+        """
+        Encodes a float (4 bytes) and appends it to the packet.
+        """
+        self._encodeGeneric("<f", value)
+
+    def encodeLong(self, value: int):
+        """
+        Encodes a long (8 bytes) and appends it to the packet.
+        """
+        self._encodeGeneric("<q", value)
+
+    def encodeDouble(self, value: float):
+        """
+        Encodes a double (8 bytes) and appends it to the packet.
+        """
+        self._encodeGeneric("<d", value)
+
+    def encodeBoolean(self, value: bool):
+        """
+        Encodes a boolean as a single byte and appends it to the packet.
+        """
+        self.encode8(1 if value else 0)
+
+    def encodeDoubleArray(self, values: list[float]):
+        """
+        Encodes an array of doubles and appends it to the packet.
+        """
+        self.encode8(len(values))
+        for value in values:
+            self.encodeDouble(value)
+
+    def encodeShortList(self, values: list[int]):
+        """
+        Encodes a list of shorts, with length prefixed as a single byte.
+        """
+        self.encode8(len(values))
+        for value in values:
+            self.encode16(value)
+
+    def encodeTransform(self, transform: Transform3d):
+        """
+        Encodes a Transform3d (translation and rotation) and appends it to the packet.
+        """
+        # Encode Translation3d part (x, y, z)
+        self.encodeDouble(transform.translation().x)
+        self.encodeDouble(transform.translation().y)
+        self.encodeDouble(transform.translation().z)
+
+        # Encode Rotation3d as Quaternion (w, x, y, z)
+        quaternion = transform.rotation().getQuaternion()
+        self.encodeDouble(quaternion.W())
+        self.encodeDouble(quaternion.X())
+        self.encodeDouble(quaternion.Y())
+        self.encodeDouble(quaternion.Z())
+
+    def encodeList(self, values: list[T], serde: Serde[T]):
+        """
+        Encodes a list of items using a specific serializer and appends it to the packet.
+        """
+        self.encode8(len(values))
+        for item in values:
+            packed = serde.pack(item)
+            self.packetData = self.packetData + packed.getData()
+            self.size = len(self.packetData)
+
+    def encodeOptional(self, value: Optional[T], serde: Serde[T]):
+        """
+        Encodes an optional value using a specific serializer.
+        """
+        if value is None:
+            self.encodeBoolean(False)
+        else:
+            self.encodeBoolean(True)
+            packed = serde.pack(value)
+            self.packetData = self.packetData + packed.getData()
+            self.size = len(self.packetData)
+
+    def encodeBytes(self, value: bytes):
+        self.packetData = self.packetData + value
+        self.size = len(self.packetData)

@@ -64,14 +64,12 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        var findContoursParams = new FindContoursPipe.FindContoursParams();
-        findContoursPipe.setParams(findContoursParams);
+        findContoursPipe.setParams(new FindContoursPipe.FindContoursParams());
 
-        var speckleRejectParams =
-                new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
-        speckleRejectPipe.setParams(speckleRejectParams);
+        speckleRejectPipe.setParams(
+                new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage));
 
-        var filterContoursParams =
+        filterContoursPipe.setParams(
                 new FilterContoursPipe.FilterContoursParams(
                         settings.contourArea,
                         settings.contourRatio,
@@ -79,44 +77,38 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         frameStaticProperties,
                         settings.contourFilterRangeX,
                         settings.contourFilterRangeY,
-                        settings.contourTargetOrientation == TargetOrientation.Landscape);
-        filterContoursPipe.setParams(filterContoursParams);
+                        settings.contourTargetOrientation == TargetOrientation.Landscape));
 
-        var groupContoursParams =
+        groupContoursPipe.setParams(
                 new GroupContoursPipe.GroupContoursParams(
-                        settings.contourGroupingMode, settings.contourIntersection);
-        groupContoursPipe.setParams(groupContoursParams);
+                        settings.contourGroupingMode, settings.contourIntersection));
 
-        var sortContoursParams =
+        sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
                         settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
-                        frameStaticProperties);
-        sortContoursPipe.setParams(sortContoursParams);
+                        frameStaticProperties));
 
-        var collect2dTargetsParams =
+        collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
                         settings.offsetRobotOffsetMode,
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         settings.contourTargetOffsetPointEdge,
                         settings.contourTargetOrientation,
-                        frameStaticProperties);
-        collect2dTargetsPipe.setParams(collect2dTargetsParams);
+                        frameStaticProperties));
 
-        var cornerDetectionPipeParams =
+        cornerDetectionPipe.setParams(
                 new CornerDetectionPipe.CornerDetectionPipeParameters(
                         settings.cornerDetectionStrategy,
                         settings.cornerDetectionUseConvexHulls,
                         settings.cornerDetectionExactSideCount,
                         settings.cornerDetectionSideCount,
-                        settings.cornerDetectionAccuracyPercentage);
-        cornerDetectionPipe.setParams(cornerDetectionPipeParams);
+                        settings.cornerDetectionAccuracyPercentage));
 
-        var solvePNPParams =
+        solvePNPPipe.setParams(
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        frameStaticProperties.cameraCalibration, settings.targetModel);
-        solvePNPPipe.setParams(solvePNPParams);
+                        frameStaticProperties.cameraCalibration, settings.targetModel));
     }
 
     @Override
@@ -169,6 +161,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

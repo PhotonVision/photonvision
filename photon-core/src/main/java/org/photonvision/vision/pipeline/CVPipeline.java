@@ -34,6 +34,9 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
 
     private final FrameThresholdType thresholdType;
 
+    // So releaseable doesn't keep track of if we double-free something. so (ew) remember that here
+    protected volatile boolean released = false;
+
     public CVPipeline(FrameThresholdType thresholdType) {
         this.thresholdType = thresholdType;
     }
@@ -64,6 +67,9 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     }
 
     public R run(Frame frame, QuirkyCamera cameraQuirks) {
+        if (released) {
+            throw new RuntimeException("Pipeline use-after-free!");
+        }
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
@@ -85,5 +91,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
      * switch. Stubbed out, but override if needed.
      */
     @Override
-    public void release() {}
+    public void release() {
+        released = true;
+    }
 }

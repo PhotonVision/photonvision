@@ -24,7 +24,7 @@ import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
+    public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
 
     public IntegerCouple threshWinSizes = new IntegerCouple(11, 91);
     public int threshStepSize = 40;
@@ -46,8 +46,8 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
         super();
         pipelineType = PipelineType.Aruco;
         outputShowMultipleTargets = true;
-        targetModel = TargetModel.kAprilTag6in_16h5;
-        cameraExposure = -1;
+        targetModel = TargetModel.kAprilTag6p5in_36h11;
+        cameraExposureRaw = 20;
         cameraAutoExposure = true;
         ledMode = false;
     }

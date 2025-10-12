@@ -1,3 +1,5 @@
+apply plugin: 'edu.wpi.first.WpilibTools'
+
 import java.nio.file.Path
 
 ext {
@@ -5,6 +7,7 @@ ext {
     includePhotonTargeting = true
     // Include the generated Version file
     generatedHeaders = "src/generate/native/include"
+    licenseFile = file("LICENSE")
 }
 
 apply plugin: 'cpp'
@@ -28,7 +31,7 @@ model {
             sources {
                 cpp {
                     source {
-                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp"
+                        srcDirs 'src/main/native/cpp', "$buildDir/generated/source/proto/main/cpp", "$buildDir/generated/native/cpp"
                         include '**/*.cpp', '**/*.cc'
                     }
                     exportedHeaders {
@@ -53,6 +56,8 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
+            nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
         }
     }
     testSuites {
@@ -81,6 +86,7 @@ model {
                 }
                 if(project.hasProperty('includePhotonTargeting')) {
                     lib project: ':photon-targeting', library: 'photontargeting', linkage: 'shared'
+                    lib project: ':photon-targeting', library: 'photontargetingJNI', linkage: 'shared'
                 }
             }
 
@@ -158,19 +164,83 @@ task generateVendorJson() {
     outputs.upToDateWhen { false }
 }
 
-build.mustRunAfter generateVendorJson
+build.dependsOn generateVendorJson
 
-task writeCurrentVersion {
-    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
-            versionString)
-    versionFileIn = file("${rootDir}/shared/PhotonVersion.h.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "generate", "native", "include", "PhotonVersion.h"),
-            versionString)
+task publishVendorJsonToLocalOutputs(type: Copy) {
+    from photonlibFileOutput
+    into "$allOutputsFolder/vendordeps/"
+
+    // Rename to match the name of the JSON we publish to maven to avoid user confusion
+    rename { String fileName ->
+        fileName.replace(".json", "-json-1.0.json")
+    }
+
+    publish.dependsOn it
 }
 
-build.mustRunAfter writeCurrentVersion
-cppHeadersZip.dependsOn writeCurrentVersion
+task copyVendorJsonToExamples {
+    outputs.upToDateWhen { false }
+    jar.finalizedBy it
+}
+
+[
+    "photonlib-cpp-examples",
+    "photonlib-java-examples"
+].each { exampleFolder ->
+    file("${rootDir}/${exampleFolder}")
+            .listFiles()
+            .findAll {
+                return (it.isDirectory()
+                        && !it.isHidden()
+                        && !it.name.startsWith(".")
+                        && it.toPath().resolve("build.gradle").toFile().exists())
+            }
+            .collect { it.name }
+            .each { exampleVendordepFolder ->
+                task "copyVendorJsonTo${exampleFolder}-${exampleVendordepFolder}"(type: Copy) {
+                    from photonlibFileOutput
+
+                    into "${rootDir}/${exampleFolder}/${exampleVendordepFolder}/vendordeps/"
+                    outputs.upToDateWhen { false }
+                    copyVendorJsonToExamples.dependsOn it
+                }
+            }
+}
+
+clean {
+    [
+        "photonlib-cpp-examples",
+        "photonlib-java-examples"
+    ].each { exampleFolder ->
+        file("${rootDir}/${exampleFolder}")
+                .listFiles()
+                .findAll {
+                    return (it.isDirectory()
+                            && !it.isHidden()
+                            && !it.name.startsWith(".")
+                            && it.toPath().resolve("build.gradle").toFile().exists())
+                }
+                .collect { it.name }
+                .each { exampleVendordepFolder ->
+                    delete "${rootDir}/${exampleFolder}/${exampleVendordepFolder}/vendordeps/"
+                }
+    }
+}
+
+task writeCurrentVersion {
+    doLast {
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "java", "org", "photonvision", "PhotonVersion.java"),
+                versionString)
+        versionFileIn = file("${rootDir}/shared/PhotonVersion.cpp.in")
+        writePhotonVersionFile(versionFileIn, Path.of("$buildDir", "generated", "native", "cpp", "PhotonVersion.cpp"),
+                versionString)
+    }
+}
+
+// https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
+sourceSets.main.java.srcDir "${buildDir}/generated/java/"
+compileJava.dependsOn writeCurrentVersion
 
 // Building photon-lib requires photon-targeting to generate its proto files. This technically shouldn't be required but is needed for it to build.
 model {
@@ -184,6 +254,7 @@ model {
             }
             it.binaries.all {
                 it.tasks.withType(CppCompile) {
+                    it.dependsOn writeCurrentVersion
                     it.dependsOn ":photon-targeting:generateProto"
                 }
             }
@@ -202,7 +273,7 @@ model {
 
 def vendorJson = artifacts.add('archives', file("$photonlibFileOutput"))
 
-model {
+if (!project.hasProperty('copyOfflineArtifacts')) {
     // Publish the vendordep json
     publishing {
         publications {
@@ -216,3 +287,87 @@ model {
         }
     }
 }
+
+// Add photonversion to cpp sources zip
+tasks.named('cppSourcesZip') {
+    dependsOn writeCurrentVersion
+
+    from("$buildDir/generated/native/cpp") {
+        into '/'
+    }
+}
+
+// Publish an uberzip with photon-lib and photon-targeting. This makes python binding easier to have it in one place
+def zipBaseNameCombined = '_GROUP_org.photonvision_combinedcpp_ID_photonvision-combinedcpp_CLS'
+task combinedCppSourcesZip(type: Zip) {
+    dependsOn(':photon-lib:cppSourcesZip', ':photon-targeting:cppSourcesZip')
+
+    destinationDirectory = file("$buildDir/outputs")
+    archiveBaseName = zipBaseNameCombined
+    archiveClassifier = "sources"
+
+    // Include the contents of the photon-lib cppSourcesZip. Magic chatgpt nonsense
+    from(zipTree(project(':photon-lib').tasks.cppSourcesZip.archiveFile.get().asFile)) {
+        into 'photon-lib'
+    }
+    from(zipTree(project(':photon-targeting').tasks.cppSourcesZip.archiveFile.get().asFile)) {
+        into 'photon-targeting'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+task combinedHeadersZip(type: Zip) {
+    dependsOn(':photon-lib:cppHeadersZip', ':photon-targeting:cppHeadersZip')
+
+    destinationDirectory = file("$buildDir/outputs")
+    archiveBaseName = zipBaseNameCombined
+    archiveClassifier = "headers"
+
+    // Include the contents of the photon-lib cppHeadersZip. Magic chatgpt nonsense
+    from(zipTree(project(':photon-lib').tasks.cppHeadersZip.archiveFile.get().asFile)) {
+        into 'photon-lib'
+    }
+    from(zipTree(project(':photon-targeting').tasks.cppHeadersZip.archiveFile.get().asFile)) {
+        into 'photon-targeting'
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
+// Add the uberzip to our maven publications
+publishing {
+    publications {
+        // Don't publish if we're creating an offline zip
+        if (!project.hasProperty('copyOfflineArtifacts')) {
+            combinedcpp(MavenPublication) {
+                artifact combinedCppSourcesZip
+                artifact combinedHeadersZip
+
+                artifactId = "${nativeName}-combinedcpp"
+                groupId artifactGroupId
+                version pubVersion
+            }
+        }
+    }
+}
+
+// setup wpilib bundled native libs
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.test)
+
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())

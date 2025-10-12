@@ -5,15 +5,20 @@ permissions:
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
     tags:
       - 'v*'
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   buildAndDeploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -29,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel pytest
+          pip install setuptools wheel pytest mypy
 
       - name: Build wheel
         working-directory: ./photon-lib/py
@@ -42,6 +47,14 @@ jobs:
             pip install --no-cache-dir dist/*.whl
             pytest
 
+      # Disable due to robotpy issue. See
+      # https://github.com/PhotonVision/photonvision/issues/1968
+      # - name: Run mypy type checking
+      #   uses: liskin/gh-problem-matcher-wrap@v3
+      #   with:
+      #     linters: mypy
+      #     run: |
+      #       mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@master

@@ -32,13 +32,15 @@ import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoPoseEstimatorPipe
         extends CVPipe<
                 ArucoDetectionResult,
                 AprilTagPoseEstimate,
-                ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams> {
+                ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams>
+        implements Releasable {
     // image points of marker corners
     private final MatOfPoint2f imagePoints = new MatOfPoint2f(Mat.zeros(4, 1, CvType.CV_32FC2));
     // rvec/tvec estimations from solvepnp
@@ -49,6 +51,9 @@ public class ArucoPoseEstimatorPipe
     private final Mat tvec = Mat.zeros(3, 1, CvType.CV_32F);
     // reprojection error of solvepnp estimations
     private final Mat reprojectionErrors = Mat.zeros(2, 1, CvType.CV_32F);
+
+    // Tag corner locations in object space - order matters for ippe_square
+    MatOfPoint3f objectPoints = new MatOfPoint3f();
 
     private final int kNaNRetries = 1;
 
@@ -79,10 +84,10 @@ public class ArucoPoseEstimatorPipe
         for (int i = 0; i < kNaNRetries + 1; i++) {
             // SolvePnP with SOLVEPNP_IPPE_SQUARE solver
             Calib3d.solvePnPGeneric(
-                    params.objectPoints,
+                    objectPoints,
                     imagePoints,
-                    params.calibration.getCameraIntrinsicsMat(),
-                    params.calibration.getDistCoeffsMat(),
+                    params.calibration().getCameraIntrinsicsMat(),
+                    params.calibration().getDistCoeffsMat(),
                     rvecs,
                     tvecs,
                     false,
@@ -114,27 +119,35 @@ public class ArucoPoseEstimatorPipe
 
     @Override
     public void setParams(ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams newParams) {
-        super.setParams(newParams);
-    }
-
-    public static class ArucoPoseEstimatorPipeParams {
-        final CameraCalibrationCoefficients calibration;
-        final double tagSize;
-        // object vertices defined by tag size
-        final MatOfPoint3f objectPoints;
-
-        public ArucoPoseEstimatorPipeParams(CameraCalibrationCoefficients cal, double tagSize) {
-            this.calibration = cal;
-            this.tagSize = tagSize;
+        // exact equality check OK here, the number shouldn't change
+        if (this.params == null || this.params.tagSize() != newParams.tagSize()) {
+            var tagSize = newParams.tagSize();
 
             // This order is relevant for SOLVEPNP_IPPE_SQUARE
             // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL, TR)
-            objectPoints =
-                    new MatOfPoint3f(
-                            new Point3(-tagSize / 2, tagSize / 2, 0),
-                            new Point3(tagSize / 2, tagSize / 2, 0),
-                            new Point3(tagSize / 2, -tagSize / 2, 0),
-                            new Point3(-tagSize / 2, -tagSize / 2, 0));
+            objectPoints.fromArray(
+                    new Point3(-tagSize / 2, tagSize / 2, 0),
+                    new Point3(tagSize / 2, tagSize / 2, 0),
+                    new Point3(tagSize / 2, -tagSize / 2, 0),
+                    new Point3(-tagSize / 2, -tagSize / 2, 0));
         }
+
+        super.setParams(newParams);
     }
+
+    @Override
+    public void release() {
+        imagePoints.release();
+        for (var m : rvecs) m.release();
+        rvecs.clear();
+        for (var m : tvecs) m.release();
+        tvecs.clear();
+        rvec.release();
+        tvec.release();
+        reprojectionErrors.release();
+    }
+
+    // object vertices defined by tag size
+    public static record ArucoPoseEstimatorPipeParams(
+            CameraCalibrationCoefficients calibration, double tagSize) {}
 }

@@ -22,6 +22,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 
 public class Frame implements Releasable {
+    public final long sequenceID;
     public final long timestampNanos;
 
     // Frame should at _least_ contain the thresholded frame, and sometimes the color image
@@ -32,11 +33,13 @@ public class Frame implements Releasable {
     public final FrameStaticProperties frameStaticProperties;
 
     public Frame(
+            long sequenceID,
             CVMat color,
             CVMat processed,
             FrameThresholdType type,
             long timestampNanos,
             FrameStaticProperties frameStaticProperties) {
+        this.sequenceID = sequenceID;
         this.colorImage = color;
         this.processedImage = processed;
         this.type = type;
@@ -45,15 +48,17 @@ public class Frame implements Releasable {
     }
 
     public Frame(
+            long sequenceID,
             CVMat color,
             CVMat processed,
             FrameThresholdType processType,
             FrameStaticProperties frameStaticProperties) {
-        this(color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
+        this(sequenceID, color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
     }
 
     public Frame() {
         this(
+                -1,
                 new CVMat(),
                 new CVMat(),
                 FrameThresholdType.NONE,

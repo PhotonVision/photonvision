@@ -1,12 +1,10 @@
 import org.gradle.internal.os.OperatingSystem
 
-rootProject.name = 'aimattarget'
-
 pluginManagement {
     repositories {
         mavenLocal()
         gradlePluginPortal()
-        String frcYear = '2024'
+        String frcYear = '2025'
         File frcHome
         if (OperatingSystem.current().isWindows()) {
             String publicFolder = System.getenv('PUBLIC')

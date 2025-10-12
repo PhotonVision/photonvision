@@ -30,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.Date;
 import java.util.List;
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -53,6 +54,7 @@ public class ConfigManager {
     // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
+    private boolean allowWriteTask = true;
 
     enum ConfigSaveStrategy {
         SQL,
@@ -60,24 +62,20 @@ public class ConfigManager {
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we want
-    // to switch back to the legacy config manager, change this constant
+    // This logic decides which kind of ConfigManager we load as the default. If we want to switch
+    // back to the legacy config manager, change this constant
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
             Path rootFolder = PathManager.getInstance().getRootFolder();
             switch (m_saveStrat) {
-                case SQL:
-                    INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
-                    break;
-                case LEGACY:
-                    INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
-                    break;
-                case ATOMIC_ZIP:
-                    // not yet done, fall through
-                default:
-                    break;
+                case SQL -> INSTANCE = new ConfigManager(rootFolder, new SqlConfigProvider(rootFolder));
+                case LEGACY ->
+                        INSTANCE = new ConfigManager(rootFolder, new LegacyConfigProvider(rootFolder));
+                case ATOMIC_ZIP -> {
+                    // TODO: Not done yet
+                }
             }
         }
         return INSTANCE;
@@ -134,6 +132,10 @@ public class ConfigManager {
         }
     }
 
+    public static boolean nukeConfigDirectory() {
+        return FileUtils.deleteDirectory(getRootFolder());
+    }
+
     public static boolean saveUploadedSettingsZip(File uploadPath) {
         // Unpack to /tmp/something/photonvision
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
@@ -141,7 +143,9 @@ public class ConfigManager {
         ZipUtil.unpack(uploadPath, folderPath);
 
         // Nuke the current settings directory
-        FileUtils.deleteDirectory(getRootFolder());
+        if (!nukeConfigDirectory()) {
+            return false;
+        }
 
         // If there's a cameras folder in the upload, we know we need to import from the
         // old style
@@ -190,6 +194,11 @@ public class ConfigManager {
 
     public void addCameraConfigurations(List<VisionSource> sources) {
         getConfig().addCameraConfigs(sources);
+        requestSave();
+    }
+
+    public void addCameraConfiguration(CameraConfiguration config) {
+        getConfig().addCameraConfig(config);
         requestSave();
     }
 
@@ -249,6 +258,26 @@ public class ConfigManager {
         return imgFilePath.toPath();
     }
 
+    public Path getCalibrationImageSavePath(String uniqueCameraName) {
+        var imgFilePath =
+                Path.of(configDirectoryFile.toString(), "calibration", uniqueCameraName).toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
+    public Path getCalibrationImageSavePathWithRes(Size frameSize, String uniqueCameraName) {
+        var imgFilePath =
+                Path.of(
+                                configDirectoryFile.toString(),
+                                "calibration",
+                                uniqueCameraName,
+                                "imgs",
+                                frameSize.toString())
+                        .toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
     public boolean saveUploadedHardwareConfig(Path uploadPath) {
         return m_provider.saveUploadedHardwareConfig(uploadPath);
     }
@@ -287,7 +316,9 @@ public class ConfigManager {
     private void saveAndWriteTask() {
         // Only save if 1 second has past since the request was made
         while (!Thread.currentThread().isInterrupted()) {
-            if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
+            if (saveRequestTimestamp > 0
+                    && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L
+                    && allowWriteTask) {
                 saveRequestTimestamp = -1;
                 logger.debug("Saving to disk...");
                 saveToDisk();
@@ -310,10 +341,16 @@ public class ConfigManager {
 
     /**
      * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
-     * settings from getting its new configs overwritten at program exit and before theyre all loaded.
+     * settings from getting its new configs overwritten at program exit and before they're all
+     * loaded.
      */
     public void disableFlushOnShutdown() {
         this.flushOnShutdown = false;
+    }
+
+    /** Prevent pending automatic saves */
+    public void setWriteTaskEnabled(boolean enabled) {
+        this.allowWriteTask = enabled;
     }
 
     public void onJvmExit() {

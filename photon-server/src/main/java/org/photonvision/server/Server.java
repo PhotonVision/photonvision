@@ -65,10 +65,6 @@ public class Server {
                                         corsContainer.add(CorsPluginConfig::anyHost);
                                     });
 
-                            // Increase the upload size limit (arbitrary, but need to be able to deal with large
-                            // calibration JSONs)
-                            javalinConfig.http.maxRequestSize = (long) (50 * 1e6);
-
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -77,6 +73,12 @@ public class Server {
                                                         .add(ctx.req().getMethod())
                                                         .add("from endpoint")
                                                         .add(ctx.path())
+                                                        .add("of req size")
+                                                        .add(Integer.toString(ctx.contentLength()))
+                                                        .add("bytes & type")
+                                                        .add(ctx.contentType())
+                                                        .add("with return code")
+                                                        .add(Integer.toString(ctx.res().getStatus()))
                                                         .add("for host")
                                                         .add(ctx.req().getRemoteHost())
                                                         .add("in")
@@ -100,7 +102,7 @@ public class Server {
                                     });
                         });
 
-        /*Web Socket Events for Data Exchange */
+        /* Web Socket Events for Data Exchange */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
                 "/websocket_data",
@@ -110,7 +112,7 @@ public class Server {
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 
-        /*API Events*/
+        /* API Events */
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
@@ -125,6 +127,9 @@ public class Server {
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
+        app.post(
+                "/api/utils/importObjectDetectionModel",
+                RequestHandler::onImportObjectDetectionModelRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
@@ -132,11 +137,14 @@ public class Server {
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
+        app.post("/api/utils/nukeConfigDirectory", RequestHandler::onNukeConfigDirectory);
+        app.post("/api/utils/nukeOneCamera", RequestHandler::onNukeOneCamera);
+        app.post("/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
+        app.post("/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
+        app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
-        app.post(
-                "/api/calibration/importFromCalibDB", RequestHandler::onCalibDBCalibrationImportRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
 
         app.start(port);

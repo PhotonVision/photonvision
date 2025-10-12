@@ -1,0 +1,17 @@
+
+modifiableFileExclude {
+  \.jpg$
+  \.jpeg$
+  \.png$
+  \.gif$
+  \.so$
+  \.pdf$
+  \.mp4$
+  \.dll$
+  \.webp$
+  \.ico$
+  \.rknn$
+  \.svg$
+  \.woff2$
+  gradlew
+}

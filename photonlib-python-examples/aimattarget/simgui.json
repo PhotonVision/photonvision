@@ -1,0 +1,63 @@
+{
+  "HALProvider": {
+    "Encoders": {
+      "0": {
+        "header": {
+          "open": true
+        }
+      },
+      "window": {
+        "visible": true
+      }
+    },
+    "Other Devices": {
+      "AnalogGyro[0]": {
+        "header": {
+          "open": true
+        }
+      }
+    }
+  },
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Drivetrain Debug": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Drivetrain Debug": {
+        "SwerveModules": {
+          "image": "swerve_module.png",
+          "length": 0.5,
+          "width": 0.5
+        },
+        "bottom": 1476,
+        "height": 8.210550308227539,
+        "left": 150,
+        "right": 2961,
+        "top": 79,
+        "width": 16.541748046875,
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "Drivetrain Debug": {
+          "double[]##v_/SmartDashboard/Drivetrain Debug/Robot": {
+            "open": true
+          }
+        },
+        "Module 1": {
+          "open": true
+        },
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}

@@ -29,14 +29,18 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 
 /** Dummy class for unit testing the vision source manager */
 public class TestSource extends VisionSource {
-    private FrameProvider usbFrameProvider;
-
     public TestSource(CameraConfiguration config) {
         super(config);
 
-        if (getCameraConfiguration().cameraQuirks == null)
-            getCameraConfiguration().cameraQuirks =
-                    QuirkyCamera.getQuirkyCamera(config.usbVID, config.usbVID, config.baseName);
+        // Disable camera quirk detection using this fun hack
+        getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(-1, -1, "");
+    }
+
+    @Override
+    public void remakeSettables() {
+        // Nothing to do, settables for this type of VisionSource should never be
+        // remade.
+        return;
     }
 
     @Override
@@ -76,6 +80,22 @@ public class TestSource extends VisionSource {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
             }
+
+            @Override
+            public void release() {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'release'");
+            }
+
+            @Override
+            public boolean checkCameraConnected() {
+                return true;
+            }
+
+            @Override
+            public boolean isConnected() {
+                return true;
+            }
         };
     }
 
@@ -89,5 +109,16 @@ public class TestSource extends VisionSource {
     public boolean isVendorCamera() {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'isVendorCamera'");
+    }
+
+    @Override
+    public boolean hasLEDs() {
+        return false; // Assume USB cameras do not have photonvision-controlled LEDs
+    }
+
+    @Override
+    public void release() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'close'");
     }
 }
