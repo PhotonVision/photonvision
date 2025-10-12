@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
-import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -665,16 +664,15 @@ public class RequestHandler {
             return;
         }
 
-        var mat = calList.observations.get(observationIdx).getAnnotatedImage();
-
         // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
         var jpegBytes = new MatOfByte();
+        var mat = calList.observations.get(observationIdx).annotateImage();
         Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
+        mat.release();
 
         ctx.result(jpegBytes.toArray());
 
         jpegBytes.release();
-        mat.release();
 
         ctx.status(200);
     }

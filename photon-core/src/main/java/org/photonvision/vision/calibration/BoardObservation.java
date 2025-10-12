@@ -18,16 +18,20 @@
 package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.geometry.Pose3d;
+import java.awt.Color;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 
@@ -115,8 +119,28 @@ public final class BoardObservation implements Cloneable {
     }
 
     @JsonIgnore
-    public Mat getAnnotatedImage() {
-        var image = snapshotData.getAsMat().clone();
+    public Mat loadImage() {
+        Mat img = null;
+        try {
+            img = Imgcodecs.imread(this.snapshotDataLocation.toString());
+        } catch (Exception e) {
+            return null;
+        }
+        if (img == null || img.empty()) {
+            return null;
+        }
+
+        return img;
+    }
+
+    @JsonIgnore
+    public Mat annotateImage() {
+        var image = loadImage();
+
+        if (image == null) {
+            return null;
+        }
+
         var diag = Math.hypot(image.width(), image.height());
         int thickness = (int) Math.max(diag * 1.0 / 600.0, 1);
         int r = (int) Math.max(diag * 4.0 / 500.0, 3);
@@ -135,6 +159,7 @@ public final class BoardObservation implements Cloneable {
             Imgproc.line(
                     image, new Point(c.x + r2, c.y - r2), new Point(c.x - r2, c.y + r2), color, thickness);
         }
+
         return image;
     }
 }

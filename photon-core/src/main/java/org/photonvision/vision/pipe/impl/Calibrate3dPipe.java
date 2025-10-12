@@ -206,7 +206,14 @@ public class Calibrate3dPipe
 
         var observations =
                 createObservations(
-                        in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null, imageSavePath);
+                        in,
+                        cameraMatrix,
+                        distortionCoefficients,
+                        rvecs,
+                        tvecs,
+                        inliners,
+                        new double[] {0, 0},
+                        imageSavePath);
 
         cameraMatrix.release();
         distortionCoefficients.release();
@@ -398,7 +405,7 @@ public class Calibrate3dPipe
 
             var inputImage = in.get(snapshotId).inputImage;
             Path image_path = null;
-            String snapshotName = "img" + i + ".png";
+            String snapshotName = "img" + snapshotId + ".png";
             if (inputImage != null) {
                 image_path = Paths.get(imageSavePath.toString(), snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
@@ -410,6 +417,8 @@ public class Calibrate3dPipe
                             i_imgPts,
                             reprojectionError,
                             camToBoard,
+                            cornersUsed.get(snapshotId),
+                            snapshotName,
                             image_path));
         }
         jac_temp.release();
