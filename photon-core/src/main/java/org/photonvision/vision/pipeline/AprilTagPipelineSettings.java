@@ -35,8 +35,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
-    // 3d settings
-
     public AprilTagPipelineSettings() {
         super();
         pipelineType = PipelineType.AprilTag;
