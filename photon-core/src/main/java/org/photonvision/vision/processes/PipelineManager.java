@@ -489,8 +489,8 @@ public class PipelineManager {
                     continue;
                 }
 
-                // Object detection doesn't support 3D mode, so we gotta make sure that gets
-                // turned off.
+                // Object detection doesn't support 3D mode, so we gotta make sure that gets 
+                // turned off when we switch from a pipeline that had 3D mode enabled.
                 if (newType == PipelineType.ObjectDetection.baseIndex
                         && field.getName().equals("solvePNPEnabled")) {
                     field.set(newSettings, false);
