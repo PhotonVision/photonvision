@@ -46,7 +46,8 @@ const processingMode = computed<number>({
             :disabled="
               !useCameraSettingsStore().hasConnected ||
               !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
-              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ObjectDetection
+              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ObjectDetection ||
+              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ColoredShape
             "
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
