@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
+import { PipelineType } from "@/types/PipelineTypes";
 
 const theme = useTheme();
 
@@ -43,7 +44,9 @@ const processingMode = computed<number>({
           <v-btn
             color="buttonPassive"
             :disabled="
-              !useCameraSettingsStore().hasConnected || !useCameraSettingsStore().isCurrentVideoFormatCalibrated
+              !useCameraSettingsStore().hasConnected ||
+              !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
+              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ObjectDetection
             "
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"
