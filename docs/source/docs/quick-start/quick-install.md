@@ -41,8 +41,8 @@ Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.
 
 ## Rubik Pi 3 Installation
 
-:::{note}
-There's a known issue with the username and password for SSH with the Rubik Pi 3 image. The expected username is `pi` and the password is `raspberry`, but the image may have a username of `ubuntu` and a password of `ubuntu`. If you encounter issues logging in, please try both sets of credentials.
+:::{warning}
+The Qualcomm Launcher caches files. If you flash multiple times, you may need to clear the cache by navigating to your temp directory, and deleting the `qualcomm-launcher` folder.
 :::
 
 To flash the Rubik Pi 3 coprocessor, it's necessary to use the [Qualcomm Launcher](https://softwarecenter.qualcomm.com/catalog/item/Qualcomm_Launcher). Upload a custom image by selecting the *Custom* option in the launcher. Choose the downloaded PhotonVision `.tar.xz` file and follow the prompts to complete the installation. It is recommended to skip the *Configure Login* process, as PhotonVision will handle the necessary settings.
