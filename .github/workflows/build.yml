@@ -538,6 +538,9 @@ jobs:
           wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
           chmod +x mount_rubikpi3.sh
           ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
+          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+          new_image_name=$(basename "${new_jar/.jar/photonvision_rubikpi3.tar.xz}")
+          mv photonvision_rubikpi3.tar.xz $new_image_name
       - uses: actions/upload-artifact@v4
         name: Upload image
         with:
