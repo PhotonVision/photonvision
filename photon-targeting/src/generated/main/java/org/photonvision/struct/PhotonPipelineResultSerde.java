@@ -43,9 +43,9 @@ import edu.wpi.first.util.struct.Struct;
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
 
     @Override
-    public final String getInterfaceUUID() { return "f8dcd79680d02a7c4bc70749763215ba"; }
+    public final String getInterfaceUUID() { return "29e82c187da35e0337c86f4c14ee5ac7"; }
     @Override
-    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b rejectedTags[?];"; }
+    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 rejectedTags[?];"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineResult"; }
 
@@ -84,7 +84,7 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
 
         // rejectedTags is optional vla!
-        ret.rejectedTags = packet.decodeOptionalVla(MultiTargetPNPResult.photonStruct);
+        ret.rejectedTags = packet.decodeOptionalVla(PhotonTrackedTarget.photonStruct);
 
         return ret;
     }
@@ -92,7 +92,7 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            PhotonPipelineMetadata.photonStruct,MultiTargetPNPResult.photonStruct,PhotonTrackedTarget.photonStruct
+            PhotonPipelineMetadata.photonStruct,PhotonTrackedTarget.photonStruct,MultiTargetPNPResult.photonStruct
         };
     }
 

@@ -434,11 +434,11 @@ public class Packet {
         return Optional.empty();
     }
 
-    public <T extends PhotonStructSerializable<T>> Optional<T> decodeOptionalVla(
-            PacketSerde<List<T>> serde) {
+    public <T extends PhotonStructSerializable<T>> Optional<List<T>> decodeOptionalVla(
+            PacketSerde<T> serde) {
         var present = decodeBoolean();
         if (present) {
-            return Optional.of(serde.unpackList(this));
+            return Optional.of(decodeList(serde));
         }
         return Optional.empty();
     }

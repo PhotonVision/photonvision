@@ -62,6 +62,14 @@ public class PhotonTrackedTargetProto
     }
 
     public List<PhotonTrackedTarget> unpack(RepeatedMessage<ProtobufPhotonTrackedTarget> msg) {
+        ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.getTargets().length());
+        for (ProtobufPhotonTrackedTarget target : msg.getTargets()) {
+            targets.add(unpack(target));
+        }
+        return targets;
+    }
+
+    public List<PhotonTrackedTarget> unpack(ProtobufPhotonTrackedTargetList msg) {
         ArrayList<PhotonTrackedTarget> targets = new ArrayList<>(msg.length());
         for (ProtobufPhotonTrackedTarget target : msg) {
             targets.add(unpack(target));

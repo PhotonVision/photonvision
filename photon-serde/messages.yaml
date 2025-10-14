@@ -93,6 +93,6 @@
     type: MultiTargetPNPResult
     optional: True
   - name: rejectedTags
-    type: MultiTargetPNPResult
+    type: PhotonTrackedTarget
     optional: True
     vla: True

@@ -41,7 +41,7 @@ struct PhotonPipelineResult_PhotonStruct {
   photon::PhotonPipelineMetadata metadata;
   std::vector<photon::PhotonTrackedTarget> targets;
   std::optional<photon::MultiTargetPNPResult> multitagResult;
-  std::optional<photon::MultiTargetPNPResult> rejectedTags;
+  std::optional<photon::PhotonTrackedTarget> rejectedTags;
 
   friend bool operator==(PhotonPipelineResult_PhotonStruct const&, PhotonPipelineResult_PhotonStruct const&) = default;
 };

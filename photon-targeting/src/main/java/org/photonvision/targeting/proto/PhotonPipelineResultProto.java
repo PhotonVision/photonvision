@@ -52,6 +52,9 @@ public class PhotonPipelineResultProto
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
                 msg.hasMultiTargetResult()
                         ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
+                        : Optional.empty(),
+                msg.hasRejectedTags()
+                        ? Optional.of(PhotonTrackedTarget.proto.unpack(msg.getRejectedTags()))
                         : Optional.empty());
     }
 

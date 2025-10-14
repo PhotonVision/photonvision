@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 
 class PhotonPipelineResultSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "f8dcd79680d02a7c4bc70749763215ba"
-    MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b rejectedTags[?];"
+    MESSAGE_VERSION = "29e82c187da35e0337c86f4c14ee5ac7"
+    MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 rejectedTags[?];"
 
     @staticmethod
     def pack(value: "PhotonPipelineResult") -> "Packet":
@@ -58,7 +58,7 @@ class PhotonPipelineResultSerde:
         ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)
 
         # rejectedTags is optional! it better not be a VLA too
-        ret.encodeOptional(value.rejectedTags, MultiTargetPNPResult.photonStruct)
+        ret.encodeOptional(value.rejectedTags, PhotonTrackedTarget.photonStruct)
         return ret
 
     @staticmethod
@@ -75,7 +75,7 @@ class PhotonPipelineResultSerde:
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
 
         # rejectedTags is optional! it better not be a VLA too
-        ret.rejectedTags = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
+        ret.rejectedTags = packet.decodeOptional(PhotonTrackedTarget.photonStruct)
 
         return ret
 
