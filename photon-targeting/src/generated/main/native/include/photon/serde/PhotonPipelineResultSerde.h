@@ -46,11 +46,11 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<PhotonPipelineResult> {
   static constexpr std::string_view GetSchemaHash() {
-    return "4b2ff16a964b5e2bf04be0c1454d91c4";
+    return "f8dcd79680d02a7c4bc70749763215ba";
   }
 
   static constexpr std::string_view GetSchema() {
-    return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;";
+    return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b rejectedTags[?];";
   }
 
   static photon::PhotonPipelineResult Unpack(photon::Packet& packet);

@@ -40,9 +40,12 @@ public class PhotonPipelineResult
     // Multi-tag result
     public Optional<MultiTargetPNPResult> multitagResult;
 
+    // Rejected tags
+    public Optional<List<AprilTagDetection>> rejectedTags;
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {
-        this(new PhotonPipelineMetadata(), List.of(), Optional.empty());
+        this(new PhotonPipelineMetadata(), List.of(), Optional.empty(), Optional.empty());
     }
 
     /**
@@ -65,6 +68,7 @@ public class PhotonPipelineResult
                 new PhotonPipelineMetadata(
                         captureTimestampMicros, publishTimestampMicros, sequenceID, timeSinceLastPong),
                 targets,
+                Optional.empty(),
                 Optional.empty());
     }
 
@@ -85,21 +89,25 @@ public class PhotonPipelineResult
             long publishTimestamp,
             long timeSinceLastPong,
             List<PhotonTrackedTarget> targets,
-            Optional<MultiTargetPNPResult> result) {
+            Optional<MultiTargetPNPResult> result,
+            Optional<List<AprilTagDetection>> rejectedTags) {
         this(
                 new PhotonPipelineMetadata(
                         captureTimestamp, publishTimestamp, sequenceID, timeSinceLastPong),
                 targets,
-                result);
+                result,
+                rejectedTags);
     }
 
     public PhotonPipelineResult(
             PhotonPipelineMetadata metadata,
             List<PhotonTrackedTarget> targets,
-            Optional<MultiTargetPNPResult> result) {
+            Optional<MultiTargetPNPResult> result,
+            Optional<List<AprilTagDetection>> rejectedTags) {
         this.metadata = metadata;
         this.targets.addAll(targets);
         this.multitagResult = result;
+        this.rejectedTags = rejectedTags;
     }
 
     /**

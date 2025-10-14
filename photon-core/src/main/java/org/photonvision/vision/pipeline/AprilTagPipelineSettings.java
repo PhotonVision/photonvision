@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.List;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
@@ -34,6 +35,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int decisionMargin = 35;
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
+    public List<Integer> rejectedTagIds = List.of();
 
     public AprilTagPipelineSettings() {
         super();

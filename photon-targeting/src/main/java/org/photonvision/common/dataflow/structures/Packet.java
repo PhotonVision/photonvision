@@ -282,6 +282,13 @@ public class Packet {
         }
     }
 
+    public <T extends PhotonStructSerializable<T>> void encodeOptionalVla(Optional<List<T>> data) {
+        encode(data.isPresent());
+        if (data.isPresent()) {
+            encodeList(data.get());
+        }
+    }
+
     /**
      * Returns a decoded byte from the packet.
      *
@@ -423,6 +430,15 @@ public class Packet {
         var present = decodeBoolean();
         if (present) {
             return Optional.of(serde.unpack(this));
+        }
+        return Optional.empty();
+    }
+
+    public <T extends PhotonStructSerializable<T>> Optional<T> decodeOptionalVla(
+            PacketSerde<List<T>> serde) {
+        var present = decodeBoolean();
+        if (present) {
+            return Optional.of(serde.unpackList(this));
         }
         return Optional.empty();
     }

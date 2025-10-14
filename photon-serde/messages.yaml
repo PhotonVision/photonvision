@@ -92,3 +92,7 @@
   - name: multitagResult
     type: MultiTargetPNPResult
     optional: True
+  - name: rejectedTags
+    type: MultiTargetPNPResult
+    optional: True
+    vla: True

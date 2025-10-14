@@ -43,9 +43,9 @@ import edu.wpi.first.util.struct.Struct;
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
 
     @Override
-    public final String getInterfaceUUID() { return "4b2ff16a964b5e2bf04be0c1454d91c4"; }
+    public final String getInterfaceUUID() { return "f8dcd79680d02a7c4bc70749763215ba"; }
     @Override
-    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
+    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b rejectedTags[?];"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineResult"; }
 
@@ -63,8 +63,11 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // targets is a custom VLA!
         packet.encodeList(value.targets);
 
-        // multitagResult is optional! it better not be a VLA too
+        // multitagResult is optional!
         packet.encodeOptional(value.multitagResult);
+
+        // rejectedTags is optional vla!
+        packet.encodeOptionalVla(value.rejectedTags);
     }
 
     @Override
@@ -77,8 +80,11 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // targets is a custom VLA!
         ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct);
 
-        // multitagResult is optional! it better not be a VLA too
+        // multitagResult is optional!
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
+
+        // rejectedTags is optional vla!
+        ret.rejectedTags = packet.decodeOptionalVla(MultiTargetPNPResult.photonStruct);
 
         return ret;
     }
@@ -86,7 +92,7 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            MultiTargetPNPResult.photonStruct,PhotonPipelineMetadata.photonStruct,PhotonTrackedTarget.photonStruct
+            PhotonPipelineMetadata.photonStruct,MultiTargetPNPResult.photonStruct,PhotonTrackedTarget.photonStruct
         };
     }
 

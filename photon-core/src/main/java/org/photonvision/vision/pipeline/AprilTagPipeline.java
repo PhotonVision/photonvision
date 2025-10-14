@@ -140,10 +140,15 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
         List<AprilTagDetection> usedDetections = new ArrayList<>();
+        List<AprilTagDetection> rejectedTags = new ArrayList<>();
         List<TrackedTarget> targetList = new ArrayList<>();
 
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
+            if (settings.rejectTagIds.contains(detection.getId())) {
+                rejectedTags.add(detection);
+                continue;
+            }
             // TODO this should be in a pipe, not in the top level here (Matt)
             if (detection.getDecisionMargin() < settings.decisionMargin) continue;
             if (detection.getHamming() > settings.hammingDist) continue;
@@ -236,7 +241,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                multiTagResult,
+                frame,
+                rejectedTags);
     }
 
     @Override
