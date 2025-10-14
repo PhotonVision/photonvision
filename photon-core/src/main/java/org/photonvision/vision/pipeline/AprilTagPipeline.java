@@ -78,7 +78,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         TargetModel tagModel = TargetModel.kAprilTag36h11;
         if (settings.tagFamily == AprilTagFamily.kTag16h5) {
             // 2023 tag, 6in
-            tagWidth = Units.inchesToMeters(6.5);
+            tagWidth = Units.inchesToMeters(6);
             tagModel = TargetModel.kAprilTag16h5;
         }
 
