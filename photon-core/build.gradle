@@ -49,6 +49,10 @@ dependencies {
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
+    implementation project(':photon-lib')
+
+    implementation 'com.ctre.phoenix6:wpiapi-java:25.4.0'
+
     // Only include mrcal natives on platforms that we build for
     if (!(jniPlatform in [
                 "osxx86-64",

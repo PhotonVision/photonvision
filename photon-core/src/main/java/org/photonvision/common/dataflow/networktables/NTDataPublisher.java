@@ -17,14 +17,19 @@
 
 package org.photonvision.common.dataflow.networktables;
 
+import com.ctre.phoenix6.hardware.Pigeon2;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
@@ -42,6 +47,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
     private final NTTopicSet ts = new NTTopicSet();
+    private final NTTopicSet trig_ts = new NTTopicSet();
+
+    private final Pigeon2 pidgey = new Pigeon2(10, "can0");
+    private final PhotonPoseEstimator photonPoseEstimator =
+            new PhotonPoseEstimator(
+                    ConfigManager.getInstance().getConfig().getApriltagFieldLayout(),
+                    PhotonPoseEstimator.PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
+                    Transform3d.kZero);
+    private final double nanosInSecond = 1e9;
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
@@ -73,6 +87,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         // ignore indexes below 0
         if (newIndex < 0) {
             ts.pipelineIndexPublisher.set(originalIndex);
+            trig_ts.pipelineIndexPublisher.set(originalIndex);
             return;
         }
 
@@ -85,6 +100,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         var setIndex = pipelineIndexSupplier.get();
         if (newIndex != setIndex) { // set failed
             ts.pipelineIndexPublisher.set(setIndex);
+            trig_ts.pipelineIndexPublisher.set(setIndex);
             // TODO: Log
         }
         logger.debug("Set pipeline index to " + newIndex);
@@ -107,6 +123,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
         ts.removeEntries();
+        trig_ts.removeEntries();
     }
 
     private void updateEntries() {
@@ -114,6 +131,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (driverModeListener != null) driverModeListener.remove();
 
         ts.updateEntries();
+        trig_ts.updateEntries();
 
         pipelineIndexListener =
                 new NTDataChangeListener(
@@ -127,6 +145,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void updateCameraNickname(String newCameraNickname) {
         removeEntries();
         ts.subTable = rootTable.getSubTable(newCameraNickname);
+        trig_ts.subTable = rootTable.getSubTable(newCameraNickname + "_trig");
         updateEntries();
     }
 
@@ -161,6 +180,34 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
                         acceptedResult.multiTagResult);
+
+        if (pidgey.isConnected()) {
+            Rotation3d pidgeyHeading =
+                    new Rotation3d(
+                            pidgey.getRoll().getValue(),
+                            pidgey.getPitch().getValue(),
+                            pidgey.getYaw().getValue());
+            photonPoseEstimator.addHeadingData(
+                    ((double) result.getImageCaptureTimestampNanos() / nanosInSecond), pidgeyHeading);
+
+            Optional<EstimatedRobotPose> estimatedPose = photonPoseEstimator.update(simplified);
+            if (estimatedPose.isPresent()) {
+                EstimatedRobotPose roboPose = estimatedPose.get();
+                trig_ts.targetPoseEntry.set(
+                        new Transform3d(
+                                roboPose.estimatedPose.getTranslation(), roboPose.estimatedPose.getRotation()));
+                trig_ts.targetPitchEntry.set(pidgey.getPitch().getValueAsDouble());
+                trig_ts.targetYawEntry.set(pidgey.getYaw().getValueAsDouble());
+            } else {
+                ts.targetPitchEntry.set(0);
+                ts.targetYawEntry.set(0);
+                ts.targetAreaEntry.set(0);
+                ts.targetSkewEntry.set(0);
+                ts.targetPoseEntry.set(new Transform3d());
+                ts.bestTargetPosX.set(0);
+                ts.bestTargetPosY.set(0);
+            }
+        }
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);

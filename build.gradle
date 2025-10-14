@@ -20,6 +20,7 @@ allprojects {
         maven { url = "https://maven.photonvision.org/releases" }
         maven { url = "https://maven.photonvision.org/snapshots" }
         maven { url = "https://jogamp.org/deployment/maven/" }
+        maven { url = 'https://maven.ctr-electronics.com/release/' }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
