@@ -60,11 +60,14 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            javalinConfig.registerPlugin(new CorsPlugin(cors -> {
-                                    cors.addRule(it -> {
-                                        it.anyHost();
-                                    });
-                                }));
+                            javalinConfig.registerPlugin(
+                                    new CorsPlugin(
+                                            cors -> {
+                                                cors.addRule(
+                                                        it -> {
+                                                            it.anyHost();
+                                                        });
+                                            }));
 
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
