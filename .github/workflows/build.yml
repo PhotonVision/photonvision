@@ -570,11 +570,12 @@ jobs:
 
       - run: find
       # Push to dev release
-      - uses: pyTooling/Actions/releaser@r0
+      - uses: pyTooling/Actions/releaser@r6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
           rm: true
+          snapshots: false
           files: |
             **/*.xz
             **/*linux*.jar
