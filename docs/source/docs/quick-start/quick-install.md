@@ -34,14 +34,10 @@ Balena Etcher can also be used, but historically has had issues such as bootloop
 
 ## Limelight Installation
 
-:::{note}
-In order to mount the Limelight 4 on your computer, it's necessary to use `rpiboot`. To do this, follow the instructions [here](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-4#4-updating-limelightos).
-:::
-
-Limelights have a different installation processes. Simply connect the limelight to your computer using the proper usb cable. Select the compute module in the [Raspberry Pi Imager](https://www.raspberrypi.com/software/). If it doesn’t show up after 30s try using another USB port, initialization may take a while. If prompted, install the recommended missing drivers. Select the image, and flash.
+In order to flash your LimeLight you should follow the instructions on the LimeLight documentation for the relevant version. Make sure to replace the LimeLight OS image with the relevant PhotonVision image.
 
 :::{note}
-Limelight 2, 2+, and 3 will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for lighting to work.
+Limelight models will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for LEDs or other hardware features to work.
 :::
 
 ## Rubik Pi 3 Installation
