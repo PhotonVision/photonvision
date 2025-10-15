@@ -29,7 +29,26 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.pipeline.*;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.AprilTagCudaPipeline;
+import org.photonvision.vision.pipeline.AprilTagCudaPipelineSettings;
+import org.photonvision.vision.pipeline.AprilTagPipeline;
+import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.ArucoPipeline;
+import org.photonvision.vision.pipeline.ArucoPipelineSettings;
+import org.photonvision.vision.pipeline.CVPipeline;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.Calibrate3dPipeline;
+import org.photonvision.vision.pipeline.ColoredShapePipeline;
+import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
+import org.photonvision.vision.pipeline.DriverModePipeline;
+import org.photonvision.vision.pipeline.DriverModePipelineSettings;
+import org.photonvision.vision.pipeline.ObjectDetectionPipeline;
+import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
+import org.photonvision.vision.pipeline.PipelineType;
+import org.photonvision.vision.pipeline.ReflectivePipeline;
+import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.photonvision.vision.pipeline.SuppressSettingCopy;
 
 @SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager {
@@ -252,6 +271,11 @@ public class PipelineManager {
                 currentUserPipeline =
                         new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
             }
+            case AprilTagCuda -> {
+                logger.debug("Creating AprilTagCuda pipeline");
+                currentUserPipeline =
+                        new AprilTagCudaPipeline((AprilTagCudaPipelineSettings) desiredPipelineSettings);
+            }
             case Aruco -> {
                 logger.debug("Creating Aruco Pipeline");
                 currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
@@ -333,6 +357,7 @@ public class PipelineManager {
                     case Reflective -> new ReflectivePipelineSettings();
                     case ColoredShape -> new ColoredShapePipelineSettings();
                     case AprilTag -> new AprilTagPipelineSettings();
+                    case AprilTagCuda -> new AprilTagCudaPipelineSettings();
                     case Aruco -> new ArucoPipelineSettings();
                     case ObjectDetection -> new ObjectDetectionPipelineSettings();
                     case Calib3d, DriverMode -> {
