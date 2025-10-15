@@ -541,19 +541,9 @@ jobs:
           find . -maxdepth 5 -type f
       - name: Compress image
         run: |
-          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
-          new_image_name=$(basename "${new_jar/.jar/_rubikpi3}")
-          echo "New image name: $new_image_name"
-          echo "Image dir before move: ${{ env.image_dir }}"
           ls -la ${{ env.image_dir }}
-          echo "Disk usage of image_dir:"
-          du -sh ${{ env.image_dir }}
-          mv ${{ env.image_dir }} $new_image_name
-          echo "Contents after move:"
-          ls -la $new_image_name
-          du -sh $new_image_name
-          tar -I 'xz -T0' -cf ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
-          find . -maxdepth 2 -type f
+          find . -maxdepth 3 -type f
+          tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz ${{ env.image_dir }} --checkpoint=10000 --checkpoint-action=echo='%T'
       - uses: actions/upload-artifact@v4
         name: Upload image
         with:
