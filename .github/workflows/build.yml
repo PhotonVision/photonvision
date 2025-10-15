@@ -544,8 +544,8 @@ jobs:
           new_image_name=$(basename "${new_jar/.jar/_rubikpi3}")
           echo "New image name: $new_image_name"
           mv ${{ env.image_dir }} $new_image_name
-          tar -I 'xz -T0' -cf ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
-          ls -la
+          tar -I 'xz -T0' -cf --recursive ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
+          find . -maxdepth 2 -type f
       - uses: actions/upload-artifact@v4
         name: Upload image
         with:
