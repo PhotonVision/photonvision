@@ -38,10 +38,10 @@ In order to flash your Limelight you should follow the instructions on the Limel
 
 | Limelight Version | Limelight Documentation                                                                                 | PhotonVision Image                                                                                                         |     |
 | ----------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --- |
-| 2                 | [Updating Limelight OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-2#4-updating-limelightos)  | photonvision-{version}-linuxarm64_limelight2.img.xz  |     |
-| 3                 | [Updating Limelight OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3#4-updating-limelightos)  | photonvision-{version}-linuxarm64_limelight3.img.xz  |     |
-| 3G                | [Updating Limelight OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3g#4-updating-limelightos) | photonvision-{version}-linuxarm64_limelight3g.img.xz |     |
-| 4                 | [Updating Limelight OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-4#4-updating-limelightos)  | photonvision-{version}-linuxarm64_limelight4.img.xz  |     |
+| 2                 | [Updating Limelight 2 OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-2#4-updating-limelightos)  | photonvision-{version}-linuxarm64_limelight2.img.xz  |     |
+| 3                 | [Updating Limelight 3 OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3#4-updating-limelightos)  | photonvision-{version}-linuxarm64_limelight3.img.xz  |     |
+| 3G                | [Updating Limelight 3G OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3g#4-updating-limelightos) | photonvision-{version}-linuxarm64_limelight3g.img.xz |     |
+| 4                 | [Updating Limelight 4 OS](https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-4#4-updating-limelightos)  | photonvision-{version}-linuxarm64_limelight4.img.xz  |     |
 
 :::{note}
 Limelight models will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for LEDs or other hardware features to work.
