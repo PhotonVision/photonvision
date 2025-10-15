@@ -538,7 +538,7 @@ jobs:
           wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/9781c63d2bf4392d4cbdcb7f8fef69be3a43c52b/mount_rubikpi3.sh
           chmod +x mount_rubikpi3.sh
           ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
-      - name: Compress image    
+      - name: Compress image
         run: |
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
           new_image_name=$(basename "${new_jar/.jar/_rubikpi3}")
