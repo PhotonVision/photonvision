@@ -2,7 +2,7 @@
 <!-- WORK IN PROGRESS -->
 
 <script setup lang="ts">
-import { inject, computed, onBeforeMount, ref, onMounted } from "vue";
+import { inject, computed, onBeforeMount, ref, onMounted, watch } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
@@ -323,7 +323,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
-const metricsLastFetched = ref("Never");
+// const metricsLastFetched = ref("Never");
 const fetchMetrics = () => {
   useSettingsStore()
     .requestMetricsUpdate()
@@ -341,53 +341,42 @@ const fetchMetrics = () => {
       }
     })
     .finally(() => {
-      const pad = (num: number): string => {
-        return String(num).padStart(2, "0");
-      };
-
-      const date = new Date();
-      metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+      // const pad = (num: number): string => {
+      //   return String(num).padStart(2, "0");
+      // };
+      // const date = new Date();
+      // metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     });
 };
-
-const MAX_POINTS = 100;
-const UPDATE_INTERVAL = 1000; // 1 second
-
-const cpuUsageData = ref<{ time: number; value: number }[]>([]);
-const cpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
-const diskUsageData = ref<{ time: number; value: number }[]>([]);
 
 onBeforeMount(() => {
   fetchMetrics();
 });
 
-onMounted(() => {
-  setInterval(function () {
-    fetchMetrics();
+const graphedMetrics = ["CPU Usage", "CPU Memory Usage", "Disk Usage", "GPU Memory Usage"];
 
-    // Maintain maximum datapoint count
-    if (cpuUsageData.value.length > MAX_POINTS) cpuUsageData.value.shift();
-    if (cpuMemoryUsageData.value.length > MAX_POINTS) cpuMemoryUsageData.value.shift();
-    if (diskUsageData.value.length > MAX_POINTS) diskUsageData.value.shift();
+const cpuUsageData = ref<{ time: number; value: number }[]>([]);
+const cpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
+const diskUsageData = ref<{ time: number; value: number }[]>([]);
+const gpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
 
-    // Push datapoint updates
-    const now = Date.now();
-    cpuUsageData.value.push({
-      time: now,
-      value: useSettingsStore().metrics.cpuUtil ?? 0
-      // value: 45 + Math.random() * 20
-    });
-    cpuMemoryUsageData.value.push({
-      time: now,
-      value: useSettingsStore().metrics.ramUtil ?? 0
-      // value: 25 + Math.random() * 20
-    });
-    diskUsageData.value.push({
-      time: now,
-      value: useSettingsStore().metrics.diskUtilPct ?? 0
-      // value: 35 + Math.random() * 20
-    });
-  }, UPDATE_INTERVAL);
+watch(useSettingsStore().metricsHistory, () => {
+  cpuUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+    time: entry.time,
+    value: entry.metrics.cpuUtil ?? 0
+  }));
+  cpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+    time: entry.time,
+    value: entry.metrics.ramUtil ?? 0
+  }));
+  diskUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+    time: entry.time,
+    value: entry.metrics.diskUtilPct ?? 0
+  }));
+  gpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+    time: entry.time,
+    value: entry.metrics.gpuMemUtil ?? 0
+  }));
 });
 </script>
 
@@ -397,10 +386,6 @@ onMounted(() => {
       <v-card class="mb-3 rounded-12" color="surface">
         <v-card-title style="display: flex; justify-content: space-between">
           <span>PhotonVision</span>
-          <v-btn variant="text" @click="fetchMetrics">
-            <v-icon start class="open-icon">mdi-reload</v-icon>
-            Last Fetched: {{ metricsLastFetched }}
-          </v-btn>
         </v-card-title>
         <v-card-text>
           <v-table density="compact">
@@ -441,7 +426,7 @@ onMounted(() => {
             </v-col>
           </v-row>
           <v-row>
-            <v-col cols="3">Logs</v-col>
+            <v-col cols="3">Program Logs</v-col>
             <v-col>
               <v-btn
                 color="buttonPassive"
@@ -501,40 +486,6 @@ onMounted(() => {
               />
             </v-col>
           </v-row>
-        </v-card-text>
-      </v-card>
-    </v-col>
-
-    <v-col>
-      <v-card class="mb-3 rounded-12" color="surface">
-        <v-card-title style="display: flex; justify-content: space-between">
-          <span>Device Control</span>
-          <v-btn variant="text" @click="fetchMetrics">
-            <v-icon start class="open-icon">mdi-reload</v-icon>
-            Last Fetched: {{ metricsLastFetched }}
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <span>CPU Usage</span>
-          <Chart :data="cpuUsageData" id="chart" />
-          <span>CPU Memory Usage</span>
-          <Chart :data="cpuMemoryUsageData" :color="{ r: 154, g: 96, b: 180 }" id="chart" />
-          <span>Disk Usage</span>
-          <Chart :data="diskUsageData" :color="{ r: 65, g: 181, b: 127 }" id="chart" />
-          <v-table density="compact">
-            <tbody>
-              <tr v-for="(item, itemIndex) in platformMetrics">
-                <td :key="itemIndex" v-if="!['CPU Usage', 'CPU Memory Usage', 'Disk Usage'].includes(item.header)">
-                  {{ item.header }}
-                </td>
-                <td :key="itemIndex" v-if="!['CPU Usage', 'CPU Memory Usage', 'Disk Usage'].includes(item.header)">
-                  {{ item.value }}
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-card-text>
-        <v-card-text>
           <v-row>
             <v-col cols="12" sm="6">
               <v-btn
@@ -557,6 +508,49 @@ onMounted(() => {
               </v-btn>
             </v-col>
           </v-row>
+        </v-card-text>
+      </v-card>
+    </v-col>
+
+    <v-col>
+      <v-card class="mb-3 rounded-12" color="surface">
+        <v-card-title style="display: flex; justify-content: space-between">
+          <span>Device Metrics</span>
+          <v-btn variant="text" @click="fetchMetrics" class="refresh">
+            <v-icon start class="open-icon">mdi-reload</v-icon>
+            Force Refresh
+          </v-btn>
+        </v-card-title>
+        <v-card-text>
+          <v-table density="compact">
+            <tbody>
+              <tr v-for="(item, itemIndex) in platformMetrics.filter((item) => !graphedMetrics.includes(item.header))">
+                <td :key="itemIndex">
+                  {{ item.header }}
+                </td>
+                <td :key="itemIndex">
+                  {{ item.value }}
+                </td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-card-text>
+        <v-card-text class="pt-0">
+          <div class="d-flex justify-space-between pb-3">
+            <span>CPU Usage</span>
+            <span>{{ cpuUsageData.at(-1)?.value }}%</span>
+          </div>
+          <Chart :data="cpuUsageData" id="chart" />
+          <div class="d-flex justify-space-between pb-3 pt-3">
+            <span>CPU Memory Usage</span>
+            <span>{{ cpuMemoryUsageData.at(-1)?.value }}%</span>
+          </div>
+          <Chart :data="cpuMemoryUsageData" :color="{ r: 154, g: 96, b: 180 }" id="chart" />
+          <div class="d-flex justify-space-between pb-3 pt-3">
+            <span>Disk Usage</span>
+            <span>{{ diskUsageData.at(-1)?.value }}%</span>
+          </div>
+          <Chart :data="diskUsageData" :color="{ r: 65, g: 181, b: 127 }" id="chart" />
         </v-card-text>
       </v-card>
     </v-col>
@@ -664,7 +658,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.v-btn {
+.v-btn:not(.refresh) {
   width: 100%;
 }
 @media only screen and (max-width: 351px) {

@@ -35,16 +35,21 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
       top: 0,
       bottom: 10,
       left: 0,
-      right: 0
+      right: 0,
+      containLabel: false
     },
     xAxis: {
       type: "time",
       splitLine: {
         show: false
       },
+      boundaryGap: false,
       minInterval: 10 * 1000,
+      // min: data.length ? data[0]?.time : undefined,
+      // max: data.at(-1)?.time,
       splitNumber: 3,
       axisLabel: {
+        align: "left",
         formatter: (value: number) => {
           const date = new Date(value);
           return date.toLocaleTimeString([], {
