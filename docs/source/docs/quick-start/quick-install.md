@@ -34,7 +34,14 @@ Balena Etcher can also be used, but historically has had issues such as bootloop
 
 ## Limelight Installation
 
-In order to flash your LimeLight you should follow the instructions on the LimeLight documentation for the relevant version. Make sure to replace the LimeLight OS image with the relevant PhotonVision image.
+In order to flash your Limelight you should follow the instructions on the Limelight documentation for the relevant version. Make sure to replace the Limelight OS image with the relevant PhotonVision image.
+
+| Limelight Version | Limelight Documentation                                                                                 | PhotonVision Image                                                                                                         |     |
+| ----------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | --- |
+| 2                 | https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-2#4-updating-limelightos  | https://github.com/PhotonVision/photonvision/releases/download/latest/photonvision-{version}-linuxarm64_limelight2.img.xz  |     |
+| 3                 | https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3#4-updating-limelightos  | https://github.com/PhotonVision/photonvision/releases/download/latest/photonvision-{version}-linuxarm64_limelight3.img.xz  |     |
+| 3G                | https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-3g#4-updating-limelightos | https://github.com/PhotonVision/photonvision/releases/download/latest/photonvision-{version}-linuxarm64_limelight3g.img.xz |     |
+| 4                 | https://docs.limelightvision.io/docs/docs-limelight/getting-started/limelight-4#4-updating-limelightos  | https://github.com/PhotonVision/photonvision/releases/download/latest/photonvision-{version}-linuxarm64_limelight4.img.xz  |     |
 
 :::{note}
 Limelight models will need a [custom hardware config file](https://github.com/PhotonVision/photonvision/tree/main/docs/source/docs/advanced-installation/sw_install/files) for LEDs or other hardware features to work.
