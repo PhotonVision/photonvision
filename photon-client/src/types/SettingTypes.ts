@@ -12,6 +12,7 @@ export interface GeneralSettings {
   supportedBackends: string[];
   conflictingHostname: boolean;
   conflictingCameras: string;
+  mismatchedCameras: PVCameraInfo[];
 }
 
 export interface ObjectDetectionModelProperties {

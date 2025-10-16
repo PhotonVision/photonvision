@@ -81,7 +81,7 @@ public class VisionSourceManager {
     protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
 
     // Set of cameras that where a camera mismatch error was logged
-    protected final List<PVCameraInfo> mismatchedCameras = new ArrayList<>();
+    public final List<PVCameraInfo> mismatchedCameras = new ArrayList<>();
 
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
@@ -322,12 +322,13 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
-        // from the listed physical camera infos, match them to the camera configs and check for mismatches
+        // from the listed physical camera infos, match them to the camera configs and check for
+        // mismatches
 
         for (PVCameraInfo info : cameraInfos) {
             for (VisionModule module : vmm.getModules()) {
                 CameraConfiguration config = module.getCameraConfiguration();
-                
+
                 // if the camera info matches, we're good
                 if (config.matchedCameraInfo.equals(info)) {
                     mismatchedCameras.remove(info);
