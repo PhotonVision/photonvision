@@ -32,6 +32,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.Platform;
@@ -354,6 +355,17 @@ public class VisionSourceManager {
                                                 }
                                             });
                         });
+
+        if (!warnedMismatchCameras.isEmpty()) {
+            NetworkTablesManager.getInstance()
+                    .setMismatchAlert(
+                            true,
+                            "Camera mismatch error! See logs for details. ("
+                                    + warnedMismatchCameras.size()
+                                    + " unique cameras affected)");
+        } else {
+            NetworkTablesManager.getInstance().setMismatchAlert(false, "");
+        }
 
         return cameraInfos;
     }
