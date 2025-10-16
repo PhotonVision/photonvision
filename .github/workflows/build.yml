@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.0.3
+  IMAGE_VERSION: Dev
 
 jobs:
 
@@ -520,7 +520,7 @@ jobs:
   build-rubik-image:
     needs: [build-package]
 
-    if: ${{ github.event_name != 'pull_request' }}
+    # if: ${{ github.event_name != 'pull_request' }}
 
     runs-on: ubuntu-24.04
     name: "Build image - Rubik Pi 3"
@@ -538,6 +538,12 @@ jobs:
           wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
           chmod +x mount_rubikpi3.sh
           ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
+          find . -maxdepth 5 -type f
+      - name: Compress image
+        run: |
+          ls -la ${{ env.image_dir }}
+          find . -maxdepth 3 -type f
+          tar -I 'xz -T0' -cf photonvision_rubikpi3.tar.xz ${{ env.image_dir }} --checkpoint=10000 --checkpoint-action=echo='%T'
       - uses: actions/upload-artifact@v4
         name: Upload image
         with:
