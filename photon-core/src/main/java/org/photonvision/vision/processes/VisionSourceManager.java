@@ -102,8 +102,7 @@ public class VisionSourceManager {
 
         final HashMap<String, CameraConfiguration> deserializedConfigs = new HashMap<>();
 
-        // 1. Verify all camera unique names are unique and paths/types are unique for
-        // paranoia. This
+        // 1. Verify all camera unique names are unique and paths/types are unique for paranoia. This
         // seems redundant, consider deleting
         for (var config : configs) {
             Predicate<PVCameraInfo> checkDuplicateCamera =
@@ -124,8 +123,7 @@ public class VisionSourceManager {
             }
         }
 
-        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't
-        // care about if
+        // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care about if
         // the underlying device is currently connected or not.
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
@@ -318,8 +316,7 @@ public class VisionSourceManager {
                     .forEach(cameraInfos::add);
         }
 
-        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but
-        // i still want my
+        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but I still want my
         // UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
@@ -463,8 +460,7 @@ public class VisionSourceManager {
     protected VisionSource loadVisionSourceFromCamConfig(CameraConfiguration configuration) {
         logger.debug("Creating VisionSource for " + configuration.toShortString());
 
-        // First, make sure that nickname is globally unique since we use the nickname
-        // in NetworkTables.
+        // First, make sure that nickname is globally unique since we use the nickname in NetworkTables.
         // "Just one more source of truth bro it'll real this time I promise"
         var currentNicknames = new ArrayList<String>();
         this.disabledCameraConfigs.values().stream()
