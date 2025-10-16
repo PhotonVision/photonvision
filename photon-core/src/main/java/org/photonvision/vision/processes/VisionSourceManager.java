@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -82,7 +81,7 @@ public class VisionSourceManager {
     protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
 
     // Set of cameras that where a camera mismatch error was logged
-    protected final Set<String> warnedMismatchCameras = Set.of();
+    protected final List<PVCameraInfo> mismatchedCameras = new ArrayList<>();
 
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
@@ -323,43 +322,37 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
-        // from the listed physical camera infos, match them to the camera configs and
-        // check for mismatches
-        var allModulesCopy = new ArrayList<>(vmm.getModules());
-        var cameraInfosCopy = new ArrayList<>(cameraInfos);
-        cameraInfosCopy.stream()
-                .filter(cameraInfo -> !warnedMismatchCameras.contains(cameraInfo.toString()))
-                .forEach(
-                        cameraInfo -> {
-                            allModulesCopy.stream()
-                                    .filter(
-                                            module ->
-                                                    module
-                                                            .getCameraConfiguration()
-                                                            .matchedCameraInfo
-                                                            .uniquePath()
-                                                            .equals(cameraInfo.uniquePath()))
-                                    .forEach(
-                                            module -> {
-                                                if (!module.getCameraConfiguration().matchedCameraInfo.equals(cameraInfo)) {
-                                                    logger.error("Camera mismatch error!");
-                                                    logger.error(
-                                                            "Camera config mismatch for "
-                                                                    + module.getCameraConfiguration().nickname);
-                                                    logCameraInfoDiff(
-                                                            module.getCameraConfiguration().matchedCameraInfo, cameraInfo);
-                                                    warnedMismatchCameras.add(cameraInfo.toString());
-                                                }
-                                            });
-                        });
+        // from the listed physical camera infos, match them to the camera configs and check for mismatches
 
-        if (!warnedMismatchCameras.isEmpty()) {
+        for (PVCameraInfo info : cameraInfos) {
+            for (VisionModule module : vmm.getModules()) {
+                CameraConfiguration config = module.getCameraConfiguration();
+                
+                // if the camera info matches, we're good
+                if (config.matchedCameraInfo.equals(info)) {
+                    mismatchedCameras.remove(info);
+                    continue;
+                }
+
+                // if the unique path matches but the camera info doesn't, log an error
+                if (config.matchedCameraInfo.uniquePath().equals(info.uniquePath())
+                        && !config.matchedCameraInfo.equals(info)
+                        && !mismatchedCameras.contains(info)) {
+                    logger.error("Camera mismatch error!");
+                    logger.error("Camera config mismatch for " + config.nickname);
+                    logCameraInfoDiff(config.matchedCameraInfo, info);
+                    mismatchedCameras.add(info);
+                }
+            }
+        }
+
+        if (!mismatchedCameras.isEmpty()) {
             NetworkTablesManager.getInstance()
                     .setMismatchAlert(
                             true,
                             "Camera mismatch error! See logs for details. ("
-                                    + warnedMismatchCameras.size()
-                                    + " unique cameras affected)");
+                                    + mismatchedCameras.stream().map(x -> x.humanReadableName()).toList().toString()
+                                    + " are affected)");
         } else {
             NetworkTablesManager.getInstance().setMismatchAlert(false, "");
         }
