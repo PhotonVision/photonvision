@@ -217,8 +217,8 @@ publishing {
                 classifier = null
             }
             artifactId = "${nativeName}-rawjava"
-            groupId artifactGroupId
-            version pubVersion
+            groupId = artifactGroupId
+            version = pubVersion
         }
     }
 }
