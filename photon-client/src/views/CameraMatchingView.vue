@@ -2,14 +2,7 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import {
-  PlaceholderCameraSettings,
-  PVCameraInfo,
-  type PVCSICameraInfo,
-  type PVFileCameraInfo,
-  type PVUsbCameraInfo,
-  type UiCameraConfiguration
-} from "@/types/SettingTypes";
+import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvInput from "@/components/common/pv-input.vue";
@@ -17,6 +10,7 @@ import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { camerasMatch, cameraInfoFor, getMatchedDevice } from "@/lib/MatchingUtils";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -168,63 +162,6 @@ const deleteThisCamera = (cameraName: string) => {
     });
 };
 
-const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
-  if (camera1.PVUsbCameraInfo && camera2.PVUsbCameraInfo)
-    return (
-      camera1.PVUsbCameraInfo.name === camera2.PVUsbCameraInfo.name &&
-      camera1.PVUsbCameraInfo.vendorId === camera2.PVUsbCameraInfo.vendorId &&
-      camera1.PVUsbCameraInfo.productId === camera2.PVUsbCameraInfo.productId &&
-      camera1.PVUsbCameraInfo.uniquePath === camera2.PVUsbCameraInfo.uniquePath
-    );
-  else if (camera1.PVCSICameraInfo && camera2.PVCSICameraInfo)
-    return (
-      camera1.PVCSICameraInfo.uniquePath === camera2.PVCSICameraInfo.uniquePath &&
-      camera1.PVCSICameraInfo.baseName === camera2.PVCSICameraInfo.baseName
-    );
-  else if (camera1.PVFileCameraInfo && camera2.PVFileCameraInfo)
-    return (
-      camera1.PVFileCameraInfo.uniquePath === camera2.PVFileCameraInfo.uniquePath &&
-      camera1.PVFileCameraInfo.name === camera2.PVFileCameraInfo.name
-    );
-  else return false;
-};
-
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
-  if (!camera) return null;
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
-};
-
-/**
- * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
- */
-const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
-  if (!info) {
-    return {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
-    };
-  }
-  return (
-    useStateStore().vsmState.allConnectedCameras.find(
-      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
-    ) || {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
-    }
-  );
-};
-
 const cameraCononected = (uniquePath: string): boolean => {
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
@@ -296,7 +233,10 @@ const yesDeleteMySettingsText = ref("");
           <v-card-subtitle
             v-else-if="
               cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-              camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
+              camerasMatch(
+                getMatchedDevice(useStateStore().vsmState.allConnectedCameras, module.matchedCameraInfo),
+                module.matchedCameraInfo
+              )
             "
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
@@ -562,7 +502,14 @@ const yesDeleteMySettingsText = ref("");
         <v-card-text v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
-        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
+        <v-card-text
+          v-else-if="
+            !camerasMatch(
+              getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0]),
+              viewingCamera[0]
+            )
+          "
+        >
           <v-alert
             class="mb-3"
             color="buttonActive"
@@ -571,10 +518,15 @@ const yesDeleteMySettingsText = ref("");
             icon="mdi-information-outline"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
           />
-          <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
+          <PvCameraMatchCard
+            :saved="viewingCamera[0]"
+            :current="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])"
+          />
         </v-card-text>
         <v-card-text v-else>
-          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
+          <PvCameraInfoCard
+            :camera="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])"
+          />
         </v-card-text>
       </v-card>
     </v-dialog>

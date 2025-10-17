@@ -70,6 +70,8 @@ public class NetworkTablesManager {
     // Creating the alert up here since it should be persistent
     private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
 
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
     private String currentMacAddress;
@@ -95,6 +97,7 @@ public class NetworkTablesManager {
 
         // This should start as false, since we don't know if there's a conflict yet
         conflictAlert.set(false);
+        mismatchAlert.set(false);
 
         // Get the UI state in sync with the backend. NT should fire a callback when it
         // first connects to the robot
@@ -113,6 +116,14 @@ public class NetworkTablesManager {
     public static NetworkTablesManager getInstance() {
         if (INSTANCE == null) INSTANCE = new NetworkTablesManager();
         return INSTANCE;
+    }
+
+    public void setMismatchAlert(boolean on, String message) {
+        if (mismatchAlert != null) {
+            mismatchAlert.set(on);
+            mismatchAlert.setText(message);
+            SmartDashboard.updateValues();
+        }
     }
 
     private void logNtMessage(NetworkTableEvent event) {

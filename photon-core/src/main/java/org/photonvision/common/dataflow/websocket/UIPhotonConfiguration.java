@@ -62,7 +62,8 @@ public class UIPhotonConfiguration {
                                         : c.getHardwareConfig().deviceName(),
                                 Platform.getPlatformName(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
-                                NetworkTablesManager.getInstance().conflictingCameras),
+                                NetworkTablesManager.getInstance().conflictingCameras,
+                                VisionSourceManager.getInstance().mismatchedCameras),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
