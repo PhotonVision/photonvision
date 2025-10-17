@@ -447,6 +447,12 @@ jobs:
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
+            image_suffix: lumap1
+            image_url: https://github.com/PhotonVision/photon-image-modifier/actions/runs/18581709087/artifacts/4295810004
+            cpu: cortex-a76
+            image_additional_mb: 0
+          - os: ubuntu-24.04
+            artifact-name: LinuxArm64
             image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             cpu: cortex-a8
