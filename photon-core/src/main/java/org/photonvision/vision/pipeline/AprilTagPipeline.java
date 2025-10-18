@@ -96,7 +96,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // setting them here to prevent upstream changes from changing behavior of the detector
         quadParams.maxNumMaxima = 10;
         quadParams.criticalAngle = 45 * Math.PI / 180.0;
-        quadParams.maxLineFitMSE = 10.0f;
+        quadParams.maxLineFitMSE = 2.5f;
         quadParams.minWhiteBlackDiff = 5;
         quadParams.deglitch = false;
 
