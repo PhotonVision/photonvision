@@ -43,7 +43,6 @@ public class MrCalJNILoader extends PhotonJNICommon {
         forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
 
         if (!MrCalJNILoader.getInstance().isLoaded()) {
-            System.exit(2);
             throw new IOException("Unable to load mrcal JNI!");
         }
     }
