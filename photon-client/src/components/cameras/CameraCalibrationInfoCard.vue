@@ -237,9 +237,7 @@ const calibrationImageURL = (index: number) =>
             <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
               <td>Board warp, X/Y</td>
               <td>
-                {{
-                  currentCalibrationCoeffs?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm").join(" / ")
-                }}
+                {{ currentCalibrationCoeffs?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm").join(" / ") }}
               </td>
             </tr>
           </tbody>
@@ -249,7 +247,10 @@ const calibrationImageURL = (index: number) =>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Camera->Board Transforms</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">
       i , too
-      <PhotonCalibrationVisualizer :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName" :resolution="props.videoFormat.resolution" />
+      <PhotonCalibrationVisualizer
+        :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+        :resolution="props.videoFormat.resolution"
+      />
       am in this visualizer
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>

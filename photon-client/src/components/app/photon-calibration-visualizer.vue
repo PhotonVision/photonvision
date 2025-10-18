@@ -69,7 +69,6 @@ const createChessboard = (obs: BoardObservation, isActive: boolean, cal: CameraC
   //   }
   // }
 
-
   // Add corner spheres
   obs.locationInObjectSpace.forEach((corner, idx) => {
     if (corner.x < 0 || corner.y < 0) return;
@@ -141,7 +140,7 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
   const aspect = (imageWidth * focalLengthY) / (imageHeight * focalLengthX);
 
   const calibCamera = new PerspectiveCamera(fovY, aspect, 0.1, 1.0);
-  calibCamera.rotateX(Math.PI); 
+  calibCamera.rotateX(Math.PI);
   const helper = new CameraHelper(calibCamera);
   helper.rotateZ(Math.PI);
   previousTargets.push(helper);
@@ -149,7 +148,7 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
   }
-}
+};
 
 const calibrationData: Ref<CameraCalibrationResult | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
@@ -162,7 +161,7 @@ const fetchCalibrationData = async () => {
   error.value = null;
 
   try {
-    const response = await axios.get('/settings/camera/getCalibration', {
+    const response = await axios.get("/settings/camera/getCalibration", {
       params: {
         cameraUniqueName: props.cameraUniqueName,
         width: props.resolution.width,
@@ -172,8 +171,8 @@ const fetchCalibrationData = async () => {
     calibrationData.value = response.data;
     console.log("Received calibration data:", response);
   } catch (err) {
-    console.error('Failed to fetch calibration data:', err);
-    error.value = 'Failed to load calibration data';
+    console.error("Failed to fetch calibration data:", err);
+    error.value = "Failed to load calibration data";
   } finally {
     isLoading.value = false;
   }
@@ -213,7 +212,7 @@ const resetCamThirdPerson = () => {
   }
 
   controls.reset();
-  camera.position.set(-.3, -0.2, -0.3);
+  camera.position.set(-0.3, -0.2, -0.3);
   camera.up.set(0, -1, 0);
   controls.target.set(0.0, 0.0, 0.4);
   controls.update();
@@ -302,7 +301,10 @@ watchEffect(() => {
 });
 
 watch(
-  () => [props.cameraUniqueName, props.resolution.width, props.resolution.height,
+  () => [
+    props.cameraUniqueName,
+    props.resolution.width,
+    props.resolution.height,
     useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
   ],
   () => {
@@ -315,19 +317,19 @@ watch(
 <template>
   <div id="container" style="width: 100%">
     <!-- <template v-if="calibrationData"> -->
-      <v-row>
-        <v-col align-self="stretch" style="display: flex; justify-content: center">
-          <canvas id="view" />
-        </v-col>
-      </v-row>
-      <v-row style="margin-bottom: 24px">
-        <v-col style="display: flex; justify-content: center">
-          <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
-        </v-col>
-        <v-col style="display: flex; justify-content: center">
-          <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
-        </v-col>
-      </v-row>
+    <v-row>
+      <v-col align-self="stretch" style="display: flex; justify-content: center">
+        <canvas id="view" />
+      </v-col>
+    </v-row>
+    <v-row style="margin-bottom: 24px">
+      <v-col style="display: flex; justify-content: center">
+        <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
+      </v-col>
+      <v-col style="display: flex; justify-content: center">
+        <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
+      </v-col>
+    </v-row>
     <!-- </template>
     <template v-else-if="isLoading">
       <v-progress-circular indeterminate color="primary" />
