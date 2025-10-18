@@ -55,9 +55,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.TimeSyncClient;
-import org.photonvision.jni.WpilibLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -69,7 +68,7 @@ class PhotonCameraTest {
 
     @BeforeAll
     public static void load_wpilib() {
-        WpilibLoader.loadLibraries();
+        LibraryLoader.loadWpiLibraries();
     }
 
     @BeforeEach
@@ -112,7 +111,7 @@ class PhotonCameraTest {
     @Order(3)
     public void testTimeSyncServerWithPhotonCamera() throws InterruptedException, IOException {
         load_wpilib();
-        PhotonTargetingJniLoader.load();
+        LibraryLoader.loadTargeting();
 
         inst.stopClient();
         inst.startServer();

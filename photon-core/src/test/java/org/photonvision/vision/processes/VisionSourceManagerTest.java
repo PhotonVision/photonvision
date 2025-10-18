@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,7 +32,6 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
 
 public class VisionSourceManagerTest {
@@ -59,9 +57,7 @@ public class VisionSourceManagerTest {
 
     @BeforeAll
     public static void loadLibraries() {
-        TestUtils.loadLibraries();
-        assertDoesNotThrow(PhotonTargetingJniLoader::load);
-        assertTrue(PhotonTargetingJniLoader.isWorking);
+        assertTrue(TestUtils.loadLibraries());
 
         // Broadcast all still calls into configmanager (ew) so set that up here
         ConfigManager.getInstance().load();

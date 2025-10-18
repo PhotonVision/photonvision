@@ -24,8 +24,8 @@
 
 package org.photonvision.timesync;
 
+import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
-import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.TimeSyncServer;
 
 /** Helper to hold a single TimeSyncServer instance with some default config */
@@ -35,12 +35,10 @@ public class TimeSyncSingleton {
     public static boolean load() {
         if (INSTANCE == null) {
             try {
-                if (!PhotonTargetingJniLoader.load()) {
-                    return false;
-                }
-            } catch (UnsatisfiedLinkError | IOException e) {
+                RuntimeLoader.loadLibrary("photontargetingJNI");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
                 e.printStackTrace();
-                return false;
             }
 
             INSTANCE = new TimeSyncServer(5810);
