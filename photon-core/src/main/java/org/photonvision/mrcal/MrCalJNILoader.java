@@ -19,7 +19,6 @@ package org.photonvision.mrcal;
 
 import java.io.IOException;
 import java.util.List;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonJNICommon;
 

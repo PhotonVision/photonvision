@@ -136,6 +136,7 @@ public final class BoardObservation implements Cloneable {
 
     /**
      * Annotate the image with the detected corners, green for used, red for unused
+     *
      * @return
      */
     @JsonIgnore
@@ -171,6 +172,7 @@ public final class BoardObservation implements Cloneable {
 
     /**
      * Mean reprojection error for this observation, skipping corners marked as unused
+     *
      * @return
      */
     @JsonIgnore

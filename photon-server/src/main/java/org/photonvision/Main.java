@@ -216,7 +216,7 @@ public class Main {
             boolean success = PhotonTargetingJniLoader.load();
 
             if (!success) {
-                logger.error("Failed to load native libraries! Giving up :(");
+                logger.error("Failed to load photon-targeting JNI! Giving up :(");
                 System.exit(1);
             }
         } catch (Exception e) {
@@ -237,6 +237,7 @@ public class Main {
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
+
         try {
             if (Platform.isRK3588()) {
                 RknnDetectorJNI.forceLoad();
@@ -246,6 +247,7 @@ public class Main {
         } catch (IOException e) {
             logger.error("Failed to load rknn-JNI!", e);
         }
+
         try {
             MrCalJNILoader.forceLoad();
         } catch (IOException e) {

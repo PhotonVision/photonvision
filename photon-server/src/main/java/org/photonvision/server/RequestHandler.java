@@ -515,8 +515,8 @@ public class RequestHandler {
         try {
             // DataCalibrationImportRequest request =
             //         kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
-            DataCalibrationImportRequest request = 
-                kObjectMapper.readValue(ctx.req().getInputStream(), DataCalibrationImportRequest.class);
+            DataCalibrationImportRequest request =
+                    kObjectMapper.readValue(ctx.req().getInputStream(), DataCalibrationImportRequest.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
@@ -641,12 +641,11 @@ public class RequestHandler {
         ctx.status(204);
     }
 
-
     /**
      * Get the calibration JSON for a specific observation. Excludes camera image data
-     * 
-     * This is excluded from UICalibrationCoefficients by default to save bandwidth on
-     * large calibrations
+     *
+     * <p>This is excluded from UICalibrationCoefficients by default to save bandwidth on large
+     * calibrations
      */
     public static void onCalibrationJsonRequest(Context ctx) {
         String cameraUniqueName = ctx.queryParam("cameraUniqueName");
