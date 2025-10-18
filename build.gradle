@@ -41,7 +41,7 @@ ext {
     libcameraDriverVersion = "v2025.0.3"
     rknnVersion = "dev-v2025.0.0-1-g33b6263"
     frcYear = "2025"
-    mrcalVersion = "dev-v2025.0.0-39-g7c1ffbc6"; // todo revert
+    mrcalVersion = "dev-v2025.0.0-1-g29c6a36"; // todo revert
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
