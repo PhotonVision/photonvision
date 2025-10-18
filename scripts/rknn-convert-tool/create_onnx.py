@@ -82,7 +82,8 @@ def run_onnx_conversion_yolov5(model_path):
             "-r",
             os.path.join(ultralytics_folder_name_yolov5, "requirements.txt"),
             "torch<2.6.0",
-            "onnx",
+            "onnx==1.18.0",
+            "onnxscript",
         ]
     )
 
@@ -121,7 +122,9 @@ def run_onnx_conversion_yolov5(model_path):
 
 def run_onnx_conversion_no_anchor(model_path):
     check_or_clone_rockchip_repo(yolo_non_anchor_repo)
-    run_pip_install_or_else_exit(["-e", ultralytics_default_folder_name, "onnx"])
+    run_pip_install_or_else_exit(
+        ["-e", ultralytics_default_folder_name, "onnx==1.18.0", "onnxscript"]
+    )
 
     sys.path.insert(0, os.path.abspath(ultralytics_default_folder_name))
     model_abs_path = os.path.abspath(model_path)
