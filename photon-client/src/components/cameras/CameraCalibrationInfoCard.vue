@@ -4,7 +4,12 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
-import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
+
+import { defineAsyncComponent } from "vue";
+
+const PhotonCalibrationVisualizer = defineAsyncComponent({
+  loader: () => import("@/components/app/photon-calibration-visualizer.vue")
+});
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -246,12 +251,15 @@ const calibrationImageURL = (index: number) =>
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Camera->Board Transforms</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">
-      i , too
-      <PhotonCalibrationVisualizer
-        :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
-        :resolution="props.videoFormat.resolution"
-      />
-      am in this visualizer
+      <Suspense>
+        <!-- Allows us to import three js when it's actually needed  -->
+        <PhotonCalibrationVisualizer
+          :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+          :resolution="props.videoFormat.resolution"
+        />
+
+        <template #fallback> Loading... </template>
+      </Suspense>
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Individual Observations</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs">
@@ -295,9 +303,11 @@ const calibrationImageURL = (index: number) =>
 .v-data-table {
   background-color: #006492 !important;
 }
+
 .snapshot-preview {
   max-width: 55%;
 }
+
 @media only screen and (max-width: 512px) {
   .snapshot-preview {
     max-width: 100%;

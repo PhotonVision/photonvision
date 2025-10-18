@@ -1,34 +1,23 @@
 <script setup lang="ts">
-import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
-import {
+const {
   AmbientLight,
-  ArrowHelper,
   AxesHelper,
   BoxGeometry,
-  BufferGeometry,
   CameraHelper,
   Color,
   ConeGeometry,
-  DoubleSide,
-  GridHelper,
   Group,
-  Line,
-  LineBasicMaterial,
   Mesh,
   MeshNormalMaterial,
   MeshPhongMaterial,
-  type Object3D,
   PerspectiveCamera,
-  PlaneGeometry,
-  Quaternion,
   Scene,
   SphereGeometry,
-  Vector3,
   WebGLRenderer
-} from "three";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
-import type { BoardObservation, CameraCalibrationResult, CvPoint3 } from "@/types/SettingTypes";
+} = await import("three");
+const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
@@ -42,38 +31,16 @@ let camera: PerspectiveCamera | undefined;
 let renderer: WebGLRenderer | undefined;
 let controls: TrackballControls | undefined;
 
-const createChessboard = (obs: BoardObservation, isActive: boolean, cal: CameraCalibrationResult): Group => {
+const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): Group => {
   const group = new Group();
 
   if (obs.locationInImageSpace.length === 0) return group;
-
-  // for (let i = 0; i < cal.calobjectSize.width; i++) {
-  //   for (let j = 0; j < cal.calobjectSize.height; j++) {
-  //     const isBlack = (i + j) % 2 === 0;
-  //     const color = isBlack ? 0x333333 : 0xeeeeee;
-
-  //     const squareGeom = new PlaneGeometry(cal.calobjectSpacing, cal.calobjectSpacing);
-  //     const squareMat = new MeshPhongMaterial({
-  //       color,
-  //       opacity: isActive ? 1.0 : 0.3,
-  //       transparent: !isActive,
-  //       side: DoubleSide
-  //     });
-  //     const square = new Mesh(squareGeom, squareMat);
-
-  //     square.position.x = i * cal.calobjectSpacing;
-  //     square.position.y = j * cal.calobjectSpacing;
-  //     square.position.z = 0;
-
-  //     group.add(square);
-  //   }
-  // }
 
   // Add corner spheres
   obs.locationInObjectSpace.forEach((corner, idx) => {
     if (corner.x < 0 || corner.y < 0) return;
 
-    isActive = !obs.cornersUsed[idx];
+    const isActive = !obs.cornersUsed[idx];
 
     const color = obs.cornersUsed[idx] ? 0x00ff00 : 0xff0000;
 
@@ -102,12 +69,11 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
   previousTargets = [];
 
   // Draw all chessboards with transparency
-  cal.observations.forEach((obs, idx) => {
-    const isActive = true;
+  cal.observations.forEach((obs) => {
     const pose = obs.optimisedCameraToObject;
 
     // Create chessboard
-    const board = createChessboard(obs, isActive, cal);
+    const board = createChessboard(obs, cal);
     board.userData.isCalibrationObject = true;
 
     // Apply transform from camera to chessboard
@@ -120,30 +86,24 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
     }
 
     previousTargets.push(board);
-
-    // Add coordinate frame for active board
-    if (isActive) {
-      // const frameAxes = new AxesHelper(0.15);
-      // frameAxes.position.copy(board.position);
-      // frameAxes.quaternion.copy(board.quaternion);
-      // frameAxes.userData.isCalibrationObject = true;
-      // previousTargets.push(frameAxes);
-    }
   });
 
   // And show camera fov
-  const imageWidth = 1280;
-  const imageHeight = 720;
-  const focalLengthX = cal.cameraIntrinsics.data[0];
+  const imageWidth = props.resolution.width;
+  const imageHeight = props.resolution.height;
   const focalLengthY = cal.cameraIntrinsics.data[4];
   const fovY = 2 * Math.atan(imageHeight / (2 * focalLengthY)) * (180 / Math.PI);
-  const aspect = (imageWidth * focalLengthY) / (imageHeight * focalLengthX);
+  const aspect = imageWidth / imageHeight;
 
   const calibCamera = new PerspectiveCamera(fovY, aspect, 0.1, 1.0);
-  calibCamera.rotateX(Math.PI);
   const helper = new CameraHelper(calibCamera);
-  helper.rotateZ(Math.PI);
-  previousTargets.push(helper);
+
+  // Flip to +Z forward
+  const helperGroup = new Group();
+  helperGroup.add(helper);
+  helperGroup.rotateY(Math.PI);
+
+  previousTargets.push(helperGroup);
 
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
@@ -221,7 +181,7 @@ const resetCamThirdPerson = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   // Grab data first off
   fetchCalibrationData();
 
@@ -330,12 +290,5 @@ watch(
         <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
       </v-col>
     </v-row>
-    <!-- </template>
-    <template v-else-if="isLoading">
-      <v-progress-circular indeterminate color="primary" />
-    </template>
-    <template v-else-if="error">
-      <v-alert type="error">{{ error }}</v-alert>
-    </template> -->
   </div>
 </template>

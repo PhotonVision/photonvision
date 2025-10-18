@@ -4,8 +4,10 @@ import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 import {
   ArrowHelper,
   BoxGeometry,
+  CameraHelper,
   Color,
   ConeGeometry,
+  Group,
   Mesh,
   MeshNormalMaterial,
   type Object3D,
@@ -16,6 +18,13 @@ import {
   WebGLRenderer
 } from "three";
 import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+
+const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats[
+    useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex
+  ].resolution
+);
 
 const props = defineProps<{
   targets: PhotonTarget[];
@@ -66,6 +75,25 @@ const drawTargets = (targets: PhotonTarget[]) => {
     arrow.position.set(target.pose.x, target.pose.y, target.pose.z);
     previousTargets.push(arrow);
   });
+
+  if (calibrationCoeffs) {
+    // And show camera fov
+    console.log("Drawing camera frustum with calibration coeffs:", calibrationCoeffs);
+    const imageWidth = calibrationCoeffs.resolution.width;
+    const imageHeight = calibrationCoeffs.resolution.height;
+    const focalLengthY = calibrationCoeffs.cameraIntrinsics.data[4];
+    const fovY = 2 * Math.atan(imageHeight / (2 * focalLengthY)) * (180 / Math.PI);
+    const aspect = imageWidth / imageHeight;
+
+    const calibCamera = new PerspectiveCamera(fovY, aspect, 0.1, 10.0);
+    const helper = new CameraHelper(calibCamera);
+    const helperGroup = new Group();
+    helperGroup.add(helper);
+    // Flip to +Z forward
+    helperGroup.rotateX(-Math.PI / 2.0);
+    helperGroup.rotateY(-Math.PI / 2.0);
+    previousTargets.push(helperGroup);
+  }
 
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
