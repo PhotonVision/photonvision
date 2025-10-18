@@ -38,30 +38,13 @@ public class MrCalJNILoader extends PhotonJNICommon {
     }
 
     public static synchronized void forceLoad() throws IOException {
-        // Force load opencv
+        // Make sure opencv has already loaded
         TestUtils.loadLibraries();
 
-        if (Platform.isWindows()) {
-            // Order is correct to match dependencies of libraries
-            // If we just extracted all of them and put them in PATH, windows might pick right. but idc
-            forceLoad(
-                    MrCalJNILoader.getInstance(),
-                    MrCalJNILoader.class,
-                    List.of(
-                            "suitesparseconfig",
-                            "amd",
-                            "camd",
-                            "colamd",
-                            "ccolamd",
-                            "openblas",
-                            "cholmod",
-                            "mrcal_jni"));
-        } else {
-            // Nothing else to do on linux
-            forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
-        }
+        forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
 
         if (!MrCalJNILoader.getInstance().isLoaded()) {
+            System.exit(2);
             throw new IOException("Unable to load mrcal JNI!");
         }
     }
