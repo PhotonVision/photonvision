@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
+// @ts-expect-error Intellisense says these conflict with the dynamic imports below
+import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
+// @ts-expect-error Intellisense says these conflict with the dynamic imports below
+import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
 import { onBeforeUnmount, onMounted, watchEffect } from "vue";
-import {
+const {
   ArrowHelper,
   BoxGeometry,
   CameraHelper,
@@ -10,14 +14,14 @@ import {
   Group,
   Mesh,
   MeshNormalMaterial,
-  type Object3D,
   PerspectiveCamera,
   Quaternion,
-  Scene,
   Vector3,
+  Scene,
   WebGLRenderer
-} from "three";
-import { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+} = await import("three");
+const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 
 const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
@@ -142,7 +146,7 @@ const resetCamThirdPerson = () => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   scene = new Scene();
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 

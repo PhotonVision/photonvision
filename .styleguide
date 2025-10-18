@@ -19,6 +19,7 @@ modifiableFileExclude {
   \.webp$
   \.ico$
   \.rknn$
+  \.tflite$
   \.mp4$
   \.ttf$
   \.woff2$

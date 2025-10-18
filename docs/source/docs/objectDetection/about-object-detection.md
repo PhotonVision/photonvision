@@ -2,9 +2,9 @@
 
 ## How does it work?
 
-PhotonVision supports object detection using neural network accelerator hardware built into Orange Pi 5/5+ coprocessors. Please note that the Orange Pi 5/5+ are the only coprocessors that are currently supported. The Neural Processing Unit, or NPU, is [used by PhotonVision](https://github.com/PhotonVision/rknn_jni/tree/main) to massively accelerate certain math operations like those needed for running ML-based object detection.
+PhotonVision supports object detection using neural network accelerator hardware, commonly known as an NPU. The two coprocessors currently supported are the {ref}`Orange Pi 5 <docs/objectDetection/opi:Orange Pi 5 (and variants) Object Detection>` and the {ref}`Rubik Pi 3 <docs/objectDetection/rubik:Rubik Pi 3 Object Detection>`.
 
-For the 2025 season, PhotonVision ships with a pretrained ALGAE model. A model to detect coral is not currently stable, and interested teams should ask in the Photonvision discord.
+PhotonVision currently ships with a model trained on the [COCO dataset](https://cocodataset.org/) by [Ultralytics](https://github.com/ultralytics/ultralytics) (this model is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html)). This model is meant to be used for testing and other miscellaneous purposes. It is not meant to be used in competition. For the 2025 post-season, PhotonVision also ships with a pretrained ALGAE model. A model to detect coral is available in the PhotonVision discord, but will not be distributed with PhotonVision.
 
 ## Tracking Objects
 
@@ -18,7 +18,7 @@ This model output means that while its fairly easy to say that "this rectangle p
 
 ## Tuning and Filtering
 
-Compared to other pipelines, object detection exposes very few tuning handles. The Confidence slider changes the minimum confidence that the model needs to have in a given detection to consider it valid, as a number between 0 and 1 (with 0 meaning completely uncertain and 1 meaning maximally certain).
+Compared to other pipelines, object detection exposes very few tuning handles. The Confidence slider changes the minimum confidence that the model needs to have in a given detection to consider it valid, as a number between 0 and 1 (with 0 meaning completely uncertain and 1 meaning maximally certain). The Non-Maximum Suppresion (NMS) Threshold slider is used to filter out overlapping detections. Higher values mean more detections are allowed through, but may result in false positives. It's generally recommended that teams leave this set at the default, unless they find they're unable to get usable results with solely the Confidence slider.
 
 ```{raw} html
 <video width="85%" controls>
@@ -33,31 +33,19 @@ The same area, aspect ratio, and target orientation/sort parameters from {ref}`r
 
 Photonvision will letterbox your camera frame to 640x640. This means that if you select a resolution that is larger than 640 it will be scaled down to fit inside a 640x640 frame with black bars if needed. Smaller frames will be scaled up with black bars if needed.
 
-## Training Custom Models
+It is recommended that you select a resolution that results in the smaller dimension being just greater than, or equal to, 640. Anything above this will not see any increased performance.
 
-:::{warning}
-Power users only. This requires some setup, such as obtaining your own dataset and installing various tools. It's additionally advised to have a general knowledge of ML before attempting to train your own model. Additionally, this is not officially supported by Photonvision, and any problems that may arise are not attributable to Photonvision.
-:::
+## Custom Models
 
-Before beginning, it is necessary to install the [rknn-toolkit2](https://github.com/airockchip/rknn-toolkit2). Then, install the relevant [Ultralytics repository](https://github.com/airockchip?tab=repositories&q=yolo&type=&language=&sort=) from this list. After training your model, export it to `rknn`. This will give you an `onnx` file, formatted for conversion. Copy this file to the relevant folder in [rknn_model_zoo](https://github.com/airockchip/rknn_model_zoo), and use the conversion script located there to convert it. If necessary, modify the script to provide the path to your training database for quantization.
+For information regarding converting custom models and supported models for each platform, refer to the page detailing information about your specific coprocessor.
 
-## Uploading Custom Models
+- {ref}`Orange Pi 5 <docs/objectDetection/opi:Orange Pi 5 (and variants) Object Detection>`
+- {ref}`Rubik Pi 3 <docs/objectDetection/rubik:Rubik Pi 3 Object Detection>`
 
-:::{warning}
-PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOLOv11 models trained and converted to `.rknn` format for RK3588 CPUs! Other models require different post-processing code and will NOT work. The model conversion process is also highly particular. Proceed with care.
-:::
+### Training Custom Models
 
-:::{warning}
-Non-quantized models are not supported! If you have the option, make sure quantization is enabled when exporting to .rknn format. This will represent the weights and activations of the model as 8-bit integers, instead of 32-bit floats which PhotonVision doesn't support. Quantized models are also much faster.
-:::
+PhotonVision does not offer any support for training custom models, only conversion. For information on which models are supported for a given coprocessor, use the links above.
 
-In the settings, under `Device Control`, there's an option to upload a new object detection model. Naming convention
-should be `name-verticalResolution-horizontalResolution-yolovXXX`. The
-`name` should only include alphanumeric characters, periods, and underscores. Additionally, the labels
-file ought to have the same name as the RKNN file, with `-labels` appended to the end. For
-example, if the RKNN file is named `Algae_1.03.2025-640-640-yolov5s.rknn`, the labels file should be
-named `Algae_1.03.2025-640-640-yolov5s-labels.txt`.
+### Managing Custom Models
 
-:::{note}
-Currently there is no way to delete custom models in the GUI, though this is a planned feature. To do this, you have to SSH into the coprocessor and delete the files manually from `/opt/photonvision/photonvision_config/models`.
-:::
+Custom models can now be managed from the Object Detection tab in settings. You can upload a custom model by clicking the "Upload Model" button, selecting your model file, and filling out the property fields. Models can also be exported, both individually and in bulk. Models exported in bulk can be imported using the `import bulk` button. Models exported individually must be re-imported as an individual model, and all the relevant metadata is stored in the filename of the model.

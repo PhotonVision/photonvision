@@ -10,77 +10,82 @@ interface MetricItem {
 
 const generalMetrics = computed<MetricItem[]>(() => {
   const stats = [
-    {
-      header: "Version",
-      value: useSettingsStore().general.version || "Unknown"
-    },
-    {
-      header: "Hardware Model",
-      value: useSettingsStore().general.hardwareModel || "Unknown"
-    },
-    {
-      header: "Platform",
-      value: useSettingsStore().general.hardwarePlatform || "Unknown"
-    },
-
-    {
-      header: "GPU Acceleration",
-      value: useSettingsStore().general.gpuAcceleration || "Unknown"
-    }
+    { header: "Version", value: useSettingsStore().general.version || "Unknown" },
+    { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
+    { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
+    { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "Unknown" }
   ];
 
   if (!useSettingsStore().network.networkingDisabled) {
-    stats.push({
-      header: "IP Address",
-      value: useSettingsStore().metrics.ipAddress || "Unknown"
-    });
+    stats.push({ header: "IP Address", value: useSettingsStore().metrics.ipAddress || "Unknown" });
   }
 
   return stats;
 });
 
+// @ts-expect-error This uses Intl.DurationFormat which is newly implemented and not available in TS.
+const durationFormatter = new Intl.DurationFormat("en", { style: "narrow" });
 const platformMetrics = computed<MetricItem[]>(() => {
+  const metrics = useSettingsStore().metrics;
   const stats = [
     {
       header: "CPU Temp",
-      value: useSettingsStore().metrics.cpuTemp === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuTemp}°C`
+      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp}°C`
     },
     {
       header: "CPU Usage",
-      value: useSettingsStore().metrics.cpuUtil === undefined ? "Unknown" : `${useSettingsStore().metrics.cpuUtil}%`
+      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil}%`
     },
     {
       header: "CPU Memory Usage",
       value:
-        useSettingsStore().metrics.ramUtil === undefined || useSettingsStore().metrics.cpuMem === undefined
-          ? "Unknown"
-          : `${useSettingsStore().metrics.ramUtil || "Unknown"}MB of ${useSettingsStore().metrics.cpuMem}MB`
+        metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
+          ? `${metrics.ramUtil}MB of ${metrics.ramMem}MB`
+          : "Unknown"
     },
     {
-      header: "GPU Memory Usage",
-      value:
-        useSettingsStore().metrics.gpuMemUtil === undefined || useSettingsStore().metrics.gpuMem === undefined
-          ? "Unknown"
-          : `${useSettingsStore().metrics.gpuMemUtil}MB of ${useSettingsStore().metrics.gpuMem}MB`
-    },
-    {
-      header: "CPU Throttling",
-      value: useSettingsStore().metrics.cpuThr || "Unknown"
-    },
-    {
-      header: "CPU Uptime",
-      value: useSettingsStore().metrics.cpuUptime || "Unknown"
+      header: "Uptime",
+      value: (() => {
+        const seconds = metrics.uptime;
+        if (seconds === undefined) return "Unknown";
+
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = Math.floor(seconds % 60);
+
+        return durationFormatter.format({
+          days: days,
+          hours: hours,
+          minutes: minutes,
+          seconds: secs
+        });
+      })()
     },
     {
       header: "Disk Usage",
-      value: useSettingsStore().metrics.diskUtilPct || "Unknown"
+      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
     }
   ];
 
-  if (useSettingsStore().metrics.npuUsage) {
+  if (metrics.npuUsage && metrics.npuUsage.length > 0) {
     stats.push({
       header: "NPU Usage",
-      value: useSettingsStore().metrics.npuUsage || "Unknown"
+      value: metrics.npuUsage?.map((usage, index) => `Core${index} ${usage}%`).join(", ") || "Unknown"
+    });
+  }
+
+  if (metrics.gpuMem && metrics.gpuMemUtil && metrics.gpuMem > 0 && metrics.gpuMemUtil > 0) {
+    stats.push({
+      header: "GPU Memory Usage",
+      value: `${metrics.gpuMemUtil}MB of ${metrics.gpuMem}MB`
+    });
+  }
+
+  if (metrics.cpuThr) {
+    stats.push({
+      header: "CPU Throttling",
+      value: metrics.cpuThr.toString()
     });
   }
 
@@ -120,16 +125,16 @@ onBeforeMount(() => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title class="pl-6" style="display: flex; justify-content: space-between">
-      <span class="pt-2 pb-2">Stats</span>
+  <v-card class="mb-3 rounded-12" color="surface">
+    <v-card-title style="display: flex; justify-content: space-between">
+      <span>Metrics</span>
       <v-btn variant="text" @click="fetchMetrics">
-        <v-icon start class="open-icon">mdi-reload</v-icon>
+        <v-icon start class="open-icon" size="large">mdi-reload</v-icon>
         Last Fetched: {{ metricsLastFetched }}
       </v-btn>
     </v-card-title>
-    <v-card-text class="pa-6 pt-0 pb-3">
-      <v-card-subtitle class="pa-0" style="font-size: 16px">General Metrics</v-card-subtitle>
+    <v-card-text class="pt-0 pb-3">
+      <v-card-subtitle class="pa-0" style="font-size: 16px">General</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>
           <tr>
@@ -165,8 +170,8 @@ onBeforeMount(() => {
         </tbody>
       </v-table>
     </v-card-text>
-    <v-card-text class="pa-6 pt-4">
-      <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px">Hardware Metrics</v-card-subtitle>
+    <v-card-text class="pt-4">
+      <v-card-subtitle class="pa-0 pb-1" style="font-size: 16px">Hardware</v-card-subtitle>
       <v-table class="metrics-table mt-3">
         <thead>
           <tr>
@@ -212,46 +217,52 @@ onBeforeMount(() => {
   text-align: center;
 }
 
+$stats-table-border: rgba(255, 255, 255, 0.5);
+$stats-table-inner: rgba(255, 255, 255, 0.1);
+
 .t {
-  border-top: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
+  border-bottom: 1px solid $stats-table-inner !important;
 }
 
 .b {
-  border-bottom: 1px solid white;
-  border-right: 1px solid white;
+  border-bottom: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
 }
 
 .tl {
-  border-top: 1px solid white;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid $stats-table-border;
+  border-left: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
+  border-bottom: 1px solid $stats-table-inner !important;
   border-top-left-radius: 5px;
 }
 
 .tr {
-  border-top: 1px solid white;
-  border-right: 1px solid white;
+  border-top: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
+  border-bottom: 1px solid $stats-table-inner !important;
   border-top-right-radius: 5px;
 }
 
 .bl {
-  border-bottom: 1px solid white;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  border-bottom: 1px solid $stats-table-border;
+  border-left: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
   border-bottom-left-radius: 5px;
 }
 
 .br {
-  border-bottom: 1px solid white;
-  border-right: 1px solid white;
+  border-bottom: 1px solid $stats-table-border;
+  border-right: 1px solid $stats-table-border;
   border-bottom-right-radius: 5px;
 }
 
 .metric-item {
   font-size: 16px !important;
   padding: 1px 15px 1px 10px;
-  border-right: 1px solid;
+  border-right: 1px solid $stats-table-border;
   font-weight: normal;
   color: white !important;
   text-align: center !important;
@@ -259,22 +270,9 @@ onBeforeMount(() => {
 
 .metric-item-title {
   font-size: 18px !important;
-  text-decoration: underline;
-  text-decoration-color: #ffd843;
 }
 
 .v-table {
-  thead,
-  tbody {
-    background-color: #006492;
-  }
-
-  :hover {
-    tbody > tr {
-      background-color: #005281 !important;
-    }
-  }
-
   ::-webkit-scrollbar {
     width: 0;
     height: 0.55em;
@@ -287,7 +285,7 @@ onBeforeMount(() => {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

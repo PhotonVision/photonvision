@@ -76,6 +76,9 @@ public class HardwareManager {
         this.metricsManager = new MetricsManager();
         this.metricsManager.setConfig(hardwareConfig);
 
+        TimedTaskManager.getInstance()
+                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
+
         ledModeRequest =
                 NetworkTablesManager.getInstance()
                         .kRootTable
@@ -220,10 +223,6 @@ public class HardwareManager {
         }
 
         blinkCounter++;
-    }
-
-    public HardwareConfig getConfig() {
-        return hardwareConfig;
     }
 
     public void publishMetrics() {

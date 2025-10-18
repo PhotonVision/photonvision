@@ -3,9 +3,9 @@ import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useRoute } from "vue-router";
-import { useDisplay } from "vuetify";
+import { useDisplay, useTheme } from "vuetify";
+import { toggleTheme } from "@/lib/ThemeManager";
 
 const compact = computed<boolean>({
   get: () => {
@@ -17,24 +17,19 @@ const compact = computed<boolean>({
 });
 const { mdAndUp } = useDisplay();
 
-const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
+const theme = useTheme();
 
-const needsCamerasConfigured = computed<boolean>(() => {
-  return (
-    Object.values(useCameraSettingsStore().cameras).length === 0 ||
-    useCameraSettingsStore().cameras["PlaceHolder Name"] === PlaceholderCameraSettings
-  );
-});
+const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </script>
 
 <template>
-  <v-navigation-drawer permanent :rail="renderCompact" color="primary">
-    <v-list nav>
+  <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
+    <v-list nav color="primary">
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
         <template #prepend>
           <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
-          <img v-else class="logo" src="@/assets/images/logoSmall.svg" alt="small logo" />
+          <img v-else class="logo" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
         </template>
       </v-list-item>
 
@@ -50,12 +45,18 @@ const needsCamerasConfigured = computed<boolean>(() => {
       <v-list-item
         link
         to="/cameraConfigs"
-        :class="{ cameraicon: needsCamerasConfigured && useRoute().path !== '/cameraConfigs' }"
+        :class="{
+          cameraicon: useCameraSettingsStore().needsCameraConfiguration && useRoute().path !== '/cameraConfigs'
+        }"
       >
         <template #prepend>
-          <v-icon :class="{ 'text-red': needsCamerasConfigured }">mdi-swap-horizontal-bold</v-icon>
+          <v-icon :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
+            >mdi-swap-horizontal-bold</v-icon
+          >
         </template>
-        <v-list-item-title :class="{ 'text-red': needsCamerasConfigured }">Camera Matching</v-list-item-title>
+        <v-list-item-title :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
+          >Camera Matching</v-list-item-title
+        >
       </v-list-item>
       <v-list-item link to="/docs" prepend-icon="mdi-bookshelf">
         <v-list-item-title>Documentation</v-list-item-title>
@@ -69,20 +70,35 @@ const needsCamerasConfigured = computed<boolean>(() => {
           :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
           @click="() => (compact = !compact)"
         >
-          <v-list-item-title>Compact Mode</v-list-item-title>
+          <v-list-item-title>Compact</v-list-item-title>
         </v-list-item>
         <v-list-item
-          :prepend-icon="
-            useSettingsStore().network.runNTServer
-              ? 'mdi-server'
-              : useStateStore().ntConnectionStatus.connected
-                ? 'mdi-robot'
-                : 'mdi-robot-off'
-          "
+          link
+          :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'"
+          @click="() => toggleTheme(theme)"
         >
+          <v-list-item-title>Theme</v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="
+                useSettingsStore().network.runNTServer
+                  ? 'mdi-server'
+                  : useStateStore().ntConnectionStatus.connected
+                    ? 'mdi-robot'
+                    : 'mdi-robot-off'
+              "
+              :color="
+                useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
+                  ? '#00ff00'
+                  : '#ff0000'
+              "
+            />
+          </template>
           <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
             NetworkTables server running for
-            <span class="text-accent">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
+            <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
           </v-list-item-title>
           <v-list-item-title
             v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
@@ -91,9 +107,7 @@ const needsCamerasConfigured = computed<boolean>(() => {
             style="flex-direction: column; display: flex"
           >
             NetworkTables Server Connected!
-            <span class="text-accent">
-              {{ useStateStore().ntConnectionStatus.address }}
-            </span>
+            <span class="text-primary"> {{ useStateStore().ntConnectionStatus.address }} </span>
           </v-list-item-title>
           <v-list-item-title
             v-else
@@ -104,10 +118,15 @@ const needsCamerasConfigured = computed<boolean>(() => {
             Not connected to NetworkTables Server!
           </v-list-item-title>
         </v-list-item>
-
-        <v-list-item :prepend-icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'">
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
+              :color="useStateStore().backendConnected ? '#00ff00' : '#ff0000'"
+            />
+          </template>
           <v-list-item-title v-show="!renderCompact" class="text-wrap">
-            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
+            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
           </v-list-item-title>
         </v-list-item>
       </v-list>
@@ -116,6 +135,14 @@ const needsCamerasConfigured = computed<boolean>(() => {
 </template>
 
 <style scoped>
+.v-navigation-drawer {
+  border: none;
+}
+
+.v-navigation-drawer--rail {
+  border: none;
+}
+
 .v-list-item-title {
   font-size: 1rem !important;
   line-height: 1.2rem !important;

@@ -22,3 +22,8 @@ const logColorClass = computed<string>(() => {
 <template>
   <div :class="logColorClass">[{{ source.timestamp.toTimeString().split(" ")[0] }}] {{ source.message }}</div>
 </template>
+<style scoped>
+div {
+  white-space: pre-wrap;
+}
+</style>

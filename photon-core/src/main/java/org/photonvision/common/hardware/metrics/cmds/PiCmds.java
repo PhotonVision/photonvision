@@ -34,7 +34,7 @@ public class PiCmds extends LinuxCmds {
                         + " else echo \"None\"; fi";
 
         // GPU
-        gpuMemoryCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-        gpuMemUsageCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
+        gpuMemCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
+        gpuMemUtilCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
     }
 }

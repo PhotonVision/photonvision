@@ -127,6 +127,7 @@ docs/troubleshooting/index
 docs/additional-resources/best-practices
 docs/additional-resources/config
 docs/additional-resources/nt-api
+docs/benchmarks/index
 docs/contributing/index
 ```
 

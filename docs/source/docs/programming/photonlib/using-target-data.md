@@ -8,17 +8,17 @@ A `PhotonUtils` class with helpful common calculations is included within `Photo
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
+   .. code-block:: java
 
       // Calculate robot's field relative pose
       if (aprilTagFieldLayout.getTagPose(target.getFiducialId()).isPresent()) {
         Pose3d robotPose = PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot);
       }
-   .. code-block:: C++
+   .. code-block:: c++
 
      //TODO
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 ```
@@ -29,19 +29,19 @@ You can get your robot's `Pose2D` on the field using various camera data, target
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
+   .. code-block:: java
 
       // Calculate robot's field relative pose
       Pose2D robotPose = PhotonUtils.estimateFieldToRobot(
         kCameraHeight, kTargetHeight, kCameraPitch, kTargetPitch, Rotation2d.fromDegrees(-target.getYaw()), gyro.getRotation2d(), targetPose, cameraToRobot);
 
-   .. code-block:: C++
+   .. code-block:: c++
 
       // Calculate robot's field relative pose
       frc::Pose2D robotPose = photonlib::EstimateFieldToRobot(
         kCameraHeight, kTargetHeight, kCameraPitch, kTargetPitch, frc::Rotation2d(units::degree_t(-target.GetYaw())), frc::Rotation2d(units::degree_t(gyro.GetRotation2d)), targetPose, cameraToRobot);
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 
@@ -54,15 +54,15 @@ If your camera is at a fixed height on your robot and the height of the target i
 ```{eval-rst}
 .. tab-set-code::
 
-   .. code-block:: Java
+   .. code-block:: java
 
       // TODO
 
-   .. code-block:: C++
+   .. code-block:: c++
 
       // TODO
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 
@@ -78,15 +78,15 @@ The C++ version of PhotonLib uses the Units library. For more information, see [
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
+   .. code-block:: java
 
       double distanceToTarget = PhotonUtils.getDistanceToPose(robotPose, targetPose);
 
-   .. code-block:: C++
+   .. code-block:: c++
 
       //TODO
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 ```
@@ -97,19 +97,19 @@ You can get a [translation](https://docs.wpilib.org/en/latest/docs/software/adva
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
+   .. code-block:: java
 
       // Calculate a translation from the camera to the target.
       Translation2d translation = PhotonUtils.estimateCameraToTargetTranslation(
         distanceMeters, Rotation2d.fromDegrees(-target.getYaw()));
 
-   .. code-block:: C++
+   .. code-block:: c++
 
       // Calculate a translation from the camera to the target.
       frc::Translation2d translation = photonlib::PhotonUtils::EstimateCameraToTargetTranslation(
         distance, frc::Rotation2d(units::degree_t(-target.GetYaw())));
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 
@@ -125,14 +125,14 @@ We are negating the yaw from the camera from CV (computer vision) conventions to
 
 ```{eval-rst}
 .. tab-set-code::
-   .. code-block:: Java
+   .. code-block:: java
 
       Rotation2d targetYaw = PhotonUtils.getYawToPose(robotPose, targetPose);
-   .. code-block:: C++
+   .. code-block:: c++
 
      //TODO
 
-   .. code-block:: Python
+   .. code-block:: python
 
       # Coming Soon!
 ```

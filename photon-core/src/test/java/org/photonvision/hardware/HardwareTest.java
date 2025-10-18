@@ -20,16 +20,25 @@ package org.photonvision.hardware;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.MetricsManager;
+import org.photonvision.common.util.TestUtils;
+import org.photonvision.jni.PhotonTargetingJniLoader;
 
 public class HardwareTest {
     @Test
     public void testHardware() {
+        try {
+            TestUtils.loadLibraries();
+            PhotonTargetingJniLoader.load();
+        } catch (UnsatisfiedLinkError | IOException e) {
+            e.printStackTrace();
+        }
         MetricsManager mm = new MetricsManager();
 
         if (!Platform.isRaspberryPi()) return;
@@ -37,15 +46,15 @@ public class HardwareTest {
         System.out.println("Testing on platform: " + Platform.getPlatformName());
 
         System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + mm.getMemory() + "MB");
-        System.out.println("Temperature: " + mm.getTemp() + "C");
-        System.out.println("Utilization: : " + mm.getUtilization() + "%");
+        System.out.println("Memory: " + mm.getRamMem() + "MB");
+        System.out.println("Temperature: " + mm.getCpuTemp() + "C");
+        System.out.println("Utilization: : " + mm.getCpuUtilization() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + mm.getGPUMemorySplit() + "MB");
+        System.out.println("Memory: " + mm.getGpuMem() + "MB");
 
         System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + mm.getUsedRam() + "MB");
+        System.out.println("Used RAM: : " + mm.getRamUtil() + "MB");
     }
 
     @Test

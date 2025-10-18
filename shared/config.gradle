@@ -45,7 +45,7 @@ model {
 
 task copyAllOutputs(type: Copy) {
     def outputsFolder = file("$project.buildDir/outputs")
-    destinationDir outputsFolder
+    destinationDir = outputsFolder
 }
 
 ext.addTaskToCopyAllOutputs = { task ->
