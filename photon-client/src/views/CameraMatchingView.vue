@@ -168,7 +168,7 @@ const deleteThisCamera = (cameraName: string) => {
     });
 };
 
-const cameraCononected = (uniquePath: string): boolean => {
+const cameraConnected = (uniquePath: string): boolean => {
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
   );
@@ -195,8 +195,8 @@ const activeVisionModules = computed(() =>
     // Display connected cameras first
     .sort(
       (first, second) =>
-        (cameraCononected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
-        (cameraCononected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
+        (cameraConnected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
+        (cameraConnected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
     )
 );
 
@@ -270,11 +270,11 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
       >
         <v-card color="surface" class="rounded-12">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+          <v-card-subtitle v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
           <v-card-subtitle
-            v-else-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
+            v-else-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
@@ -283,7 +283,7 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
               <tbody>
                 <tr
                   v-if="
-                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+                    cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
                     useStateStore().backendResults[module.uniqueName]
                   "
                 >
@@ -325,7 +325,7 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
               </tbody>
             </v-table>
             <div
-              v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+              v-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
               class="d-flex flex-column justify-center align-center mt-3"
               style="height: 250px"
@@ -347,7 +347,7 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
                     )
                   "
                 >
@@ -418,7 +418,7 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
                 </tr>
                 <tr>
                   <td>Connected</td>
-                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
+                  <td>{{ cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
                 </tr>
               </tbody>
             </v-table>
@@ -433,7 +433,7 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
                     )
                   "
                 >
