@@ -238,7 +238,7 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
 /**
  * Find the PVCameraInfo currently occupying the same uniquePath as the the given module
  */
-const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undefined): PVCameraInfo => {
+const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
   if (!info) {
     return {
       PVFileCameraInfo: undefined,
@@ -247,7 +247,9 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
     };
   }
   return (
-    allDevices.find((it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath) || {
+    useStateStore().vsmState.allConnectedCameras.find(
+      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
+    ) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
       PVUsbCameraInfo: undefined
@@ -554,15 +556,10 @@ const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undef
             icon="mdi-information-outline"
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
           />
-          <PvCameraMatchCard
-            :saved="viewingCamera[0]"
-            :current="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])"
-          />
+          <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
         <v-card-text v-else>
-          <PvCameraInfoCard
-            :camera="getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0])"
-          />
+          <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
       </v-card>
     </v-dialog>
