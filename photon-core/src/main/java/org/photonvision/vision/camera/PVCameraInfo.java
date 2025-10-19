@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
+import java.util.Objects;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -70,8 +71,15 @@ public sealed interface PVCameraInfo {
 
     CameraType type();
 
+    /**
+     * Default equals implementation that delegates to the implementing class's equals method. This
+     * method checks type compatibility first, then delegates to the actual implementation.
+     */
     default boolean equals(PVCameraInfo other) {
-        return uniquePath().equals(other.uniquePath());
+        if (other == null) return false;
+        if (this.type() != other.type()) return false;
+        // Delegate to the actual equals(Object) implementation of this instance
+        return this.equals((Object) other);
     }
 
     @JsonTypeName("PVUsbCameraInfo")
@@ -125,16 +133,17 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVUsbCameraInfo info) {
-                return super.name == info.name
-                        && super.vendorId == info.vendorId
-                        && super.productId == info.productId
-                        && equals(info);
-            }
-            if (obj instanceof PVCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            if (!(obj instanceof PVUsbCameraInfo info)) return false;
+
+            return super.name.equals(info.name)
+                    && super.vendorId == info.vendorId
+                    && super.productId == info.productId
+                    && uniquePath().equals(info.uniquePath());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.name, super.vendorId, super.productId, uniquePath());
         }
 
         @Override
@@ -200,13 +209,14 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVCSICameraInfo info) {
-                return baseName.equals(info.baseName) && equals(info);
-            }
-            if (obj instanceof PVCameraInfo info) {
-                return equals(info);
-            }
-            return false;
+            if (!(obj instanceof PVCSICameraInfo info)) return false;
+
+            return baseName.equals(info.baseName) && path.equals(info.path);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(baseName, path);
         }
 
         @Override
@@ -263,10 +273,14 @@ public sealed interface PVCameraInfo {
         public boolean equals(Object obj) {
             if (this == obj) return true;
             if (obj == null) return false;
-            if (obj instanceof PVFileCameraInfo info) {
-                return name.equals(info.name) && equals(info);
-            }
-            return false;
+            if (!(obj instanceof PVFileCameraInfo info)) return false;
+
+            return name.equals(info.name) && path.equals(info.path);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, path);
         }
 
         @Override

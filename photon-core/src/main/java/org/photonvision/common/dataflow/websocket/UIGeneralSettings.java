@@ -19,7 +19,6 @@ package org.photonvision.common.dataflow.websocket;
 
 import java.util.List;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager;
-import org.photonvision.vision.camera.PVCameraInfo;
 
 public class UIGeneralSettings {
     public UIGeneralSettings(
@@ -31,8 +30,7 @@ public class UIGeneralSettings {
             String hardwareModel,
             String hardwarePlatform,
             boolean conflictingHostname,
-            String conflictingCameras,
-            List<PVCameraInfo> mismatchedCameras) {
+            String conflictingCameras) {
         this.version = version;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
@@ -42,7 +40,6 @@ public class UIGeneralSettings {
         this.hardwarePlatform = hardwarePlatform;
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras;
-        this.mismatchedCameras = mismatchedCameras;
     }
 
     public String version;
@@ -54,5 +51,4 @@ public class UIGeneralSettings {
     public String hardwarePlatform;
     public boolean conflictingHostname;
     public String conflictingCameras;
-    public List<PVCameraInfo> mismatchedCameras;
 }

@@ -80,9 +80,6 @@ public class VisionSourceManager {
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
     protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
 
-    // Set of cameras that where a camera mismatch error was logged
-    public final List<PVCameraInfo> mismatchedCameras = new ArrayList<>();
-
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
 
@@ -255,7 +252,7 @@ public class VisionSourceManager {
 
     public synchronized boolean deactivateVisionSource(String uniqueName) {
         // try to find the module. If we find it, remove it from the VMM
-        var removedConfig =
+        Optional<CameraConfiguration> removedConfig =
                 vmm.getModules().stream()
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
@@ -324,36 +321,46 @@ public class VisionSourceManager {
 
         // from the listed physical camera infos, match them to the camera configs and check for
         // mismatches
-
-        for (PVCameraInfo info : cameraInfos) {
-            for (VisionModule module : vmm.getModules()) {
-                CameraConfiguration config = module.getCameraConfiguration();
-
-                // if the camera info matches, we're good
-                if (config.matchedCameraInfo.equals(info)) {
-                    mismatchedCameras.remove(info);
+        for (VisionModule module : vmm.getModules()) {
+            CameraConfiguration config = module.getCameraConfiguration();
+            // We use unique paths to determine if the module has a camera in the port. If no unique path
+            // is found that matches the module, it's removed from the mismatched set as a disconnected
+            // camera cannot be mismatched.
+            List<String> uniquePaths = new ArrayList<>();
+            for (PVCameraInfo info : cameraInfos) {
+                uniquePaths.add(info.uniquePath());
+                // if the unique path doesn't match, skip cause it's not in the same port
+                if (!config.matchedCameraInfo.uniquePath().equals(info.uniquePath())) {
                     continue;
                 }
 
-                // if the unique path matches but the camera info doesn't, log an error
-                if (config.matchedCameraInfo.uniquePath().equals(info.uniquePath())
-                        && !config.matchedCameraInfo.equals(info)
-                        && !mismatchedCameras.contains(info)) {
+                // If the camera info doesn't match, log an error
+                if (!config.matchedCameraInfo.equals(info) && !module.mismatch) {
                     logger.error("Camera mismatch error!");
                     logger.error("Camera config mismatch for " + config.nickname);
                     logCameraInfoDiff(config.matchedCameraInfo, info);
-                    mismatchedCameras.add(info);
+                    module.mismatch = true;
                 }
+            }
+            // If the unique path for the module's camera config is not found in the connected cameras,
+            // remove it from the mismatched set as it's disconnected.
+            if (!uniquePaths.contains(config.matchedCameraInfo.uniquePath())) {
+                module.mismatch = false;
             }
         }
 
-        if (!mismatchedCameras.isEmpty()) {
+        if (vmm.getModules().stream().anyMatch(m -> m.mismatch)) {
             NetworkTablesManager.getInstance()
                     .setMismatchAlert(
                             true,
                             "Camera mismatch error! See logs for details. ("
-                                    + mismatchedCameras.stream().map(x -> x.humanReadableName()).toList().toString()
-                                    + " are affected)");
+                                    + vmm.getModules().stream()
+                                            .filter(m -> m.mismatch)
+                                            .map(m -> m.getCameraConfiguration().nickname)
+                                            .toList()
+                                            .toString()
+                                            .replaceAll("[\\[\\]()]", "")
+                                    + " affected)");
         } else {
             NetworkTablesManager.getInstance().setMismatchAlert(false, "");
         }
