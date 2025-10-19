@@ -2,7 +2,14 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { PlaceholderCameraSettings, PVCameraInfo, type UiCameraConfiguration } from "@/types/SettingTypes";
+import {
+  PlaceholderCameraSettings,
+  PVCameraInfo,
+  type PVCSICameraInfo,
+  type PVFileCameraInfo,
+  type PVUsbCameraInfo,
+  type UiCameraConfiguration
+} from "@/types/SettingTypes";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvInput from "@/components/common/pv-input.vue";
@@ -10,7 +17,6 @@ import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
-import { camerasMatch, cameraInfoFor, getMatchedDevice } from "@/lib/MatchingUtils";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -211,6 +217,43 @@ const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettin
   cameraToDelete.value = camera;
 };
 const yesDeleteMySettingsText = ref("");
+
+/**
+ * Get the connection-type-specific camera info from the given PVCameraInfo object.
+ */
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+  if (!camera) return null;
+  if (camera.PVUsbCameraInfo) {
+    return camera.PVUsbCameraInfo;
+  }
+  if (camera.PVCSICameraInfo) {
+    return camera.PVCSICameraInfo;
+  }
+  if (camera.PVFileCameraInfo) {
+    return camera.PVFileCameraInfo;
+  }
+  return {};
+};
+
+/**
+ * Find the PVCameraInfo currently occupying the same uniquePath as the the given module
+ */
+const getMatchedDevice = (allDevices: PVCameraInfo[], info: PVCameraInfo | undefined): PVCameraInfo => {
+  if (!info) {
+    return {
+      PVFileCameraInfo: undefined,
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined
+    };
+  }
+  return (
+    allDevices.find((it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath) || {
+      PVFileCameraInfo: undefined,
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined
+    }
+  );
+};
 </script>
 
 <template>
@@ -231,13 +274,7 @@ const yesDeleteMySettingsText = ref("");
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
           <v-card-subtitle
-            v-else-if="
-              cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-              camerasMatch(
-                getMatchedDevice(useStateStore().vsmState.allConnectedCameras, module.matchedCameraInfo),
-                module.matchedCameraInfo
-              )
-            "
+            v-else-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
@@ -504,10 +541,9 @@ const yesDeleteMySettingsText = ref("");
         </v-card-text>
         <v-card-text
           v-else-if="
-            !camerasMatch(
-              getMatchedDevice(useStateStore().vsmState.allConnectedCameras, viewingCamera[0]),
-              viewingCamera[0]
-            )
+            activeVisionModules.find(
+              (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath === cameraInfoFor(viewingCamera[0]).uniquePath
+            )?.mismatch
           "
         >
           <v-alert

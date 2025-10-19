@@ -10,7 +10,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
-import { camerasMatch, getMatchedDevice } from "@/lib/MatchingUtils";
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -56,14 +56,15 @@ const arducamWarningShown = computed<boolean>(() => {
 });
 
 const cameraMismatchWarningShown = computed<boolean>(() => {
-  return Object.values(useCameraSettingsStore().cameras).some(
-    (camera) =>
-      camera.nickname !== "Placeholder Camera" &&
-      camera.isConnected &&
-      !camerasMatch(
-        getMatchedDevice(useStateStore().vsmState.allConnectedCameras, camera.matchedCameraInfo),
-        camera.matchedCameraInfo
-      )
+  console.log("Checking for camera mismatches");
+  console.log(useCameraSettingsStore().cameras);
+  return (
+    Object.values(useCameraSettingsStore().cameras)
+      // Ignore placeholder camera
+      .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+      .some((camera) => {
+        return camera.mismatch;
+      })
   );
 });
 
