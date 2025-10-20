@@ -327,6 +327,9 @@ public class VisionSourceManager {
     /**
      * Check for mismatches between connected cameras and saved camera configurations.
      *
+     * <p>Note that if the information for a camera spontaneously changes without it being
+     * disconnected/unplugged and reconnected/replugged, we may experience unexpected behavior.
+     *
      * @param cameraInfos
      */
     protected void checkMismatches(List<PVCameraInfo> cameraInfos) {
