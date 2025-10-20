@@ -125,8 +125,8 @@ end
 local udp_port = DissectorTable.get("udp.port")
 udp_port:add(5810, photon_timesync_proto)
 
--- Heuristic dissector to catch packets on any port
-function photon_timesync_proto.heuristic(buffer, pinfo, tree)
+-- Heuristic dissector function
+local function heuristic_checker(buffer, pinfo, tree)
   local length = buffer:len()
 
   -- Check minimum length (TspPing = 10 bytes)
@@ -138,7 +138,7 @@ function photon_timesync_proto.heuristic(buffer, pinfo, tree)
   local msg_id = buffer(1, 1):uint()
 
   -- Check if this looks like our protocol
-  -- Version should be reasonable (0-10), message_id should be 0 or 1
+  -- Version should be reasonable (0-10), message_id should be 1 or 2
   if version <= 10 and (msg_id == 1 or msg_id == 2) then
     -- Validate packet structure
     if msg_id == 1 and length == 10 then
@@ -156,7 +156,7 @@ function photon_timesync_proto.heuristic(buffer, pinfo, tree)
 end
 
 -- Register heuristic dissector
-photon_timesync_proto:register_heuristic("udp", photon_timesync_proto.heuristic)
+photon_timesync_proto:register_heuristic("udp", heuristic_checker)
 
 -- Initialize function to reset tables on new capture
 function photon_timesync_proto.init()
