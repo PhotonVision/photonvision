@@ -21,57 +21,102 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record HardwareConfig(
-        String deviceName,
-        String deviceLogoPath,
-        String supportURL,
-        // LED control
+public class HardwareConfig {
+    public final String deviceName;
+    public final String deviceLogoPath;
+    public final String supportURL;
 
-        ArrayList<Integer> ledPins,
-        String ledSetCommand,
-        boolean ledsCanDim,
-        ArrayList<Integer> ledBrightnessRange,
-        String ledDimCommand,
-        String ledBlinkCommand,
-        ArrayList<Integer> statusRGBPins,
-        // Metrics
+    // LED control
+    public final ArrayList<Integer> ledPins;
+    public final String ledSetCommand;
+    public final boolean ledsCanDim;
+    public final ArrayList<Integer> ledBrightnessRange;
+    public final String ledDimCommand;
+    public final String ledBlinkCommand;
+    public final ArrayList<Integer> statusRGBPins;
 
-        String cpuTempCommand,
-        String cpuMemoryCommand,
-        String cpuUtilCommand,
-        String cpuThrottleReasonCmd,
-        String cpuUptimeCommand,
-        String gpuMemoryCommand,
-        String ramUtilCommand,
-        String gpuMemUsageCommand,
-        String diskUsageCommand,
-        // Device stuff
-        String restartHardwareCommand,
-        double vendorFOV) { // -1 for unmanaged
+    // Metrics
+    public final String cpuTempCommand;
+    public final String cpuMemoryCommand;
+    public final String cpuUtilCommand;
+    public final String cpuThrottleReasonCmd;
+    public final String cpuUptimeCommand;
+    public final String gpuMemoryCommand;
+    public final String ramUtilCommand;
+    public final String gpuMemUsageCommand;
+    public final String diskUsageCommand;
+
+    // Device stuff
+    public final String restartHardwareCommand;
+    public final double vendorFOV; // -1 for unmanaged
+
+    public HardwareConfig(
+            String deviceName,
+            String deviceLogoPath,
+            String supportURL,
+            ArrayList<Integer> ledPins,
+            String ledSetCommand,
+            boolean ledsCanDim,
+            ArrayList<Integer> ledBrightnessRange,
+            String ledDimCommand,
+            String ledBlinkCommand,
+            ArrayList<Integer> statusRGBPins,
+            String cpuTempCommand,
+            String cpuMemoryCommand,
+            String cpuUtilCommand,
+            String cpuThrottleReasonCmd,
+            String cpuUptimeCommand,
+            String gpuMemoryCommand,
+            String ramUtilCommand,
+            String gpuMemUsageCommand,
+            String diskUsageCommand,
+            String restartHardwareCommand,
+            double vendorFOV) {
+        this.deviceName = deviceName;
+        this.deviceLogoPath = deviceLogoPath;
+        this.supportURL = supportURL;
+        this.ledPins = ledPins;
+        this.ledSetCommand = ledSetCommand;
+        this.ledsCanDim = ledsCanDim;
+        this.ledBrightnessRange = ledBrightnessRange;
+        this.ledDimCommand = ledDimCommand;
+        this.ledBlinkCommand = ledBlinkCommand;
+        this.statusRGBPins = statusRGBPins;
+        this.cpuTempCommand = cpuTempCommand;
+        this.cpuMemoryCommand = cpuMemoryCommand;
+        this.cpuUtilCommand = cpuUtilCommand;
+        this.cpuThrottleReasonCmd = cpuThrottleReasonCmd;
+        this.cpuUptimeCommand = cpuUptimeCommand;
+        this.gpuMemoryCommand = gpuMemoryCommand;
+        this.ramUtilCommand = ramUtilCommand;
+        this.gpuMemUsageCommand = gpuMemUsageCommand;
+        this.diskUsageCommand = diskUsageCommand;
+        this.restartHardwareCommand = restartHardwareCommand;
+        this.vendorFOV = vendorFOV;
+    }
 
     public HardwareConfig() {
-        this(
-                "", // deviceName
-                "", // deviceLogoPath
-                "", // supportURL
-                new ArrayList<>(), // ledPins
-                "", // ledSetCommand
-                false, // ledsCanDim
-                new ArrayList<>(), // ledBrightnessRange
-                "", // ledDimCommand
-                "", // ledBlinkCommand
-                new ArrayList<>(), // statusRGBPins
-                "", // cpuTempCommand
-                "", // cpuMemoryCommand
-                "", // cpuUtilCommand
-                "", // cpuThrottleReasonCmd
-                "", // cpuUptimeCommand
-                "", // gpuMemoryCommand
-                "", // ramUtilCommand
-                "", // gpuMemUsageCommand
-                "", // diskUsageCommand
-                "", // restartHardwareCommand
-                -1); // vendorFOV
+        deviceName = "";
+        deviceLogoPath = "";
+        supportURL = "";
+        ledPins = new ArrayList<>();
+        ledSetCommand = "";
+        ledsCanDim = false;
+        ledBrightnessRange = new ArrayList<>();
+        ledDimCommand = "";
+        ledBlinkCommand = "";
+        statusRGBPins = new ArrayList<>();
+        cpuTempCommand = "";
+        cpuMemoryCommand = "";
+        cpuUtilCommand = "";
+        cpuThrottleReasonCmd = "";
+        cpuUptimeCommand = "";
+        gpuMemoryCommand = "";
+        ramUtilCommand = "";
+        gpuMemUsageCommand = "";
+        diskUsageCommand = "";
+        restartHardwareCommand = "";
+        vendorFOV = -1;
     }
 
     /**
@@ -95,5 +140,52 @@ public record HardwareConfig(
                 || ledBlinkCommand != ""
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
+    }
+    
+    @Override
+    public String toString() {
+        return "HardwareConfig[deviceName="
+                + deviceName
+                + ", deviceLogoPath="
+                + deviceLogoPath
+                + ", supportURL="
+                + supportURL
+                + ", ledPins="
+                + ledPins
+                + ", ledSetCommand="
+                + ledSetCommand
+                + ", ledsCanDim="
+                + ledsCanDim
+                + ", ledBrightnessRange="
+                + ledBrightnessRange
+                + ", ledDimCommand="
+                + ledDimCommand
+                + ", ledBlinkCommand="
+                + ledBlinkCommand
+                + ", statusRGBPins="
+                + statusRGBPins
+                + ", cpuTempCommand="
+                + cpuTempCommand
+                + ", cpuMemoryCommand="
+                + cpuMemoryCommand
+                + ", cpuUtilCommand="
+                + cpuUtilCommand
+                + ", cpuThrottleReasonCmd="
+                + cpuThrottleReasonCmd
+                + ", cpuUptimeCommand="
+                + cpuUptimeCommand
+                + ", gpuMemoryCommand="
+                + gpuMemoryCommand
+                + ", ramUtilCommand="
+                + ramUtilCommand
+                + ", gpuMemUsageCommand="
+                + gpuMemUsageCommand
+                + ", diskUsageCommand="
+                + diskUsageCommand
+                + ", restartHardwareCommand="
+                + restartHardwareCommand
+                + ", vendorFOV="
+                + vendorFOV
+                + "]";
     }
 }
