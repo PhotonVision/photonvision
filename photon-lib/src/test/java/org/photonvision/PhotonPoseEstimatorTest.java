@@ -48,6 +48,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.PhotonPoseEstimator.ConstrainedSolvepnpParams;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.estimation.TargetModel;
-import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.WpilibLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
@@ -76,13 +76,11 @@ class PhotonPoseEstimatorTest {
     @AutoClose final PhotonCameraInjector cameraOne = new PhotonCameraInjector();
 
     @BeforeAll
-    public static void init() throws UnsatisfiedLinkError, IOException {
-        if (!WpilibLoader.loadLibraries()) {
+    public static void init() throws IOException {
+        if (!LibraryLoader.loadWpiLibraries()) {
             fail();
         }
-        if (!PhotonTargetingJniLoader.load()) {
-            fail();
-        }
+        RuntimeLoader.loadLibrary("photontargetingJNI");
 
         HAL.initialize(1000, 0);
 
