@@ -29,10 +29,9 @@ import org.photonvision.jni.TimeSyncServer;
 
 public class TimeSyncTest {
     @BeforeAll
-    public static void load_wpilib() throws IOException {
+    public static void load() throws IOException {
         LibraryLoader.loadWpiLibraries();
         RuntimeLoader.loadLibrary("photontargetingJNI");
-        ;
 
         HAL.initialize(1000, 0);
     }

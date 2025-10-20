@@ -48,6 +48,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,9 +80,7 @@ class PhotonPoseEstimatorTest {
         if (!LibraryLoader.loadWpiLibraries()) {
             fail();
         }
-        if (!LibraryLoader.loadTargeting()) {
-            fail();
-        }
+        RuntimeLoader.loadLibrary("photontargetingJNI");
 
         HAL.initialize(1000, 0);
 

@@ -32,12 +32,11 @@ import org.photonvision.jni.LibraryLoader;
 
 public class ConstrainedSolvepnpTest {
     @BeforeAll
-    public static void load_wpilib() throws IOException {
+    public static void load() throws IOException {
         if (!LibraryLoader.loadWpiLibraries()) {
             fail();
         }
         RuntimeLoader.loadLibrary("photontargetingJNI");
-        ;
 
         HAL.initialize(1000, 0);
     }

@@ -43,7 +43,9 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -69,9 +71,9 @@ class VisionSystemSimTest {
     NetworkTableInstance inst;
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws IOException {
         assertTrue(LibraryLoader.loadWpiLibraries());
-        assertTrue(LibraryLoader.loadTargeting());
+        RuntimeLoader.loadLibrary("photontargetingJNI");
 
         OpenCvLoader.forceStaticLoad();
     }

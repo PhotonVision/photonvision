@@ -18,7 +18,7 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
 dependencies {
-    wpilibNatives project(':photon-targeting')
+    wpilibNatives project(path: ':photon-targeting', configuration: 'wpilibNatives')
     wpilibNatives wpilibTools.deps.wpilib("wpimath")
     wpilibNatives wpilibTools.deps.wpilib("wpinet")
     wpilibNatives wpilibTools.deps.wpilib("wpiutil")

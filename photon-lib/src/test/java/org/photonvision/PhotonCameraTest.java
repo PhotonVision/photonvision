@@ -35,6 +35,7 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
@@ -67,8 +68,9 @@ class PhotonCameraTest {
     NetworkTableInstance inst = null;
 
     @BeforeAll
-    public static void load_wpilib() {
+    public static void load() throws IOException {
         LibraryLoader.loadWpiLibraries();
+        RuntimeLoader.loadLibrary("photontargetingJNI");
     }
 
     @BeforeEach
@@ -110,9 +112,6 @@ class PhotonCameraTest {
     @Test
     @Order(3)
     public void testTimeSyncServerWithPhotonCamera() throws InterruptedException, IOException {
-        load_wpilib();
-        LibraryLoader.loadTargeting();
-
         inst.stopClient();
         inst.startServer();
 
