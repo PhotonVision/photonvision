@@ -319,36 +319,49 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
+        checkMismatches(cameraInfos);
+
+        return cameraInfos;
+    }
+
+    /**
+     * Check for mismatches between connected cameras and saved camera configurations.
+     *
+     * @param cameraInfos
+     */
+    protected void checkMismatches(List<PVCameraInfo> cameraInfos) {
         // from the listed physical camera infos, match them to the camera configs and check for
         // mismatches
         for (VisionModule module : vmm.getModules()) {
-            CameraConfiguration config = module.getCameraConfiguration();
+            PVCameraInfo matchedCameraInfo = module.getCameraConfiguration().matchedCameraInfo;
             // We use unique paths to determine if the module has a camera in the port. If no unique path
             // is found that matches the module, it's removed from the mismatched set as a disconnected
             // camera cannot be mismatched.
-            List<String> uniquePaths = new ArrayList<>();
+            if (!cameraInfos.stream()
+                    .map(PVCameraInfo::uniquePath)
+                    .toList()
+                    .contains(matchedCameraInfo.uniquePath())) {
+                module.mismatch = false;
+                continue;
+            }
+
             for (PVCameraInfo info : cameraInfos) {
-                uniquePaths.add(info.uniquePath());
                 // if the unique path doesn't match, skip cause it's not in the same port
-                if (!config.matchedCameraInfo.uniquePath().equals(info.uniquePath())) {
+                if (!matchedCameraInfo.uniquePath().equals(info.uniquePath())) {
                     continue;
                 }
 
                 // If the camera info doesn't match, log an error
-                if (!config.matchedCameraInfo.equals(info) && !module.mismatch) {
+                if (!matchedCameraInfo.equals(info) && !module.mismatch) {
                     logger.error("Camera mismatch error!");
-                    logger.error("Camera config mismatch for " + config.nickname);
-                    logCameraInfoDiff(config.matchedCameraInfo, info);
+                    logger.error("Camera config mismatch for " + matchedCameraInfo.name());
+                    logCameraInfoDiff(matchedCameraInfo, info);
                     module.mismatch = true;
                 }
             }
-            // If the unique path for the module's camera config is not found in the connected cameras,
-            // remove it from the mismatched set as it's disconnected.
-            if (!uniquePaths.contains(config.matchedCameraInfo.uniquePath())) {
-                module.mismatch = false;
-            }
         }
 
+        // Set the NetworkTables mismatch alert
         if (vmm.getModules().stream().anyMatch(m -> m.mismatch)) {
             NetworkTablesManager.getInstance()
                     .setMismatchAlert(
@@ -364,8 +377,6 @@ public class VisionSourceManager {
         } else {
             NetworkTablesManager.getInstance().setMismatchAlert(false, "");
         }
-
-        return cameraInfos;
     }
 
     /** Log the differences between two PVCameraInfo objects. */
