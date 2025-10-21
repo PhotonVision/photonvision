@@ -114,10 +114,24 @@ export const useSettingsStore = defineStore("settings", {
         ipAddress: data.ipAddress || undefined,
         uptime: data.uptime || undefined
       };
+      let test: MetricData = {
+        cpuTemp: 50 + Math.random() * 20,
+        cpuUtil: 50 + Math.random() * 20,
+        cpuThr: undefined,
+        ramMem: 50 + Math.random() * 20,
+        ramUtil: 50 + Math.random() * 20,
+        gpuMem: data.gpuMem || undefined,
+        gpuMemUtil: data.gpuMemUtil || undefined,
+        diskUtilPct: 50 + Math.random() * 20,
+        npuUsage: data.npuUsage || undefined,
+        ipAddress: data.ipAddress || undefined,
+        uptime: data.uptime || undefined
+      };
       if (updateTimeElapsed.value) {
         updateTimeElapsed.value = false;
         setTimeout(() => (updateTimeElapsed.value = true), UPDATE_INTERVAL_MS);
-        this.metricsHistory.push({ time: Date.now(), metrics: this.metrics });
+        // this.metricsHistory.push({ time: Date.now(), metrics: this.metrics });
+        this.metricsHistory.push({ time: Date.now(), metrics: test });
         while (this.metricsHistory.length > MAX_METRIC_HISTORY) this.metricsHistory.shift();
       }
     },

@@ -3,7 +3,7 @@ import * as echarts from "echarts";
 import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 
 const chartRef = ref(null);
-let chartInstance: echarts.ECharts | null = null;
+let chart: echarts.ECharts | null = null;
 const DEFAULT_COLOR: Color = { r: 59, g: 130, b: 246 };
 
 const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAULT_COLOR) => {
@@ -34,7 +34,7 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
     grid: {
       top: 0,
       bottom: 10,
-      left: 0,
+      left: 20,
       right: 0,
       containLabel: false
     },
@@ -43,19 +43,23 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
       splitLine: {
         show: false
       },
-      boundaryGap: false,
-      minInterval: 10 * 1000,
-      // min: data.length ? data[0]?.time : undefined,
+      // boundaryGap: ["10%", 0],
+      // minInterval: 5 * 1000,
+      // min: data.length ? data[5]?.time + 5000 : undefined,
       // max: data.at(-1)?.time,
-      splitNumber: 3,
+      splitNumber: 4,
       axisLabel: {
-        align: "left",
+        // margin: 1
+        alignMinLabel: "left",
+        // align: "left",
         formatter: (value: number) => {
           const date = new Date(value);
+          // return date.toLocaleTimeString();
           return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
-            second: "2-digit"
+            second: "2-digit",
+            hour12: false
           });
         }
       }
@@ -108,8 +112,6 @@ const getSeries = (data: ChartData[] = [], color: Color = DEFAULT_COLOR) => {
   ];
 };
 
-const baseOptions: any = ref();
-
 // Example chart data — make it a prop if you want dynamic data
 interface ChartData {
   time: number;
@@ -123,15 +125,17 @@ interface Color {
 // blue 84, 112, 198 (59, 130, 246)
 // purple 154, 96, 180
 // green 65, 181, 127
+// red 238, 102, 102
 const props = defineProps<{
   title?: string;
   data: ChartData[];
   color?: Color;
+  dark?: boolean;
 }>();
 
 onMounted(() => {
-  chartInstance = echarts.init(chartRef.value);
-  chartInstance.setOption(getOptions(props.title, props.data, props.color));
+  chart = echarts.init(chartRef.value);
+  chart.setOption(getOptions(props.title, props.data, props.color));
 
   // Handle resize
   window.addEventListener("resize", resizeChart);
@@ -139,18 +143,18 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener("resize", resizeChart);
-  chartInstance?.dispose();
+  chart?.dispose();
 });
 
 function resizeChart() {
-  chartInstance?.resize();
+  chart?.resize();
 }
 
 // Watch for prop updates (reactive chart updates)
 watch(
   () => props.data,
-  (newData) => {
-    chartInstance?.setOption(getOptions(props.title, newData, props.color));
+  (data) => {
+    chart?.setOption(getOptions(props.title, data, props.color));
   },
   { deep: true }
 );
@@ -163,7 +167,8 @@ watch(
 <style scoped>
 /* You can size it however you like */
 div {
-  width: 100%;
+  width: calc(100% + 20px);
   height: 100px;
+  margin-left: -20px;
 }
 </style>
