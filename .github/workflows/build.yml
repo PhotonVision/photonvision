@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.0.3
+  IMAGE_VERSION: v2026.0.4
 
 jobs:
 
@@ -447,8 +447,8 @@ jobs:
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
-            image_suffix: lumap1
-            image_url: https://github.com/PhotonVision/photon-image-modifier/actions/runs/18581709087/artifacts/4295810004
+            image_suffix: luma_p1
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
             cpu: cortex-a76
             image_additional_mb: 0
           - os: ubuntu-24.04
