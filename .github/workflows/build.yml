@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+env:
+  IMAGE_VERSION: v2026.0.4
+
 jobs:
 
   validation:
@@ -376,7 +379,7 @@ jobs:
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
@@ -415,72 +418,72 @@ jobs:
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_limelight3.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight3G
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_limelight3g.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3g.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight4
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_limelight4.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight4.img.xz
             cpu: cortex-a76
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5b
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_opi5b.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5b.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5pro
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_opi5pro.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5pro.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5max
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_opi5max.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: rock5c
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.4/photonvision_rock5c.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rock5c.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
-    name: "Build image - ${{ matrix.image_url }}"
+    name: "Build image - ${{ matrix.image_suffix }}"
 
     steps:
       - name: Checkout code
@@ -514,8 +517,40 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
+  build-rubik-image:
+    needs: [build-package]
+
+    if: ${{ github.event_name != 'pull_request' }}
+
+    runs-on: ubuntu-24.04
+    name: "Build image - Rubik Pi 3"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar-LinuxArm64
+      - name: Generate image
+        run: |
+          wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
+          chmod +x mount_rubikpi3.sh
+          ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
+      - name: Compress image
+        run: |
+          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+          new_image_name=$(basename "${new_jar/.jar/_rubikpi3.img}")
+          mv photonvision_rubikpi3 $new_image_name
+          tar -I 'xz -T0' -cf ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
+      - uses: actions/upload-artifact@v4
+        name: Upload image
+        with:
+          name: image-rubikpi3
+          path: photonvision*.xz
   release:
-    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-image, build-rubik-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
@@ -541,11 +576,12 @@ jobs:
 
       - run: find
       # Push to dev release
-      - uses: pyTooling/Actions/releaser@r0
+      - uses: pyTooling/Actions/releaser@r6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
           rm: true
+          snapshots: false
           files: |
             **/*.xz
             **/*linux*.jar
@@ -553,26 +589,6 @@ jobs:
             **/photonlib*.json
             **/photonlib*.zip
         if: github.event_name == 'push'
-      # Upload all jars and xz archives
-      # Split into two uploads to work around max size limits in action-gh-releases
-      # https://github.com/softprops/action-gh-release/issues/353
-      - uses: softprops/action-gh-release@v2.0.9
-        with:
-          files: |
-            **/@(*orangepi5*|*rock5*).xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.9
-        with:
-          files: |
-            **/!(*orangepi5*|*rock5*).xz
-            **/*.jar
-            **/photonlib*.json
-            **/photonlib*.zip
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Vendor JSON Repo PR
         uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
         with:
