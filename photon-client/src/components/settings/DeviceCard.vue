@@ -412,29 +412,6 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
         <v-card-text>
           <v-row>
-            <v-col cols="3">Settings</v-col>
-            <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="() => (showImportDialog = true)"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
-                <span class="open-label">Import</span>
-              </v-btn>
-            </v-col>
-            <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="openExportSettingsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
-                <span class="open-label">Export</span>
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-row>
             <v-col cols="3">Program Logs</v-col>
             <v-col>
               <v-btn
@@ -463,6 +440,29 @@ watch(useSettingsStore().metricsHistory, () => {
                   download="photonvision-journalctl.txt"
                   target="_blank"
                 />
+              </v-btn>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col cols="3">Settings</v-col>
+            <v-col>
+              <v-btn
+                color="buttonPassive"
+                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                @click="() => (showImportDialog = true)"
+              >
+                <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
+                <span class="open-label">Import</span>
+              </v-btn>
+            </v-col>
+            <v-col>
+              <v-btn
+                color="buttonPassive"
+                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                @click="openExportSettingsPrompt"
+              >
+                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
+                <span class="open-label">Export</span>
               </v-btn>
             </v-col>
           </v-row>
@@ -533,22 +533,22 @@ watch(useSettingsStore().metricsHistory, () => {
         <v-card-text class="pt-0">
           <div class="d-flex justify-space-between pb-3">
             <span>CPU Usage</span>
-            <span>{{ cpuUsageData.at(-1)?.value }}%</span>
+            <span>{{ (cpuUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="cpuUsageData" id="chart" />
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
-            <span>{{ cpuMemoryUsageData.at(-1)?.value }}%</span>
+            <span>{{ (cpuMemoryUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="cpuMemoryUsageData" :color="{ r: 154, g: 96, b: 180 }" id="chart" />
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ cpuTempData.at(-1)?.value }}%</span>
+            <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="cpuTempData" :color="{ r: 238, g: 102, b: 102 }" id="chart" />
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
-            <span>{{ diskUsageData.at(-1)?.value }}%</span>
+            <span>{{ (diskUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="diskUsageData" :color="{ r: 65, g: 181, b: 127 }" id="chart" />
         </v-card-text>
