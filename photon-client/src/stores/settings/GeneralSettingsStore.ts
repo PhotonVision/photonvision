@@ -28,7 +28,7 @@ interface GeneralSettingsStore {
 }
 
 const MAX_METRIC_HISTORY = 50;
-const UPDATE_INTERVAL_MS = 1000;
+const UPDATE_INTERVAL_MS = 900;
 const updateTimeElapsed = ref(true);
 
 export const useSettingsStore = defineStore("settings", {

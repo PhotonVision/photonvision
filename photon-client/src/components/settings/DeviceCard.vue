@@ -353,11 +353,12 @@ onBeforeMount(() => {
   fetchMetrics();
 });
 
-const graphedMetrics = ["CPU Usage", "CPU Memory Usage", "Disk Usage", "GPU Memory Usage"];
+const graphedMetrics = ["CPU Usage", "CPU Memory Usage", "Disk Usage", "GPU Memory Usage", "CPU Temp"];
 
 const cpuUsageData = ref<{ time: number; value: number }[]>([]);
 const cpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
 const diskUsageData = ref<{ time: number; value: number }[]>([]);
+const cpuTempData = ref<{ time: number; value: number }[]>([]);
 const gpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
 
 watch(useSettingsStore().metricsHistory, () => {
@@ -372,6 +373,10 @@ watch(useSettingsStore().metricsHistory, () => {
   diskUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
     value: entry.metrics.diskUtilPct ?? 0
+  }));
+  cpuTempData.value = useSettingsStore().metricsHistory.map((entry) => ({
+    time: entry.time,
+    value: entry.metrics.cpuTemp ?? 0
   }));
   gpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
@@ -390,7 +395,11 @@ watch(useSettingsStore().metricsHistory, () => {
         <v-card-text>
           <v-table density="compact">
             <tbody>
-              <tr v-for="(item, itemIndex) in generalMetrics">
+              <tr
+                v-for="(item, itemIndex) in generalMetrics.concat(
+                  platformMetrics.filter((item) => !graphedMetrics.includes(item.header))
+                )"
+              >
                 <td :key="itemIndex">
                   {{ item.header }}
                 </td>
@@ -521,20 +530,6 @@ watch(useSettingsStore().metricsHistory, () => {
             Force Refresh
           </v-btn>
         </v-card-title>
-        <v-card-text>
-          <v-table density="compact">
-            <tbody>
-              <tr v-for="(item, itemIndex) in platformMetrics.filter((item) => !graphedMetrics.includes(item.header))">
-                <td :key="itemIndex">
-                  {{ item.header }}
-                </td>
-                <td :key="itemIndex">
-                  {{ item.value }}
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-        </v-card-text>
         <v-card-text class="pt-0">
           <div class="d-flex justify-space-between pb-3">
             <span>CPU Usage</span>
@@ -546,6 +541,11 @@ watch(useSettingsStore().metricsHistory, () => {
             <span>{{ cpuMemoryUsageData.at(-1)?.value }}%</span>
           </div>
           <Chart :data="cpuMemoryUsageData" :color="{ r: 154, g: 96, b: 180 }" id="chart" />
+          <div class="d-flex justify-space-between pb-3 pt-3">
+            <span>CPU Temperature</span>
+            <span>{{ cpuTempData.at(-1)?.value }}%</span>
+          </div>
+          <Chart :data="cpuTempData" :color="{ r: 238, g: 102, b: 102 }" id="chart" />
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
             <span>{{ diskUsageData.at(-1)?.value }}%</span>
