@@ -1,4 +1,4 @@
-# Camera-Specifc Configuration
+# Camera-Specific Configuration
 
 ```{toctree}
 :maxdepth: 2
