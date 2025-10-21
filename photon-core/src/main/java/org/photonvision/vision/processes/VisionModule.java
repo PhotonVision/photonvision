@@ -160,7 +160,7 @@ public class VisionModule {
 
         // Set vendor FOV
         if (isVendorCamera()) {
-            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV();
+            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
