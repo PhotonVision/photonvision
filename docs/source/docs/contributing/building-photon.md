@@ -279,4 +279,4 @@ build action, which can be found [here](https://github.com/PhotonVision/photonvi
 #### Forcing Object Detection in the UI
 
 In order to force the Object Detection interface to be visible, it's necessary to hardcode the platform that `Platform.java` returns. This can be done by changing the function that detects the RK3588S architecture to always return true, and changing the `getCurrentPlatform()` function to always return the RK3588S/QCS6490 architecture.
-Alternatively, it's possibly to modify the `GeneralSettingsView.vue` by commenting out `v-if="useSettingsStore().general.supportedBackends.length > 0"` to force the card to render.
+Alternatively, it's possible to modify the `GeneralSettingsView.vue` by commenting out `v-if="useSettingsStore().general.supportedBackends.length > 0"` to force the card to render.
