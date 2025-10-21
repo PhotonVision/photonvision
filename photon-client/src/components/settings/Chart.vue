@@ -34,8 +34,8 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
     grid: {
       top: 0,
       bottom: 10,
-      left: 20,
-      right: 0,
+      left: 0,
+      right: 50,
       containLabel: false
     },
     xAxis: {
@@ -50,8 +50,8 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
       splitNumber: 4,
       axisLabel: {
         // margin: 1
-        alignMinLabel: "left",
-        // align: "left",
+        // alignMinLabel: "left",
+        align: "left",
         formatter: (value: number) => {
           const date = new Date(value);
           // return date.toLocaleTimeString();
@@ -169,6 +169,6 @@ watch(
 div {
   width: calc(100% + 20px);
   height: 100px;
-  margin-left: -20px;
+  margin-right: -20px;
 }
 </style>

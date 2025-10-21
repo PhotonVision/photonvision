@@ -388,12 +388,12 @@ watch(useSettingsStore().metricsHistory, () => {
 <template>
   <v-row no-gutters>
     <v-col class="pr-3">
-      <v-card class="mb-3 rounded-12" color="surface">
-        <v-card-title style="display: flex; justify-content: space-between">
+      <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
+        <v-card-title class="d-flex justify-space-between">
           <span>PhotonVision</span>
         </v-card-title>
-        <v-card-text>
-          <v-table density="compact">
+        <v-card-text class="flex-0-0">
+          <v-table>
             <tbody>
               <tr
                 v-for="(item, itemIndex) in generalMetrics.concat(
@@ -410,7 +410,7 @@ watch(useSettingsStore().metricsHistory, () => {
             </tbody>
           </v-table>
         </v-card-text>
-        <v-card-text>
+        <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col cols="3">Program Logs</v-col>
             <v-col>
@@ -443,6 +443,8 @@ watch(useSettingsStore().metricsHistory, () => {
               </v-btn>
             </v-col>
           </v-row>
+        </v-card-text>
+        <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col cols="3">Settings</v-col>
             <v-col>
@@ -466,6 +468,8 @@ watch(useSettingsStore().metricsHistory, () => {
               </v-btn>
             </v-col>
           </v-row>
+        </v-card-text>
+        <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col cols="12" sm="6"
               ><v-btn
@@ -495,6 +499,8 @@ watch(useSettingsStore().metricsHistory, () => {
               />
             </v-col>
           </v-row>
+        </v-card-text>
+        <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col cols="12" sm="6">
               <v-btn
@@ -520,32 +526,37 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
       </v-card>
     </v-col>
-
     <v-col>
-      <v-card class="mb-3 rounded-12" color="surface">
-        <v-card-title style="display: flex; justify-content: space-between">
+      <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
+        <v-card-title class="d-flex justify-space-between">
           <span>Device Metrics</span>
           <v-btn variant="text" @click="fetchMetrics" class="refresh">
             <v-icon start class="open-icon">mdi-reload</v-icon>
             Force Refresh
           </v-btn>
         </v-card-title>
-        <v-card-text class="pt-0">
+        <v-card-text class="pt-0 flex-0-0 pb-1">
           <div class="d-flex justify-space-between pb-3">
             <span>CPU Usage</span>
             <span>{{ (cpuUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="cpuUsageData" id="chart" />
+        </v-card-text>
+        <v-card-text class="pt-0 flex-0-0 pb-1">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ (cpuMemoryUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="cpuMemoryUsageData" :color="{ r: 154, g: 96, b: 180 }" id="chart" />
+        </v-card-text>
+        <v-card-text class="pt-0 flex-0-0 pb-1">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
             <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
           <Chart :data="cpuTempData" :color="{ r: 238, g: 102, b: 102 }" id="chart" />
+        </v-card-text>
+        <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
             <span>{{ (diskUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
@@ -657,9 +668,12 @@ watch(useSettingsStore().metricsHistory, () => {
   />
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .v-btn:not(.refresh) {
   width: 100%;
+}
+.fill-height {
+  height: calc(100% - 12px) !important;
 }
 @media only screen and (max-width: 351px) {
   .open-icon {
