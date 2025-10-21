@@ -141,7 +141,7 @@ public class HardwareConfig {
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
     }
-    
+
     @Override
     public String toString() {
         return "HardwareConfig[deviceName="
