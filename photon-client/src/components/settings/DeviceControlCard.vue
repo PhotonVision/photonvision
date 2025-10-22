@@ -84,9 +84,11 @@ const handleOfflineUpdate = () => {
         const uploadPercentage = (progress || 0) * 100.0;
         if (uploadPercentage < 99.5) {
           useStateStore().showSnackbarMessage({
-            message: "New Software Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+            message: "New Software Upload in Progress",
             color: "secondary",
-            timeout: -1
+            timeout: -1,
+            progressBar: uploadPercentage,
+            progressBarColor: "primary"
           });
         } else {
           useStateStore().showSnackbarMessage({
