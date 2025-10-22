@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
 </script>
 
 <template>
@@ -21,9 +20,7 @@ import { useTheme } from "vuetify";
       :color="useStateStore().snackbarData.progressBarColor"
     >
       <template v-slot:default="{ value }">
-        <strong>
-          {{ Math.ceil(value) }}%
-        </strong>
+        <strong> {{ Math.ceil(value) }}% </strong>
       </template>
     </v-progress-linear>
   </v-snackbar>
