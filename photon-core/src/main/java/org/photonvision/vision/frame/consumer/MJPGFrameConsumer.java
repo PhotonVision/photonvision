@@ -49,6 +49,7 @@ public class MJPGFrameConsumer implements AutoCloseable {
         long now = MathUtils.wpiNanoTime();
 
         if (image == null || image.getMat() == null || image.getMat().empty()) {
+            System.out.println("Empty/nonexistant image");
             image.copyFrom(StaticFrames.LOST_MAT);
         }
 

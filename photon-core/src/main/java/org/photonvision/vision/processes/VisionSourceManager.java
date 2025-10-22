@@ -44,7 +44,10 @@ import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
+import org.photonvision.vision.camera.baslerCameras.BaslerCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
+import org.teamdeadbolts.basler.BaslerJNI;
+import org.teamdeadbolts.basler.BaslerJNI.CameraModel;
 
 /**
  * This class manages starting up VisionModules for serialized devices ({@link
@@ -310,6 +313,16 @@ public class VisionSourceManager {
                             })
                     .forEach(cameraInfos::add);
         }
+        if (BaslerJNI.isSupported()) {
+            Stream.of(BaslerJNI.getConnectedCameras())
+                    .map(
+                            serial -> {
+                                CameraModel model = BaslerJNI.getCameraModel(serial);
+                                return PVCameraInfo.fromBaslerCameraInfo(serial, model);
+                            })
+                    .forEach(cameraInfos::add);
+            ;
+        }
 
         // FileVisionSources are a bit quirky. They aren't enumerated by the above, but i still want my
         // UI to look like it ought to work
@@ -400,6 +413,7 @@ public class VisionSourceManager {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
+                    case BaslerCamera -> new BaslerCameraSource(configuration);
                 };
 
         if (source.getFrameProvider() == null) {

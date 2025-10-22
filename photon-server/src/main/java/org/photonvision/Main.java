@@ -38,6 +38,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.jni.BaslerCameraJNI;
 import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.jni.RubikDetectorJNI;
@@ -228,6 +229,19 @@ public class Main {
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
+        }
+
+        try {
+            if (Platform.getCurrentPlatform() == Platform.LINUX_64) {
+                BaslerCameraJNI.forceLoad();
+                if (BaslerCameraJNI.getInstance().isLoaded()) {
+                    logger.info("BaslerCameraJNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load basler JNI!");
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Failed to load basler JNI!", e);
         }
         try {
             if (Platform.isRK3588()) {

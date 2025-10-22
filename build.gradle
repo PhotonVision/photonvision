@@ -20,6 +20,14 @@ allprojects {
         maven { url = "https://maven.photonvision.org/releases" }
         maven { url = "https://maven.photonvision.org/snapshots" }
         maven { url = "https://jogamp.org/deployment/maven/" }
+
+        maven {
+            url = uri("https://maven.pkg.github.com/teamdeadbolts/amd_jni")
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+                password = project.findProperty("gpr.token") ?: System.getenv("GITHUB_TOKEN")
+            }
+        }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
@@ -40,6 +48,7 @@ ext {
     libcameraDriverVersion = "v2025.0.4"
     rknnVersion = "dev-v2025.0.0-5-g666c0c6"
     rubikVersion = "dev-v2025.1.0-8-g067a316"
+    baslerVersion = "0.0.1-local"
     frcYear = "2025"
     mrcalVersion = "v2025.0.0";
 

@@ -45,6 +45,9 @@ dependencies {
     implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {
         transitive = false
     }
+    implementation("org.teamdeadbolts:basler_jni-linuxx64:$baslerVersion") {
+        transitive = false
+    }
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$libcameraDriverVersion"
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
