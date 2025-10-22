@@ -412,7 +412,6 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <v-row>
-            <v-col cols="3">Program Logs</v-col>
             <v-col>
               <v-btn
                 color="buttonPassive"
@@ -420,7 +419,7 @@ watch(useSettingsStore().metricsHistory, () => {
                 @click="useStateStore().showLogModal = true"
               >
                 <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
-                <span class="open-label">View</span>
+                <span class="open-label">View Logs</span>
               </v-btn>
             </v-col>
             <v-col>
@@ -430,7 +429,7 @@ watch(useSettingsStore().metricsHistory, () => {
                 @click="openExportLogsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
-                <span class="open-label">Download</span>
+                <span class="open-label">Download Logs</span>
 
                 <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
                 <a
@@ -446,7 +445,6 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <v-row>
-            <v-col cols="3">Settings</v-col>
             <v-col>
               <v-btn
                 color="buttonPassive"
@@ -454,7 +452,7 @@ watch(useSettingsStore().metricsHistory, () => {
                 @click="() => (showImportDialog = true)"
               >
                 <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
-                <span class="open-label">Import</span>
+                <span class="open-label">Import Settings</span>
               </v-btn>
             </v-col>
             <v-col>
@@ -464,7 +462,7 @@ watch(useSettingsStore().metricsHistory, () => {
                 @click="openExportSettingsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
-                <span class="open-label">Export</span>
+                <span class="open-label">Export Settings</span>
               </v-btn>
             </v-col>
           </v-row>
@@ -535,33 +533,40 @@ watch(useSettingsStore().metricsHistory, () => {
             Force Refresh
           </v-btn>
         </v-card-title>
-        <v-card-text class="pt-0 flex-0-0 pb-1">
+        <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3">
             <span>CPU Usage</span>
             <span>{{ (cpuUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="cpuUsageData" id="chart" />
+          <Chart :data="cpuUsageData" :min="0" :max="100" color="blue" :theme="theme.global.name.value" id="chart" />
         </v-card-text>
-        <v-card-text class="pt-0 flex-0-0 pb-1">
+        <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ (cpuMemoryUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="cpuMemoryUsageData" :color="{ r: 154, g: 96, b: 180 }" id="chart" />
+          <Chart
+            :data="cpuMemoryUsageData"
+            :min="0"
+            :max="100"
+            color="purple"
+            :theme="theme.global.name.value"
+            id="chart"
+          />
         </v-card-text>
-        <v-card-text class="pt-0 flex-0-0 pb-1">
+        <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}%</span>
+            <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}°C</span>
           </div>
-          <Chart :data="cpuTempData" :color="{ r: 238, g: 102, b: 102 }" id="chart" />
+          <Chart :data="cpuTempData" color="red" :theme="theme.global.name.value" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
             <span>{{ (diskUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="diskUsageData" :color="{ r: 65, g: 181, b: 127 }" id="chart" />
+          <Chart :data="diskUsageData" :min="0" :max="100" color="green" :theme="theme.global.name.value" id="chart" />
         </v-card-text>
       </v-card>
     </v-col>

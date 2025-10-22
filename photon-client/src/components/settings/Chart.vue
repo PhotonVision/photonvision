@@ -4,23 +4,24 @@ import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 
 const chartRef = ref(null);
 let chart: echarts.ECharts | null = null;
-const DEFAULT_COLOR: Color = { r: 59, g: 130, b: 246 };
 
-const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAULT_COLOR) => {
-  color ??= DEFAULT_COLOR;
+const DEFAULT_COLOR = "blue";
+const colors = {
+  "blue-LightTheme": { r: 255, g: 255, b: 255 },
+  "blue-DarkTheme": { r: 92, g: 154, b: 255 },
+  "purple-LightTheme": { r: 255, g: 255, b: 255 },
+  "purple-DarkTheme": { r: 167, g: 104, b: 196 },
+  "red-LightTheme": { r: 255, g: 255, b: 255 },
+  "red-DarkTheme": { r: 238, g: 102, b: 102 },
+  "green-LightTheme": { r: 255, g: 255, b: 255 },
+  "green-DarkTheme": { r: 65, g: 181, b: 127 }
+};
+
+const getOptions = (data: ChartData[] = []) => {
   return {
-    title: title
-      ? {
-          text: title,
-          textStyle: {
-            color: "#fff",
-            fontWeight: "normal"
-          },
-          left: 0
-        }
-      : {
-          show: false
-        },
+    title: {
+      show: false
+    },
     tooltip: {
       trigger: "axis",
       formatter: (params: any) => {
@@ -43,18 +44,17 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
       splitLine: {
         show: false
       },
-      // boundaryGap: ["10%", 0],
-      // minInterval: 5 * 1000,
-      // min: data.length ? data[5]?.time + 5000 : undefined,
-      // max: data.at(-1)?.time,
       splitNumber: 4,
+      axisLine: {
+        lineStyle: {
+          color: props.theme === "LightTheme" ? "#aaa" : "#777"
+        }
+      },
       axisLabel: {
-        // margin: 1
-        // alignMinLabel: "left",
         align: "left",
+        color: props.theme === "LightTheme" ? "#fff" : "#ddd",
         formatter: (value: number) => {
           const date = new Date(value);
-          // return date.toLocaleTimeString();
           return date.toLocaleTimeString([], {
             hour: "2-digit",
             minute: "2-digit",
@@ -67,19 +67,31 @@ const getOptions = (title?: string, data: ChartData[] = [], color: Color = DEFAU
     yAxis: {
       type: "value",
       position: "right",
-      min: 0,
-      max: 100,
-      interval: 50,
+      min:
+        props.min ??
+        function (value) {
+          return Math.max(0, (value.min - 10) | 0);
+        },
+      max:
+        props.max ??
+        function (value) {
+          return (value.max + 10) | 0;
+        },
+      interval: props.min || props.max ? 50 : 20,
       splitLine: {
         show: false
+      },
+      axisLabel: {
+        color: props.theme === "LightTheme" ? "#fff" : "#ddd"
       }
     },
-    series: getSeries(data, color),
+    series: getSeries(data),
     animation: false
   };
 };
 
-const getSeries = (data: ChartData[] = [], color: Color = DEFAULT_COLOR) => {
+const getSeries = (data: ChartData[] = []) => {
+  let color = colors[`${props.color ?? DEFAULT_COLOR}-${props.theme}`];
   return [
     {
       name: "Fake Data",
@@ -122,20 +134,21 @@ interface Color {
   g: number;
   b: number;
 }
-// blue 84, 112, 198 (59, 130, 246)
+// blue 59, 130, 246
 // purple 154, 96, 180
 // green 65, 181, 127
 // red 238, 102, 102
 const props = defineProps<{
-  title?: string;
+  theme: string;
   data: ChartData[];
-  color?: Color;
-  dark?: boolean;
+  min?: number;
+  max?: number;
+  color?: string;
 }>();
 
 onMounted(() => {
   chart = echarts.init(chartRef.value);
-  chart.setOption(getOptions(props.title, props.data, props.color));
+  chart.setOption(getOptions(props.data));
 
   // Handle resize
   window.addEventListener("resize", resizeChart);
@@ -154,7 +167,7 @@ function resizeChart() {
 watch(
   () => props.data,
   (data) => {
-    chart?.setOption(getOptions(props.title, data, props.color));
+    chart?.setOption(getOptions(data));
   },
   { deep: true }
 );
