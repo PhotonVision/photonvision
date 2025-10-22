@@ -56,8 +56,6 @@ const arducamWarningShown = computed<boolean>(() => {
 });
 
 const cameraMismatchWarningShown = computed<boolean>(() => {
-  console.log("Checking for camera mismatches");
-  console.log(useCameraSettingsStore().cameras);
   return (
     Object.values(useCameraSettingsStore().cameras)
       // Ignore placeholder camera

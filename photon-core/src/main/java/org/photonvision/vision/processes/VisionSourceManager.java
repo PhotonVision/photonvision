@@ -252,7 +252,7 @@ public class VisionSourceManager {
 
     public synchronized boolean deactivateVisionSource(String uniqueName) {
         // try to find the module. If we find it, remove it from the VMM
-        Optional<CameraConfiguration> removedConfig =
+        var removedConfig =
                 vmm.getModules().stream()
                         .filter(module -> module.uniqueName().equals(uniqueName))
                         .findFirst()
@@ -330,7 +330,7 @@ public class VisionSourceManager {
      * <p>Note that if the information for a camera spontaneously changes without it being
      * disconnected/unplugged and reconnected/replugged, we may experience unexpected behavior.
      *
-     * @param cameraInfos
+     * @param cameraInfos List of currently connected camera infos, checked against saved configs
      */
     protected void checkMismatches(List<PVCameraInfo> cameraInfos) {
         // from the listed physical camera infos, match them to the camera configs and check for
