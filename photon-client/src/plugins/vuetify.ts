@@ -67,6 +67,6 @@ export const LightTheme: ThemeDefinition = {
 };
 
 export default createVuetify({
-  theme: { defaultTheme: "LightTheme", themes: { LightTheme: LightTheme, DarkTheme: DarkTheme } },
+  theme: { defaultTheme: "DarkTheme", themes: { LightTheme: LightTheme, DarkTheme: DarkTheme } },
   display: { thresholds: { md: 1460, lg: 2000 } }
 });
