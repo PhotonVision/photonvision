@@ -142,7 +142,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
           matchedCameraInfo: d.matchedCameraInfo,
           isConnected: d.isConnected,
-          hasConnected: d.hasConnected
+          hasConnected: d.hasConnected,
+          mismatch: d.mismatch
         };
         return acc;
       }, {});

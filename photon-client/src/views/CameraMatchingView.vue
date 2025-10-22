@@ -168,64 +168,7 @@ const deleteThisCamera = (cameraName: string) => {
     });
 };
 
-const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
-  if (camera1.PVUsbCameraInfo && camera2.PVUsbCameraInfo)
-    return (
-      camera1.PVUsbCameraInfo.name === camera2.PVUsbCameraInfo.name &&
-      camera1.PVUsbCameraInfo.vendorId === camera2.PVUsbCameraInfo.vendorId &&
-      camera1.PVUsbCameraInfo.productId === camera2.PVUsbCameraInfo.productId &&
-      camera1.PVUsbCameraInfo.uniquePath === camera2.PVUsbCameraInfo.uniquePath
-    );
-  else if (camera1.PVCSICameraInfo && camera2.PVCSICameraInfo)
-    return (
-      camera1.PVCSICameraInfo.uniquePath === camera2.PVCSICameraInfo.uniquePath &&
-      camera1.PVCSICameraInfo.baseName === camera2.PVCSICameraInfo.baseName
-    );
-  else if (camera1.PVFileCameraInfo && camera2.PVFileCameraInfo)
-    return (
-      camera1.PVFileCameraInfo.uniquePath === camera2.PVFileCameraInfo.uniquePath &&
-      camera1.PVFileCameraInfo.name === camera2.PVFileCameraInfo.name
-    );
-  else return false;
-};
-
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
-  if (!camera) return null;
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
-};
-
-/**
- * Find the PVCameraInfo currently occupying the same uniquepath as the the given module
- */
-const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
-  if (!info) {
-    return {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
-    };
-  }
-  return (
-    useStateStore().vsmState.allConnectedCameras.find(
-      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
-    ) || {
-      PVFileCameraInfo: undefined,
-      PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
-    }
-  );
-};
-
-const cameraCononected = (uniquePath: string): boolean => {
+const cameraConnected = (uniquePath: string): boolean => {
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
   );
@@ -252,8 +195,8 @@ const activeVisionModules = computed(() =>
     // Display connected cameras first
     .sort(
       (first, second) =>
-        (cameraCononected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
-        (cameraCononected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
+        (cameraConnected(cameraInfoFor(second.matchedCameraInfo).uniquePath) ? 1 : 0) -
+        (cameraConnected(cameraInfoFor(first.matchedCameraInfo).uniquePath) ? 1 : 0)
     )
 );
 
@@ -274,6 +217,45 @@ const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettin
   cameraToDelete.value = camera;
 };
 const yesDeleteMySettingsText = ref("");
+
+/**
+ * Get the connection-type-specific camera info from the given PVCameraInfo object.
+ */
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+  if (!camera) return null;
+  if (camera.PVUsbCameraInfo) {
+    return camera.PVUsbCameraInfo;
+  }
+  if (camera.PVCSICameraInfo) {
+    return camera.PVCSICameraInfo;
+  }
+  if (camera.PVFileCameraInfo) {
+    return camera.PVFileCameraInfo;
+  }
+  return {};
+};
+
+/**
+ * Find the PVCameraInfo currently occupying the same uniquePath as the the given module
+ */
+const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
+  if (!info) {
+    return {
+      PVFileCameraInfo: undefined,
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined
+    };
+  }
+  return (
+    useStateStore().vsmState.allConnectedCameras.find(
+      (it) => cameraInfoFor(it).uniquePath === cameraInfoFor(info).uniquePath
+    ) || {
+      PVFileCameraInfo: undefined,
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined
+    }
+  );
+};
 </script>
 
 <template>
@@ -290,14 +272,11 @@ const yesDeleteMySettingsText = ref("");
       >
         <v-card color="surface" class="rounded-12">
           <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
-          <v-card-subtitle v-if="!cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+          <v-card-subtitle v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
           <v-card-subtitle
-            v-else-if="
-              cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
-              camerasMatch(getMatchedDevice(module.matchedCameraInfo), module.matchedCameraInfo)
-            "
+            v-else-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
             >Status: <span class="active-status">Active</span></v-card-subtitle
           >
           <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
@@ -306,7 +285,7 @@ const yesDeleteMySettingsText = ref("");
               <tbody>
                 <tr
                   v-if="
-                    cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
+                    cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) &&
                     useStateStore().backendResults[module.uniqueName]
                   "
                 >
@@ -348,7 +327,7 @@ const yesDeleteMySettingsText = ref("");
               </tbody>
             </v-table>
             <div
-              v-if="cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
+              v-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
               class="d-flex flex-column justify-center align-center mt-3"
               style="height: 250px"
@@ -370,7 +349,7 @@ const yesDeleteMySettingsText = ref("");
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
                     )
                   "
                 >
@@ -441,7 +420,7 @@ const yesDeleteMySettingsText = ref("");
                 </tr>
                 <tr>
                   <td>Connected</td>
-                  <td>{{ cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
+                  <td>{{ cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
                 </tr>
               </tbody>
             </v-table>
@@ -456,7 +435,7 @@ const yesDeleteMySettingsText = ref("");
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
-                      cameraCononected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
+                      cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)
                     )
                   "
                 >
@@ -562,7 +541,13 @@ const yesDeleteMySettingsText = ref("");
         <v-card-text v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
         </v-card-text>
-        <v-card-text v-else-if="!camerasMatch(getMatchedDevice(viewingCamera[0]), viewingCamera[0])">
+        <v-card-text
+          v-else-if="
+            activeVisionModules.find(
+              (it) => cameraInfoFor(it.matchedCameraInfo).uniquePath === cameraInfoFor(viewingCamera[0]).uniquePath
+            )?.mismatch
+          "
+        >
           <v-alert
             class="mb-3"
             color="buttonActive"

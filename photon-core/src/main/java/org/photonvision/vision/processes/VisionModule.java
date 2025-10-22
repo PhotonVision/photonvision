@@ -93,12 +93,16 @@ public class VisionModule {
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
 
+    boolean mismatch;
+
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
         logger =
                 new Logger(
                         VisionModule.class,
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
+
+        mismatch = false;
 
         cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
 
@@ -567,6 +571,8 @@ public class VisionModule {
         ret.maxWhiteBalanceTemp = visionSource.getSettables().getMaxWhiteBalanceTemp();
 
         ret.deactivated = config.deactivated;
+
+        ret.mismatch = this.mismatch;
 
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
