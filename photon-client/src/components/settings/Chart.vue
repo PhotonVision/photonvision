@@ -7,13 +7,13 @@ let chart: echarts.ECharts | null = null;
 
 const DEFAULT_COLOR = "blue";
 const colors = {
-  "blue-LightTheme": { r: 255, g: 255, b: 255 },
+  "blue-LightTheme": { r: 255, g: 216, b: 67 },
   "blue-DarkTheme": { r: 92, g: 154, b: 255 },
-  "purple-LightTheme": { r: 255, g: 255, b: 255 },
+  "purple-LightTheme": { r: 255, g: 216, b: 67 },
   "purple-DarkTheme": { r: 167, g: 104, b: 196 },
-  "red-LightTheme": { r: 255, g: 255, b: 255 },
+  "red-LightTheme": { r: 255, g: 216, b: 67 },
   "red-DarkTheme": { r: 238, g: 102, b: 102 },
-  "green-LightTheme": { r: 255, g: 255, b: 255 },
+  "green-LightTheme": { r: 255, g: 216, b: 67 },
   "green-DarkTheme": { r: 65, g: 181, b: 127 }
 };
 
