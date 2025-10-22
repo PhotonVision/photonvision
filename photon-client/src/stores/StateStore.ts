@@ -162,7 +162,13 @@ export const useStateStore = defineStore("state", {
     updateDiscoveredCameras(data: VsmState) {
       this.vsmState = data;
     },
-    showSnackbarMessage(data: { message: string; color: string; timeout?: number; progressBar?: number; progressBarColor?: string }) {
+    showSnackbarMessage(data: {
+      message: string;
+      color: string;
+      timeout?: number;
+      progressBar?: number;
+      progressBarColor?: string;
+    }) {
       this.snackbarData = {
         show: true,
         progressBar: data.progressBar || -1,
