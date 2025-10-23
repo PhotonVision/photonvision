@@ -21,6 +21,15 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
   });
 };
 
+/**
+ * A helper function to make POST requests using axios with standardized success and error handling.
+ *
+ * @param url The endpoint URL to which the POST request is sent
+ * @param description A brief description of the request for users, e.g., "import object detection models".
+ * @param data Payload to be sent in the POST request
+ * @param config Optional axios request configuration
+ * @returns A promise that resolves when the POST request is complete
+ */
 export const axiosPost = (url: string, description: string, data?: any, config?: any): Promise<void> => {
   return axios
     .post(url, data, config)
