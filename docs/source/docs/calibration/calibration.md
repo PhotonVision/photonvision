@@ -59,7 +59,11 @@ We'll next select a resolution to calibrate and populate our pattern spacing, ma
 If you have a [calib.io](https://calib.io/) CharuCo Target you will have to enter the paramaters of your target. For example if your target says "9x12 | Checker Size: 30 mm | Marker Size: 22 mm | Dictionary: AruCo DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the board wont be detected during calibration. If you swap the width and height your calibration will have a very high error.
 :::
 
-### 4. Take at calibration images from various angles.
+::{note}
+Using the `Snapshot Loop` feature can help speed up the image capture process. This feature will continuously take snapshots at a set interval until the user stops it. This is useful for capturing images from different angles quickly without having to manually click the snapshot button each time.
+:::
+
+### 4. Take calibration images from various angles.
 
 Now, we'll capture images of our board from various angles. It's important to check that the board overlay matches the board in your image. The further the overdrawn points are from the true position of the chessboard corners, the less accurate the final calibration will be. We'll want to capture enough images to cover the whole camera's FOV (with a minimum of 12). Once we've got our images, we'll click "Finish calibration" and wait for the calibration process to complete. If all goes well, the mean error and FOVs will be shown in the table on the right. The FOV should be close to the camera's specified FOV (usually found in a datasheet) usually within + or - 10 degrees. The mean error should also be low, usually less than 1 pixel.
 
