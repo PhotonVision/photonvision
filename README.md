@@ -24,7 +24,7 @@ If you are interested in contributing code or documentation to the project, plea
 
 ## Building
 
-Gradle is used for all C++ and Java code, and NPM is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#compiling-instructions).
+Gradle is used for all C++ and Java code, and pnpm is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#compiling-instructions).
 
 You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the [`photonlib-java-examples`](photonlib-java-examples) and [`photonlib-cpp-examples`](photonlib-cpp-examples) subdirectories, respectively. Instructions for running these examples directly from the repo are found [in the docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#running-examples).
 
@@ -42,6 +42,8 @@ Note that these are case sensitive!
     * linuxarm64
     * linuxathena
 - `-PtgtIP`: Specifies where `./gradlew deploy` should try to copy the fat JAR to
+- `-PtgtUser`: Specifies custom username for `./gradlew deploy` to SSH into
+- `-PtgtPw`: Specifies custom password for `./gradlew deploy` to SSH into
 - `-Pprofile`: enables JVM profiling
 - `-PwithSanitizers`: On Linux, enables `-fsanitize=address,undefined,leak`
 

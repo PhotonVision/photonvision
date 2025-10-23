@@ -69,8 +69,7 @@ public class DataSocketHandler {
 
     public void onConnect(WsConnectContext context) {
         users.add(context);
-        context.session.setIdleTimeout(
-                Duration.ofMillis(Long.MAX_VALUE)); // TODO: determine better value
+        context.session.setIdleTimeout(Duration.ofMillis(5000));
         var remote = (InetSocketAddress) context.session.getRemoteAddress();
         var host = remote.getAddress().toString() + ":" + remote.getPort();
         logger.info("New websocket connection from " + host);
@@ -88,7 +87,7 @@ public class DataSocketHandler {
             var reason = context.reason() != null ? context.reason() : "Connection closed by client";
             logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         } else {
-            logger.info("Closing websockets for user " + context.getSessionId());
+            logger.info("Closing websockets for user " + context.sessionId());
         }
     }
 

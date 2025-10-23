@@ -85,8 +85,8 @@ publishing {
             artifact javadocJar
 
             artifactId = "${baseArtifactId}-java"
-            groupId artifactGroupId
-            version pubVersion
+            groupId = artifactGroupId
+            version = pubVersion
         }
     }
 
@@ -97,10 +97,10 @@ publishing {
             if (project.hasProperty('copyOfflineArtifacts')) {
                 url(localMavenURL)
             } else {
-                url(photonMavenURL)
+                url = photonMavenURL
                 credentials {
-                    username 'ghactions'
-                    password System.getenv("ARTIFACTORY_API_KEY")
+                    username = 'ghactions'
+                    password =  System.getenv("ARTIFACTORY_API_KEY")
                 }
             }
         }
@@ -112,8 +112,10 @@ test {
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
+        showStandardStreams = true
     }
+    forkEvery = 1
     finalizedBy jacocoTestReport
 }
 
@@ -143,9 +145,10 @@ dependencies {
     implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
 
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    testImplementation(platform('org.junit:junit-bom:5.11.4'))
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
 }
 
 jacoco {

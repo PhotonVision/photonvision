@@ -8,22 +8,34 @@ export interface GeneralSettings {
   hardwareModel?: string;
   hardwarePlatform?: string;
   mrCalWorking: boolean;
-  availableModels: Record<string, string[]>;
+  availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];
+  conflictingHostname: boolean;
+  conflictingCameras: string;
+}
+
+export interface ObjectDetectionModelProperties {
+  modelPath: string;
+  nickname: string;
+  labels: string[];
+  resolutionWidth: number;
+  resolutionHeight: number;
+  family: "RKNN" | "RUBIK";
+  version: "YOLOV5" | "YOLOV8" | "YOLOV11";
 }
 
 export interface MetricData {
-  cpuTemp?: string;
-  cpuUtil?: string;
-  cpuMem?: string;
-  gpuMem?: string;
-  ramUtil?: string;
-  gpuMemUtil?: string;
+  cpuTemp?: number;
+  cpuUtil?: number;
   cpuThr?: string;
-  cpuUptime?: string;
-  diskUtilPct?: string;
-  npuUsage?: string;
+  ramMem?: number;
+  ramUtil?: number;
+  gpuMem?: number;
+  gpuMemUtil?: number;
+  diskUtilPct?: number;
+  npuUsage?: number[];
   ipAddress?: string;
+  uptime?: number;
 }
 
 export enum NetworkConnectionType {
@@ -254,6 +266,7 @@ export interface UiCameraConfiguration {
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
   hasConnected: boolean;
+  mismatch: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -278,17 +291,20 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     {
       resolution: { width: 1920, height: 1080 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 0
     },
     {
       resolution: { width: 1280, height: 720 },
       fps: 60,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 1
     },
     {
       resolution: { width: 640, height: 480 },
       fps: 30,
-      pixelFormat: "RGB"
+      pixelFormat: "RGB",
+      index: 2
     }
   ],
   completeCalibrations: [
@@ -373,7 +389,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     PVUsbCameraInfo: undefined
   },
   isConnected: true,
-  hasConnected: true
+  hasConnected: true,
+  mismatch: false
 };
 
 export enum CalibrationBoardTypes {

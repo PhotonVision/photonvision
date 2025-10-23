@@ -17,12 +17,15 @@
 
 package org.photonvision.vision.processes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import org.opencv.core.Point;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -55,7 +58,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
     @Override
     public void onDataChangeEvent(DataChangeEvent<?> event) {
-        // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
+        // Camera index -1 means a "multicast event" (i.e. the event is received by all
+        // cameras)
         if (event instanceof IncomingWebSocketEvent wsEvent
                 && wsEvent.cameraUniqueName != null
                 && wsEvent.cameraUniqueName.equals(parentModule.uniqueName())) {
@@ -289,6 +293,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
             } else {
                 propField.setBoolean(currentSettings, (Boolean) newPropValue);
             }
+        } else if (propField.getType() == ModelProperties.class
+                && newPropValue instanceof LinkedHashMap) {
+            ObjectMapper mapper = new ObjectMapper();
+            ModelProperties modelProps = mapper.convertValue(newPropValue, ModelProperties.class);
+            propField.set(currentSettings, modelProps);
         } else {
             propField.set(currentSettings, newPropValue);
         }

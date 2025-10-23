@@ -3,38 +3,23 @@ name: Build
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main ]
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: true
 
+env:
+  IMAGE_VERSION: v2026.0.4
+
 jobs:
-  build-client:
-    name: "PhotonClient Build"
-    defaults:
-      run:
-        working-directory: photon-client
-    runs-on: ubuntu-22.04
+
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Install Dependencies
-        run: npm ci
-      - name: Build Production Client
-        run: npm run build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: built-client
-          path: photon-client/dist/
+      - uses: gradle/actions/wrapper-validation@v4
   build-examples:
 
     strategy:
@@ -49,6 +34,7 @@ jobs:
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
+    needs: [validation]
 
     steps:
       - name: Checkout code
@@ -76,6 +62,7 @@ jobs:
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
+    needs: [validation]
     steps:
       # Checkout code.
       - name: Checkout code
@@ -89,22 +76,22 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Install mrcal deps
         run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --stacktrace
+        run: ./gradlew testHeadless --stacktrace
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
-      - name: Publish Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
-      - name: Publish Core Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-22.04
@@ -135,6 +122,7 @@ jobs:
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
     runs-on: ubuntu-22.04
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -179,6 +167,7 @@ jobs:
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
     runs-on: ${{ matrix.os }}
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -190,7 +179,7 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
-      - run: ./gradlew photon-targeting:build photon-lib:build -i
+      - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
@@ -222,6 +211,7 @@ jobs:
     runs-on: ubuntu-22.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
+    needs: [validation]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -231,7 +221,7 @@ jobs:
           git config --global --add safe.directory /__w/photonvision/photonvision
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
-        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -i -x test
+        run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
       - name: Publish
         run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
@@ -270,7 +260,7 @@ jobs:
           path: output/*.zip
 
   build-package:
-    needs: [build-client, build-gradle, build-offline-docs]
+    needs: [build-gradle, build-offline-docs]
 
     strategy:
       fail-fast: false
@@ -310,21 +300,19 @@ jobs:
           java-version: 17
           distribution: temurin
           architecture: ${{ matrix.architecture }}
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
-      - run: |
-          rm -rf photon-server/src/main/resources/web/*
-          mkdir -p photon-server/src/main/resources/web/docs
-        if: ${{ (matrix.os) != 'windows-latest' }}
-      - run: |
-          del photon-server\src\main\resources\web\*.*
-          mkdir photon-server\src\main\resources\web\docs
-        if: ${{ (matrix.os) == 'windows-latest' }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: built-client
-          path: photon-server/src/main/resources/web/
       - uses: actions/download-artifact@v4
         with:
           name: built-docs
@@ -374,7 +362,7 @@ jobs:
       - run: |
           sudo apt-get update
           sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
-        if: ${{ (matrix.os) == 'ubuntu-22.04' }}
+        if: ${{ (matrix.os) == 'ubuntu-24.04' }}
       # and actually run the jar
       - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
@@ -388,10 +376,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
@@ -427,69 +415,81 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_raspi.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight2
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_limelight.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_limelight3.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: limelight3G
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_limelight3g.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3g.img.xz
             cpu: cortex-a7
             image_additional_mb: 0
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
+            artifact-name: LinuxArm64
+            image_suffix: limelight4
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight4.img.xz
+            cpu: cortex-a76
+            image_additional_mb: 0
+          - os: ubuntu-24.04
+            artifact-name: LinuxArm64
+            image_suffix: luma_p1
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
+            cpu: cortex-a76
+            image_additional_mb: 0
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5b
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5b.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5b.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5plus.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5plus.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5pro
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5pro.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5pro.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: orangepi5max
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_opi5max.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5max.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             image_suffix: rock5c
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2025.0.3/photonvision_rock5c.img.xz
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rock5c.img.xz
             cpu: cortex-a8
             image_additional_mb: 1024
 
     runs-on: ${{ matrix.os }}
-    name: "Build image - ${{ matrix.image_url }}"
+    name: "Build image - ${{ matrix.image_suffix }}"
 
     steps:
       - name: Checkout code
@@ -523,8 +523,40 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
+  build-rubik-image:
+    needs: [build-package]
+
+    if: ${{ github.event_name != 'pull_request' }}
+
+    runs-on: ubuntu-24.04
+    name: "Build image - Rubik Pi 3"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar-LinuxArm64
+      - name: Generate image
+        run: |
+          wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
+          chmod +x mount_rubikpi3.sh
+          ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
+      - name: Compress image
+        run: |
+          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+          new_image_name=$(basename "${new_jar/.jar/_rubikpi3.img}")
+          mv photonvision_rubikpi3 $new_image_name
+          tar -I 'xz -T0' -cf ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
+      - uses: actions/upload-artifact@v4
+        name: Upload image
+        with:
+          name: image-rubikpi3
+          path: photonvision*.xz
   release:
-    needs: [build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-image, build-rubik-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
@@ -550,11 +582,12 @@ jobs:
 
       - run: find
       # Push to dev release
-      - uses: pyTooling/Actions/releaser@r0
+      - uses: pyTooling/Actions/releaser@r6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
           rm: true
+          snapshots: false
           files: |
             **/*.xz
             **/*linux*.jar
@@ -562,38 +595,12 @@ jobs:
             **/photonlib*.json
             **/photonlib*.zip
         if: github.event_name == 'push'
-      # Upload all jars and xz archives
-      # Split into two uploads to work around max size limits in action-gh-releases
-      # https://github.com/softprops/action-gh-release/issues/353
-      - uses: softprops/action-gh-release@v2.0.9
+      - name: Create Vendor JSON Repo PR
+        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
         with:
-          files: |
-            **/@(*orangepi5*|*rock5*).xz
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: softprops/action-gh-release@v2.0.9
-        with:
-          files: |
-            **/!(*orangepi5*|*rock5*).xz
-            **/*.jar
-            **/photonlib*.json
-            **/photonlib*.zip
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  dispatch:
-    name: dispatch
-    needs: [build-photonlib-vendorjson, release]
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: peter-evans/repository-dispatch@v3
-        if: |
-          github.repository == 'PhotonVision/photonvision' &&
-          startsWith(github.ref, 'refs/tags/v')
-        with:
+          repo: PhotonVision/vendor-json-repo
           token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
-          repository: PhotonVision/vendor-json-repo
-          event-type: tag
-          client-payload: '{"run_id": "${{ github.run_id }}", "package_version": "${{ github.ref_name }}"}'
+          vendordep_file: ${{ github.workspace }}/photonlib-${{ github.ref_name }}.json
+          pr_title: Update photonlib to ${{ github.ref_name }}
+          pr_branch: photonlib-${{ github.ref_name }}
+        if: github.repository == 'PhotonVision/photonvision' && startsWith(github.ref, 'refs/tags/v')

@@ -4,6 +4,9 @@ import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes
 import { useStateStore } from "@/stores/StateStore";
 import { angleModulus, toDeg } from "@/lib/MathUtils";
 import { computed } from "vue";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -105,7 +108,7 @@ const resetCurrentBuffer = () => {
                 <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.yaw.toFixed(2) }}&deg;</td>
                 <td class="text-center">{{ target.skew.toFixed(2) }}&deg;</td>
-                <td class="text-center">{{ target.area.toFixed(2) }}&deg;</td>
+                <td class="text-center">{{ target.area.toFixed(2) }}%</td>
               </template>
               <template v-else>
                 <td class="text-center">{{ target.pose?.x.toFixed(3) }}&nbsp;m</td>
@@ -200,7 +203,12 @@ const resetCurrentBuffer = () => {
           >Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </v-card-subtitle>
-        <v-btn color="secondary" class="mb-4 mt-1" style="width: min-content" variant="flat" @click="resetCurrentBuffer"
+        <v-btn
+          color="buttonActive"
+          class="mb-4 mt-1"
+          style="width: min-content"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCurrentBuffer"
           >Reset Samples</v-btn
         >
         <v-table density="compact">
@@ -269,8 +277,11 @@ const resetCurrentBuffer = () => {
 </template>
 
 <style scoped lang="scss">
+th {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
 .v-table {
-  background-color: #006492 !important;
   width: 100%;
   font-size: 1rem !important;
 
@@ -283,13 +294,9 @@ const resetCurrentBuffer = () => {
     }
   }
   tbody {
-    :hover {
-      td {
-        background-color: #005281 !important;
-      }
-    }
     tr {
       td {
+        padding: 0 !important;
         font-size: 1rem !important;
         color: white !important;
       }
@@ -308,7 +315,7 @@ const resetCurrentBuffer = () => {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #ffd843;
+    background-color: rgb(var(--v-theme-accent));
     border-radius: 10px;
   }
 }

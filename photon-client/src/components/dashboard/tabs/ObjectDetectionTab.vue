@@ -8,6 +8,7 @@ import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useDisplay } from "vuetify";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
@@ -32,17 +33,32 @@ const interactiveCols = computed(() =>
 );
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
-const supportedModels = computed(() => {
+const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  return supportedBackends.flatMap((backend) => availableModels[backend] || []);
+  const isSupported = (model: ObjectDetectionModelProperties) => {
+    // Check if model's family is in the list of supported backends
+    return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
+  };
+
+  // Filter models where the family is supported and flatten the list
+  return availableModels.filter(isSupported);
 });
 
 const selectedModel = computed({
   get: () => {
-    const index = supportedModels.value.indexOf(currentPipelineSettings.value.model);
+    const currentModel = currentPipelineSettings.value.model;
+    if (!currentModel) return undefined;
+
+    const index = supportedModels.value.findIndex((model) => model.modelPath === currentModel.modelPath);
     return index === -1 ? undefined : index;
   },
-  set: (v) => v && useCameraSettingsStore().changeCurrentPipelineSetting({ model: supportedModels.value[v] }, false)
+
+  set: (v) => {
+    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
+      const newModel = supportedModels.value[v];
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
+    }
+  }
 });
 </script>
 
@@ -53,8 +69,9 @@ const selectedModel = computed({
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
-      :items="supportedModels"
+      :items="supportedModels.map((model) => model.nickname)"
     />
+
     <pv-slider
       v-model="currentPipelineSettings.confidence"
       class="pt-2"
@@ -67,6 +84,17 @@ const selectedModel = computed({
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ confidence: value }, false)
       "
+    />
+    <pv-slider
+      v-model="currentPipelineSettings.nms"
+      class="pt-2"
+      :slider-cols="interactiveCols"
+      label="NMS Threshold"
+      tooltip="The Non-Maximum Suppression threshold used to filter out overlapping detections. Higher values mean more detections are allowed through, but may result in false positives."
+      :min="0"
+      :max="1"
+      :step="0.01"
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ nms: value }, false)"
     />
     <pv-range-slider
       v-model="contourArea"
@@ -98,7 +126,11 @@ const selectedModel = computed({
       :items="['Portrait', 'Landscape']"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting(
+            { contourTargetOrientation: typeof value === 'string' ? Number(value) : value },
+            false
+          )
       "
     />
     <pv-select
@@ -108,7 +140,11 @@ const selectedModel = computed({
       :select-cols="interactiveCols"
       :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting(
+            { contourSortMode: typeof value === 'string' ? Number(value) : value },
+            false
+          )
       "
     />
   </div>

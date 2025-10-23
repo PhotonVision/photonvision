@@ -13,15 +13,9 @@ const props = withDefaults(
     disabled?: boolean;
     sliderCols?: number;
   }>(),
-  {
-    step: 1,
-    disabled: false,
-    sliderCols: 8
-  }
+  { step: 1, disabled: false, sliderCols: 8 }
 );
-const emit = defineEmits<{
-  (e: "update:modelValue", value: number): void;
-}>();
+const emit = defineEmits<{ (e: "update:modelValue", value: number): void }>();
 
 // Debounce function
 function debounce(func: (...args: any[]) => void, wait: number) {
@@ -44,17 +38,17 @@ const localValue = computed({
 
 <template>
   <div class="d-flex">
-    <v-col :cols="12 - sliderCols" class="pl-0 d-flex align-center">
+    <v-col :cols="12 - sliderCols" class="pl-0 pt-10px pb-10px d-flex align-center">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </v-col>
-    <v-col :cols="sliderCols - 1" class="pl-0">
+    <v-col :cols="sliderCols - 1" class="pl-0 pt-10px pb-10px">
       <v-slider
         v-model="localValue"
         class="align-center"
         :max="max"
         :min="min"
         hide-details
-        color="accent"
+        color="primary"
         :disabled="disabled"
         :step="step"
         append-icon="mdi-menu-right"
@@ -63,10 +57,10 @@ const localValue = computed({
         @click:prepend="localValue -= step"
       />
     </v-col>
-    <v-col :cols="1" class="pr-0">
+    <v-col :cols="1" class="pr-0 pt-10px pb-10px">
       <v-text-field
         :model-value="localValue"
-        color="accent"
+        color="primary"
         :max="max"
         :min="min"
         :disabled="disabled"

@@ -21,6 +21,7 @@ import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
@@ -48,18 +49,20 @@ public class UIPhotonConfiguration {
                                 NetworkManager.getInstance().networkingIsDisabled),
                         new UILightingConfig(
                                 c.getHardwareSettings().ledBrightnessPercentage,
-                                !c.getHardwareConfig().ledPins().isEmpty()),
+                                !c.getHardwareConfig().ledPins.isEmpty()),
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
                                 // TODO add support for other types of GPU accel
-                                LibCameraJNILoader.isSupported() ? "Zerocopy Libcamera Working" : "",
+                                LibCameraJNILoader.getInstance().isSupported() ? "Zerocopy Libcamera Working" : "",
                                 MrCalJNILoader.getInstance().isLoaded(),
-                                NeuralNetworkModelManager.getInstance().getModels(),
+                                c.neuralNetworkPropertyManager().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
-                                c.getHardwareConfig().deviceName().isEmpty()
+                                c.getHardwareConfig().deviceName.isEmpty()
                                         ? Platform.getHardwareModel()
-                                        : c.getHardwareConfig().deviceName(),
-                                Platform.getPlatformName()),
+                                        : c.getHardwareConfig().deviceName,
+                                Platform.getPlatformName(),
+                                NetworkTablesManager.getInstance().conflictingHostname,
+                                NetworkTablesManager.getInstance().conflictingCameras),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)

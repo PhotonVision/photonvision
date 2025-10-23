@@ -100,6 +100,14 @@ public class VideoSimUtil {
     /**
      * Gets the 10x10 (grayscale) image of a specific 36h11 AprilTag.
      *
+     * <p>WARNING: This creates a {@link RawFrame} instance but does not close it, which would result
+     * in a resource leak if the {@link Mat} is garbage-collected. Unfortunately, closing the {@code
+     * RawFrame} inside this function would delete the underlying data that backs the {@code
+     * ByteBuffer} that is passed to the {@code Mat} constructor (see comments on <a
+     * href="https://github.com/PhotonVision/photonvision/pull/2023">PR 2023</a> for details).
+     * Luckily, this method is private and is (as of Aug 2025) only used to populate the {@link
+     * #kTag36h11Images} static map at static-initialization time.
+     *
      * @param id The fiducial id of the desired tag
      */
     private static Mat get36h11TagImage(int id) {

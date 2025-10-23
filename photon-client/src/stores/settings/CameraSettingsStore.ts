@@ -26,6 +26,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     cameras: { [PlaceholderCameraSettings.uniqueName]: PlaceholderCameraSettings }
   }),
   getters: {
+    needsCameraConfiguration(): boolean {
+      return (
+        JSON.stringify(useCameraSettingsStore().cameras[PlaceholderCameraSettings.uniqueName]) ===
+        JSON.stringify(PlaceholderCameraSettings)
+      );
+    },
     // TODO update types to update this value being undefined. This would be a decently large change.
     currentCameraSettings(): UiCameraConfiguration {
       const currentCameraUniqueName = useStateStore().currentCameraUniqueName;
@@ -136,7 +142,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
           matchedCameraInfo: d.matchedCameraInfo,
           isConnected: d.isConnected,
-          hasConnected: d.hasConnected
+          hasConnected: d.hasConnected,
+          mismatch: d.mismatch
         };
         return acc;
       }, {});
@@ -205,6 +212,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           cameraUniqueName: cameraUniqueName
         }
       };
+
       if (updateStore) {
         this.changePipelineSettingsInStore(settings, cameraUniqueName);
       }

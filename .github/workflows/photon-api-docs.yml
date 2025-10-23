@@ -3,12 +3,7 @@ name: Photon API Documentation
 on:
   # Run on pushes to main and pushed tags, and on pull requests against main, but ignore the docs folder
   push:
-    branches: [ main ]
-    tags:
-      - 'v*'
   pull_request:
-    branches: [ main ]
-  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -21,6 +16,12 @@ permissions:
   id-token: write
 
 jobs:
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/actions/wrapper-validation@v4
   build_demo:
     name: Build PhotonClient Demo
     defaults:
@@ -29,14 +30,20 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Dependencies
-        run: npm ci
+        run: pnpm i --frozen-lockfile
       - name: Build Production Client
-        run: npm run build-demo
+        run: pnpm run build-demo
       - uses: actions/upload-artifact@v4
         with:
           name: demo
@@ -44,6 +51,7 @@ jobs:
 
   run_java_cpp_docs:
     name: Build Java and C++ API Docs
+    needs: [validation]
     runs-on: "ubuntu-22.04"
     steps:
     - name: Checkout code

@@ -2,10 +2,10 @@
 import { computed, inject, ref, onBeforeUnmount } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import loadingImage from "@/assets/images/loading-transparent.svg";
 import type { StyleValue } from "vue";
 import PvIcon from "@/components/common/pv-icon.vue";
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
+import PvLoading from "@/components/common/pv-loading.vue";
 
 const props = defineProps<{
   streamType: "Raw" | "Processed";
@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="stream-container" :style="containerStyle">
-    <img :src="loadingImage" class="stream-loading" />
+    <pv-loading class="stream-loading" />
     <img
       :id="id"
       ref="mjpgStream"
@@ -105,18 +105,21 @@ onBeforeUnmount(() => {
     />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
+        color="primary"
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
         class="ma-1 mr-2"
         @click="handleCaptureClick"
       />
       <pv-icon
+        color="primary"
         icon-name="mdi-fullscreen"
         tooltip="Open this stream in fullscreen"
         class="ma-1 mr-2"
         @click="handleFullscreenRequest"
       />
       <pv-icon
+        color="primary"
         icon-name="mdi-open-in-new"
         tooltip="Open this stream in a new window"
         class="ma-1 mr-2"

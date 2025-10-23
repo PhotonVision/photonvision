@@ -8,24 +8,26 @@ apply from: "${rootDir}/shared/common.gradle"
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
 
 def nativeConfigName = 'wpilibNatives'
-def nativeConfig = configurations.create(nativeConfigName)
-
+configurations {
+    wpilibNatives
+}
 def nativeTasks = wpilibTools.createExtractionTasks {
     configurationName = nativeConfigName
 }
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
-
 dependencies {
+    wpilibNatives project(path: ':photon-targeting', configuration: 'wpilibNatives')
+    wpilibNatives wpilibTools.deps.wpilib("wpimath")
+    wpilibNatives wpilibTools.deps.wpilib("wpinet")
+    wpilibNatives wpilibTools.deps.wpilib("wpiutil")
+    wpilibNatives wpilibTools.deps.wpilib("ntcore")
+    wpilibNatives wpilibTools.deps.wpilib("cscore")
+    wpilibNatives wpilibTools.deps.wpilib("apriltag")
+    wpilibNatives wpilibTools.deps.wpilib("hal")
+    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
@@ -34,6 +36,12 @@ dependencies {
         transitive = false
     }
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
+        transitive = false
+    }
+    implementation("org.photonvision:rubik_jni-jni:$rubikVersion:linuxarm64") {
+        transitive = false
+    }
+    implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
         transitive = false
     }
     implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {

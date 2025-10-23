@@ -39,13 +39,10 @@ doxygen {
     }
 }
 
-doxygen {
-    option 'generate_html', true
-    option 'html_extra_stylesheet', 'theme.css'
-
+doxygen.sourceSets.main {
     cppProjectZips.each {
-        dependsOn it
-        source it.source
+        doxygenDox.dependsOn it
+        sources it.source
         it.ext.includeDirs.each {
             cppIncludeRoots.add(it.absolutePath)
         }
@@ -100,7 +97,7 @@ tasks.register("zipCppDocs", Zip) {
 // Java
 configurations {
     javaSource {
-        transitive false
+        transitive = false
     }
 }
 
@@ -158,22 +155,22 @@ publishing {
             artifact zipJavaDocs
 
             artifactId = "${baseArtifactIdJava}"
-            groupId artifactGroupIdJava
-            version pubVersion
+            groupId = artifactGroupIdJava
+            version = pubVersion
         }
         cpp(MavenPublication) {
             artifact zipCppDocs
 
             artifactId = "${baseArtifactIdCpp}"
-            groupId artifactGroupIdCpp
-            version pubVersion
+            groupId = artifactGroupIdCpp
+            version = pubVersion
         }
     }
 
     repositories {
         maven {
             // Just throw everything into build/maven
-            url(localMavenURL)
+            url = localMavenURL
         }
     }
 }

@@ -39,19 +39,17 @@ const performanceRecommendation = computed<string>(() => {
 </script>
 
 <template>
-  <v-card color="primary" height="100%" class="d-flex flex-column" dark>
+  <v-card color="surface" height="100%" class="d-flex flex-column rounded-12" dark>
     <v-card-title class="justify-space-between align-center pt-1 pb-1 d-flex">
       <span>Cameras</span>
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
-        :color="fpsTooLow ? 'error' : ''"
-        style="font-size: 1rem; padding: 0; margin: 0"
-        :variant="fpsTooLow ? 'tonal' : 'text'"
-        :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }"
+        :color="fpsTooLow ? 'error' : 'primary'"
+        style="font-size: 1.1rem; padding: 0; margin: 0"
+        variant="text"
       >
-        <span class="pr-1"
-          >Processing @ {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
+        <span class="pr-1">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
         ><span>{{ performanceRecommendation }}</span>
       </v-chip>
       <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
@@ -61,7 +59,7 @@ const performanceRecommendation = computed<string>(() => {
         v-model="driverMode"
         :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
         label="Driver Mode"
-        color="accent"
+        color="primary"
         hide-details="auto"
       />
     </v-card-title>
@@ -88,9 +86,6 @@ const performanceRecommendation = computed<string>(() => {
 </template>
 
 <style scoped>
-.v-input--switch {
-  margin-top: 0;
-}
 .stream-viewer-container {
   display: flex;
   justify-content: center;

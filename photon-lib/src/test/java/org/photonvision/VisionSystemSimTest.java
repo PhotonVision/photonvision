@@ -28,8 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -45,6 +43,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,34 +59,23 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
-import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.WpilibLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-// See #1574 - flakey on windows and also linux, so commenting out until we bump wpilib
 class VisionSystemSimTest {
     private static final double kRotDeltaDeg = 0.25;
 
     NetworkTableInstance inst;
 
     @BeforeAll
-    public static void setUp() {
-        assertTrue(WpilibLoader.loadLibraries());
-
-        try {
-            assertTrue(PhotonTargetingJniLoader.load());
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
-        }
+    public static void setUp() throws IOException {
+        assertTrue(LibraryLoader.loadWpiLibraries());
+        RuntimeLoader.loadLibrary("photontargetingJNI");
 
         OpenCvLoader.forceStaticLoad();
-
-        // See #1574 - test flakey, disabled until we address this
-        assumeTrue(false);
     }
 
     @BeforeEach
@@ -200,7 +188,7 @@ class VisionSystemSimTest {
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 3.0), 3));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(3.0, 3.0), 3));
 
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
@@ -225,7 +213,7 @@ class VisionSystemSimTest {
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, robotToCamera);
         cameraSim.prop.setCalibration(1234, 1234, Rotation2d.fromDegrees(80));
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 0.5), 1736));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 1736));
 
         var robotPose = new Pose2d(new Translation2d(13.98, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
@@ -250,7 +238,7 @@ class VisionSystemSimTest {
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
         cameraSim.setMinTargetAreaPixels(20.0);
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.1, 0.025), 24));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.1, 0.1), 24));
 
         var robotPose = new Pose2d(new Translation2d(12, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
@@ -274,7 +262,7 @@ class VisionSystemSimTest {
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
         cameraSim.setMaxSightRange(10);
         cameraSim.setMinTargetAreaPixels(1.0);
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 0.25), 78));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(1.0, 1), 78));
 
         var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(5));
         visionSysSim.update(robotPose);
@@ -322,7 +310,7 @@ class VisionSystemSimTest {
         visionSysSim.addCamera(cameraSim, new Transform3d());
         cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(120));
         cameraSim.setMinTargetAreaPixels(0.0);
-        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 23));
+        visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), 3));
 
         // Transform is now robot -> camera
         visionSysSim.adjustCamera(

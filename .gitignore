@@ -5,7 +5,8 @@ __pycache__/
 
 /.vs
 backend/settings/
-.vscode/
+.vscode/*
+!.vscode/settings.json
 # Docs
 _build
 # Compiled class file
@@ -150,3 +151,4 @@ components.d.ts
 
 # Py docs stuff
 photon-lib/py/docs/build
+photon-server/src/main/resources/web/index.html

@@ -16,7 +16,12 @@ const trackedTargets = computed<PhotonTarget[]>(() => useStateStore().currentPip
     </v-row>
     <v-row style="width: 100%">
       <v-col style="display: flex; align-items: center; justify-content: center">
-        <photon3d-visualizer :targets="trackedTargets" />
+        <Suspense>
+          <!-- Allows us to import three js when it's actually needed  -->
+          <photon3d-visualizer :targets="trackedTargets" />
+
+          <template #fallback> Loading... </template>
+        </Suspense>
       </v-col>
     </v-row>
   </div>

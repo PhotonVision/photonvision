@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.photonvision.UnitTestUtils.waitForCondition;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
@@ -36,6 +35,7 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
@@ -48,25 +48,29 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.TimeSyncClient;
-import org.photonvision.jni.WpilibLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class PhotonCameraTest {
     // A test-scoped, local-only NT instance
     NetworkTableInstance inst = null;
 
     @BeforeAll
-    public static void load_wpilib() {
-        WpilibLoader.loadLibraries();
+    public static void load() throws IOException {
+        LibraryLoader.loadWpiLibraries();
+        RuntimeLoader.loadLibrary("photontargetingJNI");
     }
 
     @BeforeEach
@@ -76,6 +80,7 @@ class PhotonCameraTest {
         HAL.initialize(500, 0);
 
         inst = NetworkTableInstance.create();
+        assertTrue(inst.isValid());
         inst.stopClient();
         inst.stopServer();
         inst.startLocal();
@@ -105,38 +110,36 @@ class PhotonCameraTest {
 
     // Just a smoketest for dev use -- don't run by default
     @Test
+    @Order(3)
     public void testTimeSyncServerWithPhotonCamera() throws InterruptedException, IOException {
-        load_wpilib();
-        PhotonTargetingJniLoader.load();
-
         inst.stopClient();
         inst.startServer();
 
-        var camera = new PhotonCamera(inst, "Arducam_OV2311_USB_Camera");
-        PhotonCamera.setVersionCheckEnabled(false);
+        try (PhotonCamera camera = new PhotonCamera(inst, "Arducam_OV2311_USB_Camera")) {
+            PhotonCamera.setVersionCheckEnabled(false);
 
-        for (int i = 0; i < 5; i++) {
-            Thread.sleep(500);
+            for (int i = 0; i < 5; i++) {
+                Thread.sleep(500);
 
-            var res = camera.getLatestResult();
-            var captureTime = res.getTimestampSeconds();
-            var now = Timer.getFPGATimestamp();
+                var res = camera.getLatestResult();
+                var captureTime = res.getTimestampSeconds();
+                var now = Timer.getFPGATimestamp();
 
-            // expectTrue(captureTime < now);
+                // expectTrue(captureTime < now);
 
-            System.out.println(
-                    "sequence "
-                            + res.metadata.sequenceID
-                            + " image capture "
-                            + captureTime
-                            + " received at "
-                            + res.getTimestampSeconds()
-                            + " now: "
-                            + NetworkTablesJNI.now() / 1e6
-                            + " time since last pong: "
-                            + res.metadata.timeSinceLastPong / 1e6);
+                System.out.println(
+                        "sequence "
+                                + res.metadata.sequenceID
+                                + " image capture "
+                                + captureTime
+                                + " received at "
+                                + res.getTimestampSeconds()
+                                + " now: "
+                                + NetworkTablesJNI.now() / 1e6
+                                + " time since last pong: "
+                                + res.metadata.timeSinceLastPong / 1e6);
+            }
         }
-
         HAL.shutdown();
     }
 
@@ -189,12 +192,10 @@ class PhotonCameraTest {
      * check
      */
     @ParameterizedTest
+    @Order(2)
     @MethodSource("testNtOffsets")
     public void testRestartingRobotAndCoproc(
             int robotStart, int coprocStart, int robotRestart, int coprocRestart) throws Throwable {
-        // See #1574 - test flakey, disabled until we address this
-        assumeTrue(false);
-
         var robotNt = NetworkTableInstance.create();
         var coprocNt = NetworkTableInstance.create();
 
@@ -304,6 +305,7 @@ class PhotonCameraTest {
     }
 
     @Test
+    @Order(1) // Alerts can't be reset, need to run this test first to have a clean slate
     public void testAlerts() throws InterruptedException {
         // GIVEN a fresh NT instance
 
@@ -331,62 +333,62 @@ class PhotonCameraTest {
             Thread.sleep(20);
         }
 
-        // GIVEN a simulated camera
-        var sim = new PhotonCameraSim(camera);
-        // AND a result with a timeSinceLastPong in the past
-        PhotonPipelineResult noPongResult =
-                new PhotonPipelineResult(
-                        new PhotonPipelineMetadata(
-                                1, 2, 3, 10 * 1000000 // 10 seconds -> us since last pong
-                                ),
-                        List.of(),
-                        Optional.empty());
+        // GIVEN a simulated camera AND a result with a timeSinceLastPong in the past
+        try (PhotonCameraSim sim = new PhotonCameraSim(camera)) {
+            PhotonPipelineResult noPongResult =
+                    new PhotonPipelineResult(
+                            new PhotonPipelineMetadata(
+                                    1, 2, 3, 10 * 1000000 // 10 seconds -> us since last pong
+                                    ),
+                            List.of(),
+                            Optional.empty());
 
-        // Loop to hit cases past first iteration
-        for (int i = 0; i < 10; i++) {
-            // AND a PhotonCamera with a "new" result
+            // Loop to hit cases past first iteration
+            for (int i = 0; i < 10; i++) {
+                // AND a PhotonCamera with a "new" result
+                sim.submitProcessedFrame(noPongResult);
+
+                // WHEN we update the camera
+                camera.getAllUnreadResults();
+
+                // AND we tick SmartDashboard
+                SmartDashboard.updateValues();
+
+                // THEN the camera isn't disconnected
+                assertTrue(
+                        Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
+                                .noneMatch(it -> it.equals(disconnectedCameraString)));
+                // AND the alert string looks like a timesync warning
+                assertTrue(
+                        Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
+                                        .filter(it -> it.contains("is not connected to the TimeSyncServer"))
+                                        .count()
+                                == 1);
+
+                Thread.sleep(20);
+            }
+
+            final double HEARTBEAT_TIMEOUT = 0.5;
+
+            // GIVEN a PhotonCamera provided new results
+            SimHooks.pauseTiming();
             sim.submitProcessedFrame(noPongResult);
-
-            // WHEN we update the camera
             camera.getAllUnreadResults();
+            // AND in a connected state
+            assertTrue(camera.isConnected());
 
-            // AND we tick SmartDashboard
-            SmartDashboard.updateValues();
+            // WHEN we wait the timeout
+            SimHooks.stepTiming(HEARTBEAT_TIMEOUT * 1.5);
 
-            // THEN the camera isn't disconnected
-            assertTrue(
-                    Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
-                            .noneMatch(it -> it.equals(disconnectedCameraString)));
-            // AND the alert string looks like a timesync warning
-            assertTrue(
-                    Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
-                                    .filter(it -> it.contains("is not connected to the TimeSyncServer"))
-                                    .count()
-                            == 1);
+            // THEN the camera will not be connected
+            assertFalse(camera.isConnected());
 
-            Thread.sleep(20);
+            // WHEN we then provide new results
+            SimHooks.stepTiming(0.02);
+            sim.submitProcessedFrame(noPongResult);
+            camera.getAllUnreadResults();
+            // THEN the camera will not be connected
+            assertTrue(camera.isConnected());
         }
-
-        final double HEARTBEAT_TIMEOUT = 0.5;
-
-        // GIVEN a PhotonCamera provided new results
-        SimHooks.pauseTiming();
-        sim.submitProcessedFrame(noPongResult);
-        camera.getAllUnreadResults();
-        // AND in a connected state
-        assertTrue(camera.isConnected());
-
-        // WHEN we wait the timeout
-        SimHooks.stepTiming(HEARTBEAT_TIMEOUT * 1.5);
-
-        // THEN the camera will not be connected
-        assertFalse(camera.isConnected());
-
-        // WHEN we then provide new results
-        SimHooks.stepTiming(0.02);
-        sim.submitProcessedFrame(noPongResult);
-        camera.getAllUnreadResults();
-        // THEN the camera will not be connected
-        assertTrue(camera.isConnected());
     }
 }
