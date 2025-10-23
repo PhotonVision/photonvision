@@ -127,30 +127,30 @@ const calibrationImageURL = (index: number) =>
 </script>
 <template>
   <v-card color="surface" dark>
-    <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
+    <div class="d-flex flex-wrap pt-2 pl-2 pr-2 align-center">
       <v-col cols="12" md="6">
         <v-card-title class="pa-0"> Calibration Details </v-card-title>
       </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
+      <v-col cols="12" md="6" class="d-flex align-center pt-0 pt-md-3">
         <v-btn
           color="error"
           :disabled="!currentCalibrationCoeffs"
-          style="width: 100%"
+          class="mr-2"
+          style="flex: 1"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           @click="removeCalibration"
         >
           <v-icon start size="large">mdi-delete</v-icon>
           <span>Delete</span>
         </v-btn>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
         <v-btn
           color="buttonPassive"
-          style="width: 100%"
+          class="mr-2"
+          style="flex: 1"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           @click="openUploadPhotonCalibJsonPrompt"
         >
-          <v-icon start size="large"> mdi-import</v-icon>
+          <v-icon start size="large">mdi-import</v-icon>
           <span>Import</span>
         </v-btn>
         <input
@@ -160,12 +160,10 @@ const calibrationImageURL = (index: number) =>
           style="display: none"
           @change="importCalibration"
         />
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
         <v-btn
           color="buttonPassive"
           :disabled="!currentCalibrationCoeffs"
-          style="width: 100%"
+          style="flex: 1"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           @click="openExportCalibrationPrompt"
         >
