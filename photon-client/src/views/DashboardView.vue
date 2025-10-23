@@ -10,6 +10,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -51,6 +52,17 @@ const arducamWarningShown = computed<boolean>(() => {
         c.cameraQuirks?.quirks?.ArduOV9281Controls === true ||
         c.cameraQuirks?.quirks?.ArduOV9782Controls === true
       )
+  );
+});
+
+const cameraMismatchWarningShown = computed<boolean>(() => {
+  return (
+    Object.values(useCameraSettingsStore().cameras)
+      // Ignore placeholder camera
+      .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+      .some((camera) => {
+        return camera.mismatch;
+      })
   );
 });
 
@@ -104,6 +116,21 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </v-alert>
+    <v-banner
+      v-if="cameraMismatchWarningShown"
+      v-model="cameraMismatchWarningShown"
+      rounded
+      color="error"
+      dark
+      class="mb-3"
+      icon="mdi-alert-circle-outline"
+    >
+      <span
+        >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
+        activated.
+      </span>
+    </v-banner>
     <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />

@@ -275,6 +275,7 @@ export interface UiCameraConfiguration {
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
   hasConnected: boolean;
+  mismatch: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -398,7 +399,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     PVBaslerCameraInfo: undefined,
   },
   isConnected: true,
-  hasConnected: true
+  hasConnected: true,
+  mismatch: false
 };
 
 export enum CalibrationBoardTypes {

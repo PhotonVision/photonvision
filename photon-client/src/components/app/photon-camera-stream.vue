@@ -105,18 +105,21 @@ onBeforeUnmount(() => {
     />
     <div class="stream-overlay" :style="overlayStyle">
       <pv-icon
+        color="primary"
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
         class="ma-1 mr-2"
         @click="handleCaptureClick"
       />
       <pv-icon
+        color="primary"
         icon-name="mdi-fullscreen"
         tooltip="Open this stream in fullscreen"
         class="ma-1 mr-2"
         @click="handleFullscreenRequest"
       />
       <pv-icon
+        color="primary"
         icon-name="mdi-open-in-new"
         tooltip="Open this stream in a new window"
         class="ma-1 mr-2"
