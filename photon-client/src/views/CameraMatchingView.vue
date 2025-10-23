@@ -27,9 +27,9 @@ const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
 
-  axiosPost("/utils/activateMatchedCamera", { cameraUniqueName: moduleUniqueName }).finally(
-    () => (activatingModule.value = false)
-  );
+  axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
+    cameraUniqueName: moduleUniqueName
+  }).finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
@@ -41,14 +41,16 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
     cameraInfo: cameraInfo
   };
 
-  axiosPost("/utils/assignUnmatchedCamera", payload).finally(() => (assigningCamera.value = false));
+  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload).finally(
+    () => (assigningCamera.value = false)
+  );
 };
 
 const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  axiosPost("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName }).finally(
+  axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName }).finally(
     () => (deactivatingModule.value = false)
   );
 };
@@ -61,7 +63,7 @@ const deleteThisCamera = (cameraName: string) => {
     cameraUniqueName: cameraName
   };
 
-  axiosPost("/utils/nukeOneCamera", payload).finally(() => {
+  axiosPost("/utils/nukeOneCamera", "delete a camera", payload).finally(() => {
     setCameraDeleting(null);
     deletingCamera.value = false;
   });

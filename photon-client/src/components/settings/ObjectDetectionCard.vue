@@ -43,7 +43,7 @@ const handleImport = async () => {
     timeout: -1
   });
 
-  axiosPost("/objectdetection/import", formData, {
+  axiosPost("/objectdetection/import", "import an object detection model", formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });
 
@@ -63,7 +63,7 @@ const deleteModel = async (model: ObjectDetectionModelProperties) => {
     timeout: -1
   });
 
-  axiosPost("/objectdetection/delete", {
+  axiosPost("/objectdetection/delete", "delete an object detection model", {
     modelPath: model.modelPath
   });
 
@@ -77,7 +77,7 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
     timeout: -1
   });
 
-  axiosPost("/objectdetection/rename", {
+  axiosPost("/objectdetection/rename", "rename an object detection model", {
     modelPath: model.modelPath.replace("file:", ""),
     newName: newName
   });
@@ -110,7 +110,7 @@ const showNukeDialog = ref(false);
 const expected = "Delete Models";
 const yesDeleteMyModelsText = ref("");
 const nukeModels = () => {
-  axiosPost("/objectdetection/nuke");
+  axiosPost("/objectdetection/nuke", "clear and reset object detection models");
   showNukeDialog.value = false;
 };
 
@@ -122,7 +122,7 @@ const handleBulkImport = () => {
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  axiosPost("/objectdetection/bulkimport", formData, {
+  axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: ({ progress }) => {
       const uploadPercentage = (progress || 0) * 100.0;

@@ -9,10 +9,10 @@ import { axiosPost } from "@/lib/PhotonUtils";
 const theme = useTheme();
 
 const restartProgram = () => {
-  axiosPost("/utils/restartProgram");
+  axiosPost("/utils/restartProgram", "restart PhotonVision");
 };
 const restartDevice = () => {
-  axiosPost("/utils/restartDevice");
+  axiosPost("/utils/restartDevice", "restart the device");
 };
 
 const address = inject<string>("backendHost");
@@ -34,7 +34,7 @@ const handleOfflineUpdate = () => {
     timeout: -1
   });
 
-  axiosPost("/utils/offlineUpdate", formData, {
+  axiosPost("/utils/offlineUpdate", "upload new software", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: ({ progress }) => {
       const uploadPercentage = (progress || 0) * 100.0;
@@ -101,7 +101,9 @@ const handleSettingsImport = () => {
       break;
   }
 
-  axiosPost(`/settings${settingsEndpoint}`, formData, { headers: { "Content-Type": "multipart/form-data" } });
+  axiosPost(`/settings${settingsEndpoint}`, "import settings", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 
   showImportDialog.value = false;
   importType.value = undefined;
@@ -112,7 +114,7 @@ const showFactoryReset = ref(false);
 const expected = "Delete Everything";
 const yesDeleteMySettingsText = ref("");
 const nukePhotonConfigDirectory = () => {
-  axiosPost("/utils/nukeConfigDirectory");
+  axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
 
   showFactoryReset.value = false;
 };

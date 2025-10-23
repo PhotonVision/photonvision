@@ -120,7 +120,7 @@ const deleteThisCamera = () => {
 
   const payload = { cameraUniqueName: useStateStore().currentCameraUniqueName };
 
-  axiosPost("/utils/nukeOneCamera", payload).finally(() => {
+  axiosPost("/utils/nukeOneCamera", "delete this camera", payload).finally(() => {
     deletingCamera.value = false;
     showDeleteCamera.value = false;
   });
