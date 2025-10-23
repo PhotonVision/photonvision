@@ -200,6 +200,7 @@ const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const calibEndpointFail = ref(false);
 const endCalibration = () => {
+  useCameraSettingsStore().stopCalibrationSnapshotLoop();
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
@@ -532,6 +533,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+              v-if="isCalibrating"
               :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
@@ -542,6 +544,22 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <span class="calib-btn-label">{{
                 useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
               }}</span>
+            </v-btn>
+            <v-btn
+              size="small"
+              block
+              v-if="!isCalibrating"
+              color="buttonActive"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :disabled="!settingsValid"
+              tooltip="Automatically take calibration snapshots in a loop until calibration is ended"
+              @click="
+                startCalibration();
+                useCameraSettingsStore().startCalibrationSnapshotLoop();
+              "
+            >
+              <v-icon start class="calib-btn-icon" size="large"> mdi-autorenew </v-icon>
+              <span class="calib-btn-label"> Start Snapshot Loop </span>
             </v-btn>
           </v-col>
         </div>
