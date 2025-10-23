@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.VideoMode;
 import java.util.HashMap;
+import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -117,6 +118,11 @@ public abstract class VisionSourceSettables {
 
     public void addCalibration(CameraCalibrationCoefficients calibrationCoefficients) {
         configuration.addCalibration(calibrationCoefficients);
+        calculateFrameStaticProps();
+    }
+
+    public void removeCalibration(Size unrotatedImageSize) {
+        configuration.removeCalibration(unrotatedImageSize);
         calculateFrameStaticProps();
     }
 

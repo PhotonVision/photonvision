@@ -5,12 +5,46 @@ import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
+import axios from "axios";
 
 const theme = useTheme();
 
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
+
+const removeCalibration = () => {
+  axios
+    .post("/calibration/remove", {
+      cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+      width: props.videoFormat.resolution.width,
+      height: props.videoFormat.resolution.height
+    })
+    .then((response) => {
+      useStateStore().showSnackbarMessage({
+        message: response.data.text || response.data,
+        color: "success"
+      });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to process the request! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to process the request."
+        });
+      }
+    });
+};
 
 const exportCalibration = ref();
 const openExportCalibrationPrompt = () => {
@@ -96,6 +130,18 @@ const calibrationImageURL = (index: number) =>
     <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
       <v-col cols="12" md="6">
         <v-card-title class="pa-0"> Calibration Details </v-card-title>
+      </v-col>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-6 pr-md-3">
+        <v-btn
+          color="error"
+          :disabled="!currentCalibrationCoeffs"
+          style="width: 100%"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="removeCalibration"
+        >
+          <v-icon start size="large">mdi-delete</v-icon>
+          <span>Delete</span>
+        </v-btn>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
         <v-btn
