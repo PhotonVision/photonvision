@@ -1,9 +1,11 @@
 package org.photonvision.vision.camera.baslerCameras;
 
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.util.PixelFormat;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.PVCameraInfo.PVBaslerCameraInfo;
 import org.photonvision.vision.processes.VisionSourceSettables;
 import org.teamdeadbolts.basler.BaslerJNI;
@@ -13,10 +15,11 @@ public class BaslerCameraSettables extends VisionSourceSettables {
     private VideoMode currentVideoMode;
     private String serial;
 
+    private double[] currentRatios = new double[3];
+
     public final Object LOCK = new Object();
 
     protected BaslerCameraSettables(CameraConfiguration configuration) {
-        // configuration.matchedCameraInfo.path()
         super(configuration);
         if (!(configuration.matchedCameraInfo instanceof PVBaslerCameraInfo)) {
             throw new IllegalArgumentException(
@@ -29,19 +32,22 @@ public class BaslerCameraSettables extends VisionSourceSettables {
 
         switch (info.getModel()) {
             case daA1280_54uc:
-                videoModes.put(0, new VideoMode(PixelFormat.kBGR.getValue(), 1280, 960, 43)); 
+                videoModes.put(0, new VideoMode(PixelFormat.kBGR.getValue(), 1280, 960, 43));
                 videoModes.put(1, new VideoMode(PixelFormat.kUYVY.getValue(), 1280, 960, 52));
-            default:
                 break;
+            default:
+                logger.warn("Unsupported camera model: " + info.getModel().getFriendlyName());
+                videoModes.put(0, new VideoMode(PixelFormat.kBGR.getValue(), 1280, 960, 43)); // Just guess
         }
 
         this.currentVideoMode = videoModes.get(0);
+        this.currentRatios = new double[] {1, 1, 1};
     }
 
     @Override
     public void setExposureRaw(double exposureRaw) {
         logger.debug("Setting exposure to " + exposureRaw);
-        boolean success = BaslerJNI.setExposure(ptr, exposureRaw);
+        boolean success = BaslerJNI.setExposure(ptr, exposureRaw * 1000);
         if (!success) {
             BaslerCameraSource.logger.warn("Failed to set exposure to " + exposureRaw);
         }
@@ -50,11 +56,6 @@ public class BaslerCameraSettables extends VisionSourceSettables {
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
-        logger.debug("PTR: " + ptr);
-        logger.debug("Supported formats: ");
-        for (int f : BaslerJNI.getSupportedPixelFormats(ptr)) {
-          logger.debug(PixelFormat.getFromInt(f).toString());
-        }
 
         boolean success = BaslerJNI.setAutoExposure(ptr, cameraAutoExposure);
         if (!success) {
@@ -64,11 +65,7 @@ public class BaslerCameraSettables extends VisionSourceSettables {
 
     @Override
     public void setWhiteBalanceTemp(double temp) {
-        logger.debug("Setting white balance to " + temp);
-        boolean success = BaslerJNI.setWhiteBalance(ptr, new double[] {temp, temp, temp});
-        if (!success) {
-            BaslerCameraSource.logger.warn("Failed to set white balance to " + temp);
-        }
+        throw new RuntimeException("Dont do this, use ratios insted");
     }
 
     @Override
@@ -89,10 +86,25 @@ public class BaslerCameraSettables extends VisionSourceSettables {
     @Override
     public void setGain(int gain) {
         logger.debug("Setting gain to " + gain);
-        boolean success = BaslerJNI.setGain(ptr, gain);
+        double min = BaslerJNI.getMinGain(ptr) + 1.0; // No divide by 0
+        double max = BaslerJNI.getMaxGain(ptr);
+        boolean success =
+                BaslerJNI.setGain(ptr, MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, min, max), min, max));
         if (!success) {
             BaslerCameraSource.logger.warn("Failed to set gain to " + gain);
         }
+    }
+
+    @Override
+    public void setRedGain(int red) {
+        this.currentRatios[0] = MathUtil.clamp(MathUtils.map(red, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
+        BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
+    }
+
+    @Override
+    public void setBlueGain(int blue) {
+        this.currentRatios[2] = MathUtil.clamp(MathUtils.map(blue, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
+        BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
     }
 
     @Override
@@ -147,23 +159,22 @@ public class BaslerCameraSettables extends VisionSourceSettables {
 
     @Override
     public double getMinWhiteBalanceTemp() {
-        return BaslerJNI.getMinWhiteBalance(ptr);
+        return 1;
     }
 
     @Override
     public double getMaxWhiteBalanceTemp() {
-        return BaslerJNI.getMaxWhiteBalance(ptr);
+        return 2;
     }
 
-     @Override
+    @Override
     public double getMinExposureRaw() {
         // return BaslerJNI.
-        return BaslerJNI.getMinExposure(ptr);
+        return BaslerJNI.getMinExposure(ptr) / 1000;
     }
 
     @Override
     public double getMaxExposureRaw() {
-        return BaslerJNI.getMaxExposure(ptr);
+        return BaslerJNI.getMaxExposure(ptr) / 1000;
     }
-
 }

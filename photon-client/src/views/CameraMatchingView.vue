@@ -5,6 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 import {
   PlaceholderCameraSettings,
   PVCameraInfo,
+  type PVBaslerCameraInfo,
   type PVCSICameraInfo,
   type PVFileCameraInfo,
   type PVUsbCameraInfo,
@@ -186,10 +187,15 @@ const camerasMatch = (camera1: PVCameraInfo, camera2: PVCameraInfo) => {
       camera1.PVFileCameraInfo.uniquePath === camera2.PVFileCameraInfo.uniquePath &&
       camera1.PVFileCameraInfo.name === camera2.PVFileCameraInfo.name
     );
+  else if (camera1.PVBaslerCameraInfo && camera2.PVBaslerCameraInfo)
+    return (
+      camera1.PVBaslerCameraInfo.serial === camera2.PVBaslerCameraInfo.serial &&
+      camera1.PVBaslerCameraInfo.uniquePath === camera2.PVBaslerCameraInfo.uniquePath
+    );
   else return false;
 };
 
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVBaslerCameraInfo | any => {
   if (!camera) return null;
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
@@ -199,6 +205,9 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
   }
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
+  }
+  if (camera.PVBaslerCameraInfo) {
+    return camera.PVBaslerCameraInfo;
   }
   return {};
 };
@@ -211,7 +220,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     return {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVBaslerCameraInfo: undefined
     };
   }
   return (
@@ -220,7 +230,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     ) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVBaslerCameraInfo: undefined,
     }
   );
 };

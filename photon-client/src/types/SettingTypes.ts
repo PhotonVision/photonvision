@@ -74,7 +74,7 @@ export interface PVCameraInfoBase {
   Huge hack. In Jackson, this is set based on the underlying type -- this
   then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
   */
-  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo" | "PVBaslerCameraInfo";
 }
 
 export interface PVUsbCameraInfo {
@@ -103,11 +103,20 @@ export interface PVFileCameraInfo {
   uniquePath: string;
 }
 
+export interface PVBaslerCameraInfo {
+  serial: string;
+  model: string;
+
+  uniquePath: string;
+
+}
+
 // This camera info will only ever hold one of its members - the others should be undefined.
 export class PVCameraInfo {
   PVUsbCameraInfo: PVUsbCameraInfo | undefined;
   PVCSICameraInfo: PVCSICameraInfo | undefined;
   PVFileCameraInfo: PVFileCameraInfo | undefined;
+  PVBaslerCameraInfo: PVBaslerCameraInfo | undefined;
 }
 
 export interface VsmState {
@@ -385,7 +394,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
       uniquePath: "/dev/foobar2"
     },
     PVCSICameraInfo: undefined,
-    PVUsbCameraInfo: undefined
+    PVUsbCameraInfo: undefined,
+    PVBaslerCameraInfo: undefined,
   },
   isConnected: true,
   hasConnected: true

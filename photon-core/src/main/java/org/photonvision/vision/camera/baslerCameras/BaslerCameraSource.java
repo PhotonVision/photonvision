@@ -3,6 +3,7 @@ package org.photonvision.vision.camera.baslerCameras;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
@@ -26,6 +27,8 @@ public class BaslerCameraSource extends VisionSource {
         this.settables = new BaslerCameraSettables(cameraConfiguration);
         this.frameProvider = new BaslerFrameProvider(this.settables);
         this.getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
+        this.getCameraConfiguration().cameraQuirks.quirks.put(CameraQuirk.Gain, true);
+        this.getCameraConfiguration().cameraQuirks.quirks.put(CameraQuirk.AwbRedBlueGain, true); // Not really correct
     }
 
     @Override

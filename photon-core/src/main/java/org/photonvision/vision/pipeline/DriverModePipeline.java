@@ -70,7 +70,6 @@ public class DriverModePipeline
             totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
 
             if (settings.crosshair) {
-                System.out.print("DMP");
                 var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
                 // calculate elapsed nanoseconds
