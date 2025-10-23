@@ -79,6 +79,7 @@ const calibrationDivisors = computed(() =>
   })
 );
 
+const uniqueVideoResolutionString = ref(getUniqueVideoResolutionStrings()[0]);
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -279,13 +280,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                   : 'MrCal failed to load, check journalctl logs for details.'
               "
             />
-            <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
             <pv-select
-              v-model="useStateStore().calibrationData.videoFormatIndex"
+              v-model="uniqueVideoResolutionString.name"
               label="Resolution"
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+              @update:model-value="
+                useStateStore().calibrationData.videoFormatIndex =
+                  getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
+              "
               :items="getUniqueVideoResolutionStrings()"
             />
             <pv-select
