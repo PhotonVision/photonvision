@@ -50,7 +50,13 @@ public class CalibrationRotationPipeTest {
     @BeforeAll
     public static void init() throws IOException {
         TestUtils.loadLibraries();
-        MrCalJNILoader.forceLoad();
+        try {
+            MrCalJNILoader.forceLoad();
+        } catch (IOException e) {
+            // mrcal not available on all platforms (e.g., macOS)
+            org.junit.jupiter.api.Assumptions.assumeTrue(
+                    false, "mrcal JNI not available on this platform");
+        }
 
         var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);

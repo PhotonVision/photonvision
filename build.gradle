@@ -82,7 +82,7 @@ spotless {
     groovyGradle {
         target fileTree('.') {
             include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/swift-java/**'
         }
         greclipse()
         indentWithSpaces(4)
@@ -92,7 +92,7 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/.build/**', '**/.gradle/**'
         }
         trimTrailingWhitespace()
         indentWithSpaces(2)

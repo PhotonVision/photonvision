@@ -232,6 +232,7 @@ public class NetworkUtils {
                         byte[] mac = iface.getHardwareAddress();
                         if (mac == null) {
                             logger.error("No MAC address found for " + iface.getDisplayName());
+                            continue;
                         }
                         return formatMacAddress(mac);
                     }

@@ -93,15 +93,27 @@ public abstract class CpuImageProcessor extends FrameProvider {
             outputMat = new CVMat();
         }
 
+        // Fix frameStaticProperties if it has invalid dimensions (width=0 or height=0)
+        // This can happen on macOS when setVideoMode fails
+        var staticProps = input.staticProps;
+        if (staticProps != null && (staticProps.imageWidth == 0 || staticProps.imageHeight == 0)) {
+            // Use actual image dimensions from the Mat
+            int actualWidth = input.colorImage.getMat().cols();
+            int actualHeight = input.colorImage.getMat().rows();
+            if (actualWidth > 0 && actualHeight > 0) {
+                staticProps = new FrameStaticProperties(actualWidth, actualHeight, staticProps.fov, null);
+            }
+        }
+
         return new Frame(
                 sequenceID,
                 input.colorImage,
                 outputMat,
                 m_processType,
                 input.captureTimestamp,
-                input.staticProps != null
-                        ? input.staticProps.rotate(m_rImagePipe.getParams().rotation())
-                        : input.staticProps);
+                staticProps != null
+                        ? staticProps.rotate(m_rImagePipe.getParams().rotation())
+                        : staticProps);
     }
 
     @Override

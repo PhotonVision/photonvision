@@ -20,6 +20,8 @@ package org.photonvision.vision.pipeline;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.objects.Model;
@@ -35,6 +37,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
+    private static final Logger logger = new Logger(ObjectDetectionPipeline.class, LogGroup.General);
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ObjectDetectionPipe objectDetectorPipe = new ObjectDetectionPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
@@ -86,6 +89,13 @@ public class ObjectDetectionPipeline
                         settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
                         frameStaticProperties));
 
+        logger.debug(
+                String.format(
+                        "Setting filter params: imageArea=%.0f, width=%d, height=%d",
+                        frameStaticProperties.imageArea,
+                        frameStaticProperties.imageWidth,
+                        frameStaticProperties.imageHeight));
+
         filterContoursPipe.setParams(
                 new FilterObjectDetectionsPipe.FilterContoursParams(
                         settings.contourArea,
@@ -106,6 +116,15 @@ public class ObjectDetectionPipeline
     @Override
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
         long sumPipeNanosElapsed = 0;
+
+        logger.debug(
+                String.format(
+                        "Processing frame: %dx%d, frameStaticProperties: imageArea=%.0f, width=%d, height=%d",
+                        frame.colorImage.getMat().cols(),
+                        frame.colorImage.getMat().rows(),
+                        frameStaticProperties.imageArea,
+                        frameStaticProperties.imageWidth,
+                        frameStaticProperties.imageHeight));
 
         CVPipeResult<List<NeuralNetworkPipeResult>> neuralNetworkResult =
                 objectDetectorPipe.run(frame.colorImage);

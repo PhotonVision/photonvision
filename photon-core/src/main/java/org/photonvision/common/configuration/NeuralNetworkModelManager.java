@@ -38,6 +38,7 @@ import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelP
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.objects.AppleModel;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
@@ -201,6 +202,7 @@ public class NeuralNetworkModelManager {
         switch (Platform.getCurrentPlatform()) {
             case LINUX_QCS6490 -> supportedBackends.add(Family.RUBIK);
             case LINUX_RK3588_64 -> supportedBackends.add(Family.RKNN);
+            case MACOS -> supportedBackends.add(Family.APPLE);
             default -> {
                 logger.warn(
                         "No supported neural network backends found for this platform: "
@@ -228,7 +230,8 @@ public class NeuralNetworkModelManager {
 
     public enum Family {
         RKNN(".rknn"),
-        RUBIK(".tflite");
+        RUBIK(".tflite"),
+        APPLE(".mlmodel");
 
         private final String fileExtension;
 
@@ -293,7 +296,7 @@ public class NeuralNetworkModelManager {
 
     /** The default model when no model is specified. */
     public Optional<Model> getDefaultModel() {
-        if (models == null || supportedBackends.isEmpty()) {
+        if (models == null || models.isEmpty() || supportedBackends.isEmpty()) {
             return Optional.empty();
         }
 
@@ -336,6 +339,9 @@ public class NeuralNetworkModelManager {
                 }
                 case RUBIK -> {
                     models.get(properties.family()).add(new RubikModel(properties));
+                }
+                case APPLE -> {
+                    models.get(properties.family()).add(new AppleModel(properties));
                 }
             }
             logger.info(
