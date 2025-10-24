@@ -77,7 +77,7 @@ public class HardwareManager {
         this.metricsManager.setConfig(hardwareConfig);
 
         TimedTaskManager.getInstance()
-                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
+                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 1000);
 
         ledModeRequest =
                 NetworkTablesManager.getInstance()
