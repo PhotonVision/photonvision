@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import * as echarts from "echarts";
 import { onMounted, ref, onBeforeUnmount, watch } from "vue";
+import { useTheme } from "vuetify";
 
-const chartRef = ref(null);
-let chart: echarts.ECharts | null = null;
-
-const DEFAULT_COLOR = "blue";
+// Color  -  original        (adjusted)
+// blue   -   59, 130, 246   (r:  92, g: 154, b: 255)
+// purple -  154, 100, 180   (r: 167, g: 104, b: 196)
+// green  -   65, 181, 127   (r:  75, g: 209, b: 147)
+// red    -  238, 102, 102   (r: 238, g: 102, b: 102)
 const colors = {
   "blue-LightTheme": { r: 255, g: 216, b: 67 },
   "blue-DarkTheme": { r: 92, g: 154, b: 255 },
@@ -14,8 +16,13 @@ const colors = {
   "red-LightTheme": { r: 255, g: 216, b: 67 },
   "red-DarkTheme": { r: 238, g: 102, b: 102 },
   "green-LightTheme": { r: 255, g: 216, b: 67 },
-  "green-DarkTheme": { r: 65, g: 181, b: 127 }
+  "green-DarkTheme": { r: 75, g: 209, b: 147 }
 };
+const DEFAULT_COLOR = "blue";
+
+const theme = useTheme();
+const chartRef = ref(null);
+let chart: echarts.ECharts | null = null;
 
 const getOptions = (data: ChartData[] = []) => {
   return {
@@ -26,7 +33,12 @@ const getOptions = (data: ChartData[] = []) => {
       trigger: "axis",
       formatter: (params: any) => {
         const p = params[0];
-        return `${new Date(p.value[0]).toLocaleTimeString()}<br/>Value: ${p.value[1].toFixed(2)}`;
+        const append = props.type === "percentage" ? "%" : props.type === "temperature" ? "°C" : "";
+        return `<div style="text-align: right;">${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })}<br/>${p.value[1] | 0}${append}</div>`;
+      },
+      backgroundColor: theme.themes.value[theme.global.name.value].colors.background,
+      textStyle: {
+        color: theme.themes.value[theme.global.name.value].colors.onBackground
       },
       axisPointer: {
         animation: false
@@ -42,17 +54,20 @@ const getOptions = (data: ChartData[] = []) => {
     xAxis: {
       type: "time",
       splitLine: {
-        show: false
+        show: true,
+        lineStyle: {
+          color: "#ffffff18"
+        }
       },
       splitNumber: 4,
       axisLine: {
         lineStyle: {
-          color: props.theme === "LightTheme" ? "#aaa" : "#777"
+          color: theme.global.name.value === "LightTheme" ? "#aaa" : "#777"
         }
       },
       axisLabel: {
         align: "left",
-        color: props.theme === "LightTheme" ? "#fff" : "#ddd",
+        color: theme.global.name.value === "LightTheme" ? "#fff" : "#ddd",
         formatter: (value: number) => {
           const date = new Date(value);
           return date.toLocaleTimeString([], {
@@ -79,10 +94,13 @@ const getOptions = (data: ChartData[] = []) => {
         },
       interval: props.min || props.max ? 50 : 20,
       splitLine: {
-        show: false
+        show: true,
+        lineStyle: {
+          color: "#ffffff18"
+        }
       },
       axisLabel: {
-        color: props.theme === "LightTheme" ? "#fff" : "#ddd"
+        color: theme.global.name.value === "LightTheme" ? "#fff" : "#ddd"
       }
     },
     series: getSeries(data),
@@ -91,15 +109,17 @@ const getOptions = (data: ChartData[] = []) => {
 };
 
 const getSeries = (data: ChartData[] = []) => {
-  let color = colors[`${props.color ?? DEFAULT_COLOR}-${props.theme}`];
+  let color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}`];
   return [
     {
-      name: "Fake Data",
       type: "line",
       showSymbol: false,
       data: data.map((d) => [d.time, d.value]),
       lineStyle: {
-        color: `rgb(${color?.r ?? 84}, ${color?.g ?? 112}, ${color?.b ?? 198})`
+        color:
+          theme.global.name.value === "LightTheme"
+            ? theme.themes.value[theme.global.name.value].colors.primary
+            : `rgb(${color.r}, ${color.g}, ${color.b})`
       },
       areaStyle: {
         color: {
@@ -111,11 +131,17 @@ const getSeries = (data: ChartData[] = []) => {
           colorStops: [
             {
               offset: 0,
-              color: `rgba(${color?.r ?? 84}, ${color?.g ?? 112}, ${color?.b ?? 198}, 0.35)`
+              color:
+                theme.global.name.value === "LightTheme"
+                  ? `${theme.themes.value[theme.global.name.value].colors.primary}80`
+                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.35)`
             },
             {
               offset: 1,
-              color: `rgba(${color?.r ?? 84}, ${color?.g ?? 112}, ${color?.b ?? 198}, 0)`
+              color:
+                theme.global.name.value === "LightTheme"
+                  ? `${theme.themes.value[theme.global.name.value].colors.primary}00`
+                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0)`
             }
           ]
         }
@@ -124,23 +150,15 @@ const getSeries = (data: ChartData[] = []) => {
   ];
 };
 
-// Example chart data — make it a prop if you want dynamic data
 interface ChartData {
   time: number;
   value: number;
 }
-interface Color {
-  r: number;
-  g: number;
-  b: number;
-}
-// blue 59, 130, 246
-// purple 154, 96, 180
-// green 65, 181, 127
-// red 238, 102, 102
+
+// Type options: "percentage", "temperature"
 const props = defineProps<{
-  theme: string;
   data: ChartData[];
+  type: string;
   min?: number;
   max?: number;
   color?: string;
@@ -150,7 +168,6 @@ onMounted(() => {
   chart = echarts.init(chartRef.value);
   chart.setOption(getOptions(props.data));
 
-  // Handle resize
   window.addEventListener("resize", resizeChart);
 });
 
@@ -163,7 +180,6 @@ function resizeChart() {
   chart?.resize();
 }
 
-// Watch for prop updates (reactive chart updates)
 watch(
   () => props.data,
   (data) => {
@@ -174,11 +190,10 @@ watch(
 </script>
 
 <template>
-  <div ref="chartRef" class="w-full h-64"></div>
+  <div ref="chartRef"></div>
 </template>
 
 <style scoped>
-/* You can size it however you like */
 div {
   width: calc(100% + 20px);
   height: 100px;

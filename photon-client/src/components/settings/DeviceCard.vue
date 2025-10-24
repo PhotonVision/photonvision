@@ -1,8 +1,6 @@
 @ -0,0 +1,565 @@
-<!-- WORK IN PROGRESS -->
-
 <script setup lang="ts">
-import { inject, computed, onBeforeMount, ref, onMounted, watch } from "vue";
+import { inject, computed, onBeforeMount, ref, watch } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
@@ -243,7 +241,6 @@ const generalMetrics = computed<MetricItem[]>(() => {
     { header: "Version", value: useSettingsStore().general.version || "Unknown" },
     { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
     { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
-
     { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "Unknown" }
   ];
 
@@ -259,21 +256,6 @@ const durationFormatter = new Intl.DurationFormat("en", { style: "narrow" });
 const platformMetrics = computed<MetricItem[]>(() => {
   const metrics = useSettingsStore().metrics;
   const stats = [
-    {
-      header: "CPU Temp",
-      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp}°C`
-    },
-    {
-      header: "CPU Usage",
-      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil}%`
-    },
-    {
-      header: "CPU Memory Usage",
-      value:
-        metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
-          ? `${metrics.ramUtil}MB of ${metrics.ramMem}MB`
-          : "Unknown"
-    },
     {
       header: "Uptime",
       value: (() => {
@@ -292,10 +274,6 @@ const platformMetrics = computed<MetricItem[]>(() => {
           seconds: secs
         });
       })()
-    },
-    {
-      header: "Disk Usage",
-      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
     }
   ];
 
@@ -323,7 +301,6 @@ const platformMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
-// const metricsLastFetched = ref("Never");
 const fetchMetrics = () => {
   useSettingsStore()
     .requestMetricsUpdate()
@@ -339,13 +316,6 @@ const fetchMetrics = () => {
           message: "An error occurred while trying to fetch metrics."
         });
       }
-    })
-    .finally(() => {
-      // const pad = (num: number): string => {
-      //   return String(num).padStart(2, "0");
-      // };
-      // const date = new Date();
-      // metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     });
 };
 
@@ -353,13 +323,10 @@ onBeforeMount(() => {
   fetchMetrics();
 });
 
-const graphedMetrics = ["CPU Usage", "CPU Memory Usage", "Disk Usage", "GPU Memory Usage", "CPU Temp"];
-
 const cpuUsageData = ref<{ time: number; value: number }[]>([]);
 const cpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
 const diskUsageData = ref<{ time: number; value: number }[]>([]);
 const cpuTempData = ref<{ time: number; value: number }[]>([]);
-const gpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
 
 watch(useSettingsStore().metricsHistory, () => {
   cpuUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
@@ -368,7 +335,7 @@ watch(useSettingsStore().metricsHistory, () => {
   }));
   cpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
-    value: entry.metrics.ramUtil ?? 0
+    value: ((entry.metrics.ramUtil ?? 0) / (entry.metrics.ramMem ?? -1.0)) * 100
   }));
   diskUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
@@ -378,28 +345,21 @@ watch(useSettingsStore().metricsHistory, () => {
     time: entry.time,
     value: entry.metrics.cpuTemp ?? 0
   }));
-  gpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
-    time: entry.time,
-    value: entry.metrics.gpuMemUtil ?? 0
-  }));
 });
 </script>
 
 <template>
   <v-row no-gutters>
+    <!-- Device control card -->
     <v-col class="pr-3">
       <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
         <v-card-title class="d-flex justify-space-between">
-          <span>PhotonVision</span>
+          <span>Device Control</span>
         </v-card-title>
         <v-card-text class="flex-0-0">
           <v-table>
             <tbody>
-              <tr
-                v-for="(item, itemIndex) in generalMetrics.concat(
-                  platformMetrics.filter((item) => !graphedMetrics.includes(item.header))
-                )"
-              >
+              <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)">
                 <td :key="itemIndex">
                   {{ item.header }}
                 </td>
@@ -476,7 +436,7 @@ watch(useSettingsStore().metricsHistory, () => {
                 @click="restartProgram"
               >
                 <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
-                <span class="open-label">Restart PhotonVision</span>
+                <span class="open-label">Restart Software</span>
               </v-btn>
             </v-col>
             <v-col cols="12" sm="6">
@@ -507,7 +467,7 @@ watch(useSettingsStore().metricsHistory, () => {
                 @click="restartDevice"
               >
                 <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
-                <span class="open-label">Restart Device</span>
+                <span class="open-label">Reboot Device</span>
               </v-btn>
             </v-col>
             <v-col cols="12" sm="6">
@@ -524,6 +484,8 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
       </v-card>
     </v-col>
+
+    <!-- Device metrics card -->
     <v-col>
       <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
         <v-card-title class="d-flex justify-space-between">
@@ -538,47 +500,41 @@ watch(useSettingsStore().metricsHistory, () => {
             <span>CPU Usage</span>
             <span>{{ (cpuUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="cpuUsageData" :min="0" :max="100" color="blue" :theme="theme.global.name.value" id="chart" />
+          <Chart :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ (cpuMemoryUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart
-            :data="cpuMemoryUsageData"
-            :min="0"
-            :max="100"
-            color="purple"
-            :theme="theme.global.name.value"
-            id="chart"
-          />
+          <Chart :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
             <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}°C</span>
           </div>
-          <Chart :data="cpuTempData" color="red" :theme="theme.global.name.value" id="chart" />
+          <Chart :data="cpuTempData" type="temperature" color="red" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
             <span>{{ (diskUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="diskUsageData" :min="0" :max="100" color="green" :theme="theme.global.name.value" id="chart" />
+          <Chart :data="diskUsageData" type="percentage" :min="0" :max="100" color="green" id="chart" />
         </v-card-text>
       </v-card>
     </v-col>
   </v-row>
 
+  <!-- Factory reset modal -->
   <v-dialog v-model="showFactoryReset" width="800" dark>
-    <v-card color="primary" flat>
+    <v-card color="surface" flat>
       <v-card-title style="display: flex; justify-content: center">
         <span class="open-label">
-          <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+          <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
           Factory Reset PhotonVision
-          <v-icon end color="error" class="open-icon ma-1">mdi-nuke</v-icon>
+          <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
         </span>
       </v-card-title>
       <v-card-text class="pt-0 pb-10px">
@@ -587,8 +543,13 @@ watch(useSettingsStore().metricsHistory, () => {
             <span> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
           </v-col>
           <v-col cols="12" md="6">
-            <v-btn color="secondary" style="float: right" @click="openExportSettingsPrompt">
-              <v-icon start class="open-icon"> mdi-export </v-icon>
+            <v-btn
+              color="primary"
+              style="float: right"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="openExportSettingsPrompt"
+            >
+              <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
               <span class="open-label">Backup Settings</span>
               <a
                 ref="exportSettings"
@@ -612,10 +573,11 @@ watch(useSettingsStore().metricsHistory, () => {
       <v-card-text class="pt-10px">
         <v-btn
           color="error"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
           @click="nukePhotonConfigDirectory"
         >
-          <v-icon start class="open-icon"> mdi-trash-can-outline </v-icon>
+          <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
           <span class="open-label">
             {{ $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything" }}
           </span>
@@ -624,6 +586,7 @@ watch(useSettingsStore().metricsHistory, () => {
     </v-card>
   </v-dialog>
 
+  <!-- Import settings modal -->
   <v-dialog
     v-model="showImportDialog"
     width="600"
@@ -634,7 +597,7 @@ watch(useSettingsStore().metricsHistory, () => {
       }
     "
   >
-    <v-card color="primary" dark>
+    <v-card color="surface" dark>
       <v-card-title class="pb-0">Import Settings</v-card-title>
       <v-card-text>
         Upload and apply previously saved or exported PhotonVision settings to this device
@@ -648,14 +611,19 @@ watch(useSettingsStore().metricsHistory, () => {
             style="width: 100%"
           />
           <v-file-input
-            class="pb-5"
             v-model="importFile"
+            class="pb-5"
             variant="underlined"
             :disabled="importType === undefined"
             :error-messages="importType === undefined ? 'Settings type not selected' : ''"
             :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
           />
-          <v-btn color="accent" :disabled="importFile === null" @click="handleSettingsImport">
+          <v-btn
+            color="primary"
+            :disabled="importFile === null"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="handleSettingsImport"
+          >
             <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Settings</span>
           </v-btn>
