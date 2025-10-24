@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -79,6 +79,18 @@ const calibrationDivisors = computed(() =>
   })
 );
 
+const uniqueVideoResolutionString = ref("");
+
+// Use a watchEffect so the value is populated/reacts when the stores become available or update.
+// This avoids trying to index into an array that may be empty during page reload.
+watchEffect(() => {
+  const currentIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
+  useStateStore().calibrationData.videoFormatIndex = currentIndex;
+  const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
+    getResolutionString(f.resolution)
+  );
+  uniqueVideoResolutionString.value = names[currentIndex] ?? names[0] ?? "";
+});
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -279,13 +291,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                   : 'MrCal failed to load, check journalctl logs for details.'
               "
             />
-            <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
             <pv-select
-              v-model="useStateStore().calibrationData.videoFormatIndex"
+              v-model="uniqueVideoResolutionString"
               label="Resolution"
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+              @update:model-value="
+                useStateStore().calibrationData.videoFormatIndex =
+                  getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
+              "
               :items="getUniqueVideoResolutionStrings()"
             />
             <pv-select
@@ -527,9 +542,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-card-text>
               Camera has been successfully calibrated for
               {{
-                getUniqueVideoResolutionStrings().find(
-                  (v) => v.value === useStateStore().calibrationData.videoFormatIndex
-                )?.name
+                useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
+                  getResolutionString(f.resolution)
+                )[useStateStore().calibrationData.videoFormatIndex]
               }}!
             </v-card-text>
           </template>
