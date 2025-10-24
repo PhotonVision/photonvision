@@ -57,6 +57,17 @@ public class Contour implements Releasable {
                         new Point(box.x, box.y + box.height));
     }
 
+    public Contour(RotatedRect obb) {
+        Point[] pts = new Point[4];
+        for (int i = 0; i < 4; ++i) pts[i] = new Point();
+
+        obb.points(pts);
+
+        // target: tl tr br bl
+        // pts array: "The order is bottomLeft, topLeft, topRight, bottomRight."
+        this.mat = new MatOfPoint(pts[1], pts[2], pts[3], pts[0]);
+    }
+
     public MatOfPoint2f getMat2f() {
         if (mat2f == null) {
             mat2f = new MatOfPoint2f(mat.toArray());
