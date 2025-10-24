@@ -129,6 +129,12 @@ compile_commands.json
 photonvision_config
 bin*/
 build*/
+.build/
+
+# Swift-java submodule build artifacts
+photon-apple/swift-java/.build/
+photon-apple/swift-java/build/
+photon-apple/swift-java/.gradle/
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*

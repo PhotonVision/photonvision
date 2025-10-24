@@ -3,6 +3,10 @@ apply plugin: 'edu.wpi.first.WpilibTools'
 import java.nio.file.Path
 
 ext.licenseFile = file("$rootDir/LICENSE")
+
+// Skip JaCoCo for Java 24 (not yet supported)
+ext.skipJacoco = true
+
 apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
@@ -27,6 +31,11 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("apriltag")
     wpilibNatives wpilibTools.deps.wpilib("hal")
     wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+
+    // Conditionally include photon-apple on macOS platforms only
+    if (jniPlatform == "osxarm64" || jniPlatform == "osxx86-64") {
+        implementation project(':photon-apple')
+    }
 
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
@@ -72,6 +81,16 @@ task writeCurrentVersion {
     }
 }
 // https://github.com/wpilibsuite/allwpilib/blob/main/wpilibj/build.gradle#L52
-sourceSets.main.java.srcDir "${buildDir}/generated/java/"
+sourceSets {
+    main {
+        java {
+            srcDir "${buildDir}/generated/java/"
+            // Exclude AppleObjectDetector on non-macOS platforms (requires Swift dependencies)
+            if (!(jniPlatform in ["osxarm64", "osxx86-64"])) {
+                exclude "**/AppleObjectDetector.java"
+            }
+        }
+    }
+}
 
 compileJava.dependsOn writeCurrentVersion

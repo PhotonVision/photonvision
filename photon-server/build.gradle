@@ -64,6 +64,13 @@ processResources {
 run {
     environment "PATH_PREFIX", "../"
 
+    // Add Swift runtime and native library directory to java.library.path for macOS Apple Vision support
+    // /usr/lib/swift contains symlinks that allow System.loadLibrary() to resolve Swift libraries from the dyld shared cache
+    // photonvision_config/nativelibs is where we extract AppleVisionLibrary and SwiftKitSwift dylibs
+    // The libraries are extracted to photon-server/photonvision_config/nativelibs (relative to working directory)
+    def nativeLibPath = new File(projectDir, "photonvision_config/nativelibs").absolutePath
+    systemProperty 'java.library.path', "${nativeLibPath}:/usr/lib/swift"
+
     if (project.hasProperty("profile")) {
         jvmArgs=[
             "-Dcom.sun.management.jmxremote=true",
