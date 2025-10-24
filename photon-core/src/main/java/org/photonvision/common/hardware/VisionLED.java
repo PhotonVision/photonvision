@@ -36,7 +36,7 @@ public class VisionLED {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
 
     private final int[] ledPins;
-    private final List<GPIOBase> visionLEDs = new ArrayList<>();
+    private final List<GPIOBase> visionLEDs;
     private final int brightnessMin;
     private final int brightnessMax;
     private final PigpioSocket pigpioSocket;
@@ -58,7 +58,8 @@ public class VisionLED {
         this.brightnessMax = brightnessMax;
         this.pigpioSocket = pigpioSocket;
         this.modeConsumer = visionLEDmode;
-        this.ledPins = ledPins.stream().mapToInt(i -> i).toArray();
+        this.ledPins = ledPins.stream().mapToInt(Integer::intValue).toArray();
+        visionLEDs = new ArrayList<>(this.ledPins.length);
         ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {

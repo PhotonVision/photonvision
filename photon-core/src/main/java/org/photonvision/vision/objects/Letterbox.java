@@ -86,7 +86,7 @@ public class Letterbox {
      * @return The resized detections
      */
     public List<NeuralNetworkPipeResult> resizeDetections(List<NeuralNetworkPipeResult> unscaled) {
-        var ret = new ArrayList<NeuralNetworkPipeResult>();
+        var ret = new ArrayList<NeuralNetworkPipeResult>(unscaled.size());
 
         for (var t : unscaled) {
             var scale = 1.0 / this.scale;
