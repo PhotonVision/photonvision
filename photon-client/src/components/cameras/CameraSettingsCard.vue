@@ -6,8 +6,8 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
-import axios from "axios";
 import { useTheme } from "vuetify";
+import { axiosPost } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
@@ -120,36 +120,10 @@ const deleteThisCamera = () => {
 
   const payload = { cameraUniqueName: useStateStore().currentCameraUniqueName };
 
-  axios
-    .post("/utils/nukeOneCamera", payload)
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the delete command. Waiting for backend to start back up",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to delete this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => {
-      deletingCamera.value = false;
-      showDeleteCamera.value = false;
-    });
+  axiosPost("/utils/nukeOneCamera", "delete this camera", payload).finally(() => {
+    deletingCamera.value = false;
+    showDeleteCamera.value = false;
+  });
 };
 const wrappedCameras = computed<SelectItem[]>(() =>
   Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
