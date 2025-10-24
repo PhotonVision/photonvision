@@ -148,6 +148,7 @@ public class Server {
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
+        app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
         // Object detection
         app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
