@@ -45,7 +45,23 @@ const handleImport = async () => {
 
   axios
     .post("/objectdetection/import", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+            color: "secondary",
+            timeout: -1
+          });
+        } else {
+          useStateStore().showSnackbarMessage({
+            message: "Processing uploaded Object Detection Model...",
+            color: "secondary",
+            timeout: -1
+          });
+        }
+      }
     })
     .then((response) => {
       useStateStore().showSnackbarMessage({
