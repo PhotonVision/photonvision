@@ -8,6 +8,12 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
+import { defineAsyncComponent } from "vue";
+
+const PhotonCalibrationVisualizer = defineAsyncComponent({
+  loader: () => import("@/components/app/photon-calibration-visualizer.vue")
+});
+
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
@@ -241,17 +247,24 @@ const calibrationImageURL = (index: number) =>
             <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
               <td>Board warp, X/Y</td>
               <td>
-                {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm")
-                    .join(" / ")
-                }}
+                {{ currentCalibrationCoeffs?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm").join(" / ") }}
               </td>
             </tr>
           </tbody>
         </template>
       </v-table>
+    </v-card-text>
+    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Camera->Board Transforms</v-card-title>
+    <v-card-text v-if="currentCalibrationCoeffs">
+      <Suspense>
+        <!-- Allows us to import three js when it's actually needed  -->
+        <PhotonCalibrationVisualizer
+          :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+          :resolution="props.videoFormat.resolution"
+        />
+
+        <template #fallback> Loading... </template>
+      </Suspense>
     </v-card-text>
     <v-card-title v-if="currentCalibrationCoeffs" class="pt-0 pb-0">Individual Observations</v-card-title>
     <v-card-text v-if="currentCalibrationCoeffs" class="pt-0">
@@ -295,6 +308,7 @@ const calibrationImageURL = (index: number) =>
 .snapshot-preview {
   max-width: 55%;
 }
+
 @media only screen and (max-width: 512px) {
   .snapshot-preview {
     max-width: 100%;

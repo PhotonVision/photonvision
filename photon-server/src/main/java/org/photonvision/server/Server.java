@@ -60,6 +60,7 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
+                            // TODO - investigate HTTP compression
                             javalinConfig.registerPlugin(
                                     new CorsPlugin(
                                             cors -> {
@@ -68,7 +69,6 @@ public class Server {
                                                             it.anyHost();
                                                         });
                                             }));
-
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -129,6 +129,7 @@ public class Server {
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
+        app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
