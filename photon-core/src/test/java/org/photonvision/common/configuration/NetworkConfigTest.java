@@ -40,13 +40,13 @@ public class NetworkConfigTest {
     public void testDeserializeTeamNumberOrNtServerAddress() {
         {
             var folder = Path.of("test-resources/network-old-team-number");
-            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
+            var configMgr = new ConfigManager(folder, new SqlConfigProvider(folder));
             configMgr.load();
             assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
         {
             var folder = Path.of("test-resources/network-new-team-number");
-            var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
+            var configMgr = new ConfigManager(folder, new SqlConfigProvider(folder));
             configMgr.load();
             assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
