@@ -108,7 +108,6 @@ export interface PVBaslerCameraInfo {
   model: string;
 
   uniquePath: string;
-
 }
 
 // This camera info will only ever hold one of its members - the others should be undefined.
@@ -148,10 +147,17 @@ export interface Resolution {
   height: number;
 }
 
+export interface BinningConfig {
+  mode: String;
+  horz: number;
+  vert: number;
+}
+
 export interface VideoFormat {
   resolution: Resolution;
   fps: number;
   pixelFormat: string;
+  binning?: BinningConfig;
   index?: number;
   diagonalFOV?: number;
   horizontalFOV?: number;
@@ -229,7 +235,8 @@ export enum ValidQuirks {
   PiCam = "PiCam",
   StickyFPS = "StickyFPS",
   LifeCamControls = "LifeCamControls",
-  PsEyeControls = "PsEyeControls"
+  PsEyeControls = "PsEyeControls",
+  BaslerDaA1280Controls = "BaslerDaA1280Controls"
 }
 
 export interface QuirkyCamera {
@@ -380,7 +387,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
       StickyFPS: false,
       InnoOV9281Controls: false,
       LifeCamControls: false,
-      PsEyeControls: false
+      PsEyeControls: false,
+      BaslerDaA1280Controls: false
     }
   },
   isCSICamera: false,
@@ -396,7 +404,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
     },
     PVCSICameraInfo: undefined,
     PVUsbCameraInfo: undefined,
-    PVBaslerCameraInfo: undefined,
+    PVBaslerCameraInfo: undefined
   },
   isConnected: true,
   hasConnected: true,

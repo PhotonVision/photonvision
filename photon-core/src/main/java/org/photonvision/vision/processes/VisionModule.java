@@ -46,6 +46,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.camera.baslerCameras.BaslerCameraSource.BaslerVideoMode;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
@@ -590,7 +591,13 @@ public class VisionModule {
                                     ? "kPicam"
                                     : k.getValue().pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
-
+            if (k.getValue() instanceof BaslerVideoMode) {
+                var bMode = (BaslerVideoMode) k.getValue();
+                logger.debug("Have basler binning: " + bMode.binningConfig.mode);
+                internalMap.put("binningMode", bMode.binningConfig.mode.toString());
+                internalMap.put("binningHorz", bMode.binningConfig.horz);
+                internalMap.put("binningVert", bMode.binningConfig.vert);
+            }
             temp.put(k.getKey(), internalMap);
         }
 

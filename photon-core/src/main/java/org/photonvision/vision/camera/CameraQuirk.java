@@ -58,4 +58,7 @@ public enum CameraQuirk {
     ArduOV9782,
     /** Camera has odd exposure range, and supports gain control */
     See3Cam_24CUG,
+
+    /** Quirks to tell the difference between basler cameras */
+    BaslerDaA1280Controls,
 }

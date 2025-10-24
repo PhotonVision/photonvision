@@ -1,10 +1,13 @@
-import type { Resolution } from "@/types/SettingTypes";
+import type { BinningConfig, Resolution } from "@/types/SettingTypes";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
 };
 
 export const getResolutionString = (resolution: Resolution): string => `${resolution.width}x${resolution.height}`;
+
+export const getBinningString = (binning?: BinningConfig): string =>
+  binning != null ? ` ${binning.mode} ${binning.horz}x${binning.vert}` : "";
 
 export const parseJsonFile = async <T extends Record<string, any>>(file: File): Promise<T> => {
   return new Promise((resolve, reject) => {

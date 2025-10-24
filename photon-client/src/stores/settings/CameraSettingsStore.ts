@@ -101,6 +101,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   actions: {
     updateCameraSettingsFromWebsocket(data: WebsocketCameraSettingsUpdate[]) {
       const configuredCameras = data.reduce<{ [key: string]: UiCameraConfiguration }>((acc, d) => {
+        console.log("Bmode: " + d.videoFormatList[0].binningMode);
         acc[d.uniqueName] = {
           cameraPath: d.cameraPath,
           nickname: d.nickname,
@@ -128,7 +129,16 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
               horizontalFOV: v.horizontalFOV,
               verticalFOV: v.verticalFOV,
               standardDeviation: v.standardDeviation,
-              mean: v.mean
+              mean: v.mean,
+              ...(v.binningMode !== undefined &&
+                v.binningHorz !== undefined &&
+                v.binningVert !== undefined && {
+                  binning: {
+                    mode: v.binningMode,
+                    horz: v.binningHorz,
+                    vert: v.binningVert
+                  }
+                })
             })),
           completeCalibrations: d.calibrations,
           isCSICamera: d.isCSICamera,
@@ -145,6 +155,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           hasConnected: d.hasConnected,
           mismatch: d.mismatch
         };
+
         return acc;
       }, {});
       this.cameras =

@@ -26,9 +26,9 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
+import java.util.Objects;
 import org.teamdeadbolts.basler.BaslerJNI;
 import org.teamdeadbolts.basler.BaslerJNI.CameraModel;
-import java.util.Objects;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -316,7 +316,7 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String uniquePath() {
-            return this.serial;
+            return path();
         }
 
         @Override
@@ -327,6 +327,31 @@ public sealed interface PVCameraInfo {
         @Override
         public CameraType type() {
             return CameraType.BaslerCamera;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (!(obj instanceof PVBaslerCameraInfo info)) return false;
+
+            return this.model.equals(info.model) && serial.equals(info.serial);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(model, serial);
+        }
+
+        @Override
+        public String toString() {
+            return "PVBaslerCameraInfo[type="
+                    + type()
+                    + ", model="
+                    + model.toString()
+                    + ", serial='"
+                    + serial
+                    + "']";
         }
 
         public BaslerJNI.CameraModel getModel() {

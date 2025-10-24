@@ -6,7 +6,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { getResolutionString } from "@/lib/PhotonUtils";
+import { getBinningString, getResolutionString } from "@/lib/PhotonUtils";
 import { useDisplay } from "vuetify";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
@@ -31,9 +31,11 @@ const getFilteredStreamDivisors = (): number[] => {
 const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStreamDivisors().length;
 
 const cameraResolutions = computed(() =>
-  useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(
-    (f) => `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}`
-  )
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) => {
+    console.log("hello?");
+    console.log(f.binning?.mode + " " + f.binning?.vert);
+    return `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}${getBinningString(f.binning)}`;
+  })
 );
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);

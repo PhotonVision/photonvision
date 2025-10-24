@@ -2,50 +2,47 @@ package org.photonvision.vision.camera.baslerCameras;
 
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.util.PixelFormat;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.PVCameraInfo.PVBaslerCameraInfo;
+import org.photonvision.vision.camera.baslerCameras.BaslerCameraSource.BaslerVideoMode;
 import org.photonvision.vision.processes.VisionSourceSettables;
 import org.teamdeadbolts.basler.BaslerJNI;
 
-public class BaslerCameraSettables extends VisionSourceSettables {
+public class GenericBaslerCameraSettables extends VisionSourceSettables {
     public long ptr = 0;
-    private VideoMode currentVideoMode;
-    private String serial;
-
-    private double[] currentRatios = new double[3];
+    public String serial;
 
     public final Object LOCK = new Object();
 
-    protected BaslerCameraSettables(CameraConfiguration configuration) {
+    protected BaslerVideoMode currentVideoMode;
+
+    protected double minExposure = -1;
+    protected double maxExposure = 1000;
+
+    protected double minGain = 1;
+    protected double maxGain = 1;
+
+    protected double lastExposure = -1;
+    protected int lastGain = -1;
+
+    protected PVBaslerCameraInfo info;
+
+    protected GenericBaslerCameraSettables(CameraConfiguration configuration) {
         super(configuration);
         if (!(configuration.matchedCameraInfo instanceof PVBaslerCameraInfo)) {
             throw new IllegalArgumentException(
                     "Cannot create Basler Camera Settables from non basler info");
         }
 
-        PVBaslerCameraInfo info = (PVBaslerCameraInfo) configuration.matchedCameraInfo;
-
+        this.info = (PVBaslerCameraInfo) configuration.matchedCameraInfo;
         this.serial = configuration.getDevicePath();
-
-        switch (info.getModel()) {
-            case daA1280_54uc:
-                videoModes.put(0, new VideoMode(PixelFormat.kBGR.getValue(), 1280, 960, 43));
-                videoModes.put(1, new VideoMode(PixelFormat.kUYVY.getValue(), 1280, 960, 52));
-                break;
-            default:
-                logger.warn("Unsupported camera model: " + info.getModel().getFriendlyName());
-                videoModes.put(0, new VideoMode(PixelFormat.kBGR.getValue(), 1280, 960, 43)); // Just guess
-        }
-
-        this.currentVideoMode = videoModes.get(0);
-        this.currentRatios = new double[] {1, 1, 1};
     }
 
     @Override
     public void setExposureRaw(double exposureRaw) {
+        this.lastExposure = exposureRaw;
         logger.debug("Setting exposure to " + exposureRaw);
         boolean success = BaslerJNI.setExposure(ptr, exposureRaw * 1000);
         if (!success) {
@@ -61,6 +58,7 @@ public class BaslerCameraSettables extends VisionSourceSettables {
         if (!success) {
             BaslerCameraSource.logger.warn("Failed to set auto exposure to " + cameraAutoExposure);
         }
+        if (!cameraAutoExposure) setExposureRaw(this.lastExposure);
     }
 
     @Override
@@ -86,34 +84,57 @@ public class BaslerCameraSettables extends VisionSourceSettables {
     @Override
     public void setGain(int gain) {
         logger.debug("Setting gain to " + gain);
-        double min = BaslerJNI.getMinGain(ptr) + 1.0; // No divide by 0
-        double max = BaslerJNI.getMaxGain(ptr);
+
+        // double min = BaslerJNI.getMinGain(ptr) + 1.0; // No divide by 0
+        // double max = BaslerJNI.getMaxGain(ptr);
+        this.lastGain = gain;
         boolean success =
-                BaslerJNI.setGain(ptr, MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, min, max), min, max));
+                BaslerJNI.setGain(
+                        ptr,
+                        MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, minGain, maxGain), minGain, maxGain));
         if (!success) {
             BaslerCameraSource.logger.warn("Failed to set gain to " + gain);
         }
     }
 
-    @Override
-    public void setRedGain(int red) {
-        this.currentRatios[0] = MathUtil.clamp(MathUtils.map(red, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
-        BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
-    }
+    // @Override
+    // public void setRedGain(int red) {
+    //     this.currentRatios[0] = MathUtil.clamp(MathUtils.map(red, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
+    //     BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
+    // }
+
+    // @Override
+    // public void setBlueGain(int blue) {
+    //     this.currentRatios[2] = MathUtil.clamp(MathUtils.map(blue, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
+    //     BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
+    // }
 
     @Override
-    public void setBlueGain(int blue) {
-        this.currentRatios[2] = MathUtil.clamp(MathUtils.map(blue, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
-        BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
-    }
-
-    @Override
-    public VideoMode getCurrentVideoMode() {
+    public BaslerVideoMode getCurrentVideoMode() {
         return currentVideoMode;
+    }
+
+    public void setVideoMode(VideoMode mode) {
+        var bMode = (BaslerVideoMode) mode;
+        logger.info(
+                "Setting video mode to "
+                        + "FPS: "
+                        + mode.fps
+                        + " Width: "
+                        + mode.width
+                        + " Height: "
+                        + mode.height
+                        + " Pixel Format: "
+                        + mode.pixelFormat
+                        + " Binning config: "
+                        + bMode.binningConfig);
+        setVideoModeInternal(mode);
+        calculateFrameStaticProps();
     }
 
     @Override
     protected void setVideoModeInternal(VideoMode videoMode) {
+        var mode = (BaslerVideoMode) videoMode;
         synchronized (LOCK) {
             if (ptr != 0) {
                 logger.debug("Stopping camera");
@@ -130,9 +151,15 @@ public class BaslerCameraSettables extends VisionSourceSettables {
             logger.debug("Creating camera");
 
             ptr = BaslerJNI.createCamera(serial);
-            if (!BaslerJNI.setPixelFormat(ptr, videoMode.pixelFormat.getValue())) {
+            if (!BaslerJNI.setPixelFormat(ptr, mode.pixelFormat.getValue())) {
                 logger.warn("Failed to set pixel format");
                 return;
+            }
+            if (this.lastGain != -1) {
+                this.setGain(this.lastGain);
+            }
+            if (this.lastExposure != -1) {
+                this.setExposureRaw(this.lastExposure);
             }
 
             if (ptr == 0) {
@@ -149,7 +176,7 @@ public class BaslerCameraSettables extends VisionSourceSettables {
             }
         }
 
-        this.currentVideoMode = videoMode;
+        this.currentVideoMode = mode;
     }
 
     @Override
@@ -170,11 +197,23 @@ public class BaslerCameraSettables extends VisionSourceSettables {
     @Override
     public double getMinExposureRaw() {
         // return BaslerJNI.
-        return BaslerJNI.getMinExposure(ptr) / 1000;
+        return minExposure;
     }
 
     @Override
     public double getMaxExposureRaw() {
-        return BaslerJNI.getMaxExposure(ptr) / 1000;
+        return maxExposure;
     }
+
+    @Override
+    public void onCameraConnected() {
+        super.onCameraConnected();
+        setupVideoModes();
+        if (!videoModes.isEmpty()) this.currentVideoMode = (BaslerVideoMode) videoModes.get(0);
+        else logger.warn("Video modes empty");
+
+        calculateFrameStaticProps();
+    }
+
+    protected void setupVideoModes() {}
 }
