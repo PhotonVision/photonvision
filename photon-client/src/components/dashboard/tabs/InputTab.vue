@@ -150,6 +150,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-slider
+      v-if="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp !== -1"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
       :disabled="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       label="White Balance Temperature"

@@ -22,7 +22,10 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
     protected double maxExposure = 1000;
 
     protected double minGain = 1;
-    protected double maxGain = 1;
+    protected double maxGain = 18;
+
+    protected double minBrightness = -1;
+    protected double maxBrightness = 1;
 
     protected double lastExposure = -1;
     protected int lastGain = -1;
@@ -77,8 +80,17 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
 
     @Override
     public void setBrightness(int brightness) {
-        // TODO
-        // BaslerJNI.getMin
+        logger.debug("Setting brightness to " + brightness);
+
+        double scaledBrightness =
+                MathUtil.clamp(
+                        MathUtils.map(brightness, 0, 100, minBrightness, maxBrightness),
+                        minBrightness,
+                        maxBrightness);
+        boolean success = BaslerJNI.setBrightness(ptr, scaledBrightness);
+        if (!success) {
+            logger.warn("Failed to set brightness to " + brightness + " (" + scaledBrightness + ")");
+        }
     }
 
     @Override
@@ -93,7 +105,7 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
                         ptr,
                         MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, minGain, maxGain), minGain, maxGain));
         if (!success) {
-            BaslerCameraSource.logger.warn("Failed to set gain to " + gain);
+            logger.warn("Failed to set gain to " + gain);
         }
     }
 

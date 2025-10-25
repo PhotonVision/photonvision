@@ -126,6 +126,14 @@ public class VisionModule {
                     });
         }
 
+        // Basler stuff
+        if (cameraQuirks.hasQuirk(CameraQuirk.BaslerDaA1280Controls)) {
+            pipelineManager.userPipelineSettings.forEach(
+                    it -> {
+                        it.cameraWhiteBalanceTemp = -1;
+                    });
+        }
+
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
         changeSubscriber = new VisionModuleChangeSubscriber(this);
