@@ -7,7 +7,7 @@ export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
 export const getResolutionString = (resolution: Resolution): string => `${resolution.width}x${resolution.height}`;
 
 export const getBinningString = (binning?: BinningConfig): string =>
-  binning != null ? ` ${binning.mode} ${binning.horz}x${binning.vert}` : "";
+  binning != null && binning.mode !== "NONE" ? ` ${binning.mode} ${binning.horz}x${binning.vert}` : "";
 
 export const parseJsonFile = async <T extends Record<string, any>>(file: File): Promise<T> => {
   return new Promise((resolve, reject) => {

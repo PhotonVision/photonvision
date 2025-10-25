@@ -16,6 +16,7 @@ public class BaslerDaA1280CameraSettables extends GenericBaslerCameraSettables {
         this.maxGain = 18;
 
         this.getConfiguration().cameraQuirks.quirks.put(CameraQuirk.Gain, true);
+        this.getConfiguration().cameraQuirks.quirks.put(CameraQuirk.AwbRedBlueGain, true);
     }
 
     @Override

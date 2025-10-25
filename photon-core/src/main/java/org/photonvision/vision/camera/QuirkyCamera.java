@@ -90,7 +90,7 @@ public class QuirkyCamera {
                             0x0c45, 0x636d, "USB Camera", "Innomaker OV9281", CameraQuirk.InnoOV9281Controls),
 
                     // Basler daA1280-54uc
-                    new QuirkyCamera(-1, -1, "Basler daA1280-54uc", CameraQuirk.BaslerDaA1280Controls));
+                    new QuirkyCamera(-1, -1, "Basler daA1280-54uc", CameraQuirk.BaslerDaA1280Controls, CameraQuirk.ManualWB));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
     public static final QuirkyCamera ZeroCopyPiCamera =

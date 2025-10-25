@@ -127,10 +127,12 @@ public class VisionModule {
         }
 
         // Basler stuff
-        if (cameraQuirks.hasQuirk(CameraQuirk.BaslerDaA1280Controls)) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.ManualWB)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
                         it.cameraWhiteBalanceTemp = -1;
+                        if (it.cameraRedGain == -1) it.cameraRedGain = 11;
+                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 20;
                     });
         }
 

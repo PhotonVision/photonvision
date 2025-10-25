@@ -32,8 +32,6 @@ const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStre
 
 const cameraResolutions = computed(() =>
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) => {
-    console.log("hello?");
-    console.log(f.binning?.mode + " " + f.binning?.vert);
     return `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}${getBinningString(f.binning)}`;
   })
 );
@@ -118,24 +116,38 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
+      :disabled="
+        useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp === -1 &&
+        useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoWhiteBalance
+      "
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
-      label="Red AWB Gain"
+      :label="
+        useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp !== -1 ? 'Red AWB Gain' : 'Red Gain'
+      "
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
+      tooltip="Controls red white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
       "
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
+      :disabled="(() => {
+        const temp = useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp;
+        const autoWB = useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoWhiteBalance;
+        console.log('Blue Gain - temp:', temp, 'autoWB:', autoWB, 'disabled:', temp === -1 && autoWB);
+        return temp === -1 && autoWB;
+      })()"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
-      label="Blue AWB Gain"
+      :label="
+        useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp !== -1 ? 'Blue AWB Gain' : 'Blue Gain'
+      "
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
+      tooltip="Controls blue white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
       "

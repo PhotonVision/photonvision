@@ -236,7 +236,8 @@ export enum ValidQuirks {
   StickyFPS = "StickyFPS",
   LifeCamControls = "LifeCamControls",
   PsEyeControls = "PsEyeControls",
-  BaslerDaA1280Controls = "BaslerDaA1280Controls"
+  BaslerDaA1280Controls = "BaslerDaA1280Controls",
+  ManualWB = "ManualWB"
 }
 
 export interface QuirkyCamera {
@@ -388,7 +389,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
       InnoOV9281Controls: false,
       LifeCamControls: false,
       PsEyeControls: false,
-      BaslerDaA1280Controls: false
+      BaslerDaA1280Controls: false,
+      ManualWB: false
     }
   },
   isCSICamera: false,

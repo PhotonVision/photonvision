@@ -2,6 +2,8 @@ package org.photonvision.vision.camera.baslerCameras;
 
 import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.MathUtil;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
@@ -27,8 +29,12 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
     protected double minBrightness = -1;
     protected double maxBrightness = 1;
 
+    protected double minWBGain = 0;
+    protected double maxWBGain = 6;
+
     protected double lastExposure = -1;
     protected int lastGain = -1;
+    protected double[] lastWBValues = new double[] {-1, 1, -1};
 
     protected PVBaslerCameraInfo info;
 
@@ -76,6 +82,10 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
         if (!success) {
             BaslerCameraSource.logger.warn("Failed to set auto white balance to " + autowb);
         }
+
+        if (!autowb && lastWBValues[0] != -1 && lastWBValues[2] != -1) {
+            BaslerJNI.setWhiteBalance(ptr, lastWBValues);
+        }    
     }
 
     @Override
@@ -84,7 +94,7 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
 
         double scaledBrightness =
                 MathUtil.clamp(
-                        MathUtils.map(brightness, 0, 100, minBrightness, maxBrightness),
+                        MathUtils.map(brightness, 0, 101, minBrightness, maxBrightness),
                         minBrightness,
                         maxBrightness);
         boolean success = BaslerJNI.setBrightness(ptr, scaledBrightness);
@@ -103,23 +113,28 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
         boolean success =
                 BaslerJNI.setGain(
                         ptr,
-                        MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, minGain, maxGain), minGain, maxGain));
+                        MathUtil.clamp(MathUtils.map(gain, 0.0, 101.0, minGain, maxGain), minGain, maxGain));
         if (!success) {
             logger.warn("Failed to set gain to " + gain);
         }
     }
 
-    // @Override
-    // public void setRedGain(int red) {
-    //     this.currentRatios[0] = MathUtil.clamp(MathUtils.map(red, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
-    //     BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
-    // }
+    @Override
+    public void setRedGain(int red) {
+        double scaledRed =
+                MathUtil.clamp(MathUtils.map(red, 0.0, 101, minWBGain, maxWBGain), minWBGain, maxWBGain);
+        lastWBValues[0] = scaledRed;
+        BaslerJNI.setWhiteBalance(ptr, lastWBValues);
+    }
 
-    // @Override
-    // public void setBlueGain(int blue) {
-    //     this.currentRatios[2] = MathUtil.clamp(MathUtils.map(blue, 0.0, 100, 1.0, 3.0), 1.0, 3.0);
-    //     BaslerJNI.setWhiteBalance(ptr, this.currentRatios);
-    // }
+    @Override
+    public void setBlueGain(int blue) {
+        double scaledBlue =
+                MathUtil.clamp(MathUtils.map(blue, 0.0, 101, minWBGain, maxWBGain), minWBGain, maxWBGain);
+        lastWBValues[2] = scaledBlue;
+        logger.debug("WB: " + Arrays.toString(lastWBValues));
+        BaslerJNI.setWhiteBalance(ptr, lastWBValues);
+    }
 
     @Override
     public BaslerVideoMode getCurrentVideoMode() {
@@ -208,7 +223,6 @@ public class GenericBaslerCameraSettables extends VisionSourceSettables {
 
     @Override
     public double getMinExposureRaw() {
-        // return BaslerJNI.
         return minExposure;
     }
 
