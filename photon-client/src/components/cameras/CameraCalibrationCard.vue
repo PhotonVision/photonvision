@@ -311,6 +311,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :items="['Chessboard', 'Charuco']"
               :disabled="isCalibrating"
             />
+            <v-alert 
+              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              closable
+              density="compact"
+              variant="tonal"
+              color="warning"
+              icon="mdi-alert-box"
+              text="The usage of chessboards can result in bad calibration results if multiple 
+              similar images are taken. We strongly recommend that teams use chArUco boards instead!"
+            />
             <pv-select
               v-if="boardType !== CalibrationBoardTypes.Charuco"
               v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"

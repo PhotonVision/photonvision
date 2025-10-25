@@ -16,6 +16,10 @@ The calibration data collected during calibration is specific to each physical c
 
 ## Calibration Tips
 
+:::{warning}
+The usage of chessboards can result in bad calibration results if multiple similar images are taken. We strongly recommend that teams use chArUco boards instead!
+:::
+
 Accurate camera calibration is required in order to get accurate pose measurements when using AprilTags and 3D mode. The tips below should help ensure success:
 
 01. Ensure the images you take have the target in different positions and angles, with as big of a difference between angles as possible. It is important to make sure the target overlay still lines up with the board while doing this. Tilt no more than 45 degrees.
