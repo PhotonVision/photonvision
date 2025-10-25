@@ -136,6 +136,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
                 aprilTagDetectionPipe.run(frame.processedImage);
+
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;

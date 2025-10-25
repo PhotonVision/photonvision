@@ -6,7 +6,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { getResolutionString } from "@/lib/PhotonUtils";
+import { getBinningString, getResolutionString } from "@/lib/PhotonUtils";
 import { useDisplay } from "vuetify";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
@@ -31,9 +31,9 @@ const getFilteredStreamDivisors = (): number[] => {
 const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStreamDivisors().length;
 
 const cameraResolutions = computed(() =>
-  useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(
-    (f) => `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}`
-  )
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) => {
+    return `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}${getBinningString(f.binning)}`;
+  })
 );
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
@@ -116,24 +116,38 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
+      :disabled="
+        useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp === -1 &&
+        useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoWhiteBalance
+      "
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraRedGain"
-      label="Red AWB Gain"
+      :label="
+        useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp !== -1 ? 'Red AWB Gain' : 'Red Gain'
+      "
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
+      tooltip="Controls red white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
       "
     />
     <pv-slider
       v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
+      :disabled="(() => {
+        const temp = useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp;
+        const autoWB = useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoWhiteBalance;
+        console.log('Blue Gain - temp:', temp, 'autoWB:', autoWB, 'disabled:', temp === -1 && autoWB);
+        return temp === -1 && autoWB;
+      })()"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain"
-      label="Blue AWB Gain"
+      :label="
+        useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp !== -1 ? 'Blue AWB Gain' : 'Blue Gain'
+      "
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
-      tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
+      tooltip="Controls blue white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
       "
@@ -148,6 +162,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-slider
+      v-if="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp !== -1"
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
       :disabled="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       label="White Balance Temperature"

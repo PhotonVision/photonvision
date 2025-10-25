@@ -46,6 +46,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.camera.baslerCameras.BaslerCameraSource.BaslerVideoMode;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
@@ -121,6 +122,16 @@ public class VisionModule {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
                         if (it.cameraRedGain == -1) it.cameraRedGain = 11; // Sane defaults
+                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 20;
+                    });
+        }
+
+        // Basler stuff
+        if (cameraQuirks.hasQuirk(CameraQuirk.ManualWB)) {
+            pipelineManager.userPipelineSettings.forEach(
+                    it -> {
+                        it.cameraWhiteBalanceTemp = -1;
+                        if (it.cameraRedGain == -1) it.cameraRedGain = 11;
                         if (it.cameraBlueGain == -1) it.cameraBlueGain = 20;
                     });
         }
@@ -481,13 +492,19 @@ public class VisionModule {
                         if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
                         settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
                         settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
+
+                        if (cameraQuirks.hasQuirk(CameraQuirk.ManualWB)) {
+                          settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
+                        }
                     } else {
                         pipelineSettings.cameraRedGain = -1;
                         pipelineSettings.cameraBlueGain = -1;
 
                         // All other cameras (than picams) should support AWB temp
                         settables.setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp);
-                        settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
+
+                        if (!cameraQuirks.hasQuirk(CameraQuirk.BaslerDaA1280Controls))
+                          settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
                     }
 
                     setVisionLEDs(pipelineSettings.ledMode);
@@ -590,7 +607,13 @@ public class VisionModule {
                                     ? "kPicam"
                                     : k.getValue().pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
-
+            if (k.getValue() instanceof BaslerVideoMode) {
+                var bMode = (BaslerVideoMode) k.getValue();
+                logger.debug("Have basler binning: " + bMode.binningConfig.mode);
+                internalMap.put("binningMode", bMode.binningConfig.mode.toString());
+                internalMap.put("binningHorz", bMode.binningConfig.horz);
+                internalMap.put("binningVert", bMode.binningConfig.vert);
+            }
             temp.put(k.getKey(), internalMap);
         }
 

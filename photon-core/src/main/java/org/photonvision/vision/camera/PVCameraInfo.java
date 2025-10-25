@@ -27,13 +27,16 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 import java.util.Objects;
+import org.teamdeadbolts.basler.BaslerJNI;
+import org.teamdeadbolts.basler.BaslerJNI.CameraModel;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
+    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
+    @JsonSubTypes.Type(value = PVCameraInfo.PVBaslerCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
     /**
@@ -289,6 +292,73 @@ public sealed interface PVCameraInfo {
         }
     }
 
+    @JsonTypeName("PVBaslerCameraInfo")
+    public static final class PVBaslerCameraInfo implements PVCameraInfo {
+
+        public final String serial;
+        public final BaslerJNI.CameraModel model;
+
+        public PVBaslerCameraInfo(
+                @JsonProperty("serial") String serial, @JsonProperty("model") BaslerJNI.CameraModel model) {
+            this.serial = serial;
+            this.model = model;
+        }
+
+        @Override
+        public String path() {
+            return this.serial;
+        }
+
+        @Override
+        public String name() {
+            return this.model.getFriendlyName();
+        }
+
+        @Override
+        public String uniquePath() {
+            return path();
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return new String[] {};
+        }
+
+        @Override
+        public CameraType type() {
+            return CameraType.BaslerCamera;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (!(obj instanceof PVBaslerCameraInfo info)) return false;
+
+            return this.model.equals(info.model) && this.serial.equals(info.serial);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(model, serial);
+        }
+
+        @Override
+        public String toString() {
+            return "PVBaslerCameraInfo[type="
+                    + type()
+                    + ", model="
+                    + model.toString()
+                    + ", serial='"
+                    + serial
+                    + "']";
+        }
+
+        public BaslerJNI.CameraModel getModel() {
+            return this.model;
+        }
+    }
+
     public static PVCameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
         return new PVUsbCameraInfo(info);
     }
@@ -299,5 +369,9 @@ public sealed interface PVCameraInfo {
 
     public static PVCameraInfo fromFileInfo(String path, String baseName) {
         return new PVFileCameraInfo(path, baseName);
+    }
+
+    public static PVCameraInfo fromBaslerCameraInfo(String serial, CameraModel model) {
+        return new PVBaslerCameraInfo(serial, model);
     }
 }

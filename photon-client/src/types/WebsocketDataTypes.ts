@@ -43,6 +43,9 @@ export type WebsocketVideoFormat = Record<
     verticalFOV?: number;
     standardDeviation?: number;
     mean?: number;
+    binningMode?: String;
+    binningHorz?: number;
+    binningVert?: number;
   }
 >;
 

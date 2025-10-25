@@ -144,6 +144,7 @@ public class OutputStreamPipeline {
             }
 
             // Draw 2D Crosshair on output
+
             var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
