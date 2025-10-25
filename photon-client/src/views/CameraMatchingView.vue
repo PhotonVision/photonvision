@@ -222,7 +222,7 @@ const yesDeleteMySettingsText = ref("");
 /**
  * Get the connection-type-specific camera info from the given PVCameraInfo object.
  */
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVBaslerCameraInfo | any => {
   if (!camera) return null;
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
@@ -232,6 +232,9 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
   }
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
+  }
+  if (camera.PVBaslerCameraInfo) {
+    return camera.PVBaslerCameraInfo;
   }
   return {};
 };
@@ -244,7 +247,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     return {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVBaslerCameraInfo: undefined,
     };
   }
   return (
@@ -253,7 +257,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     ) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVBaslerCameraInfo: undefined,
     }
   );
 };
@@ -478,6 +483,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-else-if="camera.PVBaslerCameraInfo">Basler Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
           </v-card-title>

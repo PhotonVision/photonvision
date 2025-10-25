@@ -335,7 +335,7 @@ public sealed interface PVCameraInfo {
             if (obj == null) return false;
             if (!(obj instanceof PVBaslerCameraInfo info)) return false;
 
-            return this.model.equals(info.model) && serial.equals(info.serial);
+            return this.model.equals(info.model) && this.serial.equals(info.serial);
         }
 
         @Override

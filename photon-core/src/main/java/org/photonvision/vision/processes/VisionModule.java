@@ -492,13 +492,19 @@ public class VisionModule {
                         if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
                         settables.setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
                         settables.setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
+
+                        if (cameraQuirks.hasQuirk(CameraQuirk.ManualWB)) {
+                          settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
+                        }
                     } else {
                         pipelineSettings.cameraRedGain = -1;
                         pipelineSettings.cameraBlueGain = -1;
 
                         // All other cameras (than picams) should support AWB temp
                         settables.setWhiteBalanceTemp(pipelineSettings.cameraWhiteBalanceTemp);
-                        settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
+
+                        if (!cameraQuirks.hasQuirk(CameraQuirk.BaslerDaA1280Controls))
+                          settables.setAutoWhiteBalance(pipelineSettings.cameraAutoWhiteBalance);
                     }
 
                     setVisionLEDs(pipelineSettings.ledMode);
