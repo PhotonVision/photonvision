@@ -107,6 +107,7 @@ public class FindBoardCornersPipe
                     objectPoints.push_back(new MatOfPoint3f(new Point3(boardXCoord, boardYCoord, 0.0)));
                 }
             }
+            logger.warn("The usage of chessboards can result in bad calibration results if multiple similar images are taken. We strongly recommend that teams use chArUco boards instead!");
         } else if (params.type() == UICalibrationData.BoardType.CHARUCOBOARD) {
             board =
                     new CharucoBoard(
