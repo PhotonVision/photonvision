@@ -59,21 +59,28 @@ public class CoreMLBaseTest {
                 int pixelFormat = ImageUtils.getPixelFormat(emptyImage);
                 // Debug: log the MemorySegment address and size to correlate with native crash
                 try {
-                    System.err.println("[CoreMLBaseTest] imageData.address=" + imageData.address() + " byteSize=" + imageData.byteSize());
+                    System.err.println(
+                            "[CoreMLBaseTest] imageData.address="
+                                    + imageData.address()
+                                    + " byteSize="
+                                    + imageData.byteSize());
                 } catch (Throwable t) {
-                    System.err.println("[CoreMLBaseTest] imageData.byteSize=" + imageData.byteSize() + " (address unavailable)");
+                    System.err.println(
+                            "[CoreMLBaseTest] imageData.byteSize="
+                                    + imageData.byteSize()
+                                    + " (address unavailable)");
                 }
 
-        DetectionResultArray results =
-            ObjectDetectorSafe.detectChecked(
-                detector,
-                imageData,
-                (long) emptyImage.width(),
-                (long) emptyImage.height(),
-                pixelFormat,
-                0.5,
-                0.5,
-                frameArena);
+                DetectionResultArray results =
+                        ObjectDetectorSafe.detectChecked(
+                                detector,
+                                imageData,
+                                (long) emptyImage.width(),
+                                (long) emptyImage.height(),
+                                pixelFormat,
+                                0.5,
+                                0.5,
+                                frameArena);
 
                 assertNotNull(results, "Detection results should not be null");
                 assertTrue(results.count() == 0, "Empty image should have 0");

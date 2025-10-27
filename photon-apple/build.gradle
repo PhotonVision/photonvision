@@ -129,6 +129,18 @@ def publishSwiftJavaToMavenLocal = tasks.register("publishSwiftJavaToMavenLocal"
     args(":SwiftKitCore:publishToMavenLocal", ":SwiftKitFFM:publishToMavenLocal", "--quiet")
 }
 
+// Build swift-java native libraries
+def buildSwiftJavaNativeLibs = tasks.register("buildSwiftJavaNativeLibs", Exec) {
+    description = "Build swift-java native libraries (SwiftKitSwift dylib)"
+    onlyIf { isMacOS() }
+
+    workingDir = new File(projectDir, "swift-java")
+    commandLine "swift"
+    args("build", "--configuration", swiftBuildConfiguration())
+
+    outputs.dir("${projectDir}/swift-java/.build/arm64-apple-macosx/${swiftBuildConfiguration()}")
+}
+
 def jextract = tasks.register("jextract", Exec) {
     description = "Generate Java wrappers for Swift CoreML library"
     onlyIf { isMacOS() }
@@ -229,16 +241,17 @@ tasks.named('test', Test) {
 
     // Skip tests by default - they require a CoreML model and have JaCoCo Java 24 compatibility issues
     // To run tests: ./gradlew :photon-apple:test -PrunAppleTests
-    onlyIf { isMacOS() && project.hasProperty('runAppleTests') }
+    onlyIf { isMacOS() }
 
     // Set java.library.path to include the Swift library directory, Swift runtime, and OpenCV natives
     // OpenCV natives are extracted to NativeMain (shared between main and test)
-    def swiftLibPath = "${projectDir}/.build/${swiftBuildConfiguration()}"
+    def swiftLibPath = "${projectDir}/.build/arm64-apple-macosx/${swiftBuildConfiguration()}"
+    def swiftJavaLibPath = "${projectDir}/swift-java/.build/arm64-apple-macosx/${swiftBuildConfiguration()}"
     def opencvLibPath = "${buildDir}/NativeMain/RuntimeLibs/osx/universal/shared"
-    systemProperty 'java.library.path', "${swiftLibPath}:${opencvLibPath}:/usr/lib/swift"
+    systemProperty 'java.library.path', "${swiftLibPath}:${swiftJavaLibPath}:${opencvLibPath}:/usr/lib/swift"
 
-    // Ensure Swift library is built before tests run
-    dependsOn 'jextract'
+    // Ensure Swift libraries (both photon-apple and swift-java) are built before tests run
+    dependsOn 'jextract', 'buildSwiftJavaNativeLibs'
 
     testLogging {
         events "failed"

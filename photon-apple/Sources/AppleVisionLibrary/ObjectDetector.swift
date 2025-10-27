@@ -100,6 +100,8 @@ public class ObjectDetector {
         boxThreshold: Double,
         nmsThreshold: Double
     ) -> DetectionResultArray {
+        let detectStart = CFAbsoluteTimeGetCurrent()
+
         // Ensure model is loaded
         guard ensureModelLoaded(), let vnModelAny = self.vnModel, let vnModel = vnModelAny as? VNCoreMLModel else {
             p("Model not loaded, returning empty results")
@@ -108,6 +110,7 @@ public class ObjectDetector {
 
         // Convert BGRA bytes to CVPixelBuffer (with copy for safety)
         // Java side converts all formats to BGRA before calling this method
+        let pixelBufferStart = CFAbsoluteTimeGetCurrent()
         guard let pixelBuffer = createBGRAPixelBuffer(
             from: imageData,
             width: width,
@@ -116,8 +119,11 @@ public class ObjectDetector {
             p("Failed to create CVPixelBuffer")
             return DetectionResultArray(results: [])
         }
+        let pixelBufferEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] CVPixelBuffer creation: %.3f ms", (pixelBufferEnd - pixelBufferStart) * 1000.0))
 
         // Create Vision request
+        let requestStart = CFAbsoluteTimeGetCurrent()
         let request = VNCoreMLRequest(model: vnModel) { [weak self] request, error in
             if let error = error {
                 p("Vision request failed: \(error)")
@@ -126,18 +132,27 @@ public class ObjectDetector {
 
         // Set confidence threshold
         request.imageCropAndScaleOption = .scaleFill
+        let requestEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] Vision request creation: %.3f ms", (requestEnd - requestStart) * 1000.0))
 
         // Perform detection
+        let handlerStart = CFAbsoluteTimeGetCurrent()
         let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+        let handlerEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] Handler creation: %.3f ms", (handlerEnd - handlerStart) * 1000.0))
 
+        let performStart = CFAbsoluteTimeGetCurrent()
         do {
             try handler.perform([request])
         } catch {
             p("Failed to perform detection: \(error)")
             return DetectionResultArray(results: [])
         }
+        let performEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] handler.perform() (CoreML inference): %.3f ms", (performEnd - performStart) * 1000.0))
 
         // Process results
+        let processStart = CFAbsoluteTimeGetCurrent()
         guard let observations = request.results as? [VNRecognizedObjectObservation] else {
             p("No results or unexpected result type")
             return DetectionResultArray(results: [])
@@ -150,16 +165,23 @@ public class ObjectDetector {
         }
 
         // Filter by confidence threshold
+        let filterStart = CFAbsoluteTimeGetCurrent()
         p("Applying confidence threshold: \(boxThreshold)")
         let filteredObservations = observations.filter { $0.confidence >= Float(boxThreshold) }
+        let filterEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] Confidence filtering: %.3f ms", (filterEnd - filterStart) * 1000.0))
         p("After confidence filtering: \(filteredObservations.count) observations")
 
         // Apply NMS if needed
+        let nmsStart = CFAbsoluteTimeGetCurrent()
         p("Applying NMS with IoU threshold: \(nmsThreshold)")
         let nmsResults = applyNMS(observations: filteredObservations, iouThreshold: nmsThreshold)
+        let nmsEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] NMS: %.3f ms", (nmsEnd - nmsStart) * 1000.0))
         p("After NMS: \(nmsResults.count) final detections")
 
         // Convert to DetectionResult array
+        let convertStart = CFAbsoluteTimeGetCurrent()
         let results = nmsResults.map { observation -> DetectionResult in
             let boundingBox = observation.boundingBox
 
@@ -180,6 +202,14 @@ public class ObjectDetector {
                 confidence: Double(observation.confidence)
             )
         }
+        let convertEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] Result conversion: %.3f ms", (convertEnd - convertStart) * 1000.0))
+
+        let processEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] Total post-processing: %.3f ms", (processEnd - processStart) * 1000.0))
+
+        let detectEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT] ===== TOTAL SWIFT DETECT: %.3f ms =====", (detectEnd - detectStart) * 1000.0))
 
         return DetectionResultArray(results: results)
     }
@@ -225,6 +255,8 @@ public class ObjectDetector {
         width: Int,
         height: Int
     ) -> CVPixelBuffer? {
+        let createStart = CFAbsoluteTimeGetCurrent()
+
         var pixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreate(
             kCFAllocatorDefault,
@@ -234,14 +266,19 @@ public class ObjectDetector {
             nil,
             &pixelBuffer
         )
+        let createEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT]   CVPixelBufferCreate: %.3f ms", (createEnd - createStart) * 1000.0))
 
         guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
             p("Failed to create CVPixelBuffer: \(status)")
             return nil
         }
 
+        let lockStart = CFAbsoluteTimeGetCurrent()
         CVPixelBufferLockBaseAddress(buffer, [])
         defer { CVPixelBufferUnlockBaseAddress(buffer, []) }
+        let lockEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT]   CVPixelBufferLockBaseAddress: %.3f ms", (lockEnd - lockStart) * 1000.0))
 
         guard let destData = CVPixelBufferGetBaseAddress(buffer) else {
             p("Failed to get CVPixelBuffer base address")
@@ -262,6 +299,7 @@ public class ObjectDetector {
         }
 
         // Direct copy of BGRA data row by row; print the first-row addresses to aid debugging
+        let memcpyStart = CFAbsoluteTimeGetCurrent()
         for row in 0..<height {
             let srcRowPtr = imageData.advanced(by: row * srcBytesPerRow)
             let dstRowPtr = destData.advanced(by: row * bytesPerRow)
@@ -271,6 +309,8 @@ public class ObjectDetector {
             // use memcpy (calls memmove underneath on some platforms)
             memcpy(dstRowPtr, srcRowPtr, srcBytesPerRow)
         }
+        let memcpyEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT]   memcpy loop (%d rows): %.3f ms", height, (memcpyEnd - memcpyStart) * 1000.0))
 
         return buffer
     }

@@ -226,8 +226,6 @@ The core architecture follows a modular pipeline design:
 - **Performance**: Optimized for ~100 FPS sequential frame processing
 - **BGRA conversion**: All images are converted to BGRA format in Java before passing to Swift
 - **No deprecated code**: ImageUtils contains only pixel format constants and helpers
-- **Tests skipped by default**: Use `-PrunAppleTests` to run photon-apple tests
-- **JaCoCo disabled**: Java 24 is not yet supported by JaCoCo 0.8.14
 
 ### Code Style
 

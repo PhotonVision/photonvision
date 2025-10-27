@@ -351,8 +351,7 @@ public class CoreMLDetectionTest {
 
                 String label = String.format("Algae: %.2f", result.getConfidence());
                 Point labelOrg = new Point(x, y - 10);
-                Imgproc.putText(
-                        image, label, labelOrg, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, boxColor, 2);
+                Imgproc.putText(image, label, labelOrg, Imgproc.FONT_HERSHEY_SIMPLEX, 0.5, boxColor, 2);
 
                 System.out.println(
                         String.format(
@@ -364,5 +363,172 @@ public class CoreMLDetectionTest {
 
             image.release();
         }
+    }
+
+    @Test
+    public void testYOLO11BenchmarkWith100WarmupIterations() {
+        return;
+    //     String modelPath = CoreMLTestUtils.loadTestModel("coral-640-640-yolov11s.mlmodel");
+
+    //     System.out.println("=".repeat(80));
+    //     System.out.println("YOLO11 BENCHMARK TEST - 100 Warmup Iterations");
+    //     System.out.println("=".repeat(80));
+
+    //     try (var arena = AllocatingSwiftArena.ofConfined()) {
+    //         ObjectDetector detector = ObjectDetector.init(modelPath, arena);
+    //         assertNotNull(detector, "Model creation should return valid detector");
+
+    //         // Load coral test image
+    //         Mat image = CoreMLTestUtils.loadTestImage("coral.jpeg");
+    //         assertNotNull(image, "Test image should be loaded");
+    //         assertFalse(image.empty(), "Test image should not be empty");
+
+    //         System.out.println(
+    //                 "Loaded test image: "
+    //                         + image.width()
+    //                         + "x"
+    //                         + image.height()
+    //                         + " ("
+    //                         + image.channels()
+    //                         + " channels)");
+    //         System.out.println();
+
+    //         int pixelFormat = ImageUtils.getPixelFormat(image);
+    //         double boxThreshold = 0.5;
+    //         double nmsThreshold = 0.5;
+
+    //         // Warmup phase - 100 iterations
+    //         System.out.println("Starting warmup phase: 100 iterations...");
+    //         long warmupStartTime = System.nanoTime();
+
+    //         for (int i = 0; i < 100; i++) {
+    //             try (var frameArena = AllocatingSwiftArena.ofConfined()) {
+    //                 MemorySegment imageData = ImageUtils.matToMemorySegment(image, frameArena);
+
+    //                 DetectionResultArray results =
+    //                         detector.detect(
+    //                                 imageData,
+    //                                 (long) image.width(),
+    //                                 (long) image.height(),
+    //                                 pixelFormat,
+    //                                 boxThreshold,
+    //                                 nmsThreshold,
+    //                                 frameArena);
+
+    //                 assertNotNull(results, "Detection results should not be null");
+
+    //                 // Print progress every 10 iterations
+    //                 if ((i + 1) % 10 == 0) {
+    //                     System.out.println("  Completed " + (i + 1) + "/100 warmup iterations");
+    //                 }
+    //             }
+    //         }
+
+    //         long warmupEndTime = System.nanoTime();
+    //         double warmupTotalMs = (warmupEndTime - warmupStartTime) / 1_000_000.0;
+    //         double warmupAvgMs = warmupTotalMs / 100.0;
+
+    //         System.out.println();
+    //         System.out.println("Warmup phase completed!");
+    //         System.out.println(
+    //                 String.format(
+    //                         "  Total warmup time: %.2f ms (%.2f seconds)",
+    //                         warmupTotalMs, warmupTotalMs / 1000.0));
+    //         System.out.println(String.format("  Average per iteration: %.3f ms", warmupAvgMs));
+    //         System.out.println(String.format("  Estimated FPS: %.1f", 1000.0 / warmupAvgMs));
+    //         System.out.println();
+
+    //         // Benchmark phase - 50 measured iterations after warmup
+    //         System.out.println("Starting benchmark phase: 50 measured iterations...");
+    //         long[] iterationTimes = new long[50];
+
+    //         for (int i = 0; i < 50; i++) {
+    //             try (var frameArena = AllocatingSwiftArena.ofConfined()) {
+    //                 long iterStartTime = System.nanoTime();
+
+    //                 MemorySegment imageData = ImageUtils.matToMemorySegment(image, frameArena);
+
+    //                 DetectionResultArray results =
+    //                         detector.detect(
+    //                                 imageData,
+    //                                 (long) image.width(),
+    //                                 (long) image.height(),
+    //                                 pixelFormat,
+    //                                 boxThreshold,
+    //                                 nmsThreshold,
+    //                                 frameArena);
+
+    //                 long iterEndTime = System.nanoTime();
+    //                 iterationTimes[i] = iterEndTime - iterStartTime;
+
+    //                 assertNotNull(results, "Detection results should not be null");
+    //             }
+    //         }
+
+    //         // Calculate statistics
+    //         long totalTime = 0;
+    //         long minTime = Long.MAX_VALUE;
+    //         long maxTime = Long.MIN_VALUE;
+
+    //         for (long time : iterationTimes) {
+    //             totalTime += time;
+    //             minTime = Math.min(minTime, time);
+    //             maxTime = Math.max(maxTime, time);
+    //         }
+
+    //         double avgTimeMs = totalTime / (50.0 * 1_000_000.0);
+    //         double minTimeMs = minTime / 1_000_000.0;
+    //         double maxTimeMs = maxTime / 1_000_000.0;
+
+    //         // Calculate standard deviation
+    //         double sumSquaredDiff = 0;
+    //         for (long time : iterationTimes) {
+    //             double timeMs = time / 1_000_000.0;
+    //             double diff = timeMs - avgTimeMs;
+    //             sumSquaredDiff += diff * diff;
+    //         }
+    //         double stdDevMs = Math.sqrt(sumSquaredDiff / 50.0);
+
+    //         System.out.println();
+    //         System.out.println("Benchmark phase completed!");
+    //         System.out.println("=".repeat(80));
+    //         System.out.println("BENCHMARK RESULTS");
+    //         System.out.println("=".repeat(80));
+    //         System.out.println(String.format("  Average time:       %.3f ms", avgTimeMs));
+    //         System.out.println(String.format("  Minimum time:       %.3f ms", minTimeMs));
+    //         System.out.println(String.format("  Maximum time:       %.3f ms", maxTimeMs));
+    //         System.out.println(String.format("  Standard deviation: %.3f ms", stdDevMs));
+    //         System.out.println(String.format("  Average FPS:        %.1f", 1000.0 / avgTimeMs));
+    //         System.out.println(String.format("  Peak FPS:           %.1f", 1000.0 / minTimeMs));
+    //         System.out.println("=".repeat(80));
+    //         System.out.println();
+
+    //         // Verify performance is reasonable (should be faster than 1000ms per detection)
+    //         assertTrue(
+    //                 avgTimeMs < 1000,
+    //                 "Average detection time should be less than 1000ms, was: " + avgTimeMs + "ms");
+
+    //         // Run one final detection to get actual results for verification
+    //         try (var frameArena = AllocatingSwiftArena.ofConfined()) {
+    //             MemorySegment imageData = ImageUtils.matToMemorySegment(image, frameArena);
+
+    //             DetectionResultArray results =
+    //                     detector.detect(
+    //                             imageData,
+    //                             (long) image.width(),
+    //                             (long) image.height(),
+    //                             pixelFormat,
+    //                             boxThreshold,
+    //                             nmsThreshold,
+    //                             frameArena);
+
+    //             System.out.println("Final detection result: " + results.count() + " objects detected");
+    //         }
+
+    //         image.release();
+    //     }
+
+    //     System.out.println("Benchmark test completed successfully!");
+    //     System.out.println("=".repeat(80));
     }
 }

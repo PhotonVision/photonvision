@@ -4,13 +4,14 @@ import java.lang.foreign.MemorySegment;
 import org.swift.swiftkit.ffm.AllocatingSwiftArena;
 
 /**
- * Small stable wrapper around the generated ObjectDetector to validate and log
- * buffer address/size and call arguments before invoking native code.
+ * Small stable wrapper around the generated ObjectDetector to validate and log buffer address/size
+ * and call arguments before invoking native code.
  */
 public final class ObjectDetectorSafe {
     private ObjectDetectorSafe() {}
 
-    public static DetectionResultArray detectChecked(ObjectDetector detector,
+    public static DetectionResultArray detectChecked(
+            ObjectDetector detector,
             MemorySegment imageData,
             long width,
             long height,
@@ -45,18 +46,36 @@ public final class ObjectDetectorSafe {
 
         // Log details to stderr to correlate with native crash reports.
         try {
-            System.err.println("[ObjectDetectorSafe] imageData.address=" + imageData.address() + " byteSize=" + bytesAvailable +
-                    " expected=" + expected + " width=" + width + " height=" + height + " pixelFormat=" + pixelFormat);
+            System.err.println(
+                    "[ObjectDetectorSafe] imageData.address="
+                            + imageData.address()
+                            + " byteSize="
+                            + bytesAvailable
+                            + " expected="
+                            + expected
+                            + " width="
+                            + width
+                            + " height="
+                            + height
+                            + " pixelFormat="
+                            + pixelFormat);
         } catch (Throwable t) {
             // address() may not be available on some platforms; still continue.
-            System.err.println("[ObjectDetectorSafe] imageData.byteSize=" + bytesAvailable + " (address() unavailable)");
+            System.err.println(
+                    "[ObjectDetectorSafe] imageData.byteSize=" + bytesAvailable + " (address() unavailable)");
         }
 
         if (bytesAvailable < expected) {
-            throw new IllegalArgumentException("imageData byteSize (" + bytesAvailable + ") is smaller than expected (" + expected + ")");
+            throw new IllegalArgumentException(
+                    "imageData byteSize ("
+                            + bytesAvailable
+                            + ") is smaller than expected ("
+                            + expected
+                            + ")");
         }
 
         // Forward to the generated detector
-        return detector.detect(imageData, width, height, pixelFormat, boxThreshold, nmsThreshold, frameArena);
+        return detector.detect(
+                imageData, width, height, pixelFormat, boxThreshold, nmsThreshold, frameArena);
     }
 }

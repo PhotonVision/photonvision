@@ -117,6 +117,8 @@ public class AppleObjectDetector implements ObjectDetector {
      */
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
+        long detectStartNs = System.nanoTime();
+
         if (released.get()) {
             logger.warn("Attempted to use released AppleObjectDetector");
             return List.of();
@@ -135,7 +137,12 @@ public class AppleObjectDetector implements ObjectDetector {
         // Create confined arena on current thread for this frame's data
         try (var frameArena = AllocatingSwiftArena.ofConfined()) {
             // Convert to BGRA (creates new Mat if conversion needed)
+            long bgraStartNs = System.nanoTime();
             Mat bgraMat = convertToBGRA(in);
+            long bgraEndNs = System.nanoTime();
+            System.err.printf(
+                    "[TIMING-JAVA] BGRA conversion: %.3f ms%n", (bgraEndNs - bgraStartNs) / 1_000_000.0);
+
             logger.debug(
                     String.format(
                             "Converted to BGRA: %dx%d (channels=%d)",
@@ -150,16 +157,34 @@ public class AppleObjectDetector implements ObjectDetector {
                 int totalBytes = Math.toIntExact(totalElements * elemSize);
 
                 // Allocate memory
+                long allocStartNs = System.nanoTime();
                 MemorySegment imageData = frameArena.allocate(totalBytes, 1);
+                long allocEndNs = System.nanoTime();
+                System.err.printf(
+                        "[TIMING-JAVA] Memory allocation: %.3f ms%n",
+                        (allocEndNs - allocStartNs) / 1_000_000.0);
 
                 // Copy data - handle both continuous and non-continuous Mats
+                long copyStartNs = System.nanoTime();
                 byte[] buffer;
                 if (bgraMat.isContinuous()) {
                     // Fast path: continuous memory, single copy
                     logger.debug("Mat is continuous");
+                    long matGetStartNs = System.nanoTime();
                     buffer = new byte[totalBytes];
                     bgraMat.get(0, 0, buffer);
-                    MemorySegment.copy(buffer, 0, imageData, java.lang.foreign.ValueLayout.JAVA_BYTE, 0, totalBytes);
+                    long matGetEndNs = System.nanoTime();
+                    System.err.printf(
+                            "[TIMING-JAVA] Mat.get() to byte[]: %.3f ms%n",
+                            (matGetEndNs - matGetStartNs) / 1_000_000.0);
+
+                    long memcpyStartNs = System.nanoTime();
+                    MemorySegment.copy(
+                            buffer, 0, imageData, java.lang.foreign.ValueLayout.JAVA_BYTE, 0, totalBytes);
+                    long memcpyEndNs = System.nanoTime();
+                    System.err.printf(
+                            "[TIMING-JAVA] MemorySegment.copy(): %.3f ms%n",
+                            (memcpyEndNs - memcpyStartNs) / 1_000_000.0);
                 } else {
                     // Slow path: non-continuous memory, copy row by row
                     logger.debug("Mat is non-continuous, copying row-by-row");
@@ -170,26 +195,47 @@ public class AppleObjectDetector implements ObjectDetector {
                     for (int r = 0; r < height; r++) {
                         int read = bgraMat.get(r, 0, rowBuf);
                         if (read != rowBytes) {
-                            logger.error(String.format("Unexpected row byte count: expected %d but got %d", rowBytes, read));
+                            logger.error(
+                                    String.format(
+                                            "Unexpected row byte count: expected %d but got %d", rowBytes, read));
                             return List.of();
                         }
                         System.arraycopy(rowBuf, 0, buffer, r * rowBytes, rowBytes);
                     }
 
-                    MemorySegment.copy(buffer, 0, imageData, java.lang.foreign.ValueLayout.JAVA_BYTE, 0, totalBytes);
+                    MemorySegment.copy(
+                            buffer, 0, imageData, java.lang.foreign.ValueLayout.JAVA_BYTE, 0, totalBytes);
                 }
+                long copyEndNs = System.nanoTime();
+                System.err.printf(
+                        "[TIMING-JAVA] Total data copy: %.3f ms%n", (copyEndNs - copyStartNs) / 1_000_000.0);
 
                 // Debug: log first few bytes to verify data is valid
                 if (buffer.length >= 16) {
-                    logger.debug(String.format("First 16 bytes: %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
-                        buffer[0] & 0xFF, buffer[1] & 0xFF, buffer[2] & 0xFF, buffer[3] & 0xFF,
-                        buffer[4] & 0xFF, buffer[5] & 0xFF, buffer[6] & 0xFF, buffer[7] & 0xFF,
-                        buffer[8] & 0xFF, buffer[9] & 0xFF, buffer[10] & 0xFF, buffer[11] & 0xFF,
-                        buffer[12] & 0xFF, buffer[13] & 0xFF, buffer[14] & 0xFF, buffer[15] & 0xFF));
+                    logger.debug(
+                            String.format(
+                                    "First 16 bytes: %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+                                    buffer[0] & 0xFF,
+                                    buffer[1] & 0xFF,
+                                    buffer[2] & 0xFF,
+                                    buffer[3] & 0xFF,
+                                    buffer[4] & 0xFF,
+                                    buffer[5] & 0xFF,
+                                    buffer[6] & 0xFF,
+                                    buffer[7] & 0xFF,
+                                    buffer[8] & 0xFF,
+                                    buffer[9] & 0xFF,
+                                    buffer[10] & 0xFF,
+                                    buffer[11] & 0xFF,
+                                    buffer[12] & 0xFF,
+                                    buffer[13] & 0xFF,
+                                    buffer[14] & 0xFF,
+                                    buffer[15] & 0xFF));
                 }
 
                 logger.debug(String.format("Calling Swift detector with %dx%d BGRA image", width, height));
 
+                long swiftCallStartNs = System.nanoTime();
                 DetectionResultArray results =
                         swiftDetector.detect(
                                 imageData,
@@ -199,9 +245,25 @@ public class AppleObjectDetector implements ObjectDetector {
                                 boxThresh,
                                 nmsThresh,
                                 frameArena);
+                long swiftCallEndNs = System.nanoTime();
+                System.err.printf(
+                        "[TIMING-JAVA] Swift detect() call (total): %.3f ms%n",
+                        (swiftCallEndNs - swiftCallStartNs) / 1_000_000.0);
 
                 logger.debug(String.format("Swift detector returned %d results", results.count()));
-                List<NeuralNetworkPipeResult> detections = convertResults(results, width, height, frameArena);
+
+                long convertStartNs = System.nanoTime();
+                List<NeuralNetworkPipeResult> detections =
+                        convertResults(results, width, height, frameArena);
+                long convertEndNs = System.nanoTime();
+                System.err.printf(
+                        "[TIMING-JAVA] Result conversion: %.3f ms%n",
+                        (convertEndNs - convertStartNs) / 1_000_000.0);
+
+                long detectEndNs = System.nanoTime();
+                System.err.printf(
+                        "[TIMING-JAVA] ===== TOTAL JAVA DETECT: %.3f ms =====%n",
+                        (detectEndNs - detectStartNs) / 1_000_000.0);
 
                 logger.info(
                         String.format(
@@ -264,7 +326,10 @@ public class AppleObjectDetector implements ObjectDetector {
      * @return List of PhotonVision detection results
      */
     private List<NeuralNetworkPipeResult> convertResults(
-            DetectionResultArray resultsArray, int imageWidth, int imageHeight, AllocatingSwiftArena frameArena) {
+            DetectionResultArray resultsArray,
+            int imageWidth,
+            int imageHeight,
+            AllocatingSwiftArena frameArena) {
         List<NeuralNetworkPipeResult> results = new ArrayList<>();
 
         long count = resultsArray.count();
@@ -286,13 +351,7 @@ public class AppleObjectDetector implements ObjectDetector {
             logger.debug(
                     String.format(
                             "Detection %d: class=%d, confidence=%.3f, bbox=[x=%.1f, y=%.1f, w=%.1f, h=%.1f]",
-                            i,
-                            detection.getClassId(),
-                            detection.getConfidence(),
-                            x,
-                            y,
-                            width,
-                            height));
+                            i, detection.getClassId(), detection.getConfidence(), x, y, width, height));
             results.add(result);
         }
 
