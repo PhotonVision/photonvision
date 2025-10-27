@@ -41,6 +41,7 @@ public class NetworkingCommands {
         autoconnect yes
         ipv4.method auto
         ipv6.method disabled
+        ipv4.link-local fallback
         """.replaceAll("[\\n]", " ");
 }
 //spotless:on
