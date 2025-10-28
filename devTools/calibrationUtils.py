@@ -1,10 +1,8 @@
 import argparse
-import base64
 import json
 import os
 from dataclasses import dataclass
 
-import cv2
 import mrcal
 import numpy as np
 from wpimath.geometry import Quaternion as _Quat
@@ -12,8 +10,8 @@ from wpimath.geometry import Quaternion as _Quat
 
 @dataclass
 class Size:
-    width: int
-    height: int
+    width: float
+    height: float
 
 
 @dataclass
@@ -22,14 +20,6 @@ class JsonMatOfDoubles:
     cols: int
     type: int
     data: list[float]
-
-
-@dataclass
-class JsonMat:
-    rows: int
-    cols: int
-    type: int
-    data: str  # Base64-encoded PNG data
 
 
 @dataclass
@@ -84,8 +74,7 @@ class Observation:
     # If we should use this observation when re-calculating camera calibration
     includeObservationInCalibration: bool
     snapshotName: str
-    # The actual image the snapshot is from
-    snapshotData: JsonMat
+    snapshotDataLocation: str
 
 
 @dataclass
@@ -97,6 +86,7 @@ class CameraCalibration:
     calobjectWarp: list[float]
     calobjectSize: Size
     calobjectSpacing: float
+    lensmodel: str
 
 
 def __convert_cal_to_mrcal_cameramodel(
@@ -127,6 +117,13 @@ def __convert_cal_to_mrcal_cameramodel(
         ]
         return np.concatenate((r, t))
 
+    imagersize = (int(cal.resolution.width), int(cal.resolution.height))
+
+    def fill_missing_corners(observations: list[list[float]], width: int, height: int):
+        num_corners = width * height
+        observations += [[0, 0, -1] for x in range(num_corners - len(observations))]
+        return observations
+
     imagersize = (cal.resolution.width, cal.resolution.height)
 
     # Always weight=1 for Photon data
@@ -135,8 +132,12 @@ def __convert_cal_to_mrcal_cameramodel(
         [
             # note that we expect row-major observations here. I think this holds
             np.array(
-                list(map(lambda it: [it.x, it.y, WEIGHT], o.locationInImageSpace))
-            ).reshape((cal.calobjectSize.width, cal.calobjectSize.height, 3))
+                fill_missing_corners(
+                    list(map(lambda it: [it.x, it.y, WEIGHT], o.locationInImageSpace)),
+                    int(cal.calobjectSize.width),
+                    int(cal.calobjectSize.height),
+                )
+            ).reshape((int(cal.calobjectSize.width), int(cal.calobjectSize.height), 3))
             for o in cal.observations
         ]
     )
@@ -205,14 +206,6 @@ def convert_photon_to_mrcal(photon_cal_json_path: str, output_folder: str):
         # Create output_folder if not exists
         if not os.path.exists(output_folder):
             os.makedirs(output_folder)
-
-        # Decode each image and save it as a png
-        for obs in camera_cal_data.observations:
-            image = obs.snapshotData.data
-            decoded_data = base64.b64decode(image)
-            np_data = np.frombuffer(decoded_data, np.uint8)
-            img = cv2.imdecode(np_data, cv2.IMREAD_UNCHANGED)
-            cv2.imwrite(f"{output_folder}/{obs.snapshotName}", img)
 
         # And create a VNL file for use with mrcal
         with open(f"{output_folder}/corners.vnl", "w+") as vnl_file:

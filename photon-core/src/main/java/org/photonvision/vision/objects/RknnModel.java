@@ -22,7 +22,6 @@ import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
-import org.photonvision.jni.RknnObjectDetector;
 
 public class RknnModel implements Model {
     public final File modelFile;
@@ -81,5 +80,9 @@ public class RknnModel implements Model {
     public ObjectDetector load() {
         return new RknnObjectDetector(
                 this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
+    }
+
+    public String toString() {
+        return "RknnModel{" + "modelFile=" + modelFile + ", properties=" + properties + '}';
     }
 }

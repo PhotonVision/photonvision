@@ -18,7 +18,7 @@
 package org.photonvision.server;
 
 import io.javalin.Javalin;
-import io.javalin.plugin.bundled.CorsPluginConfig;
+import io.javalin.plugin.bundled.CorsPlugin;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.StringJoiner;
@@ -60,10 +60,14 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            javalinConfig.plugins.enableCors(
-                                    corsContainer -> {
-                                        corsContainer.add(CorsPluginConfig::anyHost);
-                                    });
+                            javalinConfig.registerPlugin(
+                                    new CorsPlugin(
+                                            cors -> {
+                                                cors.addRule(
+                                                        it -> {
+                                                            it.anyHost();
+                                                        });
+                                            }));
 
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {

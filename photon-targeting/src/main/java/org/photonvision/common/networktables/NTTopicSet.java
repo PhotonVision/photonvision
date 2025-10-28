@@ -54,6 +54,7 @@ public class NTTopicSet {
     public BooleanSubscriber driverModeSubscriber;
 
     public DoublePublisher latencyMillisEntry;
+    public DoublePublisher fpsEntry;
     public BooleanPublisher hasTargetEntry;
     public DoublePublisher targetPitchEntry;
     public DoublePublisher targetYawEntry;
@@ -100,6 +101,7 @@ public class NTTopicSet {
         driverModeSubscriber.getTopic().publish().setDefault(false);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
+        fpsEntry = subTable.getDoubleTopic("fps").publish();
         hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
 
         targetPitchEntry = subTable.getDoubleTopic("targetPitch").publish();
@@ -128,6 +130,7 @@ public class NTTopicSet {
         if (driverModeSubscriber != null) driverModeSubscriber.close();
 
         if (latencyMillisEntry != null) latencyMillisEntry.close();
+        if (fpsEntry != null) fpsEntry.close();
         if (hasTargetEntry != null) hasTargetEntry.close();
         if (targetPitchEntry != null) targetPitchEntry.close();
         if (targetAreaEntry != null) targetAreaEntry.close();

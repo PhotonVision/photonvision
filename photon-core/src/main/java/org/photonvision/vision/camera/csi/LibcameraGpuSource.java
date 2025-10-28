@@ -100,7 +100,7 @@ public class LibcameraGpuSource extends VisionSource {
 
     @Override
     public boolean hasLEDs() {
-        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins().size() > 0);
+        return (ConfigManager.getInstance().getConfig().getHardwareConfig().ledPins.size() > 0);
     }
 
     @Override

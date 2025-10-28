@@ -4,7 +4,8 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useRoute } from "vue-router";
-import { useDisplay } from "vuetify";
+import { useDisplay, useTheme } from "vuetify";
+import { toggleTheme } from "@/lib/ThemeManager";
 
 const compact = computed<boolean>({
   get: () => {
@@ -16,17 +17,19 @@ const compact = computed<boolean>({
 });
 const { mdAndUp } = useDisplay();
 
+const theme = useTheme();
+
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </script>
 
 <template>
-  <v-navigation-drawer permanent :rail="renderCompact" color="primary">
-    <v-list nav>
+  <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
+    <v-list nav color="primary">
       <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
       <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
         <template #prepend>
           <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
-          <img v-else class="logo" src="@/assets/images/logoSmall.svg" alt="small logo" />
+          <img v-else class="logo" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
         </template>
       </v-list-item>
 
@@ -67,20 +70,35 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
           :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
           @click="() => (compact = !compact)"
         >
-          <v-list-item-title>Compact Mode</v-list-item-title>
+          <v-list-item-title>Compact</v-list-item-title>
         </v-list-item>
         <v-list-item
-          :prepend-icon="
-            useSettingsStore().network.runNTServer
-              ? 'mdi-server'
-              : useStateStore().ntConnectionStatus.connected
-                ? 'mdi-robot'
-                : 'mdi-robot-off'
-          "
+          link
+          :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'"
+          @click="() => toggleTheme(theme)"
         >
+          <v-list-item-title>Theme</v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="
+                useSettingsStore().network.runNTServer
+                  ? 'mdi-server'
+                  : useStateStore().ntConnectionStatus.connected
+                    ? 'mdi-robot'
+                    : 'mdi-robot-off'
+              "
+              :color="
+                useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
+                  ? '#00ff00'
+                  : '#ff0000'
+              "
+            />
+          </template>
           <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
             NetworkTables server running for
-            <span class="text-accent">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
+            <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
           </v-list-item-title>
           <v-list-item-title
             v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
@@ -89,9 +107,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
             style="flex-direction: column; display: flex"
           >
             NetworkTables Server Connected!
-            <span class="text-accent">
-              {{ useStateStore().ntConnectionStatus.address }}
-            </span>
+            <span class="text-primary"> {{ useStateStore().ntConnectionStatus.address }} </span>
           </v-list-item-title>
           <v-list-item-title
             v-else
@@ -102,10 +118,15 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
             Not connected to NetworkTables Server!
           </v-list-item-title>
         </v-list-item>
-
-        <v-list-item :prepend-icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'">
+        <v-list-item>
+          <template #prepend>
+            <v-icon
+              :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
+              :color="useStateStore().backendConnected ? '#00ff00' : '#ff0000'"
+            />
+          </template>
           <v-list-item-title v-show="!renderCompact" class="text-wrap">
-            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend" }}
+            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
           </v-list-item-title>
         </v-list-item>
       </v-list>
@@ -114,6 +135,14 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 </template>
 
 <style scoped>
+.v-navigation-drawer {
+  border: none;
+}
+
+.v-navigation-drawer--rail {
+  border: none;
+}
+
 .v-list-item-title {
   font-size: 1rem !important;
   line-height: 1.2rem !important;

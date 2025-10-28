@@ -21,6 +21,29 @@ project = "PhotonVision"
 copyright = "2024, PhotonVision"
 author = "Banks Troutman, Matt Morley"
 
+# -- Git configuration -----------------------------------------------------
+import subprocess
+
+try:
+    # Use closest tag
+    git_tag_ref = (
+        subprocess.check_output(
+            [
+                "git",
+                "describe",
+                "--tags",
+            ],
+            stderr=subprocess.DEVNULL,
+        )
+        .strip()
+        .decode()
+    )
+except subprocess.CalledProcessError:
+    # Couldn't find closest tag, fallback to main
+    git_tag_ref = "main"
+
+myst_substitutions = {"git_tag_ref": git_tag_ref}
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -30,7 +53,6 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.todo",
-    "sphinx_tabs.tabs",
     "notfound.extension",
     "sphinxext.remoteliteralinclude",
     "sphinxext.opengraph",
@@ -66,6 +88,10 @@ html_title = "PhotonVision Docs"
 # a list of builtin themes.
 html_theme = "furo"
 html_favicon = "assets/RoundLogo.png"
+
+# Specify canonical root
+# This tells search engines that this domain is preferred
+html_baseurl = "https://docs.photonvision.org/en/latest/"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -155,4 +181,4 @@ if token:
     linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
-myst_enable_extensions = ["colon_fence"]
+myst_enable_extensions = ["colon_fence", "substitution"]

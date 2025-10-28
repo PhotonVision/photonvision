@@ -12,7 +12,11 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 22.15.0 is required. To install Node JS follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+ The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+
+**pnpm:**
+
+ [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
 ## Compiling Instructions
 
@@ -36,27 +40,7 @@ or alternatively download the source code from GitHub and extract the zip:
 In the photon-client directory:
 
 ```bash
-npm install
-```
-
-### Build and Copy UI to Java Source
-
-In the root directory:
-
-```{eval-rst}
-.. tab-set::
-
-   .. tab-item:: Linux
-
-      ``./gradlew buildAndCopyUI``
-
-   .. tab-item:: macOS
-
-      ``./gradlew buildAndCopyUI``
-
-   .. tab-item:: Windows (cmd)
-
-      ``gradlew buildAndCopyUI``
+pnpm install
 ```
 
 ### Using hot reload on the UI
@@ -64,7 +48,7 @@ In the root directory:
 In the photon-client directory:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
@@ -77,14 +61,17 @@ To compile and run the project, issue the following command in the root director
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew run``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew run``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew run``
 ```
@@ -95,21 +82,24 @@ Running the following command under the root directory will build the jar under 
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew shadowJar``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew shadowJar``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew shadowJar``
 ```
 
 ### Build and Run PhotonVision on a Raspberry Pi Coprocessor
 
-As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor.
+As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor. It uses [deploy-utils](https://github.com/wpilibsuite/deploy-utils/blob/main/README.md), so it works very similarly to deploys on robot projects.
 
 An architecture override is required to specify the deploy target's architecture.
 
@@ -117,18 +107,21 @@ An architecture override is required to specify the deploy target's architecture
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew clean``
 
       ``./gradlew deploy -PArchOverride=linuxarm64``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew clean``
 
       ``./gradlew deploy -PArchOverride=linuxarm64``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew clean``
 
@@ -147,14 +140,17 @@ The photonlib source can be published to your local maven repository after build
 .. tab-set::
 
    .. tab-item:: Linux
+      :sync: linux
 
       ``./gradlew publishToMavenLocal``
 
    .. tab-item:: macOS
+      :sync: macos
 
       ``./gradlew publishToMavenLocal``
 
    .. tab-item:: Windows (cmd)
+      :sync: windows
 
       ``gradlew publishToMavenLocal``
 ```
@@ -197,7 +193,7 @@ Similarly, a local instance of PhotonVision can be debugged in the same way usin
 
 Set up a VSCode configuration in {code}`launch.json`
 
-```
+```json
 {
    // Use IntelliSense to learn about possible attributes.
    // Hover to view descriptions of existing attributes.
@@ -279,3 +275,9 @@ Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from 
 MacOS builds are not published to releases as MacOS is not an officially
 supported platform. However, MacOS builds are still available from the MacOS
 build action, which can be found [here](https://github.com/PhotonVision/photonvision/actions/workflows/build.yml).
+
+#### Forcing Object Detection in the UI
+
+In order to force the Object Detection interface to be visible, it's necessary to hardcode the platform that `Platform.java` returns. This can be done by changing the function that detects the RK3588S/QCS6490 platform to always return true, and changing the `getCurrentPlatform()` function to always return the RK3588S/QCS6490 architecture.
+Alternatively, it's possible to modify the frontend code by changing all instances of `useSettingsStore().general.supportedBackends.length > 0` to `true`, which will force the card to render.
+Make sure to revert these changes before submitting a Pull Request.

@@ -7,6 +7,10 @@ import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
+import { useTheme } from "vuetify";
+import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
+
+const theme = useTheme();
 
 // Copy object to remove reference to store
 const tempSettingsStruct = ref<ConfigurableNetworkSettings>(Object.assign({}, useSettingsStore().network));
@@ -15,6 +19,19 @@ const resetTempSettingsStruct = () => {
 };
 
 const settingsValid = ref(true);
+
+const showThemeConfig = ref(false);
+const backgroundColor = ref("");
+const primaryColor = ref("");
+const secondaryColor = ref("");
+const surfaceColor = ref("");
+
+const loadCurrentColors = () => {
+  backgroundColor.value = getThemeColor(theme, "background");
+  primaryColor.value = getThemeColor(theme, "primary");
+  secondaryColor.value = getThemeColor(theme, "secondary");
+  surfaceColor.value = getThemeColor(theme, "surface");
+};
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-99999 (5 digits)
@@ -83,16 +100,10 @@ const saveGeneralSettings = () => {
   useSettingsStore()
     .updateGeneralSettings(payload)
     .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
+      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
 
       // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = {
-        ...useSettingsStore().network,
-        ...Object.assign({}, tempSettingsStruct.value)
-      };
+      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
     })
     .catch((error) => {
       resetTempSettingsStruct();
@@ -141,11 +152,24 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card class="mb-3" style="background-color: #006492">
-    <v-card-title>Global Settings</v-card-title>
+  <v-card class="mb-3 rounded-12" color="surface">
+    <v-card-title style="display: flex; justify-content: space-between">
+      <span>Global Settings</span>
+      <v-btn
+        variant="text"
+        @click="
+          () => {
+            loadCurrentColors();
+            showThemeConfig = true;
+          }
+        "
+      >
+        <v-icon size="x-large">mdi-palette-outline</v-icon>
+        Theme
+      </v-btn>
+    </v-card-title>
     <div class="pa-5 pt-0">
-      <v-divider class="pb-2" />
-      <v-card-title class="pl-0 pt-3 pb-10px">Networking</v-card-title>
+      <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
       <v-form ref="form" v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -159,16 +183,15 @@ watchEffect(() => {
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
-        <v-banner
+        <v-alert
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
-          rounded
-          bg-color="error"
-          text-color="white"
-          style="margin: 10px 0"
+          class="pt-3 pb-3"
+          color="error"
+          density="compact"
+          text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
           icon="mdi-alert-circle-outline"
-        >
-          The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect.
-        </v-banner>
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.connectionType"
@@ -207,7 +230,6 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-divider class="mt-10px pb-2" />
         <v-card-title class="pl-0 pt-3 pb-10px">Advanced Networking</v-card-title>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -230,36 +252,34 @@ watchEffect(() => {
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
-        <v-banner
+        <v-alert
           v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
             useSettingsStore().network.canManage &&
             !useSettingsStore().network.networkingDisabled
           "
-          rounded
-          bg-color="error"
-          text-color="white"
-          icon="mdi-information-outline"
-        >
-          Photon cannot detect any wired connections! Please send program logs to the developers for help.
-        </v-banner>
+          class="pt-3 pb-3"
+          color="error"
+          density="compact"
+          text="Cannot detect any wired connections! Send program logs to the developers for help."
+          icon="mdi-alert-circle-outline"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
           label="Run NetworkTables Server (Debugging Only)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           :label-cols="4"
         />
-        <v-banner
+        <v-alert
           v-if="tempSettingsStruct.runNTServer"
-          rounded
-          bg-color="error"
-          text-color="white"
+          color="buttonActive"
+          density="compact"
+          text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           icon="mdi-information-outline"
-        >
-          This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
-        </v-banner>
-        <v-divider class="mt-10px pb-2" />
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
         <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
@@ -267,21 +287,19 @@ watchEffect(() => {
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
           :label-cols="4"
         />
-        <v-banner
+        <v-alert
           v-if="tempSettingsStruct.shouldPublishProto"
-          rounded
-          bg-color="error"
-          text-color="white"
+          color="buttonActive"
+          density="compact"
+          text="This mode is intended for debugging and may reduce performance; it should be off for field use."
           icon="mdi-information-outline"
-        >
-          This mode is intended for debugging; it should be off for field use. You may notice a performance hit by using
-          this mode.
-        </v-banner>
-        <v-divider class="mt-10px pb-5" />
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        />
       </v-form>
       <v-btn
-        color="accent"
-        :variant="!settingsValid || !settingsHaveChanged() ? 'tonal' : 'elevated'"
+        color="primary"
+        class="mt-3"
+        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
         style="color: black; width: 100%"
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
@@ -289,14 +307,89 @@ watchEffect(() => {
         Save
       </v-btn>
     </div>
+    <v-dialog v-model="showThemeConfig" width="800" dark>
+      <v-card color="surface" flat>
+        <v-card-title class="text-center">Theme Configuration</v-card-title>
+        <v-card-text class="pt-0 pb-10px">
+          <v-row>
+            <v-col class="text-center">
+              Background
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                v-model:model-value="backgroundColor"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
+              ></v-color-picker>
+            </v-col>
+            <v-col class="text-center">
+              Surface
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                v-model:model-value="surfaceColor"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
+              ></v-color-picker>
+            </v-col>
+          </v-row>
+          <v-row>
+            <v-col class="text-center">
+              Primary
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                v-model:model-value="primaryColor"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
+              ></v-color-picker>
+            </v-col>
+            <v-col class="text-center">
+              Secondary
+              <v-color-picker
+                class="ma-auto pt-3"
+                elevation="0"
+                mode="hex"
+                :modes="['hex']"
+                v-model:model-value="secondaryColor"
+                v-on:update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
+              ></v-color-picker>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions class="pa-5 pt-0">
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="buttonPassive"
+            class="text-black"
+            @click="showThemeConfig = false"
+          >
+            Close
+          </v-btn>
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="buttonActive"
+            class="text-black"
+            @click="
+              () => {
+                resetTheme(theme);
+                loadCurrentColors();
+              }
+            "
+          >
+            Reset Default
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-card>
 </template>
 
 <style>
 .mt-10px {
   margin-top: 10px !important;
-}
-.v-banner__wrapper {
-  padding: 6px !important;
 }
 </style>

@@ -1,0 +1,15 @@
+"backend":
+  - changed-files:
+      - any-glob-to-any-file: [photon-core/**, photon-server/**]
+"documentation":
+  - changed-files:
+      - any-glob-to-any-file: [docs/**, photon-docs/**]
+"frontend":
+  - changed-files:
+      - any-glob-to-any-file: photon-client/**
+"photonlib":
+  - changed-files:
+      - any-glob-to-any-file: photon-lib*/**
+"website":
+  - changed-files:
+      - any-glob-to-any-file: website/**

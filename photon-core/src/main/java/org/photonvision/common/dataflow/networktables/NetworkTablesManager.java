@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -69,6 +70,8 @@ public class NetworkTablesManager {
     // Creating the alert up here since it should be persistent
     private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
 
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
     private String currentMacAddress;
@@ -94,6 +97,7 @@ public class NetworkTablesManager {
 
         // This should start as false, since we don't know if there's a conflict yet
         conflictAlert.set(false);
+        mismatchAlert.set(false);
 
         // Get the UI state in sync with the backend. NT should fire a callback when it
         // first connects to the robot
@@ -112,6 +116,14 @@ public class NetworkTablesManager {
     public static NetworkTablesManager getInstance() {
         if (INSTANCE == null) INSTANCE = new NetworkTablesManager();
         return INSTANCE;
+    }
+
+    public void setMismatchAlert(boolean on, String message) {
+        if (mismatchAlert != null) {
+            mismatchAlert.set(on);
+            mismatchAlert.setText(message);
+            SmartDashboard.updateValues();
+        }
     }
 
     private void logNtMessage(NetworkTableEvent event) {
@@ -300,20 +312,21 @@ public class NetworkTablesManager {
             }
         }
 
-        // Publish the conflict status
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
-
-        conflictAlert.setText(
-                conflictingHostname
-                        ? "Hostname conflict detected for " + hostname + "!"
-                        : ""
-                                + (conflictingCameras.isEmpty()
-                                        ? ""
-                                        : " Camera name conflict detected: " + conflictingCameras.toString() + "!"));
+        if (conflictingHostname != this.conflictingHostname
+                || !conflictingCameras.toString().equals(this.conflictingCameras)) {
+            // Only publish the conflict status when it's changed to prevent the settings cards from being
+            // forcibly reset
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+        }
+        if (conflictingHostname) {
+            conflictAlert.setText("Hostname conflict detected for " + hostname + "!");
+        } else if (!conflictingCameras.isEmpty()) {
+            conflictAlert.setText("Camera name conflict detected: " + conflictingCameras + "!");
+        }
         conflictAlert.set(conflictingHostname || !conflictingCameras.isEmpty());
         SmartDashboard.updateValues();
         this.conflictingHostname = conflictingHostname;
@@ -324,7 +337,7 @@ public class NetworkTablesManager {
         if (config.runNTServer) {
             setServerMode();
         } else {
-            setClientMode(config.ntServerAddress);
+            setClientMode(config);
         }
 
         m_timeSync.setConfig(config);
@@ -336,17 +349,20 @@ public class NetworkTablesManager {
         return m_timeSync.getOffset();
     }
 
-    private void setClientMode(String ntServerAddress) {
+    private void setClientMode(NetworkConfig config) {
         ntInstance.stopServer();
-        ntInstance.startClient4("photonvision");
+        ntInstance.stopClient();
+        String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
+        logger.debug("Starting NT Client with hostname: " + hostname);
+        ntInstance.startClient4(hostname);
         try {
-            int t = Integer.parseInt(ntServerAddress);
+            int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
             if (!m_isRetryingConnection)
-                logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
-            ntInstance.setServer(ntServerAddress);
+                logger.info("Starting NT Client, server IP is \"" + config.ntServerAddress + "\"");
+            ntInstance.setServer(config.ntServerAddress);
         }
         ntInstance.startDSClient();
         broadcastVersion();

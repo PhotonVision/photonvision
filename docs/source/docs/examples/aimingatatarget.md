@@ -19,8 +19,10 @@ In this example, while the operator holds a button down, the robot will turn tow
 
 ```{eval-rst}
 .. tab-set::
+    :sync-group: code
 
     .. tab-item:: Java
+       :sync: java
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
          :language: java
@@ -29,6 +31,7 @@ In this example, while the operator holds a button down, the robot will turn tow
          :lineno-start: 77
 
     .. tab-item:: C++ (Header)
+       :sync: c++
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
          :language: c++
@@ -37,6 +40,7 @@ In this example, while the operator holds a button down, the robot will turn tow
          :lineno-start: 25
 
     .. tab-item:: C++ (Source)
+       :sync: c++
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp
          :language: c++
@@ -45,6 +49,7 @@ In this example, while the operator holds a button down, the robot will turn tow
          :lineno-start: 56
 
     .. tab-item:: Python
+       :sync: python
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/aimattarget/robot.py
          :language: python

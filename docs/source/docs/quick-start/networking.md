@@ -75,15 +75,15 @@ If you would like to access your Ethernet-connected vision device from a compute
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: Java
+    .. code-block:: java
 
         PortForwarder.add(5800, "photonvision.local", 5800);
 
-    .. code-block:: C++
+    .. code-block:: c++
 
         wpi::PortForwarder::GetInstance().Add(5800, "photonvision.local", 5800);
 
-    .. code-block:: Python
+    .. code-block:: python
 
         # Coming Soon!
 ```
@@ -99,3 +99,7 @@ The camera streams start at 1181 with two ports for each camera (ex. 1181 and 11
 :::{warning}
 If your camera stream isn't sent to the same port as it's originally found on, its stream will not be visible in the UI.
 :::
+
+## SSH Access
+
+For advanced users, SSH access is available for coprocessors running PhotonVision. This allows you to perform advanced configurations and troubleshooting. The default credentials are: `photon:vision` for all devices using an image of `v2026.0.3` or later. The legacy credentials of `pi:raspberry` will still work, but it's recommended to switch to the new credentials as the old ones will be deprecated in a future release.

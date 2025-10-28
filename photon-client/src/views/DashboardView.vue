@@ -7,6 +7,10 @@ import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -51,6 +55,17 @@ const arducamWarningShown = computed<boolean>(() => {
   );
 });
 
+const cameraMismatchWarningShown = computed<boolean>(() => {
+  return (
+    Object.values(useCameraSettingsStore().cameras)
+      // Ignore placeholder camera
+      .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+      .some((camera) => {
+        return camera.mismatch;
+      })
+  );
+});
+
 const conflictingHostnameShown = computed<boolean>(() => {
   return useSettingsStore().general.conflictingHostname;
 });
@@ -64,44 +79,56 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <template>
   <v-container class="pa-3" fluid>
-    <v-banner
+    <v-alert
       v-if="arducamWarningShown"
-      rounded
-      bg-color="error"
-      color="error"
-      dark
       class="mb-3"
+      color="error"
+      density="compact"
       icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
     >
-      <span
-        >Arducam Camera Detected! Please configure the camera model in the <a href="#/cameras">Cameras tab</a>!
+      <span>
+        Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
       </span>
-    </v-banner>
-    <v-banner
+    </v-alert>
+    <v-alert
       v-if="conflictingHostnameShown"
-      rounded
-      bg-color="error"
-      color="error"
-      dark
       class="mb-3"
+      color="error"
+      density="compact"
       icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
     >
-      <span
-        >Conflicting Hostname Detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      <span>
+        Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
-    </v-banner>
-    <v-banner
+    </v-alert>
+    <v-alert
       v-if="conflictingCameraShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span
+        >Conflicting camera name(s) detected! Please change the name(s) of
+        {{ useSettingsStore().general.conflictingCameras }}!
+      </span>
+    </v-alert>
+    <v-banner
+      v-if="cameraMismatchWarningShown"
+      v-model="cameraMismatchWarningShown"
       rounded
-      bg-color="error"
       color="error"
       dark
       class="mb-3"
       icon="mdi-alert-circle-outline"
     >
       <span
-        >Conflicting Camera Name(s) Detected! Please change the name(s) of
-        {{ useSettingsStore().general.conflictingCameras }}!
+        >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
+        activated.
       </span>
     </v-banner>
     <v-row no-gutters>
@@ -122,11 +149,11 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       max-width="800"
       dark
     >
-      <v-card flat color="primary">
-        <v-card-title>Setup some cameras to get started!</v-card-title>
+      <v-card flat color="surface">
+        <v-card-title>Set up some cameras to get started!</v-card-title>
         <v-card-text class="pt-0">
-          No cameras activated - head to the <router-link to="/cameraConfigs">Camera matching tab</router-link> to set
-          some up!
+          No cameras activated - head to the
+          <router-link to="/cameraConfigs">camera matching tab</router-link> to set some up!
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -135,23 +162,20 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <style scoped>
 a:link {
-  color: #ffd843;
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }
 a:visited {
-  color: #ffd843;
+  color: rgb(var(--v-theme-buttonActive));
   background-color: transparent;
   text-decoration: none;
 }
 a:hover {
-  color: pink;
   background-color: transparent;
   text-decoration: underline;
 }
-
 a:active {
-  color: yellow;
   background-color: transparent;
   text-decoration: none;
 }

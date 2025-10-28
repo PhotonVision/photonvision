@@ -38,8 +38,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.RknnDetectorJNI;
+import org.photonvision.jni.RubikDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
@@ -204,7 +205,7 @@ public class Main {
         logger.info("WPI JNI libraries loaded.");
 
         try {
-            boolean success = PhotonTargetingJniLoader.load();
+            boolean success = LibraryLoader.loadTargeting();
 
             if (!success) {
                 logger.error("Failed to load native libraries! Giving up :(");
@@ -231,11 +232,30 @@ public class Main {
         try {
             if (Platform.isRK3588()) {
                 RknnDetectorJNI.forceLoad();
+                if (RknnDetectorJNI.getInstance().isLoaded()) {
+                    logger.info("RknnDetectorJNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load RknnDetectorJNI!");
+                }
             } else {
                 logger.error("Platform does not support RKNN based machine learning!");
             }
         } catch (IOException e) {
             logger.error("Failed to load rknn-JNI!", e);
+        }
+        try {
+            if (Platform.isQCS6490()) {
+                RubikDetectorJNI.forceLoad();
+                if (RubikDetectorJNI.getInstance().isLoaded()) {
+                    logger.info("RubikDetectorJNI loaded successfully.");
+                } else {
+                    logger.error("Failed to load RubikDetectorJNI!");
+                }
+            } else {
+                logger.error("Platform does not support Rubik based machine learning!");
+            }
+        } catch (IOException e) {
+            logger.error("Failed to load rubik-JNI!", e);
         }
         try {
             MrCalJNILoader.forceLoad();

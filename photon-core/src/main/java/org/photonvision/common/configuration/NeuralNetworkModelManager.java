@@ -33,12 +33,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
+import org.photonvision.vision.objects.RubikModel;
 
 /**
  * Manages the loading of neural network models.
@@ -54,12 +56,98 @@ public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
     private static NeuralNetworkModelManager INSTANCE;
 
+    private final List<Family> supportedBackends = new ArrayList<>();
+
     /**
      * This function stores the properties of the shipped object detection models. It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
      */
     private NeuralNetworkPropertyManager getShippedProperties(File modelsDirectory) {
         NeuralNetworkPropertyManager nnProps = new NeuralNetworkPropertyManager();
+
+        LinkedList<String> cocoLabels =
+                new LinkedList<String>(
+                        List.of(
+                                "person",
+                                "bicycle",
+                                "car",
+                                "motorcycle",
+                                "airplane",
+                                "bus",
+                                "train",
+                                "truck",
+                                "boat",
+                                "traffic light",
+                                "fire hydrant",
+                                "stop sign",
+                                "parking meter",
+                                "bench",
+                                "bird",
+                                "cat",
+                                "dog",
+                                "horse",
+                                "sheep",
+                                "cow",
+                                "elephant",
+                                "bear",
+                                "zebra",
+                                "giraffe",
+                                "backpack",
+                                "umbrella",
+                                "handbag",
+                                "tie",
+                                "suitcase",
+                                "frisbee",
+                                "skis",
+                                "snowboard",
+                                "sports ball",
+                                "kite",
+                                "baseball bat",
+                                "baseball glove",
+                                "skateboard",
+                                "surfboard",
+                                "tennis racket",
+                                "bottle",
+                                "wine glass",
+                                "cup",
+                                "fork",
+                                "knife",
+                                "spoon",
+                                "bowl",
+                                "banana",
+                                "apple",
+                                "sandwich",
+                                "orange",
+                                "broccoli",
+                                "carrot",
+                                "hot dog",
+                                "pizza",
+                                "donut",
+                                "cake",
+                                "chair",
+                                "couch",
+                                "potted plant",
+                                "bed",
+                                "dining table",
+                                "toilet",
+                                "tv",
+                                "laptop",
+                                "mouse",
+                                "remote",
+                                "keyboard",
+                                "cell phone",
+                                "microwave",
+                                "oven",
+                                "toaster",
+                                "sink",
+                                "refrigerator",
+                                "book",
+                                "clock",
+                                "vase",
+                                "scissors",
+                                "teddy bear",
+                                "hair drier",
+                                "toothbrush"));
 
         nnProps.addModelProperties(
                 new ModelProperties(
@@ -71,6 +159,36 @@ public class NeuralNetworkModelManager {
                         Family.RKNN,
                         Version.YOLOV8));
 
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.rknn"),
+                        "COCO",
+                        cocoLabels,
+                        640,
+                        640,
+                        Family.RKNN,
+                        Version.YOLOV8));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "algae-coral-yolov8s.tflite"),
+                        "Algae Coral v8s",
+                        new LinkedList<String>(List.of("Algae", "Coral")),
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV8));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.tflite"),
+                        "COCO",
+                        cocoLabels,
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV8));
+
         return nnProps;
     }
 
@@ -80,13 +198,17 @@ public class NeuralNetworkModelManager {
      * @return The NeuralNetworkModelManager instance
      */
     private NeuralNetworkModelManager() {
-        ArrayList<Family> backends = new ArrayList<>();
-
-        if (Platform.isRK3588()) {
-            backends.add(Family.RKNN);
+        switch (Platform.getCurrentPlatform()) {
+            case LINUX_QCS6490 -> supportedBackends.add(Family.RUBIK);
+            case LINUX_RK3588_64 -> supportedBackends.add(Family.RKNN);
+            default -> {
+                logger.warn(
+                        "No supported neural network backends found for this platform: "
+                                + Platform.getCurrentPlatform());
+                // No supported backends, so we won't load any models
+                return;
+            }
         }
-
-        supportedBackends = backends;
     }
 
     /**
@@ -105,7 +227,18 @@ public class NeuralNetworkModelManager {
     private static final Logger logger = new Logger(NeuralNetworkModelManager.class, LogGroup.Config);
 
     public enum Family {
-        RKNN
+        RKNN(".rknn"),
+        RUBIK(".tflite");
+
+        private final String fileExtension;
+
+        private Family(String fileExtension) {
+            this.fileExtension = fileExtension;
+        }
+
+        public String extension() {
+            return fileExtension;
+        }
     }
 
     public enum Version {
@@ -113,8 +246,6 @@ public class NeuralNetworkModelManager {
         YOLOV8,
         YOLOV11
     }
-
-    private final List<Family> supportedBackends;
 
     /**
      * Retrieves the list of supported backends.
@@ -170,14 +301,19 @@ public class NeuralNetworkModelManager {
     }
 
     // Do checking later on, when we create the model object
-    private void loadModel(ModelProperties properties) {
+    private void loadModel(Path path) {
         if (models == null) {
             models = new HashMap<>();
         }
 
+        ModelProperties properties =
+                ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().getModel(path);
+
         if (properties == null) {
             logger.error(
-                    "Model properties are null, this could mean the models config was unable to be found in the database");
+                    "Model properties are null. This could mean the config for model "
+                            + path
+                            + " was unable to be found in the database.");
             return;
         }
 
@@ -197,6 +333,9 @@ public class NeuralNetworkModelManager {
             switch (properties.family()) {
                 case RKNN -> {
                     models.get(properties.family()).add(new RknnModel(properties));
+                }
+                case RUBIK -> {
+                    models.get(properties.family()).add(new RubikModel(properties));
                 }
             }
             logger.info(
@@ -227,16 +366,14 @@ public class NeuralNetworkModelManager {
 
         models = new HashMap<>();
 
-        try {
-            Files.walk(modelsDirectory.toPath())
+        try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
+            files
                     .filter(Files::isRegularFile)
-                    .forEach(
+                    .filter(
                             path ->
-                                    loadModel(
-                                            ConfigManager.getInstance()
-                                                    .getConfig()
-                                                    .neuralNetworkPropertyManager()
-                                                    .getModel(path)));
+                                    supportedBackends.stream()
+                                            .anyMatch(family -> path.toString().endsWith(family.extension())))
+                    .forEach(this::loadModel);
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
         }
@@ -263,6 +400,23 @@ public class NeuralNetworkModelManager {
     public void extractModels() {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
+        // Filter shippedProprties by supportedBackends
+        NeuralNetworkPropertyManager supportedProperties = new NeuralNetworkPropertyManager();
+        for (ModelProperties model : getShippedProperties(modelsDirectory).getModels()) {
+            if (supportedBackends.contains(model.family())) {
+                supportedProperties.addModelProperties(model);
+            } else {
+                logger.warn(
+                        "Skipping model " + model.nickname() + " as it is not supported on this platform.");
+            }
+        }
+
+        // Used for checking if the model to be extracted is supported for this architecture
+        ArrayList<String> supportedModelFileNames = new ArrayList<String>();
+        for (ModelProperties model : supportedProperties.getModels()) {
+            supportedModelFileNames.add(model.modelPath().getFileName().toString());
+        }
+
         if (!modelsDirectory.exists() && !modelsDirectory.mkdirs()) {
             throw new RuntimeException("Failed to create directory: " + modelsDirectory);
         }
@@ -282,7 +436,11 @@ public class NeuralNetworkModelManager {
                     Path outputPath =
                             modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
 
-                    if (Files.exists(outputPath)) {
+                    // Check if the file already exists or if it is a supported model file
+                    if ((Files.exists(outputPath))
+                            || !(entry.getName().endsWith("txt")
+                                    || supportedModelFileNames.contains(
+                                            entry.getName().substring(entry.getName().lastIndexOf('/') + 1)))) {
                         logger.info("Skipping extraction of DNN resource: " + entry.getName());
                         continue;
                     }
@@ -300,19 +458,20 @@ public class NeuralNetworkModelManager {
             logger.error("Error extracting models", e);
         }
 
+        // Combine with existing properties
         ConfigManager.getInstance()
                 .getConfig()
                 .setNeuralNetworkProperties(
-                        getShippedProperties(modelsDirectory)
-                                .sum(ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
+                        supportedProperties.sum(
+                                ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()));
     }
 
     public boolean clearModels() {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         if (modelsDirectory.exists()) {
-            try {
-                Files.walk(modelsDirectory.toPath())
+            try (Stream<Path> files = Files.walk(modelsDirectory.toPath())) {
+                files
                         .sorted((a, b) -> b.compareTo(a))
                         .forEach(
                                 path -> {
