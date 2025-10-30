@@ -17,7 +17,7 @@ The calibration data collected during calibration is specific to each physical c
 ## Calibration Tips
 
 :::{warning}
-The usage of chessboards can result in bad calibration results if multiple similar images are taken. We strongly recommend that teams use chArUco boards instead!
+The usage of chessboards can result in bad calibration results if multiple similar images are taken. We strongly recommend that teams use Charuco boards instead!
 :::
 
 Accurate camera calibration is required in order to get accurate pose measurements when using AprilTags and 3D mode. The tips below should help ensure success:
