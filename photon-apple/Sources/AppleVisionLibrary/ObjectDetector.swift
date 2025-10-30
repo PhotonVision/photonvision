@@ -37,6 +37,7 @@ public class ObjectDetector {
     private var mlModel: Any?
     private var vnModel: Any?
     private let modelPath: String
+    private var request: VNCoreMLRequest?
 
     /// Initialize the ObjectDetector with a CoreML model
     /// - Parameter modelPath: Absolute path to the .mlmodel or .mlmodelc file
@@ -47,6 +48,7 @@ public class ObjectDetector {
         p("ObjectDetector created with model path: \(modelPath)")
 
         // Load model lazily on first detect() call
+
     }
 
     /// Load the CoreML model (called lazily on first use)
@@ -70,16 +72,216 @@ public class ObjectDetector {
                 compiledURL = modelURL
             }
 
-            let model = try MLModel(contentsOf: compiledURL)
+
+            let config = MLModelConfiguration()
+            config.computeUnits = .all  // Use all available compute units (CPU, GPU, Neural Engine)
+            let model = try MLModel(contentsOf: compiledURL, configuration: config)
             let vn = try VNCoreMLModel(for: model)
             self.mlModel = model
             self.vnModel = vn
+
+            self.request = VNCoreMLRequest(model: vn) { [weak self] request, error in
+                if let error = error {
+                    p("Vision request failed: \(error)")
+                }
+            }
+
+            // Set confidence threshold
+            request!.imageCropAndScaleOption = .scaleFill
+
             p("CoreML model loaded successfully")
             return true
         } catch {
             p("Failed to load CoreML model: \(error)")
             return false
         }
+    }
+
+    /// Detect objects using raw MLModel API (no Vision framework overhead)
+    /// This implementation mirrors the Objective-C CoreMLDetector for maximum performance
+    /// - Parameters:
+    ///   - imageData: Pointer to raw BGRA image bytes in Java memory
+    ///   - width: Image width in pixels
+    ///   - height: Image height in pixels
+    ///   - pixelFormat: Format of the pixel data (must be 2=BGRA, other values ignored)
+    ///   - boxThreshold: Minimum confidence threshold for detections (0.0 - 1.0)
+    ///   - nmsThreshold: Non-maximum suppression IoU threshold (0.0 - 1.0)
+    ///   - Returns: Array of detection results
+    /// - Note: Uses MLModel.prediction() directly without Vision framework wrapper
+    public func detectRaw(
+        imageData: UnsafeRawPointer,
+        width: Int,
+        height: Int,
+        pixelFormat: Int32,
+        boxThreshold: Double,
+        nmsThreshold: Double
+    ) -> DetectionResultArray {
+        let detectStart = CFAbsoluteTimeGetCurrent()
+
+        // Ensure model is loaded
+        guard ensureModelLoaded(), let mlModelAny = self.mlModel, let mlModel = mlModelAny as? MLModel else {
+            p("Model not loaded, returning empty results")
+            return DetectionResultArray(results: [])
+        }
+
+        // Get model input dimensions
+        let modelDescStart = CFAbsoluteTimeGetCurrent()
+        guard let inputDesc = mlModel.modelDescription.inputDescriptionsByName["image"],
+              let imageConstraint = inputDesc.imageConstraint else {
+            p("Failed to get model input dimensions")
+            return DetectionResultArray(results: [])
+        }
+        let modelWidth = imageConstraint.pixelsWide
+        let modelHeight = imageConstraint.pixelsHigh
+        let modelDescEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] Model dimension query: %.3f ms", (modelDescEnd - modelDescStart) * 1000.0))
+
+        // Step 1: Create CVPixelBuffer from input data (same as before)
+        let pixelBufferStart = CFAbsoluteTimeGetCurrent()
+        guard let inputPixelBuffer = createBGRAPixelBuffer(
+            from: imageData,
+            width: width,
+            height: height
+        ) else {
+            p("Failed to create input CVPixelBuffer")
+            return DetectionResultArray(results: [])
+        }
+        let pixelBufferEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] Input CVPixelBuffer creation: %.3f ms", (pixelBufferEnd - pixelBufferStart) * 1000.0))
+
+        // Step 2: Resize to model input dimensions if needed
+        let resizeStart = CFAbsoluteTimeGetCurrent()
+        guard let resizedPixelBuffer = resizePixelBuffer(
+            inputPixelBuffer,
+            targetWidth: modelWidth,
+            targetHeight: modelHeight
+        ) else {
+            p("Failed to resize pixel buffer")
+            return DetectionResultArray(results: [])
+        }
+        let resizeEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] Image resize (%dx%d -> %dx%d): %.3f ms",
+                     width, height, modelWidth, modelHeight, (resizeEnd - resizeStart) * 1000.0))
+
+        // Step 3: Create MLFeatureValue from pixel buffer
+        let featureStart = CFAbsoluteTimeGetCurrent()
+        let imageFeatureValue = MLFeatureValue(pixelBuffer: resizedPixelBuffer)
+
+        // Build input feature dictionary
+        var inputFeatures: [String: MLFeatureValue] = ["image": imageFeatureValue]
+
+        // Add threshold inputs if the model expects them
+        let inputsDesc = mlModel.modelDescription.inputDescriptionsByName
+        if inputsDesc["iouThreshold"] != nil {
+            inputFeatures["iouThreshold"] = MLFeatureValue(double: nmsThreshold)
+        }
+        if inputsDesc["confidenceThreshold"] != nil {
+            inputFeatures["confidenceThreshold"] = MLFeatureValue(double: boxThreshold)
+        }
+
+        guard let inputProvider = try? MLDictionaryFeatureProvider(dictionary: inputFeatures) else {
+            p("Failed to create input feature provider")
+            return DetectionResultArray(results: [])
+        }
+        let featureEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] MLFeatureProvider creation: %.3f ms", (featureEnd - featureStart) * 1000.0))
+
+        // Step 4: Run model prediction directly (no Vision framework)
+        let inferenceStart = CFAbsoluteTimeGetCurrent()
+        guard let output = try? mlModel.prediction(from: inputProvider) else {
+            p("Model prediction failed")
+            return DetectionResultArray(results: [])
+        }
+        let inferenceEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] MLModel.prediction() (CoreML inference): %.3f ms", (inferenceEnd - inferenceStart) * 1000.0))
+
+        // Step 5: Parse model outputs
+        let parseStart = CFAbsoluteTimeGetCurrent()
+        guard let coordinatesValue = output.featureValue(for: "coordinates"),
+              let confidenceValue = output.featureValue(for: "confidence"),
+              let coordinates = coordinatesValue.multiArrayValue,
+              let confidence = confidenceValue.multiArrayValue else {
+            p("Failed to get model outputs")
+            return DetectionResultArray(results: [])
+        }
+
+        let numBoxes = coordinates.shape[0].intValue
+        let numClasses = confidence.shape[1].intValue
+
+        p("Raw model output: \(numBoxes) boxes, \(numClasses) classes")
+
+        guard numBoxes > 0 && numClasses > 0 else {
+            let parseEnd = CFAbsoluteTimeGetCurrent()
+            print(String(format: "[TIMING-SWIFT-RAW] Output parsing (0 boxes): %.3f ms", (parseEnd - parseStart) * 1000.0))
+            return DetectionResultArray(results: [])
+        }
+
+        let parseEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] Output parsing: %.3f ms", (parseEnd - parseStart) * 1000.0))
+
+        // Step 6: Process detections
+        let processStart = CFAbsoluteTimeGetCurrent()
+        var results: [DetectionResult] = []
+
+        // Get raw pointers to data
+        let coordsPtr = UnsafeMutablePointer<Float>(OpaquePointer(coordinates.dataPointer))
+        let confsPtr = UnsafeMutablePointer<Float>(OpaquePointer(confidence.dataPointer))
+
+        // Scale factors for converting model coordinates back to original image
+        let scaleX = Double(width) / Double(modelWidth)
+        let scaleY = Double(height) / Double(modelHeight)
+
+        for i in 0..<numBoxes {
+            let boxCoords = coordsPtr.advanced(by: i * 4)
+            let boxConfs = confsPtr.advanced(by: i * numClasses)
+
+            // Find max confidence and class
+            var maxConf: Float = -1.0
+            var maxClass: Int32 = -1
+            for c in 0..<numClasses {
+                let conf = boxConfs[c]
+                if conf > maxConf {
+                    maxConf = conf
+                    maxClass = Int32(c)
+                }
+            }
+
+            // Filter by confidence threshold
+            if Double(maxConf) < boxThreshold {
+                continue
+            }
+
+            // Extract bounding box (format: x, y, w, h in normalized coordinates [0, 1])
+            let x = Double(boxCoords[0])
+            let y = Double(boxCoords[1])
+            let w = Double(boxCoords[2])
+            let h = Double(boxCoords[3])
+
+            results.append(DetectionResult(
+                x: x,
+                y: y,
+                width: w,
+                height: h,
+                classId: maxClass,
+                confidence: Double(maxConf)
+            ))
+        }
+
+        let processEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] Detection processing (%d -> %d after threshold): %.3f ms",
+                     numBoxes, results.count, (processEnd - processStart) * 1000.0))
+
+        // Step 7: Apply NMS
+        let nmsStart = CFAbsoluteTimeGetCurrent()
+        let nmsResults = applyNMSRaw(detections: results, iouThreshold: nmsThreshold)
+        let nmsEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] NMS (%d -> %d): %.3f ms",
+                     results.count, nmsResults.count, (nmsEnd - nmsStart) * 1000.0))
+
+        let detectEnd = CFAbsoluteTimeGetCurrent()
+        print(String(format: "[TIMING-SWIFT-RAW] ===== TOTAL SWIFT RAW DETECT: %.3f ms =====", (detectEnd - detectStart) * 1000.0))
+
+        return DetectionResultArray(results: nmsResults)
     }
 
     /// Detect objects in an image using zero-copy CVPixelBuffer wrapping
@@ -124,14 +326,7 @@ public class ObjectDetector {
 
         // Create Vision request
         let requestStart = CFAbsoluteTimeGetCurrent()
-        let request = VNCoreMLRequest(model: vnModel) { [weak self] request, error in
-            if let error = error {
-                p("Vision request failed: \(error)")
-            }
-        }
 
-        // Set confidence threshold
-        request.imageCropAndScaleOption = .scaleFill
         let requestEnd = CFAbsoluteTimeGetCurrent()
         print(String(format: "[TIMING-SWIFT] Vision request creation: %.3f ms", (requestEnd - requestStart) * 1000.0))
 
@@ -143,7 +338,7 @@ public class ObjectDetector {
 
         let performStart = CFAbsoluteTimeGetCurrent()
         do {
-            try handler.perform([request])
+            try handler.perform([request!])
         } catch {
             p("Failed to perform detection: \(error)")
             return DetectionResultArray(results: [])
@@ -153,7 +348,7 @@ public class ObjectDetector {
 
         // Process results
         let processStart = CFAbsoluteTimeGetCurrent()
-        guard let observations = request.results as? [VNRecognizedObjectObservation] else {
+        guard let observations = request!.results as? [VNRecognizedObjectObservation] else {
             p("No results or unexpected result type")
             return DetectionResultArray(results: [])
         }
@@ -360,5 +555,117 @@ public class ObjectDetector {
         guard unionArea > 0 else { return 0.0 }
 
         return Double(intersectionArea / unionArea)
+    }
+
+    /// Resize a CVPixelBuffer to target dimensions using vImage for high performance
+    /// - Parameters:
+    ///   - pixelBuffer: Source pixel buffer to resize
+    ///   - targetWidth: Target width in pixels
+    ///   - targetHeight: Target height in pixels
+    /// - Returns: Resized CVPixelBuffer or nil on failure
+    private func resizePixelBuffer(
+        _ pixelBuffer: CVPixelBuffer,
+        targetWidth: Int,
+        targetHeight: Int
+    ) -> CVPixelBuffer? {
+        let sourceWidth = CVPixelBufferGetWidth(pixelBuffer)
+        let sourceHeight = CVPixelBufferGetHeight(pixelBuffer)
+
+        // Skip resize if dimensions already match
+        if sourceWidth == targetWidth && sourceHeight == targetHeight {
+            return pixelBuffer
+        }
+
+        // Create output pixel buffer
+        var outPixelBuffer: CVPixelBuffer?
+        let status = CVPixelBufferCreate(
+            kCFAllocatorDefault,
+            targetWidth,
+            targetHeight,
+            kCVPixelFormatType_32BGRA,
+            nil,
+            &outPixelBuffer
+        )
+
+        guard status == kCVReturnSuccess, let outputBuffer = outPixelBuffer else {
+            p("Failed to create output CVPixelBuffer for resize: \(status)")
+            return nil
+        }
+
+        // Lock both buffers
+        CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
+        CVPixelBufferLockBaseAddress(outputBuffer, [])
+        defer {
+            CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+            CVPixelBufferUnlockBaseAddress(outputBuffer, [])
+        }
+
+        guard let srcData = CVPixelBufferGetBaseAddress(pixelBuffer),
+              let dstData = CVPixelBufferGetBaseAddress(outputBuffer) else {
+            p("Failed to get pixel buffer base addresses")
+            return nil
+        }
+
+        // Create vImage buffers
+        var srcBuffer = vImage_Buffer(
+            data: srcData,
+            height: vImagePixelCount(sourceHeight),
+            width: vImagePixelCount(sourceWidth),
+            rowBytes: CVPixelBufferGetBytesPerRow(pixelBuffer)
+        )
+
+        var dstBuffer = vImage_Buffer(
+            data: dstData,
+            height: vImagePixelCount(targetHeight),
+            width: vImagePixelCount(targetWidth),
+            rowBytes: CVPixelBufferGetBytesPerRow(outputBuffer)
+        )
+
+        // Perform high-quality scaling using Lanczos
+        let error = vImageScale_ARGB8888(&srcBuffer, &dstBuffer, nil, vImage_Flags(kvImageHighQualityResampling))
+
+        guard error == kvImageNoError else {
+            p("vImageScale failed with error: \(error)")
+            return nil
+        }
+
+        return outputBuffer
+    }
+
+    /// Apply NMS to raw DetectionResult array
+    /// - Parameters:
+    ///   - detections: Array of detections to filter
+    ///   - iouThreshold: IoU threshold for suppression
+    /// - Returns: Filtered array after NMS
+    private func applyNMSRaw(detections: [DetectionResult], iouThreshold: Double) -> [DetectionResult] {
+        guard detections.count > 1 else { return detections }
+
+        // Sort by confidence (descending)
+        let sorted = detections.sorted { $0.confidence > $1.confidence }
+
+        var selected: [DetectionResult] = []
+        var suppressed = Set<Int>()
+
+        for (i, det1) in sorted.enumerated() {
+            if suppressed.contains(i) { continue }
+
+            selected.append(det1)
+
+            // Suppress overlapping boxes
+            for (j, det2) in sorted.enumerated() {
+                if j <= i || suppressed.contains(j) { continue }
+
+                // Convert to CGRect for IoU calculation
+                let box1 = CGRect(x: det1.x, y: det1.y, width: det1.width, height: det1.height)
+                let box2 = CGRect(x: det2.x, y: det2.y, width: det2.width, height: det2.height)
+
+                let iou = calculateIoU(box1: box1, box2: box2)
+                if iou > iouThreshold {
+                    suppressed.insert(j)
+                }
+            }
+        }
+
+        return selected
     }
 }

@@ -169,7 +169,9 @@ def jextract = tasks.register("jextract", Exec) {
 
     workingDir = layout.projectDirectory
     commandLine "swift"
-    args("build")
+    args("build", "--configuration", swiftBuildConfiguration())
+
+    outputs.dir("${projectDir}/.build/arm64-apple-macosx/${swiftBuildConfiguration()}")
 }
 
 // Add test native dependencies for WPILib OpenCV

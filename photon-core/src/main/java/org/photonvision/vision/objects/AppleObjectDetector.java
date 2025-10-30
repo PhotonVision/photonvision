@@ -237,7 +237,7 @@ public class AppleObjectDetector implements ObjectDetector {
 
                 long swiftCallStartNs = System.nanoTime();
                 DetectionResultArray results =
-                        swiftDetector.detect(
+                        swiftDetector.detectRaw(
                                 imageData,
                                 (long) width,
                                 (long) height,
