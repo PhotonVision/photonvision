@@ -71,7 +71,7 @@ tasks.register('testHeadless', Test) {
         showStandardStreams = true
     }
     exclude '**/*BenchmarkTest*'
-    workingDir = "../"
+    workingDir = new File("${rootDir}")
 }
 
 jacoco {
