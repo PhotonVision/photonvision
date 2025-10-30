@@ -96,3 +96,10 @@ jacocoTestReport {
         }))
     }
 }
+
+// Only run headless tests from the build task
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(build)) {
+        test.enabled = false
+    }
+}
