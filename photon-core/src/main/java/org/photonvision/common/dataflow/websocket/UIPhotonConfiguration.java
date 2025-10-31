@@ -49,7 +49,7 @@ public class UIPhotonConfiguration {
                                 NetworkManager.getInstance().networkingIsDisabled),
                         new UILightingConfig(
                                 c.getHardwareSettings().ledBrightnessPercentage,
-                                !c.getHardwareConfig().ledPins().isEmpty()),
+                                !c.getHardwareConfig().ledPins.isEmpty()),
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
                                 // TODO add support for other types of GPU accel
@@ -57,9 +57,9 @@ public class UIPhotonConfiguration {
                                 MrCalJNILoader.getInstance().isLoaded(),
                                 c.neuralNetworkPropertyManager().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
-                                c.getHardwareConfig().deviceName().isEmpty()
+                                c.getHardwareConfig().deviceName.isEmpty()
                                         ? Platform.getHardwareModel()
-                                        : c.getHardwareConfig().deviceName(),
+                                        : c.getHardwareConfig().deviceName,
                                 Platform.getPlatformName(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
                                 NetworkTablesManager.getInstance().conflictingCameras),

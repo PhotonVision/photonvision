@@ -315,23 +315,23 @@ watchEffect(() => {
             <v-col class="text-center">
               Background
               <v-color-picker
+                v-model:model-value="backgroundColor"
                 class="ma-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                v-model:model-value="backgroundColor"
-                v-on:update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
+                @update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
               ></v-color-picker>
             </v-col>
             <v-col class="text-center">
               Surface
               <v-color-picker
+                v-model:model-value="surfaceColor"
                 class="ma-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                v-model:model-value="surfaceColor"
-                v-on:update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
+                @update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
               ></v-color-picker>
             </v-col>
           </v-row>
@@ -339,23 +339,23 @@ watchEffect(() => {
             <v-col class="text-center">
               Primary
               <v-color-picker
+                v-model:model-value="primaryColor"
                 class="ma-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                v-model:model-value="primaryColor"
-                v-on:update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
+                @update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
               ></v-color-picker>
             </v-col>
             <v-col class="text-center">
               Secondary
               <v-color-picker
+                v-model:model-value="secondaryColor"
                 class="ma-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
-                v-model:model-value="secondaryColor"
-                v-on:update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
+                @update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
               ></v-color-picker>
             </v-col>
           </v-row>

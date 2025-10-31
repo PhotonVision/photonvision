@@ -69,6 +69,7 @@ export interface WebsocketCameraSettingsUpdate {
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
   hasConnected: boolean;
+  mismatch: boolean;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
