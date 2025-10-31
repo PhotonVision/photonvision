@@ -43,7 +43,7 @@ public class FilterObjectDetectionsPipe
 
     private void filterContour(NeuralNetworkPipeResult contour) {
         var boc = contour.bbox();
-        
+
         // Area filtering
         double areaPercentage = boc.size.area() / params.frameStaticProperties().imageArea * 100.0;
         double minAreaPercentage = params.area().getFirst();
@@ -51,8 +51,7 @@ public class FilterObjectDetectionsPipe
         if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;
 
         // Aspect Ratio Filtering.
-        double aspectRatio =
-                TargetCalculations.getAspectRatio(boc, params.isLandscape());
+        double aspectRatio = TargetCalculations.getAspectRatio(boc, params.isLandscape());
         if (aspectRatio < params.ratio().getFirst() || aspectRatio > params.ratio().getSecond()) return;
 
         m_filteredContours.add(contour);

@@ -23,16 +23,14 @@ import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 
 public record NeuralNetworkPipeResult(RotatedRect bbox, int classIdx, double confidence) {
-    public NeuralNetworkPipeResult(Rect2d rect, int classIdx, double confidence) {        
+    public NeuralNetworkPipeResult(Rect2d rect, int classIdx, double confidence) {
         // turn the axis-aligned rect into a RotatedRect with angle 0 degrees
         this(
-            new RotatedRect(
-                new Point(rect.x + (rect.width) / 2, rect.y + (rect.height) / 2), 
-                new Size(rect.width, rect.height), 
-                0.0
-            ),
-            classIdx,
-            confidence
-        );
+                new RotatedRect(
+                        new Point(rect.x + (rect.width) / 2, rect.y + (rect.height) / 2),
+                        new Size(rect.width, rect.height),
+                        0.0),
+                classIdx,
+                confidence);
     }
 }
