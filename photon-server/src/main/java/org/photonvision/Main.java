@@ -19,7 +19,6 @@ package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -179,34 +178,67 @@ public class Main {
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
         if (Platform.isSystemCore()) {
+            String docsLink =
+                    "https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support";
+
             logger.error(
                     "SystemCore is not a supported platform for PhotonVision!\n "
-                            + "PhotonVision will now proceed to uninstall itself from this device.\n"
-                            + "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support for more information.");
+                            + "Please visit "
+                            + docsLink
+                            + " for more information.");
 
-            File jarLocation = getJarLocation();
-            if (jarLocation == null) {
-                System.exit(1);
-            }
-            // Make a file where the PV JAR is located indicating systemcore is not supported
             try {
-                File notSupportedFile =
-                        new File(jarLocation.getParent(), "SYSTEMCORE_NOT_SUPPORTED_BY_PHOTONVISION.txt");
-                try (FileWriter writer = new FileWriter(notSupportedFile)) {
-                    writer.write("SystemCore is not a supported platform for PhotonVision.\n");
-                    writer.write("PhotonVision has been uninstalled from this device.\n");
-                    writer.write(
-                            "Please visit https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support for more information.");
+                int port = 5800;
+                com.sun.net.httpserver.HttpServer server = null;
+                try {
+                    server =
+                            com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress(port), 0);
+                } catch (Exception e) {
+                    logger.warn("Failed to bind to port 5800, exiting: " + e.getMessage());
+                    port = DEFAULT_WEBPORT;
+                    server =
+                            com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress(port), 0);
                 }
-            } catch (IOException e) {
-                logger.error("Failed to create SystemCore not supported file", e);
-                System.exit(1);
-            }
 
-            // Delete the PV JAR
-            if (!jarLocation.delete()) {
-                logger.error("Failed to delete PhotonVision JAR file on SystemCore!");
-                System.exit(1);
+                final int boundPort = port;
+                server.createContext(
+                        "/",
+                        exchange -> {
+                            String html =
+                                    "<!doctype html>"
+                                            + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
+                                            + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! Please uninstall PhotonVision. "
+                                            + "If you choose to modify PhotonVision so that it functions on SystemCore, "
+                                            + "you do so entirely at your own risk and without any support. "
+                                            + "For more information, see <a href=\""
+                                            + docsLink
+                                            + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+                                            + docsLink
+                                            + "</a>.</p></body></html>";
+                            byte[] resp = html.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
+                            exchange.sendResponseHeaders(200, resp.length);
+                            try (java.io.OutputStream os = exchange.getResponseBody()) {
+                                os.write(resp);
+                            }
+                        });
+                server.setExecutor(java.util.concurrent.Executors.newSingleThreadExecutor());
+                server.start();
+                logger.info(
+                        "Served SystemCore warning page on port "
+                                + boundPort
+                                + " - process will remain running to serve the page.");
+
+                // Prevent main from exiting so the page remains available.
+                final Object lock = new Object();
+                synchronized (lock) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Failed to start static warning page server", e);
             }
 
             // Exit
