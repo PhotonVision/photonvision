@@ -27,7 +27,7 @@ interface GeneralSettingsStore {
   currentFieldLayout;
 }
 
-const MAX_METRIC_HISTORY = 50;
+const MAX_METRIC_HISTORY = 100;
 const UPDATE_INTERVAL_MS = 900;
 const updateTimeElapsed = ref(true);
 
@@ -114,24 +114,28 @@ export const useSettingsStore = defineStore("settings", {
         ipAddress: data.ipAddress || undefined,
         uptime: data.uptime || undefined
       };
-      // let test: MetricData = {
-      //   cpuTemp: 50 + Math.random() * 20,
-      //   cpuUtil: 50 + Math.random() * 20,
-      //   cpuThr: undefined,
-      //   ramMem: 50 + Math.random() * 20,
-      //   ramUtil: 50 + Math.random() * 20,
-      //   gpuMem: data.gpuMem || undefined,
-      //   gpuMemUtil: data.gpuMemUtil || undefined,
-      //   diskUtilPct: 50 + Math.random() * 20,
-      //   npuUsage: data.npuUsage || undefined,
-      //   ipAddress: data.ipAddress || undefined,
-      //   uptime: data.uptime || undefined
-      // };
+      let test: MetricData = {
+        cpuTemp: 50 + Math.random() * 20,
+        cpuUtil: 50 + Math.random() * 20,
+        cpuThr: undefined,
+        ramMem: 100,
+        ramUtil: 50 + Math.random() * 20,
+        gpuMem: data.gpuMem || undefined,
+        gpuMemUtil: data.gpuMemUtil || undefined,
+        diskUtilPct: 50 + Math.random() * 20,
+        npuUsage: data.npuUsage || undefined,
+        ipAddress: data.ipAddress || undefined,
+        uptime: data.uptime || undefined
+      };
       if (updateTimeElapsed.value) {
         updateTimeElapsed.value = false;
+        const now = Date.now();
         setTimeout(() => (updateTimeElapsed.value = true), UPDATE_INTERVAL_MS);
-        this.metricsHistory.push({ time: Date.now(), metrics: this.metrics });
-        // this.metricsHistory.push({ time: Date.now(), metrics: test });
+        // this.metricsHistory.push({ time: now, metrics: this.metrics });
+        this.metricsHistory.push({ time: now, metrics: test });
+        // console.log((this.metricsHistory.at(-1)?.time ?? 0) - (this.metricsHistory.at(0)?.time ?? 0));
+        // if ((this.metricsHistory.at(-1)?.time ?? 0) - (this.metricsHistory.at(0)?.time ?? 0) > 1000 * 180)
+        // this.metricsHistory = [];
         while (this.metricsHistory.length > MAX_METRIC_HISTORY) this.metricsHistory.shift();
       }
     },
