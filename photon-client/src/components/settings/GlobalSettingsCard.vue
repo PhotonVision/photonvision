@@ -62,6 +62,22 @@ const isValidHostname = (v: string | undefined) => {
   return hostnameRegex.test(v);
 };
 
+// When the user hits Enter in the Static IP field, save and redirect
+const onStaticIpEnter = (newIp: string) => {
+  if (!isValidIPv4(newIp)) return;
+
+  // Kick off save so backend applies change, then navigate
+  saveGeneralSettings();
+
+  // Give the backend a moment to switch networking, then redirect
+  // Keep current hash route (e.g., #/settings)
+  const hash = window.location.hash || "";
+  const url = `http://${newIp}:5800/${hash}`;
+  setTimeout(() => {
+    window.location.href = url;
+  }, 1000);
+};
+
 const settingsHaveChanged = (): boolean => {
   const a = useSettingsStore().network;
   const b = tempSettingsStruct.value;
@@ -209,6 +225,7 @@ watchEffect(() => {
           v-show="!useSettingsStore().network.networkingDisabled"
           v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
           v-model="tempSettingsStruct.staticIp"
+          @onEnter="onStaticIpEnter"
           :input-cols="12 - 4"
           label="Static IP"
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
