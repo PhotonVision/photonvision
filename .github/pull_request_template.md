@@ -11,6 +11,7 @@
 Merge checklist:
 - [ ] Pull Request title is [short, imperative summary](https://cbea.ms/git-commit/) of proposed changes
 - [ ] The description documents the _what_ and _why_
+- [ ] This PR has been [linted](https://docs.photonvision.org/en/latest/docs/contributing/linting.html).
 - [ ] If this PR changes behavior or adds a feature, user documentation is updated
 - [ ] If this PR touches photon-serde, all messages have been regenerated and hashes have not changed unexpectedly
 - [ ] If this PR touches configuration, this is backwards compatible with settings back to v2025.3.2
