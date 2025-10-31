@@ -189,41 +189,35 @@ public class Main {
 
             try {
                 int port = 5800;
-                com.sun.net.httpserver.HttpServer server = null;
+                io.javalin.Javalin app = null;
                 try {
-                    server =
-                            com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress(port), 0);
+                    app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
                 } catch (Exception e) {
                     logger.warn("Failed to bind to port 5800, exiting: " + e.getMessage());
                     port = DEFAULT_WEBPORT;
-                    server =
-                            com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress(port), 0);
+                    app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
                 }
 
                 final int boundPort = port;
-                server.createContext(
+                final String html =
+                        "<!doctype html>"
+                                + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
+                                + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! Please uninstall PhotonVision. "
+                                + "If you choose to modify PhotonVision so that it functions on SystemCore, "
+                                + "you do so entirely at your own risk and without any support. "
+                                + "For more information, see <a href=\""
+                                + docsLink
+                                + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+                                + docsLink
+                                + "</a>.</p></body></html>";
+
+                app.get(
                         "/",
-                        exchange -> {
-                            String html =
-                                    "<!doctype html>"
-                                            + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
-                                            + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! Please uninstall PhotonVision. "
-                                            + "If you choose to modify PhotonVision so that it functions on SystemCore, "
-                                            + "you do so entirely at your own risk and without any support. "
-                                            + "For more information, see <a href=\""
-                                            + docsLink
-                                            + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
-                                            + docsLink
-                                            + "</a>.</p></body></html>";
-                            byte[] resp = html.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=utf-8");
-                            exchange.sendResponseHeaders(200, resp.length);
-                            try (java.io.OutputStream os = exchange.getResponseBody()) {
-                                os.write(resp);
-                            }
+                        ctx -> {
+                            ctx.contentType("text/html; charset=utf-8");
+                            ctx.result(html);
                         });
-                server.setExecutor(java.util.concurrent.Executors.newSingleThreadExecutor());
-                server.start();
+
                 logger.info(
                         "Served SystemCore warning page on port "
                                 + boundPort
