@@ -186,8 +186,8 @@ const handleBulkImport = () => {
               <v-card-text>
                 <span v-if="useSettingsStore().general.supportedBackends?.includes('RKNN')"
                   >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
-                  640x640 YOLOv5, YOLOv8, YOLOv11, and YOLOv11 OBB models trained and converted to `.rknn` format for RK3588 SOCs are
-                  currently supported!</span
+                  640x640 YOLOv5, YOLOv8, YOLOv11, and YOLOv11 OBB models trained and converted to `.rknn` format for
+                  RK3588 SOCs are currently supported!</span
                 >
                 <span v-else-if="useSettingsStore().general.supportedBackends?.includes('RUBIK')"
                   >Upload a new object detection model to this device that can be used in a pipeline. Note that ONLY
