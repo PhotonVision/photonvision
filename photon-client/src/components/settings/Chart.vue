@@ -25,6 +25,7 @@ const chartRef = ref(null);
 let chart: echarts.ECharts | null = null;
 
 const getOptions = (data: ChartData[] = []) => {
+  const now = Date.now();
   return {
     title: {
       show: false
@@ -60,6 +61,7 @@ const getOptions = (data: ChartData[] = []) => {
         }
       },
       splitNumber: 4,
+      min: now - 95 * 1000,
       axisLine: {
         lineStyle: {
           color: theme.global.name.value === "LightTheme" ? "#aaa" : "#777"
