@@ -1,5 +1,9 @@
 # Linting the PhotonVision Codebase
 
+## Versions
+
+The correct versions for each linter can be found under the linting workflow located [here](https://github.com/PhotonVision/photonvision/tree/main/.github/workflows).For `doc8`, the version can be found in `docs/requirements.txt`. If you've linted, and are still unable to pass CI, please check the versions of your linters.
+
 ## Frontend
 
 ### Linting
@@ -10,7 +14,7 @@ In order to lint the frontend, run `pnpm -C photon-client lint && pnpm -C photon
 
 ### Installation
 
-To lint the backend, PhotonVision uses `wpiformat` and `spotless`. Spotless is included with gradle, which means installation is not needed. To install wpiformat, run `pipx install wpiformat`.
+To lint the backend, PhotonVision uses `wpiformat` and `spotless`. Spotless is included with gradle, which means installation is not needed. To install wpiformat, run `pipx install wpiformat`. To install a specific version, run `pipx install wpiformat==<version>`.
 
 ### Linting
 
@@ -20,7 +24,7 @@ To lint, run `./gradlew spotlessApply` and `wpiformat`.
 
 ### Installation
 
-To install `doc8`, the python tool we use to lint our documentation, run `pipx install doc8`.
+To install `doc8`, the python tool we use to lint our documentation, run `pipx install doc8`. To install a specific version, run `pipx install doc8==<version>`.
 
 ### Linting
 
