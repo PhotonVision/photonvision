@@ -171,6 +171,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
+        ts.fpsEntry.set(acceptedResult.fps);
         ts.hasTargetEntry.set(acceptedResult.hasTargets());
 
         if (acceptedResult.hasTargets()) {

@@ -38,8 +38,9 @@ const handleKeydown = ({ key }) => {
       break;
   }
 };
-</script>
 
+// TODO: fix error text theming
+</script>
 <template>
   <div class="d-flex">
     <v-col :cols="labelCols || 12 - inputCols" class="d-flex align-center pl-0 pt-10px pb-10px">
@@ -50,13 +51,12 @@ const handleKeydown = ({ key }) => {
       <v-text-field
         v-model="value"
         density="compact"
-        color="accent"
+        color="primary"
         :placeholder="placeholder"
         :disabled="disabled"
         :error-messages="errorMessage"
         :rules="rules"
         hide-details="auto"
-        class="light-error"
         variant="underlined"
         @keydown="handleKeydown"
       />

@@ -488,6 +488,16 @@ public class PipelineManager {
                     // Skip fields that are annotated with SuppressSettingCopy
                     continue;
                 }
+
+                // Object detection doesn't support 3D mode, so we gotta make sure that gets
+                // turned off when we switch from a pipeline that had 3D mode enabled.
+                if ((newType == PipelineType.ObjectDetection.baseIndex
+                                || newType == PipelineType.ColoredShape.baseIndex)
+                        && field.getName().equals("solvePNPEnabled")) {
+                    field.set(newSettings, false);
+                    continue;
+                }
+
                 Object value = field.get(oldSettings);
                 logger.debug("setting " + field.getName() + " to " + value);
                 field.set(newSettings, value);

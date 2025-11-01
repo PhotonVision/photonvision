@@ -5,6 +5,9 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const value = defineModel<number[]>({ required: true });
 
@@ -29,7 +32,12 @@ const fpsTooLow = computed<boolean>(() => {
 </script>
 
 <template>
-  <v-card id="camera-settings-camera-view-card" class="camera-settings-camera-view-card" color="primary" dark>
+  <v-card
+    id="camera-settings-camera-view-card"
+    class="camera-settings-camera-view-card rounded-12"
+    color="surface"
+    dark
+  >
     <v-card-title class="justify-space-between align-content-center pt-0 pb-0">
       <div class="d-flex flex-wrap align-center pt-4 pb-4">
         <span class="mr-4" style="white-space: nowrap"> Cameras </span>
@@ -39,8 +47,11 @@ const fpsTooLow = computed<boolean>(() => {
           :color="fpsTooLow ? 'error' : 'transparent'"
           style="font-size: 1rem; padding: 0; margin: 0"
         >
-          <span class="pr-1" :style="{ color: fpsTooLow ? '#C7EA46' : '#ff4d00' }">
-            {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
+          <span
+            class="pr-1"
+            :style="{ color: fpsTooLow ? 'rgb(var(--v-theme-error))' : 'rgb(var(--v-theme-primary))' }"
+          >
+            &nbsp;{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;
             {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
           </span>
         </v-chip>
@@ -52,7 +63,7 @@ const fpsTooLow = computed<boolean>(() => {
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
           label="Driver Mode"
           style="margin-left: auto"
-          color="accent"
+          color="primary"
           density="compact"
           hide-details="auto"
         />
@@ -79,28 +90,23 @@ const fpsTooLow = computed<boolean>(() => {
       </div>
     </v-card-text>
     <v-card-text class="pt-0">
-      <v-btn-toggle
-        v-model="value"
-        :multiple="true"
-        mandatory
-        class="fill"
-        style="width: 100%"
-        base-color="surface-variant"
-      >
+      <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill" style="width: 100%">
         <v-btn
-          color="secondary"
+          color="buttonPassive"
           class="fill"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon start class="mode-btn-icon">mdi-import</v-icon>
+          <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
         </v-btn>
         <v-btn
-          color="secondary"
+          color="buttonPassive"
           class="fill"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
         >
-          <v-icon start class="mode-btn-icon">mdi-export</v-icon>
+          <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
         </v-btn>
       </v-btn-toggle>

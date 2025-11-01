@@ -38,7 +38,7 @@ const localValue = computed({
         density="compact"
         hide-details
         single-line
-        color="accent"
+        color="primary"
         type="number"
         variant="underlined"
         style="width: 70px"

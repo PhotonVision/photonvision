@@ -101,11 +101,10 @@ public class PacketSubscriber<T> implements AutoCloseable {
     }
 
     public List<PacketResult<T>> getAllChanges() {
-        List<PacketResult<T>> ret = new ArrayList<>();
-
         // Get /all/ changes since last call to readQueue
         var changes = subscriber.readQueue();
 
+        List<PacketResult<T>> ret = new ArrayList<>(changes.length);
         for (var change : changes) {
             ret.add(parse(change.value, change.timestamp));
         }

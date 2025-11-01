@@ -6,6 +6,7 @@ import { useStateStore } from "@/stores/StateStore";
   <v-snackbar
     v-model="useStateStore().snackbarData.show"
     location="top"
+    variant="elevated"
     :color="useStateStore().snackbarData.color"
     :timeout="useStateStore().snackbarData.timeout"
   >

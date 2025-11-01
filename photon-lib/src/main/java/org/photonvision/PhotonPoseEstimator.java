@@ -42,11 +42,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N8;
 import edu.wpi.first.wpilibj.DriverStation;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -175,7 +171,7 @@ public class PhotonPoseEstimator {
     }
 
     private void checkUpdate(Object oldObj, Object newObj) {
-        if (oldObj != newObj && oldObj != null && !oldObj.equals(newObj)) {
+        if (!Objects.equals(oldObj, newObj)) {
             invalidatePoseCache();
         }
     }

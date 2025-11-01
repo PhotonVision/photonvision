@@ -66,7 +66,19 @@ public class NetworkUtils {
         }
     }
 
-    private static List<NMDeviceInfo> allInterfaces = new ArrayList<>();
+    public static boolean nmcliIsInstalled() {
+        var shell = new ShellExec(true, false);
+        try {
+            shell.executeBashCommand("nmcli --version");
+
+            return shell.getExitCode() == 0;
+        } catch (IOException e) {
+            logger.error("Could not query nmcli version", e);
+            return false;
+        }
+    }
+
+    private static List<NMDeviceInfo> allInterfaces = null;
     private static long lastReadTimestamp = 0;
 
     public static List<NMDeviceInfo> getAllInterfaces() {
@@ -76,35 +88,36 @@ public class NetworkUtils {
 
         var ret = new ArrayList<NMDeviceInfo>();
 
-        if (!Platform.isLinux()) {
-            // Can only determine interface name on Linux, give up
-            return ret;
-        }
-
-        try {
-            var shell = new ShellExec(true, false);
-            shell.executeBashCommand(
-                    "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show");
-            String out = shell.getOutput();
-            if (out == null) {
-                return new ArrayList<>();
+        if (Platform.isLinux()) {
+            String out = null;
+            try {
+                var shell = new ShellExec(true, false);
+                shell.executeBashCommand(
+                        "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, false);
+                out = shell.getOutput();
+            } catch (IOException e) {
+                logger.error("IO Exception occured when calling nmcli to get network interfaces!", e);
             }
-            Pattern pattern =
-                    Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
-            Matcher matcher = pattern.matcher(out);
-            while (matcher.find()) {
-                if (!matcher.group(2).equals("lo")) {
-                    // only include non-loopback devices
-                    ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+            if (out != null) {
+                Pattern pattern =
+                        Pattern.compile("GENERAL.CONNECTION:(.*)\nGENERAL.DEVICE:(.*)\nGENERAL.TYPE:(.*)");
+                Matcher matcher = pattern.matcher(out);
+                while (matcher.find()) {
+                    if (!matcher.group(2).equals("lo")) {
+                        // only include non-loopback devices
+                        ret.add(new NMDeviceInfo(matcher.group(1), matcher.group(2), matcher.group(3)));
+                    }
                 }
             }
-        } catch (IOException e) {
-            logger.error("Could not get active network interfaces!", e);
         }
-
-        logger.debug("Found network interfaces: " + ret);
-
-        allInterfaces = ret;
+        if (!ret.equals(allInterfaces)) {
+            if (ret.isEmpty()) {
+                logger.error("Unable to identify network interfaces!");
+            } else {
+                logger.debug("Found network interfaces: " + ret);
+            }
+            allInterfaces = ret;
+        }
         return ret;
     }
 
