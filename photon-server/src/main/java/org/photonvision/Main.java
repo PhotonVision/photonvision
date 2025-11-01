@@ -178,7 +178,7 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if (Platform.isSystemCore()) {
+        if (Platform.isSystemCore() || true) {
             String docsLink =
                     "https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support";
 
@@ -203,7 +203,9 @@ public class Main {
                 final String html =
                         "<!doctype html>"
                                 + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
-                                + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! Please uninstall PhotonVision. "
+                                + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! "
+                                + "Please <a href=\"https://github.com/PhotonVision/photonvision/blob/main/scripts/uninstall.sh\" "
+                                + "target=\"_blank\" rel=\"noopener noreferrer\">uninstall</a> PhotonVision. "
                                 + "If you choose to modify PhotonVision so that it functions on SystemCore, "
                                 + "you do so entirely at your own risk and without any support. "
                                 + "For more information, see <a href=\""
