@@ -87,7 +87,7 @@ const unmatchedCameras = computed(() => {
 const activeVisionModules = computed(() =>
   Object.values(useCameraSettingsStore().cameras)
     // Ignore placeholder camera
-    .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
+    .filter((camera) => camera !== PlaceholderCameraSettings)
     // Display connected cameras first
     .sort(
       (first, second) =>
