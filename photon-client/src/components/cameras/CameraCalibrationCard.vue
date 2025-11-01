@@ -297,11 +297,11 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+              :items="getUniqueVideoResolutionStrings()"
               @update:model-value="
                 useStateStore().calibrationData.videoFormatIndex =
                   getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
               "
-              :items="getUniqueVideoResolutionStrings()"
             />
             <pv-select
               v-model="boardType"
@@ -310,6 +310,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :select-cols="8"
               :items="['Chessboard', 'Charuco']"
               :disabled="isCalibrating"
+            />
+            <v-alert
+              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              closable
+              density="compact"
+              variant="tonal"
+              color="warning"
+              icon="mdi-alert-box"
+              text="The usage of chessboards can result in bad calibration results if multiple
+              similar images are taken. We strongly recommend that teams use Charuco boards instead!"
             />
             <pv-select
               v-if="boardType !== CalibrationBoardTypes.Charuco"
