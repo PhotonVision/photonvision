@@ -12,12 +12,16 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const removeCalibration = () => {
+const confirmRemoveDialog = ref({ show: false, vf: {} as VideoFormat });
+
+const removeCalibration = (vf: VideoFormat) => {
   axiosPost("/calibration/remove", "delete a camera calibration", {
     cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
-    width: props.videoFormat.resolution.width,
-    height: props.videoFormat.resolution.height
+    width: vf.resolution.width,
+    height: vf.resolution.height
   });
+
+  confirmRemoveDialog.value.show = false;
 };
 
 const exportCalibration = ref();
@@ -112,7 +116,7 @@ const calibrationImageURL = (index: number) =>
           class="mr-2"
           style="flex: 1"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          @click="removeCalibration"
+          @click="() => (confirmRemoveDialog = { show: true, vf: props.videoFormat })"
         >
           <v-icon start size="large">mdi-delete</v-icon>
           <span>Delete</span>
@@ -307,6 +311,33 @@ const calibrationImageURL = (index: number) =>
       </v-data-table>
     </v-card-text>
   </v-card>
+
+  <v-dialog v-model="confirmRemoveDialog.show" width="600">
+    <v-card color="surface" dark>
+      <v-card-title>Delete Calibration</v-card-title>
+      <v-card-text class="pt-0">
+        Are you sure you want to delete the calibration for {{ confirmRemoveDialog.vf.resolution.width }}x{{
+          confirmRemoveDialog.vf.resolution.height
+        }}?
+        <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="buttonPassive"
+            @click="confirmRemoveDialog.show = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            color="error"
+            @click="removeCalibration(confirmRemoveDialog.vf)"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
 </template>
 
 <style scoped>
