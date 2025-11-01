@@ -23,7 +23,6 @@ interface GeneralSettingsStore {
   lighting: LightingSettings;
   metrics: MetricData;
   metricsHistory: MetricsEntry[];
-  metricsLastSaved: number;
   currentFieldLayout;
 }
 
@@ -79,7 +78,6 @@ export const useSettingsStore = defineStore("settings", {
       uptime: undefined
     },
     metricsHistory: [],
-    metricsLastSaved: 0,
     currentFieldLayout: {
       field: {
         length: 16.4592,
@@ -118,6 +116,7 @@ export const useSettingsStore = defineStore("settings", {
         updateTimeElapsed.value = false;
         const now = Date.now();
         setTimeout(() => (updateTimeElapsed.value = true), UPDATE_INTERVAL_MS);
+
         this.metricsHistory.push({ time: now, metrics: this.metrics });
         while (this.metricsHistory.length > MAX_METRIC_HISTORY) this.metricsHistory.shift();
       }

@@ -32,6 +32,7 @@ const restartProgram = () => {
       }
     });
 };
+
 const restartDevice = () => {
   axios
     .post("/utils/restartDevice")
@@ -140,9 +141,11 @@ enum ImportType {
   NetworkConfig,
   ApriltagFieldLayout
 }
+
 const showImportDialog = ref(false);
 const importType = ref<ImportType | undefined>(undefined);
 const importFile = ref<File | null>(null);
+
 const handleSettingsImport = () => {
   if (importType.value === undefined || importFile.value === null) return;
 
