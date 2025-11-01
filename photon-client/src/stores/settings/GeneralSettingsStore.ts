@@ -10,14 +10,25 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { ref } from "vue";
+
+interface MetricsEntry {
+  time: number;
+  metrics: MetricData;
+}
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
+  metricsHistory: MetricsEntry[];
   currentFieldLayout;
 }
+
+const MAX_METRIC_HISTORY = 60;
+const UPDATE_INTERVAL_MS = 900;
+const updateTimeElapsed = ref(true);
 
 export const useSettingsStore = defineStore("settings", {
   state: (): GeneralSettingsStore => ({
@@ -66,6 +77,7 @@ export const useSettingsStore = defineStore("settings", {
       ipAddress: undefined,
       uptime: undefined
     },
+    metricsHistory: [],
     currentFieldLayout: {
       field: {
         length: 16.4592,
@@ -100,6 +112,14 @@ export const useSettingsStore = defineStore("settings", {
         ipAddress: data.ipAddress || undefined,
         uptime: data.uptime || undefined
       };
+      if (updateTimeElapsed.value) {
+        updateTimeElapsed.value = false;
+        setTimeout(() => (updateTimeElapsed.value = true), UPDATE_INTERVAL_MS);
+
+        const now = Date.now();
+        this.metricsHistory.push({ time: now, metrics: this.metrics });
+        while (this.metricsHistory.length > MAX_METRIC_HISTORY) this.metricsHistory.shift();
+      }
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
       this.general = {
