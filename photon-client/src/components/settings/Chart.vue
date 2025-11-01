@@ -94,7 +94,7 @@ const getOptions = (data: ChartData[] = []) => {
         function (value) {
           return (value.max + 10) | 0;
         },
-      interval: props.min || props.max ? 50 : 20,
+      splitNumber: 2,
       splitLine: {
         show: true,
         lineStyle: {
