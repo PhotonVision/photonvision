@@ -1,10 +1,12 @@
 // Plugins
 apply plugin: "java"
-apply plugin: "jacoco"
+if (!project.hasProperty('skipJacoco') || !skipJacoco) {
+    apply plugin: "jacoco"
+}
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
 }
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
@@ -58,7 +60,9 @@ test {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
     workingDir = new File("${rootDir}")
-    finalizedBy jacocoTestReport
+    if (!project.hasProperty('skipJacoco') || !skipJacoco) {
+        finalizedBy jacocoTestReport
+    }
 }
 
 tasks.register('testHeadless', Test) {
@@ -74,25 +78,27 @@ tasks.register('testHeadless', Test) {
     workingDir = "../"
 }
 
-jacoco {
-    toolVersion = "0.8.10"
-    reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
-}
-
-jacocoTestReport {
-    dependsOn testHeadless
-
-    reports {
-        xml.required = true
-        csv.required = false
-        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+if (!project.hasProperty('skipJacoco') || !skipJacoco) {
+    jacoco {
+        toolVersion = "0.8.14"
+        reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
     }
 
-    afterEvaluate {
-        classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it,
-            exclude: "edu/wpi/**"
-            )
-        }))
+    jacocoTestReport {
+        dependsOn testHeadless
+
+        reports {
+            xml.required = true
+            csv.required = false
+            html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+        }
+
+        afterEvaluate {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it,
+                exclude: "edu/wpi/**"
+                )
+            }))
+        }
     }
 }

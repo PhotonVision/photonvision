@@ -1,0 +1,355 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import groovy.json.JsonSlurper
+import java.nio.file.*
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+apply plugin: 'edu.wpi.first.WpilibTools'
+
+ext {
+    nativeName = "photon-apple"
+    licenseFile = file("$rootDir/LICENSE")
+}
+
+wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+
+// Define addTaskToCopyAllOutputs before including javacommon.gradle
+ext.addTaskToCopyAllOutputs = { task ->
+    // No-op for now - photon-apple doesn't need copyAllOutputs
+}
+
+// Skip JaCoCo for Java 24 (not yet supported)
+ext.skipJacoco = true
+
+apply from: "${rootDir}/shared/javacommon.gradle"
+
+// Override Java version to 24 for this subproject only
+java {
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(24))
+    }
+}
+
+group = 'org.photonvision'
+version = pubVersion
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+def swiftBuildConfiguration() {
+    // Use debug for faster builds, release for production
+    // Swift builds to .build/arm64-apple-macosx/{debug|release}/
+    "release"
+}
+
+// Only build on macOS platforms (osxarm64 or osxx86-64)
+def isMacOS() {
+    return jniPlatform.equals("osxarm64") || jniPlatform.equals("osxx86-64")
+}
+
+def swiftProductsWithJExtractPlugin() {
+    if (!isMacOS()) {
+        return []
+    }
+
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+
+    def result = exec {
+        commandLine 'swift', 'package', 'describe', '--type', 'json'
+        standardOutput = stdout
+        errorOutput = stderr
+        ignoreExitValue = true
+    }
+
+    def jsonOutput = stdout.toString()
+
+    if (result.exitValue == 0) {
+        def json = new JsonSlurper().parseText(jsonOutput)
+        def products = json.targets
+                .findAll { target ->
+                    target.product_dependencies?.contains("JExtractSwiftPlugin")
+                }
+                .collectMany { target ->
+                    target.product_memberships ?: []
+                }
+        return products
+    } else {
+        logger.warn("Command failed: ${stderr.toString()}")
+        return []
+    }
+}
+
+def swiftCheckValid = tasks.register("swift-check-valid", Exec) {
+    onlyIf { isMacOS() }
+    commandLine "swift"
+    args("-version")
+}
+
+// Auto-publish swift-java to mavenLocal before building
+def publishSwiftJavaToMavenLocal = tasks.register("publishSwiftJavaToMavenLocal", Exec) {
+    description = "Publish swift-java SwiftKit libraries to mavenLocal"
+    onlyIf { isMacOS() }
+
+    // Check if swift-java submodule is initialized
+    doFirst {
+        def swiftJavaDir = new File(projectDir, "swift-java")
+        if (!swiftJavaDir.exists() || !new File(swiftJavaDir, "Package.swift").exists()) {
+            throw new GradleException(
+            "swift-java submodule not initialized. Please run: git submodule update --init --recursive"
+            )
+        }
+    }
+
+    workingDir = new File(projectDir, "swift-java")
+    commandLine "./gradlew"
+    args(":SwiftKitCore:publishToMavenLocal", ":SwiftKitFFM:publishToMavenLocal", "--quiet")
+}
+
+// Build swift-java native libraries
+def buildSwiftJavaNativeLibs = tasks.register("buildSwiftJavaNativeLibs", Exec) {
+    description = "Build swift-java native libraries (SwiftKitSwift dylib)"
+    onlyIf { isMacOS() }
+
+    workingDir = new File(projectDir, "swift-java")
+    commandLine "swift"
+    args("build", "--configuration", swiftBuildConfiguration())
+
+    outputs.dir("${projectDir}/swift-java/.build/arm64-apple-macosx/${swiftBuildConfiguration()}")
+}
+
+def jextract = tasks.register("jextract", Exec) {
+    description = "Generate Java wrappers for Swift CoreML library"
+    onlyIf { isMacOS() }
+    dependsOn swiftCheckValid, publishSwiftJavaToMavenLocal
+
+    inputs.file(new File(projectDir, "Package.swift"))
+    inputs.dir(new File(projectDir, "Sources"))
+
+    // monitor all targets/products which depend on the JExtract plugin
+    swiftProductsWithJExtractPlugin().each {
+        logger.info("[photon-apple:jextract] Swift input target: ${it}")
+        inputs.dir(new File(layout.projectDirectory.asFile, "Sources/${it}".toString()))
+    }
+    outputs.dir(layout.buildDirectory.dir("../.build/plugins/outputs/${layout.projectDirectory.asFile.getName().toLowerCase()}"))
+
+    File baseSwiftPluginOutputsDir = layout.buildDirectory.dir("../.build/plugins/outputs/").get().asFile
+    if (!baseSwiftPluginOutputsDir.exists()) {
+        baseSwiftPluginOutputsDir.mkdirs()
+    }
+    Files.walk(layout.buildDirectory.dir("../.build/plugins/outputs/").get().asFile.toPath()).each {
+        // Add any Java sources generated by the plugin to our sourceSet
+        if (it.endsWith("JExtractSwiftPlugin/src/generated/java")) {
+            outputs.dir(it)
+        }
+    }
+
+    workingDir = layout.projectDirectory
+    commandLine "swift"
+    args("build", "--configuration", swiftBuildConfiguration())
+
+    outputs.dir("${projectDir}/.build/arm64-apple-macosx/${swiftBuildConfiguration()}")
+}
+
+// Add test native dependencies for WPILib OpenCV
+def nativeConfigName = 'wpilibNativesTest'
+configurations {
+    wpilibNativesTest
+}
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+// Conditional source sets based on platform
+sourceSets {
+    main {
+        java {
+            if (isMacOS()) {
+                srcDir(jextract)
+            }
+        }
+    }
+    test {
+        java {
+            if (isMacOS()) {
+                srcDir(jextract)
+            }
+        }
+    }
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.test)
+
+dependencies {
+    // SwiftKit dependencies (from swift-java project, published to mavenLocal)
+    // Use 'api' so dependent projects (photon-core) can use these classes
+    if (isMacOS()) {
+        api 'org.swift.swiftkit:swiftkit-core:1.0-SNAPSHOT'
+        api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
+    }
+
+    // OpenCV from WPILib (already provided by parent)
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, wpi.versions.opencvVersion.get())
+
+    // Test dependencies
+    testImplementation(platform('org.junit:junit-bom:5.11.4'))
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testImplementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, wpi.versions.opencvVersion.get())
+
+    // Native OpenCV libraries for tests
+    wpilibNativesTest wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+}
+
+tasks.build {
+    if (isMacOS()) {
+        dependsOn("jextract")
+    }
+}
+
+// Ensure SwiftKit libraries are published before Java compilation (dependency resolution)
+tasks.named('compileJava') {
+    if (isMacOS()) {
+        dependsOn publishSwiftJavaToMavenLocal
+    }
+}
+
+tasks.named('test', Test) {
+    useJUnitPlatform()
+
+    // Skip tests by default - they require a CoreML model and have JaCoCo Java 24 compatibility issues
+    // To run tests: ./gradlew :photon-apple:test -PrunAppleTests
+    onlyIf { isMacOS() }
+
+    // Set java.library.path to include the Swift library directory, Swift runtime, and OpenCV natives
+    // OpenCV natives are extracted to NativeMain (shared between main and test)
+    def swiftLibPath = "${projectDir}/.build/arm64-apple-macosx/${swiftBuildConfiguration()}"
+    def swiftJavaLibPath = "${projectDir}/swift-java/.build/arm64-apple-macosx/${swiftBuildConfiguration()}"
+    def opencvLibPath = "${buildDir}/NativeMain/RuntimeLibs/osx/universal/shared"
+    systemProperty 'java.library.path', "${swiftLibPath}:${swiftJavaLibPath}:${opencvLibPath}:/usr/lib/swift"
+
+    // Ensure Swift libraries (both photon-apple and swift-java) are built before tests run
+    dependsOn 'jextract', 'buildSwiftJavaNativeLibs'
+
+    testLogging {
+        events "failed"
+        exceptionFormat = "full"
+        showStandardStreams = true
+    }
+}
+
+// Disable JaCoCo test report (Java 24 not supported by JaCoCo 0.8.10)
+tasks.named('jacocoTestReport').configure {
+    enabled = false
+}
+
+// ==== Jar publishing
+
+List<String> swiftProductDylibPaths() {
+    if (!isMacOS()) {
+        return []
+    }
+
+    def process = [
+        'swift',
+        'package',
+        'describe',
+        '--type',
+        'json'
+    ].execute()
+    process.waitFor()
+
+    if (process.exitValue() != 0) {
+        logger.warn("[swift describe] command failed. Skipping Swift product dylib paths.")
+        return []
+    }
+
+    def json = new JsonSlurper().parseText(process.text)
+
+    def products =
+            json.targets.collect { target ->
+                target.product_memberships
+            }.flatten()
+
+    def productDylibPaths = products.collect {
+        logger.info("[photon-apple] Include Swift product: '${it}' in JAR resources.")
+        "${layout.projectDirectory}/.build/${swiftBuildConfiguration()}/lib${it}.dylib"
+    }
+
+    return productDylibPaths
+}
+
+processResources {
+    if (isMacOS()) {
+        dependsOn "jextract"
+
+        // Package Swift dylibs into JAR resources
+        def buildConfig = swiftBuildConfiguration()
+        def buildDir = "${layout.projectDirectory}/.build/arm64-apple-macosx/${buildConfig}"
+
+        from(buildDir) {
+            include "*.dylib"
+            into 'native/macos'
+        }
+    }
+}
+
+jar {
+    archiveClassifier = isMacOS() ? osdetector.classifier : 'stub'
+
+    // Add manifest info
+    manifest {
+        attributes(
+                'Implementation-Title': 'PhotonVision Apple CoreML Vision',
+                'Implementation-Version': version,
+                'Built-By': System.getProperty('user.name'),
+                'Built-Date': new Date().format('yyyy-MM-dd HH:mm:ss'),
+                'Built-JDK': System.getProperty('java.version'),
+                'macOS-Only': isMacOS()
+                )
+    }
+}
+
+base {
+    archivesName = "photon-apple"
+}
+
+// Configure javadoc to be lenient with auto-generated code
+tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId = "photon-apple"
+            groupId = 'org.photonvision'
+            version = pubVersion
+            from components.java
+        }
+    }
+}

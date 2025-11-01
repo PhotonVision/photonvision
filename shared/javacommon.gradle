@@ -4,8 +4,8 @@ apply plugin: 'jacoco'
 apply plugin: 'com.google.protobuf'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_24
+    targetCompatibility = JavaVersion.VERSION_24
 }
 
 def baseArtifactId = nativeName
@@ -152,7 +152,7 @@ dependencies {
 }
 
 jacoco {
-    toolVersion = "0.8.10"
+    toolVersion = "0.8.14"
 }
 
 jacocoTestReport {

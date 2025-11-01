@@ -122,6 +122,13 @@ public abstract class VisionSourceSettables {
 
     protected void calculateFrameStaticProps() {
         var videoMode = getCurrentVideoMode();
+        logger.debug(
+                String.format(
+                        "calculateFrameStaticProps: videoMode=%s (width=%d, height=%d), FOV=%.1f",
+                        videoMode != null ? "non-null" : "NULL",
+                        videoMode != null ? videoMode.width : 0,
+                        videoMode != null ? videoMode.height : 0,
+                        getFOV()));
         this.frameStaticProperties =
                 new FrameStaticProperties(
                         videoMode,
@@ -133,9 +140,25 @@ public abstract class VisionSourceSettables {
                                                         && it.unrotatedImageSize.height == videoMode.height)
                                 .findFirst()
                                 .orElse(null));
+        logger.debug(
+                String.format(
+                        "  Created frameStaticProperties: imageArea=%.0f, width=%d, height=%d",
+                        this.frameStaticProperties.imageArea,
+                        this.frameStaticProperties.imageWidth,
+                        this.frameStaticProperties.imageHeight));
     }
 
     public FrameStaticProperties getFrameStaticProperties() {
+        if (frameStaticProperties != null) {
+            logger.trace(
+                    String.format(
+                            "getFrameStaticProperties: imageArea=%.0f, width=%d, height=%d",
+                            frameStaticProperties.imageArea,
+                            frameStaticProperties.imageWidth,
+                            frameStaticProperties.imageHeight));
+        } else {
+            logger.warn("getFrameStaticProperties: frameStaticProperties is NULL!");
+        }
         return frameStaticProperties;
     }
 

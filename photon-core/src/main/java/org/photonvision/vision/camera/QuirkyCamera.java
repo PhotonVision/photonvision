@@ -39,7 +39,7 @@ public class QuirkyCamera {
                     // SnapCamera on Windows
                     new QuirkyCamera(-1, -1, "Snap Camera", CameraQuirk.CompletelyBroken),
                     // Mac Facetime Camera shared into Windows in Bootcamp
-                    new QuirkyCamera(-1, -1, "FaceTime HD Camera", CameraQuirk.CompletelyBroken),
+                    // new QuirkyCamera(-1, -1, "FaceTime HD Camera", CameraQuirk.CompletelyBroken),
                     // Microsoft Lifecam
                     new QuirkyCamera(-1, -1, "LifeCam HD-3000", CameraQuirk.LifeCamControls),
                     // Microsoft Lifecam
