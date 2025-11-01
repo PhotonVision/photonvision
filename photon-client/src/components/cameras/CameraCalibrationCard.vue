@@ -587,6 +587,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-col>
           <v-col cols="6" class="pa-0 pl-2">
             <v-btn
+              v-if="isCalibrating"
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
@@ -603,9 +604,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               }}</span>
             </v-btn>
             <v-btn
+              v-if="!isCalibrating"
               size="small"
               block
-              v-if="!isCalibrating"
               color="buttonActive"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               :disabled="!settingsValid"
