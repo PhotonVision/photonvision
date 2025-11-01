@@ -10,11 +10,10 @@ import {
   type PVUsbCameraInfo,
   type UiCameraConfiguration
 } from "@/types/SettingTypes";
-import { getResolutionString } from "@/lib/PhotonUtils";
+import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
-import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { useTheme } from "vuetify";
@@ -28,33 +27,9 @@ const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
 
-  axios
-    .post("/utils/activateMatchedCamera", { cameraUniqueName: moduleUniqueName })
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Camera activated successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to activate this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => (activatingModule.value = false));
+  axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
+    cameraUniqueName: moduleUniqueName
+  }).finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
@@ -66,66 +41,18 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
     cameraInfo: cameraInfo
   };
 
-  axios
-    .post("/utils/assignUnmatchedCamera", payload)
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Unmatched camera assigned successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to assign this unmatched camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => (assigningCamera.value = false));
+  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload).finally(
+    () => (assigningCamera.value = false)
+  );
 };
 
 const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  axios
-    .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Camera deactivated successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to deactivate this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => (deactivatingModule.value = false));
+  axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName }).finally(
+    () => (deactivatingModule.value = false)
+  );
 };
 
 const deletingCamera = ref(false);
@@ -136,36 +63,10 @@ const deleteThisCamera = (cameraName: string) => {
     cameraUniqueName: cameraName
   };
 
-  axios
-    .post("/utils/nukeOneCamera", payload)
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Camera deleted successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to delete this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => {
-      setCameraDeleting(null);
-      deletingCamera.value = false;
-    });
+  axiosPost("/utils/nukeOneCamera", "delete a camera", payload).finally(() => {
+    setCameraDeleting(null);
+    deletingCamera.value = false;
+  });
 };
 
 const cameraConnected = (uniquePath: string): boolean => {
