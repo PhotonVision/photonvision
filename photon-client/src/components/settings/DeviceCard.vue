@@ -6,7 +6,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import axios from "axios";
-import Chart from "./Chart.vue";
+import MetricsChart from "./MetricsChart.vue";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -500,28 +500,28 @@ watch(useSettingsStore().metricsHistory, () => {
             <span>CPU Usage</span>
             <span>{{ (cpuUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" id="chart" />
+          <MetricsChart :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ (cpuMemoryUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" id="chart" />
+          <MetricsChart :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
             <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}°C</span>
           </div>
-          <Chart :data="cpuTempData" type="temperature" color="red" id="chart" />
+          <MetricsChart :data="cpuTempData" type="temperature" color="red" id="chart" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
             <span>{{ (diskUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
           </div>
-          <Chart :data="diskUsageData" type="percentage" :min="0" :max="100" color="green" id="chart" />
+          <MetricsChart :data="diskUsageData" type="percentage" :min="0" :max="100" color="green" id="chart" />
         </v-card-text>
       </v-card>
     </v-col>
