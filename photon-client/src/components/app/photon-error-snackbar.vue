@@ -19,7 +19,7 @@ import { useStateStore } from "@/stores/StateStore";
       height="15"
       :color="useStateStore().snackbarData.progressBarColor"
     >
-      <template v-slot:default="{ value }">
+      <template #default="{ value }">
         <strong> {{ Math.ceil(value) }}% </strong>
       </template>
     </v-progress-linear>
