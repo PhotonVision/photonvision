@@ -144,12 +144,12 @@ const handleBulkImport = () => {
       const uploadPercentage = (progress || 0) * 100.0;
       if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-            message: "Object Detection Models Upload in Progress",
-            color: "secondary",
-            timeout: -1,
-            progressBar: uploadPercentage,
-            progressBarColor: "primary"
-          });
+          message: "Object Detection Models Upload in Progress",
+          color: "secondary",
+          timeout: -1,
+          progressBar: uploadPercentage,
+          progressBarColor: "primary"
+        });
       } else {
         useStateStore().showSnackbarMessage({
           message: "Importing New Object Detection Models...",
