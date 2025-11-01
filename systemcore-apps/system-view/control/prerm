@@ -1,0 +1,27 @@
+#!/bin/sh
+PACKAGE_NAME="pv-system-viewer"
+
+echo "Stopping $PACKAGE_NAME service..."
+
+if systemctl is-active $PACKAGE_NAME.service >/dev/null 2>&1; then
+    echo "Service is running, stopping it..."
+    if systemctl stop $PACKAGE_NAME.service; then
+        echo "Service stopped successfully"
+    else
+        echo "Service stop may have failed, continuing anyway..."
+    fi
+else
+    echo "Service was not running"
+fi
+
+# Disable the service
+echo "Disabling service auto-start..."
+if systemctl disable $PACKAGE_NAME.service 2>/dev/null; then
+    echo "Service auto-start disabled"
+else
+    echo "Service was not enabled or disable failed"
+fi
+
+echo "Service stopped and disabled"
+
+exit 0
