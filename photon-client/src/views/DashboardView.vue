@@ -64,10 +64,8 @@ const cameraMismatchWarningShown = computed<boolean>(() => {
   return (
     Object.values(useCameraSettingsStore().cameras)
       // Ignore placeholder camera
-      .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
-      .some((camera) => {
-        return camera.mismatch;
-      })
+      .filter((camera) => camera !== PlaceholderCameraSettings)
+      .some((camera) => camera.mismatch)
   );
 });
 
