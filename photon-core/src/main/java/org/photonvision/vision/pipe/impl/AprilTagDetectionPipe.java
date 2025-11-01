@@ -20,7 +20,10 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
+import org.opencv.core.Mat;
+import org.photonvision.jni.GpuDetectorJNI;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
@@ -29,13 +32,22 @@ public class AprilTagDetectionPipe
         extends CVPipe<
                 CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
         implements Releasable {
-    private AprilTagDetector m_detector = new AprilTagDetector();
+    private AprilTagDetector m_detector = null;
+    private long cudaDetector = 0;
+    private boolean cudaAccelerated;
 
-    public AprilTagDetectionPipe() {
+    public AprilTagDetectionPipe(boolean cudaAccelerated) {
         super();
 
-        m_detector.addFamily("tag16h5");
-        m_detector.addFamily("tag36h11");
+        this.cudaAccelerated = cudaAccelerated;
+
+        if (cudaAccelerated) {
+            cudaDetector = GpuDetectorJNI.createGpuDetector(640, 480); // just a guess
+        } else {
+            m_detector = new AprilTagDetector();
+            m_detector.addFamily("tag16h5");
+            m_detector.addFamily("tag36h11");
+        }
     }
 
     @Override
@@ -44,11 +56,18 @@ public class AprilTagDetectionPipe
             return List.of();
         }
 
-        if (m_detector == null) {
-            throw new RuntimeException("Apriltag detector was released!");
+        AprilTagDetection[] ret;
+        if (cudaAccelerated) {
+            if (cudaDetector == 0) {
+                throw new RuntimeException("CUDA Apriltag detector was released!");
+            }
+            ret = GpuDetectorJNI.processimage(cudaDetector, in.getMat().getNativeObjAddr());
+        } else {
+            if (m_detector == null) {
+                throw new RuntimeException("Apriltag detector was released!");
+            }
+            ret = m_detector.detect(in.getMat());
         }
-
-        var ret = m_detector.detect(in.getMat());
 
         if (ret == null) {
             return List.of();
@@ -60,11 +79,43 @@ public class AprilTagDetectionPipe
     @Override
     public void setParams(AprilTagDetectionPipeParams newParams) {
         if (this.params == null || !this.params.equals(newParams)) {
-            m_detector.setConfig(newParams.detectorParams());
-            m_detector.setQuadThresholdParameters(newParams.quadParams());
+            if (this.cudaAccelerated != newParams.useCuda) {
+                if (newParams.useCuda) {
+                    cudaDetector = GpuDetectorJNI.createGpuDetector(640, 480);
+                    m_detector.close();
+                    m_detector = null;
+                } else {
+                    m_detector = new AprilTagDetector();
+                    m_detector.addFamily("tag16h5");
+                    m_detector.addFamily("tag36h11");
+                    GpuDetectorJNI.destroyGpuDetector(cudaDetector);
+                }
+                this.cudaAccelerated = newParams.useCuda;
+            }
+            if (cudaAccelerated) {
+                if (newParams.cal == null) return;
 
-            m_detector.clearFamilies();
-            m_detector.addFamily(newParams.family().getNativeName());
+                final Mat cameraMatrix = newParams.cal.getCameraIntrinsicsMat();
+                final Mat distCoeffs = newParams.cal.getDistCoeffsMat();
+                if (cameraMatrix == null || distCoeffs == null) return;
+                var cx = cameraMatrix.get(0, 2)[0];
+                var cy = cameraMatrix.get(1, 2)[0];
+                var fx = cameraMatrix.get(0, 0)[0];
+                var fy = cameraMatrix.get(1, 1)[0];
+                var k1 = distCoeffs.get(0, 0)[0];
+                var k2 = distCoeffs.get(0, 1)[0];
+                var k3 = distCoeffs.get(0, 4)[0];
+                var p1 = distCoeffs.get(0, 2)[0];
+                var p2 = distCoeffs.get(0, 3)[0];
+
+                GpuDetectorJNI.setparams(cudaDetector, fx, cx, fy, cy, k1, k2, p1, p2, k3);
+            } else {
+                m_detector.setConfig(newParams.detectorParams());
+                m_detector.setQuadThresholdParameters(newParams.quadParams());
+
+                m_detector.clearFamilies();
+                m_detector.addFamily(newParams.family().getNativeName());
+            }
         }
 
         super.setParams(newParams);
@@ -72,12 +123,19 @@ public class AprilTagDetectionPipe
 
     @Override
     public void release() {
-        m_detector.close();
-        m_detector = null;
+        if (cudaAccelerated) {
+            GpuDetectorJNI.destroyGpuDetector(cudaDetector);
+            cudaDetector = 0;
+        } else {
+            m_detector.close();
+            m_detector = null;
+        }
     }
 
     public static record AprilTagDetectionPipeParams(
             AprilTagFamily family,
             AprilTagDetector.Config detectorParams,
-            AprilTagDetector.QuadThresholdParameters quadParams) {}
+            AprilTagDetector.QuadThresholdParameters quadParams,
+            CameraCalibrationCoefficients cal,
+            boolean useCuda) {}
 }
