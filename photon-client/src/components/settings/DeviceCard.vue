@@ -338,7 +338,7 @@ watch(useSettingsStore().metricsHistory, () => {
   }));
   cpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
-    value: ((entry.metrics.ramUtil ?? 0) / (entry.metrics.ramMem ?? -1.0)) * 100
+    value: entry.metrics.ramUtil === -1 ? -1 : ((entry.metrics.ramUtil ?? 0) / (entry.metrics.ramMem ?? -1.0)) * 100
   }));
   diskUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
@@ -362,7 +362,7 @@ watch(useSettingsStore().metricsHistory, () => {
         <v-card-text class="flex-0-0">
           <v-table>
             <tbody>
-              <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)">
+              <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
                 <td :key="itemIndex">
                   {{ item.header }}
                 </td>
@@ -493,7 +493,7 @@ watch(useSettingsStore().metricsHistory, () => {
       <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
         <v-card-title class="d-flex justify-space-between">
           <span>Device Metrics</span>
-          <v-btn variant="text" @click="fetchMetrics" class="refresh">
+          <v-btn variant="text" class="refresh" @click="fetchMetrics">
             <v-icon start class="open-icon">mdi-reload</v-icon>
             Force Refresh
           </v-btn>
@@ -501,30 +501,30 @@ watch(useSettingsStore().metricsHistory, () => {
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3">
             <span>CPU Usage</span>
-            <span>{{ (cpuUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
+            <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" id="chart" />
+          <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
-            <span>{{ (cpuMemoryUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
+            <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" id="chart" />
+          <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ (cpuTempData.at(-1)?.value ?? 0) | 0 }}°C</span>
+            <span>{{ Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
-          <MetricsChart :data="cpuTempData" type="temperature" color="red" id="chart" />
+          <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Disk Usage</span>
-            <span>{{ (diskUsageData.at(-1)?.value ?? 0) | 0 }}%</span>
+            <span>{{ Math.round(diskUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart :data="diskUsageData" type="percentage" :min="0" :max="100" color="green" id="chart" />
+          <MetricsChart id="chart" :data="diskUsageData" type="percentage" :min="0" :max="100" color="green" />
         </v-card-text>
       </v-card>
     </v-col>

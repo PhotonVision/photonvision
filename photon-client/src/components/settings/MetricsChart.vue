@@ -61,7 +61,7 @@ const getOptions = (data: ChartData[] = []) => {
         }
       },
       splitNumber: 4,
-      min: now - 95 * 1000,
+      min: now - 55 * 1000,
       axisLine: {
         lineStyle: {
           color: theme.global.name.value === "LightTheme" ? "#aaa" : "#777"
@@ -111,7 +111,7 @@ const getOptions = (data: ChartData[] = []) => {
 };
 
 const getSeries = (data: ChartData[] = []) => {
-  let color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}`];
+  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}`];
   return [
     {
       type: "line",

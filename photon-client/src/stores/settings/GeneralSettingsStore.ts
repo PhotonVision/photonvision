@@ -26,7 +26,7 @@ interface GeneralSettingsStore {
   currentFieldLayout;
 }
 
-const MAX_METRIC_HISTORY = 100;
+const MAX_METRIC_HISTORY = 60;
 const UPDATE_INTERVAL_MS = 900;
 const updateTimeElapsed = ref(true);
 
@@ -114,9 +114,9 @@ export const useSettingsStore = defineStore("settings", {
       };
       if (updateTimeElapsed.value) {
         updateTimeElapsed.value = false;
-        const now = Date.now();
         setTimeout(() => (updateTimeElapsed.value = true), UPDATE_INTERVAL_MS);
 
+        const now = Date.now();
         this.metricsHistory.push({ time: now, metrics: this.metrics });
         while (this.metricsHistory.length > MAX_METRIC_HISTORY) this.metricsHistory.shift();
       }
