@@ -2,6 +2,10 @@
 
 ## Versions
 
+:::{note}
+If you work on other projects that use different versions of the same linters as PhotonVision, you may find it beneficial to use a [venv](https://docs.python.org/3/library/venv.html) instead of installing the linters globally. This will allow you to have different versions of the same linter installed for different projects.
+:::
+
 The correct versions for each linter can be found under the linting workflow located [here](https://github.com/PhotonVision/photonvision/tree/main/.github/workflows).For *doc8*, the version can be found in `docs/requirements.txt`. If you've linted, and are still unable to pass CI, please check the versions of your linters.
 
 ## Frontend
