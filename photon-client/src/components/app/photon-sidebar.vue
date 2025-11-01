@@ -25,8 +25,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
 <template>
   <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
     <v-list nav color="primary">
-      <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
-      <v-list-item :class="renderCompact ? 'pr-0 pl-0' : ''" style="display: flex; justify-content: center">
+      <v-list-item class="pr-0 pl-0" style="display: flex; justify-content: center">
         <template #prepend>
           <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
           <img v-else class="logo" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
