@@ -193,9 +193,27 @@ public class Calibrate3dPipe
         JsonMatOfDouble cameraMatrixMat = JsonMatOfDouble.fromMat(cameraMatrix);
         JsonMatOfDouble distortionCoefficientsMat = JsonMatOfDouble.fromMat(distortionCoefficients);
 
+        // Opencv is lame, so we can only assume all points are inliers
+        var inliners =
+                objPoints.stream()
+                        .map(
+                                it -> {
+                                    var array = new boolean[it.rows() * it.cols()];
+                                    Arrays.fill(array, true);
+                                    return array;
+                                })
+                        .collect(Collectors.toList());
+
         var observations =
                 createObservations(
-                        in, cameraMatrix, distortionCoefficients, rvecs, tvecs, null, imageSavePath);
+                        in,
+                        cameraMatrix,
+                        distortionCoefficients,
+                        rvecs,
+                        tvecs,
+                        inliners,
+                        new double[] {0, 0},
+                        imageSavePath);
 
         cameraMatrix.release();
         distortionCoefficients.release();
@@ -265,45 +283,17 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat =
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
-        // Calculate optimized board poses manually. We get this for free from mrcal
-        // too, but that's not JNIed (yet)
+        // Pull optimised camera to board poses out from the JNI
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
+        for (var o : result.optimizedPoses) {
+            var rvec = new MatOfDouble();
+            var tvec = new MatOfDouble();
 
-        for (var o : in) {
-            var rvec = new Mat();
-            var tvec = new Mat();
+            rvec.fromArray(o.getRotation().getAxis().times(o.getRotation().getAngle()).getData());
+            tvec.fromArray(
+                    o.getTranslation().getX(), o.getTranslation().getY(), o.getTranslation().getZ());
 
-            // If the calibration points contain points that are negative then we need to exclude them,
-            // they are considered points that we dont want to use in calibration/solvepnp. These points
-            // are required prior to this to allow mrcal to work.
-            Point3[] oPoints = o.objectPoints.toArray();
-            Point[] iPoints = o.imagePoints.toArray();
-
-            List<Point3> outputOPoints = new ArrayList<Point3>();
-            List<Point> outputIPoints = new ArrayList<Point>();
-
-            for (int i = 0; i < iPoints.length; i++) {
-                if (iPoints[i].x >= 0 && iPoints[i].y >= 0) {
-                    outputIPoints.add(iPoints[i]);
-                }
-            }
-            for (int i = 0; i < oPoints.length; i++) {
-                if (oPoints[i].x >= 0 && oPoints[i].y >= 0 && oPoints[i].z >= 0) {
-                    outputOPoints.add(oPoints[i]);
-                }
-            }
-
-            o.objectPoints.fromList(outputOPoints);
-            o.imagePoints.fromList(outputIPoints);
-
-            Calib3d.solvePnP(
-                    o.objectPoints,
-                    o.imagePoints,
-                    cameraMatrixMat.getAsMatOfDouble(),
-                    distortionCoefficientsMat.getAsMatOfDouble(),
-                    rvec,
-                    tvec);
             rvecs.add(rvec);
             tvecs.add(tvec);
         }
@@ -315,6 +305,7 @@ public class Calibrate3dPipe
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
                         tvecs,
+                        result.cornersUsed,
                         new double[] {result.warp_x, result.warp_y},
                         imageSavePath);
 
@@ -338,6 +329,7 @@ public class Calibrate3dPipe
             MatOfDouble distortionCoefficients_,
             List<Mat> rvecs,
             List<Mat> tvecs,
+            List<boolean[]> cornersUsed,
             double[] calobject_warp,
             Path imageSavePath) {
         List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
@@ -354,11 +346,11 @@ public class Calibrate3dPipe
         // For each observation, calc reprojection error
         Mat jac_temp = new Mat();
         List<BoardObservation> observations = new ArrayList<>();
-        for (int i = 0; i < objPoints.size(); i++) {
+        for (int snapshotId = 0; snapshotId < objPoints.size(); snapshotId++) {
             MatOfPoint3f i_objPtsNative = new MatOfPoint3f();
-            objPoints.get(i).copyTo(i_objPtsNative);
+            objPoints.get(snapshotId).copyTo(i_objPtsNative);
             var i_objPts = i_objPtsNative.toList();
-            var i_imgPts = ((MatOfPoint2f) imgPts.get(i)).toList();
+            var i_imgPts = ((MatOfPoint2f) imgPts.get(snapshotId)).toList();
 
             // Apply warp, if set
             if (calobject_warp != null && calobject_warp.length == 2) {
@@ -387,8 +379,8 @@ public class Calibrate3dPipe
             try {
                 Calib3d.projectPoints(
                         i_objPtsNative,
-                        rvecs.get(i),
-                        tvecs.get(i),
+                        rvecs.get(snapshotId),
+                        tvecs.get(snapshotId),
                         cameraMatrix_,
                         distortionCoefficients_,
                         img_pts_reprojected,
@@ -402,18 +394,28 @@ public class Calibrate3dPipe
 
             var reprojectionError = new ArrayList<Point>();
             for (int j = 0; j < img_pts_reprojected_list.size(); j++) {
+                // Outliers are not part of the calibration, so don't calculate error for them
+                if (!cornersUsed.get(snapshotId)[j]) {
+                    continue;
+                }
+
                 // error = (measured - expected)
                 var measured = img_pts_reprojected_list.get(j);
                 var expected = i_imgPts.get(j);
+                assert measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0
+                        : "Negative corner in reprojection error calc! Measured: "
+                                + measured
+                                + ", expected: "
+                                + expected;
                 var error = new Point(measured.x - expected.x, measured.y - expected.y);
                 reprojectionError.add(error);
             }
 
-            var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(i), tvecs.get(i));
+            var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(snapshotId), tvecs.get(snapshotId));
 
-            var inputImage = in.get(i).inputImage;
+            var inputImage = in.get(snapshotId).inputImage;
             Path image_path = null;
-            String snapshotName = "img" + i + ".png";
+            String snapshotName = "img" + snapshotId + ".png";
             if (inputImage != null) {
                 image_path = Paths.get(imageSavePath.toString(), snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
@@ -421,7 +423,13 @@ public class Calibrate3dPipe
 
             observations.add(
                     new BoardObservation(
-                            i_objPts, i_imgPts, reprojectionError, camToBoard, true, snapshotName, image_path));
+                            i_objPts,
+                            i_imgPts,
+                            reprojectionError,
+                            camToBoard,
+                            cornersUsed.get(snapshotId),
+                            snapshotName,
+                            image_path));
         }
         jac_temp.release();
 
