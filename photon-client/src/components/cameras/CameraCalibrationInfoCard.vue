@@ -3,9 +3,8 @@ import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes"
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
-import { getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
+import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
-import axios from "axios";
 
 const theme = useTheme();
 
@@ -14,36 +13,11 @@ const props = defineProps<{
 }>();
 
 const removeCalibration = () => {
-  axios
-    .post("/calibration/remove", {
-      cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
-      width: props.videoFormat.resolution.width,
-      height: props.videoFormat.resolution.height
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  axiosPost("/calibration/remove", "delete a camera calibration", {
+    cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
+    width: props.videoFormat.resolution.width,
+    height: props.videoFormat.resolution.height
+  });
 };
 
 const exportCalibration = ref();
