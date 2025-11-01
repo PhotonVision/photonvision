@@ -63,8 +63,11 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {%- for field in fields -%}
 {%- if field.type | is_shimmed %}
         {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
+{%- elif field.optional == True and field.vla == True %}
+        // {{ field.name }} is optional vla!
+        packet.encodeOptionalVla(value.{{ field.name }});
 {%- elif field.optional == True %}
-        // {{ field.name }} is optional! it better not be a VLA too
+        // {{ field.name }} is optional!
         packet.encodeOptional(value.{{ field.name }});
 {%- elif field.vla == True and field.type | is_intrinsic %}
         // {{ field.name }} is a intrinsic VLA!
@@ -90,8 +93,11 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
+{%- elif field.optional == True and field.vla == True %}
+        // {{ field.name }} is optional vla!
+        ret.{{ field.name }} = packet.decodeOptionalVla({{ field.type }}.photonStruct);
 {%- elif field.optional == True %}
-        // {{ field.name }} is optional! it better not be a VLA too
+        // {{ field.name }} is optional!
         ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct);
 {%- elif field.vla == True and not field.type | is_intrinsic %}
         // {{ field.name }} is a custom VLA!
