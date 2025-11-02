@@ -8,7 +8,7 @@ export default defineConfigWithVueTs(
   vueTsConfigs.recommended,
   skipFormattingConfig,
   {
-    ignores: ["**/dist/**"]
+    ignores: ["**/dist/**", "playwright-report"]
   },
   {
     //extends: ["js/recommended"],
