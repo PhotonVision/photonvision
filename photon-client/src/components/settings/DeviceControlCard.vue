@@ -3,59 +3,16 @@ import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvInput from "@/components/common/pv-input.vue";
-import axios from "axios";
 import { useTheme } from "vuetify";
+import { axiosPost } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
 const restartProgram = () => {
-  axios
-    .post("/utils/restartProgram")
-    .then(() => {
-      useStateStore().showSnackbarMessage({ message: "Successfully sent program restart request", color: "success" });
-    })
-    .catch((error) => {
-      // This endpoint always return 204 regardless of outcome
-      if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
+  axiosPost("/utils/restartProgram", "restart PhotonVision");
 };
 const restartDevice = () => {
-  axios
-    .post("/utils/restartDevice")
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the restart command. It isn't confirmed if a device restart will occur.",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to restart the device.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
+  axiosPost("/utils/restartDevice", "restart the device");
 };
 
 const address = inject<string>("backendHost");
@@ -77,47 +34,27 @@ const handleOfflineUpdate = () => {
     timeout: -1
   });
 
-  axios
-    .post("/utils/offlineUpdate", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
-        const uploadPercentage = (progress || 0) * 100.0;
-        if (uploadPercentage < 99.5) {
-          useStateStore().showSnackbarMessage({
-            message: "New Software Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
-            color: "secondary",
-            timeout: -1
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            message: "Installing uploaded software...",
-            color: "secondary",
-            timeout: -1
-          });
-        }
-      }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
-    })
-    .catch((error) => {
-      if (error.response) {
+  axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: ({ progress }) => {
+      const uploadPercentage = (progress || 0) * 100.0;
+      if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message: "New Software Upload in Progress",
+          color: "secondary",
+          timeout: -1,
+          progressBar: uploadPercentage,
+          progressBarColor: "primary"
         });
       } else {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "Installing uploaded software...",
+          color: "secondary",
+          timeout: -1
         });
       }
-    });
+    }
+  });
 };
 
 const exportLogFile = ref();
@@ -166,29 +103,9 @@ const handleSettingsImport = () => {
       break;
   }
 
-  axios
-    .post(`/settings${settingsEndpoint}`, formData, { headers: { "Content-Type": "multipart/form-data" } })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  axiosPost(`/settings${settingsEndpoint}`, "import settings", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 
   showImportDialog.value = false;
   importType.value = undefined;
@@ -199,32 +116,8 @@ const showFactoryReset = ref(false);
 const expected = "Delete Everything";
 const yesDeleteMySettingsText = ref("");
 const nukePhotonConfigDirectory = () => {
-  axios
-    .post("/utils/nukeConfigDirectory")
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the reset command. Waiting for backend to start back up",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfill the request to reset the device.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
+  axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
+
   showFactoryReset.value = false;
 };
 </script>

@@ -71,7 +71,7 @@ tasks.register('testHeadless', Test) {
         showStandardStreams = true
     }
     exclude '**/*BenchmarkTest*'
-    workingDir = "../"
+    workingDir = new File("${rootDir}")
 }
 
 jacoco {
@@ -94,5 +94,12 @@ jacocoTestReport {
             exclude: "edu/wpi/**"
             )
         }))
+    }
+}
+
+// Only run headless tests from the build task
+gradle.taskGraph.whenReady { graph ->
+    if (graph.hasTask(build)) {
+        test.enabled = false
     }
 }

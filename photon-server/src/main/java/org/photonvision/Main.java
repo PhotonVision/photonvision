@@ -178,7 +178,7 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if (Platform.isSystemCore() || true) {
+        if (Platform.isSystemCore()) {
             String docsLink =
                     "https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support";
 
