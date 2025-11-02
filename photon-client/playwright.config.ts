@@ -74,7 +74,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "./gradlew run",
+    command: process.platform == "win32" ? "" : "./" + "gradlew run",
     url: "http://localhost:5800",
     timeout: 300 * 1000,
     reuseExistingServer: !process.env.CI,
