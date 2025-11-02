@@ -253,14 +253,22 @@ public class NetworkTablesManager {
         String mac = NetworkUtils.getMacAddress();
         if (!mac.equals(currentMacAddress)) {
             logger.debug("MAC address changed! New MAC address is " + mac + ", was " + currentMacAddress);
+            kCoprocTable.getSubTable(currentMacAddress).getEntry("hostname").unpublish();
+            kCoprocTable.getSubTable(currentMacAddress).getEntry("cameraNames").unpublish();
             currentMacAddress = mac;
         }
-        if (mac.isEmpty()) {
+        if (mac.equals("00-00-00-00-00-00")) {
             logger.error("Cannot check hostname and camera names, MAC address is not set!");
             return;
         }
 
-        String hostname = ConfigManager.getInstance().getConfig().getNetworkConfig().hostname;
+        var config = ConfigManager.getInstance().getConfig();
+        String hostname;
+        if (config.getNetworkConfig().shouldManage) {
+            hostname = config.getNetworkConfig().hostname;
+        } else {
+            hostname = CameraServerJNI.getHostname();
+        }
         if (hostname == null || hostname.isEmpty()) {
             logger.error("Cannot check hostname and camera names, hostname is not set!");
             return;
