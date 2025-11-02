@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import path from "path";
 
 /**
  * Read environment variables from file.
@@ -72,7 +73,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "./gradlew run",
+    command: path.normalize("./gradlew") + " run",
     url: "http://localhost:5800",
     timeout: 300 * 1000,
     reuseExistingServer: !process.env.CI,
