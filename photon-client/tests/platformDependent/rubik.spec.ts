@@ -10,7 +10,6 @@ const newModelName = "foo-bar";
 test.beforeEach(async ({ page }) => {
   page.goto("/#/settings");
   await axios.post("/override/platform", { platform: "rubik" });
-  await axios.post("/activateTestMode");
 });
 
 test("testSettingsPage", async ({ page }) => {

@@ -12,4 +12,5 @@ export const test = base.extend({
 test.beforeAll(async () => {
   console.log("Running before all tests: Resetting backend state...");
   await axios.post("http://localhost:5800/api/test/resetBackend");
+  await axios.post("http://localhost:5800/api/test/activateTestMode");
 });
