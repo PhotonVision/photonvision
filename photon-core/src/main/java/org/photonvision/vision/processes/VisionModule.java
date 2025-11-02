@@ -680,6 +680,16 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    public void removeCalibrationFromConfig(Size unrotatedImageSize) {
+        if (unrotatedImageSize != null) {
+            visionSource.getSettables().removeCalibration(unrotatedImageSize);
+        } else {
+            logger.error("Got null size?");
+        }
+
+        saveAndBroadcastAll();
+    }
+
     /**
      * Add/remove quirks from the camera we're controlling
      *
