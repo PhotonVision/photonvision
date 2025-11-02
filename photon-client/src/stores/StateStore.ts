@@ -177,7 +177,6 @@ export const useStateStore = defineStore("state", {
         progressBarColor: data.progressBarColor || "",
         timeout: data.timeout || 2000
       };
-      console.log(this.snackbarData);
     }
   }
 });
