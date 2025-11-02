@@ -655,15 +655,11 @@ public class RequestHandler {
                 Files.copy(modelFileStream, modelPath, StandardCopyOption.REPLACE_EXISTING);
             }
 
+            int idx = modelFile.filename().lastIndexOf('.');
+            String nickname = modelFile.filename().substring(0, idx);
+
             ModelProperties modelProperties =
-                    new ModelProperties(
-                            modelPath,
-                            modelFile.filename().replaceAll("." + family.extension(), ""),
-                            labels,
-                            width,
-                            height,
-                            family,
-                            version);
+                    new ModelProperties(modelPath, nickname, labels, width, height, family, version);
 
             ObjectDetector objDetector = null;
 
