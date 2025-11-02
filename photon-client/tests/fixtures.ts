@@ -8,7 +8,6 @@ export const test = base.extend({
     console.log("Running before test: Resetting backend state...");
     axios.defaults.baseURL = "http://localhost:5800/api/test";
     await axios.post("/resetBackend");
-    
 
     // Use the page in the test
     await use(page);
