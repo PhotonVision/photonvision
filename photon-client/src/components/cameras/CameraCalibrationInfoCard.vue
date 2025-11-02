@@ -322,7 +322,7 @@ const calibrationImageURL = (index: number) =>
         <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
           <v-btn
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="buttonPassive"
+            color="primary"
             @click="() => (confirmRemoveDialog.show = false)"
           >
             Cancel
