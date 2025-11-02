@@ -235,6 +235,7 @@ const handleBulkImport = () => {
                     v-model="importVersion"
                     variant="underlined"
                     label="Model Version"
+                    data-testid="import-version-select"
                     :items="
                       useSettingsStore().general.supportedBackends?.includes('RKNN')
                         ? ['YOLOv5', 'YOLOv8', 'YOLO11']
@@ -335,7 +336,7 @@ const handleBulkImport = () => {
                 <th>Info</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-testid="model-table">
               <tr v-for="model in supportedModels" :key="model.modelPath">
                 <td>{{ model.nickname }}</td>
                 <td>{{ model.labels.join(", ") }}</td>
