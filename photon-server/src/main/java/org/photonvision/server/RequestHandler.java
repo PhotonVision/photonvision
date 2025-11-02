@@ -74,6 +74,12 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
+    private static boolean testMode = false;
+
+    public static void setTestMode(boolean isTestMode) {
+        testMode = isTestMode;
+    }
+
     private record CommonCameraUniqueName(String cameraUniqueName) {}
 
     public static void onSettingsImportRequest(Context ctx) {

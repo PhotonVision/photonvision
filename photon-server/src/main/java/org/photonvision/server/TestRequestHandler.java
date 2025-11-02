@@ -70,4 +70,10 @@ public class TestRequestHandler {
             ctx.status(400).result("Invalid request");
         }
     }
+
+    public static void testMode(Context ctx) {
+        logger.info("Test mode activated");
+        RequestHandler.setTestMode(true);
+        ctx.status(200).result("Test mode activated");
+    }
 }
