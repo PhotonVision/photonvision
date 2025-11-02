@@ -162,6 +162,10 @@ public class Server {
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
 
+        /* Testing API Events */
+
+        app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
+
         app.start(port);
     }
 
