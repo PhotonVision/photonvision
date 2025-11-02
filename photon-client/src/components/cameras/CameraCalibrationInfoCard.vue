@@ -318,7 +318,7 @@ const calibrationImageURL = (index: number) =>
       <v-card-text class="pt-0">
         Are you sure you want to delete the calibration for {{ confirmRemoveDialog.vf.resolution.width }}x{{
           confirmRemoveDialog.vf.resolution.height
-        }}?
+        }}? This action is irreversible.
         <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
           <v-btn
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
