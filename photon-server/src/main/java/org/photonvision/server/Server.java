@@ -166,6 +166,9 @@ public class Server {
 
         app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
 
+        // Overrides
+        app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
+
         app.start(port);
     }
 
