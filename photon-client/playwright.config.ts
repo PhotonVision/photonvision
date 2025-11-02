@@ -74,6 +74,7 @@ export default defineConfig({
   webServer: {
     command: "./gradlew run",
     url: "http://localhost:5800",
+    timeout: 300 * 1000,
     reuseExistingServer: !process.env.CI,
     cwd: "../"
   }
