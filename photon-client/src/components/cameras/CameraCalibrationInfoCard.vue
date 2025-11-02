@@ -323,7 +323,7 @@ const calibrationImageURL = (index: number) =>
           <v-btn
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             color="buttonPassive"
-            @click="() => confirmRemoveDialog.show = false"
+            @click="() => (confirmRemoveDialog.show = false)"
           >
             Cancel
           </v-btn>
