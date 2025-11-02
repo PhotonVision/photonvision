@@ -668,35 +668,36 @@ public class RequestHandler {
             ModelProperties modelProperties =
                     new ModelProperties(modelPath, nickname, labels, width, height, family, version);
 
-            ObjectDetector objDetector = null;
-
-            try {
-                objDetector =
-                        switch (family) {
-                            case RUBIK -> new RubikModel(modelProperties).load();
-                            case RKNN -> new RknnModel(modelProperties).load();
-                        };
-            } catch (RuntimeException e) {
-                ctx.status(400);
-                ctx.result("Failed to load object detection model: " + e.getMessage());
+            if (!testMode) {
+                ObjectDetector objDetector = null;
 
                 try {
-                    Files.deleteIfExists(modelPath);
-                } catch (IOException ex) {
-                    e.addSuppressed(ex);
-                }
+                    objDetector =
+                            switch (family) {
+                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RKNN -> new RknnModel(modelProperties).load();
+                            };
+                } catch (RuntimeException e) {
+                    ctx.status(400);
+                    ctx.result("Failed to load object detection model: " + e.getMessage());
 
-                logger.error("Failed to load object detection model", e);
-                return;
-            } finally {
-                // this finally block will run regardless of what happens in try/catch
-                // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
-                // for a summary on how finally works
-                if (objDetector != null) {
-                    objDetector.release();
+                    try {
+                        Files.deleteIfExists(modelPath);
+                    } catch (IOException ex) {
+                        e.addSuppressed(ex);
+                    }
+
+                    logger.error("Failed to load object detection model", e);
+                    return;
+                } finally {
+                    // this finally block will run regardless of what happens in try/catch
+                    // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
+                    // for a summary on how finally works
+                    if (objDetector != null) {
+                        objDetector.release();
+                    }
                 }
             }
-
             ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
