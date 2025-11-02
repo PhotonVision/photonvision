@@ -13,6 +13,7 @@ import path from "path";
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  globalSetup: "./tests/global-setup",
   testDir: "./tests",
   /* Run tests in files in parallel */
   fullyParallel: false,
@@ -73,10 +74,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: path.normalize("./gradlew") + " run",
+    command: "./gradlew run",
     url: "http://localhost:5800",
     timeout: 300 * 1000,
     reuseExistingServer: !process.env.CI,
-    cwd: "../"
+    cwd: path.normalize("../")
   }
 });
