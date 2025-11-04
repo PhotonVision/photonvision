@@ -15,251 +15,91 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/*
- * Copyright (C) Photon Vision.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
-import edu.wpi.first.math.geometry.CoordinateSystem;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
-import java.util.ArrayList;
+import edu.wpi.first.math.Pair;
 import java.util.List;
-import java.util.Optional;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.Objdetect;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.estimation.TargetModel;
-import org.photonvision.targeting.MultiTargetPNPResult;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
-import org.photonvision.vision.pipe.impl.*;
-import org.photonvision.vision.pipe.impl.ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams;
-import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TrackedTarget;
-import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
+import org.photonvision.vision.pipe.impl.ResizeImagePipe;
+import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
 
-public class FocusCameraPipleine extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
-    private FocusCameraPipe FocusCameraPipe = new FocusCameraPipe();
+public class FocusCameraPipeline
+        extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
+    private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
+    private final FocusPipe focusPipe = new FocusPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
+    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public ArucoPipeline() {
-        super(FrameThresholdType.GREYSCALE);
-        settings = new ArucoPipelineSettings();
+    public FocusCameraPipeline() {
+        super(PROCESSING_TYPE);
+        settings = new FocusCameraPipelineSettings();
     }
 
-    public ArucoPipeline(ArucoPipelineSettings settings) {
-        super(FrameThresholdType.GREYSCALE);
+    public FocusCameraPipeline(DriverModePipelineSettings settings) {
+        super(PROCESSING_TYPE);
         this.settings = settings;
     }
-
+  public DoubleCouple offsetPoint = new DoubleCouple();
     @Override
     protected void setPipeParamsImpl() {
-        var params = new ArucoDetectionPipeParams();
-        // sanitize and record settings
+        draw2dCrosshairPipe.setParams(
+                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
+                        frameStaticProperties,
+                        settings.streamingFrameDivisor,
+                        settings.inputImageRotationMode));
 
-        // for now, hard code tag width based on enum value
-        // 2023/other: best guess is 6in
-        double tagWidth = Units.inchesToMeters(6);
-        TargetModel tagModel = TargetModel.kAprilTag16h5;
-
-        params.tagFamily =
-                switch (settings.tagFamily) {
-                    case kTag36h11 -> {
-                        // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6.5);
-                        tagModel = TargetModel.kAprilTag36h11;
-                        yield Objdetect.DICT_APRILTAG_36h11;
-                    }
-                    case kTag16h5 -> {
-                        // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6);
-                        tagModel = TargetModel.kAprilTag16h5;
-                        yield Objdetect.DICT_APRILTAG_16h5;
-                    }
-                };
-
-        int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
-        settings.threshWinSizes.setFirst(threshMinSize);
-        params.threshMinSize = threshMinSize;
-        int threshStepSize = Math.max(2, settings.threshStepSize);
-        settings.threshStepSize = threshStepSize;
-        params.threshStepSize = threshStepSize;
-        int threshMaxSize = Math.max(threshMinSize, settings.threshWinSizes.getSecond());
-        settings.threshWinSizes.setSecond(threshMaxSize);
-        params.threshMaxSize = threshMaxSize;
-        params.threshConstant = settings.threshConstant;
-
-        params.useCornerRefinement = settings.useCornerRefinement;
-        params.refinementMaxIterations = settings.refineNumIterations;
-        params.refinementMinErrorPx = settings.refineMinErrorPx;
-        params.useAruco3 = settings.useAruco3;
-        params.aruco3MinMarkerSideRatio = settings.aruco3MinMarkerSideRatio;
-        params.aruco3MinCanonicalImgSide = settings.aruco3MinCanonicalImgSide;
-        arucoDetectionPipe.setParams(params);
-
-        if (frameStaticProperties.cameraCalibration != null) {
-            var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
-            if (cameraMatrix != null && cameraMatrix.rows() > 0) {
-                var estimatorParams =
-                        new ArucoPoseEstimatorPipeParams(frameStaticProperties.cameraCalibration, tagWidth);
-                singleTagPoseEstimatorPipe.setParams(estimatorParams);
-
-                // TODO global state ew
-                var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
-                multiTagPNPPipe.setParams(
-                        new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, atfl, tagModel));
-            }
-        }
+        resizeImagePipe.setParams(
+                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
     }
 
     @Override
-    protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
-        long sumPipeNanosElapsed = 0L;
+    public FocusCameraPipelineResult process(Frame frame, FocusCameraPipelineSettings settings) {
+        long totalNanos = 0;
 
-        if (frame.type != FrameThresholdType.GREYSCALE) {
-            // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
-            return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
-        }
+        // apply pipes
+        var inputMat = frame.colorImage.getMat();
 
-        CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult =
-                arucoDetectionPipe.run(frame.processedImage);
-        sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+        boolean emptyIn = inputMat.empty();
 
-        // If we want to debug the thresholding steps, draw the first step to the color image
-        if (settings.debugThreshold) {
-            drawThresholdFrame(
-                    frame.processedImage.getMat(),
-                    frame.colorImage.getMat(),
-                    settings.threshWinSizes.getFirst(),
-                    settings.threshConstant);
-        }
 
-        List<TrackedTarget> targetList = new ArrayList<>();
-        for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-            // Populate target list for multitag
-            // (TODO: Address circular dependencies. Multitag only requires corners and IDs, this should
-            // not be necessary.)
+        if (!emptyIn) {
+            totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
+            var focusResult = focusPipe.run(inputMat);
+            inputMat = focusResult.output;
 
-            targetList.add(
-                    new TrackedTarget(
-                            detection,
-                            null,
-                            new TargetCalculationParameters(
-                                    false, null, null, null, null, frameStaticProperties)));
-        }
+            if (settings.crosshair) {
+                var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
-        // Do multi-tag pose estimation
-        Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
-        if (settings.solvePNPEnabled && settings.doMultiTarget) {
-            var multiTagOutput = multiTagPNPPipe.run(targetList);
-            sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
-            multiTagResult = multiTagOutput.output;
-        }
-
-        // Do single-tag pose estimation
-        if (settings.solvePNPEnabled) {
-            // Clear target list that was used for multitag so we can add target transforms
-            targetList.clear();
-            // TODO global state again ew
-            var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
-
-            for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-                AprilTagPoseEstimate tagPoseEstimate = null;
-                // Do single-tag estimation when "always enabled" or if a tag was not used for multitag
-                if (settings.doSingleTargetAlways
-                        || !(multiTagResult.isPresent()
-                                && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
-                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
-                    sumPipeNanosElapsed += poseResult.nanosElapsed;
-                    tagPoseEstimate = poseResult.output;
-                }
-
-                // If single-tag estimation was not done, this is a multi-target tag from the layout
-                if (tagPoseEstimate == null && multiTagResult.isPresent()) {
-                    // compute this tag's camera-to-tag transform using the multitag result
-                    var tagPose = atfl.getTagPose(detection.getId());
-                    if (tagPose.isPresent()) {
-                        var camToTag =
-                                new Transform3d(
-                                        new Pose3d().plus(multiTagResult.get().estimatedPose.best), tagPose.get());
-                        // match expected OpenCV coordinate system
-                        camToTag =
-                                CoordinateSystem.convert(camToTag, CoordinateSystem.NWU(), CoordinateSystem.EDN());
-
-                        tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
-                    }
-                }
-
-                // populate the target list
-                // Challenge here is that TrackedTarget functions with OpenCV Contour
-                TrackedTarget target =
-                        new TrackedTarget(
-                                detection,
-                                tagPoseEstimate,
-                                new TargetCalculationParameters(
-                                        false, null, null, null, null, frameStaticProperties));
-
-                var correctedBestPose =
-                        MathUtils.convertOpenCVtoPhotonTransform(target.getBestCameraToTarget3d());
-                var correctedAltPose =
-                        MathUtils.convertOpenCVtoPhotonTransform(target.getAltCameraToTarget3d());
-
-                target.setBestCameraToTarget3d(
-                        new Transform3d(correctedBestPose.getTranslation(), correctedBestPose.getRotation()));
-                target.setAltCameraToTarget3d(
-                        new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
-
-                targetList.add(target);
+                // calculate elapsed nanoseconds
+                totalNanos += draw2dCrosshairResult.nanosElapsed;
             }
         }
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
-    }
-
-    private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {
-        if (windowSize % 2 == 0) windowSize++;
-        Imgproc.adaptiveThreshold(
-                greyMat,
-                outputMat,
-                255,
-                Imgproc.ADAPTIVE_THRESH_MEAN_C,
-                Imgproc.THRESH_BINARY_INV,
-                windowSize,
-                constant);
+        // Flip-flop input and output in the Frame
+        return new DriverModePipelineResult(
+                frame.sequenceID,
+                MathUtils.nanosToMillis(totalNanos),
+                fps,
+                new Frame(
+                        frame.sequenceID,
+                        frame.processedImage,
+                        frame.colorImage,
+                        frame.type,
+                        frame.frameStaticProperties));
     }
 
     @Override
     public void release() {
-        arucoDetectionPipe.release();
-        singleTagPoseEstimatorPipe.release();
-        arucoDetectionPipe = null;
-        singleTagPoseEstimatorPipe = null;
-        super.release();
+        // we never actually need to give resources up since pipelinemanager only makes
+        // one of us
     }
 }

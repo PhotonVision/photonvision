@@ -23,7 +23,7 @@ import org.opencv.core.Core;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class FocusPipe extends CVPipe<Mat, Mat, GrayscalePipe.FocusParams> {
+public class FocusPipe extends CVPipe<Mat, Mat, FocusPipe.FocusParams> {
     @Override
     protected Mat process(Mat in) {
         var outputMat = new Mat();
