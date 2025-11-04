@@ -124,7 +124,7 @@ const cancelPipelineNameEdit = () => {
 // Pipeline Creation
 const showPipelineCreationDialog = ref(false);
 const newPipelineName = ref("");
-const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const newPipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentPipelineType);
 const validNewPipelineTypes = computed(() => {
   const pipelineTypes = [
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
@@ -139,7 +139,7 @@ const validNewPipelineTypes = computed(() => {
 });
 const showCreatePipelineDialog = () => {
   newPipelineName.value = "";
-  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  newPipelineType.value = useCameraSettingsStore().currentPipelineType;
   showPipelineCreationDialog.value = true;
 };
 const createNewPipeline = () => {
@@ -151,7 +151,7 @@ const createNewPipeline = () => {
 const cancelPipelineCreation = () => {
   showPipelineCreationDialog.value = false;
   newPipelineName.value = "";
-  newPipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  newPipelineType.value = useCameraSettingsStore().currentPipelineType;
 };
 
 // Pipeline Deletion
@@ -183,7 +183,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
 
   return pipelineTypes;
 });
-const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentWebsocketPipelineType);
+const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().currentPipelineType);
 const currentPipelineType = computed<WebsocketPipelineType>({
   get: () => {
     if (useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
@@ -201,7 +201,7 @@ const confirmChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 const cancelChangePipelineType = () => {
-  pipelineType.value = useCameraSettingsStore().currentWebsocketPipelineType;
+  pipelineType.value = useCameraSettingsStore().currentPipelineType;
   showPipelineTypeChangeDialog.value = false;
 };
 

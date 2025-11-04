@@ -12,8 +12,8 @@ import type {
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
-import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import { PipelineType } from "@/types/WebsocketDataTypes";
+import type { ActiveConfigurablePipelineSettings, ActivePipelineSettings } from "@/types/PipelineTypes";
 import axios from "axios";
 import { resolutionsAreEqual } from "@/lib/PhotonUtils";
 
@@ -43,10 +43,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     currentPipelineType(): PipelineType {
       return this.currentPipelineSettings.pipelineType;
     },
-    // This method only exists due to just how lazy I am and my dislike of consolidating the pipeline type enums (which mind you, suck as is)
-    currentWebsocketPipelineType(): WebsocketPipelineType {
-      return this.currentPipelineType - 2;
-    },
     currentVideoFormat(): VideoFormat {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
     },
@@ -71,10 +67,10 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.pipelineNames[useStateStore().currentCameraUniqueName];
     },
     isDriverMode(): boolean {
-      return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
+      return this.currentCameraSettings.currentPipelineIndex === PipelineType.DriverMode;
     },
     isCalibrationMode(): boolean {
-      return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
+      return this.currentCameraSettings.currentPipelineIndex == PipelineType.Calib3d;
     },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;
@@ -180,12 +176,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Create a new Pipeline for the provided camera.
      *
      * @param newPipelineName the name of the new pipeline.
-     * @param pipelineType the type of the new pipeline. Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
+     * @param pipelineType the type of the new pipeline. Cannot be {@link PipelineType.Calib3d} or {@link PipelineType.DriverMode}.
      * @param cameraUniqueName the unique name of the camera.
      */
     createNewPipeline(
       newPipelineName: string,
-      pipelineType: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
+      pipelineType: Exclude<PipelineType, PipelineType.Calib3d | PipelineType.DriverMode>,
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       const payload = {
@@ -250,11 +246,11 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     /**
      * Modify the Pipeline type of the currently selected pipeline of the provided camera. This overwrites the current pipeline's settings when the backend resets the current pipeline settings.
      *
-     * @param type the pipeline type to set.  Cannot be {@link WebsocketPipelineType.Calib3d} or {@link WebsocketPipelineType.DriverMode}.
+     * @param type the pipeline type to set.  Cannot be {@link PipelineType.Calib3d} or {@link PipelineType.DriverMode}.
      * @param cameraUniqueName the unique name of the camera.
      */
     changeCurrentPipelineType(
-      type: Exclude<WebsocketPipelineType, WebsocketPipelineType.Calib3d | WebsocketPipelineType.DriverMode>,
+      type: Exclude<PipelineType, PipelineType.Calib3d | PipelineType.DriverMode>,
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       const payload = {

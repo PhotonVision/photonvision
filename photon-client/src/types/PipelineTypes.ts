@@ -2,12 +2,13 @@ import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 export enum PipelineType {
-  DriverMode = 1,
-  Reflective = 2,
-  ColoredShape = 3,
-  AprilTag = 4,
-  Aruco = 5,
-  ObjectDetection = 6
+  Calib3d = -2,
+  DriverMode = -1,
+  Reflective = 0,
+  ColoredShape = 1,
+  AprilTag = 2,
+  Aruco = 3,
+  ObjectDetection = 4
 }
 
 export enum AprilTagFamily {
@@ -325,7 +326,7 @@ export type ConfigurableCalibration3dPipelineSettings = Partial<Omit<Calibration
   ConfigurablePipelineSettings;
 export const DefaultCalibration3dPipelineSettings: Calibration3dPipelineSettings = {
   ...DefaultPipelineSettings,
-  pipelineType: PipelineType.ObjectDetection,
+  pipelineType: PipelineType.Calib3d,
   cameraGain: 20,
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,
