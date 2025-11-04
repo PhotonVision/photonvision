@@ -131,6 +131,14 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     value: cameraUniqueName
   }))
 );
+const focusMode = computed<boolean>({
+  get: () => useCameraSettingsStore().isFocusMode,
+  set: (v) =>
+    useCameraSettingsStore().changeCurrentPipelineIndex(
+      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      true
+    )
+});
 </script>
 
 <template>
@@ -167,6 +175,19 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         :select-cols="8"
       />
     </v-card-text>
+     <v-card-text class="d-flex pt-0">
+    <v-switch
+          v-model="focusMode"
+          
+          label="Focus Camera"
+           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
+          style="margin-left: auto"
+
+          color="primary"
+          density="compact"
+          hide-details="auto"
+        />
+        </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
         <v-btn

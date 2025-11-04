@@ -36,12 +36,12 @@ public class PipelineManager {
     private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
     public static final int DRIVERMODE_INDEX = -1;
-    public static final int FOCUS_CAMERA_INDEX = -3;
+    public static final int FOCUS_INDEX = -3;
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
     protected final Calibrate3dPipeline calibration3dPipeline;
-    protected final FocusCameraPipeline focusCameraPipeline = new FocusCameraPipeline();
+    protected final FocusPipeline focusPipeline = new FocusPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
@@ -95,7 +95,7 @@ public class PipelineManager {
         return switch (index) {
             case DRIVERMODE_INDEX -> driverModePipeline.getSettings();
             case CAL_3D_INDEX -> calibration3dPipeline.getSettings();
-            case FOCUS_CAMERA_INDEX -> focusCameraPipeline.getSettings();
+            case FOCUS_INDEX -> focusPipeline.getSettings();
             default -> {
                 for (var setting : userPipelineSettings) {
                     if (setting.pipelineIndex == index) yield setting;
@@ -115,7 +115,7 @@ public class PipelineManager {
         return switch (index) {
             case DRIVERMODE_INDEX -> driverModePipeline.getSettings().pipelineNickname;
             case CAL_3D_INDEX -> calibration3dPipeline.getSettings().pipelineNickname;
-            case FOCUS_CAMERA_INDEX -> focusCameraPipeline.getSettings().pipelineNickname;
+            case FOCUS_INDEX -> focusPipeline.getSettings().pipelineNickname;
             default -> {
                 for (var setting : userPipelineSettings) {
                     if (setting.pipelineIndex == index) yield setting.pipelineNickname;
@@ -157,7 +157,7 @@ public class PipelineManager {
         return switch (currentPipelineIndex) {
             case CAL_3D_INDEX -> calibration3dPipeline;
             case DRIVERMODE_INDEX -> driverModePipeline;
-             case FOCUS_CAMERA_INDEX -> focusCameraPipeline;
+             case FOCUS_INDEX -> focusPipeline;
                 // Just return the current user pipeline, we're not on a built-in one
             default -> currentUserPipeline;
         };
@@ -290,6 +290,7 @@ public class PipelineManager {
      * @param state True to enter driver mode, false to exit driver mode.
      */
     public void setDriverMode(boolean state) {
+       
         setPipelineInternal(state ? DRIVERMODE_INDEX : lastUserPipelineIdx);
     }
 
@@ -299,6 +300,7 @@ public class PipelineManager {
      * @return Whether driver mode is active.
      */
     public boolean getDriverMode() {
+       
         return currentPipelineIndex == DRIVERMODE_INDEX;
     }
 

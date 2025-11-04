@@ -25,10 +25,15 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
-import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
+import org.photonvision.vision.pipe.impl.FocusPipe;
+import org.photonvision.vision.opencv.CVMat;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.photonvision.vision.pipeline.result.FocusPipelineResult;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-public class FocusCameraPipeline
-        extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {
+
+public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipelineSettings> {
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final FocusPipe focusPipe = new FocusPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
@@ -36,16 +41,16 @@ public class FocusCameraPipeline
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
-    public FocusCameraPipeline() {
+    public FocusPipeline() {
         super(PROCESSING_TYPE);
-        settings = new FocusCameraPipelineSettings();
+        settings = new FocusPipelineSettings();
     }
 
-    public FocusCameraPipeline(DriverModePipelineSettings settings) {
+    public FocusPipeline(FocusPipelineSettings settings) {
         super(PROCESSING_TYPE);
         this.settings = settings;
     }
-  public DoubleCouple offsetPoint = new DoubleCouple();
+ 
     @Override
     protected void setPipeParamsImpl() {
         draw2dCrosshairPipe.setParams(
@@ -59,21 +64,18 @@ public class FocusCameraPipeline
     }
 
     @Override
-    public FocusCameraPipelineResult process(Frame frame, FocusCameraPipelineSettings settings) {
-        long totalNanos = 0;
+    public FocusPipelineResult process(Frame frame, FocusPipelineSettings settings) {
+       long totalNanos = 0;
 
         // apply pipes
         var inputMat = frame.colorImage.getMat();
 
         boolean emptyIn = inputMat.empty();
 
-
         if (!emptyIn) {
             totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
-            var focusResult = focusPipe.run(inputMat);
-            inputMat = focusResult.output;
 
-            if (settings.crosshair) {
+            if (true) {
                 var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
                 // calculate elapsed nanoseconds
@@ -81,20 +83,33 @@ public class FocusCameraPipeline
             }
         }
 
+        Mat displayMat = new Mat();
+        // Run the focus pipe to compute Laplacian/variance overlay and get its result
+        if (!emptyIn) {
+            var focusResult = focusPipe.run(inputMat);
+            totalNanos += focusResult.nanosElapsed;
+
+            // focusResult.output may be CV_64F single-channel; convert to 8-bit for display
+            Core.convertScaleAbs(focusResult.output, displayMat);
+        }
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        // Flip-flop input and output in the Frame
-        return new DriverModePipelineResult(
-                frame.sequenceID,
-                MathUtils.nanosToMillis(totalNanos),
-                fps,
-                new Frame(
-                        frame.sequenceID,
-                        frame.processedImage,
-                        frame.colorImage,
-                        frame.type,
-                        frame.frameStaticProperties));
+    // Flip-flop input and output in the Frame. Ensure processedImage contains the
+    // focus-display mat (8-bit) so the output stream has image data.
+    var processedCVMat = displayMat.empty() ? frame.processedImage : new CVMat(displayMat);
+
+    return new FocusPipelineResult(
+        frame.sequenceID,
+        MathUtils.nanosToMillis(totalNanos),
+        fps,
+        new Frame(
+            frame.sequenceID,
+            frame.processedImage,
+            processedCVMat,
+            frame.type,
+            frame.frameStaticProperties));
     }
 
     @Override

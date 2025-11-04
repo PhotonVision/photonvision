@@ -18,7 +18,7 @@ const cameraViewType = computed<number[]>({
     if (useStateStore().colorPickingMode) return [0];
 
     // Only show the output stream in Driver Mode or Calibration Mode
-    if (useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode) return [1];
+    if (useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().isFocusMode) return [1];
 
     const ret: number[] = [];
     if (useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
