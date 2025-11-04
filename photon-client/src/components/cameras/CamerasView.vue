@@ -15,7 +15,7 @@ const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
   set: (v) =>
     useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      v ? -2 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
       true
     )
 });
