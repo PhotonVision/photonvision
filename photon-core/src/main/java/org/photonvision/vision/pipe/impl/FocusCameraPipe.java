@@ -18,19 +18,43 @@
 package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
+import org.opencv.core.CvType;
+import org.opencv.core.Core;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class GrayscalePipe extends CVPipe<Mat, Mat, GrayscalePipe.GrayscaleParams> {
+public class FocusPipe extends CVPipe<Mat, Mat, GrayscalePipe.FocusParams> {
     @Override
     protected Mat process(Mat in) {
         var outputMat = new Mat();
         // We can save a copy here by sending the output of cvtcolor to outputMat directly
         // rather than copying. Free performance!
-        Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2GRAY, 3);
+        //Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2GRAY, 3);
+    // Compute the Laplacian in double precision (like cv2.CV_64F)
+    Imgproc.Laplacian(in, outputMat, CvType.CV_64F, 3);
+
+    // Compute standard deviation (and square it for variance) on the double Laplacian
+    var mean = new org.opencv.core.MatOfDouble();
+    var stddev = new org.opencv.core.MatOfDouble();
+    Core.meanStdDev(outputMat, mean, stddev);
+    var sd = stddev.get(0, 0)[0];
+    var variance = sd * sd;
+
+        
+
+        // Draw the variance on the image (displayMat is 8-bit)
+        Imgproc.putText(
+            outputMat,
+            String.format("%.2f", variance),
+            new org.opencv.core.Point(10, 30),
+            Imgproc.FONT_HERSHEY_SIMPLEX,
+            0.8,
+            new org.opencv.core.Scalar(255, 255, 255),
+            2
+        );
 
         return outputMat;
     }
 
-    public static class GrayscaleParams {}
+    public static class FocusParams {}
 }
