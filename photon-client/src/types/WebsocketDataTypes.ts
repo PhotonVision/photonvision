@@ -110,6 +110,7 @@ export interface IncomingWebsocketData {
 }
 
 export enum WebsocketPipelineType {
+  FocusCamera = -3,
   Calib3d = -2,
   DriverMode = -1,
   Reflective = 0,
@@ -117,5 +118,5 @@ export enum WebsocketPipelineType {
   AprilTag = 2,
   Aruco = 3,
   ObjectDetection = 4,
-  FocusCamera
+  
 }

@@ -27,13 +27,10 @@ public class FocusPipe extends CVPipe<Mat, Mat, FocusPipe.FocusParams> {
     @Override
     protected Mat process(Mat in) {
         var outputMat = new Mat();
-        // We can save a copy here by sending the output of cvtcolor to outputMat directly
-        // rather than copying. Free performance!
-        //Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2GRAY, 3);
-    // Compute the Laplacian in double precision (like cv2.CV_64F)
+        
     Imgproc.Laplacian(in, outputMat, CvType.CV_64F, 3);
 
-    // Compute standard deviation (and square it for variance) on the double Laplacian
+   
     var mean = new org.opencv.core.MatOfDouble();
     var stddev = new org.opencv.core.MatOfDouble();
     Core.meanStdDev(outputMat, mean, stddev);
@@ -42,7 +39,6 @@ public class FocusPipe extends CVPipe<Mat, Mat, FocusPipe.FocusParams> {
 
         
 
-        // Draw the variance on the image (displayMat is 8-bit)
         Imgproc.putText(
             outputMat,
             String.format("%.2f", variance),

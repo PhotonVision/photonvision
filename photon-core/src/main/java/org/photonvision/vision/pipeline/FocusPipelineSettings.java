@@ -21,14 +21,14 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.processes.PipelineManager;
 
-@JsonTypeName("FocusCameraPipelineSettings")
-public class FocusCameraPipelineSettings extends CVPipelineSettings {
+@JsonTypeName("FocusPipelineSettings")
+public class FocusPipelineSettings extends CVPipelineSettings {
   
    
-    public FocusCameraPipelineSettings() {
+    public FocusPipelineSettings() {
         super();
         pipelineNickname = "Focus Camera";
-        pipelineIndex = PipelineManager.FOCUS_CAMERA_INDEX;
+        pipelineIndex = PipelineManager.FOCUS_INDEX;
         pipelineType = PipelineType.FocusCamera;
         inputShouldShow = true;
         cameraAutoExposure = true;
