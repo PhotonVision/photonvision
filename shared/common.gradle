@@ -60,7 +60,6 @@ test {
         exceptionFormat = "full"
         showStandardStreams = true
     }
-    exclude '**/*BenchmarkTest*'
     workingDir = new File("${rootDir}")
     finalizedBy jacocoTestReport
 }
