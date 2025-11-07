@@ -308,7 +308,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'Charuco']"
+              :items="['Chessboard', 'ChArUco']"
               :disabled="isCalibrating"
             />
             <v-alert
@@ -336,7 +336,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-if="boardType === CalibrationBoardTypes.Charuco"
               v-model="tagFamily"
               label="Tag Family"
-              tooltip="Dictionary of aruco markers on the charuco board"
+              tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
               :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
               :disabled="isCalibrating"

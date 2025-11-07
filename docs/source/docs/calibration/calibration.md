@@ -50,13 +50,13 @@ Ensure that there is no scaling applied during printing (it should be at 100%) a
 
 ### 3. Select calibration resolution and fill in appropriate target data.
 
-We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and ChArUco board are an 8x8 grid of 1 inch square. The provided ChArUco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the aruco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
+We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and ChArUco board are an 8x8 grid of 1 inch square. The provided ChArUco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the ArUco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
 
 :::{warning} Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view [this GitHub issue](https://github.com/opencv/opencv_contrib/issues/3291).
 :::
 
 :::{note}
-If you have a [calib.io](https://calib.io/) ChArUco Target you will have to enter the paramaters of your target. For example if your target says "9x12 | Checker Size: 30 mm | Marker Size: 22 mm | Dictionary: AruCo DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the board wont be detected during calibration. If you swap the width and height your calibration will have a very high error.
+If you have a [calib.io](https://calib.io/) ChArUco Target you will have to enter the paramaters of your target. For example if your target says "9x12 | Checker Size: 30 mm | Marker Size: 22 mm | Dictionary: ArUco DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the board wont be detected during calibration. If you swap the width and height your calibration will have a very high error.
 :::
 
 ### 4. Take at calibration images from various angles.
