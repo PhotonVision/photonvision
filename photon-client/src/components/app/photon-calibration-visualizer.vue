@@ -281,8 +281,8 @@ watch(
 <template>
   <div id="container" style="width: 100%; height: 100%" class="d-flex flex-column">
     <!-- <template v-if="calibrationData"> -->
-    <div class="d-flex flex-wrap pt-0">
-      <v-col cols="12" md="6">
+    <div class="d-flex flex-wrap pt-0 pb-2">
+      <v-col cols="12" md="6" class="pl-0">
         <v-card-title class="pa-0">
           {{ props.title }}
         </v-card-title>
@@ -308,10 +308,8 @@ watch(
         </v-btn>
       </v-col>
     </div>
-    <v-row style="flex: 1 1 auto">
-      <v-col align-self="stretch" style="display: flex; justify-content: center">
-        <canvas class="w-100 h-100" id="view" />
-      </v-col>
-    </v-row>
+    <div style="flex: 1 1 auto">
+      <canvas class="w-100 h-100" id="view" />
+    </div>
   </div>
 </template>
