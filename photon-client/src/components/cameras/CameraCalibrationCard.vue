@@ -141,7 +141,7 @@ const downloadCalibBoard = async () => {
       break;
 
     case CalibrationBoardTypes.Charuco:
-      // Add pregenerated charuco
+      // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
@@ -319,7 +319,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               color="warning"
               icon="mdi-alert-box"
               text="The usage of chessboards can result in bad calibration results if multiple
-              similar images are taken. We strongly recommend that teams use Charuco boards instead!"
+              similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
               v-if="boardType !== CalibrationBoardTypes.Charuco"
