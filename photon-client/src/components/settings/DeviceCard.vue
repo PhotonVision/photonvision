@@ -328,8 +328,8 @@ onBeforeMount(() => {
 
 const cpuUsageData = ref<{ time: number; value: number }[]>([]);
 const cpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
-const diskUsageData = ref<{ time: number; value: number }[]>([]);
 const cpuTempData = ref<{ time: number; value: number }[]>([]);
+const networkUsageData = ref<{ time: number; value: number }[]>([]);
 
 watch(useSettingsStore().metricsHistory, () => {
   cpuUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
@@ -340,13 +340,13 @@ watch(useSettingsStore().metricsHistory, () => {
     time: entry.time,
     value: entry.metrics.ramUtil === -1 ? -1 : ((entry.metrics.ramUtil ?? 0) / (entry.metrics.ramMem ?? -1.0)) * 100
   }));
-  diskUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
-    time: entry.time,
-    value: entry.metrics.diskUtilPct ?? 0
-  }));
   cpuTempData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
     value: entry.metrics.cpuTemp ?? 0
+  }));
+  networkUsageData.value = useStateStore().networkUsageHistory.map((entry) => ({
+    time: entry.time,
+    value: entry.usage ?? 0
   }));
 });
 </script>
@@ -521,10 +521,10 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
-            <span>Disk Usage</span>
-            <span>{{ Math.round(diskUsageData.at(-1)?.value ?? 0) }}%</span>
+            <span>Network Usage</span>
+            <span>{{ networkUsageData.at(-1)?.value.toFixed(3) }} MB</span>
           </div>
-          <MetricsChart id="chart" :data="diskUsageData" type="percentage" :min="0" :max="100" color="green" />
+          <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="6" color="green" />
         </v-card-text>
       </v-card>
     </v-col>

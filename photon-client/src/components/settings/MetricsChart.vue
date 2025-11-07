@@ -20,6 +20,12 @@ const colors = {
 };
 const DEFAULT_COLOR = "blue";
 
+const typeLabels = {
+  percentage: "%",
+  temperature: "°C",
+  mb: " MB"
+};
+
 const theme = useTheme();
 const chartRef = ref(null);
 let chart: echarts.ECharts | null = null;
@@ -34,8 +40,8 @@ const getOptions = (data: ChartData[] = []) => {
       trigger: "axis",
       formatter: (params: any) => {
         const p = params[0];
-        const append = props.type === "percentage" ? "%" : props.type === "temperature" ? "°C" : "";
-        return `<div style="text-align: right;">${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })}<br/>${p.value[1] | 0}${append}</div>`;
+        const append = typeLabels[props.type];
+        return `<div style="text-align: right;">${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })}<br/>${p.value[1].toFixed(props.type === "mb" ? 3 : 2)}${append}</div>`;
       },
       backgroundColor: theme.themes.value[theme.global.name.value].colors.background,
       textStyle: {
@@ -157,7 +163,7 @@ interface ChartData {
   value: number;
 }
 
-// Type options: "percentage", "temperature"
+// Type options: "percentage", "temperature", "mb"
 const props = defineProps<{
   data: ChartData[];
   type: string;

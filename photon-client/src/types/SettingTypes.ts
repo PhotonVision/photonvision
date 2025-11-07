@@ -36,6 +36,7 @@ export interface MetricData {
   npuUsage?: number[];
   ipAddress?: string;
   uptime?: number;
+  // networkUsage?: number;
 }
 
 export enum NetworkConnectionType {

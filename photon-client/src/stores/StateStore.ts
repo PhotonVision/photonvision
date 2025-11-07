@@ -16,6 +16,11 @@ export interface NTConnectionStatus {
   clients?: number;
 }
 
+interface NetworkUsageEntry {
+  time: number;
+  usage: number;
+}
+
 interface StateStore {
   backendConnected: boolean;
   websocket?: AutoReconnectingWebsocket;
@@ -24,6 +29,7 @@ interface StateStore {
   sidebarFolded: boolean;
   logMessages: LogMessage[];
   currentCameraUniqueName: string;
+  networkUsageHistory: NetworkUsageEntry[];
 
   backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
@@ -62,6 +68,7 @@ export const useStateStore = defineStore("state", {
         localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
       logMessages: [],
       currentCameraUniqueName: Object.keys(cameraStore.cameras)[0],
+      networkUsageHistory: [],
 
       backendResults: {
         0: {
@@ -165,6 +172,10 @@ export const useStateStore = defineStore("state", {
         color: data.color,
         timeout: data.timeout || 2000
       };
+    },
+    addNetworkUsageHistory(bytes: number) {
+      // this.networkUsageHistory.push({ time: Date.now(), usage: bytes / 1e6 });
+      // while (this.networkUsageHistory.length > MAX_METRIC_HISTORY) this.networkUsageHistory.shift();
     }
   }
 });
