@@ -237,27 +237,25 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <th>Horizontal FOV</th>
               <th>Vertical FOV</th>
               <th>Diagonal FOV</th>
-              <th>Info</th>
             </tr>
           </thead>
           <tbody style="cursor: pointer">
-            <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
-              <td>{{ getResolutionString(value.resolution) }}</td>
-              <td>
-                {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
-              </td>
-              <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon size="small" color="primary">mdi-information</v-icon>
+            <v-tooltip v-for="(value, index) in getUniqueVideoFormatsByResolution()" location="bottom">
+              <template #activator="{ props }">
+                <tr :key="index" v-bind="props" @click="setSelectedVideoFormat(value)">
+                  <td>{{ getResolutionString(value.resolution) }}</td>
+                  <td>
+                    {{
+                      value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-"
+                    }}
                   </td>
-                </template>
-                <span>View calibration information</span>
-              </v-tooltip>
-            </tr>
+                  <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                </tr>
+              </template>
+              <span>View calibration information</span>
+            </v-tooltip>
           </tbody>
         </v-table>
       </v-card-text>

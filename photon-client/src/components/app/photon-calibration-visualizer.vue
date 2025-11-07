@@ -20,10 +20,14 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const props = defineProps<{
   cameraUniqueName: string;
   resolution: { width: number; height: number };
+  title: string;
 }>();
 
 let scene: Scene | undefined;
@@ -275,19 +279,38 @@ watch(
 </script>
 
 <template>
-  <div id="container" style="width: 100%">
+  <div id="container" style="width: 100%; height: 100%" class="d-flex flex-column">
     <!-- <template v-if="calibrationData"> -->
-    <v-row>
+    <div class="d-flex flex-wrap pt-0">
+      <v-col cols="12" md="6">
+        <v-card-title class="pa-0">
+          {{ props.title }}
+        </v-card-title>
+      </v-col>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
+        <v-btn
+          style="width: 100%"
+          color="buttonActive"
+          @click="resetCamFirstPerson"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        >
+          First Person
+        </v-btn>
+      </v-col>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
+        <v-btn
+          style="width: 100%"
+          color="buttonActive"
+          @click="resetCamThirdPerson"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        >
+          Third Person
+        </v-btn>
+      </v-col>
+    </div>
+    <v-row style="flex: 1 1 auto">
       <v-col align-self="stretch" style="display: flex; justify-content: center">
-        <canvas id="view" />
-      </v-col>
-    </v-row>
-    <v-row style="margin-bottom: 24px">
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
-      </v-col>
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
+        <canvas class="w-100 h-100" id="view" />
       </v-col>
     </v-row>
   </div>

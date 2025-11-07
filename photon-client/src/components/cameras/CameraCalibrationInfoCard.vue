@@ -96,10 +96,14 @@ const exportCalibrationURL = computed<string>(() =>
 );
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
+
+var tab = ref("details");
+var viewingImg = ref(0);
 </script>
+
 <template>
   <v-card color="surface" dark>
-    <div class="d-flex flex-wrap pt-2 pl-2 pr-2">
+    <div class="d-flex flex-wrap pt-3 pl-3 pr-3">
       <v-col cols="12" md="6">
         <v-card-title class="pa-0"> Calibration Details </v-card-title>
       </v-col>
@@ -140,178 +144,209 @@ const calibrationImageURL = (index: number) =>
         />
       </v-col>
     </div>
-    <v-card-title class="pt-0 pb-0"
-      >{{ useCameraSettingsStore().currentCameraName }}@{{ getResolutionString(videoFormat.resolution) }}</v-card-title
-    >
-    <v-card-text v-if="!currentCalibrationCoeffs">
-      <v-alert
-        class="pt-3 pb-3"
-        color="primary"
-        density="compact"
-        text="The selected video format has not been calibrated."
-        icon="mdi-alert-circle-outline"
-        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
-      />
-    </v-card-text>
-    <v-card-text class="pt-0">
-      <v-table density="compact" style="width: 100%">
-        <template #default>
-          <thead>
-            <tr>
-              <th class="text-left">Name</th>
-              <th class="text-left">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Fx</td>
-              <td>
-                {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
-                }}
-                mm
-              </td>
-            </tr>
-            <tr>
-              <td>Fy</td>
-              <td>
-                {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
-                }}
-                mm
-              </td>
-            </tr>
-            <tr>
-              <td>Cx</td>
-              <td>
-                {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
-                }}
-                px
-              </td>
-            </tr>
-            <tr>
-              <td>Cy</td>
-              <td>
-                {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
-                }}
-                px
-              </td>
-            </tr>
-            <tr>
-              <td>Distortion</td>
-              <td>
-                {{
-                  useCameraSettingsStore()
-                    .getCalibrationCoeffs(props.videoFormat.resolution)
-                    ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
-                }}
-              </td>
-            </tr>
-            <tr>
-              <td>Mean Err</td>
-              <td>
-                {{
-                  videoFormat.mean !== undefined
-                    ? isNaN(videoFormat.mean)
-                      ? "NaN"
-                      : videoFormat.mean.toFixed(2) + "px"
-                    : "-"
-                }}
-              </td>
-            </tr>
-            <tr>
-              <td>Horizontal FOV</td>
-              <td>
-                {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
-              </td>
-            </tr>
-            <tr>
-              <td>Vertical FOV</td>
-              <td>{{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-            </tr>
-            <tr>
-              <td>Diagonal FOV</td>
-              <td>{{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-            </tr>
-            <!-- Board warp, only shown for mrcal-calibrated cameras -->
-            <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
-              <td>Board warp, X/Y</td>
-              <td>
-                {{ currentCalibrationCoeffs?.calobjectWarp?.map((it) => (it * 1000).toFixed(2) + " mm").join(" / ") }}
-              </td>
-            </tr>
-          </tbody>
-        </template>
-      </v-table>
-    </v-card-text>
-    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0">Camera->Board Transforms</v-card-title>
-    <v-card-text v-if="currentCalibrationCoeffs">
-      <Suspense>
-        <!-- Allows us to import three js when it's actually needed  -->
-        <PhotonCalibrationVisualizer
-          :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
-          :resolution="props.videoFormat.resolution"
-        />
-
-        <template #fallback> Loading... </template>
-      </Suspense>
-    </v-card-text>
-    <v-card-title v-if="currentCalibrationCoeffs" class="pt-0 pb-0">Individual Observations</v-card-title>
-    <v-card-text v-if="currentCalibrationCoeffs" class="pt-0">
-      <v-data-table
-        density="compact"
-        style="width: 100%"
-        :headers="[
-          { title: 'Observation Id', key: 'index' },
-          { title: 'Mean Reprojection Error', key: 'mean' },
-          { title: '', key: 'data-table-expand' }
-        ]"
-        :items="getObservationDetails()"
-        item-value="index"
-        show-expand
-      >
-        <template #item.data-table-expand="{ internalItem, toggleExpand }">
-          <v-btn
-            icon="mdi-eye"
-            class="text-none"
-            color="medium-emphasis"
-            size="small"
-            variant="text"
-            slim
-            @click="toggleExpand(internalItem)"
-          ></v-btn>
-        </template>
-
-        <template #expanded-row="{ columns, item }">
-          <td :colspan="columns.length">
-            <div style="display: flex; justify-content: center; width: 100%">
-              <img :src="calibrationImageURL(item.index)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
-            </div>
-          </td>
-        </template>
-      </v-data-table>
+    <v-card-text class="d-flex flex-row pa-0">
+      <v-col cols="4" class="pt-0">
+        <v-tabs v-model="tab" grow bg-color="surface" height="48" slider-color="buttonActive" class="pl-5">
+          <v-tab key="details" value="details">Details</v-tab>
+          <v-tab key="observations" value="observations">Observations</v-tab>
+        </v-tabs>
+        <v-tabs-window v-model="tab" class="pt-3">
+          <v-tabs-window-item key="details" value="details">
+            <v-card-text class="pt-0">
+              <v-table style="width: 100%" density="compact">
+                <template #default>
+                  <tbody>
+                    <tr>
+                      <td>Camera</td>
+                      <td>
+                        {{ useCameraSettingsStore().currentCameraName }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Resolution</td>
+                      <td>
+                        {{ getResolutionString(videoFormat.resolution) }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Fx</td>
+                      <td>
+                        {{
+                          useCameraSettingsStore()
+                            .getCalibrationCoeffs(props.videoFormat.resolution)
+                            ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
+                        }}
+                        mm
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Fy</td>
+                      <td>
+                        {{
+                          useCameraSettingsStore()
+                            .getCalibrationCoeffs(props.videoFormat.resolution)
+                            ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
+                        }}
+                        mm
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Cx</td>
+                      <td>
+                        {{
+                          useCameraSettingsStore()
+                            .getCalibrationCoeffs(props.videoFormat.resolution)
+                            ?.cameraIntrinsics.data[2].toFixed(2) || 0.0
+                        }}
+                        px
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Cy</td>
+                      <td>
+                        {{
+                          useCameraSettingsStore()
+                            .getCalibrationCoeffs(props.videoFormat.resolution)
+                            ?.cameraIntrinsics.data[5].toFixed(2) || 0.0
+                        }}
+                        px
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Distortion</td>
+                      <td>
+                        {{
+                          useCameraSettingsStore()
+                            .getCalibrationCoeffs(props.videoFormat.resolution)
+                            ?.distCoeffs.data.map((it) => parseFloat(it.toFixed(3))) || []
+                        }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Mean Err</td>
+                      <td>
+                        {{
+                          videoFormat.mean !== undefined
+                            ? isNaN(videoFormat.mean)
+                              ? "NaN"
+                              : videoFormat.mean.toFixed(2) + "px"
+                            : "-"
+                        }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Horizontal FOV</td>
+                      <td>
+                        {{ videoFormat.horizontalFOV !== undefined ? videoFormat.horizontalFOV.toFixed(2) + "°" : "-" }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Vertical FOV</td>
+                      <td>
+                        {{ videoFormat.verticalFOV !== undefined ? videoFormat.verticalFOV.toFixed(2) + "°" : "-" }}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Diagonal FOV</td>
+                      <td>
+                        {{ videoFormat.diagonalFOV !== undefined ? videoFormat.diagonalFOV.toFixed(2) + "°" : "-" }}
+                      </td>
+                    </tr>
+                    <!-- Board warp, only shown for mrcal-calibrated cameras -->
+                    <tr v-if="currentCalibrationCoeffs?.calobjectWarp?.length === 2">
+                      <td>Board warp, X/Y</td>
+                      <td>
+                        {{
+                          currentCalibrationCoeffs?.calobjectWarp
+                            ?.map((it) => (it * 1000).toFixed(2) + " mm")
+                            .join(" / ")
+                        }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-table>
+            </v-card-text>
+          </v-tabs-window-item>
+          <v-tabs-window-item key="observations" value="observations">
+            <v-card-text class="pt-0 pb-0">
+              <!-- <v-table fixed-header style="max-height: 500px" class="pb-3" density="compact">
+                <thead>
+                  <tr>
+                    <th>Id</th>
+                    <th>Mean Reprojection Error</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="(value, index) in getObservationDetails()"
+                    :key="index"
+                    v-bind="props"
+                    @click="viewingImg = index"
+                  >
+                    <td>{{ value.index }}</td>
+                    <td>{{ value.mean }}</td>
+                  </tr>
+                </tbody>
+              </v-table> -->
+              <v-data-table
+                density="compact"
+                style="width: 100%"
+                :headers="[
+                  { title: 'Id', key: 'index' },
+                  { title: 'Mean Reprojection Error', key: 'mean' }
+                ]"
+                :items="getObservationDetails()"
+                item-value="index"
+                show-expand
+              >
+                <template #item.data-table-expand="{ internalItem, toggleExpand }">
+                  <v-btn
+                    icon="mdi-eye"
+                    class="text-none"
+                    color="medium-emphasis"
+                    size="small"
+                    variant="text"
+                    slim
+                    @click="viewingImg = internalItem.index"
+                  ></v-btn>
+                </template>
+              </v-data-table>
+            </v-card-text>
+          </v-tabs-window-item>
+        </v-tabs-window>
+      </v-col>
+      <v-col cols="8" class="pt-0 pr-6 pb-6">
+        <v-card-text class="pa-0 fill-height d-flex justify-center align-center">
+          <div v-if="!currentCalibrationCoeffs">
+            <v-alert
+              class="pt-3 pb-3"
+              color="primary"
+              text="The selected video format has not been calibrated."
+              icon="mdi-alert-circle-outline"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+            />
+          </div>
+          <Suspense v-else-if="tab === 'details'">
+            <!-- Allows us to import three js when it's actually needed  -->
+            <PhotonCalibrationVisualizer
+              :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+              :resolution="props.videoFormat.resolution"
+              title="Camera to Board Transforms"
+            />
+            <template #fallback> Loading... </template>
+          </Suspense>
+          <div v-else style="display: flex; justify-content: center; width: 100%">
+            <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
+          </div>
+        </v-card-text>
+      </v-col>
     </v-card-text>
   </v-card>
 </template>
 
 <style scoped>
 .snapshot-preview {
-  max-width: 55%;
-}
-
-@media only screen and (max-width: 512px) {
-  .snapshot-preview {
-    max-width: 100%;
-  }
+  max-width: 100%;
 }
 </style>
