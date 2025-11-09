@@ -32,6 +32,12 @@ public class HardwareConfig {
     public final ArrayList<Integer> ledBrightnessRange;
     public final ArrayList<Integer> statusRGBPins;
 
+    // Custom GPIO
+    public final String getGPIOCommand;
+    public final String setGPIOCommand;
+    public final String setPWMCommand;
+    public final String releaseGPIOCommand;
+
     // Metrics
     public final String cpuTempCommand;
     public final String cpuMemoryCommand;
@@ -55,6 +61,10 @@ public class HardwareConfig {
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
             ArrayList<Integer> statusRGBPins,
+            String getGPIOCommand,
+            String setGPIOCommand,
+            String setPWMCommand,
+            String releaseGPIOCommand,
             String cpuTempCommand,
             String cpuMemoryCommand,
             String cpuUtilCommand,
@@ -73,6 +83,10 @@ public class HardwareConfig {
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
         this.statusRGBPins = statusRGBPins;
+        this.getGPIOCommand = getGPIOCommand;
+        this.setGPIOCommand = setGPIOCommand;
+        this.setPWMCommand = setPWMCommand;
+        this.releaseGPIOCommand = releaseGPIOCommand;
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
@@ -94,6 +108,10 @@ public class HardwareConfig {
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
         statusRGBPins = new ArrayList<>();
+        getGPIOCommand = "";
+        setGPIOCommand = "";
+        setPWMCommand = "";
+        releaseGPIOCommand = "";
         cpuTempCommand = "";
         cpuMemoryCommand = "";
         cpuUtilCommand = "";
@@ -115,7 +133,7 @@ public class HardwareConfig {
     }
 
     /**
-     * @return True if any command has been configured to a non-default empty, false otherwise
+     * @return True if any info command has been configured to be non-empty, false otherwise
      */
     public final boolean hasCommandsConfigured() {
         return cpuTempCommand != ""
@@ -127,6 +145,16 @@ public class HardwareConfig {
                 || ramUtilCommand != ""
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
+    }
+
+    /**
+     * @return True if any gpio command has been configured to be non-empty, false otherwise
+     */
+    public final boolean hasGPIOCommandsConfigured() {
+        return getGPIOCommand != ""
+                || setGPIOCommand != ""
+                || setPWMCommand != ""
+                || releaseGPIOCommand != "";
     }
 
     @Override

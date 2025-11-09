@@ -22,6 +22,7 @@ import com.diozero.devices.PwmLed;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.NetworkTableEvent;
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -31,7 +32,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.math.MathUtils;
 
-public class VisionLED {
+public class VisionLED implements Closeable {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
 
     private final List<LED> visionLEDs = new ArrayList<>();
@@ -148,6 +149,16 @@ public class VisionLED {
                     "Changing LED mode from \"" + lastLedMode.toString() + "\" to \"" + newLedMode + "\"");
         } else {
             logger.info("Changing LED internal state to " + newLedMode.toString());
+        }
+    }
+
+    @Override
+    public void close() {
+        for (LED led : visionLEDs) {
+            led.close();
+        }
+        for (PwmLed led : dimmableVisionLEDs) {
+            led.close();
         }
     }
 }

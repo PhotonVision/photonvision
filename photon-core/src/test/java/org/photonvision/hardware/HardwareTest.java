@@ -20,18 +20,32 @@ package org.photonvision.hardware;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.DeviceFactoryHelper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.VisionLED;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 
 public class HardwareTest {
+    final HardwareConfig hardwareConfig;
+
+    HardwareTest() throws IOException {
+        System.out.println("Loading Hardware configs...");
+        hardwareConfig =
+                new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
+        HardwareManager.configureCustomGPIO(hardwareConfig);
+    }
+
     @Test
     public void testHardware() {
         LoadJNI.loadLibraries();
@@ -54,45 +68,61 @@ public class HardwareTest {
     }
 
     @Test
-    public void testGPIO() {
-        NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
-        Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
+    public void testNativeGPIO() {
+        try (NativeDeviceFactoryInterface deviceFactory = new DefaultDeviceFactory()) {
+            Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
 
-        VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null);
-
-        // Verify states can be set
-        led.setState(true);
-        assertEquals(deviceFactory.getGpioValue(2), 1);
-        assertEquals(deviceFactory.getGpioValue(13), 1);
-        led.setState(false);
-        assertEquals(deviceFactory.getGpioValue(2), 0);
-        assertEquals(deviceFactory.getGpioValue(13), 0);
+            try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null)) {
+                // Verify states can be set
+                led.setState(true);
+                assertEquals(1, deviceFactory.getGpioValue(2));
+                assertEquals(1, deviceFactory.getGpioValue(13));
+                led.setState(false);
+                assertEquals(0, deviceFactory.getGpioValue(2));
+                assertEquals(0, deviceFactory.getGpioValue(13));
+            }
+        }
     }
 
     @Test
-    public void testBlink() throws InterruptedException {
+    public void testCustomGPIO() throws IOException {
         NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
-        Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
 
-        VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null);
-
-        // Verify blinking toggles between states
-        HashSet<Integer> seenValues = new HashSet<>();
-        led.blink(125, 3);
-        var startms = System.currentTimeMillis();
-        while (System.currentTimeMillis() - startms < 500) {
-            seenValues.add(deviceFactory.getGpioValue(2));
+        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null)) {
+            // Verify states can be set
+            led.setState(true);
+            assertEquals(1, deviceFactory.getGpioValue(2));
+            assertEquals(1, deviceFactory.getGpioValue(13));
+            led.setState(false);
+            assertEquals(0, deviceFactory.getGpioValue(2));
+            assertEquals(0, deviceFactory.getGpioValue(13));
         }
-        assertEquals(seenValues.size(), 2);
-        assertTrue(seenValues.contains(0));
-        assertTrue(seenValues.contains(1));
+    }
 
-        seenValues.clear();
+    @Test
+    public void testBlink() throws InterruptedException, IOException {
+        NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
 
-        // Verify that after blinking, toggling has stopped
-        while (System.currentTimeMillis() - startms < 125) {
-            seenValues.add(deviceFactory.getGpioValue(2));
+        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null)) {
+            // Verify blinking toggles between states
+            HashSet<Integer> seenValues = new HashSet<>();
+            led.blink(125, 3);
+            var startms = System.currentTimeMillis();
+            while (System.currentTimeMillis() - startms < 1000) {
+                seenValues.add(deviceFactory.getGpioValue(2));
+            }
+            assertEquals(2, seenValues.size());
+            assertTrue(seenValues.contains(0));
+            assertTrue(seenValues.contains(1));
+
+            seenValues.clear();
+
+            // Verify that after blinking, toggling has stopped
+            startms = System.currentTimeMillis();
+            while (System.currentTimeMillis() - startms < 250) {
+                seenValues.add(deviceFactory.getGpioValue(2));
+            }
+            assertEquals(1, seenValues.size());
         }
-        assertEquals(seenValues.size(), 1);
     }
 }

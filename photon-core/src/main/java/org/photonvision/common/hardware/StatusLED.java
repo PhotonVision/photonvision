@@ -18,9 +18,10 @@
 package org.photonvision.common.hardware;
 
 import com.diozero.devices.LED;
+import java.io.Closeable;
 import java.util.List;
 
-public class StatusLED {
+public class StatusLED implements Closeable {
     public final LED redLED;
     public final LED greenLED;
     public final LED blueLED;
@@ -43,5 +44,12 @@ public class StatusLED {
         redLED.setOn(r);
         greenLED.setOn(g);
         blueLED.setOn(b);
+    }
+
+    @Override
+    public void close() {
+        redLED.close();
+        greenLED.close();
+        blueLED.close();
     }
 }
