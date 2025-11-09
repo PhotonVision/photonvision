@@ -73,9 +73,10 @@ public class VisionLED {
 
     public void setBrightness(int percentage) {
         mappedBrightness =
-                MathUtils.map(
-                                (float) percentage, 0.0f, 100.0f, (float) brightnessMin, (float) brightnessMax)
-                        / 100.0f;
+                (float)
+                        (MathUtils.map(
+                                        (double) percentage, 0.0, 100.0, (double) brightnessMin, (double) brightnessMax)
+                                / 100.0);
         setInternal(currentLedMode, false);
     }
 
