@@ -93,10 +93,6 @@ public class MathUtils {
         return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    public static float map(float value, float in_min, float in_max, float out_min, float out_max) {
-        return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-    }
-
     public static int map(int value, int inMin, int inMax, int outMin, int outMax) {
         return (int) Math.floor(map((double) value, inMin, inMax, outMin, outMax) + 0.5);
     }
