@@ -27,6 +27,32 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
 No hardware boards with status RGB LED pins or non-dimming LED's have been tested yet. Please reach out to the development team if these features are desired, they can assist with configuration and testing.
 :::
 
+### Custom GPIO
+
+If your hardware does not support diozero's default provider, custom commands can be provided to interact with the GPIO lines.
+
+```{eval-rst}
+.. tab-set-code::
+   .. code-block:: json
+
+      {
+        "getGPIOCommand" : ""
+        "setGPIOCommand" : ""
+        "setPWMCommand" : ""
+        "releaseGPIOCommand" : ""
+      }
+```
+
+The following template strings are used to input parameters to the commands:
+
+| Template | Parameter  | Values     |
+| -------- | ---------- | ---------- |
+| `{p}`    | pin number | integers   |
+| `{s}`    | state      | true/false |
+| `{v}`    | value      | 0.0-1.0    |
+
+If you were using custom LED commands from 2025 or earlier and still need custom GPIO commands, they can likely be copied over. `ledSetCommand` can be reused as `setGPIOCommand`. `ledDimCommand` can be reused with edits as `setPWMCommand`, replacing any occurrences of `{v}` with `$(awk 'BEGIN{ print int({v}*100) }')` if your command requires integer percentages.
+
 ## Hardware Interaction Commands
 
 For Non-Raspberry-Pi hardware, users must provide valid hardware-specific commands for some parts of the UI interaction (including performance metrics, and executing system restarts).
@@ -97,14 +123,14 @@ Here is a complete example `hardwareConfig.json`:
         "deviceLogoPath" : "",
         "supportURL" : "https://www.youtube.com/watch?v=b-CvLWbfZhU",
         "ledPins" : [2, 13],
-        "ledSetCommand" : "",
         "ledsCanDim" : true,
         "ledPWMRange" : [ 0, 100 ],
-        "ledPWMSetRange" : "",
         "ledPWMFrequency" : 0,
-        "ledDimCommand" : "",
-        "ledBlinkCommand" : "",
         "statusRGBPins" : [ ],
+        "getGPIOCommand" : ""
+        "setGPIOCommand" : ""
+        "setPWMCommand" : ""
+        "releaseGPIOCommand" : ""
         "cpuTempCommand" : "",
         "cpuMemoryCommand" : "",
         "cpuUtilCommand" : "",
