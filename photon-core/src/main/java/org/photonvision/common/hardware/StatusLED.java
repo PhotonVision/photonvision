@@ -17,15 +17,13 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.devices.LED;
 import java.util.List;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 
 public class StatusLED {
-    public final GPIOBase redLED;
-    public final GPIOBase greenLED;
-    public final GPIOBase blueLED;
+    public final LED redLED;
+    public final LED greenLED;
+    public final LED blueLED;
 
     public StatusLED(List<Integer> statusLedPins) {
         // fill unassigned pins with -1 to disable
@@ -35,24 +33,15 @@ public class StatusLED {
             }
         }
 
-        if (Platform.isRaspberryPi()) {
-            redLED = new PigpioPin(statusLedPins.get(0));
-            greenLED = new PigpioPin(statusLedPins.get(1));
-            blueLED = new PigpioPin(statusLedPins.get(2));
-        } else {
-            redLED = new CustomGPIO(statusLedPins.get(0));
-            greenLED = new CustomGPIO(statusLedPins.get(1));
-            blueLED = new CustomGPIO(statusLedPins.get(2));
-        }
+        // Outputs are active-low for a common-anode RGB LED
+        redLED = new LED(statusLedPins.get(0), false);
+        greenLED = new LED(statusLedPins.get(1), false);
+        blueLED = new LED(statusLedPins.get(2), false);
     }
 
     public void setRGB(boolean r, boolean g, boolean b) {
-        // Outputs are active-low, so invert the level applied
-        redLED.setState(!r);
-        redLED.setBrightness(r ? 0 : 100);
-        greenLED.setState(!g);
-        greenLED.setBrightness(g ? 0 : 100);
-        blueLED.setState(!b);
-        blueLED.setBrightness(b ? 0 : 100);
+        redLED.setOn(r);
+        greenLED.setOn(g);
+        blueLED.setOn(b);
     }
 }
