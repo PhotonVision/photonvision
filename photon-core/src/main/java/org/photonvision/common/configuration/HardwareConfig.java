@@ -173,6 +173,14 @@ public class HardwareConfig {
                 + ledBrightnessRange
                 + ", statusRGBPins="
                 + statusRGBPins
+                + ", getGPIOCommand="
+                + getGPIOCommand
+                + ", setGPIOCommand="
+                + setGPIOCommand
+                + ", setPWMCommand="
+                + setPWMCommand
+                + ", releaseGPIOCommand="
+                + releaseGPIOCommand
                 + ", cpuTempCommand="
                 + cpuTempCommand
                 + ", cpuMemoryCommand="
