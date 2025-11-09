@@ -19,6 +19,7 @@ package org.photonvision.common.hardware;
 
 import com.diozero.devices.LED;
 import com.diozero.devices.PwmLed;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.NetworkTableEvent;
@@ -53,16 +54,32 @@ public class VisionLED implements Closeable {
             int brightnessMin,
             int brightnessMax,
             Consumer<Integer> visionLEDmode) {
+        this(
+                DeviceFactoryHelper.getNativeDeviceFactory(),
+                ledPins,
+                ledsCanDim,
+                brightnessMin,
+                brightnessMax,
+                visionLEDmode);
+    }
+
+    public VisionLED(
+            NativeDeviceFactoryInterface deviceFactory,
+            List<Integer> ledPins,
+            boolean ledsCanDim,
+            int brightnessMin,
+            int brightnessMax,
+            Consumer<Integer> visionLEDmode) {
         this.brightnessMin = brightnessMin;
         this.brightnessMax = brightnessMax;
         this.modeConsumer = visionLEDmode;
-        BoardPinInfo boardPinInfo = DeviceFactoryHelper.getNativeDeviceFactory().getBoardPinInfo();
+        BoardPinInfo boardPinInfo = deviceFactory.getBoardPinInfo();
         ledPins.forEach(
                 pin -> {
                     if (ledsCanDim && boardPinInfo.getByPwmOrGpioNumberOrThrow(pin).isPwmOutputSupported()) {
-                        dimmableVisionLEDs.add(new PwmLed(pin));
+                        dimmableVisionLEDs.add(new PwmLed(deviceFactory, pin));
                     } else {
-                        visionLEDs.add(new LED(pin));
+                        visionLEDs.add(new LED(deviceFactory, pin));
                     }
                 });
         pipelineModeSupplier = () -> false;
