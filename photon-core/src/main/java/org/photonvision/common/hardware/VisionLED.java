@@ -132,25 +132,20 @@ public class VisionLED {
     private void setInternal(VisionLEDMode newLedMode, boolean fromNT) {
         var lastLedMode = currentLedMode;
 
-        if (fromNT) {
+        if (fromNT || currentLedMode == VisionLEDMode.kDefault) {
             switch (newLedMode) {
                 case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
                 case kOff -> setStateImpl(false);
                 case kOn -> setStateImpl(true);
                 case kBlink -> blinkImpl(85, -1);
             }
+        }
+
+        if (fromNT) {
             currentLedMode = newLedMode;
             logger.info(
                     "Changing LED mode from \"" + lastLedMode.toString() + "\" to \"" + newLedMode + "\"");
         } else {
-            if (currentLedMode == VisionLEDMode.kDefault) {
-                switch (newLedMode) {
-                    case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
-                    case kOff -> setStateImpl(false);
-                    case kOn -> setStateImpl(true);
-                    case kBlink -> blinkImpl(85, -1);
-                }
-            }
             logger.info("Changing LED internal state to " + newLedMode.toString());
         }
     }
