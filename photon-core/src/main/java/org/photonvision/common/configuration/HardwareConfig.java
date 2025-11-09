@@ -28,11 +28,8 @@ public class HardwareConfig {
 
     // LED control
     public final ArrayList<Integer> ledPins;
-    public final String ledSetCommand;
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledBrightnessRange;
-    public final String ledDimCommand;
-    public final String ledBlinkCommand;
     public final ArrayList<Integer> statusRGBPins;
 
     // Metrics
@@ -55,11 +52,8 @@ public class HardwareConfig {
             String deviceLogoPath,
             String supportURL,
             ArrayList<Integer> ledPins,
-            String ledSetCommand,
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
-            String ledDimCommand,
-            String ledBlinkCommand,
             ArrayList<Integer> statusRGBPins,
             String cpuTempCommand,
             String cpuMemoryCommand,
@@ -76,11 +70,8 @@ public class HardwareConfig {
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
         this.ledPins = ledPins;
-        this.ledSetCommand = ledSetCommand;
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
-        this.ledDimCommand = ledDimCommand;
-        this.ledBlinkCommand = ledBlinkCommand;
         this.statusRGBPins = statusRGBPins;
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
@@ -100,11 +91,8 @@ public class HardwareConfig {
         deviceLogoPath = "";
         supportURL = "";
         ledPins = new ArrayList<>();
-        ledSetCommand = "";
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
-        ledDimCommand = "";
-        ledBlinkCommand = "";
         statusRGBPins = new ArrayList<>();
         cpuTempCommand = "";
         cpuMemoryCommand = "";
@@ -137,7 +125,6 @@ public class HardwareConfig {
                 || cpuUptimeCommand != ""
                 || gpuMemoryCommand != ""
                 || ramUtilCommand != ""
-                || ledBlinkCommand != ""
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
     }
@@ -152,16 +139,10 @@ public class HardwareConfig {
                 + supportURL
                 + ", ledPins="
                 + ledPins
-                + ", ledSetCommand="
-                + ledSetCommand
                 + ", ledsCanDim="
                 + ledsCanDim
                 + ", ledBrightnessRange="
                 + ledBrightnessRange
-                + ", ledDimCommand="
-                + ledDimCommand
-                + ", ledBlinkCommand="
-                + ledBlinkCommand
                 + ", statusRGBPins="
                 + statusRGBPins
                 + ", cpuTempCommand="
