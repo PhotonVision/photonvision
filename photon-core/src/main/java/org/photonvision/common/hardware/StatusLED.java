@@ -18,6 +18,8 @@
 package org.photonvision.common.hardware;
 
 import com.diozero.devices.LED;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import com.diozero.sbc.DeviceFactoryHelper;
 import java.io.Closeable;
 import java.util.List;
 
@@ -27,6 +29,10 @@ public class StatusLED implements Closeable {
     public final LED blueLED;
 
     public StatusLED(List<Integer> statusLedPins) {
+        this(DeviceFactoryHelper.getNativeDeviceFactory(), statusLedPins);
+    }
+
+    public StatusLED(NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins) {
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
             for (int i = 0; i < 3 - statusLedPins.size(); i++) {
@@ -35,9 +41,9 @@ public class StatusLED implements Closeable {
         }
 
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(statusLedPins.get(0), false);
-        greenLED = new LED(statusLedPins.get(1), false);
-        blueLED = new LED(statusLedPins.get(2), false);
+        redLED = new LED(deviceFactory, statusLedPins.get(0), false, false);
+        greenLED = new LED(deviceFactory, statusLedPins.get(1), false, false);
+        blueLED = new LED(deviceFactory, statusLedPins.get(2), false, false);
     }
 
     public void setRGB(boolean r, boolean g, boolean b) {
