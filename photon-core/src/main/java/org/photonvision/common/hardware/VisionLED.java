@@ -96,8 +96,12 @@ public class VisionLED {
     }
 
     private void setStateImpl(boolean state) {
-        visionLEDs.forEach((led) -> led.setOn(state));
-        dimmableVisionLEDs.forEach((led) -> led.setValue(mappedBrightness));
+        for (LED led : visionLEDs) {
+            led.setOn(state);
+        }
+        for (PwmLed led : dimmableVisionLEDs) {
+            led.setValue(mappedBrightness);
+        }
     }
 
     public void setState(boolean on) {
