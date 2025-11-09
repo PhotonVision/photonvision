@@ -17,15 +17,18 @@
 
 package org.photonvision.hardware;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import com.diozero.sbc.DeviceFactoryHelper;
+import java.util.HashSet;
+import java.util.List;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.VisionLED;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 
 public class HardwareTest {
@@ -52,43 +55,44 @@ public class HardwareTest {
 
     @Test
     public void testGPIO() {
-        GPIOBase gpio;
-        if (Platform.isRaspberryPi()) {
-            gpio = new PigpioPin(18);
-        } else {
-            gpio = new CustomGPIO(18);
-        }
+        NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
+        Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
 
-        gpio.setOn(); // HIGH
-        assertTrue(gpio.getState());
+        VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null);
 
-        gpio.setOff(); // LOW
-        assertFalse(gpio.getState());
-
-        gpio.togglePin(); // HIGH
-        assertTrue(gpio.getState());
-
-        gpio.togglePin(); // LOW
-        assertFalse(gpio.getState());
-
-        gpio.setState(true); // HIGH
-        assertTrue(gpio.getState());
-
-        gpio.setState(false); // LOW
-        assertFalse(gpio.getState());
-
-        var success = gpio.shutdown();
-        assertTrue(success);
+        // Verify states can be set
+        led.setState(true);
+        assertEquals(deviceFactory.getGpioValue(2), 1);
+        assertEquals(deviceFactory.getGpioValue(13), 1);
+        led.setState(false);
+        assertEquals(deviceFactory.getGpioValue(2), 0);
+        assertEquals(deviceFactory.getGpioValue(13), 0);
     }
 
     @Test
-    public void testBlink() {
-        if (!Platform.isRaspberryPi()) return;
-        GPIOBase pwm = new PigpioPin(18);
-        pwm.blink(125, 3);
+    public void testBlink() throws InterruptedException {
+        NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
+        Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
+
+        VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null);
+
+        // Verify blinking toggles between states
+        HashSet<Integer> seenValues = new HashSet<>();
+        led.blink(125, 3);
         var startms = System.currentTimeMillis();
-        while (true) {
-            if (System.currentTimeMillis() - startms > 4500) break;
+        while (System.currentTimeMillis() - startms < 500) {
+            seenValues.add(deviceFactory.getGpioValue(2));
         }
+        assertEquals(seenValues.size(), 2);
+        assertTrue(seenValues.contains(0));
+        assertTrue(seenValues.contains(1));
+
+        seenValues.clear();
+
+        // Verify that after blinking, toggling has stopped
+        while (System.currentTimeMillis() - startms < 125) {
+            seenValues.add(deviceFactory.getGpioValue(2));
+        }
+        assertEquals(seenValues.size(), 1);
     }
 }
