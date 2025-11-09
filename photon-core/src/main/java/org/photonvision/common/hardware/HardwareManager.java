@@ -27,8 +27,6 @@ import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -59,8 +57,6 @@ public class HardwareManager {
 
     public final VisionLED visionLED; // May be null if no LED is specified
 
-    private final PigpioSocket pigpioSocket; // will be null unless on Raspi
-
     public static HardwareManager getInstance() {
         if (instance == null) {
             var conf = ConfigManager.getInstance().getConfig();
@@ -88,14 +84,6 @@ public class HardwareManager {
                 NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
         ledModeState.set(VisionLEDMode.kDefault.value);
 
-        CustomGPIO.setConfig(hardwareConfig);
-
-        if (Platform.isRaspberryPi()) {
-            pigpioSocket = new PigpioSocket();
-        } else {
-            pigpioSocket = null;
-        }
-
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
                         ? new StatusLED(hardwareConfig.statusRGBPins)
@@ -111,9 +99,9 @@ public class HardwareManager {
                         ? null
                         : new VisionLED(
                                 hardwareConfig.ledPins,
+                                hardwareConfig.ledsCanDim,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                pigpioSocket,
                                 ledModeState::set);
 
         ledModeListener =
