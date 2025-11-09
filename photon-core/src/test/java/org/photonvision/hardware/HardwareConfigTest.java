@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
@@ -41,7 +40,6 @@ public class HardwareConfigTest {
             assertEquals(config.cpuThrottleReasonCmd, "");
             assertEquals(config.diskUsageCommand, "");
             assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
-            CustomGPIO.setConfig(config);
 
         } catch (IOException e) {
             e.printStackTrace();

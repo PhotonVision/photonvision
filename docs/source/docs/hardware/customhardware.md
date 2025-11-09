@@ -16,13 +16,9 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
 
       {
         "ledPins" : [ 13 ],
-        "ledSetCommand" : "",
         "ledsCanDim" : true,
         "ledPWMRange" : [ 0, 100 ],
-        "ledPWMSetRange" : "",
         "ledPWMFrequency" : 0,
-        "ledDimCommand" : "",
-        "ledBlinkCommand" : "",
         "statusRGBPins" : [ ],
       }
 ```
