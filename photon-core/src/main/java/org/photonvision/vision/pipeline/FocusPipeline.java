@@ -17,25 +17,18 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.Pair;
-import java.util.List;
+import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
-import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
-import org.photonvision.vision.pipe.impl.ResizeImagePipe;
-import org.photonvision.vision.pipe.impl.FocusPipe;
 import org.photonvision.vision.opencv.CVMat;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.FocusPipe;
+import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.FocusPipelineResult;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.processes.PipelineManager;
 
 public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipelineSettings> {
-    
-    private final FocusPipe focusPipe = new FocusPipe(); 
+    private final FocusPipe focusPipe = new FocusPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
@@ -50,25 +43,21 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
         super(PROCESSING_TYPE);
         this.settings = settings;
     }
-  
+
     @Override
     protected void setPipeParamsImpl() {
-        
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
     }
 
     @Override
     public FocusPipelineResult process(Frame frame, FocusPipelineSettings settings) {
-        
         long totalNanos = 0;
 
-        
         var inputMat = frame.colorImage.getMat();
         boolean emptyIn = inputMat.empty();
         Mat displayMat = new Mat();
         double variance = 0.0;
-        
 
         if (!emptyIn) {
             totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
@@ -81,11 +70,10 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
-            
-    
-    var processedCVMat = new CVMat(displayMat);
 
-         return new FocusPipelineResult(
+        var processedCVMat = new CVMat(displayMat);
+
+        return new FocusPipelineResult(
                 frame.sequenceID,
                 MathUtils.nanosToMillis(totalNanos),
                 fps,
@@ -95,9 +83,7 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
                         processedCVMat,
                         frame.type,
                         frame.frameStaticProperties),
-
                 variance);
-    
     }
 
     @Override

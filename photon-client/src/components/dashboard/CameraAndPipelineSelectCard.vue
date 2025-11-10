@@ -92,7 +92,7 @@ const pipelineNamesWrapper = computed<SelectItem[]>(() => {
   if (useCameraSettingsStore().isDriverMode) {
     pipelineNames.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
   }
-   if (useCameraSettingsStore().isFocusMode) {
+  if (useCameraSettingsStore().isFocusMode) {
     pipelineNames.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera });
   }
   if (useCameraSettingsStore().isCalibrationMode) {
@@ -193,7 +193,7 @@ const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().current
 const currentPipelineType = computed<WebsocketPipelineType>({
   get: () => {
     if (useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
-      if (useCameraSettingsStore().isFocusMode) return WebsocketPipelineType.FocusCamera;
+    if (useCameraSettingsStore().isFocusMode) return WebsocketPipelineType.FocusCamera;
     if (useCameraSettingsStore().isCalibrationMode) return WebsocketPipelineType.Calib3d;
     return pipelineType.value;
   },

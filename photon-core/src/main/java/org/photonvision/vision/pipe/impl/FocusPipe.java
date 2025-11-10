@@ -24,9 +24,7 @@ import org.opencv.core.MatOfDouble;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 
-
 public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.FocusParams> {
-
     private double maxVariance = 0.0;
 
     @Override

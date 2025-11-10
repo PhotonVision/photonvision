@@ -78,7 +78,6 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         var uiMap = new HashMap<String, HashMap<String, Object>>();
         uiMap.put(uniqueName, dataMap);
 
-      
         if (result instanceof FocusPipelineResult) {
             var f = (FocusPipelineResult) result;
             dataMap.put("focus", f.focus);
