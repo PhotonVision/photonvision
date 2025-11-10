@@ -20,10 +20,9 @@ package org.photonvision.common.hardware;
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.DeviceFactoryHelper;
-import java.io.Closeable;
 import java.util.List;
 
-public class StatusLED implements Closeable {
+public class StatusLED implements AutoCloseable {
     public final LED redLED;
     public final LED greenLED;
     public final LED blueLED;
