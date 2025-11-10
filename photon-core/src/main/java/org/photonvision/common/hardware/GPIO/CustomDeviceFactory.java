@@ -64,8 +64,7 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
         String releaseGPIOCommand = System.getProperty(RELEASE_GPIO_PROP, "");
 
         this.adapter =
-                new CustomAdapter(
-                        "Unknown", getGPIOCommand, setGPIOCommand, setPWMCommand, releaseGPIOCommand);
+                new CustomAdapter(getGPIOCommand, setGPIOCommand, setPWMCommand, releaseGPIOCommand);
     }
 
     @Override
