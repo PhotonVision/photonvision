@@ -90,10 +90,7 @@ public class VisionLED implements AutoCloseable {
 
     public void setBrightness(int percentage) {
         mappedBrightness =
-                (float)
-                        (MathUtils.map(
-                                        (double) percentage, 0.0, 100.0, (double) brightnessMin, (double) brightnessMax)
-                                / 100.0);
+                (float) (MathUtils.map(percentage, 0.0, 100.0, brightnessMin, brightnessMax) / 100.0);
         setInternal(currentLedMode, false);
     }
 
