@@ -23,8 +23,8 @@ import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -145,14 +145,13 @@ public class HardwareManager {
         // Populate pin info according to hardware config
         for (int pin : hardwareConfig.ledPins) {
             if (hardwareConfig.ledsCanDim) {
-                pinInfo.addGpioPinInfo(
-                        pin, pin, Arrays.asList(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
+                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
             } else {
-                pinInfo.addGpioPinInfo(pin, pin, Arrays.asList(DeviceMode.DIGITAL_OUTPUT));
+                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
         for (int pin : hardwareConfig.statusRGBPins) {
-            pinInfo.addGpioPinInfo(pin, pin, Arrays.asList(DeviceMode.DIGITAL_OUTPUT));
+            pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
     }
 
