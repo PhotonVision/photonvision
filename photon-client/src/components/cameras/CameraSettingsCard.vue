@@ -15,7 +15,14 @@ const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
   quirksToChange: Object.assign({}, useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks)
 });
-
+const focusMode = computed<boolean>({
+  get: () => useCameraSettingsStore().isFocusMode,
+  set: (v) =>
+    useCameraSettingsStore().changeCurrentPipelineIndex(
+      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      true
+    )
+});
 const arducamSelectWrapper = computed<number>({
   get: () => {
     if (tempSettingsStruct.value.quirksToChange.ArduOV9281Controls) return 1;
@@ -131,20 +138,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     value: cameraUniqueName
   }))
 );
-const focusMode = computed<boolean>({
-  get: () => useCameraSettingsStore().isFocusMode,
-  set: (v) =>
-    useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
-      true
-    )
-});
+
 </script>
 
 <template>
   <v-card class="mb-3 rounded-12" color="surface" dark>
-    <v-card-title class="pb-0">Camera Settings</v-card-title>
-    <v-card-text class="pt-3">
+    <v-card-title class="pb-1">Camera Settings</v-card-title>
+    <v-card-text class="pb-0">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
@@ -175,19 +175,29 @@ const focusMode = computed<boolean>({
         :select-cols="8"
       />
     </v-card-text>
-     <v-card-text class="d-flex pt-0">
-    <v-switch
-          v-model="focusMode"
+    <v-card-text class="pt-0">
+      <v-row align="center" no-gutters style="min-height:40px;">
+        <v-col cols="4" class="pa-0 pr-2 d-flex align-center" style="height: 40px;">
+          <span style="min-width: 90px; text-align: left; line-height: 40px;">Focus Mode</span>
+        </v-col>
+        <v-col cols="3" class="pa-2 d-flex align-center" style="height: 40px;">
+          <v-switch
+            v-model="focusMode"
+            :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
+            hide-details="auto"
+            color="primary"
+            style="margin-right: 0px; margin-top: 0; margin-bottom: 0;"
+          />
+        </v-col>
+        <v-col cols="5" class="pa-0 pr-5 d-flex align-center justify-end" style="height: 40px;">
+          <div v-if="useStateStore().currentPipelineResults?.focus !== undefined"
+               style="display: flex; align-items: center; gap: 8px; white-space: nowrap; height: 40px;">
+            <span class="pr-1" style="display:inline-block; min-width: 80px; text-align:right; line-height: 40px;">Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}</span>
           
-          label="Focus Camera"
-           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
-          style="margin-left: auto"
-
-          color="primary"
-          density="compact"
-          hide-details="auto"
-        />
-        </v-card-text>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
         <v-btn
@@ -215,6 +225,9 @@ const focusMode = computed<boolean>({
         </v-btn>
       </v-col>
     </v-card-text>
+    
+          
+
 
     <v-dialog v-model="showDeleteCamera" width="800">
       <v-card color="surface" flat>

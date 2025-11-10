@@ -17,39 +17,41 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.opencv.core.Mat;
-import org.opencv.core.CvType;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class FocusPipe extends CVPipe<Mat, Mat, FocusPipe.FocusParams> {
+
+public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.FocusParams> {
+
+    private double maxVariance = 0.0;
+
     @Override
-    protected Mat process(Mat in) {
+    protected FocusResult process(Mat in) {
         var outputMat = new Mat();
-        
-    Imgproc.Laplacian(in, outputMat, CvType.CV_64F, 3);
 
-   
-    var mean = new org.opencv.core.MatOfDouble();
-    var stddev = new org.opencv.core.MatOfDouble();
-    Core.meanStdDev(outputMat, mean, stddev);
-    var sd = stddev.get(0, 0)[0];
-    var variance = sd * sd;
+        Imgproc.Laplacian(in, outputMat, CvType.CV_64F, 3);
 
-        
+        var mean = new MatOfDouble();
+        var stddev = new MatOfDouble();
+        Core.meanStdDev(outputMat, mean, stddev);
+        var sd = stddev.get(0, 0)[0];
+        var variance = sd * sd;
 
-        Imgproc.putText(
-            outputMat,
-            String.format("%.2f", variance),
-            new org.opencv.core.Point(10, 30),
-            Imgproc.FONT_HERSHEY_SIMPLEX,
-            0.8,
-            new org.opencv.core.Scalar(255, 255, 255),
-            2
-        );
+        return new FocusResult(outputMat, variance);
+    }
 
-        return outputMat;
+    public static class FocusResult {
+        public final Mat frame;
+        public final double variance;
+
+        public FocusResult(Mat frame, double variance) {
+            this.frame = frame;
+            this.variance = variance;
+        }
     }
 
     public static class FocusParams {}

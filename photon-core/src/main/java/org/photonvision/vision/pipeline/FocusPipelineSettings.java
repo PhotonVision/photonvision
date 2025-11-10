@@ -18,13 +18,11 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.processes.PipelineManager;
 
 @JsonTypeName("FocusPipelineSettings")
 public class FocusPipelineSettings extends CVPipelineSettings {
-  
-   
+
     public FocusPipelineSettings() {
         super();
         pipelineNickname = "Focus Camera";
