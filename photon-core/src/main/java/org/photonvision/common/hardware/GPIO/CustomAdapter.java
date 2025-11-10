@@ -26,19 +26,16 @@ public class CustomAdapter {
     private static final Logger logger = new Logger(CustomAdapter.class, LogGroup.General);
     private static final ShellExec runCommand = new ShellExec(true, true);
 
-    public final String deviceName;
     protected final String getGPIOCommand;
     protected final String setGPIOCommand;
     protected final String setPWMCommand;
     protected final String releaseGPIOCommand;
 
     public CustomAdapter(
-            String deviceName,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
             String releaseGPIOCommand) {
-        this.deviceName = deviceName;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
