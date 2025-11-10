@@ -22,7 +22,6 @@ import org.photonvision.vision.processes.PipelineManager;
 
 @JsonTypeName("FocusPipelineSettings")
 public class FocusPipelineSettings extends CVPipelineSettings {
-
     public FocusPipelineSettings() {
         super();
         pipelineNickname = "Focus Camera";

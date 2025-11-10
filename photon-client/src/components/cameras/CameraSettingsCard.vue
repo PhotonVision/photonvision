@@ -138,7 +138,6 @@ const wrappedCameras = computed<SelectItem[]>(() =>
     value: cameraUniqueName
   }))
 );
-
 </script>
 
 <template>
@@ -176,24 +175,29 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       />
     </v-card-text>
     <v-card-text class="pt-0">
-      <v-row align="center" no-gutters style="min-height:40px;">
-        <v-col cols="4" class="pa-0 pr-2 d-flex align-center" style="height: 40px;">
-          <span style="min-width: 90px; text-align: left; line-height: 40px;">Focus Mode</span>
+      <v-row align="center" no-gutters style="min-height: 40px">
+        <v-col cols="4" class="pa-0 pr-2 d-flex align-center" style="height: 40px">
+          <span style="min-width: 90px; text-align: left; line-height: 40px">Focus Mode</span>
         </v-col>
-        <v-col cols="3" class="pa-2 d-flex align-center" style="height: 40px;">
+        <v-col cols="3" class="pa-2 d-flex align-center" style="height: 40px">
           <v-switch
             v-model="focusMode"
-            :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
+            :disabled="
+              useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0
+            "
             hide-details="auto"
             color="primary"
-            style="margin-right: 0px; margin-top: 0; margin-bottom: 0;"
+            style="margin-right: 0px; margin-top: 0; margin-bottom: 0"
           />
         </v-col>
-        <v-col cols="5" class="pa-0 pr-5 d-flex align-center justify-end" style="height: 40px;">
-          <div v-if="useStateStore().currentPipelineResults?.focus !== undefined"
-               style="display: flex; align-items: center; gap: 8px; white-space: nowrap; height: 40px;">
-            <span class="pr-1" style="display:inline-block; min-width: 80px; text-align:right; line-height: 40px;">Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}</span>
-          
+        <v-col cols="5" class="pa-0 pr-5 d-flex align-center justify-end" style="height: 40px">
+          <div
+            v-if="useStateStore().currentPipelineResults?.focus !== undefined"
+            style="display: flex; align-items: center; gap: 8px; white-space: nowrap; height: 40px"
+          >
+            <span class="pr-1" style="display: inline-block; min-width: 80px; text-align: right; line-height: 40px"
+              >Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}</span
+            >
           </div>
         </v-col>
       </v-row>
@@ -225,9 +229,6 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </v-btn>
       </v-col>
     </v-card-text>
-    
-          
-
 
     <v-dialog v-model="showDeleteCamera" width="800">
       <v-card color="surface" flat>

@@ -157,7 +157,7 @@ public class PipelineManager {
         return switch (currentPipelineIndex) {
             case CAL_3D_INDEX -> calibration3dPipeline;
             case DRIVERMODE_INDEX -> driverModePipeline;
-             case FOCUS_INDEX -> focusPipeline;
+            case FOCUS_INDEX -> focusPipeline;
                 // Just return the current user pipeline, we're not on a built-in one
             default -> currentUserPipeline;
         };
@@ -290,7 +290,6 @@ public class PipelineManager {
      * @param state True to enter driver mode, false to exit driver mode.
      */
     public void setDriverMode(boolean state) {
-       
         setPipelineInternal(state ? DRIVERMODE_INDEX : lastUserPipelineIdx);
     }
 
@@ -300,7 +299,6 @@ public class PipelineManager {
      * @return Whether driver mode is active.
      */
     public boolean getDriverMode() {
-       
         return currentPipelineIndex == DRIVERMODE_INDEX;
     }
 

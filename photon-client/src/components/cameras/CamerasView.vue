@@ -95,7 +95,11 @@ const fpsTooLow = computed<boolean>(() => {
           color="buttonPassive"
           class="fill"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().isFocusMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            useCameraSettingsStore().isFocusMode
+          "
         >
           <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
@@ -104,7 +108,11 @@ const fpsTooLow = computed<boolean>(() => {
           color="buttonPassive"
           class="fill"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().isFocusMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            useCameraSettingsStore().isFocusMode
+          "
         >
           <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
@@ -140,7 +148,6 @@ th {
   justify-content: center;
   width: 100%;
 }
-
 
 @media only screen and (min-width: 960px) {
   #camera-settings-camera-view-card {
