@@ -21,7 +21,11 @@ import java.util.List;
 import org.photonvision.vision.frame.Frame;
 
 public class FocusPipelineResult extends CVPipelineResult {
-    public FocusPipelineResult(long seq, double latencyNanos, double fps, Frame outputFrame) {
+    public final double focus;
+
+    public FocusPipelineResult(
+            long seq, double latencyNanos, double fps, Frame outputFrame, double focus) {
         super(seq, latencyNanos, fps, List.of(), outputFrame);
+        this.focus = focus;
     }
 }
