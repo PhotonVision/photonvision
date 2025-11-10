@@ -23,7 +23,6 @@ import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -33,7 +32,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.math.MathUtils;
 
-public class VisionLED implements Closeable {
+public class VisionLED implements AutoCloseable {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
 
     private final List<LED> visionLEDs = new ArrayList<>();
