@@ -7,8 +7,7 @@ export enum PipelineType {
   ColoredShape = 3,
   AprilTag = 4,
   Aruco = 5,
-  ObjectDetection = 6,
-  Focus
+  ObjectDetection = 6
 }
 
 export enum AprilTagFamily {
