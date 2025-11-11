@@ -25,3 +25,7 @@ modifiableFileExclude {
   photon-targeting/src/generated/
   photon-targeting/src/main/native/cpp/photon/constrained_solvepnp/generate/
 }
+
+licenseUpdateExclude {
+  photon-core/src/main/java/org/photonvision/jni/GpuDetectorJNI.java
+}
