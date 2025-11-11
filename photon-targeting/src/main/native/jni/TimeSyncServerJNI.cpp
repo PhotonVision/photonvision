@@ -15,10 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <cstdio>
+
 #include <org_photonvision_jni_TimeSyncClient.h>
 #include <org_photonvision_jni_TimeSyncServer.h>
-
-#include <cstdio>
 
 #include "jni_utils.h"
 #include "net/TimeSyncServer.h"

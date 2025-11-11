@@ -1,8 +1,5 @@
 cppHeaderFileInclude {
   \.h$
-  \.hpp$
-  \.inc$
-  \.inl$
 }
 
 cppSrcFileInclude {
@@ -10,32 +7,21 @@ cppSrcFileInclude {
 }
 
 modifiableFileExclude {
-  \.jpg$
-  \.jpeg$
-  \.png$
-  \.gif$
-  \.so$
   \.dll$
-  \.webp$
+  \.gif$
   \.ico$
-  \.rknn$
-  \.tflite$
+  \.jpeg$
+  \.jpg$
   \.mp4$
+  \.png$
+  \.rknn$
+  \.so$
+  \.tflite$
   \.ttf$
+  \.webp$
   \.woff2$
   gradlew
   photon-lib/py/photonlibpy/generated/
-  photon-targeting/src/main/native/cpp/photon/constrained_solvepnp/generate/
   photon-targeting/src/generated/
-}
-
-includeProject {
-  ^photonLib/
-}
-
-includeOtherLibs {
-  ^frc/
-  ^networktables/
-  ^units/
-  ^wpi/
+  photon-targeting/src/main/native/cpp/photon/constrained_solvepnp/generate/
 }
