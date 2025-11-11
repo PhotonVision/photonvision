@@ -29,9 +29,9 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-#include "photon/targeting/PnpResult.h"
-#include "photon/targeting/MultiTargetPNPResult.h"
 
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PnpResult.h"
 #include "photon/targeting/TargetCorner.h"
 
 namespace photon {

@@ -1,18 +1,17 @@
-
 modifiableFileExclude {
-  \.jpg$
-  \.jpeg$
-  \.png$
-  \.gif$
-  \.so$
-  \.pdf$
-  \.mp4$
   \.dll$
-  \.webp$
+  \.gif$
   \.ico$
+  \.jpeg$
+  \.jpg$
+  \.mp4$
+  \.pdf$
+  \.png$
   \.rknn$
-  \.tflite$
+  \.so$
   \.svg$
+  \.tflite$
+  \.webp$
   \.woff2$
   gradlew
 }
