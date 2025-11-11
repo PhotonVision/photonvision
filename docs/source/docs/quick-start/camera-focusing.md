@@ -6,7 +6,7 @@ To ensure that your camera is focused properly, mount it to a secure surface and
 
 ## Using Focus Tool
 :::{important}
-The focus tool will assign a "Score" to the current focus, this is score depends on your enviorment and the lighting, and cannot be used for comparison
+The focus tool will assign a *Score* to the current focus, this score depends on your environment and the lighting, and cannot be used for comparison.
 :::
 - In the Cameras tab, turn on focus mode
 - Rotate the lens on your camera to try and get the focus value as high as possible
