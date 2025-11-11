@@ -36,6 +36,10 @@ public class FrameRecorder implements Releasable {
     private final AtomicBoolean recording;
     private final AtomicBoolean shutdown;
 
+    public enum RecordingStrategy {
+        SNAPSHOTS
+    }
+
     private Logger logger;
 
     private final Path outputPath;
@@ -60,7 +64,7 @@ public class FrameRecorder implements Releasable {
         }
     }
 
-    public FrameRecorder(Path outputPath) {
+    public FrameRecorder(Path outputPath, RecordingStrategy strat) {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
 
         logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
@@ -71,7 +75,11 @@ public class FrameRecorder implements Releasable {
         this.shutdown = new AtomicBoolean(false);
 
         // Start the writer thread
-        this.writerThread = new Thread(this::writerLoop, "FrameRecorder-Writer");
+        switch (strat) {
+            case SNAPSHOTS ->
+                    this.writerThread = new Thread(this::snapshotLoop, "FrameRecorder-Snapshot");
+            default -> throw new IllegalArgumentException("Unsupported Recording Strategy: " + strat);
+        }
         this.writerThread.setDaemon(true);
         this.writerThread.start();
     }
@@ -122,7 +130,7 @@ public class FrameRecorder implements Releasable {
     }
 
     /** Worker thread that writes frames to video file */
-    private void writerLoop() {
+    private void snapshotLoop() {
         while (!shutdown.get()) {
             try {
                 RecordFrame frame = frameQueue.take();
