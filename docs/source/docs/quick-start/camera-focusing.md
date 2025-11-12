@@ -2,7 +2,7 @@
 
 ## Prepare Camera
 
-To ensure that your camera is focused properly, mount it to a secure surface and ensure it does not move drastically. Point your camera at a detailed surface like a calibration board, this may help with focusing.
+To ensure that your camera is focused properly, mount it to a secure surface and ensure it does not move drastically. Point your camera at a detailed surface like a calibration board, this may help with focusing. Make sure the target is not too close or too far away from your camera.
 
 ## Using Focus Tool
 :::{important}
