@@ -24,12 +24,11 @@
 
 #include "Robot.h"
 
-#include <photon/PhotonUtils.h>
-
 #include <iostream>
 
 #include <frc/simulation/BatterySim.h>
 #include <frc/simulation/RoboRioSim.h>
+#include <photon/PhotonUtils.h>
 
 void Robot::RobotInit() {}
 

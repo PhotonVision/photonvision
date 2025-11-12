@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <cscore_cv.h>
-
 #include <algorithm>
 #include <numeric>
 #include <string>
@@ -33,6 +31,7 @@
 #include <utility>
 #include <vector>
 
+#include <cscore_cv.h>
 #include <frc/apriltag/AprilTag.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>

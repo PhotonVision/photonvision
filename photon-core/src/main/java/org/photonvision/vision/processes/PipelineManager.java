@@ -36,6 +36,7 @@ public class PipelineManager {
     private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
     public static final int DRIVERMODE_INDEX = -1;
+    public static final int FOCUS_INDEX = -3;
     public static final int CAL_3D_INDEX = -2;
     public static final int FOCUS_INDEX = -3;
     

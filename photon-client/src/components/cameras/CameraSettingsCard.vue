@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
+<<<<<<< HEAD
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+=======
+>>>>>>> 132be8ef345c75be6eb147de5cd586698cba794c
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -175,6 +179,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         ]"
         :select-cols="8"
       />
+<<<<<<< HEAD
 
       <v-row class="pa-0 align-center">
         <v-col cols="4" class="d-flex align-center">
@@ -191,6 +196,27 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       </v-row>
     </v-card-text>
 
+=======
+     <v-row class="mb-3" >
+      <pv-switch
+           
+              v-model="focusMode"
+              label="Focus Mode"
+              tooltip="Turns of focus mode"
+              :label-cols="8"
+            />
+             <v-card-text class="pt-5 ">
+              Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}
+  </v-card-text>
+         </v-row>
+
+    </v-card-text>
+    
+    
+      
+        
+     
+>>>>>>> 132be8ef345c75be6eb147de5cd586698cba794c
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
         <v-btn
