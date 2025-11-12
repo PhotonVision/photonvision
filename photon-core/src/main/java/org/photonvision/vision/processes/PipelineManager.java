@@ -39,7 +39,7 @@ public class PipelineManager {
     public static final int FOCUS_INDEX = -3;
     public static final int CAL_3D_INDEX = -2;
     public static final int FOCUS_INDEX = -3;
-    
+
     protected final List<CVPipelineSettings> userPipelineSettings;
     protected final Calibrate3dPipeline calibration3dPipeline;
     protected final FocusPipeline focusPipeline = new FocusPipeline();
