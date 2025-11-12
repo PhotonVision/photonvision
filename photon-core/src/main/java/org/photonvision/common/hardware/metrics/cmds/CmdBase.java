@@ -34,6 +34,8 @@ public class CmdBase {
     public String npuUsageCommand = "";
     // Disk
     public String diskUsageCommand = "";
+    public String diskSpaceAvailableCommand = "";
+
     // Uptime
     public String uptimeCommand = "";
 

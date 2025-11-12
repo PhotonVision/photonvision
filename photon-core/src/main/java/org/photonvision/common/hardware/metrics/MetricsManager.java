@@ -190,6 +190,19 @@ public class MetricsManager {
         }
     }
 
+    /**
+     * Get the percentage of disk space that's available.
+     *
+     * @return The available disk space in bytes, or -1.0 if the command fails or parsing fails.
+     */
+    public double getDiskSpaceAvailable() {
+        try {
+            return Double.parseDouble(safeExecute(cmds.diskSpaceAvailableCommand));
+        } catch (NumberFormatException e) {
+            return -1.0;
+        }
+    }
+
     // This is here so we don't spam logs if it fails
     boolean npuParseWarning = false;
 
