@@ -184,10 +184,6 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-col cols="6">
           <v-switch v-model="focusMode" color="primary" hide-details />
         </v-col>
-
-        <v-col cols="2">
-          <span v-if="focusMode"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
-        </v-col>
       </v-row>
     </v-card-text>
 
