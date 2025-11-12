@@ -23,6 +23,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
@@ -35,6 +36,7 @@ public class FrameRecorder implements Releasable {
     private final Thread writerThread;
     private final AtomicBoolean recording;
     private final AtomicBoolean shutdown;
+    private int frameCounter = 0;
 
     public enum RecordingStrategy {
         SNAPSHOTS
@@ -66,6 +68,17 @@ public class FrameRecorder implements Releasable {
 
     public FrameRecorder(Path outputPath, RecordingStrategy strat) {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
+
+        double availableSpace = HardwareManager.getInstance().metricsManager.getDiskSpaceAvailable();
+
+        // Check if we're under 4 GB of available space, if so exit
+        if (availableSpace < 4 * 1024 * 1024) {
+            logger.error(
+                    "Low disk space available ("
+                            + availableSpace / 1024
+                            + " MB). FrameRecorder will not start.");
+            throw new IllegalStateException("Insufficient disk space for FrameRecorder");
+        }
 
         logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
         this.outputPath = outputPath;
@@ -108,11 +121,24 @@ public class FrameRecorder implements Releasable {
      * is full, the oldest frame is dropped (this should rarely happen).
      *
      * @param cvmat The frame to record
-     * @return true if frame was queued, false if recording is not active or queue is full
+     * @return true if frame was queued, false if recording is not active, queue is full, or we've run
+     *     out of disk space.
      */
     public boolean recordFrame(CVMat cvmat) {
         if (!recording.get() || shutdown.get()) {
             return false;
+        }
+
+        if (frameCounter % 100 == 0) {
+            double availableSpace = HardwareManager.getInstance().metricsManager.getDiskSpaceAvailable();
+
+            // Check if we're under 4 GB of available space, if so stop recording
+            if (availableSpace < 4 * 1024 * 1024) {
+                logger.error(
+                        "Low disk space available (" + availableSpace / 1024 + " MB). Stopping FrameRecorder.");
+                stopRecording();
+                return false;
+            }
         }
 
         // Clone the mat so we don't hold references to pipeline memory
@@ -125,6 +151,8 @@ public class FrameRecorder implements Releasable {
             // Queue full, release the cloned mat
             cloned.release();
         }
+
+        frameCounter++;
 
         return added;
     }
