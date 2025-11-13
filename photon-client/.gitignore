@@ -1,8 +1,0 @@
-node_modules
-.DS_Store
-dist
-dist-ssr
-
-# Editor directories and files
-.idea
-components.d.ts

@@ -102,7 +102,8 @@ public enum Platform {
     public final boolean isSupported;
 
     // Set once at init, shouldn't be needed after.
-    private static final Platform currentPlatform = getCurrentPlatform();
+    private static Platform currentPlatform = getCurrentPlatform();
+    private static boolean override = false;
 
     Platform(
             String description,
@@ -119,6 +120,11 @@ public enum Platform {
         this.nativeLibraryFolderName = nativeLibFolderName;
     }
 
+    public static void overridePlatform(Platform platform) {
+        currentPlatform = platform;
+        override = true;
+    }
+
     //////////////////////////////////////////////////////
     // Public API
 
@@ -128,11 +134,14 @@ public enum Platform {
     }
 
     public static boolean isRK3588() {
-        return Platform.isOrangePi() || Platform.isCoolPi4b() || Platform.isRock5C();
+        return currentPlatform == LINUX_RK3588_64
+                || Platform.isOrangePi()
+                || Platform.isCoolPi4b()
+                || Platform.isRock5C();
     }
 
     public static boolean isQCS6490() {
-        return isRubik();
+        return currentPlatform == LINUX_QCS6490 || Platform.isRubik();
     }
 
     public static boolean isRaspberryPi() {
@@ -164,6 +173,11 @@ public enum Platform {
         return runRobotFile.exists();
     }
 
+    public static boolean isWindows() {
+        var p = getCurrentPlatform();
+        return (p == WINDOWS_32 || p == WINDOWS_64);
+    }
+
     //////////////////////////////////////////////////////
 
     // Debug info related to unknown platforms for debug help
@@ -174,6 +188,10 @@ public enum Platform {
     private static final String UnknownDeviceModelString = "Unknown";
 
     public static Platform getCurrentPlatform() {
+        if (override) {
+            return currentPlatform;
+        }
+
         String OS_NAME;
         if (Platform.OS_NAME != null) {
             OS_NAME = Platform.OS_NAME;
@@ -315,10 +333,5 @@ public enum Platform {
         } catch (IOException ex) {
             return false;
         }
-    }
-
-    public static boolean isWindows() {
-        var p = getCurrentPlatform();
-        return (p == WINDOWS_32 || p == WINDOWS_64);
     }
 }
