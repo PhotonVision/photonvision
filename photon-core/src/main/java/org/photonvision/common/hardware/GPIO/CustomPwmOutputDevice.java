@@ -20,22 +20,24 @@ package org.photonvision.common.hardware.GPIO;
 import com.diozero.api.RuntimeIOException;
 import com.diozero.internal.spi.AbstractDevice;
 import com.diozero.internal.spi.InternalPwmOutputDeviceInterface;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 
 public class CustomPwmOutputDevice extends AbstractDevice
         implements InternalPwmOutputDeviceInterface {
-    private static final Logger logger = new Logger(CustomPwmOutputDevice.class, LogGroup.General);
-
     protected final CustomAdapter adapter;
     protected final int gpio;
     private float state;
+    private int frequency;
 
     public CustomPwmOutputDevice(
-            CustomDeviceFactory deviceFactory, String key, int gpio, float initialValue) {
+            CustomDeviceFactory deviceFactory,
+            String key,
+            int gpio,
+            int pwmFrequency,
+            float initialValue) {
         super(key, deviceFactory);
 
         this.gpio = gpio;
+        this.frequency = pwmFrequency;
 
         this.adapter = deviceFactory.adapter;
 
@@ -65,12 +67,13 @@ public class CustomPwmOutputDevice extends AbstractDevice
 
     @Override
     public int getPwmFrequency() throws RuntimeIOException {
-        throw new UnsupportedOperationException("PWM frequency cannot be retrieved");
+        return frequency;
     }
 
     @Override
     public void setPwmFrequency(int frequencyHz) throws RuntimeIOException {
-        logger.warn("Setting PWM frequency is not implemented");
+        frequency = frequencyHz;
+        adapter.setPwmFrequency(gpio, frequencyHz);
     }
 
     @Override

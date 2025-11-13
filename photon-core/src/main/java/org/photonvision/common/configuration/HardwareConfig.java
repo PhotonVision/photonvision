@@ -30,12 +30,14 @@ public class HardwareConfig {
     public final ArrayList<Integer> ledPins;
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledBrightnessRange;
+    public final int ledPWMFrequency;
     public final ArrayList<Integer> statusRGBPins;
 
     // Custom GPIO
     public final String getGPIOCommand;
     public final String setGPIOCommand;
     public final String setPWMCommand;
+    public final String setPWMFrequencyCommand;
     public final String releaseGPIOCommand;
 
     // Metrics
@@ -60,10 +62,12 @@ public class HardwareConfig {
             ArrayList<Integer> ledPins,
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
+            int ledPwmFrequency,
             ArrayList<Integer> statusRGBPins,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
+            String setPWMFrequencyCommand,
             String releaseGPIOCommand,
             String cpuTempCommand,
             String cpuMemoryCommand,
@@ -82,10 +86,12 @@ public class HardwareConfig {
         this.ledPins = ledPins;
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
+        this.ledPWMFrequency = ledPwmFrequency;
         this.statusRGBPins = statusRGBPins;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
+        this.setPWMFrequencyCommand = setPWMFrequencyCommand;
         this.releaseGPIOCommand = releaseGPIOCommand;
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
@@ -107,10 +113,12 @@ public class HardwareConfig {
         ledPins = new ArrayList<>();
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
+        ledPWMFrequency = 0;
         statusRGBPins = new ArrayList<>();
         getGPIOCommand = "";
         setGPIOCommand = "";
         setPWMCommand = "";
+        setPWMFrequencyCommand = "";
         releaseGPIOCommand = "";
         cpuTempCommand = "";
         cpuMemoryCommand = "";
@@ -154,6 +162,7 @@ public class HardwareConfig {
         return getGPIOCommand != ""
                 || setGPIOCommand != ""
                 || setPWMCommand != ""
+                || setPWMFrequencyCommand != ""
                 || releaseGPIOCommand != "";
     }
 
@@ -171,6 +180,8 @@ public class HardwareConfig {
                 + ledsCanDim
                 + ", ledBrightnessRange="
                 + ledBrightnessRange
+                + ", ledPWMFrequency="
+                + ledPWMFrequency
                 + ", statusRGBPins="
                 + statusRGBPins
                 + ", getGPIOCommand="
@@ -179,6 +190,8 @@ public class HardwareConfig {
                 + setGPIOCommand
                 + ", setPWMCommand="
                 + setPWMCommand
+                + ", setPWMFrequencyCommand="
+                + setPWMFrequencyCommand
                 + ", releaseGPIOCommand="
                 + releaseGPIOCommand
                 + ", cpuTempCommand="

@@ -111,6 +111,7 @@ public class HardwareManager {
                                 hardwareConfig.ledsCanDim,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                hardwareConfig.ledPWMFrequency,
                                 ledModeState::set);
 
         ledModeListener =
@@ -138,6 +139,7 @@ public class HardwareManager {
         System.setProperty("diozero.custom.getGPIO", hardwareConfig.getGPIOCommand);
         System.setProperty("diozero.custom.setGPIO", hardwareConfig.setGPIOCommand);
         System.setProperty("diozero.custom.setPWM", hardwareConfig.setPWMCommand);
+        System.setProperty("diozero.custom.setPWMFrequency", hardwareConfig.setPWMFrequencyCommand);
         System.setProperty("diozero.custom.releaseGPIO", hardwareConfig.releaseGPIOCommand);
 
         BoardPinInfo pinInfo = DeviceFactoryHelper.getNativeDeviceFactory().getBoardPinInfo();

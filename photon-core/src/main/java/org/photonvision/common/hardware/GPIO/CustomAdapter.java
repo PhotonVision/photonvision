@@ -29,16 +29,19 @@ public class CustomAdapter {
     protected final String getGPIOCommand;
     protected final String setGPIOCommand;
     protected final String setPWMCommand;
+    protected final String setPWMFrequencyCommand;
     protected final String releaseGPIOCommand;
 
     public CustomAdapter(
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
+            String setPWMFrequencyCommand,
             String releaseGPIOCommand) {
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
+        this.setPWMFrequencyCommand = setPWMFrequencyCommand;
         this.releaseGPIOCommand = releaseGPIOCommand;
     }
 
@@ -69,6 +72,13 @@ public class CustomAdapter {
                 setPWMCommand
                         .replace("{p}", Integer.toString(gpio))
                         .replace("{v}", Double.toString(value)));
+    }
+
+    public void setPwmFrequency(int gpio, int frequency) {
+        execute(
+                setPWMFrequencyCommand
+                        .replace("{p}", Integer.toString(gpio))
+                        .replace("{f}", Integer.toString(frequency)));
     }
 
     public void releaseGPIO(int gpio) {

@@ -47,6 +47,7 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
     public static final String GET_GPIO_PROP = "diozero.custom.getGPIO";
     public static final String SET_GPIO_PROP = "diozero.custom.setGPIO";
     public static final String SET_PWM_PROP = "diozero.custom.setPWM";
+    public static final String SET_PWM_FREQUENCY_PROP = "diozero.custom.setPWMFrequency";
     public static final String RELEASE_GPIO_PROP = "diozero.custom.releaseGPIO";
 
     private static final Logger logger = new Logger(CustomDeviceFactory.class, LogGroup.General);
@@ -61,10 +62,16 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
         String getGPIOCommand = System.getProperty(GET_GPIO_PROP, "");
         String setGPIOCommand = System.getProperty(SET_GPIO_PROP, "");
         String setPWMCommand = System.getProperty(SET_PWM_PROP, "");
+        String setPWMFrequencyCommand = System.getProperty(SET_PWM_FREQUENCY_PROP, "");
         String releaseGPIOCommand = System.getProperty(RELEASE_GPIO_PROP, "");
 
         this.adapter =
-                new CustomAdapter(getGPIOCommand, setGPIOCommand, setPWMCommand, releaseGPIOCommand);
+                new CustomAdapter(
+                        getGPIOCommand,
+                        setGPIOCommand,
+                        setPWMCommand,
+                        setPWMFrequencyCommand,
+                        releaseGPIOCommand);
     }
 
     @Override
@@ -129,7 +136,8 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
     @Override
     public InternalPwmOutputDeviceInterface createPwmOutputDevice(
             String key, PinInfo pinInfo, int pwmFrequency, float initialValue) {
-        return new CustomPwmOutputDevice(this, key, pinInfo.getDeviceNumber(), initialValue);
+        return new CustomPwmOutputDevice(
+                this, key, pinInfo.getDeviceNumber(), pwmFrequency, initialValue);
     }
 
     @Override
