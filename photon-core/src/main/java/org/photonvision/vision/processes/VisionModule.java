@@ -256,9 +256,9 @@ public class VisionModule {
             }
 
             Path outputPath =
-                    PathManager.getInstance()
-                            .getRootFolder()
-                            .resolve("recordings")
+                    ConfigManager.getInstance()
+                            .getRecordingsDirectory()
+                            .toPath()
                             .resolve(camPath)
                             .resolve(recordingPath);
 
