@@ -143,7 +143,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           matchedCameraInfo: d.matchedCameraInfo,
           isConnected: d.isConnected,
           hasConnected: d.hasConnected,
-          mismatch: d.mismatch
+          mismatch: d.mismatch,
+          recordings: d.recordings
         };
         return acc;
       }, {});

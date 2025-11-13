@@ -293,6 +293,28 @@ public class VisionModule {
         return frameRecorder != null && frameRecorder.isRecording();
     }
 
+    private List<String> getRecordingsList() {
+        List<String> recordings = new ArrayList<>();
+        Path cameraRecordingDir =
+                ConfigManager.getInstance()
+                        .getRecordingsDirectory()
+                        .toPath()
+                        .resolve(visionSource.getSettables().getConfiguration().uniqueName);
+
+        if (cameraRecordingDir.toFile().exists() && cameraRecordingDir.toFile().isDirectory()) {
+            try {
+                java.nio.file.Files.list(cameraRecordingDir)
+                        .filter(java.nio.file.Files::isDirectory)
+                        .map(Path::getFileName)
+                        .map(Path::toString)
+                        .forEach(recordings::add);
+            } catch (Exception e) {
+                logger.error("Exception listing recordings", e);
+            }
+        }
+        return recordings;
+    }
+
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
@@ -686,6 +708,8 @@ public class VisionModule {
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
+
+        ret.recordings = getRecordingsList();
 
         return ret;
     }
