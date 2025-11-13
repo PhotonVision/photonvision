@@ -218,14 +218,6 @@ def get_struct_schema_str(message: MessageType, message_db: List[MessageType]):
     ret = ""
 
     for field in message["fields"]:
-        if (
-            "optional" in field
-            and field["optional"] == True
-            and "vla" in field
-            and field["vla"] == True
-        ):
-            raise Exception(f"Field {field} must be optional OR vla!")
-
         typestr = get_fully_defined_field_name(field, message_db)
 
         array_modifier = ""
