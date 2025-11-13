@@ -10,4 +10,4 @@ The focus tool will assign a *Score* to the current focus, this score depends on
 :::
 - In the Cameras tab, turn on focus mode
 - Rotate the lens on your camera to try and get the focus value as high as possible
-- Once you cannot get a higher value, this indicated that your camera is fully focused and can be set it place using glue if desired.
+- Once you cannot get a higher value, this indicates that your camera is fully focused and can be set in place using glue if desired.
