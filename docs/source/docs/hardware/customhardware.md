@@ -17,7 +17,7 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
       {
         "ledPins" : [ 13 ],
         "ledsCanDim" : true,
-        "ledPWMRange" : [ 0, 100 ],
+        "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
         "statusRGBPins" : [ ],
       }
@@ -124,7 +124,7 @@ Here is a complete example `hardwareConfig.json`:
         "supportURL" : "https://www.youtube.com/watch?v=b-CvLWbfZhU",
         "ledPins" : [2, 13],
         "ledsCanDim" : true,
-        "ledPWMRange" : [ 0, 100 ],
+        "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
         "statusRGBPins" : [ ],
         "getGPIOCommand" : ""
