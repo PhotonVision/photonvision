@@ -27,7 +27,6 @@ import java.util.Map;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
-import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NTDriverStation;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -246,7 +245,7 @@ public class HardwareManager {
             return true; // Enough space already available
         }
 
-        Path recordingsDir = PathManager.getInstance().getRootFolder().resolve("recordings");
+        Path recordingsDir = ConfigManager.getInstance().getRecordingsDirectory().toPath();
 
         // Create a list of all the recordings
         ArrayList<Path> recordings = new ArrayList<>();
