@@ -267,6 +267,8 @@ export interface UiCameraConfiguration {
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
+
+  recordings: string[];
 }
 
 export interface CameraSettingsChangeRequest {
@@ -390,7 +392,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
   },
   isConnected: true,
   hasConnected: true,
-  mismatch: false
+  mismatch: false,
+  recordings: []
 };
 
 export enum CalibrationBoardTypes {
