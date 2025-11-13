@@ -190,7 +190,7 @@ public class PigpioSocket {
         }
 
         try {
-            ArrayList<PigpioPulse> pulses = new ArrayList<>();
+            ArrayList<PigpioPulse> pulses = new ArrayList<>(blinks * 2);
             var startPulse = new PigpioPulse(pinNo, 0, pulseTimeMillis * 1000);
             var endPulse = new PigpioPulse(0, pinNo, pulseTimeMillis * 1000);
 
