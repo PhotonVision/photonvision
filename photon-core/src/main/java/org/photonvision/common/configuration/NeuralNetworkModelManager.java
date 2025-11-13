@@ -244,7 +244,8 @@ public class NeuralNetworkModelManager {
     public enum Version {
         YOLOV5,
         YOLOV8,
-        YOLOV11
+        YOLOV11,
+        YOLOV11OBB
     }
 
     /**
