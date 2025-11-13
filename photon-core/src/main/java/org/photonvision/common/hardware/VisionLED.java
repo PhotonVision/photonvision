@@ -43,7 +43,7 @@ public class VisionLED implements AutoCloseable {
     private VisionLEDMode currentLedMode = VisionLEDMode.kDefault;
     private BooleanSupplier pipelineModeSupplier;
 
-    private float mappedBrightness;
+    private float mappedBrightness = 0.0f;
 
     private final Consumer<Integer> modeConsumer;
 
@@ -52,6 +52,7 @@ public class VisionLED implements AutoCloseable {
             boolean ledsCanDim,
             int brightnessMin,
             int brightnessMax,
+            int pwmFrequency,
             Consumer<Integer> visionLEDmode) {
         this(
                 DeviceFactoryHelper.getNativeDeviceFactory(),
@@ -59,6 +60,7 @@ public class VisionLED implements AutoCloseable {
                 ledsCanDim,
                 brightnessMin,
                 brightnessMax,
+                pwmFrequency,
                 visionLEDmode);
     }
 
@@ -68,15 +70,23 @@ public class VisionLED implements AutoCloseable {
             boolean ledsCanDim,
             int brightnessMin,
             int brightnessMax,
+            int pwmFrequency,
             Consumer<Integer> visionLEDmode) {
         this.brightnessMin = brightnessMin;
         this.brightnessMax = brightnessMax;
         this.modeConsumer = visionLEDmode;
+        if (pwmFrequency > 0) {
+            deviceFactory.setBoardPwmFrequency(pwmFrequency);
+        }
         BoardPinInfo boardPinInfo = deviceFactory.getBoardPinInfo();
         ledPins.forEach(
                 pin -> {
                     if (ledsCanDim && boardPinInfo.getByPwmOrGpioNumberOrThrow(pin).isPwmOutputSupported()) {
-                        dimmableVisionLEDs.add(new PwmLed(deviceFactory, pin));
+                        PwmLed led = new PwmLed(deviceFactory, pin);
+                        if (pwmFrequency > 0) {
+                            led.setPwmFrequency(pwmFrequency);
+                        }
+                        dimmableVisionLEDs.add(led);
                     } else {
                         visionLEDs.add(new LED(deviceFactory, pin));
                     }

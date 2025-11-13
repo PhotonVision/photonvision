@@ -29,17 +29,18 @@ No hardware boards with status RGB LED pins or non-dimming LED's have been teste
 
 ### Custom GPIO
 
-If your hardware does not support diozero's default provider, custom commands can be provided to interact with the GPIO lines.
+If your hardware does not support diozero's default provider, custom commands can be provided to interact with the GPIO lines. The examples below show what parameters are provided to each command, which can be used in any order or multiple times as needed.
 
 ```{eval-rst}
 .. tab-set-code::
    .. code-block:: json
 
       {
-        "getGPIOCommand" : ""
-        "setGPIOCommand" : ""
-        "setPWMCommand" : ""
-        "releaseGPIOCommand" : ""
+        "getGPIOCommand" : "getGPIO {p}",
+        "setGPIOCommand" : "setGPIO {p} {s}",
+        "setPWMCommand" : "setPWM {p} {v}",
+        "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
+        "releaseGPIOCommand" : "releseGPIO {p}",
       }
 ```
 
@@ -50,6 +51,7 @@ The following template strings are used to input parameters to the commands:
 | `{p}`    | pin number | integers   |
 | `{s}`    | state      | true/false |
 | `{v}`    | value      | 0.0-1.0    |
+| `{f}`    | frequency  | integers   |
 
 If you were using custom LED commands from 2025 or earlier and still need custom GPIO commands, they can likely be copied over. `ledSetCommand` can be reused as `setGPIOCommand`. `ledDimCommand` can be reused with edits as `setPWMCommand`, replacing any occurrences of `{v}` with `$(awk 'BEGIN{ print int({v}*100) }')` if your command requires integer percentages.
 
@@ -127,10 +129,11 @@ Here is a complete example `hardwareConfig.json`:
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
         "statusRGBPins" : [ ],
-        "getGPIOCommand" : ""
-        "setGPIOCommand" : ""
-        "setPWMCommand" : ""
-        "releaseGPIOCommand" : ""
+        "getGPIOCommand" : "getGPIO {p}",
+        "setGPIOCommand" : "setGPIO {p} {s}",
+        "setPWMCommand" : "setPWM {p} {v}",
+        "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
+        "releaseGPIOCommand" : "releseGPIO {p}",
         "cpuTempCommand" : "",
         "cpuMemoryCommand" : "",
         "cpuUtilCommand" : "",
