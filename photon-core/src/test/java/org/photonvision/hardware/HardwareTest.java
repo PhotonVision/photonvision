@@ -72,7 +72,7 @@ public class HardwareTest {
         try (NativeDeviceFactoryInterface deviceFactory = new DefaultDeviceFactory()) {
             Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
 
-            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 0, null)) {
+            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
                 // Verify states can be set
                 led.setState(true);
                 assertEquals(1, deviceFactory.getGpioValue(2));
@@ -88,7 +88,7 @@ public class HardwareTest {
     public void testCustomGPIO() throws IOException {
         NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
 
-        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null)) {
+        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 100, 0, null)) {
             // Verify states can be set
             led.setState(true);
             assertEquals(1, deviceFactory.getGpioValue(2));
@@ -103,7 +103,7 @@ public class HardwareTest {
     public void testBlink() throws InterruptedException, IOException {
         NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
 
-        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 0, null)) {
+        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 100, 0, null)) {
             // Verify blinking toggles between states
             HashSet<Integer> seenValues = new HashSet<>();
             led.blink(125, 3);
