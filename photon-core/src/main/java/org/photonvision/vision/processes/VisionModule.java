@@ -242,10 +242,7 @@ public class VisionModule {
      */
     void setRecording(boolean shouldRecord) {
         if (shouldRecord) {
-            String camPath =
-                    visionSource.getSettables().getConfiguration().nickname
-                            + "_"
-                            + visionSource.getSettables().getConfiguration().uniqueName;
+            String camPath = visionSource.getSettables().getConfiguration().uniqueName;
 
             String recordingPath = NetworkTablesManager.getInstance().getMatchData();
             if (recordingPath == null || recordingPath.isEmpty()) {
