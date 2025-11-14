@@ -75,7 +75,12 @@ public class NTDriverStation {
                         var word = NTDriverStation.getControlWord(event.valueData.value.getInteger());
 
                         printTransition(this.lastControlWord, word);
-                        printMatchData();
+
+                        String matchData = printMatchData();
+                        if (!matchData.isBlank()) {
+                            logger.info(matchData);
+                        }
+
                         this.lastControlWord = word;
                     }
                 });
@@ -84,7 +89,12 @@ public class NTDriverStation {
         NtControlWord word = NTDriverStation.getControlWord(this.ntControlWord.get());
 
         printTransition(this.lastControlWord, word);
-        printMatchData();
+
+        String matchData = printMatchData();
+        if (!matchData.isBlank()) {
+            logger.info(matchData);
+        }
+
         this.lastControlWord = word;
     }
 
@@ -92,12 +102,12 @@ public class NTDriverStation {
         logger.info("ROBOT TRANSITIONED MODES! From " + old.toString() + " to " + newWord.toString());
     }
 
-    private void printMatchData() {
+    public String printMatchData() {
         // this information seems to be published at the same time
         String event = eventName.get();
         if (event.isBlank()) {
             // nothing to log
-            return;
+            return "";
         }
         String type =
                 switch ((int) matchType.get()) {
@@ -121,7 +131,7 @@ public class NTDriverStation {
                         + replay
                         + ", Station: "
                         + station;
-        logger.info(message);
+        return message;
     }
 
     // Copied from
