@@ -17,22 +17,17 @@
 
 package org.photonvision.vision.pipeline;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    FocusCamera(-3, FocusPipeline.class),
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class),
-    ObjectDetection(4, ObjectDetectionPipeline.class);
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.photonvision.vision.processes.PipelineManager;
 
-    public final int baseIndex;
-    public final Class clazz;
-
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+@JsonTypeName("FocusPipelineSettings")
+public class FocusPipelineSettings extends CVPipelineSettings {
+    public FocusPipelineSettings() {
+        super();
+        pipelineNickname = "Focus Camera";
+        pipelineIndex = PipelineManager.FOCUS_INDEX;
+        pipelineType = PipelineType.FocusCamera;
+        inputShouldShow = true;
+        cameraAutoExposure = true;
     }
 }
