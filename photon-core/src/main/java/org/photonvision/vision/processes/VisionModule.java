@@ -56,7 +56,6 @@ import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.FrameRecorder;
-import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -269,7 +268,7 @@ public class VisionModule {
             }
 
             try {
-                frameRecorder = new FrameRecorder(outputPath, RecordingStrategy.SNAPSHOTS);
+                frameRecorder = new FrameRecorder(outputPath);
             } catch (Exception e) {
                 logger.error("Exception creating FrameRecorder", e);
                 return;

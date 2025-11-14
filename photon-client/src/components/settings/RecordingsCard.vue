@@ -5,6 +5,7 @@ import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const theme = useTheme();
 
@@ -53,164 +54,144 @@ const nukeRecordings = () => {
   <v-card class="mb-3" color="surface">
     <v-card-title>Recordings</v-card-title>
     <div class="pa-5 pt-0">
-      <v-row>
-        <v-col cols="12" sm="6">
-          <v-btn
-            color="buttonPassive"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="() => exportRecordings.value.click()"
-          >
-            <v-icon start class="open-icon"> mdi-export </v-icon>
-            <span class="open-label">Export Recordings</span>
-          </v-btn>
-          <a
-            ref="exportRecordings"
-            style="color: black; text-decoration: none; display: none"
-            :href="`http://${address}/api/recordings/export`"
-            download="photonvision-recordings-export.zip"
-            target="_blank"
-          />
-        </v-col>
-        <v-col cols="12" sm="6">
-          <v-btn
-            color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="() => (showNukeDialog = true)"
-          >
-            <v-icon left class="open-icon"> mdi-trash </v-icon>
-            <span class="open-label">Clear all recordings</span>
-          </v-btn>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="">
-          <v-table fixed-header height="100%" density="compact" dark>
-            <thead style="font-size: 1.25rem">
-              <tr>
-                <th>Camera</th>
-                <th>Selected Recording</th>
-                <th>Delete Selected</th>
-                <th>Export Selected</th>
-                <th>Delete All</th>
-                <th>Export All</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="camera in camerasWithRecordings" :key="camera.uniqueName">
-                <td>{{ camera.nickname }}</td>
-                <td>
-                  <pv-select
-                    v-model="selectedRecordings[camera.uniqueName]"
-                    :items="camera.recordings"
-                    :select-cols="8"
-                  />
-                </td>
-                <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="error"
-                    title="Delete Selected Recording"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    @click="
-                      () =>
-                        (confirmDeleteDialog = {
-                          show: true,
-                          recordings: [selectedRecordings[camera.uniqueName] || ''],
-                          cameraUniqueName: camera.uniqueName
-                        })
-                    "
-                  >
-                    <v-icon size="large">mdi-trash-can-outline</v-icon>
-                  </v-btn>
-                </td>
-                <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="buttonPassive"
-                    title="Export Selected Recording"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    @click="() => exportIndividualRecording.value.click()"
-                  >
-                    <v-icon size="large">mdi-export</v-icon>
-                  </v-btn>
-                  <a
-                    ref="exportIndividualRecording"
-                    style="color: black; text-decoration: none; display: none"
-                    :href="`http://${address}/api/recordings/exportIndividual?recording=${selectedRecordings[camera.uniqueName]}?camera=${camera.uniqueName}`"
-                    :download="`${camera.nickname}_${camera.recordings[0].slice(camera.recordings[0].lastIndexOf('/'))}_recording.zip`"
-                    target="_blank"
-                  />
-                </td>
-                <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="error"
-                    title="Delete Recordings"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    @click="
-                      () =>
-                        (confirmDeleteDialog = {
-                          show: true,
-                          recordings: camera.recordings,
-                          cameraUniqueName: camera.uniqueName
-                        })
-                    "
-                  >
-                    <v-icon size="large">mdi-trash-can-outline</v-icon>
-                  </v-btn>
-                </td>
-                <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="buttonPassive"
-                    title="Export Recordings"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    @click="() => exportCameraRecordings.value.click()"
-                  >
-                    <v-icon size="large">mdi-export</v-icon>
-                  </v-btn>
-                  <a
-                    ref="exportCameraRecordings"
-                    style="color: black; text-decoration: none; display: none"
-                    :href="`http://${address}/api/recordings/exportCamera?cameraPath=${camera.uniqueName}`"
-                    :download="`${camera.nickname}_recordings.zip`"
-                    target="_blank"
-                  />
-                </td>
-              </tr>
-            </tbody>
-          </v-table>
-
-          <v-dialog v-model="confirmDeleteDialog.show" width="600">
-            <v-card color="surface" dark>
-              <v-card-title>Delete Recording</v-card-title>
-              <v-card-text class="pt-0">
-                Are you sure you want to delete the recording(s) {{ confirmDeleteDialog.recordings.join(", ") }}?
-                <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-                  <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="buttonPassive"
-                    @click="confirmDeleteDialog.show = false"
-                  >
-                    Cancel
-                  </v-btn>
-                  <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="error"
-                    @click="deleteRecordings(confirmDeleteDialog.recordings, confirmDeleteDialog.cameraUniqueName)"
-                  >
-                    Delete
-                  </v-btn>
-                </v-card-actions>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
-        </v-col>
-      </v-row>
+      <pv-select
+        v-model="useSettingsStore().general.recordingStrategy"
+        label="Orientation"
+        tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
+        :items="useSettingsStore().general.supportedRecordingStrategies"
+        @update:modelValue="(args) => useSettingsStore().setRecordingStrategy(String(args ?? ''))"
+      />
+      <div v-if="camerasWithRecordings.length > 0">
+        <v-row>
+          <v-col cols="12" sm="6">
+            <v-btn
+              color="buttonPassive"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="() => exportRecordings.value.click()"
+            >
+              <v-icon start class="open-icon"> mdi-export </v-icon>
+              <span class="open-label">Export Recordings</span>
+            </v-btn>
+            <a
+              ref="exportRecordings"
+              style="color: black; text-decoration: none; display: none"
+              :href="`http://${address}/api/recordings/export`"
+              download="photonvision-recordings-export.zip"
+              target="_blank"
+            />
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-btn
+              color="error"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="() => (showNukeDialog = true)"
+            >
+              <v-icon left class="open-icon"> mdi-trash </v-icon>
+              <span class="open-label">Clear all recordings</span>
+            </v-btn>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="">
+            <v-table fixed-header height="100%" density="compact" dark>
+              <thead style="font-size: 1.25rem">
+                <tr>
+                  <th>Camera</th>
+                  <th>Selected Recording</th>
+                  <th>Delete Selected</th>
+                  <th>Export Selected</th>
+                  <th>Delete All</th>
+                  <th>Export All</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="camera in camerasWithRecordings" :key="camera.uniqueName">
+                  <td>{{ camera.nickname }}</td>
+                  <td>
+                    <pv-select v-model="selectedRecordings[camera.uniqueName]" :items="camera.recordings" />
+                  </td>
+                  <td class="text-right">
+                    <v-btn
+                      icon
+                      small
+                      color="error"
+                      title="Delete Selected Recording"
+                      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                      @click="
+                        () =>
+                          (confirmDeleteDialog = {
+                            show: true,
+                            recordings: [selectedRecordings[camera.uniqueName] || ''],
+                            cameraUniqueName: camera.uniqueName
+                          })
+                      "
+                    >
+                      <v-icon size="large">mdi-trash-can-outline</v-icon>
+                    </v-btn>
+                  </td>
+                  <td class="text-right">
+                    <v-btn
+                      icon
+                      small
+                      color="buttonPassive"
+                      title="Export Selected Recording"
+                      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                      @click="() => exportIndividualRecording.value.click()"
+                    >
+                      <v-icon size="large">mdi-export</v-icon>
+                    </v-btn>
+                    <a
+                      ref="exportIndividualRecording"
+                      style="color: black; text-decoration: none; display: none"
+                      :href="`http://${address}/api/recordings/exportIndividual?recording=${selectedRecordings[camera.uniqueName]}?camera=${camera.uniqueName}`"
+                      :download="`${camera.nickname}_${camera.recordings[0].slice(camera.recordings[0].lastIndexOf('/'))}_recording.zip`"
+                      target="_blank"
+                    />
+                  </td>
+                  <td class="text-right">
+                    <v-btn
+                      icon
+                      small
+                      color="error"
+                      title="Delete Recordings"
+                      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                      @click="
+                        () =>
+                          (confirmDeleteDialog = {
+                            show: true,
+                            recordings: camera.recordings,
+                            cameraUniqueName: camera.uniqueName
+                          })
+                      "
+                    >
+                      <v-icon size="large">mdi-trash-can-outline</v-icon>
+                    </v-btn>
+                  </td>
+                  <td class="text-right">
+                    <v-btn
+                      icon
+                      small
+                      color="buttonPassive"
+                      title="Export Recordings"
+                      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                      @click="() => exportCameraRecordings.value.click()"
+                    >
+                      <v-icon size="large">mdi-export</v-icon>
+                    </v-btn>
+                    <a
+                      ref="exportCameraRecordings"
+                      style="color: black; text-decoration: none; display: none"
+                      :href="`http://${address}/api/recordings/exportCamera?cameraPath=${camera.uniqueName}`"
+                      :download="`${camera.nickname}_recordings.zip`"
+                      target="_blank"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </v-table>
+          </v-col>
+        </v-row>
+      </div>
     </div>
 
     <v-dialog v-model="showNukeDialog" width="800" dark>
@@ -261,6 +242,30 @@ const nukeRecordings = () => {
               {{ $vuetify.display.mdAndUp ? "Delete recordings, I have backed up what I need" : "Delete Recordings" }}
             </span>
           </v-btn>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
+    <v-dialog v-model="confirmDeleteDialog.show" width="600">
+      <v-card color="surface" dark>
+        <v-card-title>Delete Recording</v-card-title>
+        <v-card-text class="pt-0">
+          Are you sure you want to delete the recording(s) {{ confirmDeleteDialog.recordings.join(", ") }}?
+          <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
+            <v-btn
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              color="buttonPassive"
+              @click="confirmDeleteDialog.show = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              color="error"
+              @click="deleteRecordings(confirmDeleteDialog.recordings, confirmDeleteDialog.cameraUniqueName)"
+            >
+              Delete
+            </v-btn>
+          </v-card-actions>
         </v-card-text>
       </v-card>
     </v-dialog>

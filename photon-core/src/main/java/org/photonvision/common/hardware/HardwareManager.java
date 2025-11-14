@@ -37,6 +37,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -316,5 +317,9 @@ public class HardwareManager {
         }
 
         return true;
+    }
+
+    public RecordingStrategy getRecordingStrategy() {
+        return hardwareConfig.recordingStrategy;
     }
 }

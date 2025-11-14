@@ -30,7 +30,9 @@ public class UIGeneralSettings {
             String hardwareModel,
             String hardwarePlatform,
             boolean conflictingHostname,
-            String conflictingCameras) {
+            String conflictingCameras,
+            String recordingStrategy,
+            List<String> supportedRecordingStrategies) {
         this.version = version;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
@@ -40,6 +42,8 @@ public class UIGeneralSettings {
         this.hardwarePlatform = hardwarePlatform;
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras;
+        this.recordingStrategy = recordingStrategy;
+        this.supportedRecordingStrategies = supportedRecordingStrategies;
     }
 
     public String version;
@@ -51,4 +55,6 @@ public class UIGeneralSettings {
     public String hardwarePlatform;
     public boolean conflictingHostname;
     public String conflictingCameras;
+    public String recordingStrategy;
+    public List<String> supportedRecordingStrategies;
 }

@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,6 +42,8 @@ public class FrameRecorder implements Releasable {
     public enum RecordingStrategy {
         SNAPSHOTS
     }
+
+    public final RecordingStrategy strat;
 
     private Logger logger;
 
@@ -66,8 +69,9 @@ public class FrameRecorder implements Releasable {
         }
     }
 
-    public FrameRecorder(Path outputPath, RecordingStrategy strat) {
+    public FrameRecorder(Path outputPath) {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
+        this.strat = HardwareManager.getInstance().getRecordingStrategy();
 
         double availableSpace = HardwareManager.getInstance().metricsManager.getDiskSpaceAvailable();
 
@@ -255,5 +259,9 @@ public class FrameRecorder implements Releasable {
 
     private static Path exportSnapshots(Path recording) throws Exception {
         throw new UnsupportedOperationException("Snapshot export not implemented yet");
+    }
+
+    public static List<RecordingStrategy> getSupportedStrategies() {
+        return List.of(RecordingStrategy.SNAPSHOTS);
     }
 }

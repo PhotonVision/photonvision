@@ -7,7 +7,6 @@ import LightingControlCard from "@/components/settings/LEDControlCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import ApriltagControlCard from "@/components/settings/ApriltagControlCard.vue";
 import RecordingsCard from "@/components/settings/RecordingsCard.vue";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 </script>
 
 <template>
@@ -17,7 +16,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
     <NetworkingCard />
     <ObjectDetectionCard v-if="useSettingsStore().general.supportedBackends.length > 0" />
     <LightingControlCard v-if="useSettingsStore().lighting.supported" />
-    <RecordingsCard v-if="useCameraSettingsStore().camerasWithRecordings.length > 0" />
+    <RecordingsCard />
     <Suspense>
       <!-- Allows us to import three js when it's actually needed  -->
       <ApriltagControlCard />
