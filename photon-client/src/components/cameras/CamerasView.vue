@@ -19,14 +19,6 @@ const driverMode = computed<boolean>({
       true
     )
 });
-const focusMode = computed<boolean>({
-  get: () => useCameraSettingsStore().isFocusMode,
-  set: (v) =>
-    useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
-      true
-    )
-});
 
 const fpsTooLow = computed<boolean>(() => {
   const currFPS = useStateStore().currentPipelineResults?.fps || 0;
@@ -66,7 +58,13 @@ const fpsTooLow = computed<boolean>(() => {
         <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
           <span class="pr-1">Camera not connected</span>
         </v-chip>
-        <v-chip v-if="focusMode" label color="primary" variant="text" style="font-size: 1rem; padding: 0; margin: auto">
+        <v-chip
+          v-if="useCameraSettingsStore().isFocusMode"
+          label
+          color="primary"
+          variant="text"
+          style="font-size: 1rem; padding: 0; margin: auto"
+        >
           <span class="pr-1"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
         </v-chip>
 

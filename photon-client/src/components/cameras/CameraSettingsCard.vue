@@ -2,8 +2,7 @@
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
@@ -176,15 +175,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         :select-cols="8"
       />
 
-      <v-row class="align-center">
-        <v-col cols="4">
-          <tooltipped-label tooltip="Enable Focus Mode to focus the lens on your camera" label="Focus Mode" />
-        </v-col>
-
-        <v-col cols="6">
-          <v-switch v-model="focusMode" color="primary" hide-details />
-        </v-col>
-      </v-row>
+      <pv-switch
+        v-model="focusMode"
+        tooltip="Enable Focus Mode to start focusing the lens on your camera"
+        label="Focus Mode"
+      ></pv-switch>
     </v-card-text>
 
     <v-card-text class="d-flex pt-0">
