@@ -9,6 +9,7 @@ import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
+import pvDeleteModal from "../common/pv-delete-modal.vue";
 
 const theme = useTheme();
 
@@ -413,33 +414,12 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
-      <v-card color="surface">
-        <v-card-title class="pb-0">Delete Pipeline</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <span style="color: white">"{{ useCameraSettingsStore().currentPipelineSettings.pipelineNickname }}"</span>?
-          This cannot be undone.
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="primary"
-            class="text-black"
-            @click="showPipelineDeletionConfirmationDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="confirmDeleteCurrentPipeline"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="showPipelineDeletionConfirmationDialog"
+      action="Delete Pipeline"
+      description="Are you sure you want to delete the current pipeline? This action cannot be undone."
+      :on-delete="confirmDeleteCurrentPipeline"
+    />
     <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
       <v-card color="surface" dark>
         <v-card-title class="pb-0">Change Pipeline Type</v-card-title>

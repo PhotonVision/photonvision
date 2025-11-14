@@ -7,15 +7,13 @@ import {
   PVCameraInfo,
   type PVCSICameraInfo,
   type PVFileCameraInfo,
-  type PVUsbCameraInfo,
-  type UiCameraConfiguration
+  type PVUsbCameraInfo
 } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import PvInput from "@/components/common/pv-input.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
-import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -55,18 +53,10 @@ const deactivateModule = (cameraUniqueName: string) => {
   );
 };
 
-const deletingCamera = ref(false);
-const deleteThisCamera = (cameraName: string) => {
-  if (deletingCamera.value) return;
-  deletingCamera.value = true;
-  const payload = {
-    cameraUniqueName: cameraName
-  };
+const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "" });
 
-  axiosPost("/utils/nukeOneCamera", "delete a camera", payload).finally(() => {
-    setCameraDeleting(null);
-    deletingCamera.value = false;
-  });
+const deleteThisCamera = (cameraUniqueName: string) => {
+  axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName });
 };
 
 const cameraConnected = (uniquePath: string): boolean => {
@@ -109,15 +99,6 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
   viewingDetails.value = camera !== null && isConnected !== null;
   viewingCamera.value = [camera, isConnected];
 };
-
-const viewingDeleteCamera = ref(false);
-const cameraToDelete = ref<UiCameraConfiguration | WebsocketCameraSettingsUpdate | null>(null);
-const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettingsUpdate | null) => {
-  yesDeleteMySettingsText.value = "";
-  viewingDeleteCamera.value = camera !== null;
-  cameraToDelete.value = camera;
-};
-const yesDeleteMySettingsText = ref("");
 
 /**
  * Get the connection-type-specific camera info from the given PVCameraInfo object.
@@ -275,7 +256,14 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="error"
                   style="width: 100%"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                  @click="setCameraDeleting(module)"
+                  @click="
+                    () =>
+                      (confirmDeleteDialog = {
+                        show: true,
+                        nickname: module.nickname,
+                        cameraUniqueName: module.uniqueName
+                      })
+                  "
                 >
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -361,7 +349,14 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="error"
                   style="width: 100%"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                  @click="setCameraDeleting(module)"
+                  @click="
+                    () =>
+                      (confirmDeleteDialog = {
+                        show: true,
+                        nickname: module.nickname,
+                        cameraUniqueName: module.uniqueName
+                      })
+                  "
                 >
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -465,43 +460,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       </v-card>
     </v-dialog>
 
-    <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="surface" flat>
-        <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
-        <v-card-text class="pb-10px">
-          Are you sure you want to delete "{{ cameraToDelete.nickname }}"? This cannot be undone.
-        </v-card-text>
-        <v-card-text class="pt-0 pb-10px">
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="primary"
-            class="text-black"
-            @click="cameraToDelete = null"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
-            :loading="deletingCamera"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="deleteThisCamera(cameraToDelete.uniqueName)"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">Delete</span>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="confirmDeleteDialog.show"
+      action="Delete Camera"
+      :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
+      :expected="confirmDeleteDialog.nickname"
+      :on-delete="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
+    />
   </div>
 </template>
 
