@@ -158,6 +158,16 @@ public class NetworkTablesManager {
                 pvlevel);
     }
 
+    /**
+     * Get a string describing the current match data from NT
+     *
+     * @return A string describing the current match data from NT, or an empty string if no match data
+     *     is available
+     */
+    public String getMatchData() {
+        return ntDriverStation.printMatchData();
+    }
+
     public void checkNtConnectState(NetworkTableEvent event) {
         var isConnEvent = event.is(Kind.kConnected);
         var isDisconnEvent = event.is(Kind.kDisconnected);

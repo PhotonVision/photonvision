@@ -37,6 +37,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
@@ -243,10 +244,13 @@ public class VisionModule {
                             + "_"
                             + visionSource.getSettables().getConfiguration().uniqueName;
 
-            String recordingPath =
+            String recordingPath = NetworkTablesManager.getInstance().getMatchData();
+            if (recordingPath == null || recordingPath.isEmpty()) {
+                // No match is currently active, use timestamp
+                recordingPath =
                     DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
                             .format(java.time.LocalDateTime.now());
-            
+            }
 
             Path outputPath =
                     PathManager.getInstance()
