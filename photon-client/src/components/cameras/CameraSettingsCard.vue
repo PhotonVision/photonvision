@@ -144,7 +144,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 <template>
   <v-card class="mb-3 rounded-12" color="surface" dark>
     <v-card-title class="pb-0">Camera Settings</v-card-title>
-    <v-card-text class="pb-3">
+    <v-card-text class="pt-3">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
