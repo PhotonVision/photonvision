@@ -21,6 +21,8 @@ import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
+import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,6 +31,7 @@ import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
@@ -51,6 +54,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -92,6 +96,8 @@ public class VisionModule {
 
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
+
+    private FrameRecorder frameRecorder = null;
 
     boolean mismatch;
 
@@ -225,6 +231,61 @@ public class VisionModule {
                 });
     }
 
+    /**
+     * Start or stop recording.
+     *
+     * @param shouldRecord true to start recording, false to stop
+     */
+    void setRecording(boolean shouldRecord) {
+        if (shouldRecord) {
+            String camPath =
+                    visionSource.getSettables().getConfiguration().nickname
+                            + "_"
+                            + visionSource.getSettables().getConfiguration().uniqueName;
+
+            String recordingPath =
+                    DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
+                            .format(java.time.LocalDateTime.now());
+            
+
+            Path outputPath =
+                    PathManager.getInstance()
+                            .getRootFolder()
+                            .resolve("recordings")
+                            .resolve(camPath)
+                            .resolve(recordingPath);
+
+            if (!outputPath.toFile().exists()) {
+                outputPath.toFile().mkdirs();
+            }
+
+            if (frameRecorder != null && frameRecorder.isRecording()) {
+                logger.warn("Frame recorder is already recording!");
+                return;
+            }
+
+            try {
+                frameRecorder = new FrameRecorder(outputPath);
+            } catch (Exception e) {
+                logger.error("Exception creating FrameRecorder", e);
+                return;
+            }
+            frameRecorder.startRecording();
+        } else {
+            if (frameRecorder == null || !frameRecorder.isRecording()) {
+                logger.warn("Frame recorder is not recording!");
+                return;
+            }
+
+            logger.info("Stopping frame recorder");
+            frameRecorder.stopRecording();
+        }
+    }
+
+    boolean getRecording() {
+        return frameRecorder != null && frameRecorder.isRecording();
+    }
+
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
@@ -280,7 +341,10 @@ public class VisionModule {
                     try {
                         CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
+                        if (getRecording()) {
+                            logger.debug("Took snapshot for recording");
+                            frameRecorder.recordFrame(m_frame.colorImage);
+                        }
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
@@ -326,6 +390,7 @@ public class VisionModule {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
+        frameRecorder.release();
 
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
