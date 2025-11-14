@@ -17,18 +17,25 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.processes.VisionModule;
+import org.photonvision.vision.processes.VisionSourceManager;
+import org.zeroturnaround.zip.ZipUtil;
 
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
@@ -243,11 +250,11 @@ public class FrameRecorder implements Releasable {
      * @param recording Path to recording directory
      * @return Path to exported recording
      */
-    public static Path export(Path recording) throws Exception {
+    public static File export(Path recording) throws Exception {
         // Read the strategy used
 
-        java.nio.file.Path strategyFile = recording.resolve("strat");
-        String strategy = java.nio.file.Files.readString(strategyFile).trim();
+        Path strategyFile = recording.resolve("strat");
+        String strategy = Files.readString(strategyFile).trim();
 
         switch (strategy) {
             case "SNAPSHOTS":
@@ -257,8 +264,81 @@ public class FrameRecorder implements Releasable {
         }
     }
 
-    private static Path exportSnapshots(Path recording) throws Exception {
+    private static File exportSnapshots(Path recording) throws Exception {
+        // This should return a file named CAMERA-NICKNAME_RECORDING-NAME_recording.mp4 or smth
         throw new UnsupportedOperationException("Snapshot export not implemented yet");
+    }
+
+    public static File exportCamera(Path cameraRecordingsDir) throws Exception {
+        File[] exportedRecordings;
+        try (var stream = Files.list(cameraRecordingsDir)) {
+            exportedRecordings =
+                    stream
+                            .map(
+                                    path -> {
+                                        try {
+                                            return FrameRecorder.export(path);
+                                        } catch (Exception e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                    })
+                            .toArray(File[]::new);
+        }
+
+        // Create a zip of all exported recordings
+        File zipPath =
+                Files.createTempFile(
+                                VisionSourceManager.getInstance().getVisionModules().stream()
+                                                .filter(
+                                                        module ->
+                                                                module
+                                                                        .getCameraConfiguration()
+                                                                        .uniqueName
+                                                                        .matches(cameraRecordingsDir.getFileName().toString()))
+                                                .map(module -> module.getCameraConfiguration().nickname)
+                                                .toString()
+                                        + "_recordings",
+                                ".zip")
+                        .toFile();
+
+        ZipUtil.packEntries(exportedRecordings, zipPath);
+
+        return zipPath;
+    }
+
+    public static File exportAll() throws Exception {
+        List<File> exportedRecordings = new ArrayList<>();
+        for (VisionModule module : VisionSourceManager.getInstance().getVisionModules()) {
+            Path dir =
+                    ConfigManager.getInstance()
+                            .getRecordingsDirectory()
+                            .toPath()
+                            .resolve(module.getCameraConfiguration().uniqueName);
+
+            if (!Files.exists(dir)) {
+                continue;
+            }
+
+            Path camExportDir = Files.createTempDirectory(module.getCameraConfiguration().nickname);
+
+            Files.list(camExportDir)
+                    .forEach(
+                            path -> {
+                                try {
+                                    Files.move(export(path).toPath(), camExportDir);
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            });
+
+            exportedRecordings.add(camExportDir.toFile());
+        }
+
+        // Create a zip of all exported recordings
+        File zipPath = Files.createTempFile("photonvision-recordings-export", ".zip").toFile();
+        ZipUtil.packEntries(exportedRecordings.toArray(File[]::new), zipPath);
+
+        return zipPath;
     }
 
     public static List<RecordingStrategy> getSupportedStrategies() {

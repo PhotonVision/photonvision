@@ -144,7 +144,7 @@ const nukeRecordings = () => {
                       ref="exportIndividualRecording"
                       style="color: black; text-decoration: none; display: none"
                       :href="`http://${address}/api/recordings/exportIndividual?recording=${selectedRecordings[camera.uniqueName]}?camera=${camera.uniqueName}`"
-                      :download="`${camera.nickname}_${camera.recordings[0].slice(camera.recordings[0].lastIndexOf('/'))}_recording.zip`"
+                      :download="`${camera.nickname}_${selectedRecordings[camera.uniqueName]}_recording.mp4`"
                       target="_blank"
                     />
                   </td>
