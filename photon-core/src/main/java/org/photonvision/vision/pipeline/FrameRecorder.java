@@ -83,6 +83,24 @@ public class FrameRecorder implements Releasable {
         logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
         this.outputPath = outputPath;
 
+        // Write strategy to a file in the output path
+        try {
+            // Ensure output directory exists
+            java.nio.file.Files.createDirectories(outputPath);
+
+            java.nio.file.Path strategyFile = outputPath.resolve("strat");
+            String content = strat.name() + System.lineSeparator();
+
+            java.nio.file.Files.write(
+                    strategyFile,
+                    content.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            logger.warn(
+                    "Failed to write recording strategy file to " + outputPath + ": " + e.getMessage());
+        }
+
         this.frameQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.recording = new AtomicBoolean(false);
         this.shutdown = new AtomicBoolean(false);
@@ -213,5 +231,29 @@ public class FrameRecorder implements Releasable {
                 frame.mat.release();
             }
         }
+    }
+
+    /**
+     * Export a recording at the given path.
+     *
+     * @param recording Path to recording directory
+     * @return Path to exported recording
+     */
+    public static Path export(Path recording) throws Exception {
+        // Read the strategy used
+
+        java.nio.file.Path strategyFile = recording.resolve("strat");
+        String strategy = java.nio.file.Files.readString(strategyFile).trim();
+
+        switch (strategy) {
+            case "SNAPSHOTS":
+                return exportSnapshots(recording);
+            default:
+                throw new IllegalArgumentException("Unsupported Recording Strategy: " + strategy);
+        }
+    }
+
+    private static Path exportSnapshots(Path recording) throws Exception {
+        throw new UnsupportedOperationException("Snapshot export not implemented yet");
     }
 }
