@@ -66,6 +66,8 @@ public class PhotonCamera implements AutoCloseable {
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
+    BooleanPublisher recordingPublisher;
+    BooleanSubscriber recordingSubscriber;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -81,6 +83,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
+        recordingPublisher.close();
+        recordingSubscriber.close();
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
@@ -144,6 +148,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
+        recordingPublisher = cameraTable.getBooleanTopic("recordingRequest").publish();
+        recordingSubscriber = cameraTable.getBooleanTopic("recording").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
@@ -371,6 +377,24 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setDriverMode(boolean driverMode) {
         driverModePublisher.set(driverMode);
+    }
+
+    /**
+     * Returns whether the camera is recording.
+     *
+     * @return Whether the camera is recording.
+     */
+    public boolean isRecording() {
+        return recordingSubscriber.get();
+    }
+
+    /**
+     * Sets whether the camera is recording.
+     *
+     * @param recording Whether to set recording.
+     */
+    public void setRecording(boolean recording) {
+        recordingPublisher.set(recording);
     }
 
     /**

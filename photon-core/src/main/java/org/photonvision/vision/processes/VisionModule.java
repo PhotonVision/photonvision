@@ -155,7 +155,9 @@ public class VisionModule {
                         pipelineManager::getRequestedIndex,
                         this::setPipeline,
                         pipelineManager::getDriverMode,
-                        this::setDriverMode);
+                        this::setDriverMode,
+                        this::getRecording,
+                        this::setRecording);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
@@ -248,8 +250,8 @@ public class VisionModule {
             if (recordingPath == null || recordingPath.isEmpty()) {
                 // No match is currently active, use timestamp
                 recordingPath =
-                    DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
-                            .format(java.time.LocalDateTime.now());
+                        DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
+                                .format(java.time.LocalDateTime.now());
             }
 
             Path outputPath =

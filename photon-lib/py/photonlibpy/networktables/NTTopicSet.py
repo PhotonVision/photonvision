@@ -47,6 +47,13 @@ class NTTopicSet:
 
         self.driverModeSubscriber.getTopic().publish().setDefault(False)
 
+        self.recordingPublisher = self.subTable.getBooleanTopic("recording").publish()
+        self.recordingSubscriber = self.subTable.getBooleanTopic(
+            "recordingRequest"
+        ).subscribe(False)
+
+        self.recordingSubscriber.getTopic().publish().setDefault(False)
+
         self.latencyMillisEntry = self.subTable.getDoubleTopic(
             "latencyMillis"
         ).publish()

@@ -53,6 +53,10 @@ public class NTTopicSet {
     public BooleanPublisher driverModePublisher;
     public BooleanSubscriber driverModeSubscriber;
 
+    public BooleanTopic recordingEntry;
+    public BooleanPublisher recordingPublisher;
+    public BooleanSubscriber recordingSubscriber;
+
     public DoublePublisher latencyMillisEntry;
     public DoublePublisher fpsEntry;
     public BooleanPublisher hasTargetEntry;
@@ -100,6 +104,12 @@ public class NTTopicSet {
         // Fun little hack to make the request show up
         driverModeSubscriber.getTopic().publish().setDefault(false);
 
+        recordingPublisher = subTable.getBooleanTopic("recording").publish();
+        recordingSubscriber = subTable.getBooleanTopic("recordingRequest").subscribe(false);
+
+        // Hacky-wacky
+        recordingSubscriber.getTopic().publish().setDefault(false);
+
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         fpsEntry = subTable.getDoubleTopic("fps").publish();
         hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
@@ -128,6 +138,9 @@ public class NTTopicSet {
 
         if (driverModePublisher != null) driverModePublisher.close();
         if (driverModeSubscriber != null) driverModeSubscriber.close();
+
+        if (recordingPublisher != null) recordingPublisher.close();
+        if (recordingSubscriber != null) recordingSubscriber.close();
 
         if (latencyMillisEntry != null) latencyMillisEntry.close();
         if (fpsEntry != null) fpsEntry.close();

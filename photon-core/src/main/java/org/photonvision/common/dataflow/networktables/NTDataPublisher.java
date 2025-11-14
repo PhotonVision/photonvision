@@ -51,16 +51,24 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final BooleanSupplier driverModeSupplier;
     private final Consumer<Boolean> driverModeConsumer;
 
+    NTDataChangeListener recordingListener;
+    private final BooleanSupplier recordingSupplier;
+    private final Consumer<Boolean> recordingConsumer;
+
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
             Consumer<Integer> pipelineIndexConsumer,
             BooleanSupplier driverModeSupplier,
-            Consumer<Boolean> driverModeConsumer) {
+            Consumer<Boolean> driverModeConsumer,
+            BooleanSupplier recordingSupplier,
+            Consumer<Boolean> recordingConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
+        this.recordingSupplier = recordingSupplier;
+        this.recordingConsumer = recordingConsumer;
 
         updateCameraNickname(cameraNickname);
         updateEntries();
@@ -103,15 +111,30 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Set driver mode to " + newDriverMode);
     }
 
+    private void onRecordingChange(NetworkTableEvent entryNotification) {
+        var newRecording = entryNotification.valueData.value.getBoolean();
+        var originalRecording = recordingSupplier.getAsBoolean();
+
+        if (newRecording == originalRecording) {
+            logger.debug("Recording state is already " + newRecording);
+            return;
+        }
+
+        recordingConsumer.accept(newRecording);
+        logger.debug("Set recording state to " + newRecording);
+    }
+
     private void removeEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (recordingListener != null) recordingListener.remove();
         ts.removeEntries();
     }
 
     private void updateEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (recordingListener != null) recordingListener.remove();
 
         ts.updateEntries();
 
@@ -122,6 +145,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         driverModeListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
+
+        recordingListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.recordingSubscriber, this::onRecordingChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -170,6 +197,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        ts.recordingPublisher.set(recordingSupplier.getAsBoolean());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
         ts.fpsEntry.set(acceptedResult.fps);
         ts.hasTargetEntry.set(acceptedResult.hasTargets());
