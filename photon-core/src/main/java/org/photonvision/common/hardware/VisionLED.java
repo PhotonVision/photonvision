@@ -17,54 +17,78 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.devices.LED;
+import com.diozero.devices.PwmLed;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import com.diozero.sbc.BoardPinInfo;
+import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PigpioException;
-import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
-import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.math.MathUtils;
 
-public class VisionLED {
+public class VisionLED implements AutoCloseable {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
 
-    private final int[] ledPins;
-    private final List<GPIOBase> visionLEDs = new ArrayList<>();
+    private final List<LED> visionLEDs = new ArrayList<>();
+    private final List<PwmLed> dimmableVisionLEDs = new ArrayList<>();
     private final int brightnessMin;
     private final int brightnessMax;
-    private final PigpioSocket pigpioSocket;
 
     private VisionLEDMode currentLedMode = VisionLEDMode.kDefault;
     private BooleanSupplier pipelineModeSupplier;
 
-    private int mappedBrightnessPercentage;
+    private float mappedBrightness = 0.0f;
 
     private final Consumer<Integer> modeConsumer;
 
     public VisionLED(
             List<Integer> ledPins,
+            boolean ledsCanDim,
             int brightnessMin,
             int brightnessMax,
-            PigpioSocket pigpioSocket,
+            int pwmFrequency,
+            Consumer<Integer> visionLEDmode) {
+        this(
+                DeviceFactoryHelper.getNativeDeviceFactory(),
+                ledPins,
+                ledsCanDim,
+                brightnessMin,
+                brightnessMax,
+                pwmFrequency,
+                visionLEDmode);
+    }
+
+    public VisionLED(
+            NativeDeviceFactoryInterface deviceFactory,
+            List<Integer> ledPins,
+            boolean ledsCanDim,
+            int brightnessMin,
+            int brightnessMax,
+            int pwmFrequency,
             Consumer<Integer> visionLEDmode) {
         this.brightnessMin = brightnessMin;
         this.brightnessMax = brightnessMax;
-        this.pigpioSocket = pigpioSocket;
         this.modeConsumer = visionLEDmode;
-        this.ledPins = ledPins.stream().mapToInt(i -> i).toArray();
+        if (pwmFrequency > 0) {
+            deviceFactory.setBoardPwmFrequency(pwmFrequency);
+        }
+        BoardPinInfo boardPinInfo = deviceFactory.getBoardPinInfo();
         ledPins.forEach(
                 pin -> {
-                    if (Platform.isRaspberryPi()) {
-                        visionLEDs.add(new PigpioPin(pin));
+                    if (ledsCanDim && boardPinInfo.getByPwmOrGpioNumberOrThrow(pin).isPwmOutputSupported()) {
+                        PwmLed led = new PwmLed(deviceFactory, pin);
+                        if (pwmFrequency > 0) {
+                            led.setPwmFrequency(pwmFrequency);
+                        }
+                        dimmableVisionLEDs.add(led);
                     } else {
-                        visionLEDs.add(new CustomGPIO(pin));
+                        visionLEDs.add(new LED(deviceFactory, pin));
                     }
                 });
         pipelineModeSupplier = () -> false;
@@ -75,7 +99,8 @@ public class VisionLED {
     }
 
     public void setBrightness(int percentage) {
-        mappedBrightnessPercentage = MathUtils.map(percentage, 0, 100, brightnessMin, brightnessMax);
+        mappedBrightness =
+                (float) (MathUtils.map(percentage, 0.0, 100.0, brightnessMin, brightnessMax) / 100.0);
         setInternal(currentLedMode, false);
     }
 
@@ -87,42 +112,20 @@ public class VisionLED {
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        if (Platform.isRaspberryPi()) {
-            try {
-                setStateImpl(false); // hack to ensure hardware PWM has stopped before trying to blink
-                pigpioSocket.generateAndSendWaveform(pulseLengthMillis, blinkCount, ledPins);
-            } catch (PigpioException e) {
-                logger.error("Failed to blink!", e);
-            } catch (NullPointerException e) {
-                logger.error("Failed to blink, pigpio internal issue!", e);
-            }
-        } else {
-            for (GPIOBase led : visionLEDs) {
-                led.blink(pulseLengthMillis, blinkCount);
-            }
+        for (LED led : visionLEDs) {
+            led.blink(pulseLengthMillis, pulseLengthMillis, blinkCount, true);
+        }
+        for (PwmLed led : dimmableVisionLEDs) {
+            led.blink(pulseLengthMillis, pulseLengthMillis, blinkCount, true);
         }
     }
 
     private void setStateImpl(boolean state) {
-        if (Platform.isRaspberryPi()) {
-            try {
-                // stop any active blink
-                pigpioSocket.waveTxStop();
-            } catch (PigpioException e) {
-                logger.error("Failed to stop blink!", e);
-            } catch (NullPointerException e) {
-                logger.error("Failed to blink, pigpio internal issue!", e);
-            }
+        for (LED led : visionLEDs) {
+            led.setOn(state);
         }
-        try {
-            // if the user has set an LED brightness other than 100%, use that instead
-            if (mappedBrightnessPercentage == 100 || !state) {
-                visionLEDs.forEach((led) -> led.setState(state));
-            } else {
-                visionLEDs.forEach((led) -> led.setBrightness(mappedBrightnessPercentage));
-            }
-        } catch (NullPointerException e) {
-            logger.error("Failed to blink, pigpio internal issue!", e);
+        for (PwmLed led : dimmableVisionLEDs) {
+            led.setValue(mappedBrightness);
         }
     }
 
@@ -154,26 +157,31 @@ public class VisionLED {
     private void setInternal(VisionLEDMode newLedMode, boolean fromNT) {
         var lastLedMode = currentLedMode;
 
-        if (fromNT) {
+        if (fromNT || currentLedMode == VisionLEDMode.kDefault) {
             switch (newLedMode) {
                 case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
                 case kOff -> setStateImpl(false);
                 case kOn -> setStateImpl(true);
                 case kBlink -> blinkImpl(85, -1);
             }
+        }
+
+        if (fromNT) {
             currentLedMode = newLedMode;
             logger.info(
                     "Changing LED mode from \"" + lastLedMode.toString() + "\" to \"" + newLedMode + "\"");
         } else {
-            if (currentLedMode == VisionLEDMode.kDefault) {
-                switch (newLedMode) {
-                    case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
-                    case kOff -> setStateImpl(false);
-                    case kOn -> setStateImpl(true);
-                    case kBlink -> blinkImpl(85, -1);
-                }
-            }
             logger.info("Changing LED internal state to " + newLedMode.toString());
+        }
+    }
+
+    @Override
+    public void close() {
+        for (LED led : visionLEDs) {
+            led.close();
+        }
+        for (PwmLed led : dimmableVisionLEDs) {
+            led.close();
         }
     }
 }

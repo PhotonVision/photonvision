@@ -28,12 +28,18 @@ public class HardwareConfig {
 
     // LED control
     public final ArrayList<Integer> ledPins;
-    public final String ledSetCommand;
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledBrightnessRange;
-    public final String ledDimCommand;
-    public final String ledBlinkCommand;
+    public final int ledPWMFrequency;
     public final ArrayList<Integer> statusRGBPins;
+    public final boolean statusRGBActiveHigh;
+
+    // Custom GPIO
+    public final String getGPIOCommand;
+    public final String setGPIOCommand;
+    public final String setPWMCommand;
+    public final String setPWMFrequencyCommand;
+    public final String releaseGPIOCommand;
 
     // Metrics
     public final String cpuTempCommand;
@@ -55,12 +61,16 @@ public class HardwareConfig {
             String deviceLogoPath,
             String supportURL,
             ArrayList<Integer> ledPins,
-            String ledSetCommand,
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
-            String ledDimCommand,
-            String ledBlinkCommand,
+            int ledPwmFrequency,
             ArrayList<Integer> statusRGBPins,
+            boolean statusRGBActiveHigh,
+            String getGPIOCommand,
+            String setGPIOCommand,
+            String setPWMCommand,
+            String setPWMFrequencyCommand,
+            String releaseGPIOCommand,
             String cpuTempCommand,
             String cpuMemoryCommand,
             String cpuUtilCommand,
@@ -76,12 +86,16 @@ public class HardwareConfig {
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
         this.ledPins = ledPins;
-        this.ledSetCommand = ledSetCommand;
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
-        this.ledDimCommand = ledDimCommand;
-        this.ledBlinkCommand = ledBlinkCommand;
+        this.ledPWMFrequency = ledPwmFrequency;
         this.statusRGBPins = statusRGBPins;
+        this.statusRGBActiveHigh = statusRGBActiveHigh;
+        this.getGPIOCommand = getGPIOCommand;
+        this.setGPIOCommand = setGPIOCommand;
+        this.setPWMCommand = setPWMCommand;
+        this.setPWMFrequencyCommand = setPWMFrequencyCommand;
+        this.releaseGPIOCommand = releaseGPIOCommand;
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
@@ -100,12 +114,16 @@ public class HardwareConfig {
         deviceLogoPath = "";
         supportURL = "";
         ledPins = new ArrayList<>();
-        ledSetCommand = "";
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
-        ledDimCommand = "";
-        ledBlinkCommand = "";
+        ledPWMFrequency = 0;
         statusRGBPins = new ArrayList<>();
+        statusRGBActiveHigh = false;
+        getGPIOCommand = "";
+        setGPIOCommand = "";
+        setPWMCommand = "";
+        setPWMFrequencyCommand = "";
+        releaseGPIOCommand = "";
         cpuTempCommand = "";
         cpuMemoryCommand = "";
         cpuUtilCommand = "";
@@ -127,7 +145,7 @@ public class HardwareConfig {
     }
 
     /**
-     * @return True if any command has been configured to a non-default empty, false otherwise
+     * @return True if any info command has been configured to be non-empty, false otherwise
      */
     public final boolean hasCommandsConfigured() {
         return cpuTempCommand != ""
@@ -137,9 +155,19 @@ public class HardwareConfig {
                 || cpuUptimeCommand != ""
                 || gpuMemoryCommand != ""
                 || ramUtilCommand != ""
-                || ledBlinkCommand != ""
                 || gpuMemUsageCommand != ""
                 || diskUsageCommand != "";
+    }
+
+    /**
+     * @return True if any gpio command has been configured to be non-empty, false otherwise
+     */
+    public final boolean hasGPIOCommandsConfigured() {
+        return getGPIOCommand != ""
+                || setGPIOCommand != ""
+                || setPWMCommand != ""
+                || setPWMFrequencyCommand != ""
+                || releaseGPIOCommand != "";
     }
 
     @Override
@@ -152,18 +180,26 @@ public class HardwareConfig {
                 + supportURL
                 + ", ledPins="
                 + ledPins
-                + ", ledSetCommand="
-                + ledSetCommand
                 + ", ledsCanDim="
                 + ledsCanDim
                 + ", ledBrightnessRange="
                 + ledBrightnessRange
-                + ", ledDimCommand="
-                + ledDimCommand
-                + ", ledBlinkCommand="
-                + ledBlinkCommand
+                + ", ledPWMFrequency="
+                + ledPWMFrequency
                 + ", statusRGBPins="
                 + statusRGBPins
+                + ", statusRGBActiveHigh"
+                + statusRGBActiveHigh
+                + ", getGPIOCommand="
+                + getGPIOCommand
+                + ", setGPIOCommand="
+                + setGPIOCommand
+                + ", setPWMCommand="
+                + setPWMCommand
+                + ", setPWMFrequencyCommand="
+                + setPWMFrequencyCommand
+                + ", releaseGPIOCommand="
+                + releaseGPIOCommand
                 + ", cpuTempCommand="
                 + cpuTempCommand
                 + ", cpuMemoryCommand="

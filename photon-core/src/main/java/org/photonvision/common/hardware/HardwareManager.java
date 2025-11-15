@@ -17,18 +17,21 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.DeviceMode;
+import com.diozero.sbc.BoardPinInfo;
+import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
+import org.photonvision.common.hardware.GPIO.CustomDeviceFactory;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -59,8 +62,6 @@ public class HardwareManager {
 
     public final VisionLED visionLED; // May be null if no LED is specified
 
-    private final PigpioSocket pigpioSocket; // will be null unless on Raspi
-
     public static HardwareManager getInstance() {
         if (instance == null) {
             var conf = ConfigManager.getInstance().getConfig();
@@ -88,17 +89,13 @@ public class HardwareManager {
                 NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
         ledModeState.set(VisionLEDMode.kDefault.value);
 
-        CustomGPIO.setConfig(hardwareConfig);
-
-        if (Platform.isRaspberryPi()) {
-            pigpioSocket = new PigpioSocket();
-        } else {
-            pigpioSocket = null;
+        if (hardwareConfig.hasGPIOCommandsConfigured()) {
+            HardwareManager.configureCustomGPIO(hardwareConfig);
         }
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                        ? new StatusLED(hardwareConfig.statusRGBPins, hardwareConfig.statusRGBActiveHigh)
                         : null;
 
         if (statusLED != null) {
@@ -111,9 +108,10 @@ public class HardwareManager {
                         ? null
                         : new VisionLED(
                                 hardwareConfig.ledPins,
+                                hardwareConfig.ledsCanDim,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                pigpioSocket,
+                                hardwareConfig.ledPWMFrequency,
                                 ledModeState::set);
 
         ledModeListener =
@@ -133,6 +131,30 @@ public class HardwareManager {
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    }
+
+    public static void configureCustomGPIO(HardwareConfig hardwareConfig) {
+        // Configure diozero to use custom commands
+        System.setProperty("diozero.devicefactory", CustomDeviceFactory.class.getName());
+        System.setProperty("diozero.custom.getGPIO", hardwareConfig.getGPIOCommand);
+        System.setProperty("diozero.custom.setGPIO", hardwareConfig.setGPIOCommand);
+        System.setProperty("diozero.custom.setPWM", hardwareConfig.setPWMCommand);
+        System.setProperty("diozero.custom.setPWMFrequency", hardwareConfig.setPWMFrequencyCommand);
+        System.setProperty("diozero.custom.releaseGPIO", hardwareConfig.releaseGPIOCommand);
+
+        BoardPinInfo pinInfo = DeviceFactoryHelper.getNativeDeviceFactory().getBoardPinInfo();
+
+        // Populate pin info according to hardware config
+        for (int pin : hardwareConfig.ledPins) {
+            if (hardwareConfig.ledsCanDim) {
+                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
+            } else {
+                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+            }
+        }
+        for (int pin : hardwareConfig.statusRGBPins) {
+            pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+        }
     }
 
     public void setBrightnessPercent(int percent) {
