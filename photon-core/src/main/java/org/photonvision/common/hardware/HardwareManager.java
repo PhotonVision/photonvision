@@ -95,7 +95,7 @@ public class HardwareManager {
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                        ? new StatusLED(hardwareConfig.statusRGBPins, hardwareConfig.statusRGBActiveHigh)
                         : null;
 
         if (statusLED != null) {

@@ -8,7 +8,7 @@ By default, PhotonVision attempts to make minimal assumptions of the hardware it
 
 ## LED Support
 
-When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) to control IO pins. The mapping of which pins control which LED's is part of the hardware config. The pins are active-high: set high when LED's are commanded on, and set low when commanded off.
+When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) to control IO pins. The mapping of which pins control which LED's is part of the hardware config. The illumination LED pins are active-high: set high when LED's are commanded on, and set low when commanded off.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -20,6 +20,7 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
         "statusRGBPins" : [ ],
+        "statusRGBActiveHigh" : false,
       }
 ```
 
@@ -129,6 +130,7 @@ Here is a complete example `hardwareConfig.json`:
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
         "statusRGBPins" : [ ],
+        "statusRGBActiveHigh" : false,
         "getGPIOCommand" : "getGPIO {p}",
         "setGPIOCommand" : "setGPIO {p} {s}",
         "setPWMCommand" : "setPWM {p} {v}",

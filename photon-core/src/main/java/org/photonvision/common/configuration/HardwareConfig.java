@@ -32,6 +32,7 @@ public class HardwareConfig {
     public final ArrayList<Integer> ledBrightnessRange;
     public final int ledPWMFrequency;
     public final ArrayList<Integer> statusRGBPins;
+    public final boolean statusRGBActiveHigh;
 
     // Custom GPIO
     public final String getGPIOCommand;
@@ -64,6 +65,7 @@ public class HardwareConfig {
             ArrayList<Integer> ledBrightnessRange,
             int ledPwmFrequency,
             ArrayList<Integer> statusRGBPins,
+            boolean statusRGBActiveHigh,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
@@ -88,6 +90,7 @@ public class HardwareConfig {
         this.ledBrightnessRange = ledBrightnessRange;
         this.ledPWMFrequency = ledPwmFrequency;
         this.statusRGBPins = statusRGBPins;
+        this.statusRGBActiveHigh = statusRGBActiveHigh;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
@@ -115,6 +118,7 @@ public class HardwareConfig {
         ledBrightnessRange = new ArrayList<>();
         ledPWMFrequency = 0;
         statusRGBPins = new ArrayList<>();
+        statusRGBActiveHigh = false;
         getGPIOCommand = "";
         setGPIOCommand = "";
         setPWMCommand = "";
@@ -184,6 +188,8 @@ public class HardwareConfig {
                 + ledPWMFrequency
                 + ", statusRGBPins="
                 + statusRGBPins
+                + ", statusRGBActiveHigh"
+                + statusRGBActiveHigh
                 + ", getGPIOCommand="
                 + getGPIOCommand
                 + ", setGPIOCommand="
