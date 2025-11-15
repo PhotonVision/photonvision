@@ -2,7 +2,7 @@
 import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
-import PvInput from "@/components/common/pv-input.vue";
+import pvDeleteModal from "../common/pv-delete-modal.vue";
 import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
 
@@ -113,12 +113,8 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(false);
-const expected = "Delete Everything";
-const yesDeleteMySettingsText = ref("");
 const nukePhotonConfigDirectory = () => {
   axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
-
-  showFactoryReset.value = false;
 };
 </script>
 
@@ -280,63 +276,14 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
       </v-row>
     </div>
-    <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card color="surface" flat>
-        <v-card-title style="display: flex; justify-content: center">
-          <span class="open-label">
-            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-            Factory Reset PhotonVision
-            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-          </span>
-        </v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          <v-row class="align-center text-white">
-            <v-col cols="12" md="6">
-              <span> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn
-                color="primary"
-                style="float: right"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="openExportSettingsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
-                <span class="open-label">Backup Settings</span>
-                <a
-                  ref="exportSettings"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/settings/photonvision_config.zip`"
-                  download="photonvision-settings.zip"
-                  target="_blank"
-                />
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 pb-0">
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + expected + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-text class="pt-10px">
-          <v-btn
-            color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
-            @click="nukePhotonConfigDirectory"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">
-              {{ $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything" }}
-            </span>
-          </v-btn>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="showFactoryReset"
+      action="Factory Reset PhotonVision"
+      description="This will delete all settings and configurations stored on this device, including network settings. This action cannot be undone."
+      expected="Delete Everything"
+      :on-delete="nukePhotonConfigDirectory"
+      :on-backup="openExportSettingsPrompt"
+    />
   </v-card>
 </template>
 
