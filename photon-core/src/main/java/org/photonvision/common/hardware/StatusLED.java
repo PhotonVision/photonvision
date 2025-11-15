@@ -27,11 +27,12 @@ public class StatusLED implements AutoCloseable {
     public final LED greenLED;
     public final LED blueLED;
 
-    public StatusLED(List<Integer> statusLedPins) {
-        this(DeviceFactoryHelper.getNativeDeviceFactory(), statusLedPins);
+    public StatusLED(List<Integer> statusLedPins, boolean activeHigh) {
+        this(DeviceFactoryHelper.getNativeDeviceFactory(), statusLedPins, activeHigh);
     }
 
-    public StatusLED(NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins) {
+    public StatusLED(
+            NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
             for (int i = 0; i < 3 - statusLedPins.size(); i++) {
@@ -40,9 +41,9 @@ public class StatusLED implements AutoCloseable {
         }
 
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(deviceFactory, statusLedPins.get(0), false, false);
-        greenLED = new LED(deviceFactory, statusLedPins.get(1), false, false);
-        blueLED = new LED(deviceFactory, statusLedPins.get(2), false, false);
+        redLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
+        greenLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
+        blueLED = new LED(deviceFactory, statusLedPins.get(2), activeHigh, false);
     }
 
     public void setRGB(boolean r, boolean g, boolean b) {
