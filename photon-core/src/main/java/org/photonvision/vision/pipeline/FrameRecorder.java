@@ -170,15 +170,12 @@ public class FrameRecorder implements Releasable {
             }
         }
 
-        // Clone the mat so we don't hold references to pipeline memory
-        Mat cloned = cvmat.getMat().clone();
-
         // Try to offer to queue; if full, drop frame (non-blocking)
-        boolean added = frameQueue.offer(new RecordFrame(cloned));
+        boolean added = frameQueue.offer(new RecordFrame(cvmat.getMat()));
 
         if (!added) {
             // Queue full, release the cloned mat
-            cloned.release();
+            cvmat.release();
         }
 
         frameCounter++;
