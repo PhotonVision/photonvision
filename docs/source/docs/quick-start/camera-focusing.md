@@ -1,8 +1,10 @@
 # Camera Focusing
 
 ## Prepare Camera
-
-To ensure that your camera is focused properly, mount it to a secure surface and ensure it does not move drastically. Point your camera at a detailed surface like a calibration board, this may help with focusing.
+:::{warning}
+Refocusing your camera **will** make your calibration inaccurate, make sure to recalibrate after focusing.
+:::
+To ensure that your camera is focused properly, mount it to a secure surface and ensure it does not move drastically. Point your camera at a detailed surface like a calibration board, and make sure that it not too close to the camera. 
 
 ## Using Focus Tool
 :::{important}
