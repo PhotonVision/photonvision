@@ -10,7 +10,7 @@ To ensure that your camera is focused properly, mount it to a secure surface and
 :::{important}
 When you enable Focus Mode, it will assign a *Score* to the current focus, this score depends on your environment and the lighting. This value cannot be compared to a focus value collected from other environment.
 :::
-- In the Cameras tab, turn on Focus mode.
+- In the Cameras tab, turn on Focus Mode.
 - Rotate the lens on your camera to try and get the focus value as high as possible.
 - Once you cannot get a higher value, this indicates that your camera is fully focused and can be set in place using glue if desired.
 
