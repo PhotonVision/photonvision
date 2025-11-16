@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
-import pvDeleteModal from "../common/pv-delete-modal.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";

@@ -9,7 +9,7 @@ import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
-import pvDeleteModal from "../common/pv-delete-modal.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 
 const theme = useTheme();
 

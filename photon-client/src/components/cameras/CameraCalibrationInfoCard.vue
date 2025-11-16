@@ -5,7 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
-import pvDeleteModal from "../common/pv-delete-modal.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 
 const theme = useTheme();
 

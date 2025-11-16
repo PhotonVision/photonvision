@@ -2,7 +2,7 @@
 import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
-import pvDeleteModal from "../common/pv-delete-modal.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
 
