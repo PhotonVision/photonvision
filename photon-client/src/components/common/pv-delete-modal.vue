@@ -10,40 +10,46 @@ const value = defineModel<boolean | undefined>({ required: true });
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const props = withDefaults(
   defineProps<{
-    expected?: string;
-    selectCols?: number;
+    expectedConfirmationText?: string;
     onBackup?: () => void;
-    onDelete: () => void;
-    action: string;
+    onConfirm: () => void;
+    title: string;
     description?: string;
+    deleteText?: string;
+    width?: number;
   }>(),
   {
-    selectCols: 9
+    width: 700
   }
 );
 
-const yesDeleteText = ref("");
+const confirmationText = ref("");
 </script>
 
 <template>
-  <v-dialog v-model="value" width="800" dark>
+  <v-dialog v-model="value" :width="props.width" dark>
     <v-card color="surface" flat>
       <v-card-title style="display: flex; justify-content: center">
-        <span class="open-label">
-          <v-icon v-if="expected" end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-          {{ action }}
-          <v-icon v-if="expected" end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-        </span>
+        {{ title }}
       </v-card-title>
       <v-card-text class="pt-0 pb-10px">
+        <span> {{ description }} </span>
+      </v-card-text>
+      <v-card-text v-if="expectedConfirmationText" class="pt-0 pb-0">
+        <pv-input
+          v-model="confirmationText"
+          :label="'Type &quot;' + expectedConfirmationText + '&quot;:'"
+          :label-cols="6"
+          :input-cols="6"
+        />
+      </v-card-text>
+      <v-card-text class="pt-10px">
         <v-row class="align-center text-white">
-          <v-col v-if="description" cols="12" md="6">
-            <span> {{ description }} </span>
-          </v-col>
-          <v-col v-if="onBackup" cols="12" md="6">
+          <v-col v-if="onBackup" cols="6">
             <v-btn
               color="buttonActive"
               style="float: right"
+              width="100%"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               @click="onBackup"
             >
@@ -51,33 +57,29 @@ const yesDeleteText = ref("");
               <span class="open-label">Backup Data</span>
             </v-btn>
           </v-col>
+          <v-col v-if="description" :cols="onBackup ? '6' : '12'">
+            <v-btn
+              color="error"
+              width="100%"
+              :disabled="
+                expectedConfirmationText
+                  ? confirmationText.toLowerCase() !== expectedConfirmationText.toLowerCase()
+                  : false
+              "
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="
+                onConfirm();
+                confirmationText = '';
+                value = false;
+              "
+            >
+              <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
+              <span class="open-label">
+                {{ deleteText ?? title }}
+              </span>
+            </v-btn>
+          </v-col>
         </v-row>
-      </v-card-text>
-      <v-card-text v-if="expected" class="pt-0 pb-0">
-        <pv-input
-          v-model="yesDeleteText"
-          :label="'Type &quot;' + expected + '&quot;:'"
-          :label-cols="6"
-          :input-cols="6"
-        />
-      </v-card-text>
-      <v-card-text class="pt-10px">
-        <v-btn
-          color="error"
-          width="100%"
-          :disabled="expected ? yesDeleteText.toLowerCase() !== expected.toLowerCase() : false"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          @click="
-            onDelete();
-            yesDeleteText = '';
-            value = false;
-          "
-        >
-          <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-          <span class="open-label">
-            {{ action }}
-          </span>
-        </v-btn>
       </v-card-text>
     </v-card>
   </v-dialog>

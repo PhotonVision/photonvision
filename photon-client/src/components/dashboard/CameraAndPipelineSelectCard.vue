@@ -415,10 +415,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       </v-card>
     </v-dialog>
     <pv-delete-modal
+      :width="500"
       v-model="showPipelineDeletionConfirmationDialog"
-      action="Delete Pipeline"
+      title="Delete Pipeline"
       description="Are you sure you want to delete the current pipeline? This action cannot be undone."
-      :on-delete="confirmDeleteCurrentPipeline"
+      :onConfirm="confirmDeleteCurrentPipeline"
     />
     <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
       <v-card color="surface" dark>

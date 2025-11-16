@@ -54,9 +54,14 @@ const deactivateModule = (cameraUniqueName: string) => {
 };
 
 const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "" });
+const deletingCamera = ref<string | null>(null);
 
 const deleteThisCamera = (cameraUniqueName: string) => {
-  axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName });
+  if (deletingCamera.value) return;
+  deletingCamera.value = cameraUniqueName;
+  axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName }).finally(() => {
+    deletingCamera.value = null;
+  });
 };
 
 const cameraConnected = (uniquePath: string): boolean => {
@@ -255,6 +260,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   class="pa-0"
                   color="error"
                   style="width: 100%"
+                  :loading="module.uniqueName === deletingCamera"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
                     () =>
@@ -348,6 +354,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   class="pa-0"
                   color="error"
                   style="width: 100%"
+                  :loading="module.uniqueName === deletingCamera"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="
                     () =>
@@ -462,10 +469,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
     <pv-delete-modal
       v-model="confirmDeleteDialog.show"
-      action="Delete Camera"
+      title="Delete Camera"
       :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
-      :expected="confirmDeleteDialog.nickname"
-      :on-delete="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
+      :expectedConfirmationText="confirmDeleteDialog.nickname"
+      :onConfirm="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
     />
   </div>
 </template>

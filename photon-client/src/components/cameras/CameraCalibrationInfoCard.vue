@@ -5,6 +5,7 @@ import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
+import pvDeleteModal from "../common/pv-delete-modal.vue";
 
 const theme = useTheme();
 
@@ -12,7 +13,7 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const confirmRemoveDialog = ref({ show: false, vf: {} as VideoFormat });
+const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat as VideoFormat });
 
 const removeCalibration = (vf: VideoFormat) => {
   axiosPost("/calibration/remove", "delete a camera calibration", {
@@ -109,17 +110,6 @@ const calibrationImageURL = (index: number) =>
       </v-col>
       <v-col cols="12" md="6" class="d-flex align-center pt-0 pt-md-3">
         <v-btn
-          color="error"
-          :disabled="!currentCalibrationCoeffs"
-          class="mr-2"
-          style="flex: 1"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          @click="() => (confirmRemoveDialog = { show: true, vf: props.videoFormat })"
-        >
-          <v-icon start size="large">mdi-delete</v-icon>
-          <span>Delete</span>
-        </v-btn>
-        <v-btn
           color="buttonPassive"
           class="mr-2"
           style="flex: 1"
@@ -138,6 +128,7 @@ const calibrationImageURL = (index: number) =>
         />
         <v-btn
           color="buttonPassive"
+          class="mr-2"
           :disabled="!currentCalibrationCoeffs"
           style="flex: 1"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
@@ -152,6 +143,16 @@ const calibrationImageURL = (index: number) =>
           :href="exportCalibrationURL"
           target="_blank"
         />
+        <v-btn
+          color="error"
+          :disabled="!currentCalibrationCoeffs"
+          style="flex: 1"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="() => (confirmRemoveDialog = { show: true, vf: props.videoFormat })"
+        >
+          <v-icon start size="large">mdi-delete</v-icon>
+          <span>Delete</span>
+        </v-btn>
       </v-col>
     </div>
     <v-card-title class="pt-0 pb-0"
@@ -311,10 +312,11 @@ const calibrationImageURL = (index: number) =>
   </v-card>
 
   <pv-delete-modal
+    :width="500"
     v-model="confirmRemoveDialog.show"
-    :action="'Delete Calibration'"
+    :title="'Delete Calibration'"
     :description="`Are you sure you want to delete the calibration for '${confirmRemoveDialog.vf.resolution.width}x${confirmRemoveDialog.vf.resolution.height}'? This action cannot be undone.`"
-    :on-delete="() => removeCalibration(confirmRemoveDialog.vf)"
+    :onConfirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />
 </template>
 

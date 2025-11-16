@@ -367,42 +367,20 @@ const handleBulkImport = () => {
             </tbody>
           </v-table>
 
-          <!-- <v-dialog v-model="confirmDeleteDialog.show" width="600">
-            <v-card color="surface" dark>
-              <v-card-title>Delete Object Detection Model</v-card-title>
-              <v-card-text class="pt-0">
-                Are you sure you want to delete the model {{ confirmDeleteDialog.model.nickname }}?
-                <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-                  <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="buttonPassive"
-                    @click="confirmDeleteDialog.show = false"
-                  >
-                    Cancel
-                  </v-btn>
-                  <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="error"
-                    @click="deleteModel(confirmDeleteDialog.model)"
-                  >
-                    Delete
-                  </v-btn>
-                </v-card-actions>
-              </v-card-text>
-            </v-card>
-          </v-dialog> -->
           <pv-delete-modal
+            :width="500"
             v-model="confirmDeleteDialog.show"
-            dark
-            :on-delete="() => deleteModel(confirmDeleteDialog.model)"
-            action="Delete Object Detection Model"
+            :onConfirm="() => deleteModel(confirmDeleteDialog.model)"
+            title="Delete Object Detection Model"
             :description="`Are you sure you want to delete the model ${confirmDeleteDialog.model.nickname}?`"
+            deleteText="Delete model"
           />
+
           <v-dialog v-model="showRenameDialog.show" width="600">
             <v-card color="surface" dark>
               <v-card-title>Rename Object Detection Model</v-card-title>
               <v-card-text class="pt-0">
-                Enter a new name for the model {{ showRenameDialog.model.nickname }}:
+                Enter a new name for the model "{{ showRenameDialog.model.nickname }}":
                 <div class="pa-5 pb-0">
                   <v-text-field v-model="showRenameDialog.newName" hide-details label="New Name" variant="underlined" />
                 </div>
@@ -460,12 +438,12 @@ const handleBulkImport = () => {
 
     <pv-delete-modal
       v-model="showNukeDialog"
-      dark
-      :on-backup="openExportPrompt"
-      :on-delete="nukeModels"
-      action="Delete and Reset All Object Detection Models"
+      :onBackup="openExportPrompt"
+      :onConfirm="nukeModels"
+      title="Delete and Reset All Object Detection Models"
       :description="'This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone.'"
-      :expected="'Delete Models'"
+      :expectedConfirmationText="'Delete Models'"
+      deleteText="Delete all models"
     />
   </v-card>
 </template>

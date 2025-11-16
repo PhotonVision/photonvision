@@ -189,10 +189,10 @@ const wrappedCameras = computed<SelectItem[]>(() =>
 
     <pv-delete-modal
       v-model="showDeleteCamera"
-      action="Delete Camera"
+      title="Delete Camera"
       :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
-      :expected="useCameraSettingsStore().currentCameraSettings.nickname"
-      :on-delete="deleteThisCamera"
+      :expectedConfirmationText="useCameraSettingsStore().currentCameraSettings.nickname"
+      :onConfirm="deleteThisCamera"
     />
   </v-card>
 </template>
