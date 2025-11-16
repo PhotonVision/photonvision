@@ -7,7 +7,6 @@ const theme = useTheme();
 
 const value = defineModel<boolean | undefined>({ required: true });
 
- 
 const props = withDefaults(
   defineProps<{
     expectedConfirmationText?: string;
