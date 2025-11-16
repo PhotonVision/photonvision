@@ -312,11 +312,11 @@ const calibrationImageURL = (index: number) =>
   </v-card>
 
   <pv-delete-modal
-    :width="500"
     v-model="confirmRemoveDialog.show"
+    :width="500"
     :title="'Delete Calibration'"
     :description="`Are you sure you want to delete the calibration for '${confirmRemoveDialog.vf.resolution.width}x${confirmRemoveDialog.vf.resolution.height}'? This action cannot be undone.`"
-    :onConfirm="() => removeCalibration(confirmRemoveDialog.vf)"
+    :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />
 </template>
 

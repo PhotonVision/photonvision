@@ -368,12 +368,12 @@ const handleBulkImport = () => {
           </v-table>
 
           <pv-delete-modal
-            :width="500"
             v-model="confirmDeleteDialog.show"
-            :onConfirm="() => deleteModel(confirmDeleteDialog.model)"
+            :width="500"
+            :on-confirm="() => deleteModel(confirmDeleteDialog.model)"
             title="Delete Object Detection Model"
             :description="`Are you sure you want to delete the model ${confirmDeleteDialog.model.nickname}?`"
-            deleteText="Delete model"
+            delete-text="Delete model"
           />
 
           <v-dialog v-model="showRenameDialog.show" width="600">
@@ -438,12 +438,12 @@ const handleBulkImport = () => {
 
     <pv-delete-modal
       v-model="showNukeDialog"
-      :onBackup="openExportPrompt"
-      :onConfirm="nukeModels"
+      :on-backup="openExportPrompt"
+      :on-confirm="nukeModels"
       title="Delete and Reset All Object Detection Models"
       :description="'This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone.'"
-      :expectedConfirmationText="'Delete Models'"
-      deleteText="Delete all models"
+      :expected-confirmation-text="'Delete Models'"
+      delete-text="Delete all models"
     />
   </v-card>
 </template>

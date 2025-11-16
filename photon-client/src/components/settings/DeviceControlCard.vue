@@ -280,10 +280,10 @@ const nukePhotonConfigDirectory = () => {
       v-model="showFactoryReset"
       title="Factory Reset PhotonVision"
       description="This will delete all settings and configurations stored on this device, including network settings. This action cannot be undone."
-      expectedConfirmationText="Delete Everything"
-      :onConfirm="nukePhotonConfigDirectory"
-      :onBackup="openExportSettingsPrompt"
-      deleteText="Factory reset"
+      expected-confirmation-text="Delete Everything"
+      :on-confirm="nukePhotonConfigDirectory"
+      :on-backup="openExportSettingsPrompt"
+      delete-text="Factory reset"
     />
   </v-card>
 </template>

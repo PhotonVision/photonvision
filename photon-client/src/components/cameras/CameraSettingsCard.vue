@@ -191,8 +191,8 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       v-model="showDeleteCamera"
       title="Delete Camera"
       :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
-      :expectedConfirmationText="useCameraSettingsStore().currentCameraSettings.nickname"
-      :onConfirm="deleteThisCamera"
+      :expected-confirmation-text="useCameraSettingsStore().currentCameraSettings.nickname"
+      :on-confirm="deleteThisCamera"
     />
   </v-card>
 </template>

@@ -7,7 +7,7 @@ const theme = useTheme();
 
 const value = defineModel<boolean | undefined>({ required: true });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 const props = withDefaults(
   defineProps<{
     expectedConfirmationText?: string;

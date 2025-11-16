@@ -471,8 +471,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       v-model="confirmDeleteDialog.show"
       title="Delete Camera"
       :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
-      :expectedConfirmationText="confirmDeleteDialog.nickname"
-      :onConfirm="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
+      :expected-confirmation-text="confirmDeleteDialog.nickname"
+      :on-confirm="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
     />
   </div>
 </template>
