@@ -67,7 +67,6 @@ const fpsTooLow = computed<boolean>(() => {
         >
           <span class="pr-1"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
         </v-chip>
-
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"

@@ -174,14 +174,12 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         ]"
         :select-cols="8"
       />
-
       <pv-switch
         v-model="focusMode"
         tooltip="Enable Focus Mode to start focusing the lens on your camera"
         label="Focus Mode"
       ></pv-switch>
     </v-card-text>
-
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
         <v-btn
