@@ -6,11 +6,11 @@ Refocusing your camera **will** make your calibration inaccurate, make sure to r
 :::
 To ensure that your camera is focused properly, mount it to a secure surface and ensure it does not move drastically. Point your camera at a detailed surface like a calibration board, and make sure that it not too close to the camera.
 
-## Using Focus Tool
+## Using Focus Mode
 :::{important}
-The focus tool will assign a *Score* to the current focus, this score depends on your environment and the lighting, and cannot be used for comparison.
+When you enable Focus Mode, it will assign a *Score* to the current focus, this score depends on your environment and the lighting, and cannot be compared to a focus value collected from another environment.
 :::
-- In the Cameras tab, turn on focus mode.
+- In the Cameras tab, turn on Focus mode.
 - Rotate the lens on your camera to try and get the focus value as high as possible.
 - Once you cannot get a higher value, this indicates that your camera is fully focused and can be set in place using glue if desired.
 
