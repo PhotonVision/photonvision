@@ -375,7 +375,9 @@ public class VisionModule {
                         logger.error("Exception while running stream runnable!", e);
                     }
                     try {
-                        m_frame.release();
+                        if (!getRecording()) {
+                            m_frame.release();
+                        }
                     } catch (Exception e) {
                         logger.error("Exception freeing frames", e);
                     }
