@@ -14,32 +14,32 @@
     "format-ci": "prettier --check src/"
   },
   "dependencies": {
-    "@fontsource/prompt": "^5.2.6",
+    "@fontsource/prompt": "^5.2.8",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
-    "axios": "^1.11.0",
-    "jspdf": "^3.0.1",
-    "pinia": "^3.0.2",
+    "axios": "^1.13.2",
+    "jspdf": "^3.0.3",
+    "pinia": "^3.0.4",
     "three": "^0.178.0",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.1",
+    "vue": "^3.5.24",
+    "vue-router": "^4.6.3",
     "vue3-virtual-scroll-list": "^0.2.1",
-    "vuetify": "^3.8.3"
+    "vuetify": "^3.10.11"
   },
   "devDependencies": {
-    "@eslint/js": "^9.31.0",
-    "@types/node": "^22.15.14",
-    "@types/three": "^0.178.0",
-    "@vitejs/plugin-vue": "^6.0.0",
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^22.19.1",
+    "@types/three": "^0.178.1",
+    "@vitejs/plugin-vue": "^6.0.1",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/eslint-config-typescript": "^14.5.0",
+    "@vue/eslint-config-typescript": "^14.6.0",
     "@vue/tsconfig": "^0.7.0",
-    "eslint": "^9.31.0",
-    "eslint-plugin-vue": "^10.3.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-vue": "^10.5.1",
     "prettier": "^3.6.2",
-    "sass": "^1.89.2",
-    "typescript": "^5.8.3",
-    "vite": "^7.0.5",
-    "vite-plugin-vuetify": "^2.1.1"
+    "sass": "^1.94.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2",
+    "vite-plugin-vuetify": "^2.1.2"
   }
 }
