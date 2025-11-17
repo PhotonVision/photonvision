@@ -26,10 +26,10 @@ jobs:
           git fetch --prune --unshallow
           git checkout -b pr
           git branch -f main origin/main
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
       - name: Install wpiformat
         run: pip3 install wpiformat==2025.69
       - name: Run
