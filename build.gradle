@@ -41,7 +41,7 @@ ext {
     rknnVersion = "dev-v2025.0.0-5-g666c0c6"
     rubikVersion = "dev-v2025.1.0-6-g4a5e508"
     frcYear = "2025"
-    mrcalVersion = "v2025.0.0";
+    mrcalVersion = "dev-v2025.0.0-2-g2adb187";
 
 
     pubVersion = versionString
