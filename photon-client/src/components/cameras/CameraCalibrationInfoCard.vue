@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -7,13 +8,6 @@ import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
-
-import { defineAsyncComponent } from "vue";
-
-const PhotonCalibrationVisualizer = defineAsyncComponent({
-  loader: () => import("@/components/app/photon-calibration-visualizer.vue")
-});
-
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
