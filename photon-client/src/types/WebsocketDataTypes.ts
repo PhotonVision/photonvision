@@ -69,6 +69,7 @@ export interface WebsocketCameraSettingsUpdate {
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
   hasConnected: boolean;
+  mismatch: boolean;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;
@@ -109,6 +110,7 @@ export interface IncomingWebsocketData {
 }
 
 export enum WebsocketPipelineType {
+  FocusCamera = -3,
   Calib3d = -2,
   DriverMode = -1,
   Reflective = 0,

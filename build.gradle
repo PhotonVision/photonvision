@@ -39,7 +39,7 @@ ext {
     javalinVersion = "6.7.0"
     libcameraDriverVersion = "v2025.0.4"
     rknnVersion = "dev-v2025.0.0-5-g666c0c6"
-    rubikVersion = "dev-v2025.1.0-8-g067a316"
+    rubikVersion = "dev-v2025.1.0-6-g4a5e508"
     frcYear = "2025"
     mrcalVersion = "dev-v2025.0.0-1-g29c6a36"; // todo revert
 
@@ -91,7 +91,7 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**', '**/node_modules/**'
         }
         trimTrailingWhitespace()
         indentWithSpaces(2)

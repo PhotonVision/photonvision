@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.0.3
+  IMAGE_VERSION: v2026.0.4
 
 jobs:
 
@@ -88,10 +88,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
-      - name: Gradle Tests
-        run: ./gradlew testHeadless --stacktrace
-      - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport
+      - name: Gradle Tests and Coverage
+        run: ./gradlew test jacocoTestReport --stacktrace
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-22.04
@@ -447,6 +445,12 @@ jobs:
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
+            image_suffix: luma_p1
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
+            cpu: cortex-a76
+            image_additional_mb: 0
+          - os: ubuntu-24.04
+            artifact-name: LinuxArm64
             image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             cpu: cortex-a8
@@ -538,6 +542,12 @@ jobs:
           wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
           chmod +x mount_rubikpi3.sh
           ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
+      - name: Compress image
+        run: |
+          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+          new_image_name=$(basename "${new_jar/.jar/_rubikpi3.img}")
+          mv photonvision_rubikpi3 $new_image_name
+          tar -I 'xz -T0' -cf ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
       - uses: actions/upload-artifact@v4
         name: Upload image
         with:

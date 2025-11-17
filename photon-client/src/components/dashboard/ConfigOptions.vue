@@ -29,7 +29,7 @@ const allTabs = Object.freeze({
   thresholdTab: { tabName: "Threshold", component: ThresholdTab },
   contoursTab: { tabName: "Contours", component: ContoursTab },
   apriltagTab: { tabName: "AprilTag", component: AprilTagTab },
-  arucoTab: { tabName: "Aruco", component: ArucoTab },
+  arucoTab: { tabName: "ArUco", component: ArucoTab },
   objectDetectionTab: { tabName: "Object Detection", component: ObjectDetectionTab },
   outputTab: { tabName: "Output", component: OutputTab },
   targetsTab: { tabName: "Targets", component: TargetsTab },
@@ -99,8 +99,8 @@ const tabGroups = computed<ConfigOption[][]>(() => {
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
           !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
           !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
-          !(!isAruco && tabConfig.tabName === "Aruco") &&
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out aruco unless we actually are doing Aruco
+          !(!isAruco && tabConfig.tabName === "ArUco") &&
+          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out ArUco unless we actually are doing ArUco
       )
     )
     .filter((it) => it.length); // Remove empty tab groups

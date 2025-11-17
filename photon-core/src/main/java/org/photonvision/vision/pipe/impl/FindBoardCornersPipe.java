@@ -280,7 +280,7 @@ public class FindBoardCornersPipe
             }
             board.matchImagePoints(detectedCornersList, detectedIds, objPoints, imgPoints);
 
-            // draw the charuco board
+            // Draw the ChArUco board
             Objdetect.drawDetectedCornersCharuco(
                     outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red Text
 
@@ -303,7 +303,7 @@ public class FindBoardCornersPipe
                 objPts.fromList(shiftedPoints);
             }
 
-            // Since charuco can still detect without the whole board we need to send "fake" (all
+            // Since ChArUco can still detect without the whole board we need to send "fake" (all
             // values less than zero) points and then tell it to ignore that corner by setting the
             // corresponding level to -1. Calibrate3dPipe deals with piping this into the correct format
             // for each backend
@@ -341,7 +341,7 @@ public class FindBoardCornersPipe
             objPoints.release();
             detectedCorners.release();
             detectedIds.release();
-        } else { // If not Charuco then do chessboard
+        } else { // If not ChArUco then do chessboard
             // Reduce the image size to be much more manageable
             // Note that opencv will copy the frame if no resize is requested; we can skip
             // this since we

@@ -14,6 +14,6 @@ PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv5, YOLOv8, and YOL
 Only quantized models are supported, so take care when exporting to select the option for quantization.
 :::
 
-PhotonVision now ships with a [Python Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/rknn-convert-tool/rknn_conversion.ipynb) that you can use in [Google Colab](https://colab.research.google.com) or in a local environment. In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rknn_conversion.ipynb` notebook without needing to manually download anything.
+PhotonVision now ships with a {{ '[Python Notebook](https://github.com/PhotonVision/photonvision/blob/{}/scripts/rknn_conversion.ipynb)'.format(git_tag_ref) }} that you can use in [Google Colab](https://colab.research.google.com) or in a local **Linux** environment (since `rknn-toolkit2` only supports Linux). In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rknn_conversion.ipynb` notebook without needing to manually download anything.
 
 Please ensure that the model you are attempting to convert is among the {ref}`supported models <docs/objectDetection/opi:Supported Models>` and using the PyTorch format.

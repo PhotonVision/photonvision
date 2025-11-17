@@ -2,12 +2,13 @@
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
-import axios from "axios";
 import { useTheme } from "vuetify";
+import { axiosPost } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
@@ -15,7 +16,14 @@ const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
   quirksToChange: Object.assign({}, useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks)
 });
-
+const focusMode = computed<boolean>({
+  get: () => useCameraSettingsStore().isFocusMode,
+  set: (v) =>
+    useCameraSettingsStore().changeCurrentPipelineIndex(
+      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      true
+    )
+});
 const arducamSelectWrapper = computed<number>({
   get: () => {
     if (tempSettingsStruct.value.quirksToChange.ArduOV9281Controls) return 1;
@@ -120,36 +128,10 @@ const deleteThisCamera = () => {
 
   const payload = { cameraUniqueName: useStateStore().currentCameraUniqueName };
 
-  axios
-    .post("/utils/nukeOneCamera", payload)
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the delete command. Waiting for backend to start back up",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to delete this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => {
-      deletingCamera.value = false;
-      showDeleteCamera.value = false;
-    });
+  axiosPost("/utils/nukeOneCamera", "delete this camera", payload).finally(() => {
+    deletingCamera.value = false;
+    showDeleteCamera.value = false;
+  });
 };
 const wrappedCameras = computed<SelectItem[]>(() =>
   Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
@@ -192,6 +174,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         ]"
         :select-cols="8"
       />
+      <pv-switch
+        v-model="focusMode"
+        tooltip="Enable Focus Mode to start focusing the lens on your camera"
+        label="Focus Mode"
+      ></pv-switch>
     </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, inject } from "vue";
-import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 import pvInput from "@/components/common/pv-input.vue";
 import { useTheme } from "vuetify";
+import { axiosPost } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 const showImportDialog = ref(false);
@@ -43,34 +43,25 @@ const handleImport = async () => {
     timeout: -1
   });
 
-  axios
-    .post("/objectdetection/import", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
+  axiosPost("/objectdetection/import", "import an object detection model", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: ({ progress }) => {
+      const uploadPercentage = (progress || 0) * 100.0;
+      if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+          color: "secondary",
+          timeout: -1
         });
       } else {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "Processing uploaded Object Detection Model...",
+          color: "secondary",
+          timeout: -1
         });
       }
-    });
+    }
+  });
 
   showImportDialog.value = false;
 
@@ -88,34 +79,10 @@ const deleteModel = async (model: ObjectDetectionModelProperties) => {
     timeout: -1
   });
 
-  axios
-    .post("/objectdetection/delete", {
-      modelPath: model.modelPath
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  axiosPost("/objectdetection/delete", "delete an object detection model", {
+    modelPath: model.modelPath
+  });
+
   confirmDeleteDialog.value.show = false;
 };
 
@@ -126,35 +93,10 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
     timeout: -1
   });
 
-  axios
-    .post("/objectdetection/rename", {
-      modelPath: model.modelPath.replace("file:", ""),
-      newName: newName
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  axiosPost("/objectdetection/rename", "rename an object detection model", {
+    modelPath: model.modelPath.replace("file:", ""),
+    newName: newName
+  });
   showRenameDialog.value.show = false;
 };
 
@@ -184,32 +126,7 @@ const showNukeDialog = ref(false);
 const expected = "Delete Models";
 const yesDeleteMyModelsText = ref("");
 const nukeModels = () => {
-  axios
-    .post("/objectdetection/nuke")
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the clear models command.",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfill the request to clear the models.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
+  axiosPost("/objectdetection/nuke", "clear and reset object detection models");
   showNukeDialog.value = false;
 };
 
@@ -221,51 +138,27 @@ const handleBulkImport = () => {
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  axios
-    .post("/objectdetection/bulkimport", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
-        const uploadPercentage = (progress || 0) * 100.0;
-        if (uploadPercentage < 99.5) {
-          useStateStore().showSnackbarMessage({
-            message: "Object Detection Models Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
-            color: "secondary",
-            timeout: -1
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            message: "Importing New Object Detection Models...",
-            color: "secondary",
-            timeout: -1
-          });
-        }
-      }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
+  axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: ({ progress }) => {
+      const uploadPercentage = (progress || 0) * 100.0;
+      if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message: "Object Detection Models Upload in Progress",
+          color: "secondary",
+          timeout: -1,
+          progressBar: uploadPercentage,
+          progressBarColor: "primary"
         });
       } else {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "Importing New Object Detection Models...",
+          color: "secondary",
+          timeout: -1
         });
       }
-    });
-
+    }
+  });
   showImportDialog.value = false;
   importFile.value = null;
 };

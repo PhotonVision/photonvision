@@ -4,7 +4,7 @@
 In order to detect AprilTags and use 3D mode, your camera must be calibrated at the desired resolution! Inaccurate calibration will lead to poor performance.
 :::
 
-To calibrate a camera, images of a Charuco board (or chessboard) are taken. By comparing where the grid corners should be in object space (for example, a corner once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the [OpenCV documentation](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html).
+To calibrate a camera, images of a ChArUco board (or chessboard) are taken. By comparing where the grid corners should be in object space (for example, a corner once every inch in an 8x6 grid) with where they appear in the camera image, we can find a least-squares estimate for intrinsic camera properties like focal lengths, center point, and distortion coefficients. For more on camera calibration, please review the [OpenCV documentation](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html).
 
 :::{warning}
 While any resolution can be calibrated, higher resolutions may be too performance-intensive for some coprocessors to handle. Therefore, we recommend experimenting to see what works best for your coprocessor.
@@ -15,6 +15,10 @@ The calibration data collected during calibration is specific to each physical c
 :::
 
 ## Calibration Tips
+
+:::{warning}
+The usage of chessboards can result in bad calibration results if multiple similar images are taken. We strongly recommend that teams use ChArUco boards instead!
+:::
 
 Accurate camera calibration is required in order to get accurate pose measurements when using AprilTags and 3D mode. The tips below should help ensure success:
 
@@ -34,11 +38,11 @@ Following the ideas above should help in getting an accurate calibration.
 
 ### 1. Navigate to the calibration section in the UI.
 
-The Cameras tab of the UI houses PhotonVision's camera calibration tooling. It assists users with calibrating their cameras, as well as allows them to view previously calibrated resolutions. We support both charuco and chessboard calibrations.
+The Cameras tab of the UI houses PhotonVision's camera calibration tooling. It assists users with calibrating their cameras, as well as allows them to view previously calibrated resolutions. We support both ChArUco and chessboard calibrations.
 
 ### 2. Print out the calibration target.
 
-In the Camera Calibration tab, we'll print out the calibration target using the "Download" button. This should be printed on 8.5x11 printer paper. This page shows using an 8x8 charuco board (or chessboard depending on the selected calibration type).
+In the Camera Calibration tab, we'll print out the calibration target using the "Download" button. This should be printed on 8.5x11 printer paper. This page shows using an 8x8 ChArUco board (or chessboard depending on the selected calibration type).
 
 :::{warning}
 Ensure that there is no scaling applied during printing (it should be at 100%) and that the PDF is printed as is on regular printer paper. Check the square size with calipers or an accurate measuring device after printing to ensure squares are sized properly, and enter the true size of the square in the UI text box. For optimal results, various resources are available online to calibrate your specific printer if needed.
@@ -46,13 +50,13 @@ Ensure that there is no scaling applied during printing (it should be at 100%) a
 
 ### 3. Select calibration resolution and fill in appropriate target data.
 
-We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and charuco board are an 8x8 grid of 1 inch square. The provided charuco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the aruco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
+We'll next select a resolution to calibrate and populate our pattern spacing, marker size, and board size. The provided chessboard and ChArUco board are an 8x8 grid of 1 inch square. The provided ChArUco board uses the 4x4 dictionary with a marker size of 0.75 inches (this board does not need the old OpenCV pattern selector selected). Printers are not perfect, and you need to measure your calibration target and enter the correct marker size (size of the ArUco marker) and pattern spacing (aka size of the black square) using calipers or similar. Finally, once our entered data is correct, we'll click "start calibration."
 
 :::{warning} Old OpenCV Pattern selector. This should be used in the case that the calibration image is generated from a version of OpenCV before version 4.6.0. This would include targets created by calib.io. If this selector is not set correctly the calibration will be completely invalid. For more info view [this GitHub issue](https://github.com/opencv/opencv_contrib/issues/3291).
 :::
 
 :::{note}
-If you have a [calib.io](https://calib.io/) CharuCo Target you will have to enter the paramaters of your target. For example if your target says "9x12 | Checker Size: 30 mm | Marker Size: 22 mm | Dictionary: AruCo DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the board wont be detected during calibration. If you swap the width and height your calibration will have a very high error.
+If you have a [calib.io](https://calib.io/) ChArUco Target you will have to enter the paramaters of your target. For example if your target says "9x12 | Checker Size: 30 mm | Marker Size: 22 mm | Dictionary: ArUco DICT 5x5", you would have to set the board type to Dict_5x5_1000, the pattern spacing to 1.1811 in (30 mm converted to inches), the marker size 0.866142 in (22 mm converted to inches), the board width to 12 and the board height to 9. If you chose the wrong tag family the board wont be detected during calibration. If you swap the width and height your calibration will have a very high error.
 :::
 
 ### 4. Take at calibration images from various angles.

@@ -38,7 +38,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.jni.RubikDetectorJNI;
 import org.photonvision.mrcal.MrCalJNILoader;
@@ -214,7 +214,7 @@ public class Main {
         logger.info("WPI JNI libraries loaded.");
 
         try {
-            boolean success = PhotonTargetingJniLoader.load();
+            boolean success = LibraryLoader.loadTargeting();
 
             if (!success) {
                 logger.error("Failed to load photon-targeting JNI! Giving up :(");
