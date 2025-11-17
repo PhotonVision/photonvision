@@ -92,6 +92,9 @@ const pipelineNamesWrapper = computed<SelectItem[]>(() => {
   if (useCameraSettingsStore().isDriverMode) {
     pipelineNames.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
   }
+  if (useCameraSettingsStore().isFocusMode) {
+    pipelineNames.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera });
+  }
   if (useCameraSettingsStore().isCalibrationMode) {
     pipelineNames.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
   }
@@ -177,6 +180,9 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
   if (useCameraSettingsStore().isDriverMode) {
     pipelineTypes.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
   }
+  if (useCameraSettingsStore().isFocusMode) {
+    pipelineTypes.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera });
+  }
   if (useCameraSettingsStore().isCalibrationMode) {
     pipelineTypes.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
   }
@@ -187,6 +193,7 @@ const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().current
 const currentPipelineType = computed<WebsocketPipelineType>({
   get: () => {
     if (useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
+    if (useCameraSettingsStore().isFocusMode) return WebsocketPipelineType.FocusCamera;
     if (useCameraSettingsStore().isCalibrationMode) return WebsocketPipelineType.Calib3d;
     return pipelineType.value;
   },
@@ -290,6 +297,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="
             useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isFocusMode ||
             useCameraSettingsStore().isCalibrationMode ||
             !useCameraSettingsStore().hasConnected
           "
@@ -366,6 +374,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
           :disabled="
             useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isFocusMode ||
             useCameraSettingsStore().isCalibrationMode ||
             !useCameraSettingsStore().hasConnected
           "

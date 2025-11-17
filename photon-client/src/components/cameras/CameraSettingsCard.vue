@@ -2,6 +2,7 @@
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
@@ -15,7 +16,14 @@ const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
   quirksToChange: Object.assign({}, useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks)
 });
-
+const focusMode = computed<boolean>({
+  get: () => useCameraSettingsStore().isFocusMode,
+  set: (v) =>
+    useCameraSettingsStore().changeCurrentPipelineIndex(
+      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      true
+    )
+});
 const arducamSelectWrapper = computed<number>({
   get: () => {
     if (tempSettingsStruct.value.quirksToChange.ArduOV9281Controls) return 1;
@@ -166,6 +174,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         ]"
         :select-cols="8"
       />
+      <pv-switch
+        v-model="focusMode"
+        tooltip="Enable Focus Mode to start focusing the lens on your camera"
+        label="Focus Mode"
+      ></pv-switch>
     </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
