@@ -47,14 +47,6 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 lensmodel);
 
         this.numSnapshots = observations.size();
-        this.meanErrors =
-                observations.stream()
-                        .map(
-                                it2 ->
-                                        it2.reprojectionErrors.stream()
-                                                .mapToDouble(it -> Math.hypot(it.x, it.y))
-                                                .average()
-                                                .orElse(0))
-                        .toList();
+        this.meanErrors = observations.stream().map(BoardObservation::meanReprojectionError).toList();
     }
 }

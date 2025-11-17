@@ -19,7 +19,6 @@ package org.photonvision.mrcal;
 
 import java.io.IOException;
 import java.util.List;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.PhotonJNICommon;
 
@@ -38,32 +37,10 @@ public class MrCalJNILoader extends PhotonJNICommon {
     }
 
     public static synchronized void forceLoad() throws IOException {
-        // Force load opencv
+        // Make sure opencv has already loaded
         TestUtils.loadLibraries();
 
-        // Library naming is dumb and has "lib" appended for Windows when it ought not to
-        if (Platform.isWindows()) {
-            // Order is correct to match dependencies of libraries
-            forceLoad(
-                    MrCalJNILoader.getInstance(),
-                    MrCalJNILoader.class,
-                    List.of(
-                            "libamd",
-                            "libcamd",
-                            "libcolamd",
-                            "libccolamd",
-                            "openblas",
-                            "libwinpthread-1",
-                            "libgcc_s_seh-1",
-                            "libquadmath-0",
-                            "libgfortran-5",
-                            "liblapack",
-                            "libcholmod",
-                            "mrcal_jni"));
-        } else {
-            // Nothing else to do on linux
-            forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
-        }
+        forceLoad(MrCalJNILoader.getInstance(), MrCalJNILoader.class, List.of("mrcal_jni"));
 
         if (!MrCalJNILoader.getInstance().isLoaded()) {
             throw new IOException("Unable to load mrcal JNI!");
