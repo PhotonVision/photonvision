@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        maven {
+            url = uri('https://maven.photonvision.org/releases')
+        }
+    }
+}
+
 include 'photon-targeting'
 include 'photon-core'
 include 'photon-server'
