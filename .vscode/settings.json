@@ -1,5 +1,8 @@
 {
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.testing.cwd": "photon-lib/py"
+    "python.testing.cwd": "photon-lib/py",
+    "files.associations": {
+        "bitset": "cpp"
+    }
 }
