@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, inject, computed } from "vue";
-import pvInput from "@/components/common/pv-input.vue";
 import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 const theme = useTheme();
@@ -33,8 +33,6 @@ const deleteRecordings = async (recordingsToDelete: string[], cameraUniqueName: 
     recordings: recordingsToDelete,
     cameraUniqueName: cameraUniqueName
   });
-
-  confirmDeleteDialog.value.show = false;
 };
 
 const exportRecordings = ref();
@@ -42,11 +40,8 @@ const exportCameraRecordings = ref();
 const exportIndividualRecording = ref();
 
 const showNukeDialog = ref(false);
-const expected = "Delete Recordings";
-const yesDeleteMyRecordingsText = ref("");
 const nukeRecordings = () => {
   axiosPost("/recordings/nuke", "clear and reset all recordings");
-  showNukeDialog.value = false;
 };
 </script>
 
@@ -193,83 +188,23 @@ const nukeRecordings = () => {
         </v-row>
       </div>
     </div>
-
-    <v-dialog v-model="showNukeDialog" width="800" dark>
-      <v-card color="surface" flat>
-        <v-card-title style="display: flex; justify-content: center">
-          <span class="open-label">
-            <v-icon end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-            Delete All Recordings
-            <v-icon end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-          </span>
-        </v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          <v-row class="align-center text-white">
-            <v-col cols="12" md="6">
-              <span> This will delete ALL OF YOUR RECORDINGS. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn
-                color="buttonActive"
-                style="float: right"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="() => exportRecordings.click()"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
-                <span class="open-label">Backup Recordings</span>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 pb-0">
-          <pv-input
-            v-model="yesDeleteMyRecordingsText"
-            :label="'Type &quot;' + expected + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-text class="pt-10px">
-          <v-btn
-            color="error"
-            width="100%"
-            :disabled="yesDeleteMyRecordingsText.toLowerCase() !== expected.toLowerCase()"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="nukeRecordings"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">
-              {{ $vuetify.display.mdAndUp ? "Delete recordings, I have backed up what I need" : "Delete Recordings" }}
-            </span>
-          </v-btn>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="confirmDeleteDialog.show" width="600">
-      <v-card color="surface" dark>
-        <v-card-title>Delete Recording</v-card-title>
-        <v-card-text class="pt-0">
-          Are you sure you want to delete the recording(s) {{ confirmDeleteDialog.recordings.join(", ") }}?
-          <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-            <v-btn
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-              color="buttonPassive"
-              @click="confirmDeleteDialog.show = false"
-            >
-              Cancel
-            </v-btn>
-            <v-btn
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-              color="error"
-              @click="deleteRecordings(confirmDeleteDialog.recordings, confirmDeleteDialog.cameraUniqueName)"
-            >
-              Delete
-            </v-btn>
-          </v-card-actions>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </v-card>
+
+  <pv-delete-modal
+    v-model="showNukeDialog"
+    title="Clear All Recordings"
+    :description="'This will permanently delete all recordings from all cameras. This action cannot be undone.'"
+    delete-text="Delete Recordings"
+    :backup="() => exportRecordings.value.click()"
+    @confirm="nukeRecordings"
+  />
+
+  <pv-delete-modal
+    v-model="confirmDeleteDialog.show"
+    title="Confirm Delete Recordings"
+    :description="'Are you sure you want to delete the recording(s) ' + confirmDeleteDialog.recordings.join(', ') + '?'"
+    @confirm="() => deleteRecordings(confirmDeleteDialog.recordings, confirmDeleteDialog.cameraUniqueName)"
+  />
 </template>
 
 <style scoped lang="scss">
