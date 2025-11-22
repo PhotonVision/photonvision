@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
-import PvInput from "@/components/common/pv-input.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
@@ -15,7 +16,14 @@ const tempSettingsStruct = ref<CameraSettingsChangeRequest>({
   fov: useCameraSettingsStore().currentCameraSettings.fov.value,
   quirksToChange: Object.assign({}, useCameraSettingsStore().currentCameraSettings.cameraQuirks.quirks)
 });
-
+const focusMode = computed<boolean>({
+  get: () => useCameraSettingsStore().isFocusMode,
+  set: (v) =>
+    useCameraSettingsStore().changeCurrentPipelineIndex(
+      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      true
+    )
+});
 const arducamSelectWrapper = computed<number>({
   get: () => {
     if (tempSettingsStruct.value.quirksToChange.ArduOV9281Controls) return 1;
@@ -112,17 +120,9 @@ watchEffect(() => {
 });
 
 const showDeleteCamera = ref(false);
-const yesDeleteMySettingsText = ref("");
-const deletingCamera = ref(false);
 const deleteThisCamera = () => {
-  if (deletingCamera.value) return;
-  deletingCamera.value = true;
-
-  const payload = { cameraUniqueName: useStateStore().currentCameraUniqueName };
-
-  axiosPost("/utils/nukeOneCamera", "delete this camera", payload).finally(() => {
-    deletingCamera.value = false;
-    showDeleteCamera.value = false;
+  axiosPost("/utils/nukeOneCamera", "delete this camera", {
+    cameraUniqueName: useStateStore().currentCameraUniqueName
   });
 };
 const wrappedCameras = computed<SelectItem[]>(() =>
@@ -166,6 +166,11 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         ]"
         :select-cols="8"
       />
+      <pv-switch
+        v-model="focusMode"
+        tooltip="Enable Focus Mode to start focusing the lens on your camera"
+        label="Focus Mode"
+      ></pv-switch>
     </v-card-text>
     <v-card-text class="d-flex pt-0">
       <v-col cols="6" class="pa-0 pr-2">
@@ -195,45 +200,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
       </v-col>
     </v-card-text>
 
-    <v-dialog v-model="showDeleteCamera" width="800">
-      <v-card color="surface" flat>
-        <v-card-title> Delete {{ useCameraSettingsStore().currentCameraSettings.nickname }}? </v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          Are you sure you want to delete "{{ useCameraSettingsStore().currentCameraSettings.nickname }}"? This cannot
-          be undone.
-        </v-card-text>
-        <v-card-text class="pt-0 pb-10px">
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + useCameraSettingsStore().currentCameraName + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="primary"
-            class="text-black"
-            @click="showDeleteCamera = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            :disabled="
-              yesDeleteMySettingsText.toLowerCase() !== useCameraSettingsStore().currentCameraName.toLowerCase()
-            "
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            :loading="deletingCamera"
-            @click="deleteThisCamera"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">Delete</span>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="showDeleteCamera"
+      title="Delete Camera"
+      :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
+      :expected-confirmation-text="useCameraSettingsStore().currentCameraSettings.nickname"
+      :on-confirm="deleteThisCamera"
+    />
   </v-card>
 </template>
 

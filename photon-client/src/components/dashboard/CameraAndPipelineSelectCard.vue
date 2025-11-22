@@ -9,6 +9,7 @@ import PvInput from "@/components/common/pv-input.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 
 const theme = useTheme();
 
@@ -92,6 +93,9 @@ const pipelineNamesWrapper = computed<SelectItem[]>(() => {
   if (useCameraSettingsStore().isDriverMode) {
     pipelineNames.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
   }
+  if (useCameraSettingsStore().isFocusMode) {
+    pipelineNames.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera });
+  }
   if (useCameraSettingsStore().isCalibrationMode) {
     pipelineNames.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
   }
@@ -130,7 +134,7 @@ const validNewPipelineTypes = computed(() => {
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "Aruco", value: WebsocketPipelineType.Aruco }
+    { name: "ArUco", value: WebsocketPipelineType.Aruco }
   ];
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
@@ -168,7 +172,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
     { name: "Reflective", value: WebsocketPipelineType.Reflective },
     { name: "Colored Shape", value: WebsocketPipelineType.ColoredShape },
     { name: "AprilTag", value: WebsocketPipelineType.AprilTag },
-    { name: "Aruco", value: WebsocketPipelineType.Aruco }
+    { name: "ArUco", value: WebsocketPipelineType.Aruco }
   ];
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
@@ -176,6 +180,9 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
 
   if (useCameraSettingsStore().isDriverMode) {
     pipelineTypes.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
+  }
+  if (useCameraSettingsStore().isFocusMode) {
+    pipelineTypes.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera });
   }
   if (useCameraSettingsStore().isCalibrationMode) {
     pipelineTypes.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
@@ -187,6 +194,7 @@ const pipelineType = ref<WebsocketPipelineType>(useCameraSettingsStore().current
 const currentPipelineType = computed<WebsocketPipelineType>({
   get: () => {
     if (useCameraSettingsStore().isDriverMode) return WebsocketPipelineType.DriverMode;
+    if (useCameraSettingsStore().isFocusMode) return WebsocketPipelineType.FocusCamera;
     if (useCameraSettingsStore().isCalibrationMode) return WebsocketPipelineType.Calib3d;
     return pipelineType.value;
   },
@@ -290,6 +298,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="
             useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isFocusMode ||
             useCameraSettingsStore().isCalibrationMode ||
             !useCameraSettingsStore().hasConnected
           "
@@ -366,6 +375,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
           :disabled="
             useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isFocusMode ||
             useCameraSettingsStore().isCalibrationMode ||
             !useCameraSettingsStore().hasConnected
           "
@@ -413,33 +423,13 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog v-model="showPipelineDeletionConfirmationDialog" width="500">
-      <v-card color="surface">
-        <v-card-title class="pb-0">Delete Pipeline</v-card-title>
-        <v-card-text>
-          Are you sure you want to delete
-          <span style="color: white">"{{ useCameraSettingsStore().currentPipelineSettings.pipelineNickname }}"</span>?
-          This cannot be undone.
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="primary"
-            class="text-black"
-            @click="showPipelineDeletionConfirmationDialog = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="confirmDeleteCurrentPipeline"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="showPipelineDeletionConfirmationDialog"
+      :width="500"
+      title="Delete Pipeline"
+      description="Are you sure you want to delete the current pipeline? This action cannot be undone."
+      :on-confirm="confirmDeleteCurrentPipeline"
+    />
     <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
       <v-card color="surface" dark>
         <v-card-title class="pb-0">Change Pipeline Type</v-card-title>

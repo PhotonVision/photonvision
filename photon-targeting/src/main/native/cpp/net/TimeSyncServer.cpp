@@ -17,9 +17,6 @@
 
 #include "net/TimeSyncServer.h"
 
-#include <wpinet/UDPClient.h>
-#include <wpinet/uv/util.h>
-
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -32,6 +29,8 @@
 #include <wpi/Logger.h>
 #include <wpi/print.h>
 #include <wpi/struct/Struct.h>
+#include <wpinet/UDPClient.h>
+#include <wpinet/uv/util.h>
 
 #include "ntcore_cpp.h"
 
