@@ -2,10 +2,6 @@ cppHeaderFileInclude {
   \.h$
 }
 
-cppSrcFileInclude {
-  \.cpp$
-}
-
 modifiableFileExclude {
   \.dll$
   \.gif$
@@ -13,9 +9,11 @@ modifiableFileExclude {
   \.jpeg$
   \.jpg$
   \.mp4$
+  \.pdf$
   \.png$
   \.rknn$
   \.so$
+  \.svg$
   \.tflite$
   \.ttf$
   \.webp$
