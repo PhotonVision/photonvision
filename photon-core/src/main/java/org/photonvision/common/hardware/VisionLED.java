@@ -25,6 +25,7 @@ import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import org.photonvision.common.logging.LogGroup;
@@ -34,6 +35,7 @@ import org.photonvision.common.util.math.MathUtils;
 
 public class VisionLED implements AutoCloseable {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
+    private static final String blinkTaskID = "VisionLEDBlink";
 
     private final List<LED> visionLEDs = new ArrayList<>();
     private final List<PwmLed> dimmableVisionLEDs = new ArrayList<>();
@@ -112,15 +114,27 @@ public class VisionLED implements AutoCloseable {
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        for (LED led : visionLEDs) {
-            led.blink(pulseLengthMillis, pulseLengthMillis, blinkCount, true);
-        }
-        for (PwmLed led : dimmableVisionLEDs) {
-            led.blink(pulseLengthMillis, pulseLengthMillis, blinkCount, true);
-        }
+        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
+        AtomicInteger blinks = new AtomicInteger();
+        TimedTaskManager.getInstance()
+                .addTask(
+                        blinkTaskID,
+                        () -> {
+                            for (LED led : visionLEDs) {
+                                led.toggle();
+                            }
+                            for (PwmLed led : dimmableVisionLEDs) {
+                                led.setValue(mappedBrightness - led.getValue());
+                            }
+                            if (blinks.incrementAndGet() >= blinkCount * 2) {
+                                TimedTaskManager.getInstance().cancelTask(blinkTaskID);
+                            }
+                        },
+                        pulseLengthMillis);
     }
 
     private void setStateImpl(boolean state) {
+        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         for (LED led : visionLEDs) {
             led.setOn(state);
         }
@@ -177,6 +191,7 @@ public class VisionLED implements AutoCloseable {
 
     @Override
     public void close() {
+        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         for (LED led : visionLEDs) {
             led.close();
         }
