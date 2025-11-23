@@ -23,9 +23,9 @@ import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -97,10 +97,6 @@ public class HardwareManager {
                 hardwareConfig.statusRGBPins.size() == 3
                         ? new StatusLED(hardwareConfig.statusRGBPins, hardwareConfig.statusRGBActiveHigh)
                         : null;
-
-        if (statusLED != null) {
-            TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
-        }
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
@@ -192,59 +188,50 @@ public class HardwareManager {
 
     // API's supporting status LEDs
 
-    private Map<String, Boolean> pipelineTargets = new HashMap<String, Boolean>();
+    private Set<String> pipelineTargets = new HashSet<String>();
     private boolean ntConnected = false;
-    private boolean systemRunning = false;
-    private int blinkCounter = 0;
 
     public void setTargetsVisibleStatus(String uniqueName, boolean hasTargets) {
-        pipelineTargets.put(uniqueName, hasTargets);
+        if (hasTargets) {
+            pipelineTargets.add(uniqueName);
+        } else {
+            pipelineTargets.remove(uniqueName);
+        }
+        updateStatus();
     }
 
     public void setNTConnected(boolean isConnected) {
-        this.ntConnected = isConnected;
+        ntConnected = isConnected;
+        updateStatus();
     }
 
-    public void setRunning(boolean isRunning) {
-        this.systemRunning = isRunning;
-    }
-
-    private void statusLEDUpdate() {
-        // make blinky
-        boolean blinky = ((blinkCounter % 3) > 0);
-
-        // check if any pipeline has a visible target
-        boolean anyTarget = false;
-        for (var t : this.pipelineTargets.values()) {
-            if (t) {
-                anyTarget = true;
-            }
+    public void setError(PhotonStatus status) {
+        if (status == null || !status.isError()) {
+            updateStatus();
+        } else if (statusLED != null) {
+            statusLED.setStatus(status);
         }
+    }
 
-        if (this.systemRunning) {
-            if (!this.ntConnected) {
+    private void updateStatus() {
+        if (statusLED != null) {
+            PhotonStatus status;
+            boolean anyTarget = !pipelineTargets.isEmpty();
+            if (ntConnected) {
                 if (anyTarget) {
-                    // Blue Flashing
-                    statusLED.setRGB(false, false, blinky);
+                    status = PhotonStatus.NT_CONNECTED_TARGETS_VISIBLE;
                 } else {
-                    // Yellow flashing
-                    statusLED.setRGB(blinky, blinky, false);
+                    status = PhotonStatus.NT_CONNECTED_TARGETS_MISSING;
                 }
             } else {
                 if (anyTarget) {
-                    // Blue
-                    statusLED.setRGB(false, false, blinky);
+                    status = PhotonStatus.NT_DISCONNECTED_TARGETS_VISIBLE;
                 } else {
-                    // blinky green
-                    statusLED.setRGB(false, blinky, false);
+                    status = PhotonStatus.NT_DISCONNECTED_TARGETS_MISSING;
                 }
             }
-        } else {
-            // Faulted, not running... blinky red
-            statusLED.setRGB(blinky, false, false);
+            statusLED.setStatus(status);
         }
-
-        blinkCounter++;
     }
 
     public void publishMetrics() {
