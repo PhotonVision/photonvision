@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware;
 
 public enum PhotonStatus {
-
     // Nominal states
     NT_CONNECTED_TARGETS_VISIBLE,
     NT_CONNECTED_TARGETS_MISSING,
