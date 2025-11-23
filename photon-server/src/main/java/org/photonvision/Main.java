@@ -29,7 +29,6 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.OsImageVersion;
-import org.photonvision.common.hardware.PhotonStatus;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.KernelLogLogger;
@@ -289,8 +288,8 @@ public class Main {
         ConfigManager.getInstance().requestSave();
 
         logger.debug("Loading HardwareManager...");
-        // Force load the hardware manager, setting generic error in case initialization crashes
-        HardwareManager.getInstance().setError(PhotonStatus.GENERIC_ERROR);
+        // Force load the hardware manager
+        HardwareManager.getInstance();
 
         logger.info("Loading ML models...");
         var modelManager = NeuralNetworkModelManager.getInstance();
