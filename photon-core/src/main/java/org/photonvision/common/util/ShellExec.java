@@ -136,7 +136,7 @@ public class ShellExec {
         return doProcess(wait, process);
     }
 
-    private int doProcess(boolean wait, Process process) {
+    private synchronized int doProcess(boolean wait, Process process) {
         errorGobbler = new StreamGobbler(process.getErrorStream(), readError);
         outputGobbler = new StreamGobbler(process.getInputStream(), readOutput);
         errorGobbler.start();
