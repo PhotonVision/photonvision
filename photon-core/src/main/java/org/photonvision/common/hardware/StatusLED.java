@@ -21,11 +21,14 @@ import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.DeviceFactoryHelper;
 import java.util.List;
+import org.photonvision.common.util.TimedTaskManager;
 
 public class StatusLED implements AutoCloseable {
     public final LED redLED;
     public final LED greenLED;
     public final LED blueLED;
+
+    protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
     public StatusLED(List<Integer> statusLedPins, boolean activeHigh) {
         this(DeviceFactoryHelper.getNativeDeviceFactory(), statusLedPins, activeHigh);
@@ -44,12 +47,50 @@ public class StatusLED implements AutoCloseable {
         redLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
         greenLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
         blueLED = new LED(deviceFactory, statusLedPins.get(2), activeHigh, false);
+
+        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }
 
-    public void setRGB(boolean r, boolean g, boolean b) {
+    protected void setRGB(boolean r, boolean g, boolean b) {
         redLED.setOn(r);
         greenLED.setOn(g);
         blueLED.setOn(b);
+    }
+
+    public void setStatus(PhotonStatus status) {
+        this.status = status;
+    }
+
+    protected int blinkCounter;
+
+    protected void updateLED() {
+        boolean blink = blinkCounter > 0;
+
+        switch (status) {
+            case NT_CONNECTED_TARGETS_VISIBLE:
+                // Blue
+                setRGB(false, false, true);
+                break;
+            case NT_CONNECTED_TARGETS_MISSING:
+                // Blinking Green
+                setRGB(false, blink, false);
+                break;
+            case NT_DISCONNECTED_TARGETS_VISIBLE:
+                // Blinking Blue
+                setRGB(false, false, blink);
+                break;
+            case NT_DISCONNECTED_TARGETS_MISSING:
+                // Blinking Yellow
+                setRGB(blink, blink, false);
+                break;
+            case GENERIC_ERROR:
+                // Blinking Red
+                setRGB(blink, false, false);
+                break;
+        }
+
+        blinkCounter++;
+        blinkCounter %= 3;
     }
 
     @Override
