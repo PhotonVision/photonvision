@@ -70,8 +70,6 @@ export interface PipelineResult {
   sequenceID: number;
   fps: number;
   latency: number;
-  // Focus pipeline
-  focus?: number;
   targets: PhotonTarget[];
   // undefined if multitag failed or non-tag pipeline
   multitagResult?: MultitagResult;

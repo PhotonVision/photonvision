@@ -36,12 +36,10 @@ public class PipelineManager {
     private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionModule);
 
     public static final int DRIVERMODE_INDEX = -1;
-    public static final int FOCUS_INDEX = -3;
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
     protected final Calibrate3dPipeline calibration3dPipeline;
-    protected final FocusPipeline focusPipeline = new FocusPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. Defaults to 0. */
@@ -95,7 +93,6 @@ public class PipelineManager {
         return switch (index) {
             case DRIVERMODE_INDEX -> driverModePipeline.getSettings();
             case CAL_3D_INDEX -> calibration3dPipeline.getSettings();
-            case FOCUS_INDEX -> focusPipeline.getSettings();
             default -> {
                 for (var setting : userPipelineSettings) {
                     if (setting.pipelineIndex == index) yield setting;
@@ -115,7 +112,6 @@ public class PipelineManager {
         return switch (index) {
             case DRIVERMODE_INDEX -> driverModePipeline.getSettings().pipelineNickname;
             case CAL_3D_INDEX -> calibration3dPipeline.getSettings().pipelineNickname;
-            case FOCUS_INDEX -> focusPipeline.getSettings().pipelineNickname;
             default -> {
                 for (var setting : userPipelineSettings) {
                     if (setting.pipelineIndex == index) yield setting.pipelineNickname;
@@ -157,7 +153,6 @@ public class PipelineManager {
         return switch (currentPipelineIndex) {
             case CAL_3D_INDEX -> calibration3dPipeline;
             case DRIVERMODE_INDEX -> driverModePipeline;
-            case FOCUS_INDEX -> focusPipeline;
                 // Just return the current user pipeline, we're not on a built-in one
             default -> currentUserPipeline;
         };
@@ -266,7 +261,7 @@ public class PipelineManager {
                 currentUserPipeline =
                         new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
             }
-            case Calib3d, DriverMode, FocusCamera -> {}
+            case Calib3d, DriverMode -> {}
         }
     }
 
@@ -340,7 +335,7 @@ public class PipelineManager {
                     case AprilTag -> new AprilTagPipelineSettings();
                     case Aruco -> new ArucoPipelineSettings();
                     case ObjectDetection -> new ObjectDetectionPipelineSettings();
-                    case Calib3d, DriverMode, FocusCamera -> {
+                    case Calib3d, DriverMode -> {
                         logger.error("Got invalid pipeline type: " + type);
                         yield null;
                     }

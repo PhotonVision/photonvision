@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 @SuppressWarnings("rawtypes")
 public enum PipelineType {
-    FocusCamera(-3, FocusPipeline.class),
     Calib3d(-2, Calibrate3dPipeline.class),
     DriverMode(-1, DriverModePipeline.class),
     Reflective(0, ReflectivePipeline.class),

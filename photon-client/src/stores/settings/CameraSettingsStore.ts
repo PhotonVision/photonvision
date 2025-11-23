@@ -76,9 +76,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     isCalibrationMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
     },
-    isFocusMode(): boolean {
-      return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.FocusCamera;
-    },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;
     },

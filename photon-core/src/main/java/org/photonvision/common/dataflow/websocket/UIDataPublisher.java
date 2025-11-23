@@ -27,7 +27,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
-import org.photonvision.vision.pipeline.result.FocusPipelineResult;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
     private static final Logger logger = new Logger(UIDataPublisher.class, LogGroup.VisionModule);
@@ -77,10 +76,6 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
 
         var uiMap = new HashMap<String, HashMap<String, Object>>();
         uiMap.put(uniqueName, dataMap);
-
-        if (result instanceof FocusPipelineResult focusResult) {
-            dataMap.put("focus", focusResult.focus);
-        }
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));

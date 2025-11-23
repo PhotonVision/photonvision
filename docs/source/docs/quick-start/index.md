@@ -9,6 +9,5 @@ wiring
 networking
 camera-matching
 camera-calibration
-camera-focusing
 quick-configure
 ```

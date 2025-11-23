@@ -21,9 +21,7 @@ const processingMode = computed<number>({
 
 <template>
   <v-card
-    :disabled="
-      useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isFocusMode || useStateStore().colorPickingMode
-    "
+    :disabled="useCameraSettingsStore().isDriverMode || useStateStore().colorPickingMode"
     class="mt-3 rounded-12"
     color="surface"
     style="flex-grow: 1; display: flex; flex-direction: column"
