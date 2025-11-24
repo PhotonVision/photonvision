@@ -26,7 +26,7 @@ const camerasWithRecordings = computed(() => {
   return cameras;
 });
 
-const confirmDeleteDialog = ref({ show: false, recordings: {} as string[], cameraUniqueName: "" });
+const confirmDeleteDialog = ref({ show: false, recordings: [] as string[], cameraUniqueName: "" });
 
 const deleteRecordings = async (recordingsToDelete: string[], cameraUniqueName: string) => {
   axiosPost("/recordings/delete", "delete " + recordingsToDelete.join(", "), {
@@ -35,13 +35,34 @@ const deleteRecordings = async (recordingsToDelete: string[], cameraUniqueName: 
   });
 };
 
-const exportRecordings = ref();
-const exportCameraRecordings = ref();
-const exportIndividualRecording = ref();
+const exportCameraRecordings = ref<HTMLAnchorElement>();
+const exportIndividualRecording = ref<HTMLAnchorElement>();
 
 const showNukeDialog = ref(false);
 const nukeRecordings = () => {
   axiosPost("/recordings/nuke", "clear and reset all recordings");
+};
+
+const downloadIndividualRecording = (camera: any) => {
+  const recording = selectedRecordings.value[camera.uniqueName];
+  const link = document.createElement('a');
+  link.href = `http://${address}/api/recordings/exportIndividual?recording=${recording}&camera=${camera.uniqueName}`;
+  link.download = `${camera.nickname}_${recording}_recording.mp4`;
+  link.click();
+};
+
+const downloadCameraRecordings = (camera: any) => {
+  const link = document.createElement('a');
+  link.href = `http://${address}/api/recordings/exportCamera?cameraPath=${camera.uniqueName}`;
+  link.download = `${camera.nickname}_recordings.zip`;
+  link.click();
+};
+
+const downloadAllRecordings = () => {
+  const link = document.createElement('a');
+  link.href = `http://${address}/api/recordings/export`;
+  link.download = `photonvision-recordings-export.zip`;
+  link.click();
 };
 </script>
 
@@ -51,8 +72,7 @@ const nukeRecordings = () => {
     <div class="pa-5 pt-0">
       <pv-select
         v-model="useSettingsStore().general.recordingStrategy"
-        label="Orientation"
-        tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
+        label="Recording Strategy"
         :items="useSettingsStore().general.supportedRecordingStrategies"
         @update:modelValue="(args) => useSettingsStore().setRecordingStrategy(String(args ?? ''))"
       />
@@ -62,7 +82,7 @@ const nukeRecordings = () => {
             <v-btn
               color="buttonPassive"
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-              @click="() => exportRecordings.value.click()"
+              @click="downloadAllRecordings()"
             >
               <v-icon start class="open-icon"> mdi-export </v-icon>
               <span class="open-label">Export Recordings</span>
@@ -131,17 +151,10 @@ const nukeRecordings = () => {
                       color="buttonPassive"
                       title="Export Selected Recording"
                       :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                      @click="() => exportIndividualRecording.value.click()"
+                      @click="downloadIndividualRecording(camera)"
                     >
                       <v-icon size="large">mdi-export</v-icon>
                     </v-btn>
-                    <a
-                      ref="exportIndividualRecording"
-                      style="color: black; text-decoration: none; display: none"
-                      :href="`http://${address}/api/recordings/exportIndividual?recording=${selectedRecordings[camera.uniqueName]}?camera=${camera.uniqueName}`"
-                      :download="`${camera.nickname}_${selectedRecordings[camera.uniqueName]}_recording.mp4`"
-                      target="_blank"
-                    />
                   </td>
                   <td class="text-right">
                     <v-btn
@@ -169,17 +182,10 @@ const nukeRecordings = () => {
                       color="buttonPassive"
                       title="Export Recordings"
                       :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                      @click="() => exportCameraRecordings.value.click()"
+                      @click="downloadCameraRecordings(camera)"
                     >
                       <v-icon size="large">mdi-export</v-icon>
                     </v-btn>
-                    <a
-                      ref="exportCameraRecordings"
-                      style="color: black; text-decoration: none; display: none"
-                      :href="`http://${address}/api/recordings/exportCamera?cameraPath=${camera.uniqueName}`"
-                      :download="`${camera.nickname}_recordings.zip`"
-                      target="_blank"
-                    />
                   </td>
                 </tr>
               </tbody>
@@ -195,7 +201,7 @@ const nukeRecordings = () => {
     title="Clear All Recordings"
     :description="'This will permanently delete all recordings from all cameras. This action cannot be undone.'"
     delete-text="Delete Recordings"
-    :backup="() => exportRecordings.value.click()"
+    :backup="() => downloadAllRecordings()"
     @confirm="nukeRecordings"
   />
 
