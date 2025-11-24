@@ -17,14 +17,19 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
@@ -262,8 +267,104 @@ public class FrameRecorder implements Releasable {
     }
 
     private static File exportSnapshots(Path recording) throws Exception {
-        // This should return a file named CAMERA-NICKNAME_RECORDING-NAME_recording.mp4 or smth
-        throw new UnsupportedOperationException("Snapshot export not implemented yet");
+        List<Snapshot> frames = new ArrayList<>();
+        Pattern pattern = Pattern.compile("frame_(\\d+)\\.png");
+
+        File dir = recording.toFile();
+        File[] files = dir.listFiles((d, name) -> name.matches("frame_\\d+\\.png"));
+
+        if (files != null) {
+            for (File file : files) {
+                Matcher matcher = pattern.matcher(file.getName());
+                if (matcher.matches()) {
+                    long timestamp = Long.parseLong(matcher.group(1));
+                    frames.add(new Snapshot(file.getAbsolutePath(), timestamp));
+                }
+            }
+        }
+
+        Collections.sort(frames);
+
+        if (frames.isEmpty()) {
+            System.err.println("No frames found matching pattern frame_*.png");
+            System.exit(1);
+        }
+
+        // Create concat file for FFmpeg
+        Path concatFile = Files.createTempFile("ffmpeg_concat_", ".txt");
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(concatFile.toFile()))) {
+            for (int i = 0; i < frames.size(); i++) {
+                Snapshot frame = frames.get(i);
+
+                // Calculate duration based on time to next frame
+                double duration;
+                if (i < frames.size() - 1) {
+                    long timeDiff = frames.get(i + 1).timestamp - frame.timestamp;
+                    duration = timeDiff / 1000.0; // Convert ms to seconds
+                } else {
+                    // Last frame: use average frame duration or target fps
+                    duration = 1.0 / 30.0; // Assume 30 FPS for last frame
+                }
+
+                writer.write("file '" + frame.filename + "'\n");
+                writer.write("duration " + duration + "\n");
+            }
+
+            // FFmpeg concat requires the last file to be listed again without duration
+            writer.write("file '" + frames.get(frames.size() - 1).filename + "'\n");
+        }
+
+        File outputVideo = Files.createTempFile(recording.getFileName().toString(), ".mp4").toFile();
+
+        // Build FFmpeg command for lossless encoding
+        List<String> command = new ArrayList<>();
+        command.add("ffmpeg");
+        command.add("-f");
+        command.add("concat");
+        command.add("-safe");
+        command.add("0");
+        command.add("-i");
+        command.add(concatFile.toString());
+        command.add("-c:v");
+        command.add("libx264");
+        command.add("-preset");
+        command.add("veryslow");
+        command.add("-crf");
+        command.add("0"); // Lossless
+        command.add("-pix_fmt");
+        command.add("yuv444p"); // Full chroma resolution
+        command.add("-y");
+        command.add(outputVideo.toString());
+
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.inheritIO();
+        Process process = pb.start();
+        int exitCode = process.waitFor();
+
+        // Cleanup
+        Files.deleteIfExists(concatFile);
+
+        if (exitCode == 0) {
+            return outputVideo;
+        } else {
+            throw new RuntimeException("FFmpeg failed with exit code " + exitCode);
+        }
+    }
+
+    private static class Snapshot implements Comparable<Snapshot> {
+        String filename;
+        long timestamp;
+
+        Snapshot(String filename, long timestamp) {
+            this.filename = filename;
+            this.timestamp = timestamp;
+        }
+
+        @Override
+        public int compareTo(Snapshot other) {
+            return Long.compare(this.timestamp, other.timestamp);
+        }
     }
 
     public static File exportCamera(Path cameraRecordingsDir) throws Exception {
