@@ -137,7 +137,8 @@ public enum Platform {
         return currentPlatform == LINUX_RK3588_64
                 || Platform.isOrangePi()
                 || Platform.isCoolPi4b()
-                || Platform.isRock5C();
+                || Platform.isRock5C()
+                || fileHasText("/proc/device-tree/compatible", "rk3588");
     }
 
     public static boolean isQCS6490() {
