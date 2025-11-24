@@ -63,6 +63,7 @@ processResources {
 
 run {
     environment "PATH_PREFIX", "../"
+    dependsOn buildAndCopyUI
 
     if (project.hasProperty("profile")) {
         jvmArgs=[
