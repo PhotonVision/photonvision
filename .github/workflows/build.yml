@@ -88,10 +88,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
-      - name: Gradle Tests
-        run: ./gradlew testHeadless --stacktrace
-      - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport
+      - name: Gradle Tests and Coverage
+        run: ./gradlew test jacocoTestReport --stacktrace
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-22.04

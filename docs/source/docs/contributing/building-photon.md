@@ -18,6 +18,10 @@ This section contains the build instructions from the source code available at [
 
  [pnpm](https://pnpm.io/) is the package manager used to download dependencies for the UI. To install pnpm, follow [the instructions on the official pnpm website](https://pnpm.io/installation).
 
+**Cross-Compilation Toolchains (Optional):**
+
+ If you plan to deploy PhotonVision to a coprocessor like a Raspberry Pi, you will need to install the appropriate cross-compilation toolchain for your platform. For `linuxarm64` devices, this can be accomplished by running `./gradlew installArm64Toolchain` in the root folder of the project.
+
 ## Compiling Instructions
 
 ### Getting the Source Code
@@ -172,6 +176,29 @@ With the VSCode [Extension Pack for Java](https://marketplace.visualstudio.com/i
 ```
 
 To correctly run PhotonVision tests this way, you must [delegate the tests to Gradle](https://code.visualstudio.com/docs/java/java-build#_delegate-tests-to-gradle). Debugging tests like this will [**not** currently](https://github.com/microsoft/build-server-for-gradle/issues/119) collect outputs.
+
+### Running Tests With UI
+
+By default, tests are run with UI disabled so they are not obtrusive during a build. All tests should be useful when the UI is disabled. However, if a particular test would benefit from having UI access (i.e. for debugging info), the UI can be enabled by passing the `enableTestUi` project property to Gradle. This will run all tests by default, but the Gradle `--tests` option can be used to [filter for specific tests](https://docs.gradle.org/current/userguide/java_testing.html#test_filtering).
+
+```{eval-rst}
+.. tab-set::
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      ``./gradlew test -PenableTestUi``
+
+   .. tab-item:: macOS
+      :sync: macos
+
+      ``./gradlew test -PenableTestUi``
+
+   .. tab-item:: Windows (cmd)
+      :sync: windows
+
+      ``gradlew test -PenableTestUi``
+```
 
 ### Debugging PhotonVision Running Locally
 

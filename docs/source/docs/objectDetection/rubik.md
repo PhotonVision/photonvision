@@ -14,7 +14,7 @@ PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv8 and YOLOv11 mode
 Only quantized models are supported, so take care when exporting to select the option for quantization.
 :::
 
-PhotonVision now ships with a [Python Notebook](https://github.com/PhotonVision/photonvision/blob/main/scripts/rubik_conversion.ipynb) that you can use in [Google Colab](https://colab.research.google.com) or in a local environment. In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rubik_conversion.ipynb` notebook without needing to manually download anything.
+PhotonVision now ships with a {{ '[Python Notebook](https://github.com/PhotonVision/photonvision/blob/{}/scripts/rubik_conversion.ipynb)'.format(git_tag_ref) }} that you can use in [Google Colab](https://colab.research.google.com), [Kaggle](https://kaggle.com/code), or in a local environment. In Google Colab, you can simply paste the PhotonVision GitHub URL into the "GitHub" tab and select the `rubik_conversion.ipynb` notebook without needing to manually download anything.
 
 Please ensure that the model you are attempting to convert is among the {ref}`supported models <docs/objectDetection/rubik:Supported Models>` and using the PyTorch format.
 

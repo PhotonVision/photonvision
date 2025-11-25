@@ -1,13 +1,16 @@
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
+/**
+ * The on-wire form of PipelineType.java (the enum is serialized with `ordinal()`)
+ */
 export enum PipelineType {
-  DriverMode = 1,
-  Reflective = 2,
-  ColoredShape = 3,
-  AprilTag = 4,
-  Aruco = 5,
-  ObjectDetection = 6
+  DriverMode = 2,
+  Reflective = 3,
+  ColoredShape = 4,
+  AprilTag = 5,
+  Aruco = 6,
+  ObjectDetection = 7
 }
 
 export enum AprilTagFamily {

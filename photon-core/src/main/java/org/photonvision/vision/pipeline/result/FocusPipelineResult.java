@@ -15,24 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.pipeline.result;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    FocusCamera(-3, FocusPipeline.class),
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class),
-    ObjectDetection(4, ObjectDetectionPipeline.class);
+import java.util.List;
+import org.photonvision.vision.frame.Frame;
 
-    public final int baseIndex;
-    public final Class clazz;
+public class FocusPipelineResult extends CVPipelineResult {
+    public final double focus;
 
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+    public FocusPipelineResult(
+            long seq, double latencyNanos, double fps, Frame outputFrame, double focus) {
+        super(seq, latencyNanos, fps, List.of(), outputFrame);
+        this.focus = focus;
     }
 }

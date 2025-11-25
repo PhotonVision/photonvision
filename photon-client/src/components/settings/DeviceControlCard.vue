@@ -2,60 +2,17 @@
 import { inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import PvSelect from "@/components/common/pv-select.vue";
-import PvInput from "@/components/common/pv-input.vue";
-import axios from "axios";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import { useTheme } from "vuetify";
+import { axiosPost } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
 const restartProgram = () => {
-  axios
-    .post("/utils/restartProgram")
-    .then(() => {
-      useStateStore().showSnackbarMessage({ message: "Successfully sent program restart request", color: "success" });
-    })
-    .catch((error) => {
-      // This endpoint always return 204 regardless of outcome
-      if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
+  axiosPost("/utils/restartProgram", "restart PhotonVision");
 };
 const restartDevice = () => {
-  axios
-    .post("/utils/restartDevice")
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the restart command. It isn't confirmed if a device restart will occur.",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to restart the device.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
+  axiosPost("/utils/restartDevice", "restart the device");
 };
 
 const address = inject<string>("backendHost");
@@ -77,47 +34,27 @@ const handleOfflineUpdate = () => {
     timeout: -1
   });
 
-  axios
-    .post("/utils/offlineUpdate", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
-        const uploadPercentage = (progress || 0) * 100.0;
-        if (uploadPercentage < 99.5) {
-          useStateStore().showSnackbarMessage({
-            message: "New Software Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
-            color: "secondary",
-            timeout: -1
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            message: "Installing uploaded software...",
-            color: "secondary",
-            timeout: -1
-          });
-        }
-      }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
-    })
-    .catch((error) => {
-      if (error.response) {
+  axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: ({ progress }) => {
+      const uploadPercentage = (progress || 0) * 100.0;
+      if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message: "New Software Upload in Progress",
+          color: "secondary",
+          timeout: -1,
+          progressBar: uploadPercentage,
+          progressBarColor: "primary"
         });
       } else {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "Installing uploaded software...",
+          color: "secondary",
+          timeout: -1
         });
       }
-    });
+    }
+  });
 };
 
 const exportLogFile = ref();
@@ -166,29 +103,9 @@ const handleSettingsImport = () => {
       break;
   }
 
-  axios
-    .post(`/settings${settingsEndpoint}`, formData, { headers: { "Content-Type": "multipart/form-data" } })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  axiosPost(`/settings${settingsEndpoint}`, "import settings", formData, {
+    headers: { "Content-Type": "multipart/form-data" }
+  });
 
   showImportDialog.value = false;
   importType.value = undefined;
@@ -196,36 +113,8 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(false);
-const expected = "Delete Everything";
-const yesDeleteMySettingsText = ref("");
 const nukePhotonConfigDirectory = () => {
-  axios
-    .post("/utils/nukeConfigDirectory")
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the reset command. Waiting for backend to start back up",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfill the request to reset the device.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
-  showFactoryReset.value = false;
+  axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
 };
 </script>
 
@@ -387,63 +276,15 @@ const nukePhotonConfigDirectory = () => {
         </v-col>
       </v-row>
     </div>
-    <v-dialog v-model="showFactoryReset" width="800" dark>
-      <v-card color="surface" flat>
-        <v-card-title style="display: flex; justify-content: center">
-          <span class="open-label">
-            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-            Factory Reset PhotonVision
-            <v-icon end color="red" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-          </span>
-        </v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          <v-row class="align-center text-white">
-            <v-col cols="12" md="6">
-              <span> This will delete ALL OF YOUR SETTINGS and restart PhotonVision. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn
-                color="primary"
-                style="float: right"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="openExportSettingsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
-                <span class="open-label">Backup Settings</span>
-                <a
-                  ref="exportSettings"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/settings/photonvision_config.zip`"
-                  download="photonvision-settings.zip"
-                  target="_blank"
-                />
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 pb-0">
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + expected + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-text class="pt-10px">
-          <v-btn
-            color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== expected.toLowerCase()"
-            @click="nukePhotonConfigDirectory"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">
-              {{ $vuetify.display.mdAndUp ? "Delete everything, I have backed up what I need" : "Delete Everything" }}
-            </span>
-          </v-btn>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="showFactoryReset"
+      title="Factory Reset PhotonVision"
+      description="This will delete all settings and configurations stored on this device, including network settings. This action cannot be undone."
+      expected-confirmation-text="Delete Everything"
+      :on-confirm="nukePhotonConfigDirectory"
+      :on-backup="openExportSettingsPrompt"
+      delete-text="Factory reset"
+    />
   </v-card>
 </template>
 

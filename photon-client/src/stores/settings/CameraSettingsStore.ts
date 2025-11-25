@@ -45,7 +45,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     // This method only exists due to just how lazy I am and my dislike of consolidating the pipeline type enums (which mind you, suck as is)
     currentWebsocketPipelineType(): WebsocketPipelineType {
-      return this.currentPipelineType - 2;
+      return this.currentPipelineType - 3;
     },
     currentVideoFormat(): VideoFormat {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
@@ -75,6 +75,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     isCalibrationMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
+    },
+    isFocusMode(): boolean {
+      return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.FocusCamera;
     },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;

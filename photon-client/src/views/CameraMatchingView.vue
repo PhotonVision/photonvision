@@ -7,16 +7,13 @@ import {
   PVCameraInfo,
   type PVCSICameraInfo,
   type PVFileCameraInfo,
-  type PVUsbCameraInfo,
-  type UiCameraConfiguration
+  type PVUsbCameraInfo
 } from "@/types/SettingTypes";
-import { getResolutionString } from "@/lib/PhotonUtils";
+import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import PvInput from "@/components/common/pv-input.vue";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
-import axios from "axios";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
-import type { WebsocketCameraSettingsUpdate } from "@/types/WebsocketDataTypes";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -28,33 +25,9 @@ const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
 
-  axios
-    .post("/utils/activateMatchedCamera", { cameraUniqueName: moduleUniqueName })
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Camera activated successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to activate this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => (activatingModule.value = false));
+  axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
+    cameraUniqueName: moduleUniqueName
+  }).finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
@@ -66,106 +39,29 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
     cameraInfo: cameraInfo
   };
 
-  axios
-    .post("/utils/assignUnmatchedCamera", payload)
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Unmatched camera assigned successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to assign this unmatched camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => (assigningCamera.value = false));
+  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload).finally(
+    () => (assigningCamera.value = false)
+  );
 };
 
 const deactivatingModule = ref(false);
 const deactivateModule = (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  axios
-    .post("/utils/unassignCamera", { cameraUniqueName: cameraUniqueName })
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Camera deactivated successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to deactivate this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => (deactivatingModule.value = false));
+  axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName }).finally(
+    () => (deactivatingModule.value = false)
+  );
 };
 
-const deletingCamera = ref(false);
-const deleteThisCamera = (cameraName: string) => {
-  if (deletingCamera.value) return;
-  deletingCamera.value = true;
-  const payload = {
-    cameraUniqueName: cameraName
-  };
+const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "" });
+const deletingCamera = ref<string | null>(null);
 
-  axios
-    .post("/utils/nukeOneCamera", payload)
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Camera deleted successfully",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfil the request to delete this camera.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    })
-    .finally(() => {
-      setCameraDeleting(null);
-      deletingCamera.value = false;
-    });
+const deleteThisCamera = (cameraUniqueName: string) => {
+  if (deletingCamera.value) return;
+  deletingCamera.value = cameraUniqueName;
+  axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName }).finally(() => {
+    deletingCamera.value = null;
+  });
 };
 
 const cameraConnected = (uniquePath: string): boolean => {
@@ -208,15 +104,6 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
   viewingDetails.value = camera !== null && isConnected !== null;
   viewingCamera.value = [camera, isConnected];
 };
-
-const viewingDeleteCamera = ref(false);
-const cameraToDelete = ref<UiCameraConfiguration | WebsocketCameraSettingsUpdate | null>(null);
-const setCameraDeleting = (camera: UiCameraConfiguration | WebsocketCameraSettingsUpdate | null) => {
-  yesDeleteMySettingsText.value = "";
-  viewingDeleteCamera.value = camera !== null;
-  cameraToDelete.value = camera;
-};
-const yesDeleteMySettingsText = ref("");
 
 /**
  * Get the connection-type-specific camera info from the given PVCameraInfo object.
@@ -373,8 +260,16 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   class="pa-0"
                   color="error"
                   style="width: 100%"
+                  :loading="module.uniqueName === deletingCamera"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                  @click="setCameraDeleting(module)"
+                  @click="
+                    () =>
+                      (confirmDeleteDialog = {
+                        show: true,
+                        nickname: module.nickname,
+                        cameraUniqueName: module.uniqueName
+                      })
+                  "
                 >
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -459,8 +354,16 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   class="pa-0"
                   color="error"
                   style="width: 100%"
+                  :loading="module.uniqueName === deletingCamera"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                  @click="setCameraDeleting(module)"
+                  @click="
+                    () =>
+                      (confirmDeleteDialog = {
+                        show: true,
+                        nickname: module.nickname,
+                        cameraUniqueName: module.uniqueName
+                      })
+                  "
                 >
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
@@ -564,43 +467,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       </v-card>
     </v-dialog>
 
-    <!-- Camera delete modal -->
-    <v-dialog v-model="viewingDeleteCamera" width="800">
-      <v-card v-if="cameraToDelete !== null" class="dialog-container" color="surface" flat>
-        <v-card-title> Delete {{ cameraToDelete.nickname }}? </v-card-title>
-        <v-card-text class="pb-10px">
-          Are you sure you want to delete "{{ cameraToDelete.nickname }}"? This cannot be undone.
-        </v-card-text>
-        <v-card-text class="pt-0 pb-10px">
-          <pv-input
-            v-model="yesDeleteMySettingsText"
-            :label="'Type &quot;' + cameraToDelete.nickname + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="primary"
-            class="text-black"
-            @click="cameraToDelete = null"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="error"
-            :disabled="yesDeleteMySettingsText.toLowerCase() !== cameraToDelete.nickname.toLowerCase()"
-            :loading="deletingCamera"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="deleteThisCamera(cameraToDelete.uniqueName)"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">Delete</span>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="confirmDeleteDialog.show"
+      title="Delete Camera"
+      :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
+      :expected-confirmation-text="confirmDeleteDialog.nickname"
+      :on-confirm="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
+    />
   </div>
 </template>
 
