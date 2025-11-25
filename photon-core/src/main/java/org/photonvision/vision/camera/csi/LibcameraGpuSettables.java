@@ -78,7 +78,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             videoModes.put(6, new FPSRatedVideoMode(PixelFormat.kUnknown, 3280 / 4, 2464 / 4, 15, 20, 1));
         } else if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             // Taken from https://www.ovt.com/wp-content/uploads/2022/01/OV9281-OV9282-PB-v1.3-WEB.pdf
-            videoModes.put(0, new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 400, 240, 240, 1));
+            videoModes.put(0, new FPSRatedVideoMode(PixelFormat.kUnknown, 640, 400, 120, 240, 1));
             videoModes.put(1, new FPSRatedVideoMode(PixelFormat.kUnknown, 1280, 800, 120, 120, 1));
 
         } else {
