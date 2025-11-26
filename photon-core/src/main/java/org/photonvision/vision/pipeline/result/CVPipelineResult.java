@@ -34,6 +34,7 @@ public class CVPipelineResult implements Releasable {
     public final List<TrackedTarget> targets;
     public final Frame inputAndOutputFrame;
     public Optional<MultiTargetPNPResult> multiTagResult;
+    public final List<AprilTagDetection> rejectedTags;
     public final List<String> objectDetectionClassNames;
 
     public CVPipelineResult(
@@ -71,6 +72,7 @@ public class CVPipelineResult implements Releasable {
             double fps,
             List<TrackedTarget> targets,
             Optional<MultiTargetPNPResult> multiTagResult,
+            List<AprilTagDetection> rejectedTags,
             Frame inputFrame,
             List<String> classNames) {
         this.sequenceID = sequenceID;
@@ -79,6 +81,7 @@ public class CVPipelineResult implements Releasable {
         this.targets = targets != null ? targets : Collections.emptyList();
         this.multiTagResult = multiTagResult;
         this.objectDetectionClassNames = classNames;
+        this.rejectedTags = rejectedTags;
 
         this.inputAndOutputFrame = inputFrame;
     }
