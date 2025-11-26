@@ -40,6 +40,9 @@ public class PhotonPipelineResult
     /** The multitag result, if using an AprilTag pipeline with Multi-Target Estimation enabled. */
     public Optional<MultiTargetPNPResult> multitagResult;
 
+    // Rejected tags
+    public List<PhotonTrackedTarget> rejectedTags;
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {
         this(new PhotonPipelineMetadata(), List.of(), Optional.empty());
