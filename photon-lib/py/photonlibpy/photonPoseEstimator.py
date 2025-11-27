@@ -261,18 +261,18 @@ class PhotonPoseEstimator:
     def update(
         self, cameraResult: Optional[PhotonPipelineResult] = None
     ) -> Optional[EstimatedRobotPose]:
-        """
-        Updates the estimated position of the robot. Returns empty if:
+        """Update the estimated robot position.
 
-         - The timestamp of the provided pipeline result is the same as in the previous call to
-         ``update()``.
+        Returns empty if one of the following is true:
 
-         - No targets were found in the pipeline results.
+        - The timestamp of the provided pipeline result is the same as in the previous call to
+          ``update()``.
+        - No targets were found in the pipeline results.
 
-        :param cameraResult: The latest pipeline result from the camera
+        :param cameraResult: The latest pipeline result from the camera.
 
-        :returns: an :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used to
-                   create the estimate.
+        :returns: An :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used
+                  to create the estimate, or ``None`` if no estimate could be made.
         """
         if not cameraResult:
             if not self._camera:

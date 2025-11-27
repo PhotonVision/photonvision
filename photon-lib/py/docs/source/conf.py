@@ -29,9 +29,19 @@ import os
 import sys
 
 sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "_stubs"))
+)  # add docs stubs first so they shadow unavailable third-party packages
+
+sys.path.insert(
     0, os.path.abspath("../../photonlibpy")
 )  # adjust based on your project layout
-print(sys.path)
+# Mock imports that aren't available in the docs build environment so autodoc
+# can import the local modules even if optional runtime deps (like wpimath)
+# aren't installed. Add other names here if you see warnings for missing
+# third-party packages during the build.
+autodoc_mock_imports = [
+    "wpilib",
+]
 templates_path = ["_templates"]
 exclude_patterns = []
 

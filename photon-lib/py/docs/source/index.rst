@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 PhotonLib Python Documentation
-==========================
+===============================
 
 
 The main documentation for PhotonVision can be found at `photonvision.org <https://photonvision.org>`_.
@@ -14,4 +14,4 @@ The main documentation for PhotonVision can be found at `photonvision.org <https
    :caption: Contents:
 
    modules
-   photonlibpy  # if you have these .rst files from sphinx-apidoc
+   photonlibpy

@@ -306,14 +306,13 @@ class SimCameraProperties:
         :param a:     The initial translation of the line
         :param b:     The final translation of the line
 
-        :returns: A Pair of Doubles. The values may be null:
+                :returns: A pair of floats (t_min, t_max) where each may be ``None``:
 
-                  - {Double, Double} : Two parametrized values(t), minimum first, representing which
-                  segment of the line is visible in the camera frustum.
-                  - {Double, null} : One value(t) representing a single intersection point. For example,
-                  the line only intersects the intersection of two adjacent viewplanes.
-                  - {null, null} : No values. The line segment is not visible in the camera frustum.
-        """
+                                    - ``(float, float)``: Two t values (minimum first) representing the visible segment.
+                                    - ``(float, None)``: A single intersection point.
+                                    - ``(None, None)``: No intersection; the segment is not visible.
+
+                """
 
         # translations relative to the camera
         relA = camRt.applyTranslation(a)
