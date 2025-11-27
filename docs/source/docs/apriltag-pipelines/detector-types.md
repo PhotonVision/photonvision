@@ -8,8 +8,8 @@ Note that both of these pipeline types detect AprilTag markers and are just two 
 
 ## AprilTag
 
-The AprilTag pipeline type is based on the [AprilTag](https://april.eecs.umich.edu/software/apriltag.html) library from the University of Michigan and we recommend it for most use cases. It is (to our understanding) most accurate pipeline type, but is also ~2x slower than AruCo. This was the pipeline type used by teams in the 2023 season and is well tested.
+The AprilTag pipeline type is based on the [AprilTag](https://april.eecs.umich.edu/software/apriltag.html) library from the University of Michigan and we recommend it for most use cases. It is (to our understanding) most accurate pipeline type, but is also ~2x slower than ArUco. This was the pipeline type used by teams in the 2023 season and is well tested.
 
-## AruCo
+## ArUco
 
-The AruCo pipeline is based on the [AruCo](https://docs.opencv.org/4.8.0/d9/d6a/group__aruco.html) library implementation from OpenCV. It is ~2x higher fps and ~2x lower latency than the AprilTag pipeline type, but is less accurate. We recommend this pipeline type for teams that need to run at a higher framerate or have a lower powered device. This pipeline type was new for the 2024 season.
+The ArUco pipeline is based on the [ArUco](https://docs.opencv.org/4.8.0/d9/d6a/group__aruco.html) library implementation from OpenCV. It is ~2x higher fps and ~2x lower latency than the AprilTag pipeline type, but is less accurate. We recommend this pipeline type for teams that need to run at a higher framerate or have a lower powered device. This pipeline type was new for the 2024 season.

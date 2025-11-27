@@ -22,7 +22,8 @@
  * SOFTWARE.
  */
 
-#include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
+
+#include <gtest/gtest.h>
 
 TEST(PhotonUtilsTest, Include) {}

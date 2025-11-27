@@ -24,8 +24,6 @@
 
 #include "photon/PhotonPoseEstimator.h"
 
-#include <hal/FRCUsageReporting.h>
-
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -41,6 +39,7 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <hal/FRCUsageReporting.h>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>

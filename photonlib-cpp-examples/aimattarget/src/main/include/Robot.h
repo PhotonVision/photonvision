@@ -24,10 +24,9 @@
 
 #pragma once
 
-#include <photon/PhotonCamera.h>
-
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
+#include <photon/PhotonCamera.h>
 
 #include "Constants.h"
 #include "VisionSim.h"

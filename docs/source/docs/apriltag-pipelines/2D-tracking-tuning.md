@@ -2,7 +2,7 @@
 
 ## Tracking AprilTags
 
-Before you get started tracking AprilTags, ensure that you have followed the previous sections on installation, wiring and networking. Next, open the Web UI, go to the top right card, and switch to the "AprilTag" or "Aruco" type. You should see a screen similar to the one below.
+Before you get started tracking AprilTags, ensure that you have followed the previous sections on installation, wiring and networking. Next, open the Web UI, go to the top right card, and switch to the "AprilTag" or "ArUco" type. You should see a screen similar to the one below.
 
 ```{image} images/apriltag.png
 :align: center
@@ -12,7 +12,7 @@ You are now able to detect and track AprilTags in 2D (yaw, pitch, roll, etc.). I
 
 ## Tuning AprilTags
 
-AprilTag pipelines come with reasonable defaults to get you up and running with tracking. However, in order to optimize your performance and accuracy, you must tune your AprilTag pipeline using the settings below. Note that the settings below are different between the AprilTag and Aruco detectors but the concepts are the same.
+AprilTag pipelines come with reasonable defaults to get you up and running with tracking. However, in order to optimize your performance and accuracy, you must tune your AprilTag pipeline using the settings below. Note that the settings below are different between the AprilTag and ArUco detectors but the concepts are the same.
 
 ```{image} images/apriltag-tune.png
 :align: center

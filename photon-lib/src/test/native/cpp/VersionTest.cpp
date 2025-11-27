@@ -24,8 +24,9 @@
 
 #include <iostream>
 
+#include <gtest/gtest.h>
+
 #include "PhotonVersion.h"
-#include "gtest/gtest.h"
 
 TEST(VersionTest, PrintVersion) {
   std::cout << photon::PhotonVersion::versionString << std::endl;

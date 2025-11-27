@@ -22,19 +22,18 @@
  * SOFTWARE.
  */
 
+#include <string>
+#include <vector>
+
 #include <fmt/ranges.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <gtest/gtest.h>
 #include <hal/HAL.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
+#include <networktables/NetworkTableInstance.h>
 #include <photon/PhotonCamera.h>
 #include <photon/simulation/PhotonCameraSim.h>
-
-#include <string>
-#include <vector>
-
-#include <frc/smartdashboard/SmartDashboard.h>
-#include <networktables/NetworkTableInstance.h>
 
 TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;

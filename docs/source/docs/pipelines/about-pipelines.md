@@ -10,7 +10,7 @@ A vision pipeline represents a series of steps that are used to acquire an image
 
 ## Types of Pipelines
 
-### AprilTag / AruCo
+### AprilTag / ArUco
 
 This pipeline type is based on detecting AprilTag fiducial markers. More information about AprilTags can be found in the [WPILib documentation](https://docs.wpilib.org/en/stable/docs/software/vision-processing/apriltag/apriltag-intro.html). This pipeline provides easy to use 3D pose information which allows localization.
 
@@ -56,7 +56,7 @@ Each pipeline has a set of tabs that are used to configure the pipeline. All pip
 
 Pipielines also have additional tabs that are specific to the pipeline type. Listed below are the tabs for each pipeline type.
 
-### AprilTag / AruCo Pipelines
+### AprilTag / ArUco Pipelines
 
 - AprilTag: This tab includes AprilTag specific tuning parameters, such as decimate, blur, threads, pose iterations, and more.
 

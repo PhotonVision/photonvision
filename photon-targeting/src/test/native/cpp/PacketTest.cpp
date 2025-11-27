@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include "photon/dataflow/structures/Packet.h"
+
 #include <chrono>
 #include <vector>
 
@@ -22,7 +24,6 @@
 #include <wpi/print.h>
 
 #include "gtest/gtest.h"
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"

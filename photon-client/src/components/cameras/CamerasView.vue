@@ -58,6 +58,15 @@ const fpsTooLow = computed<boolean>(() => {
         <v-chip v-else label color="red" variant="text" style="font-size: 1rem; padding: 0; margin: 0">
           <span class="pr-1">Camera not connected</span>
         </v-chip>
+        <v-chip
+          v-if="useCameraSettingsStore().isFocusMode"
+          label
+          color="primary"
+          variant="text"
+          style="font-size: 1rem; padding: 0; margin: auto"
+        >
+          <span class="pr-1"> Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }} </span>
+        </v-chip>
         <v-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
@@ -95,7 +104,11 @@ const fpsTooLow = computed<boolean>(() => {
           color="buttonPassive"
           class="fill"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            useCameraSettingsStore().isFocusMode
+          "
         >
           <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
           <span class="mode-btn-label">Raw</span>
@@ -104,7 +117,11 @@ const fpsTooLow = computed<boolean>(() => {
           color="buttonPassive"
           class="fill"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          :disabled="useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode"
+          :disabled="
+            useCameraSettingsStore().isDriverMode ||
+            useCameraSettingsStore().isCalibrationMode ||
+            useCameraSettingsStore().isFocusMode
+          "
         >
           <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
           <span class="mode-btn-label">Processed</span>
