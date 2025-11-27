@@ -44,6 +44,13 @@ public enum Platform {
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_SYSTEMCORE(
+            "Linux Systemcore 64-bit NOT SUPPORTED",
+            Platform::getUnknownModel,
+            "linuxarm64",
+            false,
+            OSType.LINUX,
+            false), // SystemCore 64-bit
     LINUX_RK3588_64(
             "Linux AARCH 64-bit with RK3588",
             Platform::getLinuxDeviceTreeModel,
@@ -134,6 +141,11 @@ public enum Platform {
                 || fileHasText("/proc/device-tree/compatible", "rk3588");
     }
 
+    public static boolean isSystemCore() {
+        File sysCore = new File("/home/systemcore");
+        return sysCore.exists() | fileHasText("/etc/os-release", "systemcore");
+    }
+
     public static boolean isQCS6490() {
         return isRubik();
     }
@@ -208,7 +220,9 @@ public enum Platform {
         }
 
         if (OS_NAME.startsWith("Linux")) {
-            if (isPiSBC()) {
+            if (isSystemCore()) {
+                return LINUX_SYSTEMCORE;
+            } else if (isPiSBC()) {
                 if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
                     return LINUX_RASPBIAN32;
                 } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
