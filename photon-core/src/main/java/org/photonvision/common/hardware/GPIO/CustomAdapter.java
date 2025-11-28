@@ -24,7 +24,8 @@ import org.photonvision.common.util.ShellExec;
 
 public class CustomAdapter {
     private static final Logger logger = new Logger(CustomAdapter.class, LogGroup.General);
-    private static final ShellExec runCommand = new ShellExec(true, true);
+    private static final ThreadLocal<ShellExec> runCommand =
+            ThreadLocal.withInitial(() -> new ShellExec(true, true));
 
     protected final String getGPIOCommand;
     protected final String setGPIOCommand;
@@ -47,12 +48,12 @@ public class CustomAdapter {
 
     protected static String execute(String command) {
         try {
-            runCommand.executeBashCommand(command);
+            runCommand.get().executeBashCommand(command);
         } catch (Exception e) {
             logger.error(Arrays.toString(e.getStackTrace()));
             return "";
         }
-        return runCommand.getOutput();
+        return runCommand.get().getOutput();
     }
 
     public boolean getGPIO(int gpio) {
