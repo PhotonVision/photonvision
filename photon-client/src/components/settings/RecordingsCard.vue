@@ -45,23 +45,23 @@ const nukeRecordings = () => {
 
 const downloadIndividualRecording = (camera: any) => {
   const recording = selectedRecordings.value[camera.uniqueName];
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/exportIndividual?recording=${recording}&camera=${camera.uniqueName}`;
   link.download = `${camera.nickname}_${recording}_recording.mp4`;
   link.click();
 };
 
 const downloadCameraRecordings = (camera: any) => {
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/exportCamera?cameraPath=${camera.uniqueName}`;
   link.download = `${camera.nickname}_recordings.zip`;
   link.click();
 };
 
 const downloadAllRecordings = () => {
-  const link = document.createElement('a');
+  const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/export`;
-  link.download = `photonvision-recordings-export.zip`;
+  link.download = "photonvision-recordings-export.zip";
   link.click();
 };
 </script>
