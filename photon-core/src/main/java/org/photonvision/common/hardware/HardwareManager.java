@@ -38,6 +38,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
+import org.photonvision.vision.processes.VisionModule;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -231,6 +232,25 @@ public class HardwareManager {
 
     public void publishMetrics() {
         metricsManager.publishMetrics();
+    }
+
+    /**
+     * Ensures there is enough space for new recordings by clearing stored recordings to free up disk
+     * space. This method should delete the oldest recordings, prioritizing recordings from matches
+     * over practice sessions regardless of age. We leave a default buffer of 5 GB, plus the space
+     * each module will need for a 5-minute recording.
+     *
+     * @param modules The vision modules that will be recording
+     * @return true if enough space was cleared, false otherwise
+     */
+    public boolean reserveRecordingSpace(VisionModule[] modules) {
+        double totalRequestedSpace = 5 * 1024; // Start with 5 GB buffer
+
+        for (VisionModule module : modules) {
+            totalRequestedSpace += module.recordingSpaceNeeded();
+        }
+
+        return reserveRecordingSpace(totalRequestedSpace);
     }
 
     /**

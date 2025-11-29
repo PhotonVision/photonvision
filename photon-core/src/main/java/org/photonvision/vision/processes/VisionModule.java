@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.nio.file.Path;
@@ -309,6 +310,24 @@ public class VisionModule {
             }
         }
         return recordings;
+    }
+
+    /**
+     * Calculate the disk space needed for a 5-minute recording based on current settings
+     *
+     * @return space needed in megabytes
+     */
+    public int recordingSpaceNeeded() {
+        VideoMode videoMode = visionSource.getSettables().getCurrentVideoMode();
+
+        int frames = videoMode.fps * 60 * 5;
+
+        // Assume 1 byte per pixel for color image
+        int colorImageSize = videoMode.width * videoMode.height;
+
+        int totalBytes = frames * (colorImageSize);
+
+        return totalBytes / (1024 * 1024);
     }
 
     private class StreamRunnable extends Thread {
