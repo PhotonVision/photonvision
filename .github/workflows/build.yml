@@ -560,17 +560,17 @@ jobs:
 
       - name: Compress image
         # Compress the standard images
-        if: ${{ ! startsWith(matrix.image_suffix, 'rubik') }}      
+        if: ${{ ! startsWith(matrix.image_suffix, 'rubik') }}
         run: |
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
           new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
           sudo mv ${{ steps.generate_image.outputs.image }} $new_image_name
           sudo xz -T 0 -v $new_image_name
 
-      - name: Tar built image 
+      - name: Tar built image
         # Build the RubikPi3-specific tar file
         if: ${{ startsWith(matrix.image_suffix, 'rubik') }}
-        run: |          
+        run: |
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
           new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
 
