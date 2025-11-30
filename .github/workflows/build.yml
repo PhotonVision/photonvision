@@ -559,7 +559,7 @@ jobs:
             # This assumes that the image provided to photon-image-runner contains
             # the servicefile needed to auto-launch PhotonVision.
             ###
-            NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+            NEW_JAR=$(realpath $(sudo find . -name photonvision\*-linuxarm64.jar))
             echo "Using jar: " $(basename $NEW_JAR)
             DEST_PV_LOCATION=/opt/photonvision
             sudo mkdir -p $DEST_PV_LOCATION
@@ -583,7 +583,7 @@ jobs:
 
           imagedir=$(dirname ${{ steps.generate_image.outputs.image }})
           tardir=${new_image_name}
-          mkdir --parents ${tardir}
+          sudo mkdir --parents ${tardir}
           sudo mv ${imagedir}/* ${tardir}/
           sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
@@ -592,7 +592,7 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
-  
+
   release:
     needs: [build-photonlib-vendorjson, build-package, build-image, combine]
     runs-on: ubuntu-22.04
