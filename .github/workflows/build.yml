@@ -555,8 +555,16 @@ jobs:
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
           commands: |
-            chmod +x scripts/armrunner.sh
-            ./scripts/armrunner.sh
+            ###
+            # This assumes that the image provided to photon-image-runner contains
+            # the servicefile needed to auto-launch PhotonVision.
+            ###
+            NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+            echo "Using jar: " $(basename $NEW_JAR)
+
+            DEST_PV_LOCATION=/opt/photonvision
+            sudo mkdir -p $DEST_PV_LOCATION
+            sudo cp $NEW_JAR ${DEST_PV_LOCATION}/photonvision.jar
 
       - name: Compress image
         # Compress the standard images
