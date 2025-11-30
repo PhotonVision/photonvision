@@ -575,15 +575,8 @@ jobs:
           new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
 
           imagedir=$(dirname ${{ steps.generate_image.outputs.image }})
-          echo "Imagedir: ${imagedir}"
-          ls -la ${imagedir}
           tardir=${new_image_name}
           mkdir --parents ${tardir}
-          echo "Tardir: ${tardir}"
-          ls -la ${tardir}
-          sudo mv ${imagedir}/* ${tardir}/
-          echo "After move"
-          ls -la ${tardir}
           sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
       - uses: actions/upload-artifact@v4
