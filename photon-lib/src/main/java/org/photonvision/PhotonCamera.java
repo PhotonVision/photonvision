@@ -632,4 +632,13 @@ public class PhotonCamera implements AutoCloseable {
                         })
                 .toList();
     }
+
+    public void willRecord() {
+        var entry =
+                rootPhotonTable.getStringArrayTopic("reserveRecordingSpace").getEntry(new String[0]);
+        String[] cur = entry.get();
+        String[] next = Arrays.copyOf(cur, cur.length + 1);
+        next[cur.length] = getName();
+        rootPhotonTable.getStringArrayTopic("reserveRecordingSpace").publish().set(next);
+    }
 }

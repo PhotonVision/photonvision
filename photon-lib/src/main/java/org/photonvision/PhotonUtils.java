@@ -25,6 +25,8 @@
 package org.photonvision;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public final class PhotonUtils {
     private PhotonUtils() {
@@ -205,5 +207,10 @@ public final class PhotonUtils {
      */
     public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
         return robotPose.getTranslation().getDistance(targetPose.getTranslation());
+    }
+
+    public static void reserveSpace(NetworkTableInstance instance) {
+        IntegerEntry entry = instance.getIntegerTopic("reserveRecordingSpace").getEntry(0);
+        entry.set(1);
     }
 }
