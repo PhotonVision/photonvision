@@ -48,8 +48,9 @@ const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   return isValidHostname(v);
 };
 const isValidIPv4 = (v: string | undefined) => {
-  // https://stackoverflow.com/a/17871737
-  const ipv4Regex = /^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])$/;
+  // https://stackoverflow.com/a/17871737 - modified to only allow between 10-19
+  // regexr.com/8beu1
+  const ipv4Regex = /^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}0?(1[0-9]|10)$/;
 
   if (v === undefined) return false;
   return ipv4Regex.test(v);
@@ -211,7 +212,9 @@ watchEffect(() => {
           v-model="tempSettingsStruct.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
-          :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
+          :rules="[
+            (v) => isValidIPv4(v) || 'Invalid IPv4 address - make sure that the last digit is between 10 and 19?'
+          ]"
           :disabled="
             !tempSettingsStruct.shouldManage ||
             !useSettingsStore().network.canManage ||
