@@ -28,7 +28,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.OsImageVersion;
+import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.KernelLogLogger;
@@ -173,8 +173,12 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if (OsImageVersion.IMAGE_VERSION.isPresent()) {
-            logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
+        if (OsImageData.IMAGE_METADATA.isPresent()) {
+            logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
+        } else if (OsImageData.IMAGE_VERSION.isPresent()) {
+            logger.info("PhotonVision image version: " + OsImageData.IMAGE_VERSION.get());
+        } else {
+            logger.info("PhotonVision image version: unknown");
         }
 
         try {
