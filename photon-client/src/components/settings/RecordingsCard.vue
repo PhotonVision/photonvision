@@ -35,9 +35,6 @@ const deleteRecordings = async (recordingsToDelete: string[], cameraUniqueName: 
   });
 };
 
-const exportCameraRecordings = ref<HTMLAnchorElement>();
-const exportIndividualRecording = ref<HTMLAnchorElement>();
-
 const showNukeDialog = ref(false);
 const nukeRecordings = () => {
   axiosPost("/recordings/nuke", "clear and reset all recordings");
