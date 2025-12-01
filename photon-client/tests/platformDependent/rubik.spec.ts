@@ -35,7 +35,6 @@ test("Upload model", async ({ page }) => {
   await page.getByRole("button", { name: "Import Object Detection Model" }).click();
 
   await page.goto("/#/settings");
-  // TODO: replace FAKE-MODE with FAKE-MODEL once model import bugfix is merged
   const tableRow = page.getByTestId("model-table").locator("tr", { hasText: fakeModelName });
 
   await expect(tableRow).toBeVisible();
@@ -43,7 +42,6 @@ test("Upload model", async ({ page }) => {
 });
 
 test("Rename model", async ({ page }) => {
-  // TODO: replace FAKE-MODE with FAKE-MODEL once model import bugfix is merged
   const tableRow = page.getByTestId("model-table").locator("tr", { hasText: fakeModelName });
 
   await tableRow.getByRole("button", { name: "Rename Model" }).click();
@@ -61,7 +59,7 @@ test("Delete model", async ({ page }) => {
   const tableRow = page.getByTestId("model-table").locator("tr", { hasText: newModelName });
 
   await tableRow.getByRole("button", { name: "Delete Model" }).click();
-  await page.getByRole("button", { name: "Delete", exact: true }).click();
+  await page.getByRole("button", { name: "Delete model", exact: true }).click();
 
   await page.reload();
   const deletedRow = page.getByTestId("model-table").locator("tr", { hasText: newModelName });
