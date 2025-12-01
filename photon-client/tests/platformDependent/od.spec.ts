@@ -16,7 +16,7 @@ for (const platform of platforms) {
       await page.reload();
     });
 
-    test(`testSettingsPage`, async ({ page }) => {
+    test("testSettingsPage", async ({ page }) => {
       if (platform === "opi") {
         await expect(page.getByRole("main")).toContainText("Linux AARCH 64-bit with RK3588");
       } else if (platform === "rubik") {
@@ -25,7 +25,7 @@ for (const platform of platforms) {
       await expect(page.getByText("Object Detection")).toBeVisible();
     });
 
-    test(`Upload model`, async ({ page }) => {
+    test("Upload model", async ({ page }) => {
       const testsDir = process.env.TESTS_DIR;
       if (!testsDir) {
         throw new Error("TESTS_DIR is not set");
@@ -37,12 +37,12 @@ for (const platform of platforms) {
       await page.getByRole("spinbutton", { name: "Height" }).fill("640");
       await page.getByTestId("import-version-select").click();
       await page.getByRole("option", { name: "YOLOv8" }).click();
-      
+
       const modelFile = platform === "opi" ? `${fakeModelName}.rknn` : `${fakeModelName}.tflite`;
       await page
         .getByRole("button", { name: "Model File Model File" })
         .setInputFiles(path.join(testsDir, "tests/resources", modelFile));
-      
+
       await page.getByRole("button", { name: "Import Object Detection Model" }).click();
 
       await page.goto("/#/settings");
@@ -52,7 +52,7 @@ for (const platform of platforms) {
       await expect(tableRow).toContainText(fakeLabels);
     });
 
-    test(`Rename model`, async ({ page }) => {
+    test("Rename model", async ({ page }) => {
       const tableRow = page.getByTestId("model-table").locator("tr", { hasText: fakeModelName });
 
       await tableRow.getByRole("button", { name: "Rename Model" }).click();
@@ -65,11 +65,11 @@ for (const platform of platforms) {
       await expect(renamedRow).toContainText(fakeLabels);
     });
 
-    test(`Delete model`, async ({ page }) => {
+    test("Delete model", async ({ page }) => {
       const tableRow = page.getByTestId("model-table").locator("tr", { hasText: newModelName });
 
       await tableRow.getByRole("button", { name: "Delete Model" }).click();
-      await page.getByRole('button', { name: 'Delete model', exact: true }).click();
+      await page.getByRole("button", { name: "Delete model", exact: true }).click();
 
       await page.reload();
       const deletedRow = page.getByTestId("model-table").locator("tr", { hasText: newModelName });
