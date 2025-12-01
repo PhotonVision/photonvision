@@ -36,6 +36,9 @@ jobs:
         run: wpiformat
       - name: Check output
         run: git --no-pager diff --exit-code HEAD
+      - name: Print linting docs link
+        if: ${{ failure()}}
+        run: echo "Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
       - name: Generate diff
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
@@ -58,6 +61,9 @@ jobs:
           distribution: temurin
       - run: ./gradlew spotlessCheck
         name: Run spotless
+      - name: Print linting docs link
+        if: ${{ failure() }}
+        run: echo "Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
 
   client-lint-format:
     name: "PhotonClient Lint and Formatting"
@@ -83,3 +89,6 @@ jobs:
         run: pnpm run lint-ci
       - name: Check Formatting
         run: pnpm run format-ci
+      - name: Print linting docs link
+        if: ${{ failure() }}
+        run: echo "Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
