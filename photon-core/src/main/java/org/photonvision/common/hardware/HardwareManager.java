@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -329,7 +330,7 @@ public class HardwareManager {
                 return false; // No recordings left to delete
             }
             try {
-                java.nio.file.Files.delete(toDelete);
+                FileUtils.deleteDirectory(toDelete.toFile());
             } catch (Exception e) {
                 logger.error("Failed to delete recording: " + toDelete.toString(), e);
                 return false;

@@ -22,7 +22,6 @@ const camerasWithRecordings = computed(() => {
       selectedRecordings.value[camera.uniqueName] = camera.recordings[0];
     }
   });
-  console.log(selectedRecordings);
   return cameras;
 });
 
@@ -50,7 +49,7 @@ const downloadIndividualRecording = (camera: any) => {
 
 const downloadCameraRecordings = (camera: any) => {
   const link = document.createElement("a");
-  link.href = `http://${address}/api/recordings/exportCamera?cameraPath=${camera.uniqueName}`;
+  link.href = `http://${address}/api/recordings/exportCamera?camera=${camera.uniqueName}`;
   link.download = `${camera.nickname}_recordings.zip`;
   link.click();
 };

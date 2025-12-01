@@ -151,8 +151,9 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Record a frame. This is non-blocking - the frame is cloned and queued for writing. If the queue
-     * is full, the oldest frame is dropped (this should rarely happen).
+     * Record a frame. This is non-blocking - the frame takes the CV mat passed in, and does not clone
+     * it. DO NOT pass in a mat until you're done with it. If the queue is full, the oldest frame is
+     * dropped (this should rarely happen).
      *
      * @param cvmat The frame to record
      * @return true if frame was queued, false if recording is not active, queue is full, or we've run
@@ -179,7 +180,7 @@ public class FrameRecorder implements Releasable {
         boolean added = frameQueue.offer(new RecordFrame(cvmat.getMat()));
 
         if (!added) {
-            // Queue full, release the cloned mat
+            // Queue full, release the passed-in mat
             cvmat.release();
         }
 
@@ -229,7 +230,11 @@ public class FrameRecorder implements Releasable {
         stopRecording();
 
         // Send poison pill to stop writer thread
-        frameQueue.offer(RecordFrame.poison());
+        try {
+            frameQueue.put(RecordFrame.poison());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         try {
             writerThread.join(1000); // Wait up to 1 second
@@ -287,7 +292,7 @@ public class FrameRecorder implements Releasable {
 
         if (frames.isEmpty()) {
             System.err.println("No frames found matching pattern frame_*.png");
-            System.exit(1);
+            throw new IllegalStateException("No frames to export");
         }
 
         // Create concat file for FFmpeg
@@ -313,42 +318,41 @@ public class FrameRecorder implements Releasable {
 
             // FFmpeg concat requires the last file to be listed again without duration
             writer.write("file '" + frames.get(frames.size() - 1).filename + "'\n");
-        }
 
-        File outputVideo = Files.createTempFile(recording.getFileName().toString(), ".mp4").toFile();
+            File outputVideo = Files.createTempFile(recording.getFileName().toString(), ".mp4").toFile();
 
-        // Build FFmpeg command for lossless encoding
-        List<String> command = new ArrayList<>();
-        command.add("ffmpeg");
-        command.add("-f");
-        command.add("concat");
-        command.add("-safe");
-        command.add("0");
-        command.add("-i");
-        command.add(concatFile.toString());
-        command.add("-c:v");
-        command.add("libx264");
-        command.add("-preset");
-        command.add("veryslow");
-        command.add("-crf");
-        command.add("0"); // Lossless
-        command.add("-pix_fmt");
-        command.add("yuv444p"); // Full chroma resolution
-        command.add("-y");
-        command.add(outputVideo.toString());
+            // Build FFmpeg command for lossless encoding
+            List<String> command = new ArrayList<>();
+            command.add("ffmpeg");
+            command.add("-f");
+            command.add("concat");
+            command.add("-safe");
+            command.add("0");
+            command.add("-i");
+            command.add(concatFile.toString());
+            command.add("-c:v");
+            command.add("libx264");
+            command.add("-preset");
+            command.add("veryslow");
+            command.add("-crf");
+            command.add("0"); // Lossless
+            command.add("-pix_fmt");
+            command.add("yuv444p"); // Full chroma resolution
+            command.add("-y");
+            command.add(outputVideo.toString());
 
-        ProcessBuilder pb = new ProcessBuilder(command);
-        pb.inheritIO();
-        Process process = pb.start();
-        int exitCode = process.waitFor();
+            ProcessBuilder pb = new ProcessBuilder(command);
+            pb.inheritIO();
+            Process process = pb.start();
+            int exitCode = process.waitFor();
 
-        // Cleanup
-        Files.deleteIfExists(concatFile);
-
-        if (exitCode == 0) {
-            return outputVideo;
-        } else {
-            throw new RuntimeException("FFmpeg failed with exit code " + exitCode);
+            if (exitCode == 0) {
+                return outputVideo;
+            } else {
+                throw new RuntimeException("FFmpeg failed with exit code " + exitCode);
+            }
+        } finally {
+            Files.deleteIfExists(concatFile);
         }
     }
 
@@ -393,8 +397,10 @@ public class FrameRecorder implements Releasable {
                                                                         .getCameraConfiguration()
                                                                         .uniqueName
                                                                         .matches(cameraRecordingsDir.getFileName().toString()))
-                                                .map(module -> module.getCameraConfiguration().nickname)
-                                                .toString()
+                                                .findFirst()
+                                                .get()
+                                                .getCameraConfiguration()
+                                                .nickname
                                         + "_recordings",
                                 ".zip")
                         .toFile();
@@ -419,7 +425,7 @@ public class FrameRecorder implements Releasable {
 
             Path camExportDir = Files.createTempDirectory(module.getCameraConfiguration().nickname);
 
-            Files.list(camExportDir)
+            Files.list(dir)
                     .forEach(
                             path -> {
                                 try {

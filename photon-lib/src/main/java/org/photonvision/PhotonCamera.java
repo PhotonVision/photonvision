@@ -633,6 +633,12 @@ public class PhotonCamera implements AutoCloseable {
                 .toList();
     }
 
+    /**
+     * Indicate that space needs to be reserved for this camera to record. This means that when {@link
+     * PhotonUtils#reserveSpace} is called, this camera will have space allocated for it. Note that
+     * calling this method does not itself reserve space; it only indicates that space should be
+     * reserved later.
+     */
     public void willRecord() {
         var entry =
                 rootPhotonTable.getStringArrayTopic("reserveRecordingSpace").getEntry(new String[0]);

@@ -107,7 +107,6 @@ public class NTTopicSet {
         recordingPublisher = subTable.getBooleanTopic("recording").publish();
         recordingSubscriber = subTable.getBooleanTopic("recordingRequest").subscribe(false);
 
-        // Hacky-wacky
         recordingSubscriber.getTopic().publish().setDefault(false);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();

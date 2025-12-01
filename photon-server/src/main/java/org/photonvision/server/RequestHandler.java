@@ -1404,34 +1404,32 @@ public class RequestHandler {
                 return;
             }
 
-            File recording;
+            File recordingZip = FrameRecorder.export(recordingDir);
 
-            try {
-                recording = FrameRecorder.export(recordingDir);
-            } catch (Exception e) {
-                ctx.status(500);
-                ctx.result("There was an error while exporting the recording");
-                logger.error("There was an error while exporting the recording", e);
-                return;
+            try (FileInputStream stream = new FileInputStream(recordingZip)) {
+                logger.info("Uploading individual recording with size " + stream.available());
+
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
+
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (recordingZip.exists()) {
+                    recordingZip.delete();
+                }
             }
-
-            var stream = new FileInputStream(recording);
-            logger.info("Uploading recording with size " + stream.available());
-
-            ctx.contentType("application/octet-stream");
-            ctx.header("Content-Disposition", "attachment; filename=" + recording.getName());
-
-            ctx.result(stream);
-            ctx.status(200);
-        } catch (IOException e) {
-            logger.error("Unable to export recording, " + e);
+        } catch (Exception e) {
+            logger.error("Unable to export individual recording archive", e);
             ctx.status(500);
-            ctx.result("There was an error while exporting the recording");
+            ctx.result("There was an error while exporting the individual recording archive");
         }
     }
 
     public static void onExportCameraRecordingsRequest(Context ctx) {
-        logger.info("Exporting Camera Recordings to ZIP Archive");
+        logger.info("Exporting camera recordings to a ZIP file");
 
         try {
             String cameraUniqueName = ctx.queryParam("camera");
@@ -1450,20 +1448,21 @@ public class RequestHandler {
                                     .toPath()
                                     .resolve(cameraUniqueName));
 
-            var stream = new FileInputStream(cameraRecordingZip);
-            logger.info("Uploading camera recordings with size " + stream.available());
+            try (FileInputStream stream = new FileInputStream(cameraRecordingZip)) {
+                logger.info("Uploading camera recordings with size " + stream.available());
 
-            ctx.contentType("application/zip");
-            ctx.header(
-                    "Content-Disposition",
-                    "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
 
-            ctx.result(stream);
-            ctx.status(200);
-        } catch (IOException e) {
-            logger.error("Unable to export camera recordings archive, bad recode from zip to byte");
-            ctx.status(500);
-            ctx.result("There was an error while exporting the camera recordings archive");
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (cameraRecordingZip.exists()) {
+                    cameraRecordingZip.delete();
+                }
+            }
         } catch (Exception e) {
             logger.error("Unable to export camera recordings archive", e);
             ctx.status(500);
@@ -1475,27 +1474,27 @@ public class RequestHandler {
         logger.info("Exporting all recordings to a ZIP file");
 
         try {
-            File cameraRecordingZip = FrameRecorder.exportAll();
+            File allRecordingsZip = FrameRecorder.exportAll();
 
-            var stream = new FileInputStream(cameraRecordingZip);
-            logger.info("Uploading camera recordings with size " + stream.available());
+            try (FileInputStream stream = new FileInputStream(allRecordingsZip)) {
+                logger.info("Uploading all recordings with size " + stream.available());
 
-            ctx.contentType("application/zip");
-            ctx.header(
-                    "Content-Disposition",
-                    "attachment; filename=\"" + "photonvision-recordings-export.zip\"");
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + "photonvision-recordings-export.zip\"");
 
-            ctx.result(stream);
-            ctx.status(200);
-
-        } catch (IOException e) {
-            logger.error("Unable to export camera recordings archive, bad recode from zip to byte");
-            ctx.status(500);
-            ctx.result("There was an error while exporting the camera recordings archive");
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (allRecordingsZip.exists()) {
+                    allRecordingsZip.delete();
+                }
+            }
         } catch (Exception e) {
-            logger.error("Unable to export camera recordings archive", e);
+            logger.error("Unable to export archive of all recordings", e);
             ctx.status(500);
-            ctx.result("There was an error while exporting the camera recordings archive");
+            ctx.result("There was an error while exporting the archive of all recordings");
         }
     }
 
@@ -1507,19 +1506,20 @@ public class RequestHandler {
                     kObjectMapper.readValue(ctx.body(), DeleteRecordingRequest.class);
 
             for (String recording : request.recordings) {
-                Path rec =
+                File rec =
                         ConfigManager.getInstance()
                                 .getRecordingsDirectory()
                                 .toPath()
                                 .resolve(request.cameraUniqueName)
-                                .resolve(recording);
+                                .resolve(recording)
+                                .toFile();
 
-                Files.delete(rec);
+                FileUtils.deleteDirectory(rec);
             }
 
             ctx.status(200);
-            ctx.result("Successfully deleted recording(s): " + request.recordings);
-            logger.info("Successfully deleted recording(s): " + request.recordings);
+            ctx.result("Successfully deleted recording(s): " + request.recordings.toString());
+            logger.info("Successfully deleted recording(s): " + request.recordings.toString());
         } catch (JsonProcessingException e) {
             ctx.status(400).result("Invalid JSON format");
             logger.error("Failed to delete recording(s)", e);
@@ -1531,14 +1531,11 @@ public class RequestHandler {
 
     public static void onNukeRecordingsRequest(Context ctx) {
         try {
-            Files.delete(ConfigManager.getInstance().getRecordingsDirectory().toPath());
+            FileUtils.deleteDirectory(ConfigManager.getInstance().getRecordingsDirectory());
 
             ctx.status(200);
             ctx.result("Successfully deleted all recordings");
             logger.info("Successfully deleted all recordings");
-        } catch (JsonProcessingException e) {
-            ctx.status(400).result("Invalid JSON format");
-            logger.error("Failed to delete recording(s)", e);
         } catch (Exception e) {
             ctx.status(500).result("Failed to delete all recordings");
             logger.error("Unexpected error while attempting to delete all recordings", e);

@@ -394,6 +394,8 @@ public class VisionModule {
                         logger.error("Exception while running stream runnable!", e);
                     }
                     try {
+                        // We don't release if we're passing the frame to the recorder, as the recorder takes
+                        // care of that itself
                         if (!getRecording()) {
                             m_frame.release();
                         }

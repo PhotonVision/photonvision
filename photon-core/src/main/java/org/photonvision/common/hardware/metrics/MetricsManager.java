@@ -193,7 +193,7 @@ public class MetricsManager {
     /**
      * Get the percentage of disk space that's available.
      *
-     * @return The available disk space in bytes, or -1.0 if the command fails or parsing fails.
+     * @return The available disk space in kilobytes, or -1.0 if the command fails or parsing fails.
      */
     public double getDiskSpaceAvailable() {
         try {

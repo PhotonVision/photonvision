@@ -172,16 +172,25 @@ public class NTDriverStation {
             return Integer.compare(firstCmp, secondCmp);
         }
 
-        // same type, compare match numbers
-        int firstMatchNumber = Integer.parseInt(firstMatchInfo.substring(1));
-        int secondMatchNumber = Integer.parseInt(secondMatchInfo.substring(1));
-        if (Integer.compare(firstMatchNumber, secondMatchNumber) != 0) {
-            return Integer.compare(firstMatchNumber, secondMatchNumber);
+        int comp;
+
+        try {
+            // same type, compare match numbers
+            int firstMatchNumber = Integer.parseInt(firstMatchInfo.substring(1));
+            int secondMatchNumber = Integer.parseInt(secondMatchInfo.substring(1));
+            if (Integer.compare(firstMatchNumber, secondMatchNumber) != 0) {
+                return Integer.compare(firstMatchNumber, secondMatchNumber);
+            }
+            // same match number, compare replay numbers
+            int firstReplay = Integer.parseInt(firstParts[2].split(" ")[1]);
+            int secondReplay = Integer.parseInt(secondParts[2].split(" ")[1]);
+            comp = Integer.compare(firstReplay, secondReplay);
+        } catch (NumberFormatException e) {
+            // if we can't parse numbers, just say they're equal
+            return 0;
         }
-        // same match number, compare replay numbers
-        int firstReplay = Integer.parseInt(firstParts[2].split(" ")[1]);
-        int secondReplay = Integer.parseInt(secondParts[2].split(" ")[1]);
-        return Integer.compare(firstReplay, secondReplay);
+
+        return comp;
     }
 
     // Copied from

@@ -209,8 +209,15 @@ public final class PhotonUtils {
         return robotPose.getTranslation().getDistance(targetPose.getTranslation());
     }
 
-    public static void reserveSpace(NetworkTableInstance instance) {
-        IntegerEntry entry = instance.getIntegerTopic("reserveRecordingSpace").getEntry(0);
+    /**
+     * Reserves space for all cameras that have indicated they will be recording this session. To
+     * indicate that a camera will be recording, call {@link PhotonCamera#willRecord()}. This method
+     * should be called once, prior to a recording session starting. Note that it may take some time,
+     * so it is recommend that the method is called on robotInit().
+     */
+    public static void reserveSpace() {
+        IntegerEntry entry =
+                NetworkTableInstance.getDefault().getIntegerTopic("reserveRecordingSpace").getEntry(0);
         entry.set(1);
     }
 }
