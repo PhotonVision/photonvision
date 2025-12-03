@@ -90,12 +90,12 @@ jobs:
         working-directory: photon-client
         run: |
           pnpm install
-          pnpm exec playwright install --with-deps
+          pnpm test-setup
       - name: Prebuild Gradle
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
         working-directory: photon-client
-        run: pnpm exec playwright test
+        run: pnpm test
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
