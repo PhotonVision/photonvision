@@ -39,28 +39,16 @@ public class TestRequestHandler {
         ConfigManager.getInstance().load();
     }
 
-    private record PlatformOverrideRequest(String platform) {}
+    private record PlatformOverrideRequest(Platform platform) {}
 
     public static void handlePlatformOverrideRequest(Context ctx) {
         try {
             PlatformOverrideRequest request =
                     JacksonUtils.deserialize(ctx.body(), PlatformOverrideRequest.class);
-            String platform = request.platform();
+            Platform platform = request.platform();
             logger.info("Overriding platform to: " + platform);
 
-            Platform override =
-                    switch (platform.toLowerCase()) {
-                        case "opi" -> Platform.LINUX_RK3588_64;
-                        case "rubik" -> Platform.LINUX_QCS6490;
-                        case "raspi64" -> Platform.LINUX_RASPBIAN64;
-                        default -> {
-                            logger.error("Invalid platform override: " + platform);
-                            ctx.status(400).result("Invalid platform: " + platform);
-                            yield null;
-                        }
-                    };
-
-            Platform.overridePlatform(override);
+            Platform.overridePlatform(platform);
             NeuralNetworkModelManager.getInstance(true).extractModels();
             NeuralNetworkModelManager.getInstance().discoverModels();
             ctx.status(200);

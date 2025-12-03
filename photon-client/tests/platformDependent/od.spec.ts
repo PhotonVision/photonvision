@@ -6,7 +6,7 @@ import path from "path";
 const fakeModelName = "FAKE-MODEL";
 const fakeLabels = "test, 1, woof";
 const newModelName = "foo-bar";
-const platforms = ["opi", "rubik"];
+const platforms = ["LINUX_RK3588_64", "LINUX_QCS6490"];
 
 for (const platform of platforms) {
   test.describe(`Platform: ${platform}`, () => {
@@ -17,9 +17,9 @@ for (const platform of platforms) {
     });
 
     test("testSettingsPage", async ({ page }) => {
-      if (platform === "opi") {
+      if (platform.endsWith("RK3588_64")) {
         await expect(page.getByRole("main")).toContainText("Linux AARCH 64-bit with RK3588");
-      } else if (platform === "rubik") {
+      } else if (platform.endsWith("QCS6490")) {
         await expect(page.getByRole("main")).toContainText("Linux AARCH 64-bit with QCS6490");
       }
       await expect(page.getByText("Object Detection")).toBeVisible();
@@ -38,7 +38,7 @@ for (const platform of platforms) {
       await page.getByTestId("import-version-select").click();
       await page.getByRole("option", { name: "YOLOv8" }).click();
 
-      const modelFile = platform === "opi" ? `${fakeModelName}.rknn` : `${fakeModelName}.tflite`;
+      const modelFile = platform.endsWith("RK3588_64") ? `${fakeModelName}.rknn` : `${fakeModelName}.tflite`;
       await page
         .getByRole("button", { name: "Model File Model File" })
         .setInputFiles(path.join(testsDir, "tests/resources", modelFile));
