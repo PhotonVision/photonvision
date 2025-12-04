@@ -61,9 +61,9 @@ public class CustomDigitalInputOutputDevice extends AbstractInputDevice<DigitalI
     @Override
     public void setMode(DeviceMode mode) {
         if (mode == DeviceMode.DIGITAL_INPUT) {
-            getValue();
+            getValue(); // Ensure the pin direction is input
         } else if (mode == DeviceMode.DIGITAL_OUTPUT) {
-            setValue(outputValue);
+            setValue(outputValue); // Restore the last output state
         }
     }
 
