@@ -52,11 +52,12 @@ export const restoreThemeConfig = (theme: ThemeInstance) => {
     : (customSurface ?? defaultTheme.colors!.sidebar!);
 
   theme.themes.value[theme.global.name.value].colors.primary = customPrimary ?? defaultTheme.colors!.primary!;
-  theme.themes.value[theme.global.name.value].colors.buttonActive = customPrimary ?? defaultTheme.colors!.buttonActive!;
+  theme.themes.value[theme.global.name.value].colors.buttonActive =
+    (themeType === "light" ? customPrimary : customSecondary) ?? defaultTheme.colors!.buttonActive!;
 
   theme.themes.value[theme.global.name.value].colors.secondary = customSecondary ?? defaultTheme.colors!.secondary!;
   theme.themes.value[theme.global.name.value].colors.buttonPassive =
-    customSecondary ?? defaultTheme.colors!.buttonPassive!;
+    (themeType === "light" ? customSecondary : customPrimary) ?? defaultTheme.colors!.buttonPassive!;
 
   theme.themes.value[theme.global.name.value].colors.accent = customSecondary ?? defaultTheme.colors!.accent!;
   theme.themes.value[theme.global.name.value].colors.toggle = customSecondary ?? defaultTheme.colors!.toggle!;
