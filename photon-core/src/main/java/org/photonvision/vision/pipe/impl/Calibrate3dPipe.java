@@ -402,7 +402,7 @@ public class Calibrate3dPipe
                 // error = (measured - expected)
                 var measured = img_pts_reprojected_list.get(j);
                 var expected = i_imgPts.get(j);
-                
+
                 // Sanity check -- negative corners make no sense here
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
                     throw new RuntimeException(

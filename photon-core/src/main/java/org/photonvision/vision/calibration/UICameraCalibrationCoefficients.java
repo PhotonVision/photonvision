@@ -19,15 +19,14 @@ package org.photonvision.vision.calibration;
 
 import java.util.List;
 import java.util.stream.IntStream;
-
 import org.opencv.core.Size;
 
 public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficients {
-        public int numSnapshots;
+    public int numSnapshots;
 
-        public List<Double> meanErrors;
-        public List<Integer> numMissing;
-        public List<Integer> numOutliers;
+    public List<Double> meanErrors;
+    public List<Integer> numMissing;
+    public List<Integer> numOutliers;
 
     public UICameraCalibrationCoefficients(
             Size resolution,
@@ -56,14 +55,16 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 observations.stream()
                         .map(
                                 obs -> {
-                                    long notUsed = IntStream.range(0, obs.cornersUsed.length)
-                                            .filter(i -> !obs.cornersUsed[i])
-                                            .count();
-                                    
-                                    long outliers = obs.locationInImageSpace.stream()
-                                            .filter(it -> (it.x < 0 || it.y < 0))
-                                            .count();
-                                            
+                                    long notUsed =
+                                            IntStream.range(0, obs.cornersUsed.length)
+                                                    .filter(i -> !obs.cornersUsed[i])
+                                                    .count();
+
+                                    long outliers =
+                                            obs.locationInImageSpace.stream()
+                                                    .filter(it -> (it.x < 0 || it.y < 0))
+                                                    .count();
+
                                     return (int) (notUsed - outliers);
                                 })
                         .toList();
@@ -71,10 +72,11 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 observations.stream()
                         .map(
                                 obs -> {
-                                    long outliers = obs.locationInImageSpace.stream()
-                                            .filter(it -> (it.x < 0 || it.y < 0))
-                                            .count();
-                                            
+                                    long outliers =
+                                            obs.locationInImageSpace.stream()
+                                                    .filter(it -> (it.x < 0 || it.y < 0))
+                                                    .count();
+
                                     return (int) outliers;
                                 })
                         .toList();
