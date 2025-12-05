@@ -402,11 +402,16 @@ public class Calibrate3dPipe
                 // error = (measured - expected)
                 var measured = img_pts_reprojected_list.get(j);
                 var expected = i_imgPts.get(j);
-                assert measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0
-                        : "Negative corner in reprojection error calc! Measured: "
-                                + measured
-                                + ", expected: "
-                                + expected;
+                
+                // Sanity check -- negative corners make no sense here
+                if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
+                    throw new RuntimeException(
+                            "Negative corner in reprojection error calc! Measured: "
+                                    + measured
+                                    + ", expected: "
+                                    + expected);
+                }
+
                 var error = new Point(measured.x - expected.x, measured.y - expected.y);
                 reprojectionError.add(error);
             }
