@@ -119,8 +119,6 @@ const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
 
 const fetchCalibrationData = async () => {
-  console.log("Fetching calibration data for camera:", props.cameraUniqueName, "at resolution:", props.resolution);
-
   isLoading.value = true;
   error.value = null;
 
@@ -133,7 +131,6 @@ const fetchCalibrationData = async () => {
       }
     });
     calibrationData.value = response.data;
-    console.log("Received calibration data:", response);
   } catch (err) {
     console.error("Failed to fetch calibration data:", err);
     error.value = "Failed to load calibration data";
@@ -184,6 +181,8 @@ const resetCamThirdPerson = () => {
     scene.add(...previousTargets);
   }
 };
+
+let animationFrameId: number | null = null;
 
 onMounted(async () => {
   // Grab data first off
@@ -243,12 +242,13 @@ onMounted(async () => {
 
   controls.update();
 
+
   const animate = () => {
     if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
       return;
     }
 
-    requestAnimationFrame(animate);
+    animationFrameId = requestAnimationFrame(animate);
 
     controls.update();
     renderer.render(scene, camera);
