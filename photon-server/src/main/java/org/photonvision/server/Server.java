@@ -60,7 +60,6 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            // TODO - investigate HTTP compression
                             javalinConfig.registerPlugin(
                                     new CorsPlugin(
                                             cors -> {
