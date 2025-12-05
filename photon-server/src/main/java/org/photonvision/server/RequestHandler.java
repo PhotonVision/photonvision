@@ -1010,13 +1010,14 @@ public class RequestHandler {
         var width = Integer.parseInt(ctx.queryParam("width"));
         var height = Integer.parseInt(ctx.queryParam("height"));
 
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            ctx.status(404);
+            return;
+        }
+
         CameraCalibrationCoefficients calList =
-                VisionSourceManager.getInstance()
-                        .vmm
-                        .getModule(cameraUniqueName)
-                        .getStateAsCameraConfig()
-                        .calibrations
-                        .stream()
+                module.getStateAsCameraConfig().calibrations.stream()
                         .filter(
                                 it ->
                                         Math.abs(it.unrotatedImageSize.width - width) < 1e-4

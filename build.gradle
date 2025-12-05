@@ -41,7 +41,7 @@ ext {
     rknnVersion = "dev-v2025.0.0-5-g666c0c6"
     rubikVersion = "dev-v2025.1.0-6-g4a5e508"
     frcYear = "2025"
-    mrcalVersion = "dev-v2025.0.0-1-g29c6a36"; // todo revert
+    mrcalVersion = "dev-v2025.0.0-3-g2dc275f";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

@@ -208,6 +208,8 @@ export interface CameraCalibrationResult {
   // We have to omit observations for bandwidth, so backend will send us this from UICameraCalibrationCoefficients
   numSnapshots: number;
   meanErrors: number[];
+  numOutliers: number[];
+  numMissing: number[];
 }
 
 export enum ValidQuirks {
@@ -391,7 +393,9 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
       calobjectSpacing: 0.0254,
       lensModel: "opencv8",
       numSnapshots: 1,
-      meanErrors: [123.45]
+      meanErrors: [123.45],
+      numMissing: [0],
+      numOutliers: [1],
     }
   ],
   pipelineNicknames: ["Placeholder Pipeline"],

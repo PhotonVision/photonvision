@@ -256,11 +256,55 @@ onMounted(async () => {
 
   animate();
 });
-onBeforeUnmount(() => {
+
+const cleanup = () => {
   window.removeEventListener("resize", onWindowResize);
-});
+  
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+  }
+  
+  if (controls) {
+    controls.dispose();
+  }
+  
+  if (renderer) {
+    renderer.dispose();
+    renderer.forceContextLoss();
+  }
+  
+  if (scene) {
+    scene.traverse((object) => {
+      if (object instanceof Mesh) {
+        object.geometry?.dispose();
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach(material => material.dispose());
+          } else {
+            object.material.dispose();
+          }
+        }
+      }
+    });
+  }
+  
+  scene = undefined;
+  camera = undefined;
+  renderer = undefined;
+  controls = undefined;
+  previousTargets = [];
+};
+
+onBeforeUnmount(cleanup);
+
+// If not-reloadeing, cleanup on hot reload
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    cleanup();
+  });
+}
+
 watchEffect(() => {
-  console.log("Watch triggered, refetching calibration");
   drawCalibration(calibrationData.value);
 });
 
@@ -269,7 +313,7 @@ watch(
     props.cameraUniqueName,
     props.resolution.width,
     props.resolution.height,
-    useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
+    useCameraSettingsStore().getCalibrationCoeffs(props.resolution),
   ],
   () => {
     console.log("Camera or resolution changed, refetching calibration");
