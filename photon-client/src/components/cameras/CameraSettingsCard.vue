@@ -177,7 +177,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-btn
           block
           size="small"
-          color="primary"
+          color="buttonActive"
           :disabled="!settingsHaveChanged()"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
           @click="saveCameraSettings"
