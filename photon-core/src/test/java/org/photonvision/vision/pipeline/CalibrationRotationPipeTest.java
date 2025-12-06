@@ -35,7 +35,6 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.estimation.OpenCVHelp;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
@@ -50,7 +49,7 @@ public class CalibrationRotationPipeTest {
     @BeforeAll
     public static void init() throws IOException {
         TestUtils.loadLibraries();
-        MrCalJNILoader.forceLoad();
+        TestUtils.loadMrcal();
 
         var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
