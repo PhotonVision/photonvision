@@ -31,11 +31,18 @@ jobs:
         with:
           python-version: 3.11
       - name: Install wpiformat
-        run: pip3 install wpiformat==2025.48
+        run: pip3 install wpiformat==2025.75
       - name: Run
         run: wpiformat
       - name: Check output
-        run: git --no-pager diff --exit-code HEAD
+        run: |
+          set +e
+          git --no-pager diff --exit-code HEAD
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+            exit $exit_code
+          fi
       - name: Generate diff
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
@@ -56,9 +63,15 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - run: ./gradlew spotlessCheck
+      - run: |
+          set +e
+          ./gradlew spotlessCheck
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+            exit $exit_code
+          fi
         name: Run spotless
-
   client-lint-format:
     name: "PhotonClient Lint and Formatting"
     defaults:
@@ -80,6 +93,20 @@ jobs:
       - name: Install Dependencies
         run: pnpm i --frozen-lockfile
       - name: Check Linting
-        run: pnpm run lint-ci
+        run: |
+          set +e
+          pnpm run lint-ci
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+            exit $exit_code
+          fi
       - name: Check Formatting
-        run: pnpm run format-ci
+        run: |
+          set +e
+          pnpm run format-ci
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+            exit $exit_code
+          fi

@@ -6,13 +6,14 @@ import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 
 const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const confirmRemoveDialog = ref({ show: false, vf: {} as VideoFormat });
+const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat as VideoFormat });
 
 const removeCalibration = (vf: VideoFormat) => {
   axiosPost("/calibration/remove", "delete a camera calibration", {
@@ -20,8 +21,6 @@ const removeCalibration = (vf: VideoFormat) => {
     width: vf.resolution.width,
     height: vf.resolution.height
   });
-
-  confirmRemoveDialog.value.show = false;
 };
 
 const exportCalibration = ref();
@@ -339,32 +338,13 @@ var viewingImg = ref(0);
     </v-card-text>
   </v-card>
 
-  <v-dialog v-model="confirmRemoveDialog.show" width="600">
-    <v-card color="surface" dark>
-      <v-card-title>Delete Calibration</v-card-title>
-      <v-card-text class="pt-0">
-        Are you sure you want to delete the calibration for {{ confirmRemoveDialog.vf.resolution.width }}x{{
-          confirmRemoveDialog.vf.resolution.height
-        }}? This cannot be undone.
-        <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="primary"
-            @click="() => (confirmRemoveDialog.show = false)"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            color="error"
-            @click="removeCalibration(confirmRemoveDialog.vf)"
-          >
-            Delete
-          </v-btn>
-        </v-card-actions>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
+  <pv-delete-modal
+    v-model="confirmRemoveDialog.show"
+    :width="500"
+    :title="'Delete Calibration'"
+    :description="`Are you sure you want to delete the calibration for '${confirmRemoveDialog.vf.resolution.width}x${confirmRemoveDialog.vf.resolution.height}'? This action cannot be undone.`"
+    :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
+  />
 </template>
 
 <style scoped>
