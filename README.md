@@ -58,14 +58,6 @@ PhotonVision uses the following additional out-of-source repositories for buildi
 - Custom build of OpenCV with GStreamer/Protobuf/other custom flags: https://github.com/PhotonVision/thirdparty-opencv
 - JNI code for aruco-nano: https://github.com/PhotonVision/aruconano-jni
 
-## Additional packages
-
-For now, using mrcal requires installing these additional packages on Linux systems:
-
-```
-sudo apt install libcholmod3 liblapack3 libsuitesparseconfig5
-```
-
 ## Acknowledgments
 
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
