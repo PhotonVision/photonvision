@@ -56,7 +56,7 @@ dependencies {
                 "osxx86-64",
                 "osxarm64"
             ])) {
-        implementation("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
             transitive = false
         }
     }

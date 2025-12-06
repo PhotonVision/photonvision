@@ -37,7 +37,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -52,7 +51,7 @@ public class Calibrate3dPipeTest {
     @BeforeAll
     public static void init() throws IOException {
         TestUtils.loadLibraries();
-        MrCalJNILoader.forceLoad();
+        TestUtils.loadMrcal();
 
         var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
