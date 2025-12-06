@@ -28,6 +28,10 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
     public List<Integer> numMissing;
     public List<Integer> numOutliers;
 
+    private static int countOutliers(BoardObservation obs) {
+        return (int) obs.locationInImageSpace.stream().filter(it -> it.x < 0 || it.y < 0).count();
+    }
+
     public UICameraCalibrationCoefficients(
             Size resolution,
             JsonMatOfDouble cameraIntrinsics,
@@ -54,31 +58,14 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
         this.numOutliers =
                 observations.stream()
                         .map(
-                                obs -> {
-                                    long notUsed =
-                                            IntStream.range(0, obs.cornersUsed.length)
-                                                    .filter(i -> !obs.cornersUsed[i])
-                                                    .count();
-
-                                    long outliers =
-                                            obs.locationInImageSpace.stream()
-                                                    .filter(it -> (it.x < 0 || it.y < 0))
-                                                    .count();
-
-                                    return (int) (notUsed - outliers);
-                                })
+                                obs ->
+                                        IntStream.range(0, obs.cornersUsed.length)
+                                                        .filter(i -> !obs.cornersUsed[i])
+                                                        .map(i -> 1)
+                                                        .sum()
+                                                - countOutliers(obs))
                         .toList();
         this.numMissing =
-                observations.stream()
-                        .map(
-                                obs -> {
-                                    long outliers =
-                                            obs.locationInImageSpace.stream()
-                                                    .filter(it -> (it.x < 0 || it.y < 0))
-                                                    .count();
-
-                                    return (int) outliers;
-                                })
-                        .toList();
+                observations.stream().map(UICameraCalibrationCoefficients::countOutliers).toList();
     }
 }
