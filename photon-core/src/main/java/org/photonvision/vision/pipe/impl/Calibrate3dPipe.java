@@ -283,17 +283,44 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat =
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
-        // Pull optimised camera to board poses out from the JNI
+        // We get these from the JNI (retsult.optimizedPoses), but these are subtly different from the
+        // ones our code used to produce. To preserve consistency, continue to redo this math
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
-        for (var o : result.optimizedPoses) {
-            var rvec = new MatOfDouble();
-            var tvec = new MatOfDouble();
+        for (var o : in) {
+            var rvec = new Mat();
+            var tvec = new Mat();
 
-            rvec.fromArray(o.getRotation().getAxis().times(o.getRotation().getAngle()).getData());
-            tvec.fromArray(
-                    o.getTranslation().getX(), o.getTranslation().getY(), o.getTranslation().getZ());
+            // If the calibration points contain points that are negative then we need to exclude them,
+            // they are considered points that we dont want to use in calibration/solvepnp. These points
+            // are required prior to this to allow mrcal to work.
+            Point3[] oPoints = o.objectPoints.toArray();
+            Point[] iPoints = o.imagePoints.toArray();
 
+            List<Point3> outputOPoints = new ArrayList<Point3>();
+            List<Point> outputIPoints = new ArrayList<Point>();
+
+            for (int i = 0; i < iPoints.length; i++) {
+                if (iPoints[i].x >= 0 && iPoints[i].y >= 0) {
+                    outputIPoints.add(iPoints[i]);
+                }
+            }
+            for (int i = 0; i < oPoints.length; i++) {
+                if (oPoints[i].x >= 0 && oPoints[i].y >= 0 && oPoints[i].z >= 0) {
+                    outputOPoints.add(oPoints[i]);
+                }
+            }
+
+            o.objectPoints.fromList(outputOPoints);
+            o.imagePoints.fromList(outputIPoints);
+
+            Calib3d.solvePnP(
+                    o.objectPoints,
+                    o.imagePoints,
+                    cameraMatrixMat.getAsMatOfDouble(),
+                    distortionCoefficientsMat.getAsMatOfDouble(),
+                    rvec,
+                    tvec);
             rvecs.add(rvec);
             tvecs.add(tvec);
         }
