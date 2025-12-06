@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, render, watch, watchEffect, type Ref } from "vue";
 const {
   AmbientLight,
   AxesHelper,
@@ -44,15 +44,15 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
   obs.locationInObjectSpace.forEach((corner, idx) => {
     if (corner.x < 0 || corner.y < 0) return;
 
-    const isActive = !obs.cornersUsed[idx];
+    const isInlier = !obs.cornersUsed[idx];
 
     const color = obs.cornersUsed[idx] ? 0x00ff00 : 0xff0000;
 
     const sphereGeom = new SphereGeometry(cal.calobjectSpacing / 8, 8, 8);
     const sphereMat = new MeshPhongMaterial({
       color: color,
-      opacity: isActive ? 1.0 : 0.5,
-      transparent: !isActive
+      opacity: isInlier ? 1.0 : 0.5,
+      transparent: !isInlier
     });
     const sphere = new Mesh(sphereGeom, sphereMat);
     sphere.position.set(corner.x, corner.y, corner.z);
@@ -65,7 +65,7 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
 let previousTargets: Object3D[] = [];
 const drawCalibration = (cal: CameraCalibrationResult | null) => {
   // Check here, since if we check in watchEffect this never gets called
-  if (!cal || scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+  if (!cal || !scene || !camera || !renderer || !controls) {
     return;
   }
 
@@ -143,7 +143,7 @@ const onWindowResize = () => {
   const container = document.getElementById("container");
   const canvas = document.getElementById("view");
 
-  if (container === null || canvas === null || camera === undefined || renderer === undefined) {
+  if (!container || !canvas || !camera || !renderer) {
     return;
   }
 
@@ -154,7 +154,7 @@ const onWindowResize = () => {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 };
 const resetCamFirstPerson = () => {
-  if (scene === undefined || camera === undefined || controls === undefined) {
+  if (!scene || !camera || !controls) {
     return;
   }
 
@@ -168,7 +168,7 @@ const resetCamFirstPerson = () => {
   }
 };
 const resetCamThirdPerson = () => {
-  if (scene === undefined || camera === undefined || controls === undefined) {
+  if (!scene || !camera || !controls) {
     return;
   }
 
@@ -192,7 +192,7 @@ onMounted(async () => {
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
   const canvas = document.getElementById("view");
-  if (canvas === null) return;
+  if (!canvas) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
   // Add lights
@@ -242,9 +242,8 @@ onMounted(async () => {
 
   controls.update();
 
-
   const animate = () => {
-    if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+    if (!scene || !camera || !renderer || !controls) {
       return;
     }
 
@@ -259,27 +258,27 @@ onMounted(async () => {
 
 const cleanup = () => {
   window.removeEventListener("resize", onWindowResize);
-  
-  if (animationFrameId !== null) {
+
+  if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
   }
-  
+
   if (controls) {
     controls.dispose();
   }
-  
+
   if (renderer) {
     renderer.dispose();
     renderer.forceContextLoss();
   }
-  
+
   if (scene) {
     scene.traverse((object) => {
       if (object instanceof Mesh) {
         object.geometry?.dispose();
         if (object.material) {
           if (Array.isArray(object.material)) {
-            object.material.forEach(material => material.dispose());
+            object.material.forEach((material) => material.dispose());
           } else {
             object.material.dispose();
           }
@@ -287,7 +286,7 @@ const cleanup = () => {
       }
     });
   }
-  
+
   scene = undefined;
   camera = undefined;
   renderer = undefined;
@@ -313,7 +312,7 @@ watch(
     props.cameraUniqueName,
     props.resolution.width,
     props.resolution.height,
-    useCameraSettingsStore().getCalibrationCoeffs(props.resolution),
+    useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
   ],
   () => {
     console.log("Camera or resolution changed, refetching calibration");

@@ -395,7 +395,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
       numSnapshots: 1,
       meanErrors: [123.45],
       numMissing: [0],
-      numOutliers: [1],
+      numOutliers: [1]
     }
   ],
   pipelineNicknames: ["Placeholder Pipeline"],

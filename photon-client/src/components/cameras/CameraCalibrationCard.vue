@@ -38,7 +38,8 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
     if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        // For each error, square it, sum the squares, and divide by total points N
+        // Mean overall reprojection error
+        // Calculated as average of each observation's mean error
         if (calib.meanErrors.length)
           format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
         else format.mean = NaN;
@@ -257,13 +258,11 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 <tr :key="index" v-bind="props" @click="setSelectedVideoFormat(value)">
                   <td>{{ getResolutionString(value.resolution) }}</td>
                   <td>
-                    {{
-                      value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-"
-                    }}
+                    {{ value.mean ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
                   </td>
-                  <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-                  <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-                  <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.horizontalFOV ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.verticalFOV ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.diagonalFOV ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
                 </tr>
               </template>
               <span>View calibration information</span>

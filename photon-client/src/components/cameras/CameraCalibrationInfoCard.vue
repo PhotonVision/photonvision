@@ -115,8 +115,8 @@ var viewingImg = ref(0);
     <v-card-title class="pb-2">
       <div class="d-flex flex-wrap">
         <v-col cols="12" md="6" class="pa-0">
-        <v-card-title class="pa-0"> Calibration Details </v-card-title>
-      </v-col>
+          <v-card-title class="pa-0"> Calibration Details </v-card-title>
+        </v-col>
         <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
           <v-btn
             color="buttonPassive"
