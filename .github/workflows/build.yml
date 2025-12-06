@@ -56,10 +56,12 @@ jobs:
       - name: print space 1
         run: du -h . | sort -h
         if: runner.os == 'ubuntu-22.04'
-      - name: Attempt to reclame space
+      - name: Attempt to reclaim space
         run: ./gradlew clean 
       - name: print space 2
-        run: du -h . | sort -h
+        run: |
+          find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
+          du -h . | sort -h
         if: runner.os == 'ubuntu-22.04'
       - name: Build Java examples
         working-directory: photonlib-java-examples
