@@ -15,12 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-
 #include <iostream>
 #include <span>
 #include <vector>
+
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include "org_photonvision_jni_ConstrainedSolvepnpJni.h"
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"

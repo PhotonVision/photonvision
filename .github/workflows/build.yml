@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2025.0.4
+  IMAGE_VERSION: v2026.0.4
 
 jobs:
 
@@ -50,15 +50,65 @@ jobs:
           distribution: temurin
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
+      - name: Delete duplicate toolchains
+        run: |
+          find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
+          du -h . | sort -h
+        if: matrix.os == 'ubuntu-22.04'
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
       - name: Build Java examples
         working-directory: photonlib-java-examples
-        run: ./gradlew build
+        run: |
+          ./gradlew build
+          ./gradlew clean
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
-        run: ./gradlew build
+        run: |
+          ./gradlew build
+          ./gradlew clean
+  playwright-tests:
+    name: "Playwright E2E tests"
+    runs-on: ubuntu-22.04
+    needs: [validation]
+    steps:
+      # Checkout code.
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch tags
+        run: git fetch --tags --force
+      - name: Install Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Setup tests
+        working-directory: photon-client
+        run: |
+          pnpm install
+          pnpm test-setup
+      - name: Prebuild Gradle
+        run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+      - name: Run Playwright tests
+        working-directory: photon-client
+        run: pnpm test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: photon-client/playwright-report/
+          retention-days: 30
   build-gradle:
     name: "Gradle Build"
     runs-on: ubuntu-22.04
@@ -84,14 +134,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install mrcal deps
-        run: sudo apt-get update && sudo apt-get install -y libcholmod3 liblapack3 libsuitesparseconfig5
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
-      - name: Gradle Tests
-        run: ./gradlew testHeadless --stacktrace
-      - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport
+      - name: Gradle Tests and Coverage
+        run: ./gradlew test jacocoTestReport --stacktrace
   build-offline-docs:
     name: "Build Offline Docs"
     runs-on: ubuntu-22.04
@@ -358,12 +404,6 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: ${{ matrix.artifact-name }}
-      # On linux, install mrcal packages
-      - run: |
-          sudo apt-get update
-          sudo apt-get install --yes libcholmod3 liblapack3 libsuitesparseconfig5
-        if: ${{ (matrix.os) == 'ubuntu-24.04' }}
-      # and actually run the jar
       - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
       - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
@@ -447,6 +487,12 @@ jobs:
             image_additional_mb: 0
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
+            image_suffix: luma_p1
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
+            cpu: cortex-a76
+            image_additional_mb: 0
+          - os: ubuntu-24.04
+            artifact-name: LinuxArm64
             image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             cpu: cortex-a8
@@ -517,8 +563,40 @@ jobs:
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
+  build-rubik-image:
+    needs: [build-package]
+
+    if: ${{ github.event_name != 'pull_request' }}
+
+    runs-on: ubuntu-24.04
+    name: "Build image - Rubik Pi 3"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: jar-LinuxArm64
+      - name: Generate image
+        run: |
+          wget https://raw.githubusercontent.com/PhotonVision/photon-image-modifier/refs/tags/$IMAGE_VERSION/mount_rubikpi3.sh
+          chmod +x mount_rubikpi3.sh
+          ./mount_rubikpi3.sh https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz /tmp/build/scripts/armrunner.sh
+      - name: Compress image
+        run: |
+          new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
+          new_image_name=$(basename "${new_jar/.jar/_rubikpi3.img}")
+          mv photonvision_rubikpi3 $new_image_name
+          tar -I 'xz -T0' -cf ${new_image_name}.tar.xz $new_image_name --checkpoint=10000 --checkpoint-action=echo='%T'
+      - uses: actions/upload-artifact@v4
+        name: Upload image
+        with:
+          name: image-rubikpi3
+          path: photonvision*.xz
   release:
-    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-image, build-rubik-image, combine]
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
@@ -544,11 +622,12 @@ jobs:
 
       - run: find
       # Push to dev release
-      - uses: pyTooling/Actions/releaser@r0
+      - uses: pyTooling/Actions/releaser@r6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
           rm: true
+          snapshots: false
           files: |
             **/*.xz
             **/*linux*.jar
@@ -556,17 +635,6 @@ jobs:
             **/photonlib*.json
             **/photonlib*.zip
         if: github.event_name == 'push'
-      # Upload all jars and xz archives
-      - uses: softprops/action-gh-release@v2.4.0
-        with:
-          files: |
-            **/*.xz
-            **/*.jar
-            **/photonlib*.json
-            **/photonlib*.zip
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Vendor JSON Repo PR
         uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
         with:

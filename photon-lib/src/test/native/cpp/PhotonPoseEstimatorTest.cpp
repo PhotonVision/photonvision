@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include "photon/PhotonPoseEstimator.h"
+
 #include <map>
 #include <utility>
 #include <vector>
@@ -30,16 +32,16 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <gtest/gtest.h>
 #include <units/angle.h>
 #include <units/length.h>
 #include <wpi/SmallVector.h>
 
-#include "gtest/gtest.h"
 #include "photon/PhotonCamera.h"
-#include "photon/PhotonPoseEstimator.h"
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/simulation/PhotonCameraSim.h"
 #include "photon/simulation/SimCameraProperties.h"
+#include "photon/simulation/VisionTargetSim.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
@@ -582,4 +584,77 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
   EXPECT_NEAR(testResult.GetTimestamp().to<double>(),
               test2.GetTimestamp().to<double>(), 0.001);
+}
+
+TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
+  photon::PhotonPoseEstimator estimator(
+      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
+      photon::CONSTRAINED_SOLVEPNP, frc::Transform3d());
+
+  photon::PhotonPipelineResult result;
+  auto estimate = estimator.Update(result);
+  EXPECT_FALSE(estimate.has_value());
+}
+
+TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+  auto distortion = Eigen::VectorXd::Zero(8);
+  auto cameraMat = Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
+                                   {0, 399.16666666666674, 239.5},
+                                   {0, 0, 1}};
+
+  // Create corners data matching the Java test
+  std::vector<photon::TargetCorner> corners8{
+      photon::TargetCorner{98.09875447066685, 331.0093220119495},
+      photon::TargetCorner{122.20226758624413, 335.50083894738486},
+      photon::TargetCorner{127.17118732489361, 313.81406314178633},
+      photon::TargetCorner{104.28543773760417, 309.6516557438994}};
+
+  frc::Transform3d poseTransform(
+      frc::Translation3d(3.1665557336121353_m, 4.430673446050584_m,
+                         0.48678786477534686_m),
+      frc::Rotation3d(frc::Quaternion(0.3132532247418243, 0.24722671090692333,
+                                      -0.08413452932300695,
+                                      0.9130568172784148)));
+
+  std::vector<photon::PhotonTrackedTarget> targets{
+      photon::PhotonTrackedTarget{0.0, 0.0, 0.0, 0.0, 8, 0, 0.0f, poseTransform,
+                                  poseTransform, 0.0, corners8, corners8}};
+
+  auto multiTagResult = std::make_optional<photon::MultiTargetPNPResult>(
+      photon::PnpResult{poseTransform, poseTransform, 0.1, 0.1, 0.0},
+      std::vector<int16_t>{8});
+
+  photon::PhotonPipelineResult result{
+      photon::PhotonPipelineMetadata{1, 10000, 2000, 100}, targets,
+      multiTagResult};
+
+  cameraOne.test = true;
+  cameraOne.testResult = {result};
+  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
+
+  const units::radian_t camPitch = 30_deg;
+  const frc::Transform3d kRobotToCam{frc::Translation3d(0.5_m, 0.0_m, 0.5_m),
+                                     frc::Rotation3d(0_rad, -camPitch, 0_rad)};
+
+  photon::PhotonPoseEstimator estimator(
+      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
+      photon::CONSTRAINED_SOLVEPNP, kRobotToCam);
+
+  estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(),
+                           frc::Rotation2d());
+
+  auto estimatedPose =
+      estimator.Update(cameraOne.testResult[0], cameraMat, distortion,
+                       photon::ConstrainedSolvepnpParams{true, 0});
+
+  ASSERT_TRUE(estimatedPose.has_value());
+
+  frc::Pose3d pose = estimatedPose.value().estimatedPose;
+
+  EXPECT_NEAR(3.58, units::unit_cast<double>(pose.X()), 0.01);
+  EXPECT_NEAR(4.13, units::unit_cast<double>(pose.Y()), 0.01);
+  EXPECT_NEAR(0.0, units::unit_cast<double>(pose.Z()), 0.01);
+
+  EXPECT_EQ(photon::CONSTRAINED_SOLVEPNP, estimatedPose.value().strategy);
 }

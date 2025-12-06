@@ -35,6 +35,7 @@ import org.apache.commons.io.FileUtils;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -72,6 +73,12 @@ public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
+
+    private static boolean testMode = false;
+
+    public static void setTestMode(boolean isTestMode) {
+        testMode = isTestMode;
+    }
 
     private record CommonCameraUniqueName(String cameraUniqueName) {}
 
@@ -655,45 +662,42 @@ public class RequestHandler {
                 Files.copy(modelFileStream, modelPath, StandardCopyOption.REPLACE_EXISTING);
             }
 
+            int idx = modelFile.filename().lastIndexOf('.');
+            String nickname = modelFile.filename().substring(0, idx);
+
             ModelProperties modelProperties =
-                    new ModelProperties(
-                            modelPath,
-                            modelFile.filename().replaceAll("." + family.extension(), ""),
-                            labels,
-                            width,
-                            height,
-                            family,
-                            version);
+                    new ModelProperties(modelPath, nickname, labels, width, height, family, version);
 
-            ObjectDetector objDetector = null;
-
-            try {
-                objDetector =
-                        switch (family) {
-                            case RUBIK -> new RubikModel(modelProperties).load();
-                            case RKNN -> new RknnModel(modelProperties).load();
-                        };
-            } catch (RuntimeException e) {
-                ctx.status(400);
-                ctx.result("Failed to load object detection model: " + e.getMessage());
+            if (!testMode) {
+                ObjectDetector objDetector = null;
 
                 try {
-                    Files.deleteIfExists(modelPath);
-                } catch (IOException ex) {
-                    e.addSuppressed(ex);
-                }
+                    objDetector =
+                            switch (family) {
+                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RKNN -> new RknnModel(modelProperties).load();
+                            };
+                } catch (RuntimeException e) {
+                    ctx.status(400);
+                    ctx.result("Failed to load object detection model: " + e.getMessage());
 
-                logger.error("Failed to load object detection model", e);
-                return;
-            } finally {
-                // this finally block will run regardless of what happens in try/catch
-                // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
-                // for a summary on how finally works
-                if (objDetector != null) {
-                    objDetector.release();
+                    try {
+                        Files.deleteIfExists(modelPath);
+                    } catch (IOException ex) {
+                        e.addSuppressed(ex);
+                    }
+
+                    logger.error("Failed to load object detection model", e);
+                    return;
+                } finally {
+                    // this finally block will run regardless of what happens in try/catch
+                    // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
+                    // for a summary on how finally works
+                    if (objDetector != null) {
+                        objDetector.release();
+                    }
                 }
             }
-
             ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
@@ -999,6 +1003,46 @@ public class RequestHandler {
     public static void onMetricsPublishRequest(Context ctx) {
         HardwareManager.getInstance().publishMetrics();
         ctx.status(204);
+    }
+
+    private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
+
+    public static void onCalibrationRemoveRequest(Context ctx) {
+        try {
+            CalibrationRemoveRequest request =
+                    kObjectMapper.readValue(ctx.body(), CalibrationRemoveRequest.class);
+
+            logger.info(
+                    "Attempting to remove calibration for camera: "
+                            + request.cameraUniqueName
+                            + " with a resolution of "
+                            + request.width
+                            + "x"
+                            + request.height);
+
+            VisionSourceManager.getInstance()
+                    .vmm
+                    .getModule(request.cameraUniqueName)
+                    .removeCalibrationFromConfig(new Size(request.width, request.height));
+
+            ctx.status(200);
+            ctx.result(
+                    "Successfully removed calibration for resolution: "
+                            + request.width
+                            + "x"
+                            + request.height);
+            logger.info(
+                    "Successfully removed calibration for resolution: "
+                            + request.width
+                            + "x"
+                            + request.height);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+            logger.error("Failed to process calibration removed request", e);
+        } catch (Exception e) {
+            ctx.status(500).result("Failed to removed calibration");
+            logger.error("Unexpected error while attempting to remove calibration", e);
+        }
     }
 
     public static void onCalibrationSnapshotRequest(Context ctx) {

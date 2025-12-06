@@ -87,7 +87,7 @@ public class DataSocketHandler {
             var reason = context.reason() != null ? context.reason() : "Connection closed by client";
             logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         } else {
-            logger.info("Closing websockets for user " + context.getSessionId());
+            logger.info("Closing websockets for user " + context.sessionId());
         }
     }
 

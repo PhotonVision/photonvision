@@ -29,11 +29,12 @@ import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import org.opencv.core.Core;
 
-public class WpilibLoader {
-    private static boolean has_loaded = false;
+public class LibraryLoader {
+    private static boolean hasWpiLoaded = false;
+    private static boolean hasTargetingLoaded = false;
 
-    public static boolean loadLibraries() {
-        if (has_loaded) return true;
+    public static boolean loadWpiLibraries() {
+        if (hasWpiLoaded) return true;
 
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
@@ -45,10 +46,10 @@ public class WpilibLoader {
         AprilTagJNI.Helper.setExtractOnStaticLoad(false);
         try {
             // Need to load wpiutil first before checking if the MSVC runtime is valid
-            CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, "wpiutiljni");
+            CombinedRuntimeLoader.loadLibraries(LibraryLoader.class, "wpiutiljni");
             WPIUtilJNI.checkMsvcRuntime();
             CombinedRuntimeLoader.loadLibraries(
-                    WpilibLoader.class,
+                    LibraryLoader.class,
                     "wpimathjni",
                     "ntcorejni",
                     "wpinetjni",
@@ -56,13 +57,25 @@ public class WpilibLoader {
                     "cscorejni",
                     "apriltagjni");
 
-            CombinedRuntimeLoader.loadLibraries(WpilibLoader.class, Core.NATIVE_LIBRARY_NAME);
-            has_loaded = true;
+            CombinedRuntimeLoader.loadLibraries(LibraryLoader.class, Core.NATIVE_LIBRARY_NAME);
+            hasWpiLoaded = true;
         } catch (IOException e) {
             e.printStackTrace();
-            has_loaded = false;
+            hasWpiLoaded = false;
         }
 
-        return has_loaded;
+        return hasWpiLoaded;
+    }
+
+    public static boolean loadTargeting() {
+        if (hasTargetingLoaded) return true;
+        try {
+            CombinedRuntimeLoader.loadLibraries(LibraryLoader.class, "photontargetingJNI");
+            hasTargetingLoaded = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            hasTargetingLoaded = false;
+        }
+        return hasTargetingLoaded;
     }
 }

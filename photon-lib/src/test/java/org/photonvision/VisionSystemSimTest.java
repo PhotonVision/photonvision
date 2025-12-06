@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 
 import edu.wpi.first.apriltag.AprilTag;
@@ -44,6 +43,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -59,8 +59,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.estimation.VisionEstimation;
-import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.WpilibLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.simulation.VisionTargetSim;
@@ -72,15 +71,9 @@ class VisionSystemSimTest {
     NetworkTableInstance inst;
 
     @BeforeAll
-    public static void setUp() {
-        assertTrue(WpilibLoader.loadLibraries());
-
-        try {
-            assertTrue(PhotonTargetingJniLoader.load());
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
-        }
+    public static void setUp() throws IOException {
+        assertTrue(LibraryLoader.loadWpiLibraries());
+        RuntimeLoader.loadLibrary("photontargetingJNI");
 
         OpenCvLoader.forceStaticLoad();
     }

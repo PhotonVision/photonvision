@@ -29,9 +29,9 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-#include "photon/targeting/PnpResult.h"
-#include "photon/targeting/MultiTargetPNPResult.h"
 
+#include "photon/targeting/MultiTargetPNPResult.h"
+#include "photon/targeting/PnpResult.h"
 #include "photon/targeting/TargetCorner.h"
 
 namespace photon {
@@ -42,7 +42,7 @@ static frc::Rotation3d NWU_TO_EDN{
 static frc::Rotation3d EDN_TO_NWU{
     (Eigen::Matrix3d() << 0, 0, 1, -1, 0, 0, 0, -1, 0).finished()};
 
-static std::vector<cv::Point2f> GetConvexHull(
+[[maybe_unused]] static std::vector<cv::Point2f> GetConvexHull(
     const std::vector<cv::Point2f>& points) {
   std::vector<int> outputHull{};
   cv::convexHull(points, outputHull);

@@ -9,9 +9,13 @@
     "build": "vite build",
     "build-demo": "vite build --mode demo",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "format": "prettier --write src/",
-    "lint-ci": "eslint . --max-warnings 0 --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
-    "format-ci": "prettier --check src/"
+    "format": "prettier --write src/ tests/",
+    "lint-ci": "eslint . --max-warnings 0 --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts",
+    "format-ci": "prettier --check src/",
+    "test": "playwright test",
+    "test-ui": "playwright test --ui",
+    "test-setup": "playwright install --with-deps"
+
   },
   "dependencies": {
     "@fontsource/prompt": "^5.2.6",
@@ -28,6 +32,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.31.0",
+    "@playwright/test": "^1.56.1",
     "@types/node": "^22.15.14",
     "@types/three": "^0.178.0",
     "@vitejs/plugin-vue": "^6.0.0",

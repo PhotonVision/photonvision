@@ -109,7 +109,6 @@ public class AprilTagTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
         pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
 
         var frameProvider =

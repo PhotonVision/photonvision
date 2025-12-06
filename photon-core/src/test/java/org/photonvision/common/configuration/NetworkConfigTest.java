@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.util.TestUtils;
 
 public class NetworkConfigTest {
     @Test
@@ -39,13 +40,13 @@ public class NetworkConfigTest {
     @Test
     public void testDeserializeTeamNumberOrNtServerAddress() {
         {
-            var folder = Path.of("test-resources/network-old-team-number");
+            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-old-team-number");
             var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
             assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);
         }
         {
-            var folder = Path.of("test-resources/network-new-team-number");
+            var folder = TestUtils.getResourcesFolderPath(true).resolve("network-new-team-number");
             var configMgr = new ConfigManager(folder, new LegacyConfigProvider(folder));
             configMgr.load();
             assertEquals("9999", configMgr.getConfig().getNetworkConfig().ntServerAddress);

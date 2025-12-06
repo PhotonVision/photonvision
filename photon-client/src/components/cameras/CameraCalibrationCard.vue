@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -79,6 +79,18 @@ const calibrationDivisors = computed(() =>
   })
 );
 
+const uniqueVideoResolutionString = ref("");
+
+// Use a watchEffect so the value is populated/reacts when the stores become available or update.
+// This avoids trying to index into an array that may be empty during page reload.
+watchEffect(() => {
+  const currentIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
+  useStateStore().calibrationData.videoFormatIndex = currentIndex;
+  const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
+    getResolutionString(f.resolution)
+  );
+  uniqueVideoResolutionString.value = names[currentIndex] ?? names[0] ?? "";
+});
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -129,7 +141,7 @@ const downloadCalibBoard = async () => {
       break;
 
     case CalibrationBoardTypes.Charuco:
-      // Add pregenerated charuco
+      // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
@@ -279,22 +291,35 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                   : 'MrCal failed to load, check journalctl logs for details.'
               "
             />
-            <!-- TODO: the default videoFormatIndex is 0, but the list of unique video mode indexes might not include 0. getUniqueVideoResolutionStrings indexing is also different from the normal video mode indexing -->
             <pv-select
-              v-model="useStateStore().calibrationData.videoFormatIndex"
+              v-model="uniqueVideoResolutionString"
               label="Resolution"
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
               :items="getUniqueVideoResolutionStrings()"
+              @update:model-value="
+                useStateStore().calibrationData.videoFormatIndex =
+                  getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
+              "
             />
             <pv-select
               v-model="boardType"
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'Charuco']"
+              :items="['Chessboard', 'ChArUco']"
               :disabled="isCalibrating"
+            />
+            <v-alert
+              v-if="boardType !== CalibrationBoardTypes.Charuco"
+              closable
+              density="compact"
+              variant="tonal"
+              color="warning"
+              icon="mdi-alert-box"
+              text="The usage of chessboards can result in bad calibration results if multiple
+              similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
               v-if="boardType !== CalibrationBoardTypes.Charuco"
@@ -311,7 +336,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-if="boardType === CalibrationBoardTypes.Charuco"
               v-model="tagFamily"
               label="Tag Family"
-              tooltip="Dictionary of aruco markers on the charuco board"
+              tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
               :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
               :disabled="isCalibrating"
@@ -527,9 +552,9 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-card-text>
               Camera has been successfully calibrated for
               {{
-                getUniqueVideoResolutionStrings().find(
-                  (v) => v.value === useStateStore().calibrationData.videoFormatIndex
-                )?.name
+                useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
+                  getResolutionString(f.resolution)
+                )[useStateStore().calibrationData.videoFormatIndex]
               }}!
             </v-card-text>
           </template>

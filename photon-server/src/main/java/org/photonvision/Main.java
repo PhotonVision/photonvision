@@ -28,7 +28,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.OsImageVersion;
+import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.KernelLogLogger;
@@ -38,10 +38,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.jni.RubikDetectorJNI;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -173,8 +172,12 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if (OsImageVersion.IMAGE_VERSION.isPresent()) {
-            logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
+        if (OsImageData.IMAGE_METADATA.isPresent()) {
+            logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
+        } else if (OsImageData.IMAGE_VERSION.isPresent()) {
+            logger.info("PhotonVision image version: " + OsImageData.IMAGE_VERSION.get());
+        } else {
+            logger.info("PhotonVision image version: unknown");
         }
 
         try {
@@ -205,7 +208,7 @@ public class Main {
         logger.info("WPI JNI libraries loaded.");
 
         try {
-            boolean success = PhotonTargetingJniLoader.load();
+            boolean success = LibraryLoader.loadTargeting();
 
             if (!success) {
                 logger.error("Failed to load native libraries! Giving up :(");
@@ -258,8 +261,8 @@ public class Main {
             logger.error("Failed to load rubik-JNI!", e);
         }
         try {
-            MrCalJNILoader.forceLoad();
-        } catch (IOException e) {
+            TestUtils.loadMrcal();
+        } catch (Exception e) {
             logger.warn(
                     "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
                             + e.getMessage());

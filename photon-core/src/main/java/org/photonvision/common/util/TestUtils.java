@@ -20,20 +20,39 @@ package org.photonvision.common.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
-import org.photonvision.jni.WpilibLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class TestUtils {
+    private static boolean hasMrcalLoaded = false;
+
     public static boolean loadLibraries() {
-        return WpilibLoader.loadLibraries();
+        return LibraryLoader.loadWpiLibraries() && LibraryLoader.loadTargeting();
+    }
+
+    public static boolean loadMrcal() {
+        if (hasMrcalLoaded) return true;
+        try {
+            CombinedRuntimeLoader.loadLibraries(TestUtils.class, "mrcal_jni");
+            hasMrcalLoaded = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            hasMrcalLoaded = false;
+        }
+        return hasMrcalLoaded;
+    }
+
+    public static boolean isMrcalLoaded() {
+        return hasMrcalLoaded;
     }
 
     @SuppressWarnings("unused")

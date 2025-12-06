@@ -18,7 +18,7 @@
 package org.photonvision.server;
 
 import io.javalin.Javalin;
-import io.javalin.plugin.bundled.CorsPluginConfig;
+import io.javalin.plugin.bundled.CorsPlugin;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.StringJoiner;
@@ -60,10 +60,14 @@ public class Server {
                         javalinConfig -> {
                             javalinConfig.showJavalinBanner = false;
                             javalinConfig.staticFiles.add("web");
-                            javalinConfig.plugins.enableCors(
-                                    corsContainer -> {
-                                        corsContainer.add(CorsPluginConfig::anyHost);
-                                    });
+                            javalinConfig.registerPlugin(
+                                    new CorsPlugin(
+                                            cors -> {
+                                                cors.addRule(
+                                                        it -> {
+                                                            it.anyHost();
+                                                        });
+                                            }));
 
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
@@ -144,6 +148,7 @@ public class Server {
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
+        app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
         // Object detection
         app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
@@ -156,6 +161,13 @@ public class Server {
         app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
+
+        /* Testing API Events */
+
+        app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
+
+        app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
+        app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
 
         app.start(port);
     }

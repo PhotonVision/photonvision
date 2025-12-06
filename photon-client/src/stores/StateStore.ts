@@ -39,6 +39,8 @@ interface StateStore {
 
   snackbarData: {
     show: boolean;
+    progressBar: number;
+    progressBarColor: string;
     message: string;
     color: string;
     timeout: number;
@@ -86,6 +88,8 @@ export const useStateStore = defineStore("state", {
 
       snackbarData: {
         show: false,
+        progressBar: -1,
+        progressBarColor: "info",
         message: "No Message",
         color: "info",
         timeout: 2000
@@ -158,11 +162,19 @@ export const useStateStore = defineStore("state", {
     updateDiscoveredCameras(data: VsmState) {
       this.vsmState = data;
     },
-    showSnackbarMessage(data: { message: string; color: string; timeout?: number }) {
+    showSnackbarMessage(data: {
+      message: string;
+      color: string;
+      timeout?: number;
+      progressBar?: number;
+      progressBarColor?: string;
+    }) {
       this.snackbarData = {
         show: true,
+        progressBar: data.progressBar || -1,
         message: data.message,
         color: data.color,
+        progressBarColor: data.progressBarColor || "",
         timeout: data.timeout || 2000
       };
     }

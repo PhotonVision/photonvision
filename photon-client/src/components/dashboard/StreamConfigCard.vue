@@ -3,6 +3,7 @@ import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
+import { PipelineType } from "@/types/PipelineTypes";
 
 const theme = useTheme();
 
@@ -20,7 +21,9 @@ const processingMode = computed<number>({
 
 <template>
   <v-card
-    :disabled="useCameraSettingsStore().isDriverMode || useStateStore().colorPickingMode"
+    :disabled="
+      useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isFocusMode || useStateStore().colorPickingMode
+    "
     class="mt-3 rounded-12"
     color="surface"
     style="flex-grow: 1; display: flex; flex-direction: column"
@@ -43,7 +46,10 @@ const processingMode = computed<number>({
           <v-btn
             color="buttonPassive"
             :disabled="
-              !useCameraSettingsStore().hasConnected || !useCameraSettingsStore().isCurrentVideoFormatCalibrated
+              !useCameraSettingsStore().hasConnected ||
+              !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
+              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ObjectDetection ||
+              useCameraSettingsStore().currentPipelineSettings.pipelineType == PipelineType.ColoredShape
             "
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
             class="w-50"

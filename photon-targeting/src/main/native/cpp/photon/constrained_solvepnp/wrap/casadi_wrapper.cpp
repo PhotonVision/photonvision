@@ -17,8 +17,6 @@
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 
-#include <fmt/core.h>
-
 #include <chrono>
 #include <cstdio>
 #include <iostream>
@@ -28,6 +26,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include <fmt/core.h>
 #include <frc/fmt/Eigen.h>
 #include <wpi/timestamp.h>
 

@@ -25,7 +25,7 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.mrcal.MrCalJNILoader;
+import org.photonvision.common.util.TestUtils;
 import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
@@ -49,17 +49,17 @@ public class UIPhotonConfiguration {
                                 NetworkManager.getInstance().networkingIsDisabled),
                         new UILightingConfig(
                                 c.getHardwareSettings().ledBrightnessPercentage,
-                                !c.getHardwareConfig().ledPins().isEmpty()),
+                                !c.getHardwareConfig().ledPins.isEmpty()),
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
                                 // TODO add support for other types of GPU accel
                                 LibCameraJNILoader.getInstance().isSupported() ? "Zerocopy Libcamera Working" : "",
-                                MrCalJNILoader.getInstance().isLoaded(),
+                                TestUtils.isMrcalLoaded(),
                                 c.neuralNetworkPropertyManager().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
-                                c.getHardwareConfig().deviceName().isEmpty()
+                                c.getHardwareConfig().deviceName.isEmpty()
                                         ? Platform.getHardwareModel()
-                                        : c.getHardwareConfig().deviceName(),
+                                        : c.getHardwareConfig().deviceName,
                                 Platform.getPlatformName(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
                                 NetworkTablesManager.getInstance().conflictingCameras),

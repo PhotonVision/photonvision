@@ -1,5 +1,9 @@
 # Arducam Cameras
 
+:::{warning}
+Arducam Pivariety cameras are **incompatible** with PhotonVision as they require a custom camera library not compatible with PhotonVision.
+:::
+
 Arducam cameras are supported for setups with multiple devices. This is possible because Arducam provides software that allows you to assign truly different device names to each camera. This feature is particularly useful in complex setups where multiple cameras are used simultaneously.
 
 ## Setting Up Arducam Cameras

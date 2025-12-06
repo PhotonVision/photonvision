@@ -21,24 +21,22 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.Platform;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.QueuedFileLogger;
-import org.photonvision.jni.WpilibLoader;
 
 public class FileLoggerTest {
     @BeforeAll
-    public static void load_wpilib() throws UnsatisfiedLinkError, IOException {
-        if (!WpilibLoader.loadLibraries()) {
+    public static void load() throws IOException {
+        if (!LibraryLoader.loadWpiLibraries()) {
             fail();
         }
-        if (!PhotonTargetingJniLoader.load()) {
-            fail();
-        }
+        RuntimeLoader.loadLibrary("photontargetingJNI");
 
         HAL.initialize(1000, 0);
     }

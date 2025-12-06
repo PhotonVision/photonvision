@@ -24,9 +24,6 @@
 
 #include "photon/PhotonCamera.h"
 
-#include <hal/FRCUsageReporting.h>
-#include <net/TimeSyncServer.h>
-
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -36,6 +33,8 @@
 #include <frc/Errors.h>
 #include <frc/RobotController.h>
 #include <frc/Timer.h>
+#include <hal/FRCUsageReporting.h>
+#include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <wpi/json.h>
