@@ -64,10 +64,8 @@ const cameraMismatchWarningShown = computed<boolean>(() => {
   return (
     Object.values(useCameraSettingsStore().cameras)
       // Ignore placeholder camera
-      .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
-      .some((camera) => {
-        return camera.mismatch;
-      })
+      .filter((camera) => camera !== PlaceholderCameraSettings)
+      .some((camera) => camera.mismatch)
   );
 });
 
@@ -148,12 +146,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
-    <v-dialog
-      v-if="useCameraSettingsStore().needsCameraConfiguration"
-      v-model="showCameraSetupDialog"
-      max-width="800"
-      dark
-    >
+    <v-dialog v-model="showCameraSetupDialog" max-width="800" dark>
       <v-card flat color="surface">
         <v-card-title>Set up some cameras to get started!</v-card-title>
         <v-card-text class="pt-0">
