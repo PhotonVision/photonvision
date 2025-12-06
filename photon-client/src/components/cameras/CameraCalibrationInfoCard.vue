@@ -106,8 +106,8 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 
-var tab = ref("details");
-var viewingImg = ref(0);
+const tab = ref("details");
+const viewingImg = ref(0);
 </script>
 
 <template>
@@ -278,8 +278,8 @@ var viewingImg = ref(0);
           </v-tabs-window-item>
           <v-tabs-window-item key="observations" value="observations">
             <v-data-table
-              items-per-page-text="Page size:"
               id="observations-table"
+              items-per-page-text="Page size:"
               density="compact"
               style="width: 100%"
               :headers="[
@@ -290,14 +290,14 @@ var viewingImg = ref(0);
               item-value="index"
               show-expand
             >
-              <template #item.data-table-expand="{ internalItem, toggleExpand }">
+              <template #item.data-table-expand="{ internalItem }">
                 <v-btn
                   class="text-none"
                   size="small"
                   variant="text"
                   slim
-                  @click="viewingImg = internalItem.index"
                   rounded
+                  @click="viewingImg = internalItem.index"
                 >
                   <v-icon
                     size="large"

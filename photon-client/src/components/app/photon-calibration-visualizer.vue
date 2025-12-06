@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, render, watch, watchEffect, type Ref } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
 const {
   AmbientLight,
   AxesHelper,
@@ -334,8 +334,8 @@ watch(
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          @click="resetCamFirstPerson"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCamFirstPerson"
         >
           First Person
         </v-btn>
@@ -344,15 +344,15 @@ watch(
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          @click="resetCamThirdPerson"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCamThirdPerson"
         >
           Third Person
         </v-btn>
       </v-col>
     </div>
     <div style="flex: 1 1 auto">
-      <canvas class="w-100 h-100" id="view" />
+      <canvas id="view" class="w-100 h-100" />
     </div>
   </div>
 </template>
