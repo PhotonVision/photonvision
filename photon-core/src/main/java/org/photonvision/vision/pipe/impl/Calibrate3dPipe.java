@@ -213,6 +213,8 @@ public class Calibrate3dPipe
                         tvecs,
                         inliners,
                         new double[] {0, 0},
+                        objPoints,
+                        imgPoints,
                         imageSavePath);
 
         cameraMatrix.release();
@@ -325,6 +327,8 @@ public class Calibrate3dPipe
             tvecs.add(tvec);
         }
 
+        List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
+        List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
         List<BoardObservation> observations =
                 createObservations(
                         in,
@@ -334,6 +338,8 @@ public class Calibrate3dPipe
                         tvecs,
                         result.cornersUsed,
                         new double[] {result.warp_x, result.warp_y},
+                        objPoints,
+                        imgPts,
                         imageSavePath);
 
         rvecs.forEach(Mat::release);
@@ -358,12 +364,10 @@ public class Calibrate3dPipe
             List<Mat> tvecs,
             List<boolean[]> cornersUsed,
             double[] calobject_warp,
+            List<Mat> objPoints,
+            List<Mat> imgPts,
             Path imageSavePath) {
-        List<Mat> objPoints = in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
-        List<Mat> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
-
         // Clear the calibration image folder of any old images before we save the new ones.
-
         try {
             FileUtils.cleanDirectory(imageSavePath.toFile());
         } catch (Exception e) {
@@ -378,6 +382,17 @@ public class Calibrate3dPipe
             objPoints.get(snapshotId).copyTo(i_objPtsNative);
             var i_objPts = i_objPtsNative.toList();
             var i_imgPts = ((MatOfPoint2f) imgPts.get(snapshotId)).toList();
+
+            if (i_objPts.size() != i_imgPts.size()) {
+                throw new RuntimeException(
+                        "Objpts size ("
+                                + i_objPts.size()
+                                + ") != imgpts size ("
+                                + i_imgPts.size()
+                                + ") for snapshot "
+                                + snapshotId
+                                + "!");
+            }
 
             // Apply warp, if set
             if (calobject_warp != null && calobject_warp.length == 2) {
