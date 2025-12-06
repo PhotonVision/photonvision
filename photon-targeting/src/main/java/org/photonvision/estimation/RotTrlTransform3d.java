@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a transformation that first rotates a pose around the origin, and then translates it.
@@ -103,7 +102,7 @@ public class RotTrlTransform3d {
     }
 
     public List<Translation3d> applyTrls(List<Translation3d> trls) {
-        return trls.stream().map(this::apply).collect(Collectors.toList());
+        return trls.stream().map(this::apply).toList();
     }
 
     public Rotation3d apply(Rotation3d rot) {
@@ -111,7 +110,7 @@ public class RotTrlTransform3d {
     }
 
     public List<Rotation3d> applyRots(List<Rotation3d> rots) {
-        return rots.stream().map(this::apply).collect(Collectors.toList());
+        return rots.stream().map(this::apply).toList();
     }
 
     public Pose3d apply(Pose3d pose) {
@@ -119,6 +118,6 @@ public class RotTrlTransform3d {
     }
 
     public List<Pose3d> applyPoses(List<Pose3d> poses) {
-        return poses.stream().map(this::apply).collect(Collectors.toList());
+        return poses.stream().map(this::apply).toList();
     }
 }

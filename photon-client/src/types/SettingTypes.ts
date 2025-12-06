@@ -190,7 +190,7 @@ export interface BoardObservation {
   locationInImageSpace: CvPoint[];
   reprojectionErrors: CvPoint[];
   optimisedCameraToObject: Pose3d;
-  includeObservationInCalibration: boolean;
+  cornersUsed: boolean[];
   snapshotName: string;
   snapshotData: JsonImageMat;
 }
@@ -201,9 +201,15 @@ export interface CameraCalibrationResult {
   distCoeffs: JsonMatOfDouble;
   observations: BoardObservation[];
   calobjectWarp?: number[];
-  // We might have to omit observations for bandwidth, so backend will send us this
+  calobjectSize: { width: number; height: number };
+  calobjectSpacing: number;
+  lensModel: string;
+
+  // We have to omit observations for bandwidth, so backend will send us this from UICameraCalibrationCoefficients
   numSnapshots: number;
   meanErrors: number[];
+  numOutliers: number[];
+  numMissing: number[];
 }
 
 export enum ValidQuirks {
@@ -324,28 +330,72 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
       },
       observations: [
         {
-          locationInImageSpace: [
-            { x: 100, y: 100 },
-            { x: 210, y: 100 },
-            { x: 320, y: 101 }
+          locationInObjectSpace: [
+            {
+              x: 0,
+              y: 0,
+              z: 0
+            },
+            {
+              x: 0.02539999969303608,
+              y: 0,
+              z: 0
+            },
+            {
+              x: 0.05079999938607216,
+              y: 0,
+              z: 0
+            }
           ],
-          locationInObjectSpace: [{ x: 0, y: 0, z: 0 }],
+          locationInImageSpace: [
+            {
+              x: 57.062007904052734,
+              y: 108.12601470947266
+            },
+            {
+              x: 108.72974395751953,
+              y: 108.0336685180664
+            },
+            {
+              x: 158.78118896484375,
+              y: 107.8104019165039
+            }
+          ],
           optimisedCameraToObject: {
-            translation: { x: 1, y: 2, z: 3 },
-            rotation: { quaternion: { W: 1, X: 0, Y: 0, Z: 0 } }
+            translation: {
+              x: -0.28942385915178886,
+              y: -0.12895727420625547,
+              z: 0.5933086404370699
+            },
+            rotation: {
+              quaternion: {
+                W: 0.9890028788589879,
+                X: -0.0507354429843431,
+                Y: -0.13458187019694584,
+                Z: -0.034452004994036174
+              }
+            }
           },
           reprojectionErrors: [
             { x: 1, y: 1 },
             { x: 2, y: 1 },
             { x: 3, y: 1 }
           ],
-          includeObservationInCalibration: false,
+          cornersUsed: [true, true, false],
           snapshotName: "img0.png",
           snapshotData: { rows: 480, cols: 640, type: CvType.CV_8U, data: "" }
         }
       ],
+      calobjectSize: {
+        width: 10,
+        height: 10
+      },
+      calobjectSpacing: 0.0254,
+      lensModel: "opencv8",
       numSnapshots: 1,
-      meanErrors: [123.45]
+      meanErrors: [123.45],
+      numMissing: [0],
+      numOutliers: [1]
     }
   ],
   pipelineNicknames: ["Placeholder Pipeline"],
