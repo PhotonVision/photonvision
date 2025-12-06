@@ -56,7 +56,7 @@ public class VisionEstimation {
                             return maybePose.map(pose3d -> new AprilTag(id, pose3d)).orElse(null);
                         })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
