@@ -44,15 +44,15 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
   obs.locationInObjectSpace.forEach((corner, idx) => {
     if (corner.x < 0 || corner.y < 0) return;
 
-    const isInlier = !obs.cornersUsed[idx];
+    const isOutlier = !obs.cornersUsed[idx];
 
-    const color = obs.cornersUsed[idx] ? 0x00ff00 : 0xff0000;
+    const color = isOutlier ? 0xff0000 : 0x00ff00;
 
     const sphereGeom = new SphereGeometry(cal.calobjectSpacing / 8, 8, 8);
     const sphereMat = new MeshPhongMaterial({
       color: color,
-      opacity: isInlier ? 1.0 : 0.5,
-      transparent: !isInlier
+      opacity: isOutlier ? 1.0 : 0.4,
+      transparent: !isOutlier
     });
     const sphere = new Mesh(sphereGeom, sphereMat);
     sphere.position.set(corner.x, corner.y, corner.z);
