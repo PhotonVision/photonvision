@@ -36,5 +36,6 @@ public class LinuxCmds extends CmdBase {
 
         // Disk
         diskUsageCommand = "df ./ --output=pcent | tail -n +2 | tr -d '%'";
+        diskSpaceAvailableCommand = "df ./ --output=avail | tail -n +2";
     }
 }

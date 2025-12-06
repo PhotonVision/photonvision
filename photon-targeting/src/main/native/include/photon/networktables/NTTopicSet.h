@@ -46,6 +46,10 @@ class NTTopicSet {
   nt::BooleanPublisher driverModePublisher;
   nt::BooleanSubscriber driverModeSubscriber;
 
+  nt::BooleanTopic recordingEntry;
+  nt::BooleanPublisher recordingPublisher;
+  nt::BooleanSubscriber recordingSubscriber;
+
   nt::DoublePublisher latencyMillisEntry;
   nt::BooleanPublisher hasTargetEntry;
   nt::DoublePublisher targetPitchEntry;
@@ -80,6 +84,12 @@ class NTTopicSet {
         subTable->GetBooleanTopic("driverModeRequest").Subscribe(0);
 
     driverModeSubscriber.GetTopic().Publish().SetDefault(false);
+
+    recordingPublisher = subTable->GetBooleanTopic("recording").Publish();
+    recordingSubscriber =
+        subTable->GetBooleanTopic("recordingRequest").Subscribe(0);
+
+    recordingSubscriber.GetTopic().Publish().SetDefault(false);
 
     latencyMillisEntry = subTable->GetDoubleTopic("latencyMillis").Publish();
     hasTargetEntry = subTable->GetBooleanTopic("hasTargets").Publish();
