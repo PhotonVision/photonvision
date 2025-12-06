@@ -55,14 +55,14 @@ jobs:
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
       - name: print space 1
         run: du -h . | sort -h
-        if: runner.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-22.04'
       - name: Attempt to reclaim space
         run: ./gradlew clean 
       - name: print space 2
         run: |
           find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
           du -h . | sort -h
-        if: runner.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-22.04'
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
