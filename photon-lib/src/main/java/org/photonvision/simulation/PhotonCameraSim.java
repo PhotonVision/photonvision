@@ -40,7 +40,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
@@ -566,8 +565,7 @@ public class PhotonCameraSim implements AutoCloseable {
         // var tagLayout = cam.getAprilTagFieldLayout();
         var visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(detectableTgts, tagLayout);
         if (visibleLayoutTags.size() > 1) {
-            List<Short> usedIDs =
-                    visibleLayoutTags.stream().map(t -> (short) t.ID).sorted().toList();
+            List<Short> usedIDs = visibleLayoutTags.stream().map(t -> (short) t.ID).sorted().toList();
             var pnpResult =
                     VisionEstimation.estimateCamPosePNP(
                             prop.getIntrinsics(),

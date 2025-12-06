@@ -22,7 +22,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Represents a transformation that first rotates a pose around the origin, and then translates it.
