@@ -37,32 +37,33 @@ public abstract class PhotonJNICommon {
         if (instance.isLoaded()) return;
         if (logger == null) logger = new Logger(clazz, LogGroup.General);
 
-        for (String libraryName : libraries) {
-            try {
-                logger.info("Loading " + libraryName);
-                // We always extract the shared object (we could hash each so, but that's a lot of work)
-                var arch_name = Platform.getNativeLibraryFolderName();
-                String nativeLibName = System.mapLibraryName(libraryName);
-                var in = clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName);
-
+        for (var libraryName : libraries) {
+            logger.info("Loading " + libraryName);
+            // We always extract the shared object (we could hash each so, but that's a lot
+            // of work)
+            var arch_name = Platform.getNativeLibraryFolderName();
+            var nativeLibName = System.mapLibraryName(libraryName);
+            try (var in =
+                    clazz.getResourceAsStream("/nativelibraries/" + arch_name + "/" + nativeLibName)) {
                 if (in == null) {
                     logger.error("Could not find " + libraryName);
                     instance.setLoaded(false);
                     return;
                 }
 
-                // It's important that we don't mangle the names of these files on Windows at least
+                // It's important that we don't mangle the names of these files
                 var temp = Files.createTempDirectory("nativeExtract").resolve(nativeLibName);
                 Files.copy(in, temp, StandardCopyOption.REPLACE_EXISTING);
 
-                System.load(temp.toAbsolutePath().toString());
-                logger.info("Successfully loaded shared object " + temp.getFileName());
-
-            } catch (UnsatisfiedLinkError e) {
-                logger.error("Couldn't load shared object " + libraryName, e);
-                e.printStackTrace();
-                instance.setLoaded(false);
-                return;
+                try {
+                    System.load(temp.toAbsolutePath().toString());
+                    logger.info("Successfully loaded shared object " + temp.getFileName());
+                } catch (UnsatisfiedLinkError e) {
+                    logger.error("Couldn't load shared object " + libraryName, e);
+                    e.printStackTrace();
+                    instance.setLoaded(false);
+                    return;
+                }
             }
         }
         instance.setLoaded(true);
