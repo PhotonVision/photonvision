@@ -258,11 +258,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 <tr :key="index" v-bind="props" @click="setSelectedVideoFormat(value)">
                   <td>{{ getResolutionString(value.resolution) }}</td>
                   <td>
-                    {{ value.mean ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
+                    {{
+                      value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-"
+                    }}
                   </td>
-                  <td>{{ value.horizontalFOV ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-                  <td>{{ value.verticalFOV ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-                  <td>{{ value.diagonalFOV ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
                 </tr>
               </template>
               <span>View calibration information</span>
