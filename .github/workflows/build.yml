@@ -53,12 +53,24 @@ jobs:
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
+      - name: print space 1
+        run: du -h . | sort -h
+        if: runner.os == 'ubuntu-22.04'
+      - name: Attempt to reclame space
+        run: ./gradlew clean 
+      - name: print space 2
+        run: du -h . | sort -h
+        if: runner.os == 'ubuntu-22.04'
       - name: Build Java examples
         working-directory: photonlib-java-examples
-        run: ./gradlew build
+        run: |
+          ./gradlew build
+          ./gradlew clean
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
-        run: ./gradlew build
+        run: |
+          ./gradlew build
+          ./gradlew clean
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-22.04
