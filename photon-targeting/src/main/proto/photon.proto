@@ -57,16 +57,21 @@ message ProtobufPhotonTrackedTarget {
   float obj_detection_conf = 12;
 }
 
+message ProtobufPhotonTrackedTargetList {
+  repeated ProtobufPhotonTrackedTarget targets = 1;
+}
+
 message ProtobufPhotonPipelineResult {
   double latency_ms = 1 [deprecated = true];
 
   repeated ProtobufPhotonTrackedTarget targets = 2;
   optional ProtobufMultiTargetPNPResult multi_target_result = 3;
+  optional ProtobufPhotonTrackedTargetList rejectedTags = 4;
 
-  int64 sequence_id = 4;
-  int64 capture_timestamp_micros = 5;
-  int64 nt_publish_timestamp_micros = 6;
-  int64 time_since_last_pong_micros = 7;
+  int64 sequence_id = 5;
+  int64 capture_timestamp_micros = 6;
+  int64 nt_publish_timestamp_micros = 7;
+  int64 time_since_last_pong_micros = 8;
 }
 
 message ProtobufDeviceMetrics {
