@@ -169,6 +169,12 @@ public class Server {
         app.post("/api/recordings/delete", RequestHandler::onDeleteRecordingRequest);
         app.post("/api/recordings/nuke", RequestHandler::onNukeRecordingsRequest);
 
+        /* Testing API Events */
+        app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
+
+        app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
+        app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
+
         app.start(port);
     }
 
