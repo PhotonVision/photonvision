@@ -50,19 +50,14 @@ jobs:
           distribution: temurin
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
-      # Need to publish to maven local first, so that C++ sim can pick it up
-      - name: Publish photonlib to maven local
-        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
-      - name: print space 1
-        run: du -h . | sort -h
-        if: matrix.os == 'ubuntu-22.04'
-      - name: Attempt to reclaim space
-        run: ./gradlew clean 
-      - name: print space 2
+      - name: Delete duplicate toolchains
         run: |
           find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
           du -h . | sort -h
         if: matrix.os == 'ubuntu-22.04'
+      # Need to publish to maven local first, so that C++ sim can pick it up
+      - name: Publish photonlib to maven local
+        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
