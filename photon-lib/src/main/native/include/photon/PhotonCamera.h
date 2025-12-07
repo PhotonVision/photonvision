@@ -104,6 +104,18 @@ class PhotonCamera {
   bool GetDriverMode() const;
 
   /**
+   * Sets whether the camera is recording.
+   * @param recording Whether to set recording.
+   */
+  void SetRecording(bool recording);
+
+  /**
+   * Returns whether the camera is recording.
+   * @return Whether the camera is recording.
+   */
+  bool GetRecording() const;
+
+  /**
    * Request the camera to save a new image file from the input
    * camera stream with overlays.
    * Images take up space in the filesystem of the PhotonCamera.
@@ -211,6 +223,9 @@ class PhotonCamera {
   nt::BooleanSubscriber driverModeSubscriber;
   nt::BooleanPublisher driverModePublisher;
   nt::IntegerSubscriber ledModeSubscriber;
+
+  nt::BooleanSubscriber recordingSubscriber;
+  nt::BooleanPublisher recordingPublisher;
 
   nt::IntegerSubscriber heartbeatSubscriber;
 

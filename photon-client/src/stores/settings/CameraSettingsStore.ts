@@ -99,6 +99,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     hasConnected(): boolean {
       return this.currentCameraSettings.hasConnected;
+    },
+    camerasWithRecordings(): UiCameraConfiguration[] {
+      return Object.values(this.cameras).filter((camera) => camera.recordings.length > 0);
     }
   },
   actions: {
@@ -146,7 +149,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           matchedCameraInfo: d.matchedCameraInfo,
           isConnected: d.isConnected,
           hasConnected: d.hasConnected,
-          mismatch: d.mismatch
+          mismatch: d.mismatch,
+          recordings: d.recordings
         };
         return acc;
       }, {});

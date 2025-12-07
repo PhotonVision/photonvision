@@ -74,6 +74,12 @@ class PhotonCamera:
         self._driverModeSubscriber = self._cameraTable.getBooleanTopic(
             "driverMode"
         ).subscribe(False)
+        self._recordingPublisher = self._cameraTable.getBooleanTopic(
+            "recordingRequest"
+        ).publish()
+        self._recordingSubscriber = self._cameraTable.getBooleanTopic(
+            "recording"
+        ).subscribe(False)
         self._inputSaveImgEntry = self._cameraTable.getIntegerTopic(
             "inputSaveImgCmd"
         ).getEntry(0)
@@ -189,6 +195,22 @@ class PhotonCamera:
         """
 
         self._driverModePublisher.set(driverMode)
+
+    def getRecording(self) -> bool:
+        """Returns whether the camera is recording.
+
+        :returns: Whether the camera is recording.
+        """
+
+        return self._recordingSubscriber.get()
+
+    def setRecording(self, recording: bool) -> None:
+        """Toggles recording.
+
+        :param recording: Whether to set recording.
+        """
+
+        self._recordingPublisher.set(recording)
 
     def takeInputSnapshot(self) -> None:
         """Request the camera to save a new image file from the input camera stream with overlays. Images
