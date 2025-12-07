@@ -33,21 +33,27 @@ dependencies {
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
 
     // The JNI libraries use wpilibNatives, the java libraries use implementation
-    wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$wpilibNativeName") {
-        transitive = false
+    if ( jniPlatform == "linuxarm64"){
+        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$wpilibNativeName") {
+            transitive = false
+        }
+        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$wpilibNativeName") {
+            transitive = false
+        }
+        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$wpilibNativeName") {
+            transitive = false
+        }
     }
+
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
-    wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$wpilibNativeName") {
-        transitive = false
-    }
+
     implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
         transitive = false
     }
-    wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$wpilibNativeName") {
-        transitive = false
-    }
+
+
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$libcameraDriverVersion"
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
