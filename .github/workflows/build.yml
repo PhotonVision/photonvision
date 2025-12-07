@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: Dev
+  IMAGE_VERSION: v2026.0.5
 
 jobs:
 
@@ -449,6 +449,7 @@ jobs:
   build-image:
     needs: [build-package]
 
+    # TODO: uncomment before merge
     # if: ${{ github.event_name != 'pull_request' }}
 
     strategy:
