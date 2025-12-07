@@ -17,11 +17,11 @@
 
 package org.photonvision.jni;
 
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
-import java.util.List;
 import org.photonvision.common.util.TestUtils;
 
-public class RknnDetectorJNI extends PhotonJNICommon {
+public class RknnDetectorJNI {
     private boolean isLoaded;
     private static RknnDetectorJNI instance = null;
 
@@ -38,15 +38,13 @@ public class RknnDetectorJNI extends PhotonJNICommon {
     public static synchronized void forceLoad() throws IOException {
         TestUtils.loadLibraries();
 
-        forceLoad(getInstance(), RknnDetectorJNI.class, List.of("rga", "rknnrt", "rknn_jni"));
+        CombinedRuntimeLoader.loadLibraries(RknnDetectorJNI.class, "rga", "rknnrt", "rknn_jni");
     }
 
-    @Override
     public boolean isLoaded() {
         return isLoaded;
     }
 
-    @Override
     public void setLoaded(boolean state) {
         isLoaded = state;
     }

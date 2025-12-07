@@ -17,11 +17,11 @@
 
 package org.photonvision.jni;
 
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
-import java.util.List;
 import org.photonvision.common.util.TestUtils;
 
-public class RubikDetectorJNI extends PhotonJNICommon {
+public class RubikDetectorJNI {
     private boolean isLoaded;
     private static RubikDetectorJNI instance = null;
 
@@ -38,18 +38,18 @@ public class RubikDetectorJNI extends PhotonJNICommon {
     public static synchronized void forceLoad() throws IOException {
         TestUtils.loadLibraries();
 
-        forceLoad(
-                getInstance(),
+        CombinedRuntimeLoader.loadLibraries(
                 RubikDetectorJNI.class,
-                List.of("tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"));
+                "tensorflowlite",
+                "tensorflowlite_c",
+                "external_delegate",
+                "rubik_jni");
     }
 
-    @Override
     public boolean isLoaded() {
         return isLoaded;
     }
 
-    @Override
     public void setLoaded(boolean state) {
         isLoaded = state;
     }

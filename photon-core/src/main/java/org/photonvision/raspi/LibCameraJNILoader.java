@@ -17,12 +17,11 @@
 
 package org.photonvision.raspi;
 
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
-import java.util.List;
-import org.photonvision.jni.PhotonJNICommon;
 
 /** Helper for extracting photon-libcamera-gl-driver shared library files. */
-public class LibCameraJNILoader extends PhotonJNICommon {
+public class LibCameraJNILoader {
     private boolean libraryLoaded = false;
     private static LibCameraJNILoader instance = null;
 
@@ -33,16 +32,13 @@ public class LibCameraJNILoader extends PhotonJNICommon {
     }
 
     public static synchronized void forceLoad() throws IOException {
-        forceLoad(
-                LibCameraJNILoader.getInstance(), LibCameraJNILoader.class, List.of("photonlibcamera"));
+        CombinedRuntimeLoader.loadLibraries(LibCameraJNILoader.class, "photonlibcamera");
     }
 
-    @Override
     public boolean isLoaded() {
         return libraryLoaded;
     }
 
-    @Override
     public void setLoaded(boolean state) {
         libraryLoaded = state;
     }
