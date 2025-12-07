@@ -214,24 +214,25 @@ public class HardwareManager {
     }
 
     private void updateStatus() {
-        if (statusLED != null) {
-            PhotonStatus status;
-            boolean anyTarget = !pipelineTargets.isEmpty();
-            if (ntConnected) {
-                if (anyTarget) {
-                    status = PhotonStatus.NT_CONNECTED_TARGETS_VISIBLE;
-                } else {
-                    status = PhotonStatus.NT_CONNECTED_TARGETS_MISSING;
-                }
-            } else {
-                if (anyTarget) {
-                    status = PhotonStatus.NT_DISCONNECTED_TARGETS_VISIBLE;
-                } else {
-                    status = PhotonStatus.NT_DISCONNECTED_TARGETS_MISSING;
-                }
-            }
-            statusLED.setStatus(status);
+        if (statusLED == null) {
+            return;
         }
+        PhotonStatus status;
+        boolean anyTarget = !pipelineTargets.isEmpty();
+        if (ntConnected) {
+            if (anyTarget) {
+                status = PhotonStatus.NT_CONNECTED_TARGETS_VISIBLE;
+            } else {
+                status = PhotonStatus.NT_CONNECTED_TARGETS_MISSING;
+            }
+        } else {
+            if (anyTarget) {
+                status = PhotonStatus.NT_DISCONNECTED_TARGETS_VISIBLE;
+            } else {
+                status = PhotonStatus.NT_DISCONNECTED_TARGETS_MISSING;
+            }
+        }
+        statusLED.setStatus(status);
     }
 
     public void publishMetrics() {
