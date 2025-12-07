@@ -28,6 +28,21 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
 No hardware boards with status RGB LED pins or non-dimming LED's have been tested yet. Please reach out to the development team if these features are desired, they can assist with configuration and testing.
 :::
 
+### GPIO Pinout
+
+::::{tab-set}
+
+:::{tab-item} Raspberry Pi
+
+The following diagram shows the GPIO pin numbering of the 40-pin header on Raspberry Pi hardware, courtesy of [pinout.xyz](https://pinout.xyz). Compute modules use the pin numbering from their respective datasheet.
+
+```{image} https://raw.githubusercontent.com/pinout-xyz/Pinout.xyz/master/resources/raspberry-pi-pinout.png
+:alt: Raspberry Pi GPIO Pinout
+```
+
+:::
+::::
+
 ### Custom GPIO
 
 If your hardware does not support diozero's default provider, custom commands can be provided to interact with the GPIO lines. The examples below show what parameters are provided to each command, which can be used in any order or multiple times as needed.
