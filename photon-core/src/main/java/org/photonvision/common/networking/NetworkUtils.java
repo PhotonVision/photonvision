@@ -267,7 +267,7 @@ public class NetworkUtils {
         } catch (Exception e) {
             logger.error("Error getting MAC address", e);
         }
-        return "00-00-00-00-00-00";
+        return "";
     }
 
     private static String formatMacAddress(byte[] mac) {

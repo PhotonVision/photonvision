@@ -257,7 +257,7 @@ public class NetworkTablesManager {
             kCoprocTable.getSubTable(currentMacAddress).getEntry("cameraNames").unpublish();
             currentMacAddress = mac;
         }
-        if (mac.equals("00-00-00-00-00-00")) {
+        if (mac.isEmpty()) {
             logger.error("Cannot check hostname and camera names, MAC address is not set!");
             return;
         }
