@@ -1,6 +1,7 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
 import type { Pose3d } from "@/types/PhotonTrackingTypes";
 import type { WebsocketCameraSettingsUpdate } from "./WebsocketDataTypes";
+import { reactive } from "vue";
 
 export interface GeneralSettings {
   version?: string;
@@ -274,7 +275,7 @@ export interface CameraSettingsChangeRequest {
   quirksToChange: Record<ValidQuirks, boolean>;
 }
 
-export const PlaceholderCameraSettings: UiCameraConfiguration = Object.freeze({
+export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   cameraPath: "/dev/null",
 
   nickname: "Placeholder Camera",
