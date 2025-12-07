@@ -27,17 +27,14 @@ public class CustomDigitalInputOutputDevice extends AbstractInputDevice<DigitalI
         implements GpioDigitalInputOutputDeviceInterface {
     protected final CustomAdapter adapter;
     protected final int gpio;
-    private boolean outputValue;
+    private boolean outputValue = false;
 
     public CustomDigitalInputOutputDevice(
             CustomDeviceFactory deviceFactory, String key, int gpio, DeviceMode mode) {
         super(key, deviceFactory);
 
-        this.gpio = gpio;
-
         this.adapter = deviceFactory.adapter;
-
-        this.outputValue = false;
+        this.gpio = gpio;
 
         setMode(mode);
     }

@@ -31,10 +31,8 @@ public class CustomDigitalOutputDevice extends AbstractDevice
             CustomDeviceFactory deviceFactory, String key, int gpio, boolean initialValue) {
         super(key, deviceFactory);
 
-        this.gpio = gpio;
-
         this.adapter = deviceFactory.adapter;
-
+        this.gpio = gpio;
         this.state = initialValue;
 
         setValue(initialValue);

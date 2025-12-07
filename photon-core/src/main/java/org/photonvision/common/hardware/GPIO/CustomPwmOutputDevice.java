@@ -36,10 +36,9 @@ public class CustomPwmOutputDevice extends AbstractDevice
             float initialValue) {
         super(key, deviceFactory);
 
+        this.adapter = deviceFactory.adapter;
         this.gpio = gpio;
         this.frequency = pwmFrequency;
-
-        this.adapter = deviceFactory.adapter;
 
         setValue(initialValue);
     }

@@ -37,9 +37,8 @@ public class CustomDigitalInputDevice extends AbstractInputDevice<DigitalInputEv
             GpioEventTrigger trigger) {
         super(key, deviceFactory);
 
-        this.gpio = gpio;
-
         adapter = deviceFactory.adapter;
+        this.gpio = gpio;
     }
 
     @Override
