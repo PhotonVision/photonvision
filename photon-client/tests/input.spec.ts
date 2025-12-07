@@ -3,7 +3,6 @@ import { test } from "./fixtures.ts";
 
 test("Camera Gain Slider won't go past max or min", async ({ page }) => {
   await page.goto("http://localhost:5800/#/dashboard");
-  await page.locator("div").filter({ hasText: "Set up some cameras to get started!" }).nth(2).press("Escape");
 
   // Fill in Camera Gain text field with 1000
   await page.locator("#input-v-44").fill("1000");
