@@ -23,6 +23,7 @@ const {
 const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { createPerspectiveCamera } from "@/lib/ThreeUtils";
 
 const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
   useCameraSettingsStore().currentCameraSettings.validVideoFormats[
@@ -81,14 +82,8 @@ const drawTargets = (targets: PhotonTarget[]) => {
   });
 
   if (calibrationCoeffs) {
-    // And show camera fov
-    const imageWidth = calibrationCoeffs.resolution.width;
-    const imageHeight = calibrationCoeffs.resolution.height;
-    const focalLengthY = calibrationCoeffs.cameraIntrinsics.data[4];
-    const fovY = 2 * Math.atan(imageHeight / (2 * focalLengthY)) * (180 / Math.PI);
-    const aspect = imageWidth / imageHeight;
-
-    const calibCamera = new PerspectiveCamera(fovY, aspect, 0.1, 10.0);
+    // And show camera frustum
+    const calibCamera = createPerspectiveCamera(calibrationCoeffs.resolution, calibrationCoeffs.cameraIntrinsics, 10);
     const helper = new CameraHelper(calibCamera);
     const helperGroup = new Group();
     helperGroup.add(helper);

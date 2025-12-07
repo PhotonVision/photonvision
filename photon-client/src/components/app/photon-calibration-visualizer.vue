@@ -21,6 +21,7 @@ import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingT
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useTheme } from "vuetify";
+import { createPerspectiveCamera } from "@/lib/ThreeUtils";
 
 const theme = useTheme();
 
@@ -92,14 +93,8 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
     previousTargets.push(board);
   });
 
-  // And show camera fov
-  const imageWidth = props.resolution.width;
-  const imageHeight = props.resolution.height;
-  const focalLengthY = cal.cameraIntrinsics.data[4];
-  const fovY = 2 * Math.atan(imageHeight / (2 * focalLengthY)) * (180 / Math.PI);
-  const aspect = imageWidth / imageHeight;
-
-  const calibCamera = new PerspectiveCamera(fovY, aspect, 0.1, 1.0);
+  // And show camera frustum
+  const calibCamera = createPerspectiveCamera(props.resolution, cal.cameraIntrinsics);
   const helper = new CameraHelper(calibCamera);
 
   // Flip to +Z forward

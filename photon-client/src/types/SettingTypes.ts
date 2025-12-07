@@ -320,7 +320,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
         rows: 1,
         cols: 1,
         type: 1,
-        data: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        data: [600, 0, 1920 / 2, 0, 600, 1080 / 2, 0, 0, 1]
       },
       distCoeffs: {
         rows: 1,
