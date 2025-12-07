@@ -28,23 +28,24 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("hal")
     wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
 
-    // Zip
+    // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'
-
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
-    implementation("org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64") {
+
+    // The JNI libraries use wpilibNatives, the java libraries use implementation
+    wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$wpilibNativeName") {
         transitive = false
     }
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
-    implementation("org.photonvision:rubik_jni-jni:$rubikVersion:linuxarm64") {
+    wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$wpilibNativeName") {
         transitive = false
     }
     implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
         transitive = false
     }
-    implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {
+    wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$wpilibNativeName") {
         transitive = false
     }
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$libcameraDriverVersion"
