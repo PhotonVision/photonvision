@@ -423,6 +423,17 @@ jobs:
             cpu: cortex-a7
             image_additional_mb: 0
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
+          - os: ubuntu-24.04-arm
+            artifact-name: LinuxArm64
+            image_suffix: rubikpi3
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
+            minimum_free_mb: 1024
+            root_location: 'offset=569376768'
+          - os: ubuntu-24.04-arm
+            artifact-name: LinuxArm64
+            image_suffix: orangepi5
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
+            minimum_free_mb: 1024
 
     runs-on: ${{ matrix.os }}
     name: smoketest-${{ matrix.image_suffix }}
@@ -432,16 +443,13 @@ jobs:
         with:
           name: jar-${{ matrix.artifact-name }}
 
-      - uses: pguyot/arm-runner-action@v2
+      - uses: photonvision/photon-image-runner@HEAD
         name: Run photon smoketest
         id: generate_image
         with:
-          base_image: ${{ matrix.image_url }}
-          image_additional_mb: ${{ matrix.image_additional_mb }}
-          optimize_image: yes
-          cpu: ${{ matrix.cpu }}
-          # We do _not_ wanna copy photon into the image. Bind mount instead
-          bind_mount_repository: true
+          image_url: ${{ matrix.image_url }}
+          minimum_free_mb: ${{ matrix.image_additional_mb }}
+          root_location: ${{ matrix.root_location || 'partition=2' }}
           # our image better have java installed already
           commands: |
             java -jar ${{ matrix.extraOpts }} *.jar --smoketest
