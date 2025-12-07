@@ -67,26 +67,21 @@ public class StatusLED implements AutoCloseable {
         boolean blink = blinkCounter > 0;
 
         switch (status) {
-            case NT_CONNECTED_TARGETS_VISIBLE:
-                // Blue
-                setRGB(false, false, true);
-                break;
-            case NT_CONNECTED_TARGETS_MISSING:
-                // Blinking Green
-                setRGB(false, blink, false);
-                break;
-            case NT_DISCONNECTED_TARGETS_VISIBLE:
-                // Blinking Blue
-                setRGB(false, false, blink);
-                break;
-            case NT_DISCONNECTED_TARGETS_MISSING:
-                // Blinking Yellow
-                setRGB(blink, blink, false);
-                break;
-            case GENERIC_ERROR:
-                // Blinking Red
-                setRGB(blink, false, false);
-                break;
+            case NT_CONNECTED_TARGETS_VISIBLE ->
+                    // Blue
+                    setRGB(false, false, true);
+            case NT_CONNECTED_TARGETS_MISSING ->
+                    // Blinking Green
+                    setRGB(false, blink, false);
+            case NT_DISCONNECTED_TARGETS_VISIBLE ->
+                    // Blinking Blue
+                    setRGB(false, false, blink);
+            case NT_DISCONNECTED_TARGETS_MISSING ->
+                    // Blinking Yellow
+                    setRGB(blink, blink, false);
+            case GENERIC_ERROR ->
+                    // Blinking Red
+                    setRGB(blink, false, false);
         }
 
         blinkCounter++;
