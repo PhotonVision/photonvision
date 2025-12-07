@@ -23,15 +23,17 @@ import org.photonvision.jni.LibraryLoader;
 
 public class LoadJNI {
     public enum JNITypes {
-        RUBIK_DETECTOR(false),
-        RKNN_DETECTOR(false),
-        MRCAL(false),
-        LIBCAMERA(false);
+        RUBIK_DETECTOR(false, "tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"),
+        RKNN_DETECTOR(false, "rga", "rknnrt", "rknn_jni"),
+        MRCAL(false, "mrcal_jni"),
+        LIBCAMERA(false, "photonlibcamera");
 
         private volatile boolean hasLoaded;
+        public final String[] libraries;
 
-        JNITypes(boolean hasLoaded) {
+        JNITypes(boolean hasLoaded, String... libraries) {
             this.hasLoaded = hasLoaded;
+            this.libraries = libraries;
         }
 
         public boolean hasLoaded() {
@@ -50,27 +52,8 @@ public class LoadJNI {
             return;
         }
 
-        switch (type) {
-            case RUBIK_DETECTOR:
-                CombinedRuntimeLoader.loadLibraries(
-                        LoadJNI.class, "tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni");
-                type.setHasLoaded(true);
-                break;
-            case RKNN_DETECTOR:
-                CombinedRuntimeLoader.loadLibraries(LoadJNI.class, "rga", "rknnrt", "rknn_jni");
-                type.setHasLoaded(true);
-                break;
-            case MRCAL:
-                CombinedRuntimeLoader.loadLibraries(LoadJNI.class, "mrcal_jni");
-                type.setHasLoaded(true);
-                break;
-            case LIBCAMERA:
-                CombinedRuntimeLoader.loadLibraries(LoadJNI.class, "photonlibcamera");
-                type.setHasLoaded(true);
-                break;
-            default:
-                throw new IOException("Unknown JNI type: " + type);
-        }
+        CombinedRuntimeLoader.loadLibraries(type.getClass(), type.libraries);
+        type.setHasLoaded(true);
     }
 
     public static boolean loadLibraries() {
