@@ -274,7 +274,7 @@ export interface CameraSettingsChangeRequest {
   quirksToChange: Record<ValidQuirks, boolean>;
 }
 
-export const PlaceholderCameraSettings: UiCameraConfiguration = {
+export const PlaceholderCameraSettings: UiCameraConfiguration = Object.freeze({
   cameraPath: "/dev/null",
 
   nickname: "Placeholder Camera",
@@ -391,7 +391,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
   isConnected: true,
   hasConnected: true,
   mismatch: false
-};
+});
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
