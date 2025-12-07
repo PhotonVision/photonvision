@@ -327,25 +327,27 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         </div>
         <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset="7">
           <template #activator="{ props }">
-            <v-icon color="#c5c5c5" v-bind="props" @click="cancelPipelineNameEdit"> mdi-menu </v-icon>
+            <v-icon color="#c5c5c5" v-bind="props" data-testid="pipeline-menu" @click="cancelPipelineNameEdit">
+              mdi-menu
+            </v-icon>
           </template>
           <v-list density="compact" color="primary">
-            <v-list-item @click="startPipelineNameEdit">
+            <v-list-item data-testid="rename-pipeline" @click="startPipelineNameEdit">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item @click="duplicateCurrentPipeline">
+            <v-list-item data-testid="duplicate-pipeline" @click="duplicateCurrentPipeline">
               <v-list-item-title>
                 <pv-icon color="#c5c5c5" :right="true" icon-name="mdi-content-copy" tooltip="Duplicate pipeline" />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item @click="showCreatePipelineDialog">
+            <v-list-item data-testid="add-pipeline" @click="showCreatePipelineDialog">
               <v-list-item-title>
                 <pv-icon color="green" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
+            <v-list-item data-testid="delete-pipeline" @click="showPipelineDeletionConfirmationDialog = true">
               <v-list-item-title>
                 <pv-icon
                   color="red-darken-2"

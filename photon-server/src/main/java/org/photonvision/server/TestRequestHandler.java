@@ -18,6 +18,8 @@
 package org.photonvision.server;
 
 import io.javalin.http.Context;
+
+import org.photonvision.Main;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.hardware.Platform;
@@ -62,6 +64,7 @@ public class TestRequestHandler {
     public static void testMode(Context ctx) {
         logger.info("Test mode activated");
         RequestHandler.setTestMode(true);
+        Main.addTestModeSources();
         ctx.status(200).result("Test mode activated");
     }
 }

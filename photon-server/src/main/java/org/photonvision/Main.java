@@ -122,7 +122,7 @@ public class Main {
         return true;
     }
 
-    private static void addTestModeSources() {
+    public static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
         CameraConfiguration camConf2024 =
