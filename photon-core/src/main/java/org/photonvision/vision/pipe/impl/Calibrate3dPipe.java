@@ -202,7 +202,7 @@ public class Calibrate3dPipe
                                     Arrays.fill(array, true);
                                     return array;
                                 })
-                        .toList();
+                        .collect(Collectors.toList());
 
         var observations =
                 createObservations(

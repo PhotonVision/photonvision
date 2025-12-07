@@ -289,7 +289,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 videoModesList.stream()
                         .distinct() // remove redundant video mode entries
                         .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                        .toList();
+                        .collect(Collectors.toList());
         // The ordering is usually more logical when done like this. It typically puts higher FPSes
         // closer to the bottom.
         Collections.reverse(sortedList);
