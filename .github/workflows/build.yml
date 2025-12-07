@@ -416,27 +416,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
-            image_suffix: RaspberryPi
+          - image_suffix: RaspberryPi
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
-          - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
-            image_suffix: rubikpi3
+          - image_suffix: rubikpi3
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
             root_location: 'offset=569376768'
-          - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
-            image_suffix: orangepi5
+          - image_suffix: orangepi5
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04-arm
     name: smoketest-${{ matrix.image_suffix }}
 
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: jar-${{ matrix.artifact-name }}
+          name: jar-LinuxArm64
 
       - uses: photonvision/photon-image-runner@HEAD
         name: Run photon smoketest
