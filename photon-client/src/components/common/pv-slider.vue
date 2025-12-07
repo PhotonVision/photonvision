@@ -27,7 +27,13 @@ function debounce(func: (...args: any[]) => void, wait: number) {
 }
 
 const debouncedEmit = debounce((v: number) => {
-  emit("update:modelValue", v);
+  if (v < props.min) {
+    emit("update:modelValue", props.min);
+  } else if (v > props.max) {
+    emit("update:modelValue", props.max);
+  } else {
+    emit("update:modelValue", v);
+  }
 }, 20);
 
 const localValue = computed({
