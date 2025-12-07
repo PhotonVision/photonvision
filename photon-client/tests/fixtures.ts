@@ -15,34 +15,35 @@ export const test = base.extend<TestFixtures>({
     axios.defaults.baseURL = "http://localhost:5800/api/test";
     await use(page);
   },
-  fileSetup: [async ({ }, use, testInfo) => {
+  fileSetup: [
+    async ({}, use, testInfo) => {
+      const projectName = testInfo.project.name;
+      const filePath = testInfo.file;
 
-    const projectName = testInfo.project.name;
-    const filePath = testInfo.file;
-    
-    // Initialize set for this project if it doesn't exist
-    if (!setupFiles.has(projectName)) {
-      setupFiles.set(projectName, new Set());
-    }
-    
-    const projectFiles = setupFiles.get(projectName)!;
-    
-    // Only run setup once per file per project (browser)
-    if (!projectFiles.has(filePath)) {
-      projectFiles.add(filePath);
+      // Initialize set for this project if it doesn't exist
+      if (!setupFiles.has(projectName)) {
+        setupFiles.set(projectName, new Set());
+      }
 
+      const projectFiles = setupFiles.get(projectName)!;
 
-      console.log("Running before all tests: Resetting backend state...");
-      await axios.post("http://localhost:5800/api/test/resetBackend");
-      await axios.post("http://localhost:5800/api/test/activateTestMode");
-    }
+      // Only run setup once per file per project (browser)
+      if (!projectFiles.has(filePath)) {
+        projectFiles.add(filePath);
 
-    // Pass control to the test
-    await use();
+        console.log("Running before all tests: Resetting backend state...");
+        await axios.post("http://localhost:5800/api/test/resetBackend");
+        await axios.post("http://localhost:5800/api/test/activateTestMode");
+      }
 
-    // Note: Cleanup runs after each test, not once per file
-    // Use test.afterAll() in test files if you need per-file cleanup
-  }, { auto: true }]
+      // Pass control to the test
+      await use();
+
+      // Note: Cleanup runs after each test, not once per file
+      // Use test.afterAll() in test files if you need per-file cleanup
+    },
+    { auto: true }
+  ]
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";

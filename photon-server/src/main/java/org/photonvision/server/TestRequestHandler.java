@@ -18,7 +18,6 @@
 package org.photonvision.server;
 
 import io.javalin.http.Context;
-
 import org.photonvision.Main;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
