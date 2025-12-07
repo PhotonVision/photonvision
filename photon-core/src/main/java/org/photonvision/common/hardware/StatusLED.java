@@ -27,6 +27,7 @@ public class StatusLED implements AutoCloseable {
     public final LED redLED;
     public final LED greenLED;
     public final LED blueLED;
+    protected int blinkCounter;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
@@ -60,8 +61,6 @@ public class StatusLED implements AutoCloseable {
     public void setStatus(PhotonStatus status) {
         this.status = status;
     }
-
-    protected int blinkCounter;
 
     protected void updateLED() {
         boolean blink = blinkCounter > 0;
