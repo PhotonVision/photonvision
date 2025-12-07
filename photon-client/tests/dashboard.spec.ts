@@ -1,9 +1,7 @@
-import { test, expect } from "@playwright/test";
-import axios from "axios";
+import { expect } from "@playwright/test";
+import { test } from "./fixtures.ts";
 
 test("New Pipeline", async ({ page }) => {
-  await axios.post("http://localhost:5800/api/test/resetBackend");
-  await axios.post("http://localhost:5800/api/test/activateTestMode");
   await page.goto("http://localhost:5800/#/dashboard");
   await page.getByTestId("pipeline-menu").click();
   await page.getByTestId("add-pipeline").click();

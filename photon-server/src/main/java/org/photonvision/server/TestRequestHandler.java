@@ -36,8 +36,9 @@ public class TestRequestHandler {
     public static void handleResetRequest(Context ctx) {
         logger.info("Resetting Backend");
         // Reset backend
-        ConfigManager.nukeConfigDirectory();
+        ConfigManager.getInstance().clearConfig();
         ConfigManager.getInstance().load();
+        RequestHandler.onNukeObjectDetectionModelsRequest(ctx);
     }
 
     private record PlatformOverrideRequest(Platform platform) {}
