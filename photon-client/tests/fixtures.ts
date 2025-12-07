@@ -31,7 +31,7 @@ export const test = base.extend<TestFixtures>({
       if (!projectFiles.has(filePath)) {
         projectFiles.add(filePath);
 
-        console.log("Running before all tests: Resetting backend state...");
+        console.log("Running before all tests: Resetting backend state and activating test mode...");
         await axios.post("http://localhost:5800/api/test/resetBackend");
         await axios.post("http://localhost:5800/api/test/activateTestMode");
       }

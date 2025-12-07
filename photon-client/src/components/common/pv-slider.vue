@@ -12,6 +12,7 @@ const props = withDefaults(
     step?: number;
     disabled?: boolean;
     sliderCols?: number;
+    testid?: string;
   }>(),
   { step: 1, disabled: false, sliderCols: 8 }
 );
@@ -56,6 +57,7 @@ const localValue = computed({
         hide-details
         color="primary"
         :disabled="disabled"
+        v-bind="testid ? { 'data-testid': testid + '-slider' } : {}"
         :step="step"
         append-icon="mdi-menu-right"
         prepend-icon="mdi-menu-left"
@@ -74,6 +76,7 @@ const localValue = computed({
         density="compact"
         hide-details
         single-line
+        v-bind="testid ? { 'data-testid': testid + '-text-field' } : {}"
         type="number"
         variant="underlined"
         style="width: 100%"

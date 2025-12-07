@@ -21,6 +21,7 @@ import edu.wpi.first.hal.HAL;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.cli.*;
 import org.photonvision.common.LoadJNI;
@@ -41,7 +42,9 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -138,6 +141,10 @@ public class Main {
                                     "WPI2024"));
 
             camConf2024.FOV = TestUtils.WPI2024Images.FOV;
+            HashMap<CameraQuirk, Boolean> quirks = new HashMap<>();
+            quirks.put(CameraQuirk.Gain, true);
+            camConf2024.cameraQuirks = QuirkyCamera.DefaultCamera;
+            camConf2024.cameraQuirks.updateQuirks(quirks);
             // same camera as 2023
             camConf2024.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
 
