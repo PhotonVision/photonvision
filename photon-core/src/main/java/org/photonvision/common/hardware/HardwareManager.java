@@ -131,12 +131,14 @@ public class HardwareManager {
 
     public static void configureCustomGPIO(HardwareConfig hardwareConfig) {
         // Configure diozero to use custom commands
-        System.setProperty("diozero.devicefactory", CustomDeviceFactory.class.getName());
-        System.setProperty("diozero.custom.getGPIO", hardwareConfig.getGPIOCommand);
-        System.setProperty("diozero.custom.setGPIO", hardwareConfig.setGPIOCommand);
-        System.setProperty("diozero.custom.setPWM", hardwareConfig.setPWMCommand);
-        System.setProperty("diozero.custom.setPWMFrequency", hardwareConfig.setPWMFrequencyCommand);
-        System.setProperty("diozero.custom.releaseGPIO", hardwareConfig.releaseGPIOCommand);
+        System.setProperty(
+                DeviceFactoryHelper.DEVICE_FACTORY_PROP, CustomDeviceFactory.class.getName());
+        System.setProperty(CustomDeviceFactory.GET_GPIO_PROP, hardwareConfig.getGPIOCommand);
+        System.setProperty(CustomDeviceFactory.SET_GPIO_PROP, hardwareConfig.setGPIOCommand);
+        System.setProperty(CustomDeviceFactory.SET_PWM_PROP, hardwareConfig.setPWMCommand);
+        System.setProperty(
+                CustomDeviceFactory.SET_PWM_FREQUENCY_PROP, hardwareConfig.setPWMFrequencyCommand);
+        System.setProperty(CustomDeviceFactory.RELEASE_GPIO_PROP, hardwareConfig.releaseGPIOCommand);
 
         BoardPinInfo pinInfo = DeviceFactoryHelper.getNativeDeviceFactory().getBoardPinInfo();
 
