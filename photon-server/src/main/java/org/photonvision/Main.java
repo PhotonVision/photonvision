@@ -212,6 +212,7 @@ public class Main {
         try {
             if (Platform.isRaspberryPi()) {
                 LoadJNI.forceLoad(LoadJNI.JNITypes.LIBCAMERA);
+                logger.info("Loaded libcamera-JNI");
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
@@ -219,20 +220,22 @@ public class Main {
         try {
             if (Platform.isRK3588()) {
                 LoadJNI.forceLoad(LoadJNI.JNITypes.RKNN_DETECTOR);
+                logger.info("Loaded RKNN-JNI");
             } else {
                 logger.error("Platform does not support RKNN based machine learning!");
             }
         } catch (IOException e) {
-            logger.error("Failed to load rknn-JNI!", e);
+            logger.error("Failed to load RKNN-JNI!", e);
         }
         try {
             if (Platform.isQCS6490()) {
                 LoadJNI.forceLoad(LoadJNI.JNITypes.RUBIK_DETECTOR);
+                logger.info("Loaded Rubik-JNI");
             } else {
                 logger.error("Platform does not support Rubik based machine learning!");
             }
         } catch (IOException e) {
-            logger.error("Failed to load rubik-JNI!", e);
+            logger.error("Failed to load Rubik-JNI!", e);
         }
         try {
             LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
