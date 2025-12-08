@@ -29,6 +29,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
@@ -58,7 +59,7 @@ public class VisionSourceManagerTest {
 
     @BeforeAll
     public static void loadLibraries() {
-        assertTrue(TestUtils.loadLibraries());
+        assertTrue(LoadJNI.loadLibraries());
 
         // Broadcast all still calls into configmanager (ew) so set that up here
         ConfigManager.getInstance().load();

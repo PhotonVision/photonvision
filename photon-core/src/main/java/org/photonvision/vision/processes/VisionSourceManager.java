@@ -27,7 +27,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
-
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;

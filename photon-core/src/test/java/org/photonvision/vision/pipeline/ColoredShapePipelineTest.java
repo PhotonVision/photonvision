@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -89,7 +90,7 @@ public class ColoredShapePipelineTest {
     }
 
     public static void main(String[] args) {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         System.out.println(
                 TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false));
         var frameProvider =

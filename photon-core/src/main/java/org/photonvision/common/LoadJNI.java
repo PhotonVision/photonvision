@@ -52,7 +52,7 @@ public class LoadJNI {
             return;
         }
 
-        CombinedRuntimeLoader.loadLibraries(type.getClass(), type.libraries);
+        CombinedRuntimeLoader.loadLibraries(LoadJNI.class, type.libraries);
         type.setHasLoaded(true);
     }
 
