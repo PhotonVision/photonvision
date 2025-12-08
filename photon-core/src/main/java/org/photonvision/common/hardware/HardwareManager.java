@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware;
 
 import com.diozero.api.DeviceMode;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -31,6 +32,7 @@ import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.GPIO.CustomAdapter;
 import org.photonvision.common.hardware.GPIO.CustomDeviceFactory;
 import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
@@ -89,13 +91,17 @@ public class HardwareManager {
                 NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
         ledModeState.set(VisionLEDMode.kDefault.value);
 
+        NativeDeviceFactoryInterface deviceFactory;
         if (hardwareConfig.hasGPIOCommandsConfigured()) {
-            HardwareManager.configureCustomGPIO(hardwareConfig);
+            deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
+        } else {
+            deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
         }
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins, hardwareConfig.statusRGBActiveHigh)
+                        ? new StatusLED(
+                                deviceFactory, hardwareConfig.statusRGBPins, hardwareConfig.statusRGBActiveHigh)
                         : null;
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
@@ -103,6 +109,7 @@ public class HardwareManager {
                 hardwareConfig.ledPins.isEmpty()
                         ? null
                         : new VisionLED(
+                                deviceFactory,
                                 hardwareConfig.ledPins,
                                 hardwareConfig.ledsCanDim,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
@@ -129,18 +136,17 @@ public class HardwareManager {
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
-    public static void configureCustomGPIO(HardwareConfig hardwareConfig) {
-        // Configure diozero to use custom commands
-        System.setProperty(
-                DeviceFactoryHelper.DEVICE_FACTORY_PROP, CustomDeviceFactory.class.getName());
-        System.setProperty(CustomDeviceFactory.GET_GPIO_PROP, hardwareConfig.getGPIOCommand);
-        System.setProperty(CustomDeviceFactory.SET_GPIO_PROP, hardwareConfig.setGPIOCommand);
-        System.setProperty(CustomDeviceFactory.SET_PWM_PROP, hardwareConfig.setPWMCommand);
-        System.setProperty(
-                CustomDeviceFactory.SET_PWM_FREQUENCY_PROP, hardwareConfig.setPWMFrequencyCommand);
-        System.setProperty(CustomDeviceFactory.RELEASE_GPIO_PROP, hardwareConfig.releaseGPIOCommand);
-
-        BoardPinInfo pinInfo = DeviceFactoryHelper.getNativeDeviceFactory().getBoardPinInfo();
+    public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
+        // Create a new adapter and device factory using the commands from hardwareConfig
+        CustomAdapter adapter =
+                new CustomAdapter(
+                        hardwareConfig.getGPIOCommand,
+                        hardwareConfig.setGPIOCommand,
+                        hardwareConfig.setPWMCommand,
+                        hardwareConfig.setPWMFrequencyCommand,
+                        hardwareConfig.setPWMFrequencyCommand);
+        CustomDeviceFactory deviceFactory = new CustomDeviceFactory(adapter);
+        BoardPinInfo pinInfo = deviceFactory.getBoardPinInfo();
 
         // Populate pin info according to hardware config
         for (int pin : hardwareConfig.ledPins) {
@@ -153,6 +159,8 @@ public class HardwareManager {
         for (int pin : hardwareConfig.statusRGBPins) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
+
+        return deviceFactory;
     }
 
     public void setBrightnessPercent(int percent) {
