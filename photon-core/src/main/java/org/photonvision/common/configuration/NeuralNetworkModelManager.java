@@ -203,15 +203,11 @@ public class NeuralNetworkModelManager {
             case LINUX_QCS6490 -> {
                 if (LoadJNI.JNITypes.RUBIK_DETECTOR.hasLoaded()) {
                     supportedBackends.add(Family.RUBIK);
-                } else {
-                    logger.warn("RUBIK_DETECTOR JNI library failed to load, skipping Rubik backend.");
                 }
             }
             case LINUX_RK3588_64 -> {
                 if (LoadJNI.JNITypes.RKNN_DETECTOR.hasLoaded()) {
                     supportedBackends.add(Family.RKNN);
-                } else {
-                    logger.warn("RKNN_DETECTOR JNI library failed to load, skipping RKNN backend.");
                 }
             }
             default -> {
@@ -435,8 +431,7 @@ public class NeuralNetworkModelManager {
             }
         }
 
-        // Used for checking if the model to be extracted is supported for this
-        // architecture
+        // Used for checking if the model to be extracted is supported for this architecture
         ArrayList<String> supportedModelFileNames = new ArrayList<String>();
         for (ModelProperties model : supportedProperties.getModels()) {
             supportedModelFileNames.add(model.modelPath().getFileName().toString());
