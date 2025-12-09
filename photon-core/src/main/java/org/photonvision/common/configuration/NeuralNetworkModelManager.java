@@ -46,11 +46,15 @@ import org.photonvision.vision.objects.RubikModel;
 /**
  * Manages the loading of neural network models.
  *
- * <p>Models are loaded from the filesystem at the <code>modelsFolder</code> location. PhotonVision
- * also supports shipping pre-trained models as resources in the JAR. If the model has already been
+ * <p>
+ * Models are loaded from the filesystem at the <code>modelsFolder</code>
+ * location. PhotonVision
+ * also supports shipping pre-trained models as resources in the JAR. If the
+ * model has already been
  * extracted to the filesystem, it will not be extracted again.
  *
- * <p>Each model must have a corresponding {@link ModelProperties} entry in {@link
+ * <p>
+ * Each model must have a corresponding {@link ModelProperties} entry in {@link
  * NeuralNetworkPropertyManager}.
  */
 public class NeuralNetworkModelManager {
@@ -60,95 +64,95 @@ public class NeuralNetworkModelManager {
     private final List<Family> supportedBackends = new ArrayList<>();
 
     /**
-     * This function stores the properties of the shipped object detection models. It is stored as a
+     * This function stores the properties of the shipped object detection models.
+     * It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
      */
     private NeuralNetworkPropertyManager getShippedProperties(File modelsDirectory) {
         NeuralNetworkPropertyManager nnProps = new NeuralNetworkPropertyManager();
 
-        LinkedList<String> cocoLabels =
-                new LinkedList<String>(
-                        List.of(
-                                "person",
-                                "bicycle",
-                                "car",
-                                "motorcycle",
-                                "airplane",
-                                "bus",
-                                "train",
-                                "truck",
-                                "boat",
-                                "traffic light",
-                                "fire hydrant",
-                                "stop sign",
-                                "parking meter",
-                                "bench",
-                                "bird",
-                                "cat",
-                                "dog",
-                                "horse",
-                                "sheep",
-                                "cow",
-                                "elephant",
-                                "bear",
-                                "zebra",
-                                "giraffe",
-                                "backpack",
-                                "umbrella",
-                                "handbag",
-                                "tie",
-                                "suitcase",
-                                "frisbee",
-                                "skis",
-                                "snowboard",
-                                "sports ball",
-                                "kite",
-                                "baseball bat",
-                                "baseball glove",
-                                "skateboard",
-                                "surfboard",
-                                "tennis racket",
-                                "bottle",
-                                "wine glass",
-                                "cup",
-                                "fork",
-                                "knife",
-                                "spoon",
-                                "bowl",
-                                "banana",
-                                "apple",
-                                "sandwich",
-                                "orange",
-                                "broccoli",
-                                "carrot",
-                                "hot dog",
-                                "pizza",
-                                "donut",
-                                "cake",
-                                "chair",
-                                "couch",
-                                "potted plant",
-                                "bed",
-                                "dining table",
-                                "toilet",
-                                "tv",
-                                "laptop",
-                                "mouse",
-                                "remote",
-                                "keyboard",
-                                "cell phone",
-                                "microwave",
-                                "oven",
-                                "toaster",
-                                "sink",
-                                "refrigerator",
-                                "book",
-                                "clock",
-                                "vase",
-                                "scissors",
-                                "teddy bear",
-                                "hair drier",
-                                "toothbrush"));
+        LinkedList<String> cocoLabels = new LinkedList<String>(
+                List.of(
+                        "person",
+                        "bicycle",
+                        "car",
+                        "motorcycle",
+                        "airplane",
+                        "bus",
+                        "train",
+                        "truck",
+                        "boat",
+                        "traffic light",
+                        "fire hydrant",
+                        "stop sign",
+                        "parking meter",
+                        "bench",
+                        "bird",
+                        "cat",
+                        "dog",
+                        "horse",
+                        "sheep",
+                        "cow",
+                        "elephant",
+                        "bear",
+                        "zebra",
+                        "giraffe",
+                        "backpack",
+                        "umbrella",
+                        "handbag",
+                        "tie",
+                        "suitcase",
+                        "frisbee",
+                        "skis",
+                        "snowboard",
+                        "sports ball",
+                        "kite",
+                        "baseball bat",
+                        "baseball glove",
+                        "skateboard",
+                        "surfboard",
+                        "tennis racket",
+                        "bottle",
+                        "wine glass",
+                        "cup",
+                        "fork",
+                        "knife",
+                        "spoon",
+                        "bowl",
+                        "banana",
+                        "apple",
+                        "sandwich",
+                        "orange",
+                        "broccoli",
+                        "carrot",
+                        "hot dog",
+                        "pizza",
+                        "donut",
+                        "cake",
+                        "chair",
+                        "couch",
+                        "potted plant",
+                        "bed",
+                        "dining table",
+                        "toilet",
+                        "tv",
+                        "laptop",
+                        "mouse",
+                        "remote",
+                        "keyboard",
+                        "cell phone",
+                        "microwave",
+                        "oven",
+                        "toaster",
+                        "sink",
+                        "refrigerator",
+                        "book",
+                        "clock",
+                        "vase",
+                        "scissors",
+                        "teddy bear",
+                        "hair drier",
+                        "toothbrush"));
 
         nnProps.addModelProperties(
                 new ModelProperties(
@@ -200,16 +204,10 @@ public class NeuralNetworkModelManager {
      */
     private NeuralNetworkModelManager() {
         switch (Platform.getCurrentPlatform()) {
-            case LINUX_QCS6490 -> {
-                if (LoadJNI.JNITypes.RUBIK_DETECTOR.hasLoaded()) {
-                    supportedBackends.add(Family.RUBIK);
-                }
-            }
-            case LINUX_RK3588_64 -> {
-                if (LoadJNI.JNITypes.RKNN_DETECTOR.hasLoaded()) {
-                    supportedBackends.add(Family.RKNN);
-                }
-            }
+            case LINUX_QCS6490 -> supportedBackends.add(Family.RUBIK);
+
+            case LINUX_RK3588_64 -> supportedBackends.add(Family.RKNN);
+
             default -> {
                 logger.warn(
                         "No supported neural network backends found for this platform: "
@@ -221,7 +219,8 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Returns the singleton instance of the NeuralNetworkModelManager. Call getInstance() to use the
+     * Returns the singleton instance of the NeuralNetworkModelManager. Call
+     * getInstance() to use the
      * default (no reset), or getInstance(true) to reset.
      *
      * @return The singleton instance
@@ -231,7 +230,8 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Returns the singleton instance of the NeuralNetworkModelManager, optionally resetting it.
+     * Returns the singleton instance of the NeuralNetworkModelManager, optionally
+     * resetting it.
      *
      * @param reset If true, resets the instance
      * @return The singleton instance
@@ -279,18 +279,23 @@ public class NeuralNetworkModelManager {
     /**
      * Stores model information, such as the model file, labels, and version.
      *
-     * <p>The first model in the list is the default model.
+     * <p>
+     * The first model in the list is the default model.
      */
     private Map<Family, ArrayList<Model>> models;
 
     /**
-     * Retrieves the model with the specified name, assuming it is available under a supported
+     * Retrieves the model with the specified name, assuming it is available under a
+     * supported
      * backend.
      *
-     * <p>If this method returns `Optional.of(..)` then the model should be safe to load.
+     * <p>
+     * If this method returns `Optional.of(..)` then the model should be safe to
+     * load.
      *
      * @param modelUID the unique identifier of the model to retrieve
-     * @return an Optional containing the model if found, or an empty Optional if not found
+     * @return an Optional containing the model if found, or an empty Optional if
+     *         not found
      */
     public Optional<Model> getModel(String modelUID) {
         if (models == null) {
@@ -300,8 +305,8 @@ public class NeuralNetworkModelManager {
         // Check if the model exists in any supported backend
         for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
-                Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getUID().equals(modelUID)).findFirst();
+                Optional<Model> model = models.get(backend).stream().filter(m -> m.getUID().equals(modelUID))
+                        .findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
@@ -326,8 +331,8 @@ public class NeuralNetworkModelManager {
             models = new HashMap<>();
         }
 
-        ModelProperties properties =
-                ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager().getModel(path);
+        ModelProperties properties = ConfigManager.getInstance().getConfig().neuralNetworkPropertyManager()
+                .getModel(path);
 
         if (properties == null) {
             logger.error(
@@ -371,7 +376,9 @@ public class NeuralNetworkModelManager {
     /**
      * Discovers DNN models from the specified folder.
      *
-     * <p>This makes the assumption that all of the models have their properties stored in the
+     * <p>
+     * This makes the assumption that all of the models have their properties stored
+     * in the
      * database
      */
     public void discoverModels() {
@@ -390,9 +397,8 @@ public class NeuralNetworkModelManager {
             files
                     .filter(Files::isRegularFile)
                     .filter(
-                            path ->
-                                    supportedBackends.stream()
-                                            .anyMatch(family -> path.toString().endsWith(family.extension())))
+                            path -> supportedBackends.stream()
+                                    .anyMatch(family -> path.toString().endsWith(family.extension())))
                     .forEach(this::loadModel);
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);
@@ -415,7 +421,8 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Extracts models from the JAR and copies them to disk. Also copies properties into the database.
+     * Extracts models from the JAR and copies them to disk. Also copies properties
+     * into the database.
      */
     public void extractModels() {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
@@ -431,7 +438,8 @@ public class NeuralNetworkModelManager {
             }
         }
 
-        // Used for checking if the model to be extracted is supported for this architecture
+        // Used for checking if the model to be extracted is supported for this
+        // architecture
         ArrayList<String> supportedModelFileNames = new ArrayList<String>();
         for (ModelProperties model : supportedProperties.getModels()) {
             supportedModelFileNames.add(model.modelPath().getFileName().toString());
@@ -444,8 +452,7 @@ public class NeuralNetworkModelManager {
         String resource = "models";
 
         try {
-            String jarPath =
-                    getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+            String jarPath = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
             try (JarFile jarFile = new JarFile(jarPath)) {
                 Enumeration<JarEntry> entries = jarFile.entries();
                 while (entries.hasMoreElements()) {
@@ -453,8 +460,8 @@ public class NeuralNetworkModelManager {
                     if (!entry.getName().startsWith(resource + "/") || entry.isDirectory()) {
                         continue;
                     }
-                    Path outputPath =
-                            modelsDirectory.toPath().resolve(entry.getName().substring(resource.length() + 1));
+                    Path outputPath = modelsDirectory.toPath()
+                            .resolve(entry.getName().substring(resource.length() + 1));
 
                     // Check if the file already exists or if it is a supported model file
                     if ((Files.exists(outputPath))
@@ -519,24 +526,22 @@ public class NeuralNetworkModelManager {
                 return null;
             }
 
-            ModelProperties properties =
-                    ConfigManager.getInstance()
-                            .getConfig()
-                            .neuralNetworkPropertyManager()
-                            .getModel(Path.of(modelPath));
+            ModelProperties properties = ConfigManager.getInstance()
+                    .getConfig()
+                    .neuralNetworkPropertyManager()
+                    .getModel(Path.of(modelPath));
 
             String fileName = "";
             String suffix = modelFile.getName().substring(modelFile.getName().lastIndexOf('.'));
             if (properties != null) {
-                fileName =
-                        String.format(
-                                "%s-%s-%s-%dx%d-%s",
-                                properties.nickname().replace(" ", ""),
-                                properties.family(),
-                                properties.version(),
-                                properties.resolutionWidth(),
-                                properties.resolutionHeight(),
-                                String.join("_", properties.labels()));
+                fileName = String.format(
+                        "%s-%s-%s-%dx%d-%s",
+                        properties.nickname().replace(" ", ""),
+                        properties.family(),
+                        properties.version(),
+                        properties.resolutionWidth(),
+                        properties.resolutionHeight(),
+                        String.join("_", properties.labels()));
             } else {
                 fileName = new File(modelPath).getName();
             }
