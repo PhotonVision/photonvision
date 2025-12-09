@@ -27,65 +27,50 @@ import java.util.function.Supplier;
 @SuppressWarnings("unused")
 public enum Platform {
     // WPILib Supported (JNI)
-    WINDOWS_64("Windows x64", Platform::getUnknownModel, "winx64", false, OSType.WINDOWS, true),
-    LINUX_32("Linux x86", Platform::getUnknownModel, "linuxx64", false, OSType.LINUX, true),
-    LINUX_64("Linux x64", Platform::getUnknownModel, "linuxx64", false, OSType.LINUX, true),
+    WINDOWS_64("Windows x64", Platform::getUnknownModel, false, OSType.WINDOWS, true),
+    LINUX_32("Linux x86", Platform::getUnknownModel, false, OSType.LINUX, true),
+    LINUX_64("Linux x64", Platform::getUnknownModel, false, OSType.LINUX, true),
     LINUX_RASPBIAN32(
             "Linux Raspbian 32-bit",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm32",
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 32-bit image
     LINUX_RASPBIAN64(
             "Linux Raspbian 64-bit",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
     LINUX_RK3588_64(
             "Linux AARCH 64-bit with RK3588",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             false,
             OSType.LINUX,
             true),
     LINUX_QCS6490(
             "Linux AARCH 64-bit with QCS6490",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             false,
             OSType.LINUX,
             true), // QCS6490 SBCs
     LINUX_AARCH64(
             "Linux AARCH64",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             false,
             OSType.LINUX,
             true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
     LINUX_ARM64(
-            "Linux ARM64",
-            Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
-            false,
-            OSType.LINUX,
-            true), // ODROID C2, N2
+            "Linux ARM64", Platform::getLinuxDeviceTreeModel, false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
-    WINDOWS_32("Windows x86", Platform::getUnknownModel, "windowsx64", false, OSType.WINDOWS, false),
-    MACOS("Mac OS", Platform::getUnknownModel, "osxuniversal", false, OSType.MACOS, false),
+    WINDOWS_32("Windows x86", Platform::getUnknownModel, false, OSType.WINDOWS, false),
+    MACOS("Mac OS", Platform::getUnknownModel, false, OSType.MACOS, false),
     LINUX_ARM32(
-            "Linux ARM32",
-            Platform::getUnknownModel,
-            "linuxarm32",
-            false,
-            OSType.LINUX,
-            false), // ODROID XU4, C1+
-    UNKNOWN("Unsupported Platform", Platform::getUnknownModel, "", false, OSType.UNKNOWN, false);
+            "Linux ARM32", Platform::getUnknownModel, false, OSType.LINUX, false), // ODROID XU4, C1+
+    UNKNOWN("Unsupported Platform", Platform::getUnknownModel, false, OSType.UNKNOWN, false);
 
     public enum OSType {
         WINDOWS,
@@ -96,7 +81,6 @@ public enum Platform {
 
     public final String description;
     public final String hardwareModel;
-    public final String nativeLibraryFolderName;
     public final boolean isPi;
     public final OSType osType;
     public final boolean isSupported;
@@ -108,7 +92,6 @@ public enum Platform {
     Platform(
             String description,
             Supplier<String> getHardwareModel,
-            String nativeLibFolderName,
             boolean isPi,
             OSType osType,
             boolean isSupported) {
@@ -117,7 +100,6 @@ public enum Platform {
         this.isPi = isPi;
         this.osType = osType;
         this.isSupported = isSupported;
-        this.nativeLibraryFolderName = nativeLibFolderName;
     }
 
     public static void overridePlatform(Platform platform) {
@@ -159,10 +141,6 @@ public enum Platform {
 
     public static String getHardwareModel() {
         return currentPlatform.hardwareModel;
-    }
-
-    public static String getNativeLibraryFolderName() {
-        return currentPlatform.nativeLibraryFolderName;
     }
 
     public static boolean isSupported() {

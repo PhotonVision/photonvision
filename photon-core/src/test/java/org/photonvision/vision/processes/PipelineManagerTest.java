@@ -23,15 +23,15 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 
 public class PipelineManagerTest {
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

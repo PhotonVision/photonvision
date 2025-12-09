@@ -32,6 +32,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -50,8 +51,8 @@ import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 public class Calibrate3dPipeTest {
     @BeforeAll
     public static void init() throws IOException {
-        TestUtils.loadLibraries();
-        TestUtils.loadMrcal();
+        LoadJNI.loadLibraries();
+        LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
 
         var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
