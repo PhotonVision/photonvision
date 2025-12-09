@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.diozero.sbc.DeviceFactoryHelper;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
@@ -44,9 +44,9 @@ public class HardwareConfigTest {
             assertEquals(config.cpuThrottleReasonCmd, "");
             assertEquals(config.diskUsageCommand, "");
             assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
-            HardwareManager.configureCustomGPIO(config);
-            assertTrue(DeviceFactoryHelper.getNativeDeviceFactory() instanceof CustomDeviceFactory);
-            DeviceFactoryHelper.close();
+            NativeDeviceFactoryInterface deviceFactory = HardwareManager.configureCustomGPIO(config);
+            assertTrue(deviceFactory instanceof CustomDeviceFactory);
+            deviceFactory.close();
 
         } catch (IOException e) {
             e.printStackTrace();

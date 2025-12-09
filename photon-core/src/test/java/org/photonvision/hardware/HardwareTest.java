@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import com.diozero.sbc.DeviceFactoryHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.HashSet;
@@ -38,12 +37,13 @@ import org.photonvision.common.hardware.metrics.MetricsManager;
 
 public class HardwareTest {
     final HardwareConfig hardwareConfig;
+    final NativeDeviceFactoryInterface deviceFactory;
 
     HardwareTest() throws IOException {
         System.out.println("Loading Hardware configs...");
         hardwareConfig =
                 new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
-        HardwareManager.configureCustomGPIO(hardwareConfig);
+        deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
     }
 
     @Test
@@ -86,9 +86,7 @@ public class HardwareTest {
 
     @Test
     public void testCustomGPIO() throws IOException {
-        NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
-
-        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 100, 0, null)) {
+        try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
             // Verify states can be set
             led.setState(true);
             assertEquals(1, deviceFactory.getGpioValue(2));
@@ -101,9 +99,7 @@ public class HardwareTest {
 
     @Test
     public void testBlink() throws InterruptedException, IOException {
-        NativeDeviceFactoryInterface deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
-
-        try (VisionLED led = new VisionLED(List.of(2, 13), false, 0, 100, 0, null)) {
+        try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
             // Verify blinking toggles between states
             HashSet<Integer> seenValues = new HashSet<>();
             led.blink(125, 3);
