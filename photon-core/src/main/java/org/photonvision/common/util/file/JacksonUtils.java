@@ -21,22 +21,21 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ext.NioPathDeserializer;
 import com.fasterxml.jackson.databind.ext.NioPathSerializer;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.jetty.io.EofException;
@@ -45,14 +44,27 @@ public class JacksonUtils {
     public static class UIMap extends HashMap<String, Object> {}
 
     // Custom Path key deserializer for Maps with Path keys
+    public static class PathKeySerializer
+            extends com.fasterxml.jackson.databind.JsonSerializer<Path> {
+        @Override
+        public void serialize(Path value, JsonGenerator gen, SerializerProvider serializers)
+                throws IOException {
+            if (value == null) {
+                gen.writeNull();
+            } else {
+                gen.writeFieldName(value.toUri().toString());
+            }
+        }
+    }
+
+    // Custom Path key deserializer for Maps with Path keys
     public static class PathKeyDeserializer extends com.fasterxml.jackson.databind.KeyDeserializer {
         @Override
         public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
             if (key == null || key.isEmpty()) {
                 return null;
             }
-
-            return new ObjectMapper().readValue(key, Path.class);
+            return Paths.get(URI.create(key));
         }
     }
 
@@ -63,6 +75,7 @@ public class JacksonUtils {
 
         SimpleModule pathModule = new SimpleModule();
         pathModule.addSerializer(Path.class, new NioPathSerializer());
+        pathModule.addKeySerializer(Path.class, new PathKeySerializer());
         pathModule.addDeserializer(Path.class, new NioPathDeserializer());
         pathModule.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
