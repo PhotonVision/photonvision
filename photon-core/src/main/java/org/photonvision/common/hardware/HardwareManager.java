@@ -92,10 +92,14 @@ public class HardwareManager {
         ledModeState.set(VisionLEDMode.kDefault.value);
 
         NativeDeviceFactoryInterface deviceFactory;
-        if (hardwareConfig.hasGPIOCommandsConfigured()) {
-            deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
+        if (hardwareConfig.statusRGBPins.size() == 3 || !hardwareConfig.ledPins.isEmpty()) {
+            if (hardwareConfig.hasGPIOCommandsConfigured()) {
+                deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
+            } else {
+                deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
+            }
         } else {
-            deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
+            deviceFactory = null;
         }
 
         statusLED =
