@@ -217,7 +217,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     @JsonIgnore
-    public List<BoardObservation> getPerViewErrors() {
+    public List<BoardObservation> getObservations() {
         return observations;
     }
 

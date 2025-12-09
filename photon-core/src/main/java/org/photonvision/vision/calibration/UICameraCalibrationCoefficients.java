@@ -18,13 +18,19 @@
 package org.photonvision.vision.calibration;
 
 import java.util.List;
+import java.util.stream.IntStream;
 import org.opencv.core.Size;
 
 public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficients {
     public int numSnapshots;
 
-    /** Immutable list of mean errors. */
     public List<Double> meanErrors;
+    public List<Integer> numMissing;
+    public List<Integer> numOutliers;
+
+    private static int countOutliers(BoardObservation obs) {
+        return (int) obs.locationInImageSpace.stream().filter(it -> it.x < 0 || it.y < 0).count();
+    }
 
     public UICameraCalibrationCoefficients(
             Size resolution,
@@ -47,14 +53,19 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 lensmodel);
 
         this.numSnapshots = observations.size();
-        this.meanErrors =
+        this.meanErrors = observations.stream().map(BoardObservation::meanReprojectionError).toList();
+
+        this.numOutliers =
                 observations.stream()
                         .map(
-                                it2 ->
-                                        it2.reprojectionErrors.stream()
-                                                .mapToDouble(it -> Math.hypot(it.x, it.y))
-                                                .average()
-                                                .orElse(0))
+                                obs ->
+                                        IntStream.range(0, obs.cornersUsed.length)
+                                                        .filter(i -> !obs.cornersUsed[i])
+                                                        .map(i -> 1)
+                                                        .sum()
+                                                - countOutliers(obs))
                         .toList();
+        this.numMissing =
+                observations.stream().map(UICameraCalibrationCoefficients::countOutliers).toList();
     }
 }

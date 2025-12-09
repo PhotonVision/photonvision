@@ -279,6 +279,18 @@ public class Calibrate3dPipeTest {
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
 
+        // calculate RMS error
+        double totalSquaredError = 0.0;
+        long totalPoints = 0;
+        for (var obs : cal.getObservations()) {
+            double sumErrorSq =
+                    obs.reprojectionErrors.stream().mapToDouble(d -> d.x * d.x + d.y * d.y).sum();
+            totalSquaredError += sumErrorSq;
+            totalPoints += obs.reprojectionErrors.size();
+        }
+        double rmsError = Math.sqrt(totalSquaredError / totalPoints);
+        System.out.println("RMS Reprojection Error: " + rmsError);
+
         // Confirm we didn't get leaky on our mat usage
         // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this
         // doesn't

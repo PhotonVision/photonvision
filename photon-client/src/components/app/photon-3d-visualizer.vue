@@ -8,8 +8,10 @@ import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 const {
   ArrowHelper,
   BoxGeometry,
+  CameraHelper,
   Color,
   ConeGeometry,
+  Group,
   Mesh,
   MeshNormalMaterial,
   PerspectiveCamera,
@@ -19,6 +21,15 @@ const {
   WebGLRenderer
 } = await import("three");
 const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { createPerspectiveCamera } from "@/lib/ThreeUtils";
+
+const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats[
+    useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex
+  ].resolution
+);
 
 const props = defineProps<{
   targets: PhotonTarget[];
@@ -32,7 +43,7 @@ let controls: TrackballControls | undefined;
 let previousTargets: Object3D[] = [];
 const drawTargets = (targets: PhotonTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
-  if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+  if (!scene || !camera || !renderer || !controls) {
     return;
   }
 
@@ -40,7 +51,7 @@ const drawTargets = (targets: PhotonTarget[]) => {
   previousTargets = [];
 
   targets.forEach((target) => {
-    if (target.pose === undefined) return;
+    if (!target.pose) return;
 
     const geometry = new BoxGeometry(0.3 / 5, 0.2, 0.2);
     const material = new MeshNormalMaterial();
@@ -70,6 +81,18 @@ const drawTargets = (targets: PhotonTarget[]) => {
     previousTargets.push(arrow);
   });
 
+  if (calibrationCoeffs) {
+    // And show camera frustum
+    const calibCamera = createPerspectiveCamera(calibrationCoeffs.resolution, calibrationCoeffs.cameraIntrinsics, 10);
+    const helper = new CameraHelper(calibCamera);
+    const helperGroup = new Group();
+    helperGroup.add(helper);
+    // Flip to +Z forward
+    helperGroup.rotateX(-Math.PI / 2.0);
+    helperGroup.rotateY(-Math.PI / 2.0);
+    previousTargets.push(helperGroup);
+  }
+
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
   }
@@ -78,7 +101,7 @@ const onWindowResize = () => {
   const container = document.getElementById("container");
   const canvas = document.getElementById("view");
 
-  if (container === null || canvas === null || camera === undefined || renderer === undefined) {
+  if (!container || !canvas || !camera || !renderer) {
     return;
   }
 
@@ -89,7 +112,7 @@ const onWindowResize = () => {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 };
 const resetCamFirstPerson = () => {
-  if (scene === undefined || camera === undefined || controls === undefined) {
+  if (!scene || !camera || !controls) {
     return;
   }
 
@@ -103,7 +126,7 @@ const resetCamFirstPerson = () => {
   }
 };
 const resetCamThirdPerson = () => {
-  if (scene === undefined || camera === undefined || controls === undefined) {
+  if (!scene || !camera || !controls) {
     return;
   }
 
@@ -122,7 +145,7 @@ onMounted(async () => {
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
   const canvas = document.getElementById("view");
-  if (canvas === null) return;
+  if (!canvas) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
   scene.background = new Color(0xa9a9a9);
@@ -169,7 +192,7 @@ onMounted(async () => {
   controls.update();
 
   const animate = () => {
-    if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+    if (!scene || !camera || !renderer || !controls) {
       return;
     }
 
