@@ -23,14 +23,19 @@ import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
+import org.photonvision.vision.frame.provider.VideoFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class FileVisionSource extends VisionSource {
-    private final FileFrameProvider frameProvider;
+    private static final Logger logger = new Logger(FileVisionSource.class, LogGroup.Camera);
+
+    private final FrameProvider frameProvider;
     private final FileSourceSettables settables;
 
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
@@ -39,13 +44,20 @@ public class FileVisionSource extends VisionSource {
                 !cameraConfiguration.calibrations.isEmpty()
                         ? cameraConfiguration.calibrations.get(0)
                         : null;
-        frameProvider =
-                new FileFrameProvider(
-                        // TODO - create new File/replay camera info type
-                        Path.of(cameraConfiguration.getDevicePath()),
-                        cameraConfiguration.FOV,
-                        FileFrameProvider.MAX_FPS,
-                        calibration);
+
+        var path = Path.of(cameraConfiguration.getDevicePath());
+
+        if (path.endsWith(".png") || path.endsWith(".jpg") || path.endsWith(".jpeg")) {
+            logger.info("Using image file: " + path.toAbsolutePath());
+
+            frameProvider =
+                    new FileFrameProvider(
+                            // TODO - create new File/replay camera info type
+                            path, cameraConfiguration.FOV, FileFrameProvider.MAX_FPS, calibration);
+        } else {
+            logger.info("Looks like a video file, using as replay: " + path.toAbsolutePath());
+            frameProvider = new VideoFrameProvider(path, cameraConfiguration.FOV, calibration);
+        }
 
         if (getCameraConfiguration().cameraQuirks == null)
             getCameraConfiguration().cameraQuirks = QuirkyCamera.DefaultCamera;
