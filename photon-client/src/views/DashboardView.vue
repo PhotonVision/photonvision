@@ -64,10 +64,8 @@ const cameraMismatchWarningShown = computed<boolean>(() => {
   return (
     Object.values(useCameraSettingsStore().cameras)
       // Ignore placeholder camera
-      .filter((camera) => JSON.stringify(camera) !== JSON.stringify(PlaceholderCameraSettings))
-      .some((camera) => {
-        return camera.mismatch;
-      })
+      .filter((camera) => camera !== PlaceholderCameraSettings)
+      .some((camera) => camera.mismatch)
   );
 });
 
@@ -148,6 +146,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
+    <!-- Need v-model to allow the dialog to be dismissed and v-if to only display when cameras need configuration -->
     <v-dialog
       v-if="useCameraSettingsStore().needsCameraConfiguration"
       v-model="showCameraSetupDialog"

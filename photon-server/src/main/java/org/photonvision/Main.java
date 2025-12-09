@@ -38,7 +38,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.jni.RubikDetectorJNI;
 import org.photonvision.raspi.LibCameraJNILoader;
@@ -214,20 +213,7 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("WPI JNI libraries loaded.");
-
-        try {
-            boolean success = LibraryLoader.loadTargeting();
-
-            if (!success) {
-                logger.error("Failed to load photon-targeting JNI! Giving up :(");
-                System.exit(1);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load photon-targeting JNI!", e);
-            System.exit(1);
-        }
-        logger.info("photon-targeting JNI libraries loaded.");
+        logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
         if (!HAL.initialize(500, 0)) {
             logger.error("Failed to initialize the HAL! Giving up :(");
