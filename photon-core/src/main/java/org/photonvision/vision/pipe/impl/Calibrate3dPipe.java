@@ -28,6 +28,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -94,7 +95,7 @@ public class Calibrate3dPipe
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
 
-        if (LoadJNI.JNITypes.MRCAL.hasLoaded() && params.useMrCal) {
+        if (LoadJNI.hasLoaded(JNITypes.MRCAL) && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             ret =
                     calibrateMrcal(

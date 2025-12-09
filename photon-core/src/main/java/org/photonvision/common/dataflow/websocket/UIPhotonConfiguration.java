@@ -20,6 +20,7 @@ package org.photonvision.common.dataflow.websocket;
 import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -52,8 +53,8 @@ public class UIPhotonConfiguration {
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
                                 // TODO add support for other types of GPU accel
-                                LoadJNI.JNITypes.LIBCAMERA.hasLoaded() ? "Zerocopy Libcamera Working" : "",
-                                LoadJNI.JNITypes.MRCAL.hasLoaded(),
+                                LoadJNI.hasLoaded(JNITypes.LIBCAMERA) ? "Zerocopy Libcamera Working" : "",
+                                LoadJNI.hasLoaded(JNITypes.MRCAL),
                                 c.neuralNetworkPropertyManager().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),
                                 c.getHardwareConfig().deviceName.isEmpty()

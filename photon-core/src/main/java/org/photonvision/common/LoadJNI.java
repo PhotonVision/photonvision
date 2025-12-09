@@ -19,44 +19,41 @@ package org.photonvision.common;
 
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
+import java.util.HashMap;
 import org.photonvision.jni.LibraryLoader;
 
 public class LoadJNI {
-    public enum JNITypes {
-        RUBIK_DETECTOR(false, "tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"),
-        RKNN_DETECTOR(false, "rga", "rknnrt", "rknn_jni"),
-        MRCAL(false, "mrcal_jni"),
-        LIBCAMERA(false, "photonlibcamera");
+    private static HashMap<JNITypes, Boolean> loadedMap = new HashMap<>();
 
-        private volatile boolean hasLoaded;
+    public enum JNITypes {
+        RUBIK_DETECTOR("tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"),
+        RKNN_DETECTOR("rga", "rknnrt", "rknn_jni"),
+        MRCAL("mrcal_jni"),
+        LIBCAMERA("photonlibcamera");
+
         public final String[] libraries;
 
-        JNITypes(boolean hasLoaded, String... libraries) {
-            this.hasLoaded = hasLoaded;
+        JNITypes(String... libraries) {
             this.libraries = libraries;
-        }
-
-        public boolean hasLoaded() {
-            return hasLoaded;
-        }
-
-        public void setHasLoaded(boolean loaded) {
-            this.hasLoaded = loaded;
         }
     }
 
     public static synchronized void forceLoad(JNITypes type) throws IOException {
         loadLibraries();
 
-        if (type.hasLoaded()) {
+        if (loadedMap.getOrDefault(type, false)) {
             return;
         }
 
         CombinedRuntimeLoader.loadLibraries(LoadJNI.class, type.libraries);
-        type.setHasLoaded(true);
+        loadedMap.put(type, true);
     }
 
     public static boolean loadLibraries() {
         return LibraryLoader.loadWpiLibraries() && LibraryLoader.loadTargeting();
+    }
+
+    public static boolean hasLoaded(JNITypes t) {
+        return loadedMap.getOrDefault(t, false);
     }
 }
