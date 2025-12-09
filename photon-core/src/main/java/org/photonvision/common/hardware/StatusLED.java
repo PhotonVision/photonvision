@@ -19,7 +19,6 @@ package org.photonvision.common.hardware;
 
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import com.diozero.sbc.DeviceFactoryHelper;
 import java.util.List;
 import org.photonvision.common.util.TimedTaskManager;
 
@@ -30,10 +29,6 @@ public class StatusLED implements AutoCloseable {
     protected int blinkCounter;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
-
-    public StatusLED(List<Integer> statusLedPins, boolean activeHigh) {
-        this(DeviceFactoryHelper.getNativeDeviceFactory(), statusLedPins, activeHigh);
-    }
 
     public StatusLED(
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {

@@ -21,7 +21,6 @@ import com.diozero.devices.LED;
 import com.diozero.devices.PwmLed;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
-import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,23 +47,6 @@ public class VisionLED implements AutoCloseable {
     private float mappedBrightness = 0.0f;
 
     private final Consumer<Integer> modeConsumer;
-
-    public VisionLED(
-            List<Integer> ledPins,
-            boolean ledsCanDim,
-            int brightnessMin,
-            int brightnessMax,
-            int pwmFrequency,
-            Consumer<Integer> visionLEDmode) {
-        this(
-                DeviceFactoryHelper.getNativeDeviceFactory(),
-                ledPins,
-                ledsCanDim,
-                brightnessMin,
-                brightnessMax,
-                pwmFrequency,
-                visionLEDmode);
-    }
 
     public VisionLED(
             NativeDeviceFactoryInterface deviceFactory,
