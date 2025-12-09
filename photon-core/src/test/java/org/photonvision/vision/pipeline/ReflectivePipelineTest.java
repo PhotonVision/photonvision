@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -34,7 +35,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class ReflectivePipelineTest {
     @Test
     public void test2019() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var pipeline = new ReflectivePipeline();
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
@@ -72,7 +73,7 @@ public class ReflectivePipelineTest {
 
     @Test
     public void test2020() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var pipeline = new ReflectivePipeline();
 
         pipeline.getSettings().hsvHue.set(60, 100);
@@ -108,7 +109,7 @@ public class ReflectivePipelineTest {
 
     // used to run VisualVM for profiling. It won't run on unit tests.
     public static void main(String[] args) {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),

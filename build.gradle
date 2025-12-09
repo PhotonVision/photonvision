@@ -37,9 +37,9 @@ ext {
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
     javalinVersion = "6.7.0"
-    libcameraDriverVersion = "v2025.0.4"
-    rknnVersion = "dev-v2025.0.0-5-g666c0c6"
-    rubikVersion = "dev-v2025.1.0-6-g4a5e508"
+    libcameraDriverVersion = "dev-v2025.0.4-2-gc91d4b7"
+    rknnVersion = "dev-v2025.0.0-7-g83c1bf3"
+    rubikVersion = "dev-v2025.1.0-7-g39588a8"
     frcYear = "2025"
     mrcalVersion = "dev-v2025.0.0-2-g2adb187";
 

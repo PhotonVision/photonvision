@@ -26,13 +26,12 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.jni.RknnDetectorJNI;
 import org.photonvision.rknn.RknnJNI;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /** Manages an object detector using the rknn backend. */
 public class RknnObjectDetector implements ObjectDetector {
-    private static final Logger logger = new Logger(RknnDetectorJNI.class, LogGroup.General);
+    private static final Logger logger = new Logger(RknnObjectDetector.class, LogGroup.General);
 
     /** Cleaner instance to release the detector when it goes out of scope */
     private final Cleaner cleaner = Cleaner.create();
