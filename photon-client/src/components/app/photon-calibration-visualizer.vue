@@ -291,7 +291,7 @@ const cleanup = () => {
 
 onBeforeUnmount(cleanup);
 
-// If not-reloadeing, cleanup on hot reload
+// If hot-reloading, cleanup on hot reload
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     cleanup();
@@ -318,7 +318,6 @@ watch(
 
 <template>
   <div id="container" style="width: 100%; height: 100%" class="d-flex flex-column">
-    <!-- <template v-if="calibrationData"> -->
     <div class="d-flex flex-wrap pt-0 pb-2">
       <v-col cols="12" md="6" class="pl-0">
         <v-card-title class="pa-0">

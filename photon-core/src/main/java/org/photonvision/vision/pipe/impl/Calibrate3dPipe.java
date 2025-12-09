@@ -22,7 +22,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -173,8 +172,8 @@ public class Calibrate3dPipe
             // imageSize from, other parameters are output Mats
 
             Calib3d.calibrateCameraExtended(
-                    objPoints.stream().map(it -> (Mat) it).collect(Collectors.toList()),
-                    imgPoints.stream().map(it -> (Mat) it).collect(Collectors.toList()),
+                    objPoints.stream().map(it -> (Mat) it).toList(),
+                    imgPoints.stream().map(it -> (Mat) it).toList(),
                     new Size(in.get(0).size.width, in.get(0).size.height),
                     cameraMatrix,
                     distortionCoefficients,
@@ -327,9 +326,8 @@ public class Calibrate3dPipe
             tvecs.add(tvec);
         }
 
-        List<MatOfPoint3f> objPoints =
-                in.stream().map(it -> it.objectPoints).collect(Collectors.toList());
-        List<MatOfPoint2f> imgPts = in.stream().map(it -> it.imagePoints).collect(Collectors.toList());
+        List<MatOfPoint3f> objPoints = in.stream().map(it -> it.objectPoints).toList();
+        List<MatOfPoint2f> imgPts = in.stream().map(it -> it.imagePoints).toList();
         List<BoardObservation> observations =
                 createObservations(
                         in,

@@ -209,8 +209,8 @@ export interface CameraCalibrationResult {
   // We have to omit observations for bandwidth, so backend will send us this from UICameraCalibrationCoefficients
   numSnapshots: number;
   meanErrors: number[];
-  numOutliers: number[];
   numMissing: number[];
+  numOutliers: number[];
 }
 
 export enum ValidQuirks {

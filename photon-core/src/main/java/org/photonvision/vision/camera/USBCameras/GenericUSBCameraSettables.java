@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -289,7 +290,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                 videoModesList.stream()
                         .distinct() // remove redundant video mode entries
                         .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                        .toList();
+                        .collect(Collectors.toList());
         // The ordering is usually more logical when done like this. It typically puts higher FPSes
         // closer to the bottom.
         Collections.reverse(sortedList);

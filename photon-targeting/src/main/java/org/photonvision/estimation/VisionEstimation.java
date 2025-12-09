@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfDouble;
@@ -55,7 +56,7 @@ public class VisionEstimation {
                             return maybePose.map(pose3d -> new AprilTag(id, pose3d)).orElse(null);
                         })
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
