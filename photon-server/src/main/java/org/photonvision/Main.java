@@ -23,12 +23,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.OsImageVersion;
+import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.KernelLogLogger;
@@ -38,11 +39,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.LibraryLoader;
-import org.photonvision.jni.RknnDetectorJNI;
-import org.photonvision.jni.RubikDetectorJNI;
-import org.photonvision.mrcal.MrCalJNILoader;
-import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -173,8 +169,12 @@ public class Main {
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
-        if (OsImageVersion.IMAGE_VERSION.isPresent()) {
-            logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
+        if (OsImageData.IMAGE_METADATA.isPresent()) {
+            logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
+        } else if (OsImageData.IMAGE_VERSION.isPresent()) {
+            logger.info("PhotonVision image version: " + OsImageData.IMAGE_VERSION.get());
+        } else {
+            logger.info("PhotonVision image version: unknown");
         }
 
         try {
@@ -192,7 +192,7 @@ public class Main {
         }
 
         try {
-            boolean success = TestUtils.loadLibraries();
+            boolean success = LoadJNI.loadLibraries();
 
             if (!success) {
                 logger.error("Failed to load native libraries! Giving up :(");
@@ -202,20 +202,7 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("WPI JNI libraries loaded.");
-
-        try {
-            boolean success = LibraryLoader.loadTargeting();
-
-            if (!success) {
-                logger.error("Failed to load native libraries! Giving up :(");
-                System.exit(1);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load photon-targeting JNI!", e);
-            System.exit(1);
-        }
-        logger.info("photon-targeting JNI libraries loaded.");
+        logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
         if (!HAL.initialize(500, 0)) {
             logger.error("Failed to initialize the HAL! Giving up :(");
@@ -224,42 +211,36 @@ public class Main {
 
         try {
             if (Platform.isRaspberryPi()) {
-                LibCameraJNILoader.forceLoad();
+                LoadJNI.forceLoad(LoadJNI.JNITypes.LIBCAMERA);
+                logger.info("Loaded libcamera-JNI");
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
         }
         try {
             if (Platform.isRK3588()) {
-                RknnDetectorJNI.forceLoad();
-                if (RknnDetectorJNI.getInstance().isLoaded()) {
-                    logger.info("RknnDetectorJNI loaded successfully.");
-                } else {
-                    logger.error("Failed to load RknnDetectorJNI!");
-                }
+                LoadJNI.forceLoad(LoadJNI.JNITypes.RKNN_DETECTOR);
+                logger.info("Loaded RKNN-JNI");
             } else {
                 logger.error("Platform does not support RKNN based machine learning!");
             }
         } catch (IOException e) {
-            logger.error("Failed to load rknn-JNI!", e);
+            logger.error("Failed to load RKNN-JNI!", e);
         }
         try {
             if (Platform.isQCS6490()) {
-                RubikDetectorJNI.forceLoad();
-                if (RubikDetectorJNI.getInstance().isLoaded()) {
-                    logger.info("RubikDetectorJNI loaded successfully.");
-                } else {
-                    logger.error("Failed to load RubikDetectorJNI!");
-                }
+                LoadJNI.forceLoad(LoadJNI.JNITypes.RUBIK_DETECTOR);
+                logger.info("Loaded Rubik-JNI");
             } else {
                 logger.error("Platform does not support Rubik based machine learning!");
             }
         } catch (IOException e) {
-            logger.error("Failed to load rubik-JNI!", e);
+            logger.error("Failed to load Rubik-JNI!", e);
         }
         try {
-            MrCalJNILoader.forceLoad();
-        } catch (IOException e) {
+            LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
+            logger.info("mrcal-JNI loaded successfully.");
+        } catch (Exception e) {
             logger.warn(
                     "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
                             + e.getMessage());

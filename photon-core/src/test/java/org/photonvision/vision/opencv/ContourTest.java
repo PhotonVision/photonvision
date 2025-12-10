@@ -25,12 +25,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
-import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.LoadJNI;
 
 public class ContourTest {
     @BeforeEach
     public void Init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

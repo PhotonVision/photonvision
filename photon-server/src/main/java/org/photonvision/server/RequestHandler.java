@@ -74,6 +74,12 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
+    private static boolean testMode = false;
+
+    public static void setTestMode(boolean isTestMode) {
+        testMode = isTestMode;
+    }
+
     private record CommonCameraUniqueName(String cameraUniqueName) {}
 
     public static void onSettingsImportRequest(Context ctx) {
@@ -662,35 +668,36 @@ public class RequestHandler {
             ModelProperties modelProperties =
                     new ModelProperties(modelPath, nickname, labels, width, height, family, version);
 
-            ObjectDetector objDetector = null;
-
-            try {
-                objDetector =
-                        switch (family) {
-                            case RUBIK -> new RubikModel(modelProperties).load();
-                            case RKNN -> new RknnModel(modelProperties).load();
-                        };
-            } catch (RuntimeException e) {
-                ctx.status(400);
-                ctx.result("Failed to load object detection model: " + e.getMessage());
+            if (!testMode) {
+                ObjectDetector objDetector = null;
 
                 try {
-                    Files.deleteIfExists(modelPath);
-                } catch (IOException ex) {
-                    e.addSuppressed(ex);
-                }
+                    objDetector =
+                            switch (family) {
+                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RKNN -> new RknnModel(modelProperties).load();
+                            };
+                } catch (RuntimeException e) {
+                    ctx.status(400);
+                    ctx.result("Failed to load object detection model: " + e.getMessage());
 
-                logger.error("Failed to load object detection model", e);
-                return;
-            } finally {
-                // this finally block will run regardless of what happens in try/catch
-                // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
-                // for a summary on how finally works
-                if (objDetector != null) {
-                    objDetector.release();
+                    try {
+                        Files.deleteIfExists(modelPath);
+                    } catch (IOException ex) {
+                        e.addSuppressed(ex);
+                    }
+
+                    logger.error("Failed to load object detection model", e);
+                    return;
+                } finally {
+                    // this finally block will run regardless of what happens in try/catch
+                    // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
+                    // for a summary on how finally works
+                    if (objDetector != null) {
+                        objDetector.release();
+                    }
                 }
             }
-
             ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
@@ -843,33 +850,30 @@ public class RequestHandler {
         }
     }
 
-    private record DeleteObjectDetectionModelRequest(String modelPath) {}
+    private record DeleteObjectDetectionModelRequest(Path modelPath) {}
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
-        Path modelPath;
 
         try {
             DeleteObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
 
-            modelPath = Path.of(request.modelPath.substring(7));
-
-            if (modelPath == null) {
+            if (request.modelPath == null) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
                 return;
             }
 
-            if (!modelPath.toFile().exists()) {
+            if (!request.modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
                 logger.error("The provided model path does not exist");
                 return;
             }
 
-            if (!modelPath.toFile().delete()) {
+            if (!request.modelPath.toFile().delete()) {
                 ctx.status(500);
                 ctx.result("Unable to delete the model file");
                 logger.error("Unable to delete the model file");
@@ -879,7 +883,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .removeModel(modelPath)) {
+                    .removeModel(request.modelPath)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
@@ -903,26 +907,24 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+    private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
             RenameObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
 
-            Path modelPath = Path.of(request.modelPath);
-
-            if (modelPath == null) {
+            if (request.modelPath == null) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
                 return;
             }
 
-            if (!modelPath.toFile().exists()) {
+            if (!request.modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
-                logger.error("The model path: " + modelPath + " does not exist");
+                logger.error("The model path: " + request.modelPath + " does not exist");
                 return;
             }
 
@@ -936,7 +938,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .renameModel(modelPath, request.newName)) {
+                    .renameModel(request.modelPath, request.newName)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");

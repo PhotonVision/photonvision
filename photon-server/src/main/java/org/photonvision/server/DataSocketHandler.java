@@ -155,7 +155,7 @@ public class DataSocketHandler {
                             // var name = (String) data.get("pipelineName");
                             var arr = (ArrayList<Object>) entryValue;
                             var name = (String) arr.get(0);
-                            var type = PipelineType.values()[(Integer) arr.get(1) + 2];
+                            var type = PipelineType.values()[(Integer) arr.get(1) + 3];
 
                             dcService.publishEvent(
                                     new IncomingWebSocketEvent<>(

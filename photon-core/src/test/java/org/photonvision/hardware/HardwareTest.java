@@ -21,17 +21,17 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.MetricsManager;
-import org.photonvision.common.util.TestUtils;
 
 public class HardwareTest {
     @Test
     public void testHardware() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         MetricsManager mm = new MetricsManager();
 
         if (!Platform.isRaspberryPi()) return;

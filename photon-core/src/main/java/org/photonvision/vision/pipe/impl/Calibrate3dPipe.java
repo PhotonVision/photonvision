@@ -27,12 +27,13 @@ import org.apache.commons.io.FileUtils;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.mrcal.MrCalJNI.MrCalResult;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
@@ -94,7 +95,7 @@ public class Calibrate3dPipe
         CameraCalibrationCoefficients ret;
         var start = System.nanoTime();
 
-        if (MrCalJNILoader.getInstance().isLoaded() && params.useMrCal) {
+        if (LoadJNI.hasLoaded(JNITypes.MRCAL) && params.useMrCal) {
             logger.debug("Calibrating with mrcal!");
             ret =
                     calibrateMrcal(
