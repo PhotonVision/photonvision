@@ -244,11 +244,14 @@ public class NetworkUtils {
                     }
                 }
                 // Connected to a localhost server or we are the server? Try resolving ourselves. Only
-                // returns a localhost address when there's no other interface available
-                byte[] mac =
-                        NetworkInterface.getByInetAddress(InetAddress.getLocalHost()).getHardwareAddress();
-                if (mac != null) {
-                    return formatMacAddress(mac);
+                // returns a localhost address when there's no other interface available on Windows, but
+                // like to return a localhost address on Linux
+                var localIface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+                if (localIface != null) {
+                    byte[] mac = localIface.getHardwareAddress();
+                    if (mac != null) {
+                        return formatMacAddress(mac);
+                    }
                 }
                 // Fine. Just find something with a MAC address
                 for (var iface : NetworkInterface.networkInterfaces().toList()) {
