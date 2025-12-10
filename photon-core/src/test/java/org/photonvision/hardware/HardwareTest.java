@@ -34,6 +34,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.VisionLED;
 import org.photonvision.common.hardware.metrics.MetricsManager;
+import org.photonvision.common.util.TestUtils;
 
 public class HardwareTest {
     final HardwareConfig hardwareConfig;
