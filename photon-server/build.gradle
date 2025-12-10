@@ -46,7 +46,7 @@ tasks.register('copyClientUIToResources', Copy) {
 }
 
 tasks.register('buildClient', PnpmTask) {
-    inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")
+    inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: ["dist/", "playwright-report/", "test-results/", "tests/"])
     outputs.dir file("${projectDir}/../photon-client/dist")
     args = ["build"]
     dependsOn "pnpmInstall"
