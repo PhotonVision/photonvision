@@ -649,7 +649,7 @@ public class SqlConfigProvider extends ConfigProvider {
                         JacksonUtils.deserialize(
                                 result.getString(Columns.CAM_PIPELINE_JSONS), dummyList.getClass());
 
-                List<CVPipelineSettings> loadedSettings = new ArrayList<>();
+                List<CVPipelineSettings> loadedSettings = new ArrayList<>(pipelineSettings.size());
                 for (var setting : pipelineSettings) {
                     if (setting instanceof String str) {
                         loadedSettings.add(JacksonUtils.deserialize(str, CVPipelineSettings.class));
