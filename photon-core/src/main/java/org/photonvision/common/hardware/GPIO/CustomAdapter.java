@@ -17,7 +17,6 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import java.util.Arrays;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -50,7 +49,7 @@ public class CustomAdapter {
         try {
             runCommand.get().executeBashCommand(command);
         } catch (Exception e) {
-            logger.error(Arrays.toString(e.getStackTrace()));
+            logger.error("Exception caught running GPIO command \"%s\"".formatted(command), e);
             return "";
         }
         return runCommand.get().getOutput();
