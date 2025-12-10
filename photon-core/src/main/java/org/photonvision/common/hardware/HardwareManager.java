@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -91,21 +92,31 @@ public class HardwareManager {
                 NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
         ledModeState.set(VisionLEDMode.kDefault.value);
 
-        NativeDeviceFactoryInterface deviceFactory;
-        if (hardwareConfig.statusRGBPins.size() == 3 || !hardwareConfig.ledPins.isEmpty()) {
-            if (hardwareConfig.hasGPIOCommandsConfigured()) {
-                deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
-            } else {
-                deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
-            }
-        } else {
-            deviceFactory = null;
-        }
+        // Device factory is lazy to prevent creating one if it will go unused.
+        Supplier<NativeDeviceFactoryInterface> lazyDeviceFactory =
+                new Supplier<NativeDeviceFactoryInterface>() {
+                    NativeDeviceFactoryInterface deviceFactory = null;
+
+                    @Override
+                    public NativeDeviceFactoryInterface get() {
+                        if (deviceFactory == null) {
+                            if (hardwareConfig.hasGPIOCommandsConfigured()) {
+                                deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
+                            } else {
+                                deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
+                            }
+                        }
+
+                        return deviceFactory;
+                    }
+                };
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
                         ? new StatusLED(
-                                deviceFactory, hardwareConfig.statusRGBPins, hardwareConfig.statusRGBActiveHigh)
+                                lazyDeviceFactory.get(),
+                                hardwareConfig.statusRGBPins,
+                                hardwareConfig.statusRGBActiveHigh)
                         : null;
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
@@ -113,7 +124,7 @@ public class HardwareManager {
                 hardwareConfig.ledPins.isEmpty()
                         ? null
                         : new VisionLED(
-                                deviceFactory,
+                                lazyDeviceFactory.get(),
                                 hardwareConfig.ledPins,
                                 hardwareConfig.ledsCanDim,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
