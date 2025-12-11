@@ -400,6 +400,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           />
           <pv-select
             v-model="newPipelineType"
+            data-testid="new-pipeline-type"
             :select-cols="12 - 4"
             label="Tracking Type"
             tooltip="Pipeline type, which changes the type of processing that will happen on input frames"

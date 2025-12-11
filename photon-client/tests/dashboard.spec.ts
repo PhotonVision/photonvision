@@ -1,12 +1,13 @@
 import { expect } from "@playwright/test";
-import { test } from "./fixtures.ts";
+import { resetBackend, test } from "./fixtures.ts";
 
 test("New Pipeline", async ({ page }) => {
+  await resetBackend();
   await page.goto("http://localhost:5800/#/dashboard");
   await page.getByTestId("pipeline-menu").click();
   await page.getByTestId("add-pipeline").click();
   await page.getByRole("textbox", { name: "Pipeline Name" }).fill("Test Pipeline");
-  await page.getByRole("dialog").getByText("AprilTag").click();
+  await page.getByTestId("new-pipeline-type").click();
   await page.getByRole("option", { name: "Colored Shape" }).click();
   await page.getByRole("button", { name: "Create" }).click();
   await page.getByRole("combobox").nth(1).click();
