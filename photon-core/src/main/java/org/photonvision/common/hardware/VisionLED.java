@@ -78,13 +78,6 @@ public class VisionLED implements AutoCloseable {
         pipelineModeSupplier = () -> false;
     }
 
-    // LED state has three different sources:
-    // Pipeline, which supplies the default LED state
-    // NT, which supplies the user override LED state
-    // Internal, which supplies special actions such as the startup blink
-    //
-    // LED state is set when pipeline changes, NT state changes, or an internal request is received.
-
     public void setPipelineModeSupplier(BooleanSupplier pipelineModeSupplier) {
         this.pipelineModeSupplier = pipelineModeSupplier;
     }
@@ -158,6 +151,14 @@ public class VisionLED implements AutoCloseable {
     }
 
     private void setInternal(VisionLEDMode newLedMode, boolean fromNT) {
+        // LED state has three different sources:
+        // Pipeline, which supplies the default LED state
+        // NT, which supplies the user override LED state
+        // Internal methods, which supply special actions such as the startup blink
+        //
+        // LED state is set with this method when the pipeline changes, NT state changes,
+        // or an internal request is received.
+
         var lastLedMode = currentLedMode;
 
         if (fromNT || currentLedMode == VisionLEDMode.kDefault) {
