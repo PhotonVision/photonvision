@@ -20,7 +20,11 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
+import org.photonvision.vision.apriltag.AprilTagDetectorAdapter;
+import org.photonvision.vision.apriltag.AprilTagDetectorBackend;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.apriltag.OptimizedAprilTagDetectorAdapter;
+import org.photonvision.vision.apriltag.WpilibAprilTagDetectorAdapter;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
@@ -29,13 +33,10 @@ public class AprilTagDetectionPipe
         extends CVPipe<
                 CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
         implements Releasable {
-    private AprilTagDetector m_detector = new AprilTagDetector();
+    private AprilTagDetectorAdapter detectorAdapter;
 
     public AprilTagDetectionPipe() {
         super();
-
-        m_detector.addFamily("tag16h5");
-        m_detector.addFamily("tag36h11");
     }
 
     @Override
@@ -44,40 +45,44 @@ public class AprilTagDetectionPipe
             return List.of();
         }
 
-        if (m_detector == null) {
-            throw new RuntimeException("Apriltag detector was released!");
+        if (detectorAdapter == null) {
+            throw new RuntimeException("Apriltag detector backend not initialized!");
         }
 
-        var ret = m_detector.detect(in.getMat());
-
-        if (ret == null) {
-            return List.of();
-        }
-
-        return List.of(ret);
+        return detectorAdapter.detect(in);
     }
 
     @Override
     public void setParams(AprilTagDetectionPipeParams newParams) {
-        if (this.params == null || !this.params.equals(newParams)) {
-            m_detector.setConfig(newParams.detectorParams());
-            m_detector.setQuadThresholdParameters(newParams.quadParams());
-
-            m_detector.clearFamilies();
-            m_detector.addFamily(newParams.family().getNativeName());
+        if (detectorAdapter == null) {
+            detectorAdapter = createAdapter(newParams.backend());
+        } else if (detectorAdapter.getBackendType() != newParams.backend()) {
+            detectorAdapter.release();
+            detectorAdapter = createAdapter(newParams.backend());
         }
 
+        detectorAdapter.setParams(newParams);
         super.setParams(newParams);
     }
 
     @Override
     public void release() {
-        m_detector.close();
-        m_detector = null;
+        if (detectorAdapter != null) {
+            detectorAdapter.release();
+            detectorAdapter = null;
+        }
+    }
+
+    private AprilTagDetectorAdapter createAdapter(AprilTagDetectorBackend backend) {
+        return switch (backend) {
+            case OPTIMIZED_UMICH -> new OptimizedAprilTagDetectorAdapter();
+            case WPILIB -> new WpilibAprilTagDetectorAdapter();
+        };
     }
 
     public static record AprilTagDetectionPipeParams(
             AprilTagFamily family,
             AprilTagDetector.Config detectorParams,
-            AprilTagDetector.QuadThresholdParameters quadParams) {}
+            AprilTagDetector.QuadThresholdParameters quadParams,
+            AprilTagDetectorBackend backend) {}
 }
