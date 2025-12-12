@@ -21,6 +21,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
+  /* Time out much sooner. Tests don't take that long and quick failure is better. */
+  timeout: 12 * 1000,
   /* Opt out of parallel tests on CI. */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
@@ -74,7 +76,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: process.platform == "win32" ? "" : "./" + "gradlew run",
+    command: (process.platform == "win32" ? "" : "./") + "gradlew run",
     url: "http://localhost:5800",
     timeout: 300 * 1000,
     reuseExistingServer: !process.env.CI,

@@ -111,6 +111,7 @@ const interactiveCols = computed(() =>
       tooltip="Controls camera gain, similar to brightness"
       :min="0"
       :max="100"
+      testid="camera-gain"
       :slider-cols="interactiveCols"
       @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
     />

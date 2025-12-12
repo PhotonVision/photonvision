@@ -18,12 +18,15 @@
 package org.photonvision.server;
 
 import io.javalin.http.Context;
+import org.photonvision.Main;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.vision.processes.VisionModule;
+import org.photonvision.vision.processes.VisionSourceManager;
 
 public class TestRequestHandler {
     // Treat all 2XX calls as "INFO"
@@ -35,8 +38,12 @@ public class TestRequestHandler {
     public static void handleResetRequest(Context ctx) {
         logger.info("Resetting Backend");
         // Reset backend
-        ConfigManager.nukeConfigDirectory();
+        ConfigManager.getInstance().clearConfig();
+        for (var name : VisionSourceManager.getInstance().getVisionModules().stream().map(VisionModule::uniqueName).toList()) {
+            VisionSourceManager.getInstance().deleteVisionSource(name);
+        }
         ConfigManager.getInstance().load();
+        RequestHandler.onNukeObjectDetectionModelsRequest(ctx);
     }
 
     private record PlatformOverrideRequest(Platform platform) {}
@@ -62,6 +69,7 @@ public class TestRequestHandler {
     public static void testMode(Context ctx) {
         logger.info("Test mode activated");
         RequestHandler.setTestMode(true);
+        Main.addTestModeSources();
         ctx.status(200).result("Test mode activated");
     }
 }
