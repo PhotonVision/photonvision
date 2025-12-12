@@ -10,7 +10,7 @@ nativeUtils.wpi.configureDependencies {
     wpimathVersion = wpimathVersion
     opencvYear = 'frc'+openCVYear
     opencvVersion = openCVversion
-    niLibVersion = "2025.0.0"
+    niLibVersion = "2026.1.0"
 }
 
 // Configure warnings and errors
