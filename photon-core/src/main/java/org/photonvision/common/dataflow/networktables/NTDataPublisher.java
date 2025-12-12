@@ -160,7 +160,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         now + offset,
                         NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
-                        acceptedResult.multiTagResult);
+                        acceptedResult.multiTagResult,
+                        acceptedResult.rejectedTags);
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);
