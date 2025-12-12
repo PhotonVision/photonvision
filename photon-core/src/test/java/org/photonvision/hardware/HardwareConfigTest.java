@@ -26,8 +26,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
-import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
