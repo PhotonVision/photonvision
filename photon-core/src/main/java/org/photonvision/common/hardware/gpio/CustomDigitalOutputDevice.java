@@ -15,39 +15,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.GPIO;
+package org.photonvision.common.hardware.gpio;
 
-import com.diozero.api.DeviceMode;
-import com.diozero.api.DigitalInputEvent;
 import com.diozero.api.RuntimeIOException;
-import com.diozero.internal.spi.AbstractInputDevice;
-import com.diozero.internal.spi.GpioDigitalInputOutputDeviceInterface;
+import com.diozero.internal.spi.AbstractDevice;
+import com.diozero.internal.spi.GpioDigitalOutputDeviceInterface;
 
-public class CustomDigitalInputOutputDevice extends AbstractInputDevice<DigitalInputEvent>
-        implements GpioDigitalInputOutputDeviceInterface {
+public class CustomDigitalOutputDevice extends AbstractDevice
+        implements GpioDigitalOutputDeviceInterface {
     protected final CustomAdapter adapter;
     protected final int gpio;
-    private boolean outputValue = false;
+    private boolean state;
 
-    public CustomDigitalInputOutputDevice(
-            CustomDeviceFactory deviceFactory, String key, int gpio, DeviceMode mode) {
+    public CustomDigitalOutputDevice(
+            CustomDeviceFactory deviceFactory, String key, int gpio, boolean initialValue) {
         super(key, deviceFactory);
 
         this.adapter = deviceFactory.adapter;
         this.gpio = gpio;
+        this.state = initialValue;
 
-        setMode(mode);
-    }
-
-    @Override
-    public void setValue(boolean value) throws RuntimeIOException {
-        outputValue = value;
-        setValue(value);
+        setValue(initialValue);
     }
 
     @Override
     public boolean getValue() throws RuntimeIOException {
-        return adapter.getGPIO(gpio);
+        return state;
     }
 
     @Override
@@ -56,16 +49,13 @@ public class CustomDigitalInputOutputDevice extends AbstractInputDevice<DigitalI
     }
 
     @Override
-    public void setMode(DeviceMode mode) {
-        if (mode == DeviceMode.DIGITAL_INPUT) {
-            getValue(); // Ensure the pin direction is input
-        } else if (mode == DeviceMode.DIGITAL_OUTPUT) {
-            setValue(outputValue); // Restore the last output state
-        }
+    public void setValue(boolean value) throws RuntimeIOException {
+        state = value;
+        adapter.setGPIO(gpio, value);
     }
 
     @Override
-    public void closeDevice() {
+    protected void closeDevice() throws RuntimeIOException {
         adapter.releaseGPIO(gpio);
     }
 }

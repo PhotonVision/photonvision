@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.GPIO;
+package org.photonvision.common.hardware.gpio;
 
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
