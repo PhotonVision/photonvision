@@ -70,19 +70,11 @@ class Packet:
         return retVal
 
     def getData(self) -> bytes:
-        """
-        * Returns the packet data.
-        *
-        * @return The packet data.
-        """
+        """Return the packet data."""
         return self.packetData
 
     def setData(self, data: bytes):
-        """
-        * Sets the packet data.
-        *
-        * @param data The packet data.
-        """
+        """Set the packet data."""
         self.clear()
         self.packetData = data
         self.size = len(self.packetData)
@@ -101,74 +93,42 @@ class Packet:
         return value
 
     def decode8(self) -> int:
-        """
-        * Returns a single decoded byte from the packet.
-        *
-        * @return A decoded byte from the packet.
-        """
+        """Return a single decoded byte from the packet."""
         return self._decodeGeneric("<b", 1)
 
     def decode16(self) -> int:
-        """
-        * Returns a single decoded short from the packet.
-        *
-        * @return A decoded short from the packet.
-        """
+        """Return a single decoded short from the packet."""
         return self._decodeGeneric("<h", 2)
 
     def decodeInt(self) -> int:
-        """
-        * Returns a decoded int (32 bytes) from the packet.
-        *
-        * @return A decoded int from the packet.
-        """
+        """Return a decoded 32-bit integer from the packet."""
         return self._decodeGeneric("<l", 4)
 
     def decodeFloat(self) -> float:
-        """
-        * Returns a decoded float from the packet.
-        *
-        * @return A decoded float from the packet.
-        """
+        """Return a decoded float from the packet."""
         return self._decodeGeneric("<f", 4)
 
     def decodeLong(self) -> int:
-        """
-        * Returns a decoded int64 from the packet.
-        *
-        * @return A decoded int64 from the packet.
-        """
+        """Return a decoded 64-bit integer from the packet."""
         return self._decodeGeneric("<q", 8)
 
     def decodeDouble(self) -> float:
-        """
-        * Returns a decoded double from the packet.
-        *
-        * @return A decoded double from the packet.
-        """
+        """Return a decoded double from the packet."""
         return self._decodeGeneric("<d", 8)
 
     def decodeBoolean(self) -> bool:
-        """
-        * Returns a decoded boolean from the packet.
-        *
-        * @return A decoded boolean from the packet.
-        """
+        """Return a decoded boolean from the packet."""
         return self.decode8() == 1
 
     def decodeDoubleArray(self, length: int) -> list[float]:
-        """
-        * Returns a decoded array of floats from the packet.
-        """
+        """Return a decoded list of doubles of the given length from the packet."""
         ret = []
         for _ in range(length):
             ret.append(self.decodeDouble())
         return ret
 
     def decodeShortList(self) -> list[int]:
-        """
-        * Returns a decoded array of shorts from the packet.
-        """
+        """Return a decoded list of shorts from the packet (length-prefixed)."""
         length = self.decode8()
         ret = []
         for _ in range(length):
@@ -176,11 +136,7 @@ class Packet:
         return ret
 
     def decodeTransform(self) -> Transform3d:
-        """
-        * Returns a decoded Transform3d
-        *
-        * @return A decoded Tansform3d from the packet.
-        """
+        """Return a decoded Transform3d from the packet."""
         x = self.decodeDouble()
         y = self.decodeDouble()
         z = self.decodeDouble()
