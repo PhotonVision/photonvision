@@ -49,7 +49,7 @@ public class CustomAdapter {
         try {
             runCommand.get().executeBashCommand(command);
         } catch (Exception e) {
-            logger.error("Exception caught running GPIO command \"%s\"".formatted(command), e);
+            logger.error("Exception caught running GPIO command \"" + command + "\"", e);
             return "";
         }
         return runCommand.get().getOutput();
