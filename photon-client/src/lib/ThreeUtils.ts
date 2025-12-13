@@ -6,7 +6,7 @@ const { PerspectiveCamera } = await import("three");
  *
  * @param resolution video mode width/height
  * @param intrinsicsCore camera intrinsics from the backend, row-major
- * @returns
+ * @returns a Three.js PerspectiveCamera matching the provided intrinsics
  */
 export const createPerspectiveCamera = (
   resolution: Resolution,

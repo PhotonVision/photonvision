@@ -120,6 +120,12 @@ public final class BoardObservation implements Cloneable {
     }
 
     @JsonIgnore
+    /**
+     * Load the captured board image from disk. Allocates a new Mat, which the caller is responsible
+     * for releasing.
+     *
+     * @return The loaded image, or null if it could not be loaded.
+     */
     public Mat loadImage() {
         Mat img = null;
         try {
@@ -137,7 +143,8 @@ public final class BoardObservation implements Cloneable {
     /**
      * Annotate the image with the detected corners, green for used, red for unused
      *
-     * @return
+     * @return Annotated image, or null if the image could not be loaded. Caller is responsible for
+     *     releasing the Mat.
      */
     @JsonIgnore
     public Mat annotateImage() {
@@ -147,8 +154,8 @@ public final class BoardObservation implements Cloneable {
             return null;
         }
 
-        var diag = Math.hypot(image.width(), image.height());
         int thickness = Core.FILLED;
+        var diag = Math.hypot(image.width(), image.height());
         int r = (int) Math.max(diag * 4.0 / 500.0, 3);
         for (int i = 0; i < this.locationInImageSpace.size(); i++) {
             var c = locationInImageSpace.get(i);
@@ -171,9 +178,11 @@ public final class BoardObservation implements Cloneable {
     }
 
     /**
-     * Mean reprojection error for this observation, skipping corners marked as unused
+     * Mean reprojection error for this observation, skipping corners marked as unused. The overall
+     * mean is calcualted as the mean of each individual corner's reprojection error, or the distance
+     * in pixels between the observed and expected location.
      *
-     * @return
+     * @return Mean reprojection error in pixels.
      */
     @JsonIgnore
     double meanReprojectionError() {
