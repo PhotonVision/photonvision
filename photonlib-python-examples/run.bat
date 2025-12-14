@@ -8,6 +8,10 @@ if exist build rmdir /S /Q build
 python setup.py bdist_wheel
 popd
 
+:: Setup robotpy
+pip install robotpy
+
+
 :: Add the output directory to PYTHONPATH to make sure it gets picked up ahead of any other installs
 set PHOTONLIBPY_ROOT=%~dp0..\photon-lib\py
 set PYTHONPATH=%PHOTONLIBPY_ROOT%
@@ -26,6 +30,9 @@ if "%~1"=="" (
 
 :: Move to to the right example folder
 cd %~1
+
+:: Setup project
+pip install .
 
 :: Run the example
 robotpy sim

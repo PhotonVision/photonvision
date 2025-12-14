@@ -11,6 +11,9 @@ popd
 export PHOTONLIBPY_ROOT=../photon-lib/py
 export PYTHONPATH=$PHOTONLIBPY_ROOT
 
+# Setup robotpy
+pip install robotpy
+
 # If an example to run is not provided, run all examples
 if [ $# -eq 0 ]
   then
@@ -25,6 +28,9 @@ fi
 
 # Move to the right example folder
 cd $1
+
+# Setup project
+pip install .
 
 # Run the example
 robotpy sim
