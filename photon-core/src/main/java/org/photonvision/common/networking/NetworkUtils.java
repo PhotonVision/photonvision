@@ -81,7 +81,9 @@ public class NetworkUtils {
     }
 
     private static List<NMDeviceInfo> allInterfaces = null;
-    private static long lastReadTimestamp = 0;
+    private static long lastReadTimestamp = -10000;
+    private static int tries = 10;
+    private static boolean networkManagerRunning = false;
 
     public static List<NMDeviceInfo> getAllInterfaces() {
         long now = System.currentTimeMillis();
@@ -94,11 +96,31 @@ public class NetworkUtils {
             String out = null;
             try {
                 var shell = new ShellExec(true, false);
-                shell.executeBashCommand(
-                        "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, false);
-                out = shell.getOutput();
+
+                do {
+                    shell.executeBashCommand(
+                            "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, true);
+                    // nmcli returns an error of 8 if NetworkManager isn't running
+                    networkManagerRunning = shell.getExitCode() != 8;
+                    if (!networkManagerRunning) {
+                        tries--;
+                        logger.debug("NetworkManager not running, " + (tries) + " attempts remaining");
+                        Thread.sleep(500);
+                    }
+                } while (!networkManagerRunning && tries > 0);
+
+                if (networkManagerRunning) {
+                    out = shell.getOutput();
+                } else {
+                    tries = 1; // try again one time the next time this is called
+                    logger.error(
+                            "Timmed out trying to reach NetworkManager, may not be able to configure networking");
+                }
+
             } catch (IOException e) {
                 logger.error("IO Exception occured when calling nmcli to get network interfaces!", e);
+            } catch (InterruptedException e) {
+                logger.error("Interrupted while waiting for NetworkManager", e);
             }
             if (out != null) {
                 Pattern pattern =
