@@ -68,14 +68,15 @@ jobs:
         run: |
           ./gradlew build
           ./gradlew clean
-      - name: Build Python examples
+      - name: Build Python examples (Windows)
+        if: ${{ matrix.os == 'windows-2022' }}
+        working-directory: photonlib-python-examples
+        run: .\run.bat
+      - name: Build Python examples (POSIX)
+        if: ${{ matrix.os != 'windows-2022' }}
         working-directory: photonlib-python-examples
         run: |
-          if [ "${{ matrix.os }}" == "windows-2022" ]; then
-            .\run.bat
-          else
-            ./run.sh
-          fi
+          ./run.sh
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-22.04
