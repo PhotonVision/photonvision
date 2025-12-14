@@ -86,7 +86,7 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
   });
 
   axiosPost("/objectdetection/rename", "rename an object detection model", {
-    modelPath: model.modelPath.replace("file:", ""),
+    modelPath: model.modelPath,
     newName: newName
   });
   showRenameDialog.value.show = false;
@@ -418,7 +418,7 @@ const handleBulkImport = () => {
                 <a
                   ref="exportIndividualModel"
                   style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath.replace('file:', '')}`"
+                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath}`"
                   :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
                   target="_blank"
                 />

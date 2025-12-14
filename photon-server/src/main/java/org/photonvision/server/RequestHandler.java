@@ -851,33 +851,30 @@ public class RequestHandler {
         }
     }
 
-    private record DeleteObjectDetectionModelRequest(String modelPath) {}
+    private record DeleteObjectDetectionModelRequest(Path modelPath) {}
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
-        Path modelPath;
 
         try {
             DeleteObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
 
-            modelPath = Path.of(request.modelPath.substring(7));
-
-            if (modelPath == null) {
+            if (request.modelPath == null) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
                 return;
             }
 
-            if (!modelPath.toFile().exists()) {
+            if (!request.modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
                 logger.error("The provided model path does not exist");
                 return;
             }
 
-            if (!modelPath.toFile().delete()) {
+            if (!request.modelPath.toFile().delete()) {
                 ctx.status(500);
                 ctx.result("Unable to delete the model file");
                 logger.error("Unable to delete the model file");
@@ -887,7 +884,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .removeModel(modelPath)) {
+                    .removeModel(request.modelPath)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
@@ -911,26 +908,24 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+    private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
             RenameObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
 
-            Path modelPath = Path.of(request.modelPath);
-
-            if (modelPath == null) {
+            if (request.modelPath == null) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
                 return;
             }
 
-            if (!modelPath.toFile().exists()) {
+            if (!request.modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
-                logger.error("The model path: " + modelPath + " does not exist");
+                logger.error("The model path: " + request.modelPath + " does not exist");
                 return;
             }
 
@@ -944,7 +939,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .renameModel(modelPath, request.newName)) {
+                    .renameModel(request.modelPath, request.newName)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");

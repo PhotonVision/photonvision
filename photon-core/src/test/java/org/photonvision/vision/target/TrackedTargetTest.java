@@ -25,14 +25,14 @@ import org.junit.jupiter.api.Test;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
-import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TrackedTargetTest {
     @BeforeEach
     public void Init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

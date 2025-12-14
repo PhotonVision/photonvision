@@ -8,7 +8,7 @@ By default, PhotonVision attempts to make minimal assumptions of the hardware it
 
 ## LED Support
 
-For Raspberry-Pi based hardware, PhotonVision can use [PiGPIO](https://abyz.me.uk/rpi/pigpio/) to control IO pins. The mapping of which pins control which LED's is part of the hardware config. The pins are active-high: set high when LED's are commanded on, and set low when commanded off.
+When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) to control IO pins. The mapping of which pins control which LED's is part of the hardware config. The illumination LED pins are active-high: set high when LED's are commanded on, and set low when commanded off.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -16,20 +16,60 @@ For Raspberry-Pi based hardware, PhotonVision can use [PiGPIO](https://abyz.me.u
 
       {
         "ledPins" : [ 13 ],
-        "ledSetCommand" : "",
         "ledsCanDim" : true,
-        "ledPWMRange" : [ 0, 100 ],
-        "ledPWMSetRange" : "",
+        "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "ledDimCommand" : "",
-        "ledBlinkCommand" : "",
         "statusRGBPins" : [ ],
+        "statusRGBActiveHigh" : false,
       }
 ```
 
 :::{note}
 No hardware boards with status RGB LED pins or non-dimming LED's have been tested yet. Please reach out to the development team if these features are desired, they can assist with configuration and testing.
 :::
+
+### GPIO Pinout
+
+::::{tab-set}
+
+:::{tab-item} Raspberry Pi
+
+The following diagram shows the GPIO pin numbering of the 40-pin header on Raspberry Pi hardware, courtesy of [pinout.xyz](https://pinout.xyz). Compute modules use the pin numbering from their respective datasheet.
+
+```{image} https://raw.githubusercontent.com/pinout-xyz/Pinout.xyz/master/resources/raspberry-pi-pinout.png
+:alt: Raspberry Pi GPIO Pinout
+```
+
+:::
+::::
+
+### Custom GPIO
+
+If your hardware does not support diozero's default provider, custom commands can be provided to interact with the GPIO lines. The examples below show what parameters are provided to each command, which can be used in any order or multiple times as needed.
+
+```{eval-rst}
+.. tab-set-code::
+   .. code-block:: json
+
+      {
+        "getGPIOCommand" : "getGPIO {p}",
+        "setGPIOCommand" : "setGPIO {p} {s}",
+        "setPWMCommand" : "setPWM {p} {v}",
+        "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
+        "releaseGPIOCommand" : "releseGPIO {p}",
+      }
+```
+
+The following template strings are used to input parameters to the commands:
+
+| Template | Parameter  | Values     |
+| -------- | ---------- | ---------- |
+| `{p}`    | pin number | integers   |
+| `{s}`    | state      | true/false |
+| `{v}`    | value      | 0.0-1.0    |
+| `{f}`    | frequency  | integers   |
+
+If you were using custom LED commands from 2025 or earlier and still need custom GPIO commands, they can likely be copied over. `ledSetCommand` can be reused as `setGPIOCommand`. `ledDimCommand` can be reused with edits as `setPWMCommand`, replacing any occurrences of `{v}` with `$(awk 'BEGIN{ print int({v}*100) }')` if your command requires integer percentages.
 
 ## Hardware Interaction Commands
 
@@ -101,14 +141,16 @@ Here is a complete example `hardwareConfig.json`:
         "deviceLogoPath" : "",
         "supportURL" : "https://www.youtube.com/watch?v=b-CvLWbfZhU",
         "ledPins" : [2, 13],
-        "ledSetCommand" : "",
         "ledsCanDim" : true,
-        "ledPWMRange" : [ 0, 100 ],
-        "ledPWMSetRange" : "",
+        "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "ledDimCommand" : "",
-        "ledBlinkCommand" : "",
         "statusRGBPins" : [ ],
+        "statusRGBActiveHigh" : false,
+        "getGPIOCommand" : "getGPIO {p}",
+        "setGPIOCommand" : "setGPIO {p} {s}",
+        "setPWMCommand" : "setPWM {p} {v}",
+        "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
+        "releaseGPIOCommand" : "releseGPIO {p}",
         "cpuTempCommand" : "",
         "cpuMemoryCommand" : "",
         "cpuUtilCommand" : "",
