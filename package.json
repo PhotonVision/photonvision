@@ -1,6 +1,0 @@
-{
-  "devDependencies": {
-    "@toolwind/anchors": "^1.0.10",
-    "vite-ssg": "^28.2.2"
-  }
-}
