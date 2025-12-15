@@ -49,9 +49,6 @@ class Vision {
                             Eigen::Matrix<double, 3, 1>)>
              estConsumer)
       : estConsumer{estConsumer} {
-    photonEstimator.SetMultiTagFallbackStrategy(
-        photon::PoseStrategy::LOWEST_AMBIGUITY);
-
     if (frc::RobotBase::IsSimulation()) {
       visionSim = std::make_unique<photon::VisionSystemSim>("main");
 
@@ -79,7 +76,10 @@ class Vision {
     // Run each new pipeline result through our pose estimator
     for (const auto& result : camera.GetAllUnreadResults()) {
       // cache result and update pose estimator
-      auto visionEst = photonEstimator.Update(result);
+      auto visionEst = photonEstimator.EstimateCoprocMultiTagPose(result);
+      if (!visionEst) {
+        visionEst = photonEstimator.EstimateLowestAmbiguityPose(result);
+      }
       m_latestResult = result;
 
       // In sim only, add our vision estimate to the sim debug field
@@ -146,10 +146,8 @@ class Vision {
   frc::Field2d& GetSimDebugField() { return visionSim->GetDebugField(); }
 
  private:
-  photon::PhotonPoseEstimator photonEstimator{
-      constants::Vision::kTagLayout,
-      photon::PoseStrategy::MULTI_TAG_PNP_ON_COPROCESSOR,
-      constants::Vision::kRobotToCam};
+  photon::PhotonPoseEstimator photonEstimator{constants::Vision::kTagLayout,
+                                              constants::Vision::kRobotToCam};
   photon::PhotonCamera camera{constants::Vision::kCameraName};
   std::unique_ptr<photon::VisionSystemSim> visionSim;
   std::unique_ptr<photon::SimCameraProperties> cameraProp;

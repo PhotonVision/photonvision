@@ -25,12 +25,11 @@
 from .estimatedRobotPose import EstimatedRobotPose
 from .packet import Packet
 from .photonCamera import PhotonCamera
-from .photonPoseEstimator import PhotonPoseEstimator, PoseStrategy
+from .photonPoseEstimator import PhotonPoseEstimator
 
 __all__ = (
     "EstimatedRobotPose",
     "Packet",
     "PhotonCamera",
     "PhotonPoseEstimator",
-    "PoseStrategy",
 )

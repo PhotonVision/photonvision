@@ -16,14 +16,10 @@
 ###############################################################################
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from wpimath.geometry import Pose3d
 
 from .targeting.photonTrackedTarget import PhotonTrackedTarget
-
-if TYPE_CHECKING:
-    from .photonPoseEstimator import PoseStrategy
 
 
 @dataclass
@@ -38,6 +34,3 @@ class EstimatedRobotPose:
 
     targetsUsed: list[PhotonTrackedTarget]
     """A list of the targets used to compute this pose"""
-
-    strategy: "PoseStrategy"
-    """The strategy actually used to produce this pose"""
