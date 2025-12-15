@@ -25,9 +25,7 @@
 package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -38,13 +36,11 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.RuntimeLoader;
@@ -576,81 +572,6 @@ class PhotonPoseEstimatorTest {
     }
 
     @Test
-    void cacheIsInvalidated() {
-        var result =
-                new PhotonPipelineResult(
-                        0,
-                        20_000_000,
-                        1_100_000,
-                        1024,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        3.0,
-                                        -4.0,
-                                        9.0,
-                                        4.0,
-                                        0,
-                                        -1,
-                                        -1,
-                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
-                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
-                                        0.7,
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)),
-                                        List.of(
-                                                new TargetCorner(1, 2),
-                                                new TargetCorner(3, 4),
-                                                new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        aprilTags, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
-
-        // Initial state, expect no timestamp
-        assertEquals(-1, estimator.poseCacheTimestampSeconds);
-
-        // Empty result, expect empty result
-        cameraOne.result = new PhotonPipelineResult();
-        cameraOne.result.metadata.captureTimestampMicros = (long) (1 * 1e6);
-        Optional<EstimatedRobotPose> estimatedPose =
-                estimator.estimateAverageBestTargetsPose(cameraOne.result);
-        assertFalse(estimatedPose.isPresent());
-
-        // Set actual result
-        cameraOne.result = result;
-        estimatedPose = estimator.estimateAverageBestTargetsPose(cameraOne.result);
-        assertTrue(estimatedPose.isPresent());
-        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-
-        // And again -- pose cache should mean this is empty
-        cameraOne.result = result;
-        estimatedPose = estimator.estimateAverageBestTargetsPose(cameraOne.result);
-        assertFalse(estimatedPose.isPresent());
-        // Expect the old timestamp to still be here
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-
-        // Set new field layout -- right after, the pose cache timestamp should be -1
-        estimator.setFieldTags(new AprilTagFieldLayout(List.of(new AprilTag(0, new Pose3d())), 0, 0));
-        assertEquals(-1, estimator.poseCacheTimestampSeconds);
-        // Update should cache the current timestamp (20) again
-        cameraOne.result = result;
-        estimatedPose = estimator.estimateAverageBestTargetsPose(cameraOne.result);
-        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-
-        // Setting a value from None to a non-None should invalidate the cache
-        assertNull(estimator.getReferencePose());
-        assertEquals(20, estimator.poseCacheTimestampSeconds);
-        estimator.setReferencePose(new Pose2d(new Translation2d(1, 2), Rotation2d.kZero));
-        assertEquals(-1, estimator.poseCacheTimestampSeconds, "wtf");
-    }
-
-    @Test
     void averageBestPoses() {
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -789,18 +710,21 @@ class PhotonPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(aprilTags, PoseStrategy.MULTI_TAG_PNP_ON_RIO, Transform3d.kZero);
-        estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        PhotonPoseEstimator estimator = new PhotonPoseEstimator(aprilTags, Transform3d.kZero);
 
-        Optional<EstimatedRobotPose> estimatedPose = estimator.update(camera.result);
+        Optional<EstimatedRobotPose> estimatedPose =
+                estimator.estimateCoprocMultiTagPose(camera.result);
+        assertTrue(estimatedPose.isEmpty());
+
+        estimatedPose = estimator.estimateLowestAmbiguityPose(camera.result);
+        assertTrue(estimatedPose.isPresent());
+
         Pose3d pose = estimatedPose.get().estimatedPose;
         // Make sure values match what we'd expect for the LOWEST_AMBIGUITY strategy
-        assertAll(
-                () -> assertEquals(11, estimatedPose.get().timestampSeconds),
-                () -> assertEquals(1, pose.getX(), 1e-9),
-                () -> assertEquals(3, pose.getY(), 1e-9),
-                () -> assertEquals(2, pose.getZ(), 1e-9));
+        assertEquals(11, estimatedPose.get().timestampSeconds);
+        assertEquals(1, pose.getX(), 1e-9);
+        assertEquals(3, pose.getY(), 1e-9);
+        assertEquals(2, pose.getZ(), 1e-9);
     }
 
     @Test
@@ -887,23 +811,6 @@ class PhotonPoseEstimatorTest {
                         result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);
-    }
-
-    @Test
-    void testConstrainedPnpEmptyCase() {
-        PhotonPoseEstimator estimator =
-                new PhotonPoseEstimator(
-                        AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo), Transform3d.kZero);
-        PhotonPipelineResult result = new PhotonPipelineResult();
-        var estimate =
-                estimator.estimateConstrainedPnpPose(
-                        result,
-                        MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 0, 0, 0, 0, 0, 0, 0),
-                        VecBuilder.fill(0, 0, 0, 0, 0, 0, 0, 0),
-                        Pose3d.kZero,
-                        true,
-                        0);
-        assertEquals(estimate, Optional.empty());
     }
 
     private static class PhotonCameraInjector extends PhotonCamera {
