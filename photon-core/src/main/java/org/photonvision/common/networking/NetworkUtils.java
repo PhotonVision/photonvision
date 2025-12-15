@@ -114,7 +114,7 @@ public class NetworkUtils {
                 } else {
                     tries = 1; // try again one time the next time this is called
                     logger.error(
-                            "Timmed out trying to reach NetworkManager, may not be able to configure networking");
+                            "Timed out trying to reach NetworkManager, may not be able to configure networking");
                 }
 
             } catch (IOException e) {
