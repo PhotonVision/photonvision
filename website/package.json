@@ -9,9 +9,11 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@toolwind/anchors": "^1.0.10",
     "prettier": "^3.5.3",
     "typescript": "~5.7.2",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "vite-ssg": "^28.2.2"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
