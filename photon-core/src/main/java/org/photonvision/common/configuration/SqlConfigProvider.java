@@ -273,7 +273,7 @@ public class SqlConfigProvider extends ConfigProvider {
             } catch (IOException e) {
                 if (e.getMessage().startsWith("Provided empty string")) {
                     logger.info("Missing Hardware Config in database. Loading defaults");
-                } else {                  
+                } else {
                     logger.error("Could not deserialize hardware config! Loading defaults", e);
                 }
                 hardwareConfig = new HardwareConfig();
@@ -286,7 +286,7 @@ public class SqlConfigProvider extends ConfigProvider {
             } catch (IOException e) {
                 if (e.getMessage().startsWith("Provided empty string")) {
                     logger.info("Missing Hardware Settings in database. Loading defaults");
-                } else {  
+                } else {
                     logger.error("Could not deserialize hardware settings! Loading defaults", e);
                 }
                 hardwareSettings = new HardwareSettings();
@@ -299,7 +299,7 @@ public class SqlConfigProvider extends ConfigProvider {
             } catch (IOException e) {
                 if (e.getMessage().startsWith("Provided empty string")) {
                     logger.info("Missing Network Config in database. Loading defaults");
-                } else {                
+                } else {
                     logger.error("Could not deserialize network config! Loading defaults", e);
                 }
                 networkConfig = new NetworkConfig();

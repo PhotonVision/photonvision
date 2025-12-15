@@ -199,7 +199,7 @@ public class MetricsManager {
      * @return An array of doubles representing NPU usage, or null if parsing fails.
      */
     public double[] getNpuUsage() {
-        if ( cmds.npuUsageCommand.isBlank() ) {
+        if (cmds.npuUsageCommand.isBlank()) {
             return new double[0];
         }
         String[] usages = safeExecute(cmds.npuUsageCommand).split(",");
