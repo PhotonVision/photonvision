@@ -21,7 +21,7 @@ withDefaults(
     columns: 2,
     reverseCards: false,
     showScrollIndicator: false,
-  }
+  },
 );
 </script>
 
