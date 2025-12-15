@@ -17,7 +17,7 @@ defineProps<{
     <div
       :class="[
         'flex items-center justify-center rounded-xl bg-linear-to-br from-brand-blue to-primary shadow-lg',
-        'size-12 rounded-2xl mb-4'
+        'size-12 rounded-2xl mb-4',
       ]"
     >
       <i :class="[icon, reverse ? 'text-2xl' : '']"></i>
