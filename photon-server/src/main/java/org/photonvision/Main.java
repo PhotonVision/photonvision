@@ -209,8 +209,10 @@ public class Main {
             System.exit(1);
         }
 
+        // We load these in the case of a smoketest to ensure that the libraries exist, and can be
+        // loaded properly.
         try {
-            if (Platform.isRaspberryPi()) {
+            if (Platform.isRaspberryPi() || isSmoketest) {
                 LoadJNI.forceLoad(LoadJNI.JNITypes.LIBCAMERA);
                 logger.info("Loaded libcamera-JNI");
             }
@@ -218,7 +220,7 @@ public class Main {
             logger.error("Failed to load libcamera-JNI!", e);
         }
         try {
-            if (Platform.isRK3588()) {
+            if (Platform.isRK3588() || isSmoketest) {
                 LoadJNI.forceLoad(LoadJNI.JNITypes.RKNN_DETECTOR);
                 logger.info("Loaded RKNN-JNI");
             } else {
@@ -228,7 +230,7 @@ public class Main {
             logger.error("Failed to load RKNN-JNI!", e);
         }
         try {
-            if (Platform.isQCS6490()) {
+            if (Platform.isQCS6490() || isSmoketest) {
                 LoadJNI.forceLoad(LoadJNI.JNITypes.RUBIK_DETECTOR);
                 logger.info("Loaded Rubik-JNI");
             } else {
