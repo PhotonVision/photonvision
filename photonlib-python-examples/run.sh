@@ -1,3 +1,5 @@
+set -e
+
 # To run any example, we want to use photonlib out of this repo
 # Build the wheel first
 pushd ../photon-lib/py

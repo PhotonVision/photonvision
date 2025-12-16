@@ -1,4 +1,6 @@
 @echo off
+setlocal enabledelayedexpansion
+set "ERRORLEVEL=0"
 setlocal
 
 :: To run any example, we want to use photonlib out of the source code in this repo.
