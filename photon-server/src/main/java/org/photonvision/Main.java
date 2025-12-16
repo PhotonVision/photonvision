@@ -70,7 +70,7 @@ public class Main {
                 false,
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
-        options.addOption("p", "path", true, "Point test mode to a specific folder");
+        options.addOption("f", "folder", true, "Point test mode to a specific folder");
         options.addOption("n", "disable-networking", false, "Disables control device network settings");
         options.addOption(
                 "c",
@@ -82,6 +82,8 @@ public class Main {
                 "smoketest",
                 false,
                 "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
+        options.addOption(
+                "p", "platform", true, "Specify platform override, based on Platform enum");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -117,6 +119,18 @@ public class Main {
 
             if (cmd.hasOption("smoketest")) {
                 isSmoketest = true;
+            }
+
+            if (cmd.hasOption("platform")) {
+                String platStr = cmd.getOptionValue("platform");
+                try {
+                    Platform plat = Platform.valueOf(platStr);
+                    Platform.overridePlatform(plat);
+                    logger.info("Overrode platform to: " + plat);
+                } catch (IllegalArgumentException e) {
+                    logger.error("Invalid platform override: " + platStr);
+                    return false;
+                }
             }
         }
         return true;
