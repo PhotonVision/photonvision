@@ -82,8 +82,7 @@ public class Main {
                 "smoketest",
                 false,
                 "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
-        options.addOption(
-                "p", "platform", true, "Specify platform override, based on Platform enum");
+        options.addOption("p", "platform", true, "Specify platform override, based on Platform enum");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
