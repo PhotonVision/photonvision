@@ -27,6 +27,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -40,7 +42,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -301,7 +302,7 @@ public class VisionSourceManager {
                 .filter(c -> !(String.join("", c.otherPaths()).contains("csi-video")))
                 .filter(c -> !c.name().equals("unicam"))
                 .forEach(cameraInfos::add);
-        if (LibCameraJNILoader.getInstance().isSupported()) {
+        if (LoadJNI.hasLoaded(JNITypes.LIBCAMERA)) {
             // find all CSI cameras (Raspberry Pi cameras)
             Stream.of(LibCameraJNI.getCameraNames())
                     .map(

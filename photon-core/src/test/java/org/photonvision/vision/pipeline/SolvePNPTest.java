@@ -26,6 +26,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -44,7 +45,7 @@ public class SolvePNPTest {
 
     @BeforeEach
     public void Init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test
@@ -213,7 +214,7 @@ public class SolvePNPTest {
 
     // used to run VisualVM for profiling, which won't run on unit tests.
     public static void main(String[] args) {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
