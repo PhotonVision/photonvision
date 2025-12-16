@@ -85,11 +85,10 @@ public class NetworkUtils {
     private static int tries = 10;
     private static boolean networkManagerRunning = false;
 
-    public static List<NMDeviceInfo> getAllInterfaces() {
-        long now = System.currentTimeMillis();
-        if (now - lastReadTimestamp < 5000) return allInterfaces;
-        else lastReadTimestamp = now;
-
+    public static synchronized List<NMDeviceInfo> getAllInterfaces() {
+        if (System.currentTimeMillis() - lastReadTimestamp < 5000) {
+            return allInterfaces;
+        }
         var ret = new ArrayList<NMDeviceInfo>();
 
         if (Platform.isLinux()) {
@@ -142,6 +141,8 @@ public class NetworkUtils {
             }
             allInterfaces = ret;
         }
+        lastReadTimestamp = System.currentTimeMillis();
+
         return ret;
     }
 
