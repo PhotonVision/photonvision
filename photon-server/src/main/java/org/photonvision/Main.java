@@ -259,15 +259,17 @@ public class Main {
                 System.exit(1);
             }
         }
-        try {
-            LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
-            logger.info("mrcal-JNI loaded successfully.");
-        } catch (Exception e) {
-            logger.warn(
-                    "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
-                            + e.getMessage());
-            if (isSmoketest) {
-                System.exit(1);
+        if (Platform.isWindows() || Platform.isLinux()) {
+            try {
+                LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
+                logger.info("mrcal-JNI loaded successfully.");
+            } catch (Exception e) {
+                logger.warn(
+                        "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
+                                + e.getMessage());
+                if (isSmoketest) {
+                    System.exit(1);
+                }
             }
         }
 
