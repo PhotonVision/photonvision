@@ -549,6 +549,13 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
 
+  matrix-checker:
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    if: always()
+    steps:
+      - run: ${{!contains(needs.*.result, 'failure')}}
+
   release:
     needs: [build-photonlib-vendorjson, build-package, build-image, combine]
     runs-on: ubuntu-22.04
