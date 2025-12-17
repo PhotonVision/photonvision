@@ -54,7 +54,6 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
-    private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
     private static boolean isSmoketest = false;
