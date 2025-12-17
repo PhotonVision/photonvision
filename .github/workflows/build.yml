@@ -558,6 +558,7 @@ jobs:
 
   release:
     needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
