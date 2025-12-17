@@ -229,6 +229,9 @@ public class Main {
             }
         } catch (IOException e) {
             logger.error("Failed to load libcamera-JNI!", e);
+            if (isSmoketest) {
+                System.exit(1);
+            }
         }
         try {
             if (Platform.isRK3588()) {
@@ -239,6 +242,9 @@ public class Main {
             }
         } catch (IOException e) {
             logger.error("Failed to load RKNN-JNI!", e);
+            if (isSmoketest) {
+                System.exit(1);
+            }
         }
         try {
             if (Platform.isQCS6490()) {
@@ -249,6 +255,9 @@ public class Main {
             }
         } catch (IOException e) {
             logger.error("Failed to load Rubik-JNI!", e);
+            if (isSmoketest) {
+                System.exit(1);
+            }
         }
         try {
             LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
@@ -257,6 +266,9 @@ public class Main {
             logger.warn(
                     "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
                             + e.getMessage());
+            if (isSmoketest) {
+                System.exit(1);
+            }
         }
 
         CVMat.enablePrint(false);
