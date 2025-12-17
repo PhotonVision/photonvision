@@ -81,12 +81,13 @@ public class NetworkUtils {
     }
 
     private static List<NMDeviceInfo> allInterfaces = null;
-    private static long lastReadTimestamp = -10000;
-    private static int tries = 10;
-    private static boolean networkManagerRunning = false;
+    private static long lastReadTimestamp = 0;
+    private static long timeout = 5000; // milliseconds
+    private static long retry = 500; // milliseconds
 
     public static synchronized List<NMDeviceInfo> getAllInterfaces() {
-        if (System.currentTimeMillis() - lastReadTimestamp < 5000) {
+        var start = System.currentTimeMillis();
+        if (start - lastReadTimestamp < 5000) {
             return allInterfaces;
         }
         var ret = new ArrayList<NMDeviceInfo>();
@@ -95,23 +96,26 @@ public class NetworkUtils {
             String out = null;
             try {
                 var shell = new ShellExec(true, false);
+                boolean networkManagerRunning = false;
+                boolean tryagain = true;
 
                 do {
                     shell.executeBashCommand(
                             "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, true);
                     // nmcli returns an error of 8 if NetworkManager isn't running
                     networkManagerRunning = shell.getExitCode() != 8;
-                    if (!networkManagerRunning) {
-                        tries--;
-                        logger.debug("NetworkManager not running, " + (tries) + " attempts remaining");
-                        Thread.sleep(500);
+                    tryagain = System.currentTimeMillis() - start < timeout;
+                    if (!networkManagerRunning && tryagain) {
+                        logger.debug("NetworkManager not running, retrying in " + (retry) + " milliseconds");
+                        Thread.sleep(retry);
                     }
-                } while (!networkManagerRunning && tries > 0);
+                } while (!networkManagerRunning && tryagain);
+
+                timeout = 0; // only try once after the first time
 
                 if (networkManagerRunning) {
                     out = shell.getOutput();
                 } else {
-                    tries = 1; // try again one time the next time this is called
                     logger.error(
                             "Timed out trying to reach NetworkManager, may not be able to configure networking");
                 }
