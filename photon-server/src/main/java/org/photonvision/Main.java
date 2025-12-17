@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
@@ -174,6 +175,18 @@ public class Main {
         VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
+    private static void tryLoadJNI(JNITypes type) {
+        try {
+            LoadJNI.forceLoad(type);
+            logger.info("Loaded " + type.name() + "-JNI");
+        } catch (IOException e) {
+            logger.error("Failed to load " + type.name() + "-JNI!", e);
+            if (isSmoketest) {
+                System.exit(1);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         logger.info(
                 "Starting PhotonVision version "
@@ -222,55 +235,24 @@ public class Main {
             System.exit(1);
         }
 
-        try {
-            if (Platform.isRaspberryPi()) {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.LIBCAMERA);
-                logger.info("Loaded libcamera-JNI");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load libcamera-JNI!", e);
-            if (isSmoketest) {
-                System.exit(1);
-            }
+        if (Platform.isRaspberryPi()) {
+            tryLoadJNI(JNITypes.LIBCAMERA);
         }
-        try {
-            if (Platform.isRK3588()) {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.RKNN_DETECTOR);
-                logger.info("Loaded RKNN-JNI");
-            } else {
-                logger.error("Platform does not support RKNN based machine learning!");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load RKNN-JNI!", e);
-            if (isSmoketest) {
-                System.exit(1);
-            }
+
+        if (Platform.isRK3588()) {
+            tryLoadJNI(JNITypes.RKNN_DETECTOR);
+        } else {
+            logger.error("Platform does not support RKNN based machine learning!");
         }
-        try {
-            if (Platform.isQCS6490()) {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.RUBIK_DETECTOR);
-                logger.info("Loaded Rubik-JNI");
-            } else {
-                logger.error("Platform does not support Rubik based machine learning!");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load Rubik-JNI!", e);
-            if (isSmoketest) {
-                System.exit(1);
-            }
+
+        if (Platform.isQCS6490()) {
+            tryLoadJNI(JNITypes.RUBIK_DETECTOR);
+        } else {
+            logger.error("Platform does not support Rubik based machine learning!");
         }
+
         if (Platform.isWindows() || Platform.isLinux()) {
-            try {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
-                logger.info("mrcal-JNI loaded successfully.");
-            } catch (Exception e) {
-                logger.warn(
-                        "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
-                                + e.getMessage());
-                if (isSmoketest) {
-                    System.exit(1);
-                }
-            }
+            tryLoadJNI(JNITypes.MRCAL);
         }
 
         CVMat.enablePrint(false);
