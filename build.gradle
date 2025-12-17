@@ -37,11 +37,11 @@ ext {
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
     javalinVersion = "6.7.0"
-    libcameraDriverVersion = "dev-v2025.0.4-2-gc91d4b7"
+    libcameraDriverVersion = "dev-v2025.0.4-3-g95e2b38"
     rknnVersion = "dev-v2025.0.0-7-g83c1bf3"
     rubikVersion = "dev-v2025.1.0-7-g39588a8"
     frcYear = "2026beta"
-    mrcalVersion = "dev-v2025.0.0-2-g2adb187";
+    mrcalVersion = "dev-v2025.0.0-3-g2dc275f";
 
 
     pubVersion = versionString
