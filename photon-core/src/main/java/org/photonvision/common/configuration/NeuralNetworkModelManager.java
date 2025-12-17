@@ -256,7 +256,6 @@ public class NeuralNetworkModelManager {
         YOLOV5,
         YOLOV8,
         YOLOV11,
-        YOLOV11_OBB, // Not yet supported
         YOLO_PRO
     }
 

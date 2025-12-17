@@ -80,8 +80,7 @@ public class RubikModel implements Model {
     public ObjectDetector load() {
         return new RubikObjectDetector(
                 this,
-                new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()),
-                this.properties.version().ordinal());
+                new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
     }
 
     public String toString() {
