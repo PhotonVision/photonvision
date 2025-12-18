@@ -65,7 +65,7 @@ public class RubikObjectDetector implements ObjectDetector {
 
         // Create the detector
         try {
-            ptr = RubikJNI.create(model.modelFile.getPath().toString());
+            ptr = RubikJNI.create(model.modelFile.getPath().toString(), model.properties.version().ordinal());
         } catch (Exception e) {
             logger.error("Failed to create detector from path " + model.modelFile.getPath(), e);
             throw new RuntimeException(
