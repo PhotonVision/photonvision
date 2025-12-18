@@ -170,13 +170,20 @@ const socialLinks = [
     </header>
 
     <section
-      class="flex flex-col min-h-[calc(100vh_-_56px)] justify-center items-center p-8 md:p-16 relative overflow-hidden"
+      class="flex flex-col min-h-[calc(100vh_-_56px)] md:justify-center items-center p-8 md:p-16 relative overflow-hidden"
     >
       <div
-        class="flex justify-center md:justify-end flex-col md:flex-row items-center"
+        class="flex justify-center md:justify-start flex-col md:flex-row items-start"
       >
+        <span class="self-center md:self-initial mb-8 md:mb-0 md:me-12 shrink">
+          <img
+            src="/images/PhotonVision-Icon-BG.png"
+            alt="PhotonVision Logo"
+            class="max-w-20 md:max-w-80 drop-shadow-2xl md:p-0 transition-transform duration-500"
+          />
+        </span>
         <header
-          class="flex flex-col gap-6 items-center md:items-end justify-center text-center md:text-end"
+          class="flex flex-col gap-6 items-center md:items-start justify-center text-center md:text-start"
         >
           <h2
             class="text-5xl md:text-6xl font-bold drop-shadow-lg font-heading"
@@ -195,18 +202,11 @@ const socialLinks = [
             href="https://docs.photonvision.org/en/latest/docs/quick-start/quick-install.html"
             variant="primary"
             size="lg"
-            class="self-center md:self-end rounded-xl"
+            class="self-center md:self-start rounded-xl"
           >
             Get Started
           </Button>
         </header>
-        <span class="self-center md:self-initial mt-10 md:ms-12 shrink">
-          <img
-            src="/images/PhotonVision-Icon-BG.png"
-            alt="PhotonVision Logo"
-            class="max-w-72 drop-shadow-2xl transition-transform duration-500"
-          />
-        </span>
       </div>
       <a
         href="#demo"
