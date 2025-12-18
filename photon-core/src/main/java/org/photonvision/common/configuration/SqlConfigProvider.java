@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
@@ -302,13 +301,20 @@ public class SqlConfigProvider extends ConfigProvider {
 
         synchronized (m_mutex) {
             var hardwareConfig =
-                    loadConfigOrDefault(conn, GlobalKeys.HARDWARE_CONFIG, HardwareConfig.class, HardwareConfig::new);
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.HARDWARE_CONFIG, HardwareConfig.class, HardwareConfig::new);
             var hardwareSettings =
-                    loadConfigOrDefault(conn, GlobalKeys.HARDWARE_SETTINGS, HardwareSettings.class, HardwareSettings::new);
-            var networkConfig = loadConfigOrDefault(conn, GlobalKeys.NETWORK_CONFIG, NetworkConfig.class, NetworkConfig::new);
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.HARDWARE_SETTINGS, HardwareSettings.class, HardwareSettings::new);
+            var networkConfig =
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.NETWORK_CONFIG, NetworkConfig.class, NetworkConfig::new);
             var nnProps =
                     loadConfigOrDefault(
-                            conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES, NeuralNetworkPropertyManager.class, NeuralNetworkPropertyManager::new);
+                            conn,
+                            GlobalKeys.NEURAL_NETWORK_PROPERTIES,
+                            NeuralNetworkPropertyManager.class,
+                            NeuralNetworkPropertyManager::new);
             var atfl =
                     loadConfigOrDefault(
                             conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, () -> atflDefault());
