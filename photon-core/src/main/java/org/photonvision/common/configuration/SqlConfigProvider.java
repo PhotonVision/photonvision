@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
@@ -254,7 +255,8 @@ public class SqlConfigProvider extends ConfigProvider {
         return true;
     }
 
-    private <T> T loadConfig(Connection conn, String key, Class<T> ref, Callable<T> factory) {
+    private <T> T loadConfigOrDefault(
+            Connection conn, String key, Class<T> ref, Supplier<T> factory) {
         String configString = getOneConfigFile(conn, key);
         T configObj = null;
         if (!configString.isBlank()) {
@@ -270,17 +272,13 @@ public class SqlConfigProvider extends ConfigProvider {
         }
         // either the config entry is empty or Jackson threw and exception
         try {
-            configObj = factory.call(); // (T) ref.getConstructor().newInstance();
+            configObj = factory.get(); // (T) ref.getConstructor().newInstance();
             logger.info("Loaded default " + ref.getSimpleName());
             return configObj;
         } catch (Exception e) {
             logger.error("Failed to construct a default instance of " + ref.getSimpleName(), e);
         }
         return configObj;
-    }
-
-    private <T> T loadConfig(Connection conn, String key, Class<T> ref) {
-        return loadConfig(conn, key, ref, () -> ref.getConstructor().newInstance());
     }
 
     private AprilTagFieldLayout atflDefault() {
@@ -303,14 +301,16 @@ public class SqlConfigProvider extends ConfigProvider {
         if (conn == null) return;
 
         synchronized (m_mutex) {
-            var hardwareConfig = loadConfig(conn, GlobalKeys.HARDWARE_CONFIG, HardwareConfig.class);
-            var hardwareSettings = loadConfig(conn, GlobalKeys.HARDWARE_SETTINGS, HardwareSettings.class);
-            var networkConfig = loadConfig(conn, GlobalKeys.NETWORK_CONFIG, NetworkConfig.class);
+            var hardwareConfig =
+                    loadConfigOrDefault(conn, GlobalKeys.HARDWARE_CONFIG, HardwareConfig.class, HardwareConfig::new);
+            var hardwareSettings =
+                    loadConfigOrDefault(conn, GlobalKeys.HARDWARE_SETTINGS, HardwareSettings.class, HardwareSettings::new);
+            var networkConfig = loadConfigOrDefault(conn, GlobalKeys.NETWORK_CONFIG, NetworkConfig.class, NetworkConfig::new);
             var nnProps =
-                    loadConfig(
-                            conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES, NeuralNetworkPropertyManager.class);
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES, NeuralNetworkPropertyManager.class, NeuralNetworkPropertyManager::new);
             var atfl =
-                    loadConfig(
+                    loadConfigOrDefault(
                             conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, () -> atflDefault());
             var cams = loadCameraConfigs(conn);
 
