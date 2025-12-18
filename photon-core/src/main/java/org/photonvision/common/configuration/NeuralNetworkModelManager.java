@@ -146,7 +146,7 @@ public class NeuralNetworkModelManager {
                                 "vase",
                                 "scissors",
                                 "teddy bear",
-                                "hair drier",
+                                "hair dryer",
                                 "toothbrush"));
 
         nnProps.addModelProperties(
