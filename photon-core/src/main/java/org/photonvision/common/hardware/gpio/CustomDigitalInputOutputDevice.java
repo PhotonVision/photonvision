@@ -26,11 +26,11 @@ import com.diozero.internal.spi.GpioDigitalInputOutputDeviceInterface;
 public class CustomDigitalInputOutputDevice extends AbstractInputDevice<DigitalInputEvent>
         implements GpioDigitalInputOutputDeviceInterface {
     protected final CustomAdapter adapter;
-    protected final int gpio;
+    protected final PinIdentifier gpio;
     private boolean outputValue = false;
 
     public CustomDigitalInputOutputDevice(
-            CustomDeviceFactory deviceFactory, String key, int gpio, DeviceMode mode) {
+            CustomDeviceFactory deviceFactory, String key, PinIdentifier gpio, DeviceMode mode) {
         super(key, deviceFactory);
 
         this.adapter = deviceFactory.adapter;
@@ -52,7 +52,7 @@ public class CustomDigitalInputOutputDevice extends AbstractInputDevice<DigitalI
 
     @Override
     public int getGpio() {
-        return gpio;
+        return gpio.getDeviceNumber();
     }
 
     @Override

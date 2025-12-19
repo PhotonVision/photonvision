@@ -54,6 +54,16 @@ public interface PinIdentifier {
                 return super.equals(obj);
             }
         }
+
+        @Override
+        public int getDeviceNumber() {
+            return PinInfo.NOT_DEFINED;
+        }
+
+        @Override
+        public String toString() {
+            return this.name;
+        }
     }
 
     @Json
@@ -82,6 +92,16 @@ public interface PinIdentifier {
                 return super.equals(obj);
             }
         }
+
+        @Override
+        public int getDeviceNumber() {
+            return number;
+        }
+
+        @Override
+        public String toString() {
+            return Integer.toString(number);
+        }
     }
 
     public static PinIdentifier named(String name) {
@@ -92,6 +112,19 @@ public interface PinIdentifier {
         return new NumberedPin(number);
     }
 
+    public static PinIdentifier fromInfo(PinInfo info) throws NoSuchDeviceException {
+        int number = info.getDeviceNumber();
+        if (number != PinInfo.NOT_DEFINED) {
+            return numbered(number);
+        }
+        String name = info.getName();
+        if (name != "") {
+            return named(name);
+        }
+        throw new NoSuchDeviceException(
+                "PinIdentifier can only represent pins that are numbered or named");
+    }
+
     public static PinIdentifier STUB = numbered(-1);
 
     public default PinInfo info() throws NoSuchDeviceException {
@@ -99,4 +132,6 @@ public interface PinIdentifier {
     }
 
     public PinInfo info(NativeDeviceFactoryInterface deviceFactory) throws NoSuchDeviceException;
+
+    public int getDeviceNumber();
 }

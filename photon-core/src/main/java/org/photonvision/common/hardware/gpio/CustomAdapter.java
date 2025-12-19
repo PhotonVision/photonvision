@@ -55,33 +55,26 @@ public class CustomAdapter {
         return runCommand.get().getOutput();
     }
 
-    public boolean getGPIO(int gpio) {
-        return Boolean.parseBoolean(
-                execute(getGPIOCommand.replace("{p}", Integer.toString(gpio))).trim());
+    public boolean getGPIO(PinIdentifier gpio) {
+        return Boolean.parseBoolean(execute(getGPIOCommand.replace("{p}", gpio.toString())).trim());
     }
 
-    public void setGPIO(int gpio, boolean state) {
-        execute(
-                setGPIOCommand
-                        .replace("{p}", Integer.toString(gpio))
-                        .replace("{s}", Boolean.toString(state)));
+    public void setGPIO(PinIdentifier gpio, boolean state) {
+        execute(setGPIOCommand.replace("{p}", gpio.toString()).replace("{s}", Boolean.toString(state)));
     }
 
-    public void setPWM(int gpio, double value) {
-        execute(
-                setPWMCommand
-                        .replace("{p}", Integer.toString(gpio))
-                        .replace("{v}", Double.toString(value)));
+    public void setPWM(PinIdentifier gpio, double value) {
+        execute(setPWMCommand.replace("{p}", gpio.toString()).replace("{v}", Double.toString(value)));
     }
 
-    public void setPwmFrequency(int gpio, int frequency) {
+    public void setPwmFrequency(PinIdentifier gpio, int frequency) {
         execute(
                 setPWMFrequencyCommand
-                        .replace("{p}", Integer.toString(gpio))
+                        .replace("{p}", gpio.toString())
                         .replace("{f}", Integer.toString(frequency)));
     }
 
-    public void releaseGPIO(int gpio) {
-        execute(releaseGPIOCommand.replace("{p}", Integer.toString(gpio)));
+    public void releaseGPIO(PinIdentifier gpio) {
+        execute(releaseGPIOCommand.replace("{p}", gpio.toString()));
     }
 }
