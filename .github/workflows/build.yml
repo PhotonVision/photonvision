@@ -409,43 +409,8 @@ jobs:
       - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
         if: ${{ (matrix.os) == 'windows-latest' }}
 
-  run-smoketest-chroot:
-    needs: [build-package]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - image_suffix: RaspberryPi
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
-          - image_suffix: rubikpi3
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
-            root_location: 'offset=569376768'
-          - image_suffix: orangepi5
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
-
-    runs-on: ubuntu-24.04-arm
-    name: smoketest-${{ matrix.image_suffix }}
-
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: jar-LinuxArm64
-
-      - uses: photonvision/photon-image-runner@HEAD
-        name: Run photon smoketest
-        id: generate_image
-        with:
-          image_url: ${{ matrix.image_url }}
-          root_location: ${{ matrix.root_location || 'partition=2' }}
-          # our image better have java installed already
-          commands: |
-            java -jar *.jar --smoketest
-
   build-image:
     needs: [build-package]
-
-    if: ${{ github.event_name != 'pull_request' }}
 
     strategy:
       fail-fast: false
@@ -454,66 +419,79 @@ jobs:
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: RaspberryPi
+            plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: limelight2
+            plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: limelight3
+            plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: limelight3G
+            plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3g.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: limelight4
+            plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight4.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: luma_p1
+            plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: orangepi5
+            plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: orangepi5b
+            plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5b.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: orangepi5plus
+            plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5plus.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: orangepi5pro
+            plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5pro.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: orangepi5max
+            plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5max.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: rock5c
+            plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rock5c.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
             image_suffix: rubikpi3
+            plat_override: LINUX_QCS6490
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
             minimum_free_mb: 1024
             root_location: 'offset=569376768'
@@ -541,6 +519,7 @@ jobs:
           commands: |
             chmod +x scripts/armrunner.sh
             ./scripts/armrunner.sh
+            java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
 
       - name: Compress image
         # Compress the standard images
@@ -570,8 +549,16 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
 
+  matrix-checker:
+    runs-on: ubuntu-latest
+    needs: [build-image]
+    if: always()
+    steps:
+      - run: ${{!contains(needs.*.result, 'failure')}}
+
   release:
     needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    if: github.ref == ('refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.repository == 'PhotonVision/photonvision'
     runs-on: ubuntu-22.04
     steps:
       # Download all fat JARs
