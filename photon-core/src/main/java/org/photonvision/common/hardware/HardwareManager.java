@@ -174,10 +174,15 @@ public class HardwareManager {
     protected static PinInfo addCustomGPIOPin(
             BoardPinInfo pinInfo, PinIdentifier pin, Collection<DeviceMode> modes) {
         if (pin instanceof PinIdentifier.NumberedPin) {
-            int number = ((PinIdentifier.NumberedPin) pin).number;
+            int number = pin.getDeviceNumber();
             return pinInfo.addGpioPinInfo(number, number, modes);
+        } else if (pin instanceof PinIdentifier.NamedPin) {
+            int number = pin.getDeviceNumber();
+            String name = ((PinIdentifier.NamedPin) pin).name;
+            return pinInfo.addGpioPinInfo(number, name, number, modes);
         } else {
-            throw new UnsupportedOperationException("Only numbered pins can be used with custom GPIO");
+            throw new UnsupportedOperationException(
+                    "Only numbered or named pins can be used with custom GPIO");
         }
     }
 

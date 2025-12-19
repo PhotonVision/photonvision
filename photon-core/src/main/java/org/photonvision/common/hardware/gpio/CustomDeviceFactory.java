@@ -87,7 +87,7 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
 
     @Override
     public int getGpioValue(int gpio) {
-        return adapter.getGPIO(gpio) ? 1 : 0;
+        return adapter.getGPIO(PinIdentifier.numbered(gpio)) ? 1 : 0;
     }
 
     @Override
@@ -118,26 +118,26 @@ public class CustomDeviceFactory extends BaseNativeDeviceFactory {
     @Override
     public GpioDigitalInputDeviceInterface createDigitalInputDevice(
             String key, PinInfo pinInfo, GpioPullUpDown pud, GpioEventTrigger trigger) {
-        return new CustomDigitalInputDevice(this, key, pinInfo.getDeviceNumber(), pud, trigger);
+        return new CustomDigitalInputDevice(this, key, PinIdentifier.fromInfo(pinInfo), pud, trigger);
     }
 
     @Override
     public GpioDigitalOutputDeviceInterface createDigitalOutputDevice(
             String key, PinInfo pinInfo, boolean initialValue) {
-        return new CustomDigitalOutputDevice(this, key, pinInfo.getDeviceNumber(), initialValue);
+        return new CustomDigitalOutputDevice(this, key, PinIdentifier.fromInfo(pinInfo), initialValue);
     }
 
     @Override
     public GpioDigitalInputOutputDeviceInterface createDigitalInputOutputDevice(
             String key, PinInfo pinInfo, DeviceMode mode) {
-        return new CustomDigitalInputOutputDevice(this, key, pinInfo.getDeviceNumber(), mode);
+        return new CustomDigitalInputOutputDevice(this, key, PinIdentifier.fromInfo(pinInfo), mode);
     }
 
     @Override
     public InternalPwmOutputDeviceInterface createPwmOutputDevice(
             String key, PinInfo pinInfo, int pwmFrequency, float initialValue) {
         return new CustomPwmOutputDevice(
-                this, key, pinInfo.getDeviceNumber(), pwmFrequency, initialValue);
+                this, key, PinIdentifier.fromInfo(pinInfo), pwmFrequency, initialValue);
     }
 
     @Override
