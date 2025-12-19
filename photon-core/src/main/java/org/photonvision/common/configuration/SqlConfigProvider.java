@@ -257,7 +257,7 @@ public class SqlConfigProvider extends ConfigProvider {
     private <T> T loadConfigOrDefault(
             Connection conn, String key, Class<T> ref, Supplier<T> factory) {
         String configString = getOneConfigFile(conn, key);
-        T configObj = null;
+        T configObj;
         if (!configString.isBlank()) {
             try {
                 configObj = JacksonUtils.deserialize(configString, ref);
@@ -271,13 +271,13 @@ public class SqlConfigProvider extends ConfigProvider {
         }
         // either the config entry is empty or Jackson threw and exception
         try {
-            configObj = factory.get(); // (T) ref.getConstructor().newInstance();
+            configObj = factory.get();
             logger.info("Loaded default " + ref.getSimpleName());
             return configObj;
         } catch (Exception e) {
             logger.error("Failed to construct a default instance of " + ref.getSimpleName(), e);
         }
-        return configObj;
+        return null;
     }
 
     private AprilTagFieldLayout atflDefault() {
