@@ -2,7 +2,7 @@
   "deviceName": "PhotonVision",
   "deviceLogoPath": "photonvision.png",
   "supportURL": "https://support.photonvision.com",
-  "ledPins" : [2, 13],
+  "ledPins" : [2, 13, "GPIO1_B7"],
   "statusRGBPins" : [-1, -1, -1],
   "ledsCanDim" : true,
   "getGPIOCommand": "cat /tmp/GPIO{p}",

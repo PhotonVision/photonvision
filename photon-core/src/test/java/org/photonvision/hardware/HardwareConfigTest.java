@@ -44,7 +44,9 @@ public class HardwareConfigTest {
             // Ensure defaults are not null
             assertArrayEquals(
                     config.ledPins.toArray(),
-                    new PinIdentifier[] {PinIdentifier.numbered(2), PinIdentifier.numbered(13)});
+                    new PinIdentifier[] {
+                        PinIdentifier.numbered(2), PinIdentifier.numbered(13), PinIdentifier.named("GPIO1_B7")
+                    });
             NativeDeviceFactoryInterface deviceFactory = HardwareManager.configureCustomGPIO(config);
             assertTrue(deviceFactory instanceof CustomDeviceFactory);
             deviceFactory.close();
