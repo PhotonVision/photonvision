@@ -260,11 +260,14 @@ public class NetworkUtils {
                     }
                 }
             } else { // Managed? We should have a working interface available
-                byte[] mac = NetworkInterface.getByName(config.networkManagerIface).getHardwareAddress();
-                if (mac != null) {
-                    return formatMacAddress(mac);
-                } else {
-                    logger.error("No MAC address found for " + config.networkManagerIface);
+                var iface = NetworkInterface.getByName(config.networkManagerIface);
+                if (iface != null) {
+                    byte[] mac = iface.getHardwareAddress();
+                    if (mac != null) {
+                        return formatMacAddress(mac);
+                    } else {
+                        logger.error("No MAC address found for " + config.networkManagerIface);
+                    }
                 }
             }
         } catch (Exception e) {
