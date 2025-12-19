@@ -24,6 +24,9 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
 
 const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
   useCameraSettingsStore().currentCameraSettings.validVideoFormats[
@@ -46,6 +49,9 @@ const drawTargets = (targets: PhotonTarget[]) => {
   if (!scene || !camera || !renderer || !controls) {
     return;
   }
+  
+  if (theme.global.name.value === 'LightTheme') scene.background = new Color(0xa9a9a9);
+  else scene.background = new Color(0x000000);
 
   scene.remove(...previousTargets);
   previousTargets = [];
@@ -148,7 +154,8 @@ onMounted(async () => {
   if (!canvas) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
-  scene.background = new Color(0xa9a9a9);
+  if (theme.global.name.value === 'LightTheme') scene.background = new Color(0xa9a9a9);
+  else scene.background = new Color(0x000000);
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
@@ -215,18 +222,33 @@ watchEffect(() => {
 
 <template>
   <div id="container" style="width: 100%">
-    <v-row>
-      <v-col align-self="stretch" style="display: flex; justify-content: center">
-        <canvas id="view" />
+    <div class="d-flex flex-wrap pt-0 pb-2">
+      <v-col cols="12" md="6" class="pl-0">
+        <v-card-title class="pa-0">
+          Target Visualization
+        </v-card-title>
       </v-col>
-    </v-row>
-    <v-row style="margin-bottom: 24px">
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
+        <v-btn
+          style="width: 100%"
+          color="buttonActive"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCamFirstPerson"
+        >
+          First Person
+        </v-btn>
       </v-col>
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
+        <v-btn
+          style="width: 100%"
+          color="buttonActive"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCamThirdPerson"
+        >
+          Third Person
+        </v-btn>
       </v-col>
-    </v-row>
+    </div>
+    <canvas id="view" class="w-100" />
   </div>
 </template>

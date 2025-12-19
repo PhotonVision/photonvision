@@ -47,12 +47,12 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
 
     const isOutlier = !obs.cornersUsed[idx];
 
-    const color = isOutlier ? 0xff0000 : 0x00ff00;
+    const color = isOutlier ? 0xff3333 : 0x33ff33;
 
     const sphereGeom = new SphereGeometry(cal.calobjectSpacing / 8, 8, 8);
     const sphereMat = new MeshPhongMaterial({
       color: color,
-      opacity: isOutlier ? 1.0 : 0.4,
+      opacity: 1,
       transparent: !isOutlier
     });
     const sphere = new Mesh(sphereGeom, sphereMat);
@@ -64,6 +64,7 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
 };
 
 let previousTargets: Object3D[] = [];
+let baseAspect: number | undefined;
 const drawCalibration = (cal: CameraCalibrationResult | null) => {
   // Check here, since if we check in watchEffect this never gets called
   if (!cal || !scene || !camera || !renderer || !controls) {
@@ -142,12 +143,24 @@ const onWindowResize = () => {
     return;
   }
 
-  canvas.style.width = container.clientWidth * 0.75 + "px";
-  canvas.style.height = container.clientWidth * 0.35 + "px";
-  camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  // Compute a concrete width from the container and derive height from a
+  // stable base aspect ratio (calculated on mount) to avoid feedback loops
+  // where updating canvas size changes container size while resizing
+  const width = Math.max(1, Math.floor(container.clientWidth));
+  let height: number;
+  if (baseAspect && baseAspect > 0) {
+    height = Math.max(1, Math.floor(width / baseAspect));
+  } else {
+    height = Math.max(1, Math.floor(container.clientHeight));
+  }
+
+  // Use updateStyle=false so Three.js does not write to canvas style,
+  // which can affect layout and re-trigger resize events
+  renderer.setSize(width, height, false);
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 };
+
 const resetCamFirstPerson = () => {
   if (!scene || !camera || !controls) {
     return;
@@ -162,6 +175,7 @@ const resetCamFirstPerson = () => {
     scene.add(...previousTargets);
   }
 };
+
 const resetCamThirdPerson = () => {
   if (!scene || !camera || !controls) {
     return;
@@ -194,13 +208,18 @@ onMounted(async () => {
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  scene.background = new Color(0xa9a9a9);
+  if (theme.global.name.value === 'LightTheme') scene.background = new Color(0xa9a9a9);
+  else scene.background = new Color(0x000000);
 
-  // // Add grid
-  // const gridHelper = new GridHelper(2, 10, 0x444444, 0x222222);
-  // gridHelper.rotateOnWorldAxis(new Vector3(1, 0, 0), Math.PI / 2);
-  // gridHelper.position.z = -0.05;
-  // scene.add(gridHelper);
+  // Initialize a stable aspect ratio so subsequent resize events derive
+  // height from width, avoiding layout feedback during continuous resizing
+  try {
+    const initWidth = Math.max(1, Math.floor((document.getElementById("container")?.clientWidth) || 1));
+    const initHeight = Math.max(1, Math.floor((document.getElementById("container")?.clientHeight) || 1));
+    baseAspect = initWidth / Math.max(1, initHeight);
+  } catch (e) {
+    baseAspect = undefined;
+  }
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
@@ -317,7 +336,7 @@ watch(
 </script>
 
 <template>
-  <div id="container" style="width: 100%; height: 100%" class="d-flex flex-column">
+  <div style="width: 100%; height: 100%" class="d-flex flex-column">
     <div class="d-flex flex-wrap pt-0 pb-2">
       <v-col cols="12" md="6" class="pl-0">
         <v-card-title class="pa-0">
@@ -345,7 +364,7 @@ watch(
         </v-btn>
       </v-col>
     </div>
-    <div style="flex: 1 1 auto">
+    <div id="container" style="flex: 1 1 auto">
       <canvas id="view" class="w-100 h-100" />
     </div>
   </div>
