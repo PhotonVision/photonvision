@@ -167,7 +167,7 @@ const resetCamFirstPerson = () => {
   }
 
   controls.reset();
-  camera.position.set(0, 0, 0.2);
+  camera.position.set(0, 0, 0.05);
   camera.up.set(0, -1, 0);
   controls.target.set(0.0, 0.0, 1.0);
   controls.update();

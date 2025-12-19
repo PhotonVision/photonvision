@@ -253,7 +253,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             </tr>
           </thead>
           <tbody style="cursor: pointer">
-            <v-tooltip v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index" location="bottom">
+            <v-tooltip
+              v-for="(value, index) in getUniqueVideoFormatsByResolution()"
+              :key="index"
+              transition=""
+              location="bottom"
+              :open-delay="100"
+            >
               <template #activator="{ props }">
                 <tr :key="index" v-bind="props" @click="setSelectedVideoFormat(value)">
                   <td>{{ getResolutionString(value.resolution) }}</td>
