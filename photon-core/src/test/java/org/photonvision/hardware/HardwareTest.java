@@ -39,6 +39,7 @@ import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.VisionLED;
+import org.photonvision.common.hardware.gpio.PinIdentifier;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareTest {
