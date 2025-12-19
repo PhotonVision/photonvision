@@ -12,15 +12,7 @@ Bonjour provides more stable networking when using Windows PCs. Install [Bonjour
 
 ## Installing Java
 
-PhotonVision requires a JDK installed and on the system path. **JDK 17 is needed. Windows Users must use the JDK that ships with WPILib.** [Download and install it from here.](https://github.com/wpilibsuite/allwpilib/releases/tag/v2025.3.2) Either ensure the only Java on your PATH is the WPILIB Java or specify it to gradle with `-Dorg.gradle.java.home=C:\Users\Public\wpilib\2025\jdk`:
-
-```
-> ./gradlew run "-Dorg.gradle.java.home=C:\Users\Public\wpilib\2025\jdk"
-```
-
-:::{warning}
-Using a JDK other than WPILIB's JDK17 will cause issues when running PhotonVision and is not supported.
-:::
+PhotonVision requires a JDK installed and on the system path. **JDK 17 is needed.** You may already have it if you installed WPILib, but ensure that running `java -version` shows JDK 17. You will likely have to add WPILib's JDK to JAVA_HOME and the JDK's `bin` directory to PATH. If you do not have a JDK 17 install, [download and install it from here.](https://adoptium.net/temurin/releases?version=17)
 
 ## Downloading the Latest Stable Release of PhotonVision
 

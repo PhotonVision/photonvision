@@ -31,6 +31,7 @@ dependencies {
     // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
+    implementation 'com.diozero:diozero-core:1.4.1'
 
     // The JNI libraries use wpilibNatives, the java libraries use implementation
     if (jniPlatform == "linuxarm64") {
