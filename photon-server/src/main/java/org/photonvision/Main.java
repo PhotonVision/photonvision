@@ -241,13 +241,13 @@ public class Main {
         if (Platform.isRK3588()) {
             tryLoadJNI(JNITypes.RKNN_DETECTOR);
         } else {
-            logger.error("Platform does not support RKNN based machine learning!");
+            logger.warn("Platform does not support RKNN based machine learning!");
         }
 
         if (Platform.isQCS6490()) {
             tryLoadJNI(JNITypes.RUBIK_DETECTOR);
         } else {
-            logger.error("Platform does not support Rubik based machine learning!");
+            logger.warn("Platform does not support Rubik based machine learning!");
         }
 
         if (Platform.isWindows() || Platform.isLinux()) {
