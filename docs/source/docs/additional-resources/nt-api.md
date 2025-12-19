@@ -9,7 +9,7 @@ PhotonVision interfaces with PhotonLib, our vendor dependency, using NetworkTabl
 ## API
 
 :::{warning}
-NetworkTables is not a supported setup/viable option when using PhotonVision as we only send one target at a time (this is problematic when using AprilTags, which will return data from multiple tags at once). 
+NetworkTables is not a supported setup/viable option when using PhotonVision as we only send one target at a time (this is problematic when using AprilTags, which will return data from multiple tags at once).
 
 **We strongly recommend using PhotonLib instead, as the NetworkTables API will most likely be removed in 2027.**
 :::

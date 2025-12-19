@@ -65,7 +65,6 @@ class NTTopicSet {
   nt::DoubleArrayPublisher cameraDistortionPublisher;
 
   void UpdateEntries() {
-
     nt::PubSubOptions options;
     options.periodic = 0.01;
     options.sendAll = true;
@@ -105,10 +104,10 @@ class NTTopicSet {
         subTable->GetDoubleArrayTopic("cameraDistortion").Publish();
 
     fmt::println(
-    "NetworkTables is not a supported setup/viable option when using"
-    "PhotonVision as we only send one target at a time.   We strongly" 
-    "recommend using PhotonLib instead, as the NetworkTables API will" 
-    "most likely be removed in 2027.");
+        "NetworkTables is not a supported setup/viable option when using"
+        "PhotonVision as we only send one target at a time.   We strongly"
+        "recommend using PhotonLib instead, as the NetworkTables API will"
+        "most likely be removed in 2027.");
   }
 
  private:
