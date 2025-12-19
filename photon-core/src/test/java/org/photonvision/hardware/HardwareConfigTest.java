@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
+import org.photonvision.common.hardware.gpio.PinIdentifier;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
@@ -39,7 +40,9 @@ public class HardwareConfigTest {
                     new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
             assertEquals(config.deviceName, "PhotonVision");
             // Ensure defaults are not null
-            assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
+            assertArrayEquals(
+                    config.ledPins.toArray(),
+                    new PinIdentifier[] {PinIdentifier.numbered(2), PinIdentifier.numbered(13)});
             NativeDeviceFactoryInterface deviceFactory = HardwareManager.configureCustomGPIO(config);
             assertTrue(deviceFactory instanceof CustomDeviceFactory);
             deviceFactory.close();
