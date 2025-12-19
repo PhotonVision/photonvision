@@ -31,7 +31,7 @@ import org.photonvision.common.hardware.statusLED.StatusLED;
 public interface StatusLedConfig {
     public StatusLED create(NativeDeviceFactoryInterface deviceFactory);
 
-    public int[] pins();
+    public PinIdentifier[] pins();
 
     @Override
     public String toString();

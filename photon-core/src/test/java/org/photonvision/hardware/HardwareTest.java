@@ -36,6 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
+import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.VisionLED;
 import org.photonvision.common.util.TestUtils;
@@ -51,7 +52,15 @@ public class HardwareTest {
         try (NativeDeviceFactoryInterface deviceFactory = new DefaultDeviceFactory()) {
             Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
 
-            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
+            try (VisionLED led =
+                    new VisionLED(
+                            deviceFactory,
+                            List.of(PinIdentifier.numbered(2), PinIdentifier.numbered(13)),
+                            false,
+                            0,
+                            100,
+                            0,
+                            null)) {
                 // Verify states can be set
                 led.setState(true);
                 assertEquals(1, deviceFactory.getGpioValue(2));
@@ -79,7 +88,15 @@ public class HardwareTest {
 
         @Test
         public void testCustomGPIO() throws IOException {
-            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
+            try (VisionLED led =
+                    new VisionLED(
+                            deviceFactory,
+                            List.of(PinIdentifier.numbered(2), PinIdentifier.numbered(13)),
+                            false,
+                            0,
+                            100,
+                            0,
+                            null)) {
                 // Verify states can be set
                 led.setState(true);
                 assertEquals(1, deviceFactory.getGpioValue(2));
@@ -92,7 +109,15 @@ public class HardwareTest {
 
         @Test
         public void testBlink() throws InterruptedException, IOException {
-            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
+            try (VisionLED led =
+                    new VisionLED(
+                            deviceFactory,
+                            List.of(PinIdentifier.numbered(2), PinIdentifier.numbered(13)),
+                            false,
+                            0,
+                            100,
+                            0,
+                            null)) {
                 // Verify blinking toggles between states
                 HashSet<Integer> seenValues = new HashSet<>();
                 led.blink(125, 3);

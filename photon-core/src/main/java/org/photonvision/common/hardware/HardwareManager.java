@@ -20,10 +20,12 @@ package org.photonvision.common.hardware;
 import com.diozero.api.DeviceAlreadyOpenedException;
 import com.diozero.api.DeviceMode;
 import com.diozero.api.NoSuchDeviceException;
+import com.diozero.api.PinInfo;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -32,7 +34,7 @@ import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
-import org.photonvision.common.configuration.StatusLedConfig;
+import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
@@ -175,19 +177,30 @@ public class HardwareManager implements AutoCloseable {
         BoardPinInfo pinInfo = deviceFactory.getBoardPinInfo();
 
         // Populate pin info according to hardware config
-        for (int pin : hardwareConfig.ledPins) {
+        for (PinIdentifier pin : hardwareConfig.ledPins) {
             if (hardwareConfig.ledsCanDim) {
-                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
+                addCustomGPIOPin(pinInfo, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
             } else {
-                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+                addCustomGPIOPin(pinInfo, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
-        for (int pin :
-                hardwareConfig.statusLEDConfig.map(StatusLedConfig::pins).orElseGet(() -> new int[0])) {
-            pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+        if (hardwareConfig.statusLEDConfig.isPresent()) {
+            for (PinIdentifier pin : hardwareConfig.statusLEDConfig.get().pins()) {
+                addCustomGPIOPin(pinInfo, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+            }
         }
 
         return deviceFactory;
+    }
+
+    protected static PinInfo addCustomGPIOPin(
+            BoardPinInfo pinInfo, PinIdentifier pin, Collection<DeviceMode> modes) {
+        if (pin instanceof PinIdentifier.NumberedPin) {
+            int number = ((PinIdentifier.NumberedPin) pin).number;
+            return pinInfo.addGpioPinInfo(number, number, modes);
+        } else {
+            throw new UnsupportedOperationException("Only numbered pins can be used with custom GPIO");
+        }
     }
 
     public void setBrightnessPercent(int percent) {
