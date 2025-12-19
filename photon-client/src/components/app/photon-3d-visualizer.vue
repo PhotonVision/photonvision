@@ -49,8 +49,8 @@ const drawTargets = (targets: PhotonTarget[]) => {
   if (!scene || !camera || !renderer || !controls) {
     return;
   }
-  
-  if (theme.global.name.value === 'LightTheme') scene.background = new Color(0xa9a9a9);
+
+  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
   else scene.background = new Color(0x000000);
 
   scene.remove(...previousTargets);
@@ -154,7 +154,7 @@ onMounted(async () => {
   if (!canvas) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
-  if (theme.global.name.value === 'LightTheme') scene.background = new Color(0xa9a9a9);
+  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
   else scene.background = new Color(0x000000);
 
   onWindowResize();
@@ -224,9 +224,7 @@ watchEffect(() => {
   <div id="container" style="width: 100%">
     <div class="d-flex flex-wrap pt-0 pb-2">
       <v-col cols="12" md="6" class="pl-0">
-        <v-card-title class="pa-0">
-          Target Visualization
-        </v-card-title>
+        <v-card-title class="pa-0"> Target Visualization </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
         <v-btn

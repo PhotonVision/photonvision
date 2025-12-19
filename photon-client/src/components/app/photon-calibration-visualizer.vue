@@ -208,16 +208,16 @@ onMounted(async () => {
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  if (theme.global.name.value === 'LightTheme') scene.background = new Color(0xa9a9a9);
+  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
   else scene.background = new Color(0x000000);
 
   // Initialize a stable aspect ratio so subsequent resize events derive
   // height from width, avoiding layout feedback during continuous resizing
   try {
-    const initWidth = Math.max(1, Math.floor((document.getElementById("container")?.clientWidth) || 1));
-    const initHeight = Math.max(1, Math.floor((document.getElementById("container")?.clientHeight) || 1));
+    const initWidth = Math.max(1, Math.floor(document.getElementById("container")?.clientWidth || 1));
+    const initHeight = Math.max(1, Math.floor(document.getElementById("container")?.clientHeight || 1));
     baseAspect = initWidth / Math.max(1, initHeight);
-  } catch (e) {
+  } catch {
     baseAspect = undefined;
   }
 
