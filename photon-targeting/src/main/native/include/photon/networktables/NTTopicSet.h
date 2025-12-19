@@ -28,7 +28,6 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/RawTopic.h>
 #include <networktables/StructTopic.h>
-#include <wpi/deprecated.h>
 
 namespace photon {
 const std::string PhotonPipelineResult_TYPE_STRING =
@@ -102,12 +101,6 @@ class NTTopicSet {
         subTable->GetDoubleArrayTopic("cameraIntrinsics").Publish();
     cameraDistortionPublisher =
         subTable->GetDoubleArrayTopic("cameraDistortion").Publish();
-
-    fmt::println(
-        "NetworkTables is not a supported setup/viable option when using"
-        "PhotonVision as we only send one target at a time.   We strongly"
-        "recommend using PhotonLib instead, as the NetworkTables API will"
-        "most likely be removed in 2027.");
   }
 
  private:
