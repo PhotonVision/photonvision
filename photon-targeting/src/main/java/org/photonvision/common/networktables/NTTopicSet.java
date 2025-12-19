@@ -40,6 +40,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * <p>However, we do expect that the actual logic which fills out values in the entries will be
  * different for sim vs. real camera
  */
+@Deprecated(since = "2025", forRemoval = true)
 public class NTTopicSet {
     public NetworkTable subTable;
 
