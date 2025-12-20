@@ -430,7 +430,7 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Z()), .01);
 }
 
-TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
+TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{

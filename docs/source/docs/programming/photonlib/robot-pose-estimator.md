@@ -106,7 +106,7 @@ The final prerequisite to using your `PhotonPoseEstimator` is creating a `Photon
      :lines: 44
 ```
 
-Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to do estimation with one of MultiTag methods, check if the result is empty, then fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`. For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedPnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator. 
+Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to do estimation with one of MultiTag methods, check if the result is empty, then fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`. For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedPnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator.
 
 ```{eval-rst}
 .. tab-set-code::

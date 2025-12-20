@@ -554,7 +554,12 @@ public class PhotonPoseEstimator {
                         }
                         var res = estimateRioMultiTagPose(cameraResult, cameraMatrix.get(), distCoeffs.get());
                         if (res.isEmpty()) {
-                            yield update(cameraResult, cameraMatrix, distCoeffs, constrainedPnpParams, this.multiTagFallbackStrategy);
+                            yield update(
+                                    cameraResult,
+                                    cameraMatrix,
+                                    distCoeffs,
+                                    constrainedPnpParams,
+                                    this.multiTagFallbackStrategy);
                         }
                         yield res;
                     }
