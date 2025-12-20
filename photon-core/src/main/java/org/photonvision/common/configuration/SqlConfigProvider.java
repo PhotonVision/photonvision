@@ -317,7 +317,7 @@ public class SqlConfigProvider extends ConfigProvider {
                             NeuralNetworkPropertyManager::new);
             var atfl =
                     loadConfigOrDefault(
-                            conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, () -> atflDefault());
+                            conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, this::atflDefault);
             var cams = loadCameraConfigs(conn);
 
             try {
