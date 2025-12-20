@@ -659,7 +659,7 @@ class PhotonPoseEstimatorTest {
     }
 
     @Test
-    void testMultiTagOnRioFallback() {
+    void testMultiTagOnCoprocFallback() {
         PhotonCameraInjector camera = new PhotonCameraInjector();
         camera.result =
                 new PhotonPipelineResult(
