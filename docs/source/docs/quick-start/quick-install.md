@@ -54,3 +54,9 @@ The Qualcomm Launcher caches files. If you flash multiple times, you may need to
 :::
 
 To flash the Rubik Pi 3 coprocessor, it's necessary to use the [Qualcomm Launcher](https://softwarecenter.qualcomm.com/catalog/item/Qualcomm_Launcher). Upload a custom image by selecting the *Custom* option in the launcher. Choose the downloaded PhotonVision `.tar.xz` file and follow the prompts to complete the installation. It is recommended to skip the *Configure Login* process, as PhotonVision will handle the necessary settings.
+
+:::{note}
+Some users have reported issues with the Qualcomm Launcher. If you encounter problems, try the method outlined below.
+:::
+
+An alternative method to flash the Rubik Pi 3 is with the use of [qdl](https://github.com/linux-msm/qdl). This is a more advanced method, and should only be used in the case where you encounter issues with the Qualcomm Launcher. First, follow the instructions located in the qdl repository to install qdl and the necessary dependencies. Second, follow the instructions [here](https://www.thundercomm.com/rubik-pi-3/en/docs/rubik-pi-3-user-manual/1.1.0/quick-start/#133-flash-images) to put your Rubik Pi 3 into EDL mode. Next, extract the contents of the downloaded PhotonVision `.tar.xz` file. Change to the extracted directory in a terminal, and run the following command: ```qdl --dry-run prog_firehose_ddr.elf rawprogram*.xml patch*.xml```.
