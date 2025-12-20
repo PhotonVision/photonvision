@@ -179,7 +179,7 @@ public final class BoardObservation implements Cloneable {
 
     /**
      * Mean reprojection error for this observation, skipping corners marked as unused. The overall
-     * mean is calcualted as the mean of each individual corner's reprojection error, or the distance
+     * mean is calculated as the mean of each individual corner's reprojection error, or the distance
      * in pixels between the observed and expected location.
      *
      * @return Mean reprojection error in pixels.
