@@ -34,7 +34,7 @@ import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
     @Test
-    public void loadJson() {
+    public void loadJson() throws IOException {
         System.out.println("Loading Hardware configs...");
         try (var stream = new FileInputStream(TestUtils.getHardwareConfigJson())) {
             var config = Jsonb.instance().type(HardwareConfig.class).fromJson(stream);
@@ -49,8 +49,6 @@ public class HardwareConfigTest {
                     HardwareManager.configureCustomGPIO(config)) {
                 assertTrue(deviceFactory instanceof CustomDeviceFactory);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }
