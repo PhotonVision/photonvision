@@ -416,9 +416,7 @@ public class NeuralNetworkModelManager {
         for (ModelProperties model : getShippedProperties(modelsDirectory).getModels()) {
             if (supportedBackends.contains(model.family())) {
                 supportedProperties.addModelProperties(model);
-            } else {
-                logger.warn(
-                        "Skipping model " + model.nickname() + " as it is not supported on this platform.");
+                logger.debug("Added shipped model: " + model.modelPath().getFileName().toString());
             }
         }
 
