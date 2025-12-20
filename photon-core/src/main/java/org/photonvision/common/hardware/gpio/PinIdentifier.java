@@ -21,14 +21,14 @@ import com.diozero.api.NoSuchDeviceException;
 import com.diozero.api.PinInfo;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.DeviceFactoryHelper;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
 public interface PinIdentifier {
     public static final class NamedPin implements PinIdentifier {
         public final String name;
 
+        @JsonCreator
         protected NamedPin(String name) {
             this.name = name;
         }
@@ -50,7 +50,7 @@ public interface PinIdentifier {
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof NamedPin) {
-                return this.name == ((NamedPin) obj).name;
+                return this.name.equals(((NamedPin) obj).name);
             } else {
                 return super.equals(obj);
             }
@@ -70,6 +70,7 @@ public interface PinIdentifier {
     public static final class NumberedPin implements PinIdentifier {
         public final int number;
 
+        @JsonCreator
         protected NumberedPin(int number) {
             this.number = number;
         }
@@ -104,10 +105,12 @@ public interface PinIdentifier {
         }
     }
 
+    @JsonCreator
     public static PinIdentifier named(String name) {
         return new NamedPin(name);
     }
 
+    @JsonCreator
     public static PinIdentifier numbered(int number) {
         return new NumberedPin(number);
     }
