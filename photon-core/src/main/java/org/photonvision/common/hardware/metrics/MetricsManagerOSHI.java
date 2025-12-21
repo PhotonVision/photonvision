@@ -104,8 +104,12 @@ public class MetricsManagerOSHI {
         try {
             var fs = Files.getFileStore(Path.of(""));
             logger.info("File Store: " + fs.name() );
-            logger.info("  Total Space: " + fs.getTotalSpace());
-            logger.info("  Usable Space: " + fs.getUsableSpace());
+            var total = fs.getTotalSpace();
+            var free = fs.getUsableSpace();
+            var used = total - free;
+            logger.info("  Total Space: " + total/(1024*1024));
+            logger.info("  Free Space: " + free/(1024*1024));
+            logger.info("  Used Space: " + used/(1024*1024));
         } catch (Exception e) { logger.error("Couldn't get FileStore"); }
         
         logger.info("File Systems");
@@ -129,6 +133,8 @@ public class MetricsManagerOSHI {
 
         
     }
+
+
 
 
 }
