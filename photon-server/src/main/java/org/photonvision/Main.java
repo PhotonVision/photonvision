@@ -33,6 +33,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.metrics.MetricsManagerOSHI;
 import org.photonvision.common.logging.KernelLogLogger;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -311,6 +312,8 @@ public class Main {
             }
         }
 
+        MetricsManagerOSHI.getInstance().logMetrics();
+        
         VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");
