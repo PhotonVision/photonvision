@@ -2,6 +2,8 @@ package org.photonvision.common.hardware.metrics;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,19 +24,19 @@ import oshi.util.FormatUtil;
 import oshi.util.GlobalConfig;
 
 public class MetricsManagerOSHI {
-    private final Logger logger = new Logger(MetricsManagerOSHI.class, LogGroup.General);
-    private final OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
-    private final SystemInfo si;
-    private final CentralProcessor cpu;
-    private final OperatingSystem os;
-    private GlobalMemory mem;
-    private HardwareAbstractionLayer hal;
+    private static MetricsManagerOSHI instance;
+
+    private static Logger logger = new Logger(MetricsManagerOSHI.class, LogGroup.General);
+    private static OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+    private static SystemInfo si;
+    private static CentralProcessor cpu;
+    private static OperatingSystem os;
+    private static GlobalMemory mem;
+    private static HardwareAbstractionLayer hal;
     // private long[] oldTicks; 
     // private long lastTime = 0;
     // private List<NetworkIF> iFaces;
     
-    private static MetricsManagerOSHI instance;
-
     private MetricsManagerOSHI() {
         logger.info("Starting MetricsManagerOSHI");
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, "true" );
@@ -55,7 +57,7 @@ public class MetricsManagerOSHI {
         return instance;
     }
 
-    public void logMetrics() {
+    public void dumpMetricsToLog() {
         logger.info("Operating System: " + os.toString());
         logger.info("  System Uptime: " + FormatUtil.formatElapsedSecs(os.getSystemUptime()));
         logger.info("  Elevated Privileges: " + os.isElevated() );
@@ -98,9 +100,18 @@ public class MetricsManagerOSHI {
 
         logger.info("Sensors: " + hal.getSensors().toString());
 
+        logger.info("CWD: " + Path.of("").toAbsolutePath().toString());
+        try {
+            var fs = Files.getFileStore(Path.of(""));
+            logger.info("File Store: " + fs.name() );
+            logger.info("  Total Space: " + fs.getTotalSpace());
+            logger.info("  Usable Space: " + fs.getUsableSpace());
+        } catch (Exception e) { logger.error("Couldn't get FileStore"); }
+        
         logger.info("File Systems");
         for ( OSFileStore fs : os.getFileSystem().getFileStores() ) {
-            logger.info("  System: " + fs.getMount() + " (" + fs.getName() + ")");
+            if ( fs.getMount().equals("/") ) {}
+            logger.info("  Store: " + fs.getMount() + " (" + fs.getName() + ")");
             logger.info("    Total Space: " + fs.getTotalSpace());
             logger.info("    Usable Space: " + fs.getUsableSpace());
             logger.info("    Free Space: " + fs.getFreeSpace());

@@ -312,7 +312,7 @@ public class Main {
             }
         }
 
-        MetricsManagerOSHI.getInstance().logMetrics();
+        MetricsManagerOSHI.getInstance().dumpMetricsToLog();
         
         VisionSourceManager.getInstance().registerTimedTasks();
 
