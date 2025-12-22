@@ -1,7 +1,9 @@
 package org.photonvision.common.hardware.metrics;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
+import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -10,10 +12,11 @@ import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
+import com.diozero.sbc.LocalSystemInfo;
+
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
-import oshi.hardware.CentralProcessor.TickType;
 import oshi.hardware.GlobalMemory;
 import oshi.hardware.GraphicsCard;
 import oshi.hardware.HardwareAbstractionLayer;
@@ -27,12 +30,13 @@ public class MetricsManagerOSHI {
     private static MetricsManagerOSHI instance;
 
     private static Logger logger = new Logger(MetricsManagerOSHI.class, LogGroup.General);
-    private static OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
     private static SystemInfo si;
     private static CentralProcessor cpu;
     private static OperatingSystem os;
     private static GlobalMemory mem;
     private static HardwareAbstractionLayer hal;
+    private static FileStore fs;
+    // private static LocalSystemInfo lsi;
     // private long[] oldTicks; 
     // private long lastTime = 0;
     // private List<NetworkIF> iFaces;
@@ -45,6 +49,15 @@ public class MetricsManagerOSHI {
         os = si.getOperatingSystem();
         cpu = hal.getProcessor();
         mem = hal.getMemory();
+        // lsi = LocalSystemInfo.getInstance();
+
+        try {
+            // get the filesystem for the directory photonvision is running on
+            fs = Files.getFileStore(Path.of(""));
+        } catch (IOException e) { 
+            logger.error("Couldn't get FileStore for " + Path.of("")); 
+            fs = null;
+        }
         // oldTicks = new long[TickType.values().length];
         // lastTime = System.currentTimeMillis();
         // iFaces = hal.getNetworkIFs();        
@@ -72,6 +85,7 @@ public class MetricsManagerOSHI {
 
         logger.info("CPU Info: " + cpu.toString());
         logger.info("  CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
+        logger.info("  CPU Temperature: " + LocalSystemInfo.getInstance().getCpuTemperature());
         logger.info("  Max Frequency: " + FormatUtil.formatHertz(cpu.getMaxFreq()));
         StringBuilder frequencies = new StringBuilder();
         for (long freq : cpu.getCurrentFreq()) {
@@ -100,27 +114,8 @@ public class MetricsManagerOSHI {
 
         logger.info("Sensors: " + hal.getSensors().toString());
 
-        logger.info("CWD: " + Path.of("").toAbsolutePath().toString());
-        try {
-            var fs = Files.getFileStore(Path.of(""));
-            logger.info("File Store: " + fs.name() );
-            var total = fs.getTotalSpace();
-            var free = fs.getUsableSpace();
-            var used = total - free;
-            logger.info("  Total Space: " + total/(1024*1024));
-            logger.info("  Free Space: " + free/(1024*1024));
-            logger.info("  Used Space: " + used/(1024*1024));
-        } catch (Exception e) { logger.error("Couldn't get FileStore"); }
+        logger.info("Used Disk (pct): " + getUsedDiskPct());
         
-        logger.info("File Systems");
-        for ( OSFileStore fs : os.getFileSystem().getFileStores() ) {
-            if ( fs.getMount().equals("/") ) {}
-            logger.info("  Store: " + fs.getMount() + " (" + fs.getName() + ")");
-            logger.info("    Total Space: " + fs.getTotalSpace());
-            logger.info("    Usable Space: " + fs.getUsableSpace());
-            logger.info("    Free Space: " + fs.getFreeSpace());
-        }
-
         logger.info("Network Interfaces");
         for (NetworkIF iFace : hal.getNetworkIFs() ) {
             logger.info("  Interface: " + iFace.toString());
@@ -130,11 +125,26 @@ public class MetricsManagerOSHI {
         for ( GraphicsCard gc : hal.getGraphicsCards()) {
             logger.info("  Card: " + gc.toString());
         }        
-
         
     }
 
-
-
+    /**
+     * Get the percentage of disk space used.
+     * 
+     * @return The percentage of disk space used, or -1.0 if the command fails.
+     */
+    public double getUsedDiskPct() {
+        double usedPct;
+        if (fs == null) return -1.0;
+        try {
+            double total = fs.getTotalSpace();
+            // note: df matches better with fs.getUnallocatedSpace(), but this is more conservative
+            usedPct = 100.0*(1.0 - fs.getUsableSpace()/total);
+        } catch (IOException e) { 
+            logger.error("Couldn't retrieve used disk space", e);
+            usedPct = -1.0; 
+        }
+        return usedPct;
+    }
 
 }
