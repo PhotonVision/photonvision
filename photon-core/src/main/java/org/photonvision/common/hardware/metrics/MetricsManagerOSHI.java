@@ -12,6 +12,7 @@ import java.rmi.server.ExportException;
 import java.util.Arrays;
 import java.util.List;
 
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
@@ -40,10 +41,10 @@ public class MetricsManagerOSHI {
     private static GlobalMemory mem;
     private static HardwareAbstractionLayer hal;
     private static FileStore fs;
+    private static List<NetworkIF> iFaces;
     // private static LocalSystemInfo lsi;
     private long[] oldTicks; 
-    // private long lastTime = 0;
-    // private List<NetworkIF> iFaces;
+    private long lastUpdate = 0;
     
     private static final long MB = (1024*1024);
 
@@ -66,8 +67,9 @@ public class MetricsManagerOSHI {
             fs = null;
         }
         oldTicks = cpu.getSystemCpuLoadTicks();
+        lastUpdate = System.currentTimeMillis();
         // lastTime = System.currentTimeMillis();
-        // iFaces = hal.getNetworkIFs();       
+        iFaces = hal.getNetworkIFs();       
         
         TimedTaskManager.getInstance().addTask("Metrics", this::periodic, 5000);
     }
@@ -189,7 +191,7 @@ public class MetricsManagerOSHI {
     }
 
     public double getCpuUsage() {
-        try { Thread.sleep(5000); } catch (Exception e) {}
+        // try { Thread.sleep(5000); } catch (Exception e) {}
         var newTicks = cpu.getSystemCpuLoadTicks();
         logger.info("  oldTicks: " + Arrays.toString(oldTicks));
         logger.info("  newTicks: " + Arrays.toString(newTicks));
@@ -198,8 +200,41 @@ public class MetricsManagerOSHI {
         return 100.0 * cpuLoad;
     }
 
+    public record NetworkTraffic(double sent, double recv) { }
+
+    public NetworkTraffic getNetworkTraffic() {
+        long sent = 0;
+        long recv = 0;
+        logger.info("Managed Interface: " + ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+        for (var iFace : iFaces ) {
+            logger.info("Network Interface: " + iFace.getName());
+            // if (iFace.getName().equals(ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface)) {
+                var lastBytesSent = iFace.getBytesSent();
+                var lastBytesRecv = iFace.getBytesRecv();
+                logger.info("  lastBytesSent: " + lastBytesSent + "| lastBytesRecv: " + lastBytesRecv);
+                iFace.updateAttributes();
+                sent = iFace.getBytesSent() - lastBytesSent;
+                recv = iFace.getBytesRecv() - lastBytesRecv;
+                logger.info("  Sent: " + sent + "| Recv: " + recv);
+                // break;
+            // }
+        }
+        long now = System.currentTimeMillis();
+        double dTime = (now - lastUpdate)/1000.0;
+        if (dTime > 0) {
+            lastUpdate = now;
+            return new NetworkTraffic(sent/dTime, recv/dTime);
+        }
+        return new NetworkTraffic(0, 0);
+    }
+
     public void periodic() {
         logger.info("CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
         logger.info(String.format("CPU Usage: %.2f%%", getCpuUsage()));
+        logger.info(String.format("CPU Temperature: %.2f °C", getCpuTemperature()));
+        logger.info(String.format( "Used Disk: %.2f%%", getUsedDiskPct()));
+        logger.info(String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
+        var nt = getNetworkTraffic();
+        logger.info(String.format("Data sent: %.2f B/s, Data recieved: %.2f B/s", nt.sent(), nt.recv()));
     }
 }
