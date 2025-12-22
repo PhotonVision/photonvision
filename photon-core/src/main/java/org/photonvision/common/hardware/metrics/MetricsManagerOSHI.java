@@ -1,16 +1,20 @@
 package org.photonvision.common.hardware.metrics;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.rmi.server.ExportException;
 import java.util.Arrays;
 import java.util.List;
 
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TimedTaskManager;
 
 import com.diozero.sbc.LocalSystemInfo;
 
@@ -37,13 +41,16 @@ public class MetricsManagerOSHI {
     private static HardwareAbstractionLayer hal;
     private static FileStore fs;
     // private static LocalSystemInfo lsi;
-    // private long[] oldTicks; 
+    private long[] oldTicks; 
     // private long lastTime = 0;
     // private List<NetworkIF> iFaces;
     
+    private static final long MB = (1024*1024);
+
     private MetricsManagerOSHI() {
         logger.info("Starting MetricsManagerOSHI");
-        GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, "true" );
+        GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true );
+
         si = new SystemInfo();
         hal = si.getHardware();
         os = si.getOperatingSystem();
@@ -58,9 +65,11 @@ public class MetricsManagerOSHI {
             logger.error("Couldn't get FileStore for " + Path.of("")); 
             fs = null;
         }
-        // oldTicks = new long[TickType.values().length];
+        oldTicks = cpu.getSystemCpuLoadTicks();
         // lastTime = System.currentTimeMillis();
-        // iFaces = hal.getNetworkIFs();        
+        // iFaces = hal.getNetworkIFs();       
+        
+        TimedTaskManager.getInstance().addTask("Metrics", this::periodic, 5000);
     }
 
     public static MetricsManagerOSHI getInstance() {
@@ -72,7 +81,7 @@ public class MetricsManagerOSHI {
 
     public void dumpMetricsToLog() {
         logger.info("Operating System: " + os.toString());
-        logger.info("  System Uptime: " + FormatUtil.formatElapsedSecs(os.getSystemUptime()));
+        logger.info("  System Uptime: " + FormatUtil.formatElapsedSecs(getUptime()));
         logger.info("  Elevated Privileges: " + os.isElevated() );
 
         var computerSystem = hal.getComputerSystem();
@@ -85,7 +94,7 @@ public class MetricsManagerOSHI {
 
         logger.info("CPU Info: " + cpu.toString());
         logger.info("  CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
-        logger.info("  CPU Temperature: " + LocalSystemInfo.getInstance().getCpuTemperature());
+        // logger.info(String.format("  CPU Utilization: %.2f%%", getCpuUsage()));
         logger.info("  Max Frequency: " + FormatUtil.formatHertz(cpu.getMaxFreq()));
         StringBuilder frequencies = new StringBuilder();
         for (long freq : cpu.getCurrentFreq()) {
@@ -101,6 +110,8 @@ public class MetricsManagerOSHI {
         logger.info("  Total: " + mem.getTotal());
         logger.info("  Available: " + mem.getAvailable());
 
+        logger.info(String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
+
         var myProc = os.getCurrentProcess();
         logger.info( "Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID());
         // logger.info("  Command Line: " + myProc.getCommandLine());
@@ -112,9 +123,14 @@ public class MetricsManagerOSHI {
         logger.info("  User: " + myProc.getUser());
         logger.info("  Threads: " + myProc.getThreadCount());
 
-        logger.info("Sensors: " + hal.getSensors().toString());
+        if (Files.exists(Path.of("/proc/device-tree/model"))) {
+            logger.info("CPU Temperature (diozero): " + LocalSystemInfo.getInstance().getCpuTemperature());
+        } else {
+            logger.info("diozero Cannot read CPU Temperature");
+        }
+        logger.info(String.format("CPU Temperature (oshi): %.2f °C", getCpuTemperature()));
 
-        logger.info("Used Disk (pct): " + getUsedDiskPct());
+        logger.info(String.format( "Used Disk: %.2f%%", getUsedDiskPct()));
         
         logger.info("Network Interfaces");
         for (NetworkIF iFace : hal.getNetworkIFs() ) {
@@ -147,4 +163,43 @@ public class MetricsManagerOSHI {
         return usedPct;
     }
 
+    /**
+     * Get the temperature of the CPU
+     * 
+     * @return The temperature of the CPU in °C or -1.0 if it cannot be retrieved
+     */
+    public double getCpuTemperature() {
+        double temperature = hal.getSensors().getCpuTemperature();
+        if (temperature < 0.1 || Double.isNaN(temperature)) {
+            temperature = -1.0;
+        }
+        return temperature;
+    }
+
+    public double getTotalMemory() {
+        return mem.getTotal() / MB;
+    }
+
+    public double getUsedMemory() {
+        return (mem.getTotal() - mem.getAvailable()) / MB;
+    }
+
+    public long getUptime() {
+        return os.getSystemUptime();
+    }
+
+    public double getCpuUsage() {
+        try { Thread.sleep(5000); } catch (Exception e) {}
+        var newTicks = cpu.getSystemCpuLoadTicks();
+        logger.info("  oldTicks: " + Arrays.toString(oldTicks));
+        logger.info("  newTicks: " + Arrays.toString(newTicks));
+        var cpuLoad = cpu.getSystemCpuLoadBetweenTicks(oldTicks, newTicks);
+        oldTicks = newTicks;
+        return 100.0 * cpuLoad;
+    }
+
+    public void periodic() {
+        logger.info("CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
+        logger.info(String.format("CPU Usage: %.2f%%", getCpuUsage()));
+    }
 }
