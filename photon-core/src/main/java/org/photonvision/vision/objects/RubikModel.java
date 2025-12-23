@@ -53,7 +53,8 @@ public class RubikModel implements Model {
 
         if (properties.version() != Version.YOLOV8
                 && properties.version() != Version.YOLOV11
-                && properties.version() != Version.YOLO_PRO) {
+                && properties.version() != Version.YOLO_PRO
+                && properties.version() != Version.YOLO_OBB) {
             throw new IllegalArgumentException("Model version must be YOLOV8 or YOLOV11");
         }
 
@@ -79,8 +80,7 @@ public class RubikModel implements Model {
 
     public ObjectDetector load() {
         return new RubikObjectDetector(
-                this,
-                new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
+                this, new Size(this.properties.resolutionWidth(), this.properties.resolutionHeight()));
     }
 
     public String toString() {

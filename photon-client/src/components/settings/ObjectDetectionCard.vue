@@ -228,7 +228,7 @@ const handleBulkImport = () => {
                     :items="
                       useSettingsStore().general.supportedBackends?.includes('RKNN')
                         ? ['YOLOv5', 'YOLOv8', 'YOLO11']
-                        : ['YOLOv8', 'YOLO11', 'YOLO_PRO']
+                        : ['YOLOv8', 'YOLO11', 'YOLO_OBB', 'YOLO_PRO']
                     "
                   />
                   <v-btn
