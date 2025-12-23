@@ -50,7 +50,7 @@ public class HardwareManager {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
 
-    private final MetricsManager metricsManager;
+    // private final MetricsManager metricsManager;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
@@ -77,11 +77,11 @@ public class HardwareManager {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
 
-        this.metricsManager = new MetricsManager();
-        this.metricsManager.setConfig(hardwareConfig);
+        // this.metricsManager = new MetricsManager();
+        // this.metricsManager.setConfig(hardwareConfig);
 
-        TimedTaskManager.getInstance()
-                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
+        // TimedTaskManager.getInstance()
+        //         .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
 
         ledModeRequest =
                 NetworkTablesManager.getInstance()
@@ -260,7 +260,7 @@ public class HardwareManager {
         statusLED.setStatus(status);
     }
 
-    public void publishMetrics() {
-        metricsManager.publishMetrics();
-    }
+    // public void publishMetrics() {
+    //     metricsManager.publishMetrics();
+    // }
 }
