@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.common.hardware.metrics;
 
 import edu.wpi.first.cscore.CameraServerJNI;
@@ -8,14 +25,12 @@ import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -56,7 +71,7 @@ public class SystemMonitor {
 
     private long[] oldTicks;
     private long lastNetworkUpdate = 0;
-    public static boolean writeMetricsToLog = false;
+    public boolean writeMetricsToLog = false;
 
     private MetricsManager mm;
 
@@ -107,7 +122,7 @@ public class SystemMonitor {
         lastNetworkUpdate = System.currentTimeMillis();
 
         mm = new MetricsManager();
-        mm.setConfig( ConfigManager.getInstance().getConfig().getHardwareConfig());
+        mm.setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
     }
 
     public static final String taskName = "SystemMonitorPublisher";
@@ -115,7 +130,7 @@ public class SystemMonitor {
     public void startMonitor() {
         if (!TimedTaskManager.getInstance().taskActive(taskName)) {
             logger.debug("Starting SystemMonitor ...");
-            TimedTaskManager.getInstance().addTask(taskName, this::compare, 2000, 5000);
+            TimedTaskManager.getInstance().addTask(taskName, this::publishMetrics, 2000, 5000);
         } else {
             logger.warn("SystemMonitor already running!");
         }
@@ -135,6 +150,7 @@ public class SystemMonitor {
                             .publish();
         }
 
+        var nt = this.getNetworkTraffic();
         var metrics =
                 new DeviceMetrics(
                         this.getCpuTemperature(),
@@ -147,26 +163,35 @@ public class SystemMonitor {
                         this.getUsedDiskPct(),
                         this.getNpuUsage(),
                         this.getIpAddress(),
-                        this.getUptime());
+                        this.getUptime(),
+                        nt.sent,
+                        nt.recv);
 
         metricPublisher.set(metrics);
-        if (writeMetricsToLog) { logMetrics(metrics); }
+
+        if (writeMetricsToLog) {
+            logMetrics(metrics);
+        }
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
 
     private void logMetrics(DeviceMetrics metrics) {
         StringBuilder sb = new StringBuilder();
-        sb.append("System Metrics Update:\n");
-        sb.append(String.format("System Uptime: %d", metrics.uptime() ));
-        sb.append(String.format("CPU Usage: %.2f%%", metrics.cpuUtil()));
-        sb.append(String.format("CPU Temperature: %.2f °C", metrics.cpuTemp()));
-        sb.append(String.format("NPU Usage: %s", Arrays.toString(metrics.npuUsage())));
-        sb.append(String.format("Used Disk: %.2f%%", metrics.diskUtilPct()));
-        sb.append(String.format("Memory: %.0f / %.0f MB", metrics.ramUtil(), metrics.ramMem()));
-        sb.append(String.format("GPU Memory: %.0f / %.0f MB", metrics.gpuMemUtil(), metrics.gpuMem()));
-        sb.append(String.format("CPU Throttle: %s", metrics.cpuThr()));
-        // sb.append(String.format("Data sent: %.0f Kbps, Data recieved: %.0f Kbps",nt.sent() / 1000, nt.recv() / 1000);};
+        sb.append("System Metrics Update: ");
+        sb.append(String.format("System Uptime: %.0f, ", metrics.uptime()));
+        sb.append(String.format("CPU Usage: %.2f%%, ", metrics.cpuUtil()));
+        sb.append(String.format("CPU Temperature: %.2f °C, ", metrics.cpuTemp()));
+        sb.append(String.format("NPU Usage: %s, ", Arrays.toString(metrics.npuUsage())));
+        sb.append(String.format("Used Disk: %.2f%%, ", metrics.diskUtilPct()));
+        sb.append(String.format("Memory: %.0f / %.0f MB, ", metrics.ramUtil(), metrics.ramMem()));
+        sb.append(
+                String.format("GPU Memory: %.0f / %.0f MB, ", metrics.gpuMemUtil(), metrics.gpuMem()));
+        sb.append(String.format("CPU Throttle: %s, ", metrics.cpuThr()));
+        sb.append(
+                String.format(
+                        "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                        metrics.sent() / 1000, metrics.recv() / 1000));
         logger.debug(sb.toString());
     }
 
@@ -351,9 +376,12 @@ public class SystemMonitor {
     private static NetworkTraffic lastResult = new NetworkTraffic(0, 0);
 
     private NetworkTraffic getNetworkTraffic() {
-        String activeIFaceName = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
-        if (managedIFace == null || !activeIFaceName.equals(managedIFace.getName()) ) {
-            managedIFace = getNetworkIfByName(ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+        String activeIFaceName =
+                ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+        if (managedIFace == null || !activeIFaceName.equals(managedIFace.getName())) {
+            managedIFace =
+                    getNetworkIfByName(
+                            ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
             if (managedIFace == null) {
                 return new NetworkTraffic(-1, -1);
             }
@@ -438,10 +466,11 @@ public class SystemMonitor {
         total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(mm.getNpuUsage())));
         total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", mm.getUsedDiskPct()));
         total +=
-                timeIt(
-                        sb, () -> String.format("Memory: %.0f / %.0f MB", mm.getRamUtil(), mm.getRamMem()));
+                timeIt(sb, () -> String.format("Memory: %.0f / %.0f MB", mm.getRamUtil(), mm.getRamMem()));
         total +=
-                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", mm.getGpuMemUtil(), mm.getGpuMem()));
+                timeIt(
+                        sb,
+                        () -> String.format("GPU Memory: %.0f / %.0f MB", mm.getGpuMemUtil(), mm.getGpuMem()));
         total += timeIt(sb, () -> String.format("CPU Throttle: %s", mm.getThrottleReason()));
         sb.append(String.format("==========\n%7.3f ms\n", total));
 
@@ -453,6 +482,14 @@ public class SystemMonitor {
         testMM();
     }
 
+    /**
+     * Measures the time (in ms) that a String Supplier takes. This can be used to compare different
+     * ways of gathering the same metric.
+     *
+     * @param sb A StringBuilder used to collect the output from the supplier.
+     * @param source A supplier that takes no arguments and returns a string.
+     * @return The time (in ms) `source` required to produce the output.
+     */
     public double timeIt(StringBuilder sb, Supplier<String> source) {
         long start = System.nanoTime();
         String resp = source.get();

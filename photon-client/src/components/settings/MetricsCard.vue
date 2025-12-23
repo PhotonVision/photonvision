@@ -65,6 +65,13 @@ const platformMetrics = computed<MetricItem[]>(() => {
     {
       header: "Disk Usage",
       value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct.toFixed(1)}%`
+    },
+    {
+      header: "Network Traffic",
+      value:
+        metrics.sent === undefined || metrics.recv === undefined
+          ? "Missing"
+          : `↑${(metrics.sent / 1e6).toFixed(3).padStart(8)} Mbps | ↓${(metrics.recv / 1e6).toFixed(3).padStart(8)} Mpbs`
     }
   ];
 

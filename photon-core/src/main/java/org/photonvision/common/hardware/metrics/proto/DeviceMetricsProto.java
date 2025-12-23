@@ -51,7 +51,9 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
                 msg.getDiskUtilPct(),
                 msg.getNpuUsage().toArray(),
                 msg.getIpAddress(),
-                msg.getUptime());
+                msg.getUptime(),
+                msg.getSent(),
+                msg.getRecv());
     }
 
     @Override
@@ -67,5 +69,7 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
         msg.setDiskUtilPct(value.diskUtilPct());
         msg.addAllNpuUsage(value.npuUsage());
         msg.setIpAddress(value.ipAddress());
+        msg.setSent(value.sent());
+        msg.setRecv(value.recv());
     }
 }

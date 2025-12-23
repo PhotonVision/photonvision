@@ -64,7 +64,9 @@ export const useSettingsStore = defineStore("settings", {
       diskUtilPct: undefined,
       npuUsage: undefined,
       ipAddress: undefined,
-      uptime: undefined
+      uptime: undefined,
+      sent: undefined,
+      recv: undefined
     },
     currentFieldLayout: {
       field: {
@@ -98,7 +100,9 @@ export const useSettingsStore = defineStore("settings", {
         diskUtilPct: data.diskUtilPct || undefined,
         npuUsage: data.npuUsage || undefined,
         ipAddress: data.ipAddress || undefined,
-        uptime: data.uptime || undefined
+        uptime: data.uptime || undefined,
+        sent: data.sent || undefined,
+        recv: data.recv || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {

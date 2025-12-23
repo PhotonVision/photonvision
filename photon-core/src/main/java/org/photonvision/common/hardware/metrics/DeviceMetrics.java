@@ -30,6 +30,8 @@ public record DeviceMetrics(
         double diskUtilPct,
         double[] npuUsage,
         String ipAddress,
-        double uptime) {
+        double uptime,
+        double sent,
+        double recv) {
     public static final DeviceMetricsProto proto = new DeviceMetricsProto();
 }
