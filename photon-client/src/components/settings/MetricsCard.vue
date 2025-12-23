@@ -30,11 +30,11 @@ const platformMetrics = computed<MetricItem[]>(() => {
   const stats = [
     {
       header: "CPU Temp",
-      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp}°C`
+      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp.toFixed(1)}°C`
     },
     {
       header: "CPU Usage",
-      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil}%`
+      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil.toFixed(1)}%`
     },
     {
       header: "CPU Memory Usage",
@@ -64,7 +64,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
     },
     {
       header: "Disk Usage",
-      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
+      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct.toFixed(1)}%`
     }
   ];
 
