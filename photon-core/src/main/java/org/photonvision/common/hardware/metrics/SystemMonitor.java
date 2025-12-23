@@ -1,25 +1,26 @@
 package org.photonvision.common.hardware.metrics;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
-
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.ProtobufPublisher;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
@@ -33,8 +34,9 @@ import oshi.util.GlobalConfig;
 
 public class SystemMonitor {
     protected static Logger logger = new Logger(SystemMonitor.class, LogGroup.General);
-    
+
     private static SystemMonitor instance;
+
     private record NetworkTraffic(double sent, double recv) {}
 
     ProtobufPublisher<DeviceMetrics> metricPublisher =
@@ -50,11 +52,12 @@ public class SystemMonitor {
     private static GlobalMemory mem;
     private static HardwareAbstractionLayer hal;
     private static FileStore fs;
-    private static List<NetworkIF> iFaces;
     private static NetworkIF managedIFace;
 
     private long[] oldTicks;
     private long lastNetworkUpdate = 0;
+
+    private MetricsManager mm;
 
     private static final long MB = (1024 * 1024);
 
@@ -92,36 +95,28 @@ public class SystemMonitor {
             logger.error("Couldn't get FileStore for " + Path.of(""));
             fs = null;
         }
+
         oldTicks = cpu.getSystemCpuLoadTicks();
+
+        // iFaces = hal.getNetworkIFs();
+        managedIFace =
+                getNetworkIfByName(
+                        ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+
         lastNetworkUpdate = System.currentTimeMillis();
 
-        iFaces = hal.getNetworkIFs();
-        for (var iFace : iFaces) {
-            if (iFace
-                    .getName()
-                    .equals(ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface)) {
-                managedIFace = iFace;
-                break;
-            }
-        }
-        if (managedIFace != null) {
-            logger.debug("Monitoring network traffic on '" + managedIFace.getName() + "'");
-        } else {
-            logger.warn(
-                    "Can't monitor network interface '"
-                            + ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface
-                            + "'");
-        }
+        mm = new MetricsManager();
+        mm.setConfig( ConfigManager.getInstance().getConfig().getHardwareConfig());
     }
 
-    public static final String taskName = "MetricsPublisher";
+    public static final String taskName = "SystemMonitorPublisher";
 
     public void startMonitor() {
         if (!TimedTaskManager.getInstance().taskActive(taskName)) {
             logger.debug("Starting SystemMonitor ...");
-            TimedTaskManager.getInstance().addTask(taskName, this::publishMetrics, 2000, 5000);
+            TimedTaskManager.getInstance().addTask(taskName, this::compare, 2000, 5000);
         } else {
-            logger.debug("SystemMonitor already running!");
+            logger.warn("SystemMonitor already running!");
         }
     }
 
@@ -158,50 +153,89 @@ public class SystemMonitor {
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
     }
 
+    private NetworkIF getNetworkIfByName(String name) {
+        lastNetworkUpdate = System.currentTimeMillis();
+        for (var iFace : hal.getNetworkIFs()) {
+            if (iFace.getName().equals(name)) {
+                logger.debug("Monitoring network traffic on '" + iFace.getName() + "'");
+                return iFace;
+            }
+        }
+        logger.warn("Can't retrieve network interface '" + name + "'");
+        return null;
+    }
+
     public void dumpMetricsToLog() {
-        logger.info("Operating System: " + os.toString());
-        logger.info("  System Uptime: " + FormatUtil.formatElapsedSecs(getUptime()));
-        logger.info("  Elevated Privileges: " + os.isElevated());
+        var sb = new StringBuilder();
+        sb.append("*** System Information ***");
+        sb.append(System.lineSeparator());
+        sb.append("Operating System: " + os.toString());
+        sb.append(System.lineSeparator());
+        sb.append("  System Uptime: " + FormatUtil.formatElapsedSecs(getUptime()));
+        sb.append(System.lineSeparator());
+        sb.append("  Elevated Privileges: " + os.isElevated());
+        sb.append(System.lineSeparator());
 
         var computerSystem = hal.getComputerSystem();
-        logger.info("System: " + computerSystem.toString());
-        logger.info("  Manufacturer: " + computerSystem.getManufacturer());
-        logger.info("  Firmware: " + computerSystem.getFirmware());
-        logger.info("  Baseboard: " + computerSystem.getBaseboard());
-        logger.info("  Model: " + computerSystem.getModel());
-        logger.info("  Serial Number: " + computerSystem.getSerialNumber());
+        sb.append("System: " + computerSystem.toString());
+        sb.append(System.lineSeparator());
+        sb.append("  Manufacturer: " + computerSystem.getManufacturer());
+        sb.append(System.lineSeparator());
+        sb.append("  Firmware: " + computerSystem.getFirmware());
+        sb.append(System.lineSeparator());
+        sb.append("  Baseboard: " + computerSystem.getBaseboard());
+        sb.append(System.lineSeparator());
+        sb.append("  Model: " + computerSystem.getModel());
+        sb.append(System.lineSeparator());
+        sb.append("  Serial Number: " + computerSystem.getSerialNumber());
+        sb.append(System.lineSeparator());
 
-        logger.info("CPU Info: " + cpu.toString());
-        logger.info("  Max Frequency: " + FormatUtil.formatHertz(cpu.getMaxFreq()));
-        logger.info(
+        sb.append("CPU Info: " + cpu.toString());
+        sb.append(System.lineSeparator());
+        sb.append("  Max Frequency: " + FormatUtil.formatHertz(cpu.getMaxFreq()));
+        sb.append(System.lineSeparator());
+        sb.append(
                 "  Current Frequency: "
                         + Arrays.stream(cpu.getCurrentFreq())
                                 .mapToObj(FormatUtil::formatHertz)
                                 .collect(Collectors.joining(", ")));
+        sb.append(System.lineSeparator());
         for (PhysicalProcessor core : cpu.getPhysicalProcessors()) {
-            logger.info(
-                    "  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")");
+            sb.append("  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")");
+            sb.append(System.lineSeparator());
         }
         var myProc = os.getCurrentProcess();
-        logger.info("Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID());
-        // logger.info("  Command Line: " + myProc.getCommandLine());
-        logger.info("  Kernel Time: " + myProc.getKernelTime());
-        logger.info("  User Time: " + myProc.getUserTime());
-        logger.info("  Cumulative Load: " + myProc.getProcessCpuLoadCumulative());
-        logger.info("  Up Time: " + myProc.getUpTime());
-        logger.info("  Priority: " + myProc.getPriority());
-        logger.info("  User: " + myProc.getUser());
-        logger.info("  Threads: " + myProc.getThreadCount());
+        sb.append("Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID());
+        sb.append(System.lineSeparator());
+        // sb.append("  Command Line: " + myProc.getCommandLine());
+        sb.append("  Kernel Time: " + myProc.getKernelTime());
+        sb.append(System.lineSeparator());
+        sb.append("  User Time: " + myProc.getUserTime());
+        sb.append(System.lineSeparator());
+        sb.append("  Cumulative Load: " + myProc.getProcessCpuLoadCumulative());
+        sb.append(System.lineSeparator());
+        sb.append("  Up Time: " + myProc.getUpTime());
+        sb.append(System.lineSeparator());
+        sb.append("  Priority: " + myProc.getPriority());
+        sb.append(System.lineSeparator());
+        sb.append("  User: " + myProc.getUser());
+        sb.append(System.lineSeparator());
+        sb.append("  Threads: " + myProc.getThreadCount());
+        sb.append(System.lineSeparator());
 
-        logger.info("Network Interfaces");
+        sb.append("Network Interfaces");
+        sb.append(System.lineSeparator());
         for (NetworkIF iFace : hal.getNetworkIFs()) {
-            logger.info("  Interface: " + iFace.toString());
+            sb.append("  Interface: " + iFace.toString());
+            sb.append(System.lineSeparator());
         }
 
-        logger.info("Graphics Cards");
+        sb.append("Graphics Cards");
         for (GraphicsCard gc : hal.getGraphicsCards()) {
-            logger.info("  Card: " + gc.toString());
+            sb.append("  Card: " + gc.toString());
+            sb.append(System.lineSeparator());
         }
+        logger.info(sb.toString());
     }
 
     /**
@@ -236,8 +270,13 @@ public class SystemMonitor {
         return temperature;
     }
 
+    double totalMemory = -1.0;
+
     public double getTotalMemory() {
-        return mem.getTotal() / MB;
+        if (totalMemory < 0) {
+            totalMemory = mem.getTotal() / MB;
+        }
+        return totalMemory;
     }
 
     public double getUsedMemory() {
@@ -295,7 +334,10 @@ public class SystemMonitor {
 
     private NetworkTraffic getNetworkTraffic() {
         if (managedIFace == null) {
-            return new NetworkTraffic(-1, -1);
+            managedIFace = getNetworkIfByName(ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+            if (managedIFace == null) {
+                return new NetworkTraffic(-1, -1);
+            }
         }
         long now = System.currentTimeMillis();
         double dTime = (now - lastNetworkUpdate) / 1000.0;
@@ -314,48 +356,88 @@ public class SystemMonitor {
     }
 
     public void periodic() {
+        StringBuilder sb = new StringBuilder();
+        double total = 0;
+
+        sb.append("System Metrics Update:\n");
+        total += timeIt(sb, () -> String.format("System Uptime: %d", getUptime()));
+        total += timeIt(sb, () -> "CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
+        total += timeIt(sb, () -> String.format("CPU Usage: %.2f%%", getCpuUsage()));
+        total += timeIt(sb, () -> String.format("CPU Temperature: %.2f °C", getCpuTemperature()));
+        total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(getNpuUsage())));
+        total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
+        total +=
+                timeIt(
+                        sb, () -> String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
+        total +=
+                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", getGpuMemUtil(), getGpuMem()));
+        total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
+        total +=
+                timeIt(
+                        sb,
+                        () -> {
+                            var nt = getNetworkTraffic();
+                            return String.format(
+                                    "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                                    nt.sent() / 1000, nt.recv() / 1000);
+                        });
+        sb.append(String.format("==========\n%7.3f ms\n", total));
+
+        logger.info(sb.toString());
+    }
+
+    public void testSM() {
+        StringBuilder sb = new StringBuilder();
+        double total = 0;
+
+        sb.append("SystemMetrics Test:\n");
+        total += timeIt(sb, () -> String.format("System Uptime: %d", getUptime()));
+        total += timeIt(sb, () -> String.format("CPU Usage: %.2f%%", getCpuUsage()));
+        total += timeIt(sb, () -> String.format("CPU Temperature: %.2f °C", getCpuTemperature()));
+        total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(getNpuUsage())));
+        total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
+        total +=
+                timeIt(
+                        sb, () -> String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
+        total +=
+                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", getGpuMemUtil(), getGpuMem()));
+        total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
+        sb.append(String.format("==========\n%7.3f ms\n", total));
+
+        logger.info(sb.toString());
+    }
+
+    public void testMM() {
+        StringBuilder sb = new StringBuilder();
+        double total = 0;
+
+        sb.append("MetricsManager Test:\n");
+        total += timeIt(sb, () -> String.format("System Uptime: %.0f", mm.getUptime()));
+        total += timeIt(sb, () -> String.format("CPU Usage: %.2f%%", mm.getCpuUtilization()));
+        total += timeIt(sb, () -> String.format("CPU Temperature: %.2f °C", mm.getCpuTemp()));
+        total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(mm.getNpuUsage())));
+        total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", mm.getUsedDiskPct()));
+        total +=
+                timeIt(
+                        sb, () -> String.format("Memory: %.0f / %.0f MB", mm.getRamUtil(), mm.getRamMem()));
+        total +=
+                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", mm.getGpuMemUtil(), mm.getGpuMem()));
+        total += timeIt(sb, () -> String.format("CPU Throttle: %s", mm.getThrottleReason()));
+        sb.append(String.format("==========\n%7.3f ms\n", total));
+
+        logger.info(sb.toString());
+    }
+
+    public void compare() {
+        testSM();
+        testMM();
+    }
+
+    public double timeIt(StringBuilder sb, Supplier<String> source) {
         long start = System.nanoTime();
-        logger.info("System Metrics Update:");
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info("CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("CPU Usage: %.2f%%", getCpuUsage()));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("CPU Temperature: %.2f °C", getCpuTemperature()));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("NPU Usage: %s", Arrays.toString(getNpuUsage())));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("Used Disk: %.2f%%", getUsedDiskPct()));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("GPU Memory: %.0f / %.0f MB", getGpuMemUtil(), getGpuMem()));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        logger.info(String.format("CPU Throttle: %s", getCpuThrottleReason()));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
-        start = System.nanoTime();
-        var nt = getNetworkTraffic();
-        logger.info(
-                String.format(
-                        "Data sent: %.0f Kbps, Data recieved: %.0f Kbps", nt.sent() / 1000, nt.recv() / 1000));
-        logger.debug(
-                String.format("--> Operation took %.3f ms", (System.nanoTime() - start) / 1000000.0));
+        String resp = source.get();
+        var delta = (System.nanoTime() - start) / 1000000.0;
+        sb.append(String.format(" %7.3f ms >> %s\n", delta, resp));
+        return delta;
     }
 }
