@@ -56,6 +56,7 @@ public class SystemMonitor {
 
     private long[] oldTicks;
     private long lastNetworkUpdate = 0;
+    public static boolean writeMetricsToLog = false;
 
     private MetricsManager mm;
 
@@ -149,8 +150,24 @@ public class SystemMonitor {
                         this.getUptime());
 
         metricPublisher.set(metrics);
+        if (writeMetricsToLog) { logMetrics(metrics); }
 
         DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("metrics", metrics));
+    }
+
+    private void logMetrics(DeviceMetrics metrics) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("System Metrics Update:\n");
+        sb.append(String.format("System Uptime: %d", metrics.uptime() ));
+        sb.append(String.format("CPU Usage: %.2f%%", metrics.cpuUtil()));
+        sb.append(String.format("CPU Temperature: %.2f °C", metrics.cpuTemp()));
+        sb.append(String.format("NPU Usage: %s", Arrays.toString(metrics.npuUsage())));
+        sb.append(String.format("Used Disk: %.2f%%", metrics.diskUtilPct()));
+        sb.append(String.format("Memory: %.0f / %.0f MB", metrics.ramUtil(), metrics.ramMem()));
+        sb.append(String.format("GPU Memory: %.0f / %.0f MB", metrics.gpuMemUtil(), metrics.gpuMem()));
+        sb.append(String.format("CPU Throttle: %s", metrics.cpuThr()));
+        // sb.append(String.format("Data sent: %.0f Kbps, Data recieved: %.0f Kbps",nt.sent() / 1000, nt.recv() / 1000);};
+        logger.debug(sb.toString());
     }
 
     private NetworkIF getNetworkIfByName(String name) {
@@ -288,7 +305,6 @@ public class SystemMonitor {
     }
 
     public double getCpuUsage() {
-        // try { Thread.sleep(5000); } catch (Exception e) {}
         var newTicks = cpu.getSystemCpuLoadTicks();
         var cpuLoad = cpu.getSystemCpuLoadBetweenTicks(oldTicks, newTicks);
         oldTicks = newTicks;
@@ -332,8 +348,11 @@ public class SystemMonitor {
         return addr;
     }
 
+    private static NetworkTraffic lastResult = new NetworkTraffic(0, 0);
+
     private NetworkTraffic getNetworkTraffic() {
-        if (managedIFace == null) {
+        String activeIFaceName = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
+        if (managedIFace == null || !activeIFaceName.equals(managedIFace.getName()) ) {
             managedIFace = getNetworkIfByName(ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
             if (managedIFace == null) {
                 return new NetworkTraffic(-1, -1);
@@ -343,7 +362,7 @@ public class SystemMonitor {
         double dTime = (now - lastNetworkUpdate) / 1000.0;
         if (dTime < 0.1) {
             // not enough time between calls
-            return new NetworkTraffic(0, 0);
+            return lastResult;
         }
         long lastBytesSent = managedIFace.getBytesSent();
         long lastBytesRecv = managedIFace.getBytesRecv();
@@ -352,7 +371,8 @@ public class SystemMonitor {
         long recv = managedIFace.getBytesRecv() - lastBytesRecv;
         lastNetworkUpdate = now;
         // multiply values by 8 to convert from bytes to bits
-        return new NetworkTraffic(8 * sent / dTime, 8 * recv / dTime);
+        lastResult = new NetworkTraffic(8 * sent / dTime, 8 * recv / dTime);
+        return lastResult;
     }
 
     public void periodic() {
