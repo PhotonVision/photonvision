@@ -256,7 +256,8 @@ public class NeuralNetworkModelManager {
         YOLOV5,
         YOLOV8,
         YOLOV11,
-        YOLOV11OBB
+        YOLO_OBB,
+        YOLO_PRO
     }
 
     /**

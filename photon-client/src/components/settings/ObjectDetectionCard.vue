@@ -227,8 +227,8 @@ const handleBulkImport = () => {
                     data-testid="import-version-select"
                     :items="
                       useSettingsStore().general.supportedBackends?.includes('RKNN')
-                        ? ['YOLOv5', 'YOLOv8', 'YOLO11', 'YOLO11OBB']
-                        : ['YOLOv8', 'YOLO11']
+                        ? ['YOLOv5', 'YOLOv8', 'YOLO11']
+                        : ['YOLOv8', 'YOLO11', 'YOLO_OBB', 'YOLO_PRO']
                     "
                   />
                   <v-btn
