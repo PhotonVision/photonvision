@@ -20,7 +20,6 @@ package org.photonvision.vision.objects;
 import java.io.File;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 
 public class RknnModel implements Model {
@@ -51,11 +50,7 @@ public class RknnModel implements Model {
             throw new IllegalArgumentException("Model family must be RKNN");
         }
 
-        if (properties.version() != Version.YOLOV5
-                && properties.version() != Version.YOLOV8
-                && properties.version() != Version.YOLOV11
-                && properties.version() != Version.YOLO_OBB
-                && properties.version() != Version.YOLO_PRO) {
+        if (RubikModel.isValidVersion(properties.version()) == false) {
             throw new IllegalArgumentException(
                     "Model version must be YOLOV5, YOLOV8, YOLOV11, YOLO_OBB, or YOLO_PRO");
         }
