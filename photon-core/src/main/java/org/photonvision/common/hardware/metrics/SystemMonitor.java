@@ -136,7 +136,7 @@ public class SystemMonitor {
         }
     }
 
-    public void publishMetrics() {
+    private void publishMetrics() {
         // Check that the hostname hasn't changed
         if (!CameraServerJNI.getHostname()
                 .equals(NetworkTable.basenameKey(metricPublisher.getTopic().getName()))) {
