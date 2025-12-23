@@ -33,7 +33,6 @@ dependencies {
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
     implementation 'com.diozero:diozero-core:1.4.1'
     implementation 'com.github.oshi:oshi-core:6.9.1'
-    implementation 'io.github.pandalxb:jLibreHardwareMonitor:1.0.6'
 
     // The JNI libraries use wpilibNatives, the java libraries use implementation
     if (jniPlatform == "linuxarm64") {
