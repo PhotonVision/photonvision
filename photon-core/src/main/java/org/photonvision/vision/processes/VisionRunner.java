@@ -49,6 +49,7 @@ public class VisionRunner {
     private final VisionModuleChangeSubscriber changeSubscriber;
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
+    private int FPSLimit = -1;
 
     private long loopCount;
 
@@ -127,6 +128,14 @@ public class VisionRunner {
         return future;
     }
 
+    public void setFPSLimit(int fps) {
+        FPSLimit = fps;
+    }
+
+    public int getFPSLimit() {
+        return FPSLimit;
+    }
+
     private void update() {
         // wait for the camera to connect
         while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
@@ -146,6 +155,7 @@ public class VisionRunner {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
 
         while (!Thread.interrupted()) {
+            long start = System.currentTimeMillis();
             changeSubscriber.processSettingChanges();
             synchronized (runnableList) {
                 for (var runnable : runnableList) {
@@ -187,6 +197,9 @@ public class VisionRunner {
                 // Still feed with blank frames just dont run any pipelines
 
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                if (FPSLimit > 0) {
+                    limit(start);
+                }
                 continue;
             }
 
@@ -205,7 +218,23 @@ public class VisionRunner {
                 }
             }
 
+            if (FPSLimit > 0) {
+                limit(start);
+            }
+
             loopCount++;
+        }
+    }
+
+    private void limit(long startTime) {
+        long sleepTime = (long) (1000 / FPSLimit - (System.currentTimeMillis() - startTime));
+
+        if (sleepTime > 0) {
+            try {
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException e) {
+                return;
+            }
         }
     }
 }

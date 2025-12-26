@@ -148,7 +148,9 @@ public class VisionModule {
                         pipelineManager::getRequestedIndex,
                         this::setPipeline,
                         pipelineManager::getDriverMode,
-                        this::setDriverMode);
+                        this::setDriverMode,
+                        this::getFPSLimit,
+                        this::setFPSLimit);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
@@ -614,6 +616,21 @@ public class VisionModule {
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
 
         return ret;
+    }
+
+    /**
+     * Set FPS limit for this vision module. This will cause our processing thread to sleep in order
+     * to increase our processing time to match the provided fps.
+     *
+     * @param fps
+     */
+    public void setFPSLimit(int fps) {
+        visionRunner.setFPSLimit(fps);
+        saveAndBroadcastAll();
+    }
+
+    public int getFPSLimit() {
+        return visionRunner.getFPSLimit();
     }
 
     public CameraConfiguration getStateAsCameraConfig() {
