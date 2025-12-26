@@ -579,6 +579,8 @@ public class VisionModule {
 
         ret.mismatch = this.mismatch;
 
+        ret.fpsLimit = this.fpsLimit;
+
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
