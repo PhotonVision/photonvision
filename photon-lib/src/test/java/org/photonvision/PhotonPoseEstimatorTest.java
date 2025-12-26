@@ -807,7 +807,7 @@ class PhotonPoseEstimatorTest {
         var multiTagEstimate = estimator.estimateCoprocMultiTagPose(result);
         estimator.addHeadingData(result.getTimestampSeconds(), Rotation2d.kZero);
         Optional<EstimatedRobotPose> estimatedPose =
-                estimator.estimateConstrainedPnpPose(
+                estimator.estimateConstrainedSolvepnpPose(
                         result, cameraMat, distortion, multiTagEstimate.get().estimatedPose, true, 0);
         Pose3d pose = estimatedPose.get().estimatedPose;
         System.out.println(pose);

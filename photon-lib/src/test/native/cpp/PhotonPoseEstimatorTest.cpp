@@ -540,7 +540,7 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
   estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(),
                            frc::Rotation2d());
 
-  auto estimatedPose = estimator.EstimateConstrainedPnpPose(
+  auto estimatedPose = estimator.EstimateConstrainedSolvepnpPose(
       cameraOne.testResult[0], cameraMat, distortion,
       estimatedMultiTagPose->estimatedPose, true, 0);
 
