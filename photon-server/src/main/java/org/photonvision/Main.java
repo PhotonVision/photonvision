@@ -170,6 +170,70 @@ public class Main {
         VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
+    private static void serveDenialPage() {
+        String docsLink =
+                "https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support";
+
+        logger.error(
+                "SystemCore is not a supported platform for PhotonVision!\n "
+                        + "Please visit "
+                        + docsLink
+                        + " for more information.");
+
+        try {
+            int port = 5800;
+            io.javalin.Javalin app = null;
+            try {
+                app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
+            } catch (Exception e) {
+                logger.warn("Failed to bind to port 5800, exiting: " + e.getMessage());
+                port = DEFAULT_WEBPORT;
+                app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
+            }
+
+            final int boundPort = port;
+            final String html =
+                    "<!doctype html>"
+                            + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
+                            + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! "
+                            + "Please <a href=\"https://github.com/PhotonVision/photonvision/blob/main/scripts/uninstall.sh\" "
+                            + "target=\"_blank\" rel=\"noopener noreferrer\">uninstall</a> PhotonVision. "
+                            + "If you choose to modify PhotonVision so that it functions on SystemCore, "
+                            + "you do so entirely at your own risk and without any support. "
+                            + "For more information, see <a href=\""
+                            + docsLink
+                            + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+                            + docsLink
+                            + "</a>.</p></body></html>";
+
+            app.get(
+                    "/",
+                    ctx -> {
+                        ctx.contentType("text/html; charset=utf-8");
+                        ctx.result(html);
+                    });
+
+            logger.info(
+                    "Served SystemCore warning page on port "
+                            + boundPort
+                            + " - process will remain running to serve the page.");
+
+            // Prevent main from exiting so the page remains available.
+            final Object lock = new Object();
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException ignored) {
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to start static warning page server", e);
+        }
+
+        // Exit
+        System.exit(1);
+    }
+
     public static void main(String[] args) {
         logger.info(
                 "Starting PhotonVision version "
@@ -179,67 +243,7 @@ public class Main {
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
         if (Platform.isSystemCore()) {
-            String docsLink =
-                    "https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support";
-
-            logger.error(
-                    "SystemCore is not a supported platform for PhotonVision!\n "
-                            + "Please visit "
-                            + docsLink
-                            + " for more information.");
-
-            try {
-                int port = 5800;
-                io.javalin.Javalin app = null;
-                try {
-                    app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
-                } catch (Exception e) {
-                    logger.warn("Failed to bind to port 5800, exiting: " + e.getMessage());
-                    port = DEFAULT_WEBPORT;
-                    app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
-                }
-
-                final int boundPort = port;
-                final String html =
-                        "<!doctype html>"
-                                + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
-                                + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! "
-                                + "Please <a href=\"https://github.com/PhotonVision/photonvision/blob/main/scripts/uninstall.sh\" "
-                                + "target=\"_blank\" rel=\"noopener noreferrer\">uninstall</a> PhotonVision. "
-                                + "If you choose to modify PhotonVision so that it functions on SystemCore, "
-                                + "you do so entirely at your own risk and without any support. "
-                                + "For more information, see <a href=\""
-                                + docsLink
-                                + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
-                                + docsLink
-                                + "</a>.</p></body></html>";
-
-                app.get(
-                        "/",
-                        ctx -> {
-                            ctx.contentType("text/html; charset=utf-8");
-                            ctx.result(html);
-                        });
-
-                logger.info(
-                        "Served SystemCore warning page on port "
-                                + boundPort
-                                + " - process will remain running to serve the page.");
-
-                // Prevent main from exiting so the page remains available.
-                final Object lock = new Object();
-                synchronized (lock) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("Failed to start static warning page server", e);
-            }
-
-            // Exit
-            System.exit(1);
+            serveDenialPage();
         }
 
         if (OsImageVersion.IMAGE_VERSION.isPresent()) {
