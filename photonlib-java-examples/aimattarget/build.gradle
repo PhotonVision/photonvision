@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2025.3.2"
+    id "edu.wpi.first.GradleRIO" version "2026.1.1-beta-1"
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -9,8 +9,8 @@ targetCompatibility = JavaVersion.VERSION_17
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 wpi.maven.useDevelopment = true
-wpi.versions.wpilibVersion = "2025.3.2"
-wpi.versions.wpimathVersion = "2025.3.2"
+wpi.versions.wpilibVersion = "2026.1.1-beta-1"
+wpi.versions.wpimathVersion = "2026.1.1-beta-1"
 
 
 // Define my targets (RoboRIO) and artifacts (deployable files)

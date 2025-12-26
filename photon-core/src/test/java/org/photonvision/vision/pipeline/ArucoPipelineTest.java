@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import edu.wpi.first.math.geometry.Translation3d;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -33,7 +34,7 @@ import org.photonvision.vision.target.TargetModel;
 public class ArucoPipelineTest {
     @BeforeEach
     public void setup() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         ConfigManager.getInstance().load();
     }
 

@@ -28,12 +28,14 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
+import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.OsImageVersion;
+import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.KernelLogLogger;
@@ -43,11 +45,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.LibraryLoader;
-import org.photonvision.jni.RknnDetectorJNI;
-import org.photonvision.jni.RubikDetectorJNI;
-import org.photonvision.mrcal.MrCalJNILoader;
-import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -62,7 +59,6 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
-    private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
     private static boolean isSmoketest = false;
@@ -79,7 +75,7 @@ public class Main {
                 false,
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
-        options.addOption("p", "path", true, "Point test mode to a specific folder");
+        options.addOption("f", "folder", true, "Point test mode to a specific folder");
         options.addOption("n", "disable-networking", false, "Disables control device network settings");
         options.addOption(
                 "c",
@@ -91,6 +87,7 @@ public class Main {
                 "smoketest",
                 false,
                 "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
+        options.addOption("p", "platform", true, "Specify platform override, based on Platform enum");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -126,6 +123,18 @@ public class Main {
 
             if (cmd.hasOption("smoketest")) {
                 isSmoketest = true;
+            }
+
+            if (cmd.hasOption("platform")) {
+                String platStr = cmd.getOptionValue("platform");
+                try {
+                    Platform plat = Platform.valueOf(platStr);
+                    Platform.overridePlatform(plat);
+                    logger.info("Overrode platform to: " + plat);
+                } catch (IllegalArgumentException e) {
+                    logger.error("Invalid platform override: " + platStr);
+                    return false;
+                }
             }
         }
         return true;
@@ -234,6 +243,18 @@ public class Main {
         System.exit(1);
     }
 
+    private static void tryLoadJNI(JNITypes type) {
+        try {
+            LoadJNI.forceLoad(type);
+            logger.info("Loaded " + type.name() + "-JNI");
+        } catch (IOException e) {
+            logger.error("Failed to load " + type.name() + "-JNI!", e);
+            if (isSmoketest) {
+                System.exit(1);
+            }
+        }
+    }
+
     public static void main(String[] args) {
         logger.info(
                 "Starting PhotonVision version "
@@ -246,8 +267,12 @@ public class Main {
             serveDenialPage();
         }
 
-        if (OsImageVersion.IMAGE_VERSION.isPresent()) {
-            logger.info("PhotonVision image version: " + OsImageVersion.IMAGE_VERSION.get());
+        if (OsImageData.IMAGE_METADATA.isPresent()) {
+            logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
+        } else if (OsImageData.IMAGE_VERSION.isPresent()) {
+            logger.info("PhotonVision image version: " + OsImageData.IMAGE_VERSION.get());
+        } else {
+            logger.info("PhotonVision image version: unknown");
         }
 
         try {
@@ -265,7 +290,7 @@ public class Main {
         }
 
         try {
-            boolean success = TestUtils.loadLibraries();
+            boolean success = LoadJNI.loadLibraries();
 
             if (!success) {
                 logger.error("Failed to load native libraries! Giving up :(");
@@ -275,67 +300,31 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("WPI JNI libraries loaded.");
-
-        try {
-            boolean success = LibraryLoader.loadTargeting();
-
-            if (!success) {
-                logger.error("Failed to load native libraries! Giving up :(");
-                System.exit(1);
-            }
-        } catch (Exception e) {
-            logger.error("Failed to load photon-targeting JNI!", e);
-            System.exit(1);
-        }
-        logger.info("photon-targeting JNI libraries loaded.");
+        logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
         if (!HAL.initialize(500, 0)) {
             logger.error("Failed to initialize the HAL! Giving up :(");
             System.exit(1);
         }
 
-        try {
-            if (Platform.isRaspberryPi()) {
-                LibCameraJNILoader.forceLoad();
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load libcamera-JNI!", e);
+        if (Platform.isRaspberryPi()) {
+            tryLoadJNI(JNITypes.LIBCAMERA);
         }
-        try {
-            if (Platform.isRK3588()) {
-                RknnDetectorJNI.forceLoad();
-                if (RknnDetectorJNI.getInstance().isLoaded()) {
-                    logger.info("RknnDetectorJNI loaded successfully.");
-                } else {
-                    logger.error("Failed to load RknnDetectorJNI!");
-                }
-            } else {
-                logger.error("Platform does not support RKNN based machine learning!");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load rknn-JNI!", e);
+
+        if (Platform.isRK3588()) {
+            tryLoadJNI(JNITypes.RKNN_DETECTOR);
+        } else {
+            logger.warn("Platform does not support RKNN based machine learning!");
         }
-        try {
-            if (Platform.isQCS6490()) {
-                RubikDetectorJNI.forceLoad();
-                if (RubikDetectorJNI.getInstance().isLoaded()) {
-                    logger.info("RubikDetectorJNI loaded successfully.");
-                } else {
-                    logger.error("Failed to load RubikDetectorJNI!");
-                }
-            } else {
-                logger.error("Platform does not support Rubik based machine learning!");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load rubik-JNI!", e);
+
+        if (Platform.isQCS6490()) {
+            tryLoadJNI(JNITypes.RUBIK_DETECTOR);
+        } else {
+            logger.warn("Platform does not support Rubik based machine learning!");
         }
-        try {
-            MrCalJNILoader.forceLoad();
-        } catch (IOException e) {
-            logger.warn(
-                    "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
-                            + e.getMessage());
+
+        if (Platform.isWindows() || Platform.isLinux()) {
+            tryLoadJNI(JNITypes.MRCAL);
         }
 
         CVMat.enablePrint(false);
@@ -365,10 +354,6 @@ public class Main {
         modelManager.extractModels();
         modelManager.discoverModels();
 
-        logger.debug("Loading HardwareManager...");
-        // Force load the hardware manager
-        HardwareManager.getInstance();
-
         logger.debug("Loading NetworkManager...");
         NetworkManager.getInstance().reinitialize();
 
@@ -376,6 +361,10 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
+
+        logger.debug("Loading HardwareManager...");
+        // Force load the hardware manager
+        HardwareManager.getInstance();
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
@@ -398,7 +387,7 @@ public class Main {
         VisionSourceManager.getInstance().registerTimedTasks();
 
         logger.info("Starting server...");
-        HardwareManager.getInstance().setRunning(true);
+        HardwareManager.getInstance().setError(null);
         Server.initialize(DEFAULT_WEBPORT);
     }
 

@@ -1,6 +1,7 @@
 import { type ActivePipelineSettings, DefaultAprilTagPipelineSettings } from "@/types/PipelineTypes";
 import type { Pose3d } from "@/types/PhotonTrackingTypes";
 import type { WebsocketCameraSettingsUpdate } from "./WebsocketDataTypes";
+import { reactive } from "vue";
 
 export interface GeneralSettings {
   version?: string;
@@ -274,7 +275,7 @@ export interface CameraSettingsChangeRequest {
   quirksToChange: Record<ValidQuirks, boolean>;
 }
 
-export const PlaceholderCameraSettings: UiCameraConfiguration = {
+export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   cameraPath: "/dev/null",
 
   nickname: "Placeholder Camera",
@@ -391,7 +392,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = {
   isConnected: true,
   hasConnected: true,
   mismatch: false
-};
+});
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,

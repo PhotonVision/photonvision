@@ -54,3 +54,32 @@ The Qualcomm Launcher caches files. If you flash multiple times, you may need to
 :::
 
 To flash the Rubik Pi 3 coprocessor, it's necessary to use the [Qualcomm Launcher](https://softwarecenter.qualcomm.com/catalog/item/Qualcomm_Launcher). Upload a custom image by selecting the *Custom* option in the launcher. Choose the downloaded PhotonVision `.tar.xz` file and follow the prompts to complete the installation. It is recommended to skip the *Configure Login* process, as PhotonVision will handle the necessary settings.
+
+### Alternative Flashing Method (advanced users only)
+
+Follow the specific steps listed below from the [Rubik Pi 3 Docs](https://www.thundercomm.com/rubik-pi-3/en/docs/rubik-pi-3-user-manual/1.0.0-u/Troubleshooting/11.1.flash-over-android/).
+
+[Step 1](https://www.thundercomm.com/rubik-pi-3/en/docs/rubik-pi-3-user-manual/1.0.0-u/Troubleshooting/11.1.flash-over-android/#1%EF%B8%8F%E2%83%A3-setup-qdl-tool) should be completed once per computer. [Step 2](https://www.thundercomm.com/rubik-pi-3/en/docs/rubik-pi-3-user-manual/1.0.0-u/Troubleshooting/11.1.flash-over-android/#2%EF%B8%8F%E2%83%A3-ufs-provisioning) and [Step 3](https://www.thundercomm.com/rubik-pi-3/en/docs/rubik-pi-3-user-manual/1.0.0-u/Troubleshooting/11.1.flash-over-android/#3%EF%B8%8F%E2%83%A3-flash-renesas-firmware) should be completed once per Rubik Pi 3.
+
+After completing these steps, unzip your downloaded PhotonVision image to a folder. Navigate to that folder in your terminal or command prompt. After putting your Rubik Pi 3 into EDL mode, run the command below to flash PhotonVision. There is no need to complete any further steps from the Rubik Pi 3 documentation after running this command.
+
+
+::::{tab-set}
+:::{tab-item} Ubuntu host
+```shell
+qdl --storage ufs prog_firehose_ddr.elf rawprogram*.xml patch*.xml
+```
+:::
+
+:::{tab-item} Windows host
+```shell
+QDL.exe prog_firehose_ddr.elf rawprogram0.xml rawprogram1.xml rawprogram2.xml rawprogram3.xml rawprogram4.xml rawprogram5.xml rawprogram6.xml patch1.xml patch2.xml patch3.xml patch4.xml patch5.xml patch6.xml
+```
+:::
+
+:::{tab-item} macOS host
+```shell
+qdl prog_firehose_ddr.elf rawprogram*.xml patch*.xml
+```
+:::
+::::

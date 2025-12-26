@@ -28,10 +28,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
@@ -51,7 +51,7 @@ public class ConfigTest {
 
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var path = Path.of("testconfigdir");
         configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
         configMgr.load();
@@ -79,7 +79,7 @@ public class ConfigTest {
     @Test
     @Order(1)
     public void serializeConfig() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);

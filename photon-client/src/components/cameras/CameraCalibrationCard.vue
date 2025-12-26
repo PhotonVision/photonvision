@@ -141,7 +141,7 @@ const downloadCalibBoard = async () => {
       break;
 
     case CalibrationBoardTypes.Charuco:
-      // Add pregenerated charuco
+      // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
@@ -308,7 +308,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'Charuco']"
+              :items="['Chessboard', 'ChArUco']"
               :disabled="isCalibrating"
             />
             <v-alert
@@ -319,7 +319,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               color="warning"
               icon="mdi-alert-box"
               text="The usage of chessboards can result in bad calibration results if multiple
-              similar images are taken. We strongly recommend that teams use Charuco boards instead!"
+              similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
               v-if="boardType !== CalibrationBoardTypes.Charuco"
@@ -336,7 +336,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-if="boardType === CalibrationBoardTypes.Charuco"
               v-model="tagFamily"
               label="Tag Family"
-              tooltip="Dictionary of aruco markers on the charuco board"
+              tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
               :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
               :disabled="isCalibrating"
