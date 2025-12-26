@@ -197,43 +197,32 @@ public class VisionRunner {
                 // Still feed with blank frames just dont run any pipelines
 
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-                if (FPSLimit > 0) {
-                    limit(start);
-                }
-                continue;
-            }
 
-            // If the pipeline has changed while we are getting our frame we should scrap
-            // that frame it
-            // may result in incorrect frame settings like hsv values
-            if (pipeline == pipelineSupplier.get()) {
+            } else if (pipeline == pipelineSupplier.get()) {
+                // If the pipeline has changed while we are getting our frame we should scrap
+                // that frame it may result in incorrect frame settings like hsv values
+
                 // There's no guarantee the processing type change will occur this tick, so
-                // pipelines should
-                // check themselves
+                // pipelines should check themselves
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
                     pipelineResultConsumer.accept(pipelineResult);
                 } catch (Exception ex) {
                     logger.error("Exception on loop " + loopCount, ex);
                 }
+                loopCount++;
             }
 
             if (FPSLimit > 0) {
-                limit(start);
-            }
+                long sleepTime = (long) (1000 / FPSLimit - (System.currentTimeMillis() - start));
 
-            loopCount++;
-        }
-    }
-
-    private void limit(long startTime) {
-        long sleepTime = (long) (1000 / FPSLimit - (System.currentTimeMillis() - startTime));
-
-        if (sleepTime > 0) {
-            try {
-                Thread.sleep(sleepTime);
-            } catch (InterruptedException e) {
-                return;
+                if (sleepTime > 0) {
+                    try {
+                        Thread.sleep(sleepTime);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
             }
         }
     }
