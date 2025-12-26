@@ -67,7 +67,7 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
   - Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
     to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
     data is up-to-date. Based on a reference implementation by [FRC Team 6328 Mechanical Advantage](https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98).
-- Constrained SolvePnP (`estimateConstrainedPnpPose`)
+- Constrained SolvePnP (`estimateConstrainedSolvepnpPose`)
   - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
     flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
     This also requires addHeadingData to be called every frame so heading data is up to date.
@@ -106,7 +106,7 @@ The final prerequisite to using your `PhotonPoseEstimator` is creating a `Photon
      :lines: 44
 ```
 
-Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to do estimation with one of MultiTag methods, check if the result is empty, then fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`. For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedPnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator.
+Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to do estimation with one of MultiTag methods, check if the result is empty, then fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`. For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedSolvepnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator.
 
 ```{eval-rst}
 .. tab-set-code::

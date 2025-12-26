@@ -635,7 +635,7 @@ public class PhotonPoseEstimator {
                         }
 
                         var pnpResult =
-                                estimateConstrainedPnpPose(
+                                estimateConstrainedSolvepnpPose(
                                         cameraResult,
                                         cameraMatrix.get(),
                                         distCoeffs.get(),
@@ -760,7 +760,7 @@ public class PhotonPoseEstimator {
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
      *     create the estimate.
      */
-    public Optional<EstimatedRobotPose> estimateConstrainedPnpPose(
+    public Optional<EstimatedRobotPose> estimateConstrainedSolvepnpPose(
             PhotonPipelineResult cameraResult,
             Matrix<N3, N3> cameraMatrix,
             Matrix<N8, N1> distCoeffs,

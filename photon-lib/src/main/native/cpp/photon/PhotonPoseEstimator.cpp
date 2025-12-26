@@ -222,7 +222,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
         fieldToRobotSeed = nestedUpdate->estimatedPose;
       }
 
-      ret = EstimateConstrainedPnpPose(
+      ret = EstimateConstrainedSolvepnpPose(
           result, *cameraMatrixData, *cameraDistCoeffs, fieldToRobotSeed,
           constrainedPnpParams->headingFree,
           constrainedPnpParams->headingScalingFactor);
@@ -625,7 +625,7 @@ PhotonPoseEstimator::EstimateAverageBestTargetsPose(
 }
 
 std::optional<EstimatedRobotPose>
-PhotonPoseEstimator::EstimateConstrainedPnpPose(
+PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
     photon::PhotonPipelineResult cameraResult,
     photon::PhotonCamera::CameraMatrix cameraMatrix,
     photon::PhotonCamera::DistortionMatrix distCoeffs, frc::Pose3d seedPose,
