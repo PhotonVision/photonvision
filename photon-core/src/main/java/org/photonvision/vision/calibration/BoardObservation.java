@@ -127,13 +127,8 @@ public final class BoardObservation implements Cloneable {
      * @return The loaded image, or null if it could not be loaded.
      */
     public Mat loadImage() {
-        Mat img = null;
-        try {
-            img = Imgcodecs.imread(this.snapshotDataLocation.toString());
-        } catch (Exception e) {
-            return null;
-        }
-        if (img == null || img.empty()) {
+        Mat img = Imgcodecs.imread(this.snapshotDataLocation.toString());
+        if (img == null || img.empty() || img.rows() == 0 || img.cols == 0) {
             return null;
         }
 

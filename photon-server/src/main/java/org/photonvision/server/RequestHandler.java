@@ -1100,13 +1100,17 @@ public class RequestHandler {
         }
 
         // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
-        var jpegBytes = new MatOfByte();
         var mat = calList.observations.get(observationIdx).annotateImage();
-        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
-        mat.release();
+        if (mat == null) {
+            ctx.status(404);
+            return;
+        }
 
+        var jpegBytes = new MatOfByte();
+        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
         ctx.result(jpegBytes.toArray());
 
+        mat.release();
         jpegBytes.release();
 
         ctx.status(200);
