@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
@@ -53,7 +54,6 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
-    private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
     private static boolean isSmoketest = false;
@@ -70,7 +70,7 @@ public class Main {
                 false,
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
-        options.addOption("p", "path", true, "Point test mode to a specific folder");
+        options.addOption("f", "folder", true, "Point test mode to a specific folder");
         options.addOption("n", "disable-networking", false, "Disables control device network settings");
         options.addOption(
                 "c",
@@ -82,6 +82,7 @@ public class Main {
                 "smoketest",
                 false,
                 "Exit Photon after loading native libraries and camera configs, but before starting up camera runners");
+        options.addOption("p", "platform", true, "Specify platform override, based on Platform enum");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -117,6 +118,18 @@ public class Main {
 
             if (cmd.hasOption("smoketest")) {
                 isSmoketest = true;
+            }
+
+            if (cmd.hasOption("platform")) {
+                String platStr = cmd.getOptionValue("platform");
+                try {
+                    Platform plat = Platform.valueOf(platStr);
+                    Platform.overridePlatform(plat);
+                    logger.info("Overrode platform to: " + plat);
+                } catch (IllegalArgumentException e) {
+                    logger.error("Invalid platform override: " + platStr);
+                    return false;
+                }
             }
         }
         return true;
@@ -159,6 +172,18 @@ public class Main {
         ConfigManager.getInstance().unloadCameraConfigs();
         cameraConfigs.stream().forEach(ConfigManager.getInstance()::addCameraConfiguration);
         VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
+    }
+
+    private static void tryLoadJNI(JNITypes type) {
+        try {
+            LoadJNI.forceLoad(type);
+            logger.info("Loaded " + type.name() + "-JNI");
+        } catch (IOException e) {
+            logger.error("Failed to load " + type.name() + "-JNI!", e);
+            if (isSmoketest) {
+                System.exit(1);
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -209,41 +234,24 @@ public class Main {
             System.exit(1);
         }
 
-        try {
-            if (Platform.isRaspberryPi()) {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.LIBCAMERA);
-                logger.info("Loaded libcamera-JNI");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load libcamera-JNI!", e);
+        if (Platform.isRaspberryPi()) {
+            tryLoadJNI(JNITypes.LIBCAMERA);
         }
-        try {
-            if (Platform.isRK3588()) {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.RKNN_DETECTOR);
-                logger.info("Loaded RKNN-JNI");
-            } else {
-                logger.error("Platform does not support RKNN based machine learning!");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load RKNN-JNI!", e);
+
+        if (Platform.isRK3588()) {
+            tryLoadJNI(JNITypes.RKNN_DETECTOR);
+        } else {
+            logger.warn("Platform does not support RKNN based machine learning!");
         }
-        try {
-            if (Platform.isQCS6490()) {
-                LoadJNI.forceLoad(LoadJNI.JNITypes.RUBIK_DETECTOR);
-                logger.info("Loaded Rubik-JNI");
-            } else {
-                logger.error("Platform does not support Rubik based machine learning!");
-            }
-        } catch (IOException e) {
-            logger.error("Failed to load Rubik-JNI!", e);
+
+        if (Platform.isQCS6490()) {
+            tryLoadJNI(JNITypes.RUBIK_DETECTOR);
+        } else {
+            logger.warn("Platform does not support Rubik based machine learning!");
         }
-        try {
-            LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
-            logger.info("mrcal-JNI loaded successfully.");
-        } catch (Exception e) {
-            logger.warn(
-                    "Failed to load mrcal-JNI! Camera calibration will fall back to opencv\n"
-                            + e.getMessage());
+
+        if (Platform.isWindows() || Platform.isLinux()) {
+            tryLoadJNI(JNITypes.MRCAL);
         }
 
         CVMat.enablePrint(false);
@@ -268,10 +276,6 @@ public class Main {
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
-        logger.debug("Loading HardwareManager...");
-        // Force load the hardware manager
-        HardwareManager.getInstance();
-
         logger.info("Loading ML models...");
         var modelManager = NeuralNetworkModelManager.getInstance();
         modelManager.extractModels();
@@ -284,6 +288,10 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
+
+        logger.debug("Loading HardwareManager...");
+        // Force load the hardware manager
+        HardwareManager.getInstance();
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
