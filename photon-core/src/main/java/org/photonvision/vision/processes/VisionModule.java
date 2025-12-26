@@ -87,6 +87,8 @@ public class VisionModule {
     private int inputStreamPort = -1;
     private int outputStreamPort = -1;
 
+    private int fpsLimit = -1;
+
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
 
@@ -134,7 +136,8 @@ public class VisionModule {
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
-                        getChangeSubscriber());
+                        getChangeSubscriber(),
+                        () -> this.fpsLimit);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -625,12 +628,12 @@ public class VisionModule {
      * @param fps
      */
     public void setFPSLimit(int fps) {
-        visionRunner.setFPSLimit(fps);
+        this.fpsLimit = fps;
         saveAndBroadcastAll();
     }
 
     public int getFPSLimit() {
-        return visionRunner.getFPSLimit();
+        return fpsLimit;
     }
 
     public CameraConfiguration getStateAsCameraConfig() {

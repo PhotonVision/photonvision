@@ -49,7 +49,7 @@ public class VisionRunner {
     private final VisionModuleChangeSubscriber changeSubscriber;
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
-    private int FPSLimit = -1;
+    private final Supplier<Integer> fpsLimitSupplier;
 
     private long loopCount;
 
@@ -66,12 +66,14 @@ public class VisionRunner {
             Supplier<CVPipeline> pipelineSupplier,
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
-            VisionModuleChangeSubscriber changeSubscriber) {
+            VisionModuleChangeSubscriber changeSubscriber,
+            Supplier<Integer> fpsLimitSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
         this.changeSubscriber = changeSubscriber;
+        this.fpsLimitSupplier = fpsLimitSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -126,14 +128,6 @@ public class VisionRunner {
         }
 
         return future;
-    }
-
-    public void setFPSLimit(int fps) {
-        FPSLimit = fps;
-    }
-
-    public int getFPSLimit() {
-        return FPSLimit;
     }
 
     private void update() {
@@ -212,9 +206,9 @@ public class VisionRunner {
                 }
                 loopCount++;
             }
-
-            if (FPSLimit > 0) {
-                long sleepTime = (long) (1000 / FPSLimit - (System.currentTimeMillis() - start));
+            int fpsLimit = fpsLimitSupplier.get();
+            if (fpsLimit > 0) {
+                long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
 
                 if (sleepTime > 0) {
                     try {
