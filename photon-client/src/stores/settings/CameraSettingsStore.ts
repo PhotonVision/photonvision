@@ -422,6 +422,32 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       };
       useStateStore().websocket?.send(payload, true);
     },
+
+    /**
+     * Start repeatedly calling takeCalibrationSnapshot every intervalMs milliseconds.
+     * No-op if already running. Call stopCalibrationSnapshotLoop() to stop.
+     *
+     * @param intervalMs interval in milliseconds between snapshots (default 1000)
+     * @param cameraUniqueName camera to snapshot (captured when the loop starts)
+     */
+    startCalibrationSnapshotLoop(intervalMs = 500, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      // store the interval id on the store instance (avoid changing state shape)
+      if ((this as any)._calibrationSnapshotInterval != null) return;
+      // take one immediately then schedule
+      this.takeCalibrationSnapshot(cameraUniqueName);
+      (this as any)._calibrationSnapshotInterval = window.setInterval(() => {
+        this.takeCalibrationSnapshot(cameraUniqueName);
+      }, intervalMs);
+    },
+
+    /**
+     * Stop a running calibration snapshot loop started with startCalibrationSnapshotLoop().
+     */
+    stopCalibrationSnapshotLoop() {
+      if ((this as any)._calibrationSnapshotInterval == null) return;
+      clearInterval((this as any)._calibrationSnapshotInterval);
+      (this as any)._calibrationSnapshotInterval = null;
+    },
     /**
      * Save a snapshot of the input frame of the camera.
      *
