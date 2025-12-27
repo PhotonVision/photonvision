@@ -995,7 +995,7 @@ public class RequestHandler {
     }
 
     public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
+        // HardwareManager.getInstance().publishMetrics();
         ctx.status(204);
     }
 

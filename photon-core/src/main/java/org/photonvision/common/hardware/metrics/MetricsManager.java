@@ -270,7 +270,9 @@ public class MetricsManager {
                         this.getUsedDiskPct(),
                         this.getNpuUsage(),
                         this.getIpAddress(),
-                        this.getUptime());
+                        this.getUptime(),
+                        0,
+                        0);
 
         metricPublisher.set(metrics);
 

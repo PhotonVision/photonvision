@@ -35,11 +35,9 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
-import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.common.util.TimedTaskManager;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -50,7 +48,7 @@ public class HardwareManager {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
 
-    private final MetricsManager metricsManager;
+    // private final MetricsManager metricsManager;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
@@ -77,11 +75,11 @@ public class HardwareManager {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
 
-        this.metricsManager = new MetricsManager();
-        this.metricsManager.setConfig(hardwareConfig);
+        // this.metricsManager = new MetricsManager();
+        // this.metricsManager.setConfig(hardwareConfig);
 
-        TimedTaskManager.getInstance()
-                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
+        // TimedTaskManager.getInstance()
+        //         .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
 
         ledModeRequest =
                 NetworkTablesManager.getInstance()
@@ -260,7 +258,7 @@ public class HardwareManager {
         statusLED.setStatus(status);
     }
 
-    public void publishMetrics() {
-        metricsManager.publishMetrics();
-    }
+    // public void publishMetrics() {
+    //     metricsManager.publishMetrics();
+    // }
 }
