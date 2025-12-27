@@ -82,23 +82,48 @@ public class NetworkUtils {
 
     private static List<NMDeviceInfo> allInterfaces = null;
     private static long lastReadTimestamp = 0;
+    private static long timeout = 5000; // milliseconds
+    private static long retry = 500; // milliseconds
 
-    public static List<NMDeviceInfo> getAllInterfaces() {
-        long now = System.currentTimeMillis();
-        if (now - lastReadTimestamp < 5000) return allInterfaces;
-        else lastReadTimestamp = now;
-
+    public static synchronized List<NMDeviceInfo> getAllInterfaces() {
+        var start = System.currentTimeMillis();
+        if (start - lastReadTimestamp < 5000) {
+            return allInterfaces;
+        }
         var ret = new ArrayList<NMDeviceInfo>();
 
         if (Platform.isLinux()) {
             String out = null;
             try {
                 var shell = new ShellExec(true, false);
-                shell.executeBashCommand(
-                        "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, false);
-                out = shell.getOutput();
+                boolean networkManagerRunning = false;
+                boolean tryagain = true;
+
+                do {
+                    shell.executeBashCommand(
+                            "nmcli -t -f GENERAL.CONNECTION,GENERAL.DEVICE,GENERAL.TYPE device show", true, true);
+                    // nmcli returns an error of 8 if NetworkManager isn't running
+                    networkManagerRunning = shell.getExitCode() != 8;
+                    tryagain = System.currentTimeMillis() - start < timeout;
+                    if (!networkManagerRunning && tryagain) {
+                        logger.debug("NetworkManager not running, retrying in " + (retry) + " milliseconds");
+                        Thread.sleep(retry);
+                    }
+                } while (!networkManagerRunning && tryagain);
+
+                timeout = 0; // only try once after the first time
+
+                if (networkManagerRunning) {
+                    out = shell.getOutput();
+                } else {
+                    logger.error(
+                            "Timed out trying to reach NetworkManager, may not be able to configure networking");
+                }
+
             } catch (IOException e) {
                 logger.error("IO Exception occured when calling nmcli to get network interfaces!", e);
+            } catch (InterruptedException e) {
+                logger.error("Interrupted while waiting for NetworkManager", e);
             }
             if (out != null) {
                 Pattern pattern =
@@ -120,6 +145,8 @@ public class NetworkUtils {
             }
             allInterfaces = ret;
         }
+        lastReadTimestamp = System.currentTimeMillis();
+
         return ret;
     }
 
@@ -260,11 +287,14 @@ public class NetworkUtils {
                     }
                 }
             } else { // Managed? We should have a working interface available
-                byte[] mac = NetworkInterface.getByName(config.networkManagerIface).getHardwareAddress();
-                if (mac != null) {
-                    return formatMacAddress(mac);
-                } else {
-                    logger.error("No MAC address found for " + config.networkManagerIface);
+                var iface = NetworkInterface.getByName(config.networkManagerIface);
+                if (iface != null) {
+                    byte[] mac = iface.getHardwareAddress();
+                    if (mac != null) {
+                        return formatMacAddress(mac);
+                    } else {
+                        logger.error("No MAC address found for " + config.networkManagerIface);
+                    }
                 }
             }
         } catch (Exception e) {

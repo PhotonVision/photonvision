@@ -187,6 +187,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
+        logger.info("Logging initialized in debug mode.");
+
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
@@ -241,13 +250,13 @@ public class Main {
         if (Platform.isRK3588()) {
             tryLoadJNI(JNITypes.RKNN_DETECTOR);
         } else {
-            logger.error("Platform does not support RKNN based machine learning!");
+            logger.warn("Platform does not support RKNN based machine learning!");
         }
 
         if (Platform.isQCS6490()) {
             tryLoadJNI(JNITypes.RUBIK_DETECTOR);
         } else {
-            logger.error("Platform does not support Rubik based machine learning!");
+            logger.warn("Platform does not support Rubik based machine learning!");
         }
 
         if (Platform.isWindows() || Platform.isLinux()) {
@@ -256,15 +265,6 @@ public class Main {
 
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
-
-        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
-        Logger.setLevel(LogGroup.Camera, logLevel);
-        Logger.setLevel(LogGroup.WebServer, logLevel);
-        Logger.setLevel(LogGroup.VisionModule, logLevel);
-        Logger.setLevel(LogGroup.Data, logLevel);
-        Logger.setLevel(LogGroup.Config, logLevel);
-        Logger.setLevel(LogGroup.General, logLevel);
-        logger.info("Logging initialized in debug mode.");
 
         // Add Linux kernel log->Photon logger
         KernelLogLogger.getInstance();
@@ -292,6 +292,10 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
+
+        logger.debug("Loading HardwareManager...");
+        // Force load the hardware manager
+        HardwareManager.getInstance();
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
