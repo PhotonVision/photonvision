@@ -280,6 +280,19 @@ public class CameraConfiguration {
         ret.calibrations =
                 calibrations.stream().map(CameraCalibrationCoefficients::cloneWithoutObservations).toList();
 
+        // Populate duplicate camera information
+        if (matchedCameraInfo instanceof PVCameraInfo.PVDuplicateCameraInfo dupInfo) {
+            ret.isDuplicateCamera = true;
+            ret.sourceUniqueName = dupInfo.sourceUniqueName;
+            ret.inputSettingsReadOnly = true;
+            // sourceCameraNickname will be populated by VisionModule if available
+        } else {
+            ret.isDuplicateCamera = false;
+            ret.sourceUniqueName = null;
+            ret.sourceCameraNickname = null;
+            ret.inputSettingsReadOnly = false;
+        }
+
         return ret;
     }
 }

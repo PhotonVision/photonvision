@@ -33,7 +33,8 @@ import java.util.Objects;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
+    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
+    @JsonSubTypes.Type(value = PVCameraInfo.PVDuplicateCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
     /**
@@ -286,6 +287,70 @@ public sealed interface PVCameraInfo {
         @Override
         public String toString() {
             return "PVFileCameraInfo[type=" + type() + ", filename=" + name + ", path='" + path + "']";
+        }
+    }
+
+    @JsonTypeName("PVDuplicateCameraInfo")
+    public static final class PVDuplicateCameraInfo implements PVCameraInfo {
+        public final String sourceUniqueName;
+        public final String displayName;
+
+        @JsonCreator
+        public PVDuplicateCameraInfo(
+                @JsonProperty("sourceUniqueName") String sourceUniqueName,
+                @JsonProperty("displayName") String displayName) {
+            this.sourceUniqueName = sourceUniqueName;
+            this.displayName = displayName;
+        }
+
+        @Override
+        public String path() {
+            return "duplicate://" + sourceUniqueName;
+        }
+
+        @Override
+        public String name() {
+            return displayName.replaceAll("[^\\x00-\\x7F]", "");
+        }
+
+        @Override
+        public String uniquePath() {
+            return "duplicate://" + sourceUniqueName;
+        }
+
+        @Override
+        public String[] otherPaths() {
+            return new String[0];
+        }
+
+        @Override
+        public CameraType type() {
+            return CameraType.DuplicateCamera;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (!(obj instanceof PVDuplicateCameraInfo info)) return false;
+
+            return sourceUniqueName.equals(info.sourceUniqueName) && displayName.equals(info.displayName);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(sourceUniqueName, displayName);
+        }
+
+        @Override
+        public String toString() {
+            return "PVDuplicateCameraInfo[type="
+                    + type()
+                    + ", displayName='"
+                    + displayName
+                    + "', sourceUniqueName='"
+                    + sourceUniqueName
+                    + "']";
         }
     }
 
