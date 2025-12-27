@@ -117,6 +117,9 @@ public class Server {
                     ws.onBinaryMessage(dsHandler::onBinaryMessage);
                 });
 
+        /* Stream Proxy for MJPEG Camera Streams */
+        app.get("/port/{port}/*", StreamProxyHandler::handleProxyRequest);
+
         /* API Events */
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
