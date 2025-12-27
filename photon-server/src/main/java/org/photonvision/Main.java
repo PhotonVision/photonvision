@@ -18,8 +18,13 @@
 package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
@@ -174,6 +179,70 @@ public class Main {
         VisionSourceManager.getInstance().registerLoadedConfigs(cameraConfigs);
     }
 
+    private static void serveDenialPage() {
+        String docsLink =
+                "https://docs.photonvision.org/en/latest/docs/quick-start/common-setups.html#systemcore-support";
+
+        logger.error(
+                "SystemCore is not a supported platform for PhotonVision!\n "
+                        + "Please visit "
+                        + docsLink
+                        + " for more information.");
+
+        try {
+            int port = 5800;
+            io.javalin.Javalin app = null;
+            try {
+                app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
+            } catch (Exception e) {
+                logger.warn("Failed to bind to port 5800, exiting: " + e.getMessage());
+                port = DEFAULT_WEBPORT;
+                app = io.javalin.Javalin.create(cfg -> cfg.showJavalinBanner = false).start(port);
+            }
+
+            final int boundPort = port;
+            final String html =
+                    "<!doctype html>"
+                            + "<html><head><meta charset=\"utf-8\"><title>Unsupported platform</title></head><body>"
+                            + "<p>Main Robot Controllers shouldn't run PhotonVision, but yours does! "
+                            + "Please <a href=\"https://github.com/PhotonVision/photonvision/blob/main/scripts/uninstall.sh\" "
+                            + "target=\"_blank\" rel=\"noopener noreferrer\">uninstall</a> PhotonVision. "
+                            + "If you choose to modify PhotonVision so that it functions on SystemCore, "
+                            + "you do so entirely at your own risk and without any support. "
+                            + "For more information, see <a href=\""
+                            + docsLink
+                            + "\" target=\"_blank\" rel=\"noopener noreferrer\">"
+                            + docsLink
+                            + "</a>.</p></body></html>";
+
+            app.get(
+                    "/",
+                    ctx -> {
+                        ctx.contentType("text/html; charset=utf-8");
+                        ctx.result(html);
+                    });
+
+            logger.info(
+                    "Served SystemCore warning page on port "
+                            + boundPort
+                            + " - process will remain running to serve the page.");
+
+            // Prevent main from exiting so the page remains available.
+            final Object lock = new Object();
+            synchronized (lock) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException ignored) {
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Failed to start static warning page server", e);
+        }
+
+        // Exit
+        System.exit(1);
+    }
+
     private static void tryLoadJNI(JNITypes type) {
         try {
             LoadJNI.forceLoad(type);
@@ -202,6 +271,10 @@ public class Main {
                         + " on platform "
                         + Platform.getPlatformName()
                         + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
+
+        if (Platform.isSystemCore()) {
+            serveDenialPage();
+        }
 
         if (OsImageData.IMAGE_METADATA.isPresent()) {
             logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
@@ -316,5 +389,22 @@ public class Main {
         logger.info("Starting server...");
         HardwareManager.getInstance().setError(null);
         Server.initialize(DEFAULT_WEBPORT);
+    }
+
+    public static File getJarLocation() {
+        try {
+            ProtectionDomain protectionDomain = Main.class.getProtectionDomain();
+            CodeSource codeSource = protectionDomain.getCodeSource();
+            if (codeSource != null) {
+                URL location = codeSource.getLocation();
+                return new File(location.toURI());
+            } else {
+                logger.error("Could not determine JAR location: code source is null");
+                return null;
+            }
+        } catch (URISyntaxException e) {
+            logger.error("Error determining JAR location", e);
+            return null;
+        }
     }
 }
