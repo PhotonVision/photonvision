@@ -250,13 +250,13 @@ public class Main {
         if (Platform.isRK3588()) {
             tryLoadJNI(JNITypes.RKNN_DETECTOR);
         } else {
-            logger.error("Platform does not support RKNN based machine learning!");
+            logger.warn("Platform does not support RKNN based machine learning!");
         }
 
         if (Platform.isQCS6490()) {
             tryLoadJNI(JNITypes.RUBIK_DETECTOR);
         } else {
-            logger.error("Platform does not support Rubik based machine learning!");
+            logger.warn("Platform does not support Rubik based machine learning!");
         }
 
         if (Platform.isWindows() || Platform.isLinux()) {
@@ -276,10 +276,6 @@ public class Main {
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
-        logger.debug("Loading HardwareManager...");
-        // Force load the hardware manager
-        HardwareManager.getInstance();
-
         logger.info("Loading ML models...");
         var modelManager = NeuralNetworkModelManager.getInstance();
         modelManager.extractModels();
@@ -292,6 +288,10 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
         NetworkTablesManager.getInstance().registerTimedTasks();
+
+        logger.debug("Loading HardwareManager...");
+        // Force load the hardware manager
+        HardwareManager.getInstance();
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");

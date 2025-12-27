@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration.LegacyCameraConfigStruct;
 import org.photonvision.common.configuration.DatabaseSchema.Columns;
@@ -253,6 +254,45 @@ public class SqlConfigProvider extends ConfigProvider {
         return true;
     }
 
+    private <T> T loadConfigOrDefault(
+            Connection conn, String key, Class<T> ref, Supplier<T> factory) {
+        String configString = getOneConfigFile(conn, key);
+        T configObj;
+        if (!configString.isBlank()) {
+            try {
+                configObj = JacksonUtils.deserialize(configString, ref);
+                logger.info("Loaded " + ref.getSimpleName() + " from database");
+                return configObj;
+            } catch (IOException e) {
+                logger.error("Could not deserialize " + ref.getSimpleName() + " from database!", e);
+            }
+        } else {
+            logger.debug("No " + ref.getSimpleName() + " in database");
+        }
+        // either the config entry is empty or Jackson threw and exception
+        try {
+            configObj = factory.get();
+            logger.info("Loaded default " + ref.getSimpleName());
+            return configObj;
+        } catch (Exception e) {
+            logger.error("Failed to construct a default instance of " + ref.getSimpleName(), e);
+        }
+        return null;
+    }
+
+    private AprilTagFieldLayout atflDefault() {
+        AprilTagFieldLayout atfl;
+        try {
+            atfl = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+            logger.info("Loaded " + AprilTagFields.kDefaultField.toString() + " field");
+        } catch (UncheckedIOException e) {
+            logger.error("Error loading WPILib field", e);
+            logger.info("Creating an empty field");
+            atfl = new AprilTagFieldLayout(List.of(), 1, 1);
+        }
+        return atfl;
+    }
+
     @Override
     public void load() {
         logger.debug("Loading config...");
@@ -260,68 +300,24 @@ public class SqlConfigProvider extends ConfigProvider {
         if (conn == null) return;
 
         synchronized (m_mutex) {
-            HardwareConfig hardwareConfig;
-            HardwareSettings hardwareSettings;
-            NetworkConfig networkConfig;
-            AprilTagFieldLayout atfl;
-            NeuralNetworkPropertyManager nnProps;
-
-            try {
-                hardwareConfig =
-                        JacksonUtils.deserialize(
-                                getOneConfigFile(conn, GlobalKeys.HARDWARE_CONFIG), HardwareConfig.class);
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware config! Loading defaults", e);
-                hardwareConfig = new HardwareConfig();
-            }
-
-            try {
-                hardwareSettings =
-                        JacksonUtils.deserialize(
-                                getOneConfigFile(conn, GlobalKeys.HARDWARE_SETTINGS), HardwareSettings.class);
-            } catch (IOException e) {
-                logger.error("Could not deserialize hardware settings! Loading defaults", e);
-                hardwareSettings = new HardwareSettings();
-            }
-
-            try {
-                networkConfig =
-                        JacksonUtils.deserialize(
-                                getOneConfigFile(conn, GlobalKeys.NETWORK_CONFIG), NetworkConfig.class);
-            } catch (IOException e) {
-                logger.error("Could not deserialize network config! Loading defaults", e);
-                networkConfig = new NetworkConfig();
-            }
-
-            try {
-                atfl =
-                        JacksonUtils.deserialize(
-                                getOneConfigFile(conn, GlobalKeys.ATFL_CONFIG_FILE), AprilTagFieldLayout.class);
-            } catch (IOException e) {
-                logger.error("Could not deserialize apriltag layout! Loading defaults", e);
-                try {
-                    atfl = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-                } catch (UncheckedIOException e2) {
-                    logger.error("Error loading WPILib field", e);
-                    atfl = null;
-                }
-                if (atfl == null) {
-                    // what do we even do here lmao -- wpilib should always work
-                    logger.error("Field layout is *still* null??????");
-                    atfl = new AprilTagFieldLayout(List.of(), 1, 1);
-                }
-            }
-
-            try {
-                nnProps =
-                        JacksonUtils.deserialize(
-                                getOneConfigFile(conn, GlobalKeys.NEURAL_NETWORK_PROPERTIES),
-                                NeuralNetworkPropertyManager.class);
-            } catch (IOException e) {
-                logger.error("Could not deserialize neural network properties! Loading defaults", e);
-                nnProps = new NeuralNetworkPropertyManager();
-            }
-
+            var hardwareConfig =
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.HARDWARE_CONFIG, HardwareConfig.class, HardwareConfig::new);
+            var hardwareSettings =
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.HARDWARE_SETTINGS, HardwareSettings.class, HardwareSettings::new);
+            var networkConfig =
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.NETWORK_CONFIG, NetworkConfig.class, NetworkConfig::new);
+            var nnProps =
+                    loadConfigOrDefault(
+                            conn,
+                            GlobalKeys.NEURAL_NETWORK_PROPERTIES,
+                            NeuralNetworkPropertyManager.class,
+                            NeuralNetworkPropertyManager::new);
+            var atfl =
+                    loadConfigOrDefault(
+                            conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, this::atflDefault);
             var cams = loadCameraConfigs(conn);
 
             try {
