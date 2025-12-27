@@ -625,7 +625,8 @@ public class VisionModule {
 
     /**
      * Set FPS limit for this vision module. This will cause our processing thread to sleep in order
-     * to increase our processing time to match the provided fps.
+     * to increase our processing time to match the provided fps. If our processing time is longer
+     * than the frame period, the FPS limit will not be reached.
      *
      * @param fps
      */
@@ -634,6 +635,12 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    /**
+     * Get the current FPS limit for this vision module. This limit cannot be exceeded, but may be
+     * lower depending on processing time.
+     *
+     * @return the FPS limit
+     */
     public int getFPSLimit() {
         return fpsLimit;
     }
