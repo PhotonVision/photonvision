@@ -221,11 +221,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       updateStore = true,
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
-      // Don't send settings changes for duplicate cameras - they're read-only
-      if (this.cameras[cameraUniqueName]?.isDuplicateCamera) {
-        return;
-      }
-
       const payload = {
         changePipelineSetting: {
           ...settings,

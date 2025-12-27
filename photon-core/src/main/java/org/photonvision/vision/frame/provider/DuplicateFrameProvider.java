@@ -30,8 +30,8 @@ import org.photonvision.vision.pipe.impl.HSVPipe;
  * This allows duplicate cameras to process the same frames through different pipelines without
  * duplicating frame acquisition.
  *
- * <p>All frame acquisition is delegated to the source provider. Settings that would affect frame
- * processing (rotation, threshold type, HSV) are ignored with warnings.
+ * <p>Frame acquisition is delegated to the source provider, but pre-processing (rotation,
+ * threshold, HSV) is done independently for each duplicate based on its own pipeline settings.
  */
 public class DuplicateFrameProvider extends FrameProvider {
     private final FrameProvider sourceFrameProvider;
@@ -51,8 +51,8 @@ public class DuplicateFrameProvider extends FrameProvider {
     }
 
     /**
-     * Get the next frame from the source camera. This returns the same frame that the source camera
-     * is processing, allowing zero-copy frame sharing.
+     * Get the next frame from the source camera. Returns the same frame instance as the source. Each
+     * duplicate camera's pipeline will process the frame independently with its own settings.
      */
     @Override
     public Frame get() {
@@ -81,38 +81,31 @@ public class DuplicateFrameProvider extends FrameProvider {
 
     /**
      * Duplicate cameras cannot change the frame threshold type - this is controlled by the source
-     * camera. Silently ignore the request (VisionRunner calls this every frame).
+     * camera. Pipeline processing settings (blur, decimate, etc.) are independent per duplicate.
      */
     @Override
     public void requestFrameThresholdType(FrameThresholdType type) {
-        // No-op: duplicate cameras use the source camera's threshold type
+        // No-op: Pre-processing is done by source, but pipeline settings are independent
     }
 
     /**
      * Duplicate cameras cannot change the frame rotation - this is controlled by the source camera.
-     * Silently ignore the request (VisionRunner calls this every frame).
      */
     @Override
     public void requestFrameRotation(ImageRotationMode rotationMode) {
-        // No-op: duplicate cameras use the source camera's rotation
+        // No-op: Pre-processing is done by source
     }
 
-    /**
-     * Request frame copies from the source. This is safe to delegate as it just tells the source we
-     * want copies too.
-     */
+    /** Request frame copies for input/output. */
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         sourceFrameProvider.requestFrameCopies(copyInput, copyOutput);
     }
 
-    /**
-     * Duplicate cameras cannot change HSV settings - this is controlled by the source camera.
-     * Silently ignore the request (VisionRunner calls this every frame).
-     */
+    /** Duplicate cameras cannot change HSV settings - this is controlled by the source camera. */
     @Override
     public void requestHsvSettings(HSVPipe.HSVParams params) {
-        // No-op: duplicate cameras use the source camera's HSV settings
+        // No-op: Pre-processing is done by source
     }
 
     /**

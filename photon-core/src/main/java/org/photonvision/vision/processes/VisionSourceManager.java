@@ -115,9 +115,12 @@ public class VisionSourceManager {
             if (deserializedConfigs.containsKey(config.uniqueName)) {
                 logger.error(
                         "Duplicate unique name for config " + config.uniqueName + " -- not overwriting");
-            } else if (deserializedConfigs.values().stream()
-                    .map(it -> it.matchedCameraInfo)
-                    .anyMatch(checkDuplicateCamera)) {
+            } else if (config.matchedCameraInfo.type() != CameraType.DuplicateCamera
+                    && deserializedConfigs.values().stream()
+                            .map(it -> it.matchedCameraInfo)
+                            .anyMatch(checkDuplicateCamera)) {
+                // Skip uniquePath check for duplicate cameras - multiple duplicates of the same source
+                // are intentional and should all be loaded
                 logger.error(
                         "Duplicate camera type & path for config " + config.uniqueName + " -- not overwriting");
             } else {
@@ -301,14 +304,30 @@ public class VisionSourceManager {
         var sourceConfig = sourceModule.getCameraConfiguration();
         var duplicateUniqueName = java.util.UUID.randomUUID().toString();
 
+        // Generate a unique nickname by checking existing names
+        var currentNicknames = new ArrayList<String>();
+        this.disabledCameraConfigs.values().stream()
+                .map(it -> it.nickname)
+                .forEach(currentNicknames::add);
+        this.vmm.getModules().stream()
+                .map(it -> it.getCameraConfiguration().nickname)
+                .forEach(currentNicknames::add);
+
+        // Find a unique duplicate name
+        String duplicateNickname = sourceConfig.nickname + " (Duplicate)";
+        int duplicateNumber = 2;
+        while (currentNicknames.contains(duplicateNickname)) {
+            duplicateNickname = sourceConfig.nickname + " (Duplicate " + duplicateNumber + ")";
+            duplicateNumber++;
+        }
+
         var duplicateCameraInfo =
-                new PVCameraInfo.PVDuplicateCameraInfo(
-                        sourceUniqueName, sourceConfig.nickname + " (Duplicate)");
+                new PVCameraInfo.PVDuplicateCameraInfo(sourceUniqueName, duplicateNickname);
 
         var duplicateConfig = new CameraConfiguration(duplicateUniqueName, duplicateCameraInfo);
 
         // Set the nickname explicitly
-        duplicateConfig.nickname = sourceConfig.nickname + " (Duplicate)";
+        duplicateConfig.nickname = duplicateNickname;
 
         // Copy FOV and quirks from source
         duplicateConfig.FOV = sourceConfig.FOV;
