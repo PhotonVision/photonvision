@@ -45,7 +45,6 @@ public enum Platform {
     LINUX_SYSTEMCORE(
             "Linux Systemcore 64-bit NOT SUPPORTED",
             Platform::getUnknownModel,
-            "linuxarm64",
             false,
             OSType.LINUX,
             false), // SystemCore 64-bit
