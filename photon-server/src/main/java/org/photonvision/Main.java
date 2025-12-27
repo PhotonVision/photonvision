@@ -187,6 +187,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.Config, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
+        logger.info("Logging initialized in debug mode.");
+
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
@@ -256,15 +265,6 @@ public class Main {
 
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
-
-        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
-        Logger.setLevel(LogGroup.Camera, logLevel);
-        Logger.setLevel(LogGroup.WebServer, logLevel);
-        Logger.setLevel(LogGroup.VisionModule, logLevel);
-        Logger.setLevel(LogGroup.Data, logLevel);
-        Logger.setLevel(LogGroup.Config, logLevel);
-        Logger.setLevel(LogGroup.General, logLevel);
-        logger.info("Logging initialized in debug mode.");
 
         // Add Linux kernel log->Photon logger
         KernelLogLogger.getInstance();

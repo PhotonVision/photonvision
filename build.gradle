@@ -43,7 +43,6 @@ ext {
     frcYear = "2026beta"
     mrcalVersion = "dev-v2025.0.0-3-g2dc275f";
 
-
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
