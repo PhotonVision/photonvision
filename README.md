@@ -20,6 +20,7 @@ If you are interested in contributing code or documentation to the project, plea
 - Photon UI demo: [demo.photonvision.org](https://demo.photonvision.org)
 - Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org)
 - C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org)
+- Python Documentation [pydocs.photonvision.org](https://pydocs.photonvision.org)
 
 ## Building
 
