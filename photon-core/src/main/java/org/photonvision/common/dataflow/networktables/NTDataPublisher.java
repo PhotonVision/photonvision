@@ -51,16 +51,24 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final BooleanSupplier driverModeSupplier;
     private final Consumer<Boolean> driverModeConsumer;
 
+    NTDataChangeListener fpsLimitListener;
+    private final Consumer<Integer> fpsLimitConsumer;
+    private final Supplier<Integer> fpsLimitSupplier;
+
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
             Consumer<Integer> pipelineIndexConsumer,
             BooleanSupplier driverModeSupplier,
-            Consumer<Boolean> driverModeConsumer) {
+            Consumer<Boolean> driverModeConsumer,
+            Supplier<Integer> fpsLimitSupplier,
+            Consumer<Integer> fpsLimitConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
+        this.fpsLimitSupplier = fpsLimitSupplier;
+        this.fpsLimitConsumer = fpsLimitConsumer;
 
         updateCameraNickname(cameraNickname);
         updateEntries();
@@ -103,6 +111,19 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Set driver mode to " + newDriverMode);
     }
 
+    private void onFPSLimitChange(NetworkTableEvent entryNotification) {
+        var newFPSLimit = (int) entryNotification.valueData.value.getInteger();
+        var originalFPSLimit = fpsLimitSupplier.get();
+
+        if (newFPSLimit == originalFPSLimit) {
+            logger.debug("FPS limit is already " + newFPSLimit);
+            return;
+        }
+
+        fpsLimitConsumer.accept(newFPSLimit);
+        logger.debug("Set FPS limit to " + newFPSLimit);
+    }
+
     private void removeEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
@@ -112,6 +133,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private void updateEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (fpsLimitListener != null) fpsLimitListener.remove();
 
         ts.updateEntries();
 
@@ -122,6 +144,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         driverModeListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
+
+        fpsLimitListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -170,6 +196,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        ts.fpsLimitPublisher.set(fpsLimitSupplier.get());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
         ts.fpsEntry.set(acceptedResult.fps);
         ts.hasTargetEntry.set(acceptedResult.hasTargets());

@@ -66,6 +66,8 @@ public class PhotonCamera implements AutoCloseable {
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
+    IntegerPublisher fpsLimitPublisher;
+    IntegerSubscriber fpsLimitSubscriber;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -81,6 +83,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
+        fpsLimitPublisher.close();
+        fpsLimitSubscriber.close();
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
@@ -144,6 +148,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
+        fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
+        fpsLimitSubscriber = cameraTable.getIntegerTopic("fpsLimit").subscribe(-1);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
@@ -371,6 +377,24 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setDriverMode(boolean driverMode) {
         driverModePublisher.set(driverMode);
+    }
+
+    /**
+     * Gets the FPS limit set on the camera.
+     *
+     * @return The current FPS limit.
+     */
+    public int getFPSLimit() {
+        return (int) fpsLimitSubscriber.get();
+    }
+
+    /**
+     * Sets the FPS limit on the camera.
+     *
+     * @param fps The FPS limit to set. Set to -1 for unlimited FPS.
+     */
+    public void setFPSLimit(int fps) {
+        fpsLimitPublisher.set(fps);
     }
 
     /**

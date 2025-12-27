@@ -77,6 +77,10 @@ const conflictingCameraShown = computed<boolean>(() => {
   return useSettingsStore().general.conflictingCameras.length > 0;
 });
 
+const fpsLimitWarningShown = computed<boolean>(() => {
+  return Object.values(useCameraSettingsStore().cameras).some((c) => c.fpsLimit > 0);
+});
+
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
 </script>
 
@@ -104,6 +108,19 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     >
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="fpsLimitWarningShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span
+        >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
+        information.
       </span>
     </v-alert>
     <v-alert

@@ -104,6 +104,16 @@ class PhotonCamera {
   bool GetDriverMode() const;
 
   /**
+   * @param fpsLimit The FPS limit to set. Use -1 for unlimited FPS.
+   */
+  void SetFPSLimit(int fpsLimit);
+
+  /**
+   * @return The FPS limit set on the camera, or -1 if no limit is set.
+   */
+  int GetFPSLimit() const;
+
+  /**
    * Request the camera to save a new image file from the input
    * camera stream with overlays.
    * Images take up space in the filesystem of the PhotonCamera.
@@ -210,6 +220,9 @@ class PhotonCamera {
 
   nt::BooleanSubscriber driverModeSubscriber;
   nt::BooleanPublisher driverModePublisher;
+  nt::IntegerSubscriber fpsLimitSubscriber;
+  nt::IntegerPublisher fpsLimitPublisher;
+
   nt::IntegerSubscriber ledModeSubscriber;
 
   nt::IntegerSubscriber heartbeatSubscriber;

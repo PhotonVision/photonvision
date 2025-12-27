@@ -196,6 +196,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
+      fpsLimitSubscriber(rootTable->GetIntegerTopic("fpsLimit").Subscribe(-1)),
+      fpsLimitPublisher(
+          rootTable->GetIntegerTopic("fpsLimitRequest").Publish()),
       heartbeatSubscriber(
           rootTable->GetIntegerTopic("heartbeat").Subscribe(-1)),
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
@@ -322,6 +325,14 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
   driverModePublisher.Set(driverMode);
 }
 
+bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
+
+int PhotonCamera::GetFPSLimit() const { return fpsLimitSubscriber.Get(); }
+
+void PhotonCamera::SetFPSLimit(int fpsLimit) {
+  fpsLimitPublisher.Set(fpsLimit);
+}
+
 void PhotonCamera::TakeInputSnapshot() {
   inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
 }
@@ -329,8 +340,6 @@ void PhotonCamera::TakeInputSnapshot() {
 void PhotonCamera::TakeOutputSnapshot() {
   outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1);
 }
-
-bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) { pipelineIndexPub.Set(index); }
 
