@@ -51,11 +51,19 @@ public class RubikModel implements Model {
             throw new IllegalArgumentException("Model family must be RUBIK");
         }
 
-        if (properties.version() != Version.YOLOV8 && properties.version() != Version.YOLOV11) {
-            throw new IllegalArgumentException("Model version must be YOLOV8 or YOLOV11");
+        if (!isValidVersion(properties.version())) {
+            throw new IllegalArgumentException(
+                    "Model version must be YOLOV8, YOLOV11, YOLO_OBB, or YOLO_PRO");
         }
 
         this.properties = properties;
+    }
+
+    public static boolean isValidVersion(Version version) {
+        return version == Version.YOLOV8
+                || version == Version.YOLOV11
+                || version == Version.YOLO_OBB
+                || version == Version.YOLO_PRO;
     }
 
     /** Return the unique identifier for the model. In this case, it's the model's path. */
