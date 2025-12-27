@@ -142,6 +142,7 @@ public class Server {
         app.post("/api/utils/nukeOneCamera", RequestHandler::onNukeOneCamera);
         app.post("/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
         app.post("/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
+        app.post("/api/utils/duplicateCamera", RequestHandler::onDuplicateCameraRequest);
         app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
 
         // Calibration

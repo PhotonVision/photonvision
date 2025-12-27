@@ -1370,6 +1370,38 @@ public class RequestHandler {
         }
     }
 
+    public static void onDuplicateCameraRequest(Context ctx) {
+        logger.info(ctx.queryString());
+
+        try {
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+
+            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("cameraUniqueName is required");
+                logger.error("cameraUniqueName is missing in the request");
+                return;
+            }
+
+            String duplicateUniqueName =
+                    VisionSourceManager.getInstance().createDuplicateCamera(request.cameraUniqueName);
+
+            if (duplicateUniqueName != null) {
+                ctx.status(200);
+                ctx.result("{\"duplicateUniqueName\": \"" + duplicateUniqueName + "\"}");
+            } else {
+                ctx.status(404);
+                ctx.result("Failed to create duplicate camera - source not found");
+            }
+        } catch (IOException e) {
+            ctx.status(401);
+            logger.error("Failed to process duplicate camera request", e);
+            ctx.result("Failed to process duplicate camera request");
+            return;
+        }
+    }
+
     public static void onUnassignCameraRequest(Context ctx) {
         logger.info(ctx.queryString());
         try {

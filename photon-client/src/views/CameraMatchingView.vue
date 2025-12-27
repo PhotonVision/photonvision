@@ -6,6 +6,7 @@ import {
   PlaceholderCameraSettings,
   PVCameraInfo,
   type PVCSICameraInfo,
+  type PVDuplicateCameraInfo,
   type PVFileCameraInfo,
   type PVUsbCameraInfo
 } from "@/types/SettingTypes";
@@ -53,7 +54,7 @@ const deactivateModule = (cameraUniqueName: string) => {
   );
 };
 
-const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "" });
+const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "", isDuplicate: false });
 const deletingCamera = ref<string | null>(null);
 
 const deleteThisCamera = (cameraUniqueName: string) => {
@@ -64,7 +65,52 @@ const deleteThisCamera = (cameraUniqueName: string) => {
   });
 };
 
+const duplicatingCamera = ref(false);
+const duplicateCamera = (sourceUniqueName: string) => {
+  if (duplicatingCamera.value) return;
+  duplicatingCamera.value = true;
+
+  useCameraSettingsStore()
+    .createDuplicateCamera(sourceUniqueName)
+    .then(() => {
+      useStateStore().showSnackbarMessage({ color: "success", message: "Duplicate camera created successfully" });
+    })
+    .catch((error) => {
+      if (error.response) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
+      } else if (error.request) {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "Error while trying to create duplicate camera! The backend didn't respond."
+        });
+      } else {
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: "An error occurred while trying to create duplicate camera."
+        });
+      }
+    })
+    .finally(() => (duplicatingCamera.value = false));
+};
+
+const isCameraDuplicate = (module: any): boolean => {
+  return module.matchedCameraInfo?.PVDuplicateCameraInfo !== undefined;
+};
+
 const cameraConnected = (uniquePath: string): boolean => {
+  // Duplicate cameras are always "connected" if their source camera is connected
+  if (uniquePath.startsWith("duplicate://")) {
+    const sourceUniqueName = uniquePath.replace("duplicate://", "");
+    const sourceCamera = Object.values(useCameraSettingsStore().cameras).find((cam) => cam.uniqueName === sourceUniqueName);
+    if (sourceCamera) {
+      return cameraConnected(cameraInfoFor(sourceCamera.matchedCameraInfo).uniquePath);
+    }
+    return false;
+  }
+
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
   );
@@ -108,7 +154,9 @@ const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null)
 /**
  * Get the connection-type-specific camera info from the given PVCameraInfo object.
  */
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
+const cameraInfoFor = (
+  camera: PVCameraInfo | null
+): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | PVDuplicateCameraInfo | any => {
   if (!camera) return null;
   if (camera.PVUsbCameraInfo) {
     return camera.PVUsbCameraInfo;
@@ -118,6 +166,9 @@ const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICame
   }
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
+  }
+  if (camera.PVDuplicateCameraInfo) {
+    return camera.PVDuplicateCameraInfo;
   }
   return {};
 };
@@ -158,7 +209,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         class="pr-0"
       >
         <v-card color="surface" class="rounded-12">
-          <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
+          <v-card-title>
+            {{ module.nickname }}
+            <v-chip v-if="isCameraDuplicate(module)" color="info" size="x-small" class="ml-2">Duplicate</v-chip>
+          </v-card-title>
           <v-card-subtitle v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
@@ -184,10 +238,16 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                     FPS)
                   </td>
                 </tr>
-                <tr v-else>
-                  <td>Name</td>
+                <tr v-if="!isCameraDuplicate(module)">
+                  <td>Device Name</td>
                   <td>
-                    {{ module.nickname }}
+                    {{ cameraInfoFor(module.matchedCameraInfo).name || cameraInfoFor(module.matchedCameraInfo).baseName }}
+                  </td>
+                </tr>
+                <tr v-else>
+                  <td>Source Camera</td>
+                  <td>
+                    {{ module.sourceCameraNickname || "Unknown" }}
                   </td>
                 </tr>
                 <tr>
@@ -228,7 +288,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           </v-card-text>
           <v-card-text class="pt-0">
             <v-row>
-              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
+              <v-col cols="6" md="3" class="pr-0 pb-0 pb-md-3">
                 <v-btn
                   color="buttonPassive"
                   style="width: 100%"
@@ -243,7 +303,19 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   <span>Details</span>
                 </v-btn>
               </v-col>
-              <v-col cols="6" md="5" class="pr-0">
+              <v-col cols="6" md="3" class="pb-0 pb-md-3">
+                <v-btn
+                  color="secondary"
+                  style="width: 100%"
+                  :disabled="isCameraDuplicate(module)"
+                  :loading="duplicatingCamera"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  @click="duplicateCamera(module.uniqueName)"
+                >
+                  <v-icon size="large">mdi-content-copy</v-icon>
+                </v-btn>
+              </v-col>
+              <v-col cols="6" md="4" class="pr-0">
                 <v-btn
                   class="text-black"
                   color="buttonActive"
@@ -255,7 +327,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   Deactivate
                 </v-btn>
               </v-col>
-              <v-col cols="6" md="3">
+              <v-col cols="6" md="2">
                 <v-btn
                   class="pa-0"
                   color="error"
@@ -267,7 +339,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       (confirmDeleteDialog = {
                         show: true,
                         nickname: module.nickname,
-                        cameraUniqueName: module.uniqueName
+                        cameraUniqueName: module.uniqueName,
+                        isDuplicate: isCameraDuplicate(module)
                       })
                   "
                 >
@@ -469,9 +542,13 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
     <pv-delete-modal
       v-model="confirmDeleteDialog.show"
-      title="Delete Camera"
-      :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
-      :expected-confirmation-text="confirmDeleteDialog.nickname"
+      :title="confirmDeleteDialog.isDuplicate ? 'Delete Duplicate Camera' : 'Delete Camera'"
+      :description="
+        confirmDeleteDialog.isDuplicate
+          ? `Are you sure you want to delete the duplicate camera '${confirmDeleteDialog.nickname}'?`
+          : `Are you sure you want to delete the camera '${confirmDeleteDialog.nickname}'? This action cannot be undone.`
+      "
+      :expected-confirmation-text="confirmDeleteDialog.isDuplicate ? undefined : confirmDeleteDialog.nickname"
       :on-confirm="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
     />
   </div>

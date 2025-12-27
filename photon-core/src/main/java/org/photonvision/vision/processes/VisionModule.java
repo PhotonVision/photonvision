@@ -45,6 +45,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.DuplicateVisionSource;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
@@ -619,6 +620,20 @@ public class VisionModule {
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
+
+        // Set duplicate camera information
+        if (visionSource instanceof DuplicateVisionSource duplicateSource) {
+            ret.isDuplicateCamera = true;
+            ret.inputSettingsReadOnly = true;
+            var source = duplicateSource.getSourceVisionSource();
+            ret.sourceUniqueName = source.getCameraConfiguration().uniqueName;
+            ret.sourceCameraNickname = source.getCameraConfiguration().nickname;
+        } else {
+            ret.isDuplicateCamera = false;
+            ret.inputSettingsReadOnly = false;
+            ret.sourceUniqueName = null;
+            ret.sourceCameraNickname = null;
+        }
 
         return ret;
     }
