@@ -104,7 +104,9 @@ const cameraConnected = (uniquePath: string): boolean => {
   // Duplicate cameras are always "connected" if their source camera is connected
   if (uniquePath.startsWith("duplicate://")) {
     const sourceUniqueName = uniquePath.replace("duplicate://", "");
-    const sourceCamera = Object.values(useCameraSettingsStore().cameras).find((cam) => cam.uniqueName === sourceUniqueName);
+    const sourceCamera = Object.values(useCameraSettingsStore().cameras).find(
+      (cam) => cam.uniqueName === sourceUniqueName
+    );
     if (sourceCamera) {
       return cameraConnected(cameraInfoFor(sourceCamera.matchedCameraInfo).uniquePath);
     }
@@ -241,7 +243,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 <tr v-if="!isCameraDuplicate(module)">
                   <td>Device Name</td>
                   <td>
-                    {{ cameraInfoFor(module.matchedCameraInfo).name || cameraInfoFor(module.matchedCameraInfo).baseName }}
+                    {{
+                      cameraInfoFor(module.matchedCameraInfo).name || cameraInfoFor(module.matchedCameraInfo).baseName
+                    }}
                   </td>
                 </tr>
                 <tr v-else>

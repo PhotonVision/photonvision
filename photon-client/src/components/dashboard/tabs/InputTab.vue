@@ -78,7 +78,8 @@ const interactiveCols = computed(() =>
   <div>
     <v-alert v-if="isReadOnly" type="info" class="mb-4">
       This is a duplicate camera. Input settings are controlled by
-      <strong>{{ sourceCameraName || "the source camera" }}</strong>.
+      <strong>{{ sourceCameraName || "the source camera" }}</strong
+      >.
     </v-alert>
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"

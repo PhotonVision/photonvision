@@ -45,7 +45,9 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
           <td v-else-if="camera.PVDuplicateCameraInfo" class="mb-3">Duplicate Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
-        <tr v-if="cameraInfoFor(camera).sourceUniqueName !== undefined && cameraInfoFor(camera).sourceUniqueName !== null">
+        <tr
+          v-if="cameraInfoFor(camera).sourceUniqueName !== undefined && cameraInfoFor(camera).sourceUniqueName !== null"
+        >
           <td>Source Camera:</td>
           <td>{{ cameraInfoFor(camera).displayName || cameraInfoFor(camera).sourceUniqueName }}</td>
         </tr>
