@@ -59,14 +59,8 @@ dependencies {
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
-    // Only include mrcal natives on platforms that we build for
-    if (!(jniPlatform in [
-                "osxx86-64",
-                "osxarm64"
-            ])) {
-        wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
-            transitive = false
-        }
+    wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
+        transitive = false
     }
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'

@@ -41,7 +41,7 @@ ext {
     rknnVersion = "dev-v2025.0.0-7-g83c1bf3"
     rubikVersion = "dev-v2025.1.0-7-g39588a8"
     frcYear = "2026beta"
-    mrcalVersion = "dev-v2025.0.0-3-g2dc275f";
+    mrcalVersion = "dev-v2025.0.0-13-g665e210";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
@@ -51,8 +51,10 @@ ext {
     def nativeName = wpilibNativeName
     if (wpilibNativeName == "linuxx64") nativeName = "linuxx86-64";
     if (wpilibNativeName == "winx64") nativeName = "windowsx86-64";
-    if (wpilibNativeName == "macx64") nativeName = "osxx86-64";
-    if (wpilibNativeName == "macarm64") nativeName = "osxarm64";
+    if (wpilibNativeName == "macx64" || wpilibNativeName == "macarm64") {
+        wpilibNativeName = "macuniversal";
+        nativeName = "osxuniversal";
+    }
     jniPlatform = nativeName
 
     println("Building for platform " + jniPlatform + " wpilib: " + wpilibNativeName)
