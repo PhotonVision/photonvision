@@ -54,7 +54,8 @@ public class StreamProxyHandler {
 
         // Extract the path after /port/{port}/
         String fullPath = ctx.path();
-        String pathAfterPort = fullPath.substring(fullPath.indexOf("/" + portStr) + ("/" + portStr).length());
+        String pathAfterPort =
+                fullPath.substring(fullPath.indexOf("/" + portStr) + ("/" + portStr).length());
 
         // If no path specified, default to empty (will connect to root)
         if (pathAfterPort.isEmpty()) {
