@@ -89,14 +89,6 @@ model {
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
-
-        all {
-            binaries.withType(SharedLibraryBinarySpec) { binary ->
-                // check that we're building for the platform (per PArchOverride/wpilib plat detection)
-                def platName = jniPlatform
-                def realWpilibName = wpilibNativeName;
-            }
-        }
     }
     testSuites {
         "${nativeName}Test"(GoogleTestTestSuiteSpec) {
