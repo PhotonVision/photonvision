@@ -137,7 +137,7 @@ public class VisionModule {
                         this::consumeResult,
                         this.cameraQuirks,
                         getChangeSubscriber(),
-                        () -> this.fpsLimit);
+                        this::getFPSLimit);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
