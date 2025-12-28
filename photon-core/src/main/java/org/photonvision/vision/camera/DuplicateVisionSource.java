@@ -20,6 +20,7 @@ package org.photonvision.vision.camera;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.DuplicateFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -29,9 +30,10 @@ import org.photonvision.vision.processes.VisionSourceSettables;
  * A VisionSource that wraps another VisionSource to create a duplicate camera. This allows multiple
  * pipelines to process frames from the same physical camera.
  *
- * <p>The duplicate camera shares the frame provider from the source camera (zero-copy frame
- * access), but has its own independent pipelines and NetworkTables publishing. Input settings
- * (exposure, gain, white balance, etc.) are read-only and controlled by the source camera.
+ * <p>The duplicate camera creates its own frame provider using the source camera's UsbCamera
+ * object. This ensures each duplicate has its own CvSink to avoid cscore thread-safety issues.
+ * Input settings (exposure, gain, white balance, etc.) are read-only and controlled by the source
+ * camera.
  */
 public class DuplicateVisionSource extends VisionSource {
     private final VisionSource sourceVisionSource;
@@ -51,12 +53,18 @@ public class DuplicateVisionSource extends VisionSource {
         this.sourceVisionSource = sourceVisionSource;
         this.logger = new Logger(DuplicateVisionSource.class, config.nickname, LogGroup.Camera);
 
-        // Share the frame provider from source
-        this.frameProvider =
-                new DuplicateFrameProvider(sourceVisionSource.getFrameProvider(), config.nickname);
-
         // Create read-only settables that delegate to source
         this.settables = new DuplicateSettables(config, sourceVisionSource.getSettables());
+
+        // Create our own frame provider using the source's UsbCamera to avoid thread-safety issues
+        if (sourceVisionSource instanceof USBCameraSource usbSource) {
+            this.frameProvider =
+                    new DuplicateFrameProvider(usbSource.getCamera(), settables, config.nickname);
+        } else {
+            throw new IllegalArgumentException(
+                    "DuplicateVisionSource currently only supports USB cameras. Source: "
+                            + sourceVisionSource.getClass().getName());
+        }
 
         // Inherit quirks from source camera
         if (config.cameraQuirks == null) {

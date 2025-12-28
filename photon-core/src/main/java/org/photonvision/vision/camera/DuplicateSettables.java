@@ -20,6 +20,7 @@ package org.photonvision.vision.camera;
 import edu.wpi.first.cscore.VideoMode;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 /**
@@ -35,9 +36,6 @@ public class DuplicateSettables extends VisionSourceSettables {
     public DuplicateSettables(CameraConfiguration config, VisionSourceSettables sourceSettables) {
         super(config);
         this.sourceSettables = sourceSettables;
-
-        // Sync our cached properties from source
-        this.frameStaticProperties = sourceSettables.getFrameStaticProperties();
     }
 
     // All setters log warnings and do nothing
@@ -128,12 +126,20 @@ public class DuplicateSettables extends VisionSourceSettables {
     }
 
     /**
-     * Override to sync frame static properties from source instead of calculating. Duplicate cameras
-     * always use the same properties as their source.
+     * Always delegate to the source for frame static properties. This ensures duplicates always see
+     * the current properties even if the source camera connects after the duplicate is created.
+     */
+    @Override
+    public FrameStaticProperties getFrameStaticProperties() {
+        return sourceSettables.getFrameStaticProperties();
+    }
+
+    /**
+     * Override to do nothing since we always delegate to source. Duplicate cameras don't calculate
+     * their own frame static properties.
      */
     @Override
     protected void calculateFrameStaticProps() {
-        // Sync from source instead of calculating
-        this.frameStaticProperties = sourceSettables.getFrameStaticProperties();
+        // No-op: We always delegate to source via getFrameStaticProperties()
     }
 }

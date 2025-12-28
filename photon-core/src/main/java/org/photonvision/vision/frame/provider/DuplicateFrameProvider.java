@@ -17,105 +17,51 @@
 
 package org.photonvision.vision.frame.provider;
 
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameProvider;
-import org.photonvision.vision.frame.FrameThresholdType;
-import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipe.impl.HSVPipe;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.UsbCamera;
+import org.photonvision.vision.processes.VisionSourceSettables;
 
 /**
- * A {@link FrameProvider} that wraps another FrameProvider to share frames with a source camera.
- * This allows duplicate cameras to process the same frames through different pipelines without
- * duplicating frame acquisition.
+ * A {@link FrameProvider} that creates its own CvSink for a duplicate camera. This allows duplicate
+ * cameras to process frames from the same physical camera without thread-safety issues in cscore.
  *
- * <p>Frame acquisition is delegated to the source provider, but pre-processing (rotation,
- * threshold, HSV) is done independently for each duplicate based on its own pipeline settings.
+ * <p>Each duplicate creates its own CvSink manually (not using CameraServer.getVideo() which caches
+ * by camera name) to avoid conflicts. This ensures proper input/output stream handling.
  */
-public class DuplicateFrameProvider extends FrameProvider {
-    private final FrameProvider sourceFrameProvider;
-    private final String duplicateName;
-    private final Logger logger;
-
+public class DuplicateFrameProvider extends USBFrameProvider {
     /**
-     * Create a new DuplicateFrameProvider that wraps a source provider.
+     * Create a new DuplicateFrameProvider that creates its own CvSink.
      *
-     * @param sourceFrameProvider The source camera's frame provider to delegate to
+     * @param camera The source camera's UsbCamera object
+     * @param settables The settables for this duplicate camera (used for frame properties)
      * @param duplicateName The name of this duplicate camera for logging
      */
-    public DuplicateFrameProvider(FrameProvider sourceFrameProvider, String duplicateName) {
-        this.sourceFrameProvider = sourceFrameProvider;
-        this.duplicateName = duplicateName;
-        this.logger = new Logger(DuplicateFrameProvider.class, duplicateName, LogGroup.Camera);
+    public DuplicateFrameProvider(
+            UsbCamera camera, VisionSourceSettables settables, String duplicateName) {
+        super(camera, createDuplicateCvSink(camera, duplicateName), settables, () -> {}, duplicateName);
+
+        logger.info("Created duplicate frame provider with sink: DUPLICATE_" + duplicateName);
     }
 
-    /**
-     * Get the next frame from the source camera. Returns the same frame instance as the source. Each
-     * duplicate camera's pipeline will process the frame independently with its own settings.
-     */
-    @Override
-    public Frame get() {
-        return sourceFrameProvider.get();
-    }
-
-    @Override
-    public boolean isConnected() {
-        return sourceFrameProvider.isConnected();
-    }
-
-    @Override
-    public boolean checkCameraConnected() {
-        return sourceFrameProvider.checkCameraConnected();
-    }
-
-    @Override
-    public boolean hasConnected() {
-        return sourceFrameProvider.hasConnected();
+    /** Creates a unique CvSink for this duplicate camera to avoid CameraServer caching. */
+    private static CvSink createDuplicateCvSink(UsbCamera camera, String duplicateName) {
+        String sinkName = "DUPLICATE_" + duplicateName;
+        CvSink cvSink = new CvSink(sinkName);
+        cvSink.setSource(camera);
+        CameraServer.addServer(cvSink);
+        return cvSink;
     }
 
     @Override
     public String getName() {
-        return duplicateName;
+        return "DuplicateFrameProvider - " + cvSink.getName();
     }
 
-    /**
-     * Duplicate cameras cannot change the frame threshold type - this is controlled by the source
-     * camera. Pipeline processing settings (blur, decimate, etc.) are independent per duplicate.
-     */
-    @Override
-    public void requestFrameThresholdType(FrameThresholdType type) {
-        // No-op: Pre-processing is done by source, but pipeline settings are independent
-    }
-
-    /**
-     * Duplicate cameras cannot change the frame rotation - this is controlled by the source camera.
-     */
-    @Override
-    public void requestFrameRotation(ImageRotationMode rotationMode) {
-        // No-op: Pre-processing is done by source
-    }
-
-    /** Request frame copies for input/output. */
-    @Override
-    public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
-        sourceFrameProvider.requestFrameCopies(copyInput, copyOutput);
-    }
-
-    /** Duplicate cameras cannot change HSV settings - this is controlled by the source camera. */
-    @Override
-    public void requestHsvSettings(HSVPipe.HSVParams params) {
-        // No-op: Pre-processing is done by source
-    }
-
-    /**
-     * Release resources for this duplicate. Does NOT release the source provider as other cameras may
-     * still be using it.
-     */
     @Override
     public void release() {
-        // Do not release the source provider - only clean up our own resources
-        // Other VisionModules may still be using the source
-        logger.debug("Releasing duplicate frame provider for " + duplicateName);
+        logger.debug("Releasing duplicate frame provider: " + cvSink.getName());
+        CameraServer.removeServer(cvSink.getName());
+        cvSink.close();
     }
 }
