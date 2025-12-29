@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.wpilib.vision.camera.UsbCamera;
 
 public class ArduOV9782CameraSettables extends GenericUSBCameraSettables {
     public ArduOV9782CameraSettables(CameraConfiguration configuration, UsbCamera camera) {

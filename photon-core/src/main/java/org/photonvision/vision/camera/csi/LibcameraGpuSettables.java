@@ -17,10 +17,6 @@
 
 package org.photonvision.vision.camera.csi;
 
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.util.PixelFormat;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
@@ -28,6 +24,9 @@ import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource.FPSRatedVideoMode;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.math.util.Pair;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.VideoMode;
 
 public class LibcameraGpuSettables extends VisionSourceSettables {
     private FPSRatedVideoMode currentVideoMode;
@@ -142,7 +141,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // 80,000 uS seems like an exposure value that will be greater than ever needed while giving
         // enough control over exposure.
-        exposureRaw = MathUtil.clamp(exposureRaw, minExposure, maxExposure);
+        exposureRaw = Math.clamp(exposureRaw, minExposure, maxExposure);
 
         var success = LibCameraJNI.setExposure(r_ptr, (int) exposureRaw);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
@@ -164,7 +163,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // than ever needed) from 0 to 100 (UI values).
         var success =
                 LibCameraJNI.setAnalogGain(
-                        r_ptr, MathUtil.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
+                        r_ptr, Math.clamp(MathUtils.map(gain, 0.0, 100.0, 1.0, 10.0), 1.0, 10.0));
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera gain");
     }
 

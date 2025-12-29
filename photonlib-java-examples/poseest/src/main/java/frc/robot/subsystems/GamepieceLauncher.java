@@ -24,14 +24,13 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.hardware.motor.PWMSparkMax;
+import org.wpilib.math.system.plant.DCMotor;
+import org.wpilib.math.system.plant.LinearSystemId;
+import org.wpilib.math.util.Units;
+import org.wpilib.simulation.FlywheelSim;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.system.RobotController;
 
 public class GamepieceLauncher {
     private final PWMSparkMax motor;
@@ -52,7 +51,7 @@ public class GamepieceLauncher {
     public void periodic() {
         double maxRPM = Units.radiansPerSecondToRotationsPerMinute(DCMotor.getFalcon500(1).freeSpeed);
         curMotorCmd = curDesSpd / maxRPM;
-        curMotorCmd = MathUtil.clamp(curMotorCmd, 0.0, 1.0);
+        curMotorCmd = Math.clamp(curMotorCmd, 0.0, 1.0);
         motor.set(curMotorCmd);
 
         SmartDashboard.putNumber("GPLauncher Des Spd (RPM)", curDesSpd);

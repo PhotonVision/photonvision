@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <frc/OnboardIMU.h>
-#include <frc/estimator/SwerveDrivePoseEstimator.h>
-#include <frc/kinematics/SwerveDriveKinematics.h>
+#include <wpi/hardware/imu/OnboardIMU.hpp>
+#include <wpi/math/estimator/SwerveDrivePoseEstimator.hpp>
+#include <wpi/math/kinematics/wpi/math/kinematics/SwerveDriveKinematics.hpppp>
 
 #include "SwerveDriveSim.h"
 #include "SwerveModule.h"
@@ -35,26 +35,26 @@ class SwerveDrive {
  public:
   SwerveDrive();
   void Periodic();
-  void Drive(units::meters_per_second_t vx, units::meters_per_second_t vy,
-             units::radians_per_second_t omega);
-  void SetChassisSpeeds(const frc::ChassisSpeeds& targetChassisSpeeds,
+  void Drive(wpi::units::meters_per_second_t vx, wpi::units::meters_per_second_t vy,
+             wpi::units::radians_per_second_t omega);
+  void SetChassisSpeeds(const wpi::math::ChassisSpeeds& targetChassisSpeeds,
                         bool openLoop, bool steerInPlace);
   void SetModuleStates(
-      const std::array<frc::SwerveModuleState, 4>& desiredStates, bool openLoop,
-      bool steerInPlace);
+      const std::array<wpi::math::SwerveModuleState, 4>& desiredStates,
+      bool openLoop, bool steerInPlace);
   void Stop();
-  void ResetPose(const frc::Pose2d& pose, bool resetSimPose);
-  frc::Pose2d GetPose() const;
-  frc::Rotation2d GetHeading() const;
-  frc::Rotation2d GetGyroYaw() const;
-  frc::ChassisSpeeds GetChassisSpeeds() const;
-  std::array<frc::SwerveModuleState, 4> GetModuleStates() const;
-  std::array<frc::SwerveModulePosition, 4> GetModulePositions() const;
-  std::array<frc::Pose2d, 4> GetModulePoses() const;
+  void ResetPose(const wpi::math::Pose2d& pose, bool resetSimPose);
+  wpi::math::Pose2d GetPose() const;
+  wpi::math::Rotation2d GetHeading() const;
+  wpi::math::Rotation2d GetGyroYaw() const;
+  wpi::math::ChassisSpeeds GetChassisSpeeds() const;
+  std::array<wpi::math::SwerveModuleState, 4> GetModuleStates() const;
+  std::array<wpi::math::SwerveModulePosition, 4> GetModulePositions() const;
+  std::array<wpi::math::Pose2d, 4> GetModulePoses() const;
   void Log();
   void SimulationPeriodic();
-  frc::Pose2d GetSimPose() const;
-  units::ampere_t GetCurrentDraw() const;
+  wpi::math::Pose2d GetSimPose() const;
+  wpi::units::ampere_t GetCurrentDraw() const;
 
  private:
   std::array<SwerveModule, 4> swerveMods{
@@ -62,18 +62,18 @@ class SwerveDrive {
       SwerveModule{constants::Swerve::FR_CONSTANTS},
       SwerveModule{constants::Swerve::BL_CONSTANTS},
       SwerveModule{constants::Swerve::BR_CONSTANTS}};
-  frc::SwerveDriveKinematics<4> kinematics{
+  wpi::math::SwerveDriveKinematics<4> kinematics{
       swerveMods[0].GetModuleConstants().centerOffset,
       swerveMods[1].GetModuleConstants().centerOffset,
       swerveMods[2].GetModuleConstants().centerOffset,
       swerveMods[3].GetModuleConstants().centerOffset,
   };
-  frc::OnboardIMU gyro{MountOrientation::kFlat};
-  frc::SwerveDrivePoseEstimator<4> poseEstimator;
-  frc::ChassisSpeeds targetChassisSpeeds{};
+  wpi::OnboardIMU gyro{MountOrientation::kFlat};
+  wpi::math::SwerveDrivePoseEstimator<4> poseEstimator;
+  wpi::math::ChassisSpeeds targetChassisSpeeds{};
 
   // TODO(Jade) onboard imu doesn't have sim yet
-  //  frc::sim::ADXRS450_GyroSim gyroSim;
+  //  wpi::sim::ADXRS450_GyroSim gyroSim;
   SwerveDriveSim swerveDriveSim;
-  units::ampere_t totalCurrentDraw{0};
+  wpi::units::ampere_t totalCurrentDraw{0};
 };

@@ -26,14 +26,14 @@
 #include <vector>
 
 #include <fmt/ranges.h>
-#include <frc/smartdashboard/SmartDashboard.h>
 #include <gtest/gtest.h>
-#include <hal/HAL.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
-#include <networktables/NetworkTableInstance.h>
 #include <photon/PhotonCamera.h>
 #include <photon/simulation/PhotonCameraSim.h>
+#include <wpi/hal/HAL.h>
+#include <wpi/nt/NetworkTableInstance.hpp>
+#include <wpi/smartdashboard/SmartDashboard.hpp>
 
 TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;
@@ -60,10 +60,10 @@ TEST(TimeSyncProtocolTest, Smoketest) {
 }
 
 TEST(PhotonCameraTest, Alerts) {
-  using frc::SmartDashboard;
+  using wpi::SmartDashboard;
 
   // GIVEN a local-only NT instance
-  auto inst = nt::NetworkTableInstance::GetDefault();
+  auto inst = wpi::nt::NetworkTableInstance::GetDefault();
   inst.StopClient();
   inst.StopServer();
   inst.StartLocal();

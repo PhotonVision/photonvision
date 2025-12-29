@@ -17,10 +17,6 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
@@ -35,6 +31,10 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
@@ -177,7 +177,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         var offset = NetworkTablesManager.getInstance().getOffset();
 
-        // Transform the metadata timestamps from the local nt::Now timebase to the Time Sync Server's
+        // Transform the metadata timestamps from the local wpi::nt::Now timebase to the Time Sync
+        // Server's
         // timebase
         var simplified =
                 new PhotonPipelineResult(

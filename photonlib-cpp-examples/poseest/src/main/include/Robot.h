@@ -24,14 +24,14 @@
 
 #pragma once
 
-#include <frc/TimedRobot.h>
-#include <frc/XboxController.h>
+#include <wpi/driverstation/XboxController.hpp>
+#include <wpi/opmode/TimedRobot.hpp>
 
 #include "Vision.h"
 #include "subsystems/GamepieceLauncher.h"
 #include "subsystems/SwerveDrive.h"
 
-class Robot : public frc::TimedRobot {
+class Robot : public wpi::TimedRobot {
  public:
   void RobotInit() override;
   void RobotPeriodic() override;
@@ -51,10 +51,10 @@ class Robot : public frc::TimedRobot {
 
  private:
   SwerveDrive drivetrain{};
-  Vision vision{[=, this](frc::Pose2d pose, units::second_t timestamp,
+  Vision vision{[=, this](wpi::math::Pose2d pose, wpi::units::second_t timestamp,
                           Eigen::Matrix<double, 3, 1> stddevs) {
     drivetrain.AddVisionMeasurement(pose, timestamp, stddevs);
   }};
   GamepieceLauncher launcher{};
-  frc::XboxController controller{0};
+  wpi::XboxController controller{0};
 };

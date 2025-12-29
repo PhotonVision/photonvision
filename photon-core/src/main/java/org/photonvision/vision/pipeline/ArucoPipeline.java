@@ -17,11 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
-import edu.wpi.first.math.geometry.CoordinateSystem;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +40,11 @@ import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipePa
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
+import org.wpilib.math.geometry.CoordinateSystem;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.util.Units;
+import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
 
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private static final Logger logger = new Logger(ArucoPipeline.class, LogGroup.VisionModule);

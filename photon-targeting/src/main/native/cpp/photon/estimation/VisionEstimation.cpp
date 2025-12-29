@@ -25,15 +25,15 @@
 namespace photon {
 namespace VisionEstimation {
 
-std::vector<frc::AprilTag> GetVisibleLayoutTags(
+std::vector<wpi::apriltag::AprilTag> GetVisibleLayoutTags(
     const std::vector<PhotonTrackedTarget>& visTags,
-    const frc::AprilTagFieldLayout& layout) {
-  std::vector<frc::AprilTag> retVal{};
+    const wpi::apriltag::AprilTagFieldLayout& layout) {
+  std::vector<wpi::apriltag::AprilTag> retVal{};
   for (const auto& tag : visTags) {
     int id = tag.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      retVal.emplace_back(frc::AprilTag{id, maybePose.value()});
+      retVal.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
     }
   }
   return retVal;
@@ -43,19 +43,20 @@ std::optional<PnpResult> EstimateCamPosePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<PhotonTrackedTarget>& visTags,
-    const frc::AprilTagFieldLayout& layout, const TargetModel& tagModel) {
+    const wpi::apriltag::AprilTagFieldLayout& layout,
+    const TargetModel& tagModel) {
   if (visTags.size() == 0) {
     return PnpResult();
   }
 
   std::vector<photon::TargetCorner> corners{};
-  std::vector<frc::AprilTag> knownTags{};
+  std::vector<wpi::apriltag::AprilTag> knownTags{};
 
   for (const auto& tgt : visTags) {
     int id = tgt.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      knownTags.emplace_back(frc::AprilTag{id, maybePose.value()});
+      knownTags.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
       auto currentCorners = tgt.GetDetectedCorners();
       corners.insert(corners.end(), currentCorners.begin(),
                      currentCorners.end());
@@ -73,22 +74,22 @@ std::optional<PnpResult> EstimateCamPosePNP(
     if (!camToTag) {
       return PnpResult{};
     }
-    frc::Pose3d bestPose =
+    wpi::math::Pose3d bestPose =
         knownTags[0].pose.TransformBy(camToTag->best.Inverse());
-    frc::Pose3d altPose{};
+    wpi::math::Pose3d altPose{};
     if (camToTag->ambiguity != 0) {
       altPose = knownTags[0].pose.TransformBy(camToTag->alt.Inverse());
     }
-    frc::Pose3d o{};
+    wpi::math::Pose3d o{};
     PnpResult result{};
-    result.best = frc::Transform3d{o, bestPose};
-    result.alt = frc::Transform3d{o, altPose};
+    result.best = wpi::math::Transform3d{o, bestPose};
+    result.alt = wpi::math::Transform3d{o, altPose};
     result.ambiguity = camToTag->ambiguity;
     result.bestReprojErr = camToTag->bestReprojErr;
     result.altReprojErr = camToTag->altReprojErr;
     return result;
   } else {
-    std::vector<frc::Translation3d> objectTrls{};
+    std::vector<wpi::math::Translation3d> objectTrls{};
     for (const auto& tag : knownTags) {
       auto verts = tagModel.GetFieldVertices(tag.pose);
       objectTrls.insert(objectTrls.end(), verts.begin(), verts.end());
@@ -109,21 +110,23 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const std::vector<photon::PhotonTrackedTarget>& visTags,
-    const frc::Transform3d& robot2Camera, const frc::Pose3d& robotPoseSeed,
-    const frc::AprilTagFieldLayout& layout, const photon::TargetModel& tagModel,
-    bool headingFree, frc::Rotation2d gyroTheta, double gyroErrorScaleFac) {
+    const wpi::math::Transform3d& robot2Camera,
+    const wpi::math::Pose3d& robotPoseSeed,
+    const wpi::apriltag::AprilTagFieldLayout& layout,
+    const photon::TargetModel& tagModel, bool headingFree,
+    wpi::math::Rotation2d gyroTheta, double gyroErrorScaleFac) {
   if (visTags.size() == 0) {
     return photon::PnpResult();
   }
 
   std::vector<photon::TargetCorner> corners{};
-  std::vector<frc::AprilTag> knownTags{};
+  std::vector<wpi::apriltag::AprilTag> knownTags{};
 
   for (const auto& tgt : visTags) {
     int id = tgt.GetFiducialId();
     auto maybePose = layout.GetTagPose(id);
     if (maybePose) {
-      knownTags.emplace_back(frc::AprilTag{id, maybePose.value()});
+      knownTags.emplace_back(wpi::apriltag::AprilTag{id, maybePose.value()});
       auto currentCorners = tgt.GetDetectedCorners();
       corners.insert(corners.end(), currentCorners.begin(),
                      currentCorners.end());
@@ -158,7 +161,7 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     pointObservations(1, i) = points[i].y;
   }
 
-  std::vector<frc::Translation3d> objectTrls{};
+  std::vector<wpi::math::Translation3d> objectTrls{};
   for (const auto& tag : knownTags) {
     auto verts = tagModel.GetFieldVertices(tag.pose);
     objectTrls.insert(objectTrls.end(), verts.begin(), verts.end());
@@ -175,7 +178,7 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     field2points(3, i) = 1;
   }
 
-  frc::Pose2d guess2 = robotPoseSeed.ToPose2d();
+  wpi::math::Pose2d guess2 = robotPoseSeed.ToPose2d();
 
   constrained_solvepnp::CameraCalibration cameraCal{
       cameraMatrix(0, 0),
@@ -188,7 +191,7 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
       guess2.X().value(), guess2.Y().value(),
       guess2.Rotation().Radians().value()};
 
-  wpi::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
+  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
       constrained_solvepnp::do_optimization(
           headingFree, knownTags.size(), cameraCal, robotToCamera, guessMat,
           field2points, pointObservations, gyroTheta.Radians().value(),
@@ -199,9 +202,9 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
   } else {
     photon::PnpResult res{};
 
-    res.best = frc::Transform3d{frc::Transform2d{
-        units::meter_t{result.value()[0]}, units::meter_t{result.value()[1]},
-        frc::Rotation2d{units::radian_t{result.value()[2]}}}};
+    res.best = wpi::math::Transform3d{wpi::math::Transform2d{
+        wpi::units::meter_t{result.value()[0]}, wpi::units::meter_t{result.value()[1]},
+        wpi::math::Rotation2d{wpi::units::radian_t{result.value()[2]}}}};
 
     return res;
   }
