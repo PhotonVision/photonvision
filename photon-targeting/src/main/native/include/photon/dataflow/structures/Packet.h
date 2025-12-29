@@ -24,7 +24,7 @@
 #include <string_view>
 #include <vector>
 
-#include <wpi/struct/Struct.h>
+#include <wpi/util/struct/Struct.hpp>
 
 namespace photon {
 
@@ -90,14 +90,14 @@ class Packet {
   inline size_t GetDataSize() const { return packetData.size(); }
 
   template <typename T, typename... I>
-    requires wpi::StructSerializable<T, I...>
+    requires wpi::util::StructSerializable<T, I...>
   inline void Pack(const T& value) {
     // as WPI struct stuff assumes constant data length - reserve at least
     // enough new space for our new member
-    size_t newWritePos = writePos + wpi::GetStructSize<T, I...>();
+    size_t newWritePos = writePos + wpi::util::GetStructSize<T, I...>();
     packetData.resize(newWritePos);
 
-    wpi::PackStruct(
+    wpi::util::PackStruct(
         std::span<uint8_t>{packetData.begin() + writePos, packetData.end()},
         value);
 
@@ -111,12 +111,12 @@ class Packet {
   }
 
   template <typename T, typename... I>
-    requires wpi::StructSerializable<T, I...>
+    requires wpi::util::StructSerializable<T, I...>
   inline T Unpack() {
     // Unpack this member, starting at readPos
-    T ret = wpi::UnpackStruct<T, I...>(
+    T ret = wpi::util::UnpackStruct<T, I...>(
         std::span<uint8_t>{packetData.begin() + readPos, packetData.end()});
-    readPos += wpi::GetStructSize<T, I...>();
+    readPos += wpi::util::GetStructSize<T, I...>();
     return ret;
   }
 

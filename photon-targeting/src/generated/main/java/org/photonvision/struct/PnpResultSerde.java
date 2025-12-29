@@ -35,7 +35,7 @@ import org.photonvision.targeting.*;
 
 // WPILib imports (if any)
 import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Transform3d;
 
 /**
  * Auto-generated serialization/deserialization helper for PnpResult

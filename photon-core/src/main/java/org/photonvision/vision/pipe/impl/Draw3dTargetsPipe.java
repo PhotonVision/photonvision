@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.Pair;
 import java.awt.*;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
@@ -33,6 +32,7 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.util.Pair;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {

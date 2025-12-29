@@ -17,11 +17,12 @@
 
 package org.photonvision.jni;
 
-import edu.wpi.first.networktables.NetworkTablesJNI;
+import org.wpilib.networktables.NetworkTablesJNI;
 
 /**
- * Send ping-pongs to estimate server time, relative to nt::Now. The underlying implementation does
- * technically allow us to provide a different source, but all photon code assumes nt::Now is used
+ * Send ping-pongs to estimate server time, relative to wpi::nt::Now. The underlying implementation
+ * does technically allow us to provide a different source, but all photon code assumes wpi::nt::Now
+ * is used
  */
 public class TimeSyncClient {
     public static class PingMetadata {
@@ -112,8 +113,8 @@ public class TimeSyncClient {
     }
 
     /**
-     * This offset, when added to the current value of nt::now(), yields the timestamp in the timebase
-     * of the TSP Server
+     * This offset, when added to the current value of wpi::nt::now(), yields the timestamp in the
+     * timebase of the TSP Server
      *
      * @return
      */

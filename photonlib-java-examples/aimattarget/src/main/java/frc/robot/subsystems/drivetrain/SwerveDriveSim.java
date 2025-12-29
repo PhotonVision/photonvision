@@ -24,27 +24,26 @@
 
 package frc.robot.subsystems.drivetrain;
 
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.math.system.Discretization;
-import edu.wpi.first.math.system.LinearSystem;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.wpilib.math.controller.SimpleMotorFeedforward;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.math.kinematics.SwerveModulePosition;
+import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N2;
+import org.wpilib.math.system.Discretization;
+import org.wpilib.math.system.LinearSystem;
+import org.wpilib.math.system.plant.DCMotor;
+import org.wpilib.math.util.Nat;
+import org.wpilib.system.RobotController;
 
 /**
  * This class attempts to simulate the dynamics of a swerve drive. In simulationPeriodic, users
@@ -55,8 +54,8 @@ import java.util.Random;
  * <p>In this class, distances are expressed with meters, angles with radians, and inputs with
  * voltages.
  *
- * <p>Teams can use {@link edu.wpi.first.wpilibj.smartdashboard.Field2d} to visualize their robot on
- * the Sim GUI's field.
+ * <p>Teams can use {@link org.wpilib.smartdashboard.Field2d} to visualize their robot on the Sim
+ * GUI's field.
  */
 public class SwerveDriveSim {
     private final LinearSystem<N2, N1, N2> drivePlant;
@@ -201,7 +200,7 @@ public class SwerveDriveSim {
         final double battVoltage = RobotController.getBatteryVoltage();
         for (int i = 0; i < driveInputs.length; i++) {
             double input = inputs[i];
-            driveInputs[i] = MathUtil.clamp(input, -battVoltage, battVoltage);
+            driveInputs[i] = Math.clamp(input, -battVoltage, battVoltage);
         }
     }
 
@@ -214,7 +213,7 @@ public class SwerveDriveSim {
         final double battVoltage = RobotController.getBatteryVoltage();
         for (int i = 0; i < steerInputs.length; i++) {
             double input = inputs[i];
-            steerInputs[i] = MathUtil.clamp(input, -battVoltage, battVoltage);
+            steerInputs[i] = Math.clamp(input, -battVoltage, battVoltage);
         }
     }
 
@@ -236,7 +235,7 @@ public class SwerveDriveSim {
         // input required to make next state vel == 0
         double inputToStop = nextStateVel / -discB.get(1, 0);
         // ks effect on system velocity
-        double ksSystemEffect = MathUtil.clamp(inputToStop, -ks, ks);
+        double ksSystemEffect = Math.clamp(inputToStop, -ks, ks);
 
         // after ks system effect:
         nextStateVel += discB.get(1, 0) * ksSystemEffect;
@@ -248,13 +247,13 @@ public class SwerveDriveSim {
         // system velocity was reduced to 0, resist any input
         if (Math.abs(ksSystemEffect) < ks) {
             double absInput = Math.abs(input);
-            ksInputEffect = -MathUtil.clamp(ks * inputSign, -absInput, absInput);
+            ksInputEffect = -Math.clamp(ks * inputSign, -absInput, absInput);
         }
         // non-zero system velocity, but input causes velocity sign change. Resist input after sign
         // change
         else if ((input * signToStop) > (inputToStop * signToStop)) {
             double absInput = Math.abs(input - inputToStop);
-            ksInputEffect = -MathUtil.clamp(ks * inputSign, -absInput, absInput);
+            ksInputEffect = -Math.clamp(ks * inputSign, -absInput, absInput);
         }
 
         // calculate next x including static friction
@@ -446,8 +445,8 @@ public class SwerveDriveSim {
             DCMotor motor, double radiansPerSec, double inputVolts, double battVolts) {
         double effVolts = inputVolts - radiansPerSec / motor.Kv;
         // ignore regeneration
-        if (inputVolts >= 0) effVolts = MathUtil.clamp(effVolts, 0, inputVolts);
-        else effVolts = MathUtil.clamp(effVolts, inputVolts, 0);
+        if (inputVolts >= 0) effVolts = Math.clamp(effVolts, 0, inputVolts);
+        else effVolts = Math.clamp(effVolts, inputVolts, 0);
         // calculate battery current
         return (inputVolts / battVolts) * (effVolts / motor.R);
     }

@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.frame;
 
-import edu.wpi.first.cscore.VideoMode;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ImageRotationMode;
+import org.wpilib.vision.camera.VideoMode;
 
 /** Represents the properties of a frame. */
 public class FrameStaticProperties {
