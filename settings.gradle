@@ -3,3 +3,8 @@ include 'photon-core'
 include 'photon-server'
 include 'photon-lib'
 include 'photon-docs'
+
+// Include photon-apple only on macOS (requires Swift and Apple frameworks)
+if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+    include 'photon-apple'
+}

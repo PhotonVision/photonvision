@@ -59,6 +59,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.objects.ObjectDetector;
+import org.photonvision.vision.objects.AppleModel;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
 import org.photonvision.vision.processes.VisionSourceManager;
@@ -619,6 +620,9 @@ public class RequestHandler {
                 case LINUX_RK3588_64:
                     family = NeuralNetworkModelManager.Family.RKNN;
                     break;
+                case MACOS:
+                    family = NeuralNetworkModelManager.Family.APPLE;
+                    break;
                 default:
                     ctx.status(400);
                     ctx.result("The current platform does not support object detection models");
@@ -675,6 +679,7 @@ public class RequestHandler {
                             switch (family) {
                                 case RUBIK -> new RubikModel(modelProperties).load();
                                 case RKNN -> new RknnModel(modelProperties).load();
+                                case APPLE -> new AppleModel(modelProperties).load();
                             };
                 } catch (RuntimeException e) {
                     ctx.status(400);

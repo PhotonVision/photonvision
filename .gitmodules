@@ -1,0 +1,3 @@
+[submodule "photon-apple/swift-java"]
+	path = photon-apple/swift-java
+	url = https://github.com/swiftlang/swift-java.git

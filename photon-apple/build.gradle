@@ -1,0 +1,64 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(24)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java', '.build/plugins/outputs/photon-apple/AppleVisionLibrary/destination/JExtractSwiftPlugin/src/generated/java']
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+    // JUnit 5 for testing
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+
+    // SwiftKit dependencies from local Maven (published by Swift Package Manager)
+    // Use 'api' to expose these to consumers (photon-core needs AllocatingSwiftArena)
+    api 'org.swift.swiftkit:swiftkit-core:1.0-SNAPSHOT'
+    api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
+}
+
+test {
+    useJUnitPlatform()
+    // Skip tests by default (requires macOS and CoreML model)
+    enabled = project.hasProperty('runAppleTests')
+}
+
+// Task to build Swift library and generate Java bindings
+task buildSwift(type: Exec) {
+    commandLine 'swift', 'build', '-c', 'release'
+    workingDir projectDir
+}
+
+// TODO: SwiftKit publishing is broken when parent gradle passes -x flags
+// Manual publish required: cd photon-apple/swift-java && ./gradlew publishToMavenLocal
+// This needs to be run once after cloning or when swift-java is updated
+
+// Package Swift dylibs into JAR resources for portable deployment
+processResources {
+    dependsOn buildSwift
+
+    // Package Swift dylibs from .build/release into JAR at native/macos/
+    def buildDir = "${projectDir}/.build/release"
+
+    from(buildDir) {
+        include '*.dylib'
+        into 'native/macos'
+    }
+}
+
+// Ensure Swift library is built before compiling Java
+tasks.compileJava.dependsOn(buildSwift)

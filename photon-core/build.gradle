@@ -68,6 +68,11 @@ dependencies {
         }
     }
 
+    // Include photon-apple only on macOS (for Apple object detection)
+    if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+        implementation project(':photon-apple')
+    }
+
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
 }
 
@@ -82,3 +87,8 @@ task writeCurrentVersion {
 sourceSets.main.java.srcDir "${buildDir}/generated/java/"
 
 compileJava.dependsOn writeCurrentVersion
+
+// Ensure photon-apple is built before photon-core on macOS
+if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+    compileJava.dependsOn ':photon-apple:compileJava'
+}

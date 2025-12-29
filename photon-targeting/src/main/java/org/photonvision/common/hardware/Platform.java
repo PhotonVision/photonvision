@@ -66,8 +66,8 @@ public enum Platform {
             "Linux ARM64", Platform::getLinuxDeviceTreeModel, false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
+    MACOS("Mac OS", Platform::getUnknownModel, false, OSType.MACOS, true),
     WINDOWS_32("Windows x86", Platform::getUnknownModel, false, OSType.WINDOWS, false),
-    MACOS("Mac OS", Platform::getUnknownModel, false, OSType.MACOS, false),
     LINUX_ARM32(
             "Linux ARM32", Platform::getUnknownModel, false, OSType.LINUX, false), // ODROID XU4, C1+
     UNKNOWN("Unsupported Platform", Platform::getUnknownModel, false, OSType.UNKNOWN, false);
