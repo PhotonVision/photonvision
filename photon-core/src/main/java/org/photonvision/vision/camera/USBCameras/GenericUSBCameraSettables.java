@@ -17,12 +17,6 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.cscore.VideoProperty;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.util.PixelFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +27,11 @@ import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.camera.VideoException;
+import org.wpilib.vision.camera.VideoMode;
+import org.wpilib.vision.camera.VideoProperty;
 
 public class GenericUSBCameraSettables extends VisionSourceSettables {
     // We need to remember the last exposure set when exiting
@@ -131,7 +130,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
             softSet("white_balance_automatic", 0);
 
-            int propVal = (int) MathUtil.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
+            int propVal = (int) Math.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
 
             logger.debug(
                     "Setting property "
@@ -230,7 +229,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             try {
                 if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
-                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) Math.clamp(exposureRaw, minExposure, maxExposure);
 
                 logger.debug(
                         "Setting property "

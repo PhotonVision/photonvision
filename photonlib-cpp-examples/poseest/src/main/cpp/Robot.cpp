@@ -24,8 +24,8 @@
 
 #include "Robot.h"
 
-#include <frc/simulation/BatterySim.h>
-#include <frc/simulation/RoboRioSim.h>
+#include <wpi/simulation/BatterySim.hpp>
+#include <wpi/simulation/RoboRioSim.hpp>
 
 void Robot::RobotInit() {}
 
@@ -50,7 +50,7 @@ void Robot::AutonomousPeriodic() {}
 void Robot::AutonomousExit() {}
 
 void Robot::TeleopInit() {
-  frc::Pose2d pose{1_m, 1_m, frc::Rotation2d{}};
+  wpi::math::Pose2d pose{1_m, 1_m, wpi::math::Rotation2d{}};
   drivetrain.ResetPose(pose, true);
 }
 
@@ -68,7 +68,7 @@ void Robot::TeleopPeriodic() {
 
   // Calculate whether the gamepiece launcher runs based on our global pose
   // estimate.
-  frc::Pose2d curPose = drivetrain.GetPose();
+  wpi::math::Pose2d curPose = drivetrain.GetPose();
   bool shouldRun = (curPose.Y() > 2.0_m &&
                     curPose.X() < 4.0_m);  // Close enough to blue speaker
   launcher.setRunning(shouldRun);
@@ -87,20 +87,20 @@ void Robot::SimulationPeriodic() {
   drivetrain.SimulationPeriodic();
   vision.SimPeriodic(drivetrain.GetSimPose());
 
-  frc::Field2d& debugField = vision.GetSimDebugField();
+  wpi::Field2d& debugField = vision.GetSimDebugField();
   debugField.GetObject("EstimatedRobot")->SetPose(drivetrain.GetPose());
   debugField.GetObject("EstimatedRobotModules")
       ->SetPoses(drivetrain.GetModulePoses());
 
-  units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();
-  units::volt_t loadedBattVolts =
-      frc::sim::BatterySim::Calculate({totalCurrent});
+  wpi::units::ampere_t totalCurrent = drivetrain.GetCurrentDraw();
+  wpi::units::volt_t loadedBattVolts =
+      wpi::sim::BatterySim::Calculate({totalCurrent});
 
   // Using max(0.1, voltage) here isn't a *physically correct* solution,
   // but it avoids problems with battery voltage measuring 0.
-  frc::sim::RoboRioSim::SetVInVoltage(units::math::max(0.1_V, loadedBattVolts));
+  wpi::sim::RoboRioSim::SetVInVoltage(wpi::units::math::max(0.1_V, loadedBattVolts));
 }
 
 #ifndef RUNNING_FRC_TESTS
-int main() { return frc::StartRobot<Robot>(); }
+int main() { return wpi::StartRobot<Robot>(); }
 #endif

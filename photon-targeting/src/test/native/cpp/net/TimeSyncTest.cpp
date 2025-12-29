@@ -16,10 +16,10 @@
  */
 
 #include <gtest/gtest.h>
-#include <hal/HAL.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
-#include <wpi/print.h>
+#include <wpi/hal/HAL.h>
+#include <wpi/util/print.hpp>
 
 TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;
@@ -34,7 +34,7 @@ TEST(TimeSyncProtocolTest, Smoketest) {
   for (int i = 0; i < 10; i++) {
     std::this_thread::sleep_for(100ms);
     TimeSyncClient::Metadata m = client.GetMetadata();
-    wpi::println("Offset={} rtt={}", m.offset, m.rtt2);
+    wpi::util::println("Offset={} rtt={}", m.offset, m.rtt2);
   }
 
   server.Stop();

@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import edu.wpi.first.cscore.VideoMode;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +39,7 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.wpilib.vision.camera.VideoMode;
 
 public class VisionModuleManagerTest {
     @BeforeAll

@@ -17,15 +17,15 @@
 
 #pragma once
 
-#include <wpi/print.h>
+#include <wpi/util/print.hpp>
 
-#define CHECK_PTR(ptr)                                               \
-  if (!ptr) {                                                        \
-    wpi::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
-    return;                                                          \
+#define CHECK_PTR(ptr)                                                     \
+  if (!ptr) {                                                              \
+    wpi::util::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return;                                                                \
   }
-#define CHECK_PTR_RETURN(ptr, default)                               \
-  if (!ptr) {                                                        \
-    wpi::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
-    return default;                                                  \
+#define CHECK_PTR_RETURN(ptr, default)                                     \
+  if (!ptr) {                                                              \
+    wpi::util::println("Got invalid pointer?? {}:{}", __FILE__, __LINE__); \
+    return default;                                                        \
   }

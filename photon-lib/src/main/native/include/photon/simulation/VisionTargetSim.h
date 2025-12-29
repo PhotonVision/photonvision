@@ -26,7 +26,7 @@
 
 #include <vector>
 
-#include <frc/geometry/Pose3d.h>
+#include <wpi/math/geometry/Pose3d.hpp>
 
 #include "photon/estimation/TargetModel.h"
 
@@ -42,7 +42,7 @@ class VisionTargetSim {
    * @param pose Pose3d of the tag in field-relative coordinates
    * @param model TargetModel which describes the geometry of the target
    */
-  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model)
+  VisionTargetSim(const wpi::math::Pose3d& pose, const TargetModel& model)
       : fiducialId(-1),
         objDetClassId(-1),
         objDetConf(-1),
@@ -57,7 +57,8 @@ class VisionTargetSim {
    * @param model TargetModel which describes the geometry of the target(tag)
    * @param id The ID of this fiducial tag
    */
-  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id)
+  VisionTargetSim(const wpi::math::Pose3d& pose, const TargetModel& model,
+                  int id)
       : fiducialId(id),
         objDetClassId(-1),
         objDetConf(-1),
@@ -79,7 +80,7 @@ class VisionTargetSim {
    * simulation will compute a confidence based on the area of the target in the
    * camera's field of view
    */
-  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model,
+  VisionTargetSim(const wpi::math::Pose3d& pose, const TargetModel& model,
                   int objDetClassId, float objDetConf)
       : fiducialId(-1),
         objDetClassId(objDetClassId),
@@ -92,7 +93,7 @@ class VisionTargetSim {
    *
    * @param newPose The pose in field-relative coordinates
    */
-  void SetPose(const frc::Pose3d& newPose) { pose = newPose; }
+  void SetPose(const wpi::math::Pose3d& newPose) { pose = newPose; }
 
   /**
    * Sets the model describing this target's geometry.
@@ -106,7 +107,7 @@ class VisionTargetSim {
    *
    * @return The pose in field-relative coordinates
    */
-  frc::Pose3d GetPose() const { return pose; }
+  wpi::math::Pose3d GetPose() const { return pose; }
 
   /**
    * Returns the model describing this target's geometry.
@@ -142,7 +143,7 @@ class VisionTargetSim {
    * This target's vertices offset from its field pose.
    * @return A vector of Translation3d representing the vertices of the target
    */
-  std::vector<frc::Translation3d> GetFieldVertices() const {
+  std::vector<wpi::math::Translation3d> GetFieldVertices() const {
     return model.GetFieldVertices(pose);
   }
 
@@ -151,18 +152,18 @@ class VisionTargetSim {
   }
 
   bool operator==(const VisionTargetSim& other) const {
-    return units::math::abs(pose.Translation().X() -
-                            other.GetPose().Translation().X()) < 1_in &&
-           units::math::abs(pose.Translation().Y() -
-                            other.GetPose().Translation().Y()) < 1_in &&
-           units::math::abs(pose.Translation().Z() -
-                            other.GetPose().Translation().Z()) < 1_in &&
-           units::math::abs(pose.Rotation().X() -
-                            other.GetPose().Rotation().X()) < 1_deg &&
-           units::math::abs(pose.Rotation().Y() -
-                            other.GetPose().Rotation().Y()) < 1_deg &&
-           units::math::abs(pose.Rotation().Z() -
-                            other.GetPose().Rotation().Z()) < 1_deg &&
+    return wpi::units::math::abs(pose.Translation().X() -
+                                 other.GetPose().Translation().X()) < 1_in &&
+           wpi::units::math::abs(pose.Translation().Y() -
+                                 other.GetPose().Translation().Y()) < 1_in &&
+           wpi::units::math::abs(pose.Translation().Z() -
+                                 other.GetPose().Translation().Z()) < 1_in &&
+           wpi::units::math::abs(pose.Rotation().X() -
+                                 other.GetPose().Rotation().X()) < 1_deg &&
+           wpi::units::math::abs(pose.Rotation().Y() -
+                                 other.GetPose().Rotation().Y()) < 1_deg &&
+           wpi::units::math::abs(pose.Rotation().Z() -
+                                 other.GetPose().Rotation().Z()) < 1_deg &&
            model.GetIsPlanar() == other.GetModel().GetIsPlanar();
   }
 
@@ -170,7 +171,7 @@ class VisionTargetSim {
   int fiducialId;
   int objDetClassId;
   float objDetConf;
-  frc::Pose3d pose;
+  wpi::math::Pose3d pose;
   TargetModel model;
 };
 }  // namespace photon

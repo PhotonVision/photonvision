@@ -17,9 +17,6 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -37,6 +34,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.ProtobufPublisher;
+import org.wpilib.vision.camera.CameraServerJNI;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;

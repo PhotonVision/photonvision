@@ -17,11 +17,11 @@
 
 package org.photonvision.common.configuration;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import org.photonvision.vision.processes.VisionSource;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 public class PhotonConfiguration {
     private final HardwareConfig hardwareConfig;

@@ -17,12 +17,12 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.PnpResultSerde;
 import org.photonvision.targeting.proto.PNPResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /**
  * The best estimated transformation from solvePnP, and possibly an alternate transformation

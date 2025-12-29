@@ -26,25 +26,26 @@
 
 #include <numbers>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/apriltag/AprilTagFields.h>
-#include <frc/controller/SimpleMotorFeedforward.h>
-#include <frc/geometry/Transform3d.h>
-#include <frc/geometry/Translation2d.h>
-#include <units/acceleration.h>
-#include <units/angular_acceleration.h>
-#include <units/angular_velocity.h>
-#include <units/length.h>
-#include <units/velocity.h>
+#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/apriltag/AprilTagFields.hpp>
+#include <wpi/math/controller/SimpleMotorFeedforward.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
+#include <wpi/math/geometry/Translation2d.hpp>
+#include <wpi/units/acceleration.hpp>
+#include <wpi/units/angular_acceleration.hpp>
+#include <wpi/units/angular_velocity.hpp>
+#include <wpi/units/length.hpp>
+#include <wpi/units/velocity.hpp>
 
 namespace constants {
 namespace Vision {
 inline constexpr std::string_view kCameraName{"YOUR CAMERA NAME"};
-inline const frc::Transform3d kRobotToCam{
-    frc::Translation3d{0.5_m, 0.0_m, 0.5_m},
-    frc::Rotation3d{0_rad, -30_deg, 0_rad}};
-inline const frc::AprilTagFieldLayout kTagLayout{
-    frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)};
+inline const wpi::math::Transform3d kRobotToCam{
+    wpi::math::Translation3d{0.5_m, 0.0_m, 0.5_m},
+    wpi::math::Rotation3d{0_rad, -30_deg, 0_rad}};
+inline const wpi::apriltag::AprilTagFieldLayout kTagLayout{
+    wpi::apriltag::AprilTagFieldLayout::LoadField(
+        wpi::apriltag::AprilTagField::kDefaultField)};
 
 inline const Eigen::Matrix<double, 3, 1> kSingleTagStdDevs{4, 4, 8};
 inline const Eigen::Matrix<double, 3, 1> kMultiTagStdDevs{0.5, 0.5, 1};
@@ -52,23 +53,23 @@ inline const Eigen::Matrix<double, 3, 1> kMultiTagStdDevs{0.5, 0.5, 1};
 namespace Swerve {
 using namespace units;
 
-inline constexpr units::meter_t kTrackWidth{18.5_in};
-inline constexpr units::meter_t kTrackLength{18.5_in};
-inline constexpr units::meter_t kRobotWidth{25_in + 3.25_in * 2};
-inline constexpr units::meter_t kRobotLength{25_in + 3.25_in * 2};
-inline constexpr units::meters_per_second_t kMaxLinearSpeed{15.5_fps};
-inline constexpr units::radians_per_second_t kMaxAngularSpeed{720_deg_per_s};
-inline constexpr units::meter_t kWheelDiameter{4_in};
-inline constexpr units::meter_t kWheelCircumference{kWheelDiameter *
+inline constexpr wpi::units::meter_t kTrackWidth{18.5_in};
+inline constexpr wpi::units::meter_t kTrackLength{18.5_in};
+inline constexpr wpi::units::meter_t kRobotWidth{25_in + 3.25_in * 2};
+inline constexpr wpi::units::meter_t kRobotLength{25_in + 3.25_in * 2};
+inline constexpr wpi::units::meters_per_second_t kMaxLinearSpeed{15.5_fps};
+inline constexpr wpi::units::radians_per_second_t kMaxAngularSpeed{720_deg_per_s};
+inline constexpr wpi::units::meter_t kWheelDiameter{4_in};
+inline constexpr wpi::units::meter_t kWheelCircumference{kWheelDiameter *
                                                     std::numbers::pi};
 
 inline constexpr double kDriveGearRatio = 6.75;
 inline constexpr double kSteerGearRatio = 12.8;
 
-inline constexpr units::meter_t kDriveDistPerPulse =
+inline constexpr wpi::units::meter_t kDriveDistPerPulse =
     kWheelCircumference / 1024.0 / kDriveGearRatio;
-inline constexpr units::radian_t kSteerRadPerPulse =
-    units::radian_t{2 * std::numbers::pi} / 1024.0;
+inline constexpr wpi::units::radian_t kSteerRadPerPulse =
+    wpi::units::radian_t{2 * std::numbers::pi} / 1024.0;
 
 inline constexpr double kDriveKP = 1.0;
 inline constexpr double kDriveKI = 0.0;
@@ -80,10 +81,10 @@ inline constexpr double kSteerKD = 0.25;
 
 using namespace units;
 
-inline const frc::SimpleMotorFeedforward<units::meters> kDriveFF{
+inline const wpi::math::SimpleMotorFeedforward<wpi::units::meters> kDriveFF{
     0.25_V, 2.5_V / 1_mps, 0.3_V / 1_mps_sq};
 
-inline const frc::SimpleMotorFeedforward<units::radians> kSteerFF{
+inline const wpi::math::SimpleMotorFeedforward<wpi::units::radians> kSteerFF{
     0.5_V, 0.25_V / 1_rad_per_s, 0.01_V / 1_rad_per_s_sq};
 
 struct ModuleConstants {
@@ -96,12 +97,12 @@ struct ModuleConstants {
   const int steerEncoderA;
   const int steerEncoderB;
   const double angleOffset;
-  const frc::Translation2d centerOffset;
+  const wpi::math::Translation2d centerOffset;
 
   ModuleConstants(int moduleNum, int driveMotorId, int driveEncoderA,
                   int driveEncoderB, int steerMotorId, int steerEncoderA,
-                  int steerEncoderB, double angleOffset, units::meter_t xOffset,
-                  units::meter_t yOffset)
+                  int steerEncoderB, double angleOffset, wpi::units::meter_t xOffset,
+                  wpi::units::meter_t yOffset)
       : moduleNum(moduleNum),
         driveMotorId(driveMotorId),
         driveEncoderA(driveEncoderA),
@@ -110,7 +111,7 @@ struct ModuleConstants {
         steerEncoderA(steerEncoderA),
         steerEncoderB(steerEncoderB),
         angleOffset(angleOffset),
-        centerOffset(frc::Translation2d{xOffset, yOffset}) {}
+        centerOffset(wpi::math::Translation2d{xOffset, yOffset}) {}
 };
 
 inline const ModuleConstants FL_CONSTANTS{

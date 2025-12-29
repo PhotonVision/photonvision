@@ -19,13 +19,13 @@ package org.photonvision.targeting.proto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.photonvision.targeting.*;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
 
 public class PhotonPipelineResultProtoTest {
     @Test

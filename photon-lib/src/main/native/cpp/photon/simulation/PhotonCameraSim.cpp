@@ -29,8 +29,8 @@
 #include <utility>
 #include <vector>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/apriltag/AprilTagFields.h>
+#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/apriltag/AprilTagFields.hpp>
 
 #include "photon/estimation/CameraTargetRelation.h"
 #include "photon/estimation/RotTrlTransform3d.h"
@@ -40,19 +40,19 @@
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
     : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
-                      frc::AprilTagFieldLayout::LoadField(
-                          frc::AprilTagField::kDefaultField)) {}
+                      wpi::apriltag::AprilTagFieldLayout::LoadField(
+                          wpi::apriltag::AprilTagField::kDefaultField)) {}
 
-PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
-                                 const SimCameraProperties& props,
-                                 const frc::AprilTagFieldLayout& tagLayout)
+PhotonCameraSim::PhotonCameraSim(
+    PhotonCamera* camera, const SimCameraProperties& props,
+    const wpi::apriltag::AprilTagFieldLayout& tagLayout)
     : prop{props}, cam{camera}, tagLayout{tagLayout} {
   SetMinTargetAreaPixels(kDefaultMinAreaPx);
   videoSimRaw =
-      frc::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
+      wpi::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
                                   prop.GetResWidth(), prop.GetResHeight());
-  videoSimRaw.SetPixelFormat(cs::VideoMode::PixelFormat::kGray);
-  videoSimProcessed = frc::CameraServer::PutVideo(
+  videoSimRaw.SetPixelFormat(wpi::cs::VideoMode::PixelFormat::kGray);
+  videoSimProcessed = wpi::CameraServer::PutVideo(
       std::string{camera->GetCameraName()} + "-processed", prop.GetResWidth(),
       prop.GetResHeight());
   ts.subTable = cam->GetCameraTable();
@@ -62,21 +62,21 @@ PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
                                  const SimCameraProperties& props,
                                  double minTargetAreaPercent,
-                                 units::meter_t maxSightRange)
+                                 wpi::units::meter_t maxSightRange)
     : PhotonCameraSim(camera, props) {
   this->minTargetAreaPercent = minTargetAreaPercent;
   this->maxSightRange = maxSightRange;
 }
 
-bool PhotonCameraSim::CanSeeTargetPose(const frc::Pose3d& camPose,
+bool PhotonCameraSim::CanSeeTargetPose(const wpi::math::Pose3d& camPose,
                                        const VisionTargetSim& target) {
   CameraTargetRelation rel{camPose, target.GetPose()};
-  return ((units::math::abs(rel.camToTargYaw.Degrees()) <
+  return ((wpi::units::math::abs(rel.camToTargYaw.Degrees()) <
            prop.GetHorizFOV().Degrees() / 2.0) &&
-          (units::math::abs(rel.camToTargPitch.Degrees()) <
+          (wpi::units::math::abs(rel.camToTargPitch.Degrees()) <
            prop.GetVertFOV().Degrees() / 2.0) &&
           (!target.GetModel().GetIsPlanar() ||
-           units::math::abs(rel.targToCamAngle.Degrees()) < 90_deg) &&
+           wpi::units::math::abs(rel.targToCamAngle.Degrees()) < 90_deg) &&
           (rel.camToTarg.Translation().Norm() <= maxSightRange));
 }
 bool PhotonCameraSim::CanSeeCorner(const std::vector<cv::Point2f>& points) {
@@ -89,13 +89,13 @@ bool PhotonCameraSim::CanSeeCorner(const std::vector<cv::Point2f>& points) {
   return true;
 }
 std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
-  uint64_t now = wpi::Now();
+  uint64_t now = wpi::util::Now();
   uint64_t timestamp{};
   int iter = 0;
   while (now >= nextNTEntryTime) {
     timestamp = nextNTEntryTime;
     uint64_t frameTime = prop.EstSecUntilNextFrame()
-                             .convert<units::microseconds>()
+                             .convert<wpi::units::microseconds>()
                              .to<uint64_t>();
     nextNTEntryTime += frameTime;
 
@@ -113,13 +113,13 @@ std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
   }
 }
 PhotonPipelineResult PhotonCameraSim::Process(
-    units::second_t latency, const frc::Pose3d& cameraPose,
+    wpi::units::second_t latency, const wpi::math::Pose3d& cameraPose,
     std::vector<VisionTargetSim> targets) {
   std::sort(targets.begin(), targets.end(),
             [cameraPose](const VisionTargetSim& t1, const VisionTargetSim& t2) {
-              units::meter_t dist1 =
+              wpi::units::meter_t dist1 =
                   t1.GetPose().Translation().Distance(cameraPose.Translation());
-              units::meter_t dist2 =
+              wpi::units::meter_t dist2 =
                   t2.GetPose().Translation().Distance(cameraPose.Translation());
               return dist1 > dist2;
             });
@@ -144,7 +144,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
       continue;
     }
 
-    std::vector<frc::Translation3d> fieldCorners = tgt.GetFieldVertices();
+    std::vector<wpi::math::Translation3d> fieldCorners = tgt.GetFieldVertices();
     if (tgt.GetModel().GetIsSpherical()) {
       TargetModel model = tgt.GetModel();
       fieldCorners = model.GetFieldVertices(TargetModel::GetOrientedPose(
@@ -186,11 +186,12 @@ PhotonPipelineResult PhotonCameraSim::Process(
           r = i;
         }
       }
-      cv::RotatedRect rect{
-          cv::Point2d{center.x, center.y},
-          cv::Size2d{imagePoints[r].x - lc.x,
-                     imagePoints[b].y - imagePoints[t].y},
-          units::radian_t{-angles[r]}.convert<units::degrees>().to<float>()};
+      cv::RotatedRect rect{cv::Point2d{center.x, center.y},
+                           cv::Size2d{imagePoints[r].x - lc.x,
+                                      imagePoints[b].y - imagePoints[t].y},
+                           wpi::units::radian_t{-angles[r]}
+                               .convert<wpi::units::degrees>()
+                               .to<float>()};
       std::vector<cv::Point2f> points{};
       rect.points(points);
 
@@ -210,7 +211,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
     minAreaRectPts.reserve(4);
     minAreaRect.points(minAreaRectPts);
     cv::Point2d centerPt = minAreaRect.center;
-    frc::Rotation3d centerRot = prop.GetPixelRot(centerPt);
+    wpi::math::Rotation3d centerRot = prop.GetPixelRot(centerPt);
     double areaPercent = prop.GetContourAreaPercent(noisyTargetCorners);
 
     if (!(CanSeeCorner(noisyTargetCorners) &&
@@ -250,12 +251,12 @@ PhotonPipelineResult PhotonCameraSim::Process(
     std::vector<TargetCorner> cornersDouble{cornersFloat.begin(),
                                             cornersFloat.end()};
     detectableTgts.emplace_back(
-        -centerRot.Z().convert<units::degrees>().to<double>(),
-        -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
-        centerRot.X().convert<units::degrees>().to<double>(),
+        -centerRot.Z().convert<wpi::units::degrees>().to<double>(),
+        -centerRot.Y().convert<wpi::units::degrees>().to<double>(), areaPercent,
+        centerRot.X().convert<wpi::units::degrees>().to<double>(),
         tgt.GetFiducialId(), classId, conf,
-        pnpSim ? pnpSim->best : frc::Transform3d{},
-        pnpSim ? pnpSim->alt : frc::Transform3d{},
+        pnpSim ? pnpSim->best : wpi::math::Transform3d{},
+        pnpSim ? pnpSim->alt : wpi::math::Transform3d{},
         pnpSim ? pnpSim->ambiguity : -1, smallVec, cornersDouble);
   }
 
@@ -288,7 +289,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
     videoSimRaw.PutFrame(videoSimFrameRaw);
   } else {
     videoSimRaw.SetConnectionStrategy(
-        cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
+        wpi::cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
   }
 
   if (videoSimProcEnabled) {
@@ -333,19 +334,19 @@ PhotonPipelineResult PhotonCameraSim::Process(
     videoSimProcessed.PutFrame(videoSimFrameProcessed);
   } else {
     videoSimProcessed.SetConnectionStrategy(
-        cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
+        wpi::cs::VideoSource::ConnectionStrategy::kConnectionForceClose);
   }
 
   std::optional<MultiTargetPNPResult> multiTagResults = std::nullopt;
 
-  std::vector<frc::AprilTag> visibleLayoutTags =
+  std::vector<wpi::apriltag::AprilTag> visibleLayoutTags =
       VisionEstimation::GetVisibleLayoutTags(detectableTgts, tagLayout);
   if (visibleLayoutTags.size() > 1) {
     std::vector<int16_t> usedIds{};
     usedIds.resize(visibleLayoutTags.size());
     std::transform(visibleLayoutTags.begin(), visibleLayoutTags.end(),
                    usedIds.begin(),
-                   [](const frc::AprilTag& tag) { return tag.ID; });
+                   [](const wpi::apriltag::AprilTag& tag) { return tag.ID; });
     std::sort(usedIds.begin(), usedIds.end());
     auto pnpResult = VisionEstimation::EstimateCamPosePNP(
         prop.GetIntrinsics(), prop.GetDistCoeffs(), detectableTgts, tagLayout,
@@ -357,17 +358,17 @@ PhotonPipelineResult PhotonCameraSim::Process(
 
   return PhotonPipelineResult{
       PhotonPipelineMetadata{heartbeatCounter, 0,
-                             units::microsecond_t{latency}.to<int64_t>(),
+                             wpi::units::microsecond_t{latency}.to<int64_t>(),
                              1000000},
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
-  SubmitProcessedFrame(result, wpi::Now());
+  SubmitProcessedFrame(result, wpi::util::Now());
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
                                            uint64_t ReceiveTimestamp) {
   ts.latencyMillisEntry.Set(
-      result.GetLatency().convert<units::milliseconds>().to<double>(),
+      result.GetLatency().convert<wpi::units::milliseconds>().to<double>(),
       ReceiveTimestamp);
 
   Packet newPacket{};
@@ -381,7 +382,7 @@ void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
     ts.targetPitchEntry.Set(0.0, ReceiveTimestamp);
     ts.targetYawEntry.Set(0.0, ReceiveTimestamp);
     ts.targetAreaEntry.Set(0.0, ReceiveTimestamp);
-    ts.targetPoseEntry.Set(frc::Transform3d{}, ReceiveTimestamp);
+    ts.targetPoseEntry.Set(wpi::math::Transform3d{}, ReceiveTimestamp);
     ts.targetSkewEntry.Set(0.0, ReceiveTimestamp);
   } else {
     PhotonTrackedTarget bestTarget = result.GetBestTarget();

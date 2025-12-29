@@ -18,13 +18,13 @@
 #include <string>
 
 #include <opencv2/core/mat.hpp>
-#include <wpi/jni_util.h>
+#include <wpi/util/jni_util.hpp>
 
-#include "cscore_raw.h"
 #include "org_photonvision_jni_CscoreExtras.h"
+#include "wpi/cs/cscore_raw.h"
 
 // from wpilib, licensed under the wpilib BSD license
-using namespace wpi::java;
+using namespace wpi::util::java;
 static JException videoEx;
 static const JExceptionInit exceptions[] = {
     {"edu/wpi/first/cscore/VideoException", &videoEx}};
@@ -115,11 +115,11 @@ Java_org_photonvision_jni_CscoreExtras_grabRawSinkFrameTimeoutLastTime
   (JNIEnv* env, jclass, jint sink, jlong framePtr, jdouble timeout,
    jlong lastFrameTimeout)
 {
-  auto* frame = reinterpret_cast<wpi::RawFrame*>(framePtr);
+  auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
   CS_Status status = 0;
 
   // fill frame with a copy of the latest frame from the Source
-  auto rv = cs::GrabSinkFrameTimeoutLastTime(
+  auto rv = wpi::cs::GrabSinkFrameTimeoutLastTime(
       static_cast<CS_Sink>(sink), *frame, timeout, lastFrameTimeout, &status);
   if (!CheckStatus(env, status)) {
     return 0;
@@ -137,7 +137,7 @@ JNIEXPORT jlong JNICALL
 Java_org_photonvision_jni_CscoreExtras_wrapRawFrame
   (JNIEnv*, jclass, jlong framePtr)
 {
-  auto* frame = reinterpret_cast<wpi::RawFrame*>(framePtr);
+  auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
 
   return reinterpret_cast<jlong>(new cv::Mat(frame->height, frame->width,
                                              GetCVFormat(frame->pixelFormat),
@@ -153,7 +153,7 @@ JNIEXPORT jint JNICALL
 Java_org_photonvision_jni_CscoreExtras_getTimestampSourceNative
   (JNIEnv*, jclass, jlong framePtr)
 {
-  auto* frame = reinterpret_cast<wpi::RawFrame*>(framePtr);
+  auto* frame = reinterpret_cast<wpi::util::RawFrame*>(framePtr);
   return frame->timestampSrc;
 }
 

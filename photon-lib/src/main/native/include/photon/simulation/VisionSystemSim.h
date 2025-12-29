@@ -29,11 +29,11 @@
 #include <utility>
 #include <vector>
 
-#include <frc/Timer.h>
-#include <frc/interpolation/TimeInterpolatableBuffer.h>
-#include <frc/smartdashboard/Field2d.h>
-#include <frc/smartdashboard/FieldObject2d.h>
-#include <frc/smartdashboard/SmartDashboard.h>
+#include <wpi/math/interpolation/TimeInterpolatableBuffer.hpp>
+#include <wpi/smartdashboard/Field2d.hpp>
+#include <wpi/smartdashboard/FieldObject2d.hpp>
+#include <wpi/smartdashboard/SmartDashboard.hpp>
+#include <wpi/system/Timer.hpp>
 
 #include "photon/simulation/PhotonCameraSim.h"
 
@@ -60,7 +60,7 @@ class VisionSystemSim {
    */
   explicit VisionSystemSim(std::string visionSystemName) {
     std::string tableName = "VisionSystemSim-" + visionSystemName;
-    frc::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
+    wpi::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
   }
 
   /** Get one of the simulated cameras. */
@@ -91,17 +91,18 @@ class VisionSystemSim {
    * @param robotToCamera The transform from the robot pose to the camera pose
    */
   void AddCamera(PhotonCameraSim* cameraSim,
-                 const frc::Transform3d& robotToCamera) {
+                 const wpi::math::Transform3d& robotToCamera) {
     auto found =
         camSimMap.find(std::string{cameraSim->GetCamera()->GetCameraName()});
     if (found == camSimMap.end()) {
       camSimMap[std::string{cameraSim->GetCamera()->GetCameraName()}] =
           cameraSim;
-      camTrfMap.insert(std::make_pair(
-          std::move(cameraSim),
-          frc::TimeInterpolatableBuffer<frc::Pose3d>{bufferLength}));
-      camTrfMap.at(cameraSim).AddSample(frc::Timer::GetFPGATimestamp(),
-                                        frc::Pose3d{} + robotToCamera);
+      camTrfMap.insert(
+          std::make_pair(std::move(cameraSim),
+                         wpi::math::TimeInterpolatableBuffer<wpi::math::Pose3d>{
+                             bufferLength}));
+      camTrfMap.at(cameraSim).AddSample(wpi::Timer::GetFPGATimestamp(),
+                                        wpi::math::Pose3d{} + robotToCamera);
     }
   }
 
@@ -135,8 +136,9 @@ class VisionSystemSim {
    * of
    * @return The transform of this camera, or an empty optional if it is invalid
    */
-  std::optional<frc::Transform3d> GetRobotToCamera(PhotonCameraSim* cameraSim) {
-    return GetRobotToCamera(cameraSim, frc::Timer::GetFPGATimestamp());
+  std::optional<wpi::math::Transform3d> GetRobotToCamera(
+      PhotonCameraSim* cameraSim) {
+    return GetRobotToCamera(cameraSim, wpi::Timer::GetFPGATimestamp());
   }
 
   /**
@@ -148,17 +150,17 @@ class VisionSystemSim {
    * @param time Timestamp of when the transform should be observed
    * @return The transform of this camera, or an empty optional if it is invalid
    */
-  std::optional<frc::Transform3d> GetRobotToCamera(PhotonCameraSim* cameraSim,
-                                                   units::second_t time) {
+  std::optional<wpi::math::Transform3d> GetRobotToCamera(
+      PhotonCameraSim* cameraSim, wpi::units::second_t time) {
     if (camTrfMap.find(cameraSim) != camTrfMap.end()) {
-      frc::TimeInterpolatableBuffer<frc::Pose3d> trfBuffer =
+      wpi::math::TimeInterpolatableBuffer<wpi::math::Pose3d> trfBuffer =
           camTrfMap.at(cameraSim);
-      std::optional<frc::Pose3d> sample = trfBuffer.Sample(time);
+      std::optional<wpi::math::Pose3d> sample = trfBuffer.Sample(time);
       if (!sample) {
         return std::nullopt;
       } else {
-        return std::make_optional(
-            frc::Transform3d{frc::Pose3d{}, sample.value_or(frc::Pose3d{})});
+        return std::make_optional(wpi::math::Transform3d{
+            wpi::math::Pose3d{}, sample.value_or(wpi::math::Pose3d{})});
       }
     } else {
       return std::nullopt;
@@ -172,8 +174,8 @@ class VisionSystemSim {
    * @param cameraSim The specific camera to get the field pose of
    * @return The pose of this camera, or an empty optional if it is invalid
    */
-  std::optional<frc::Pose3d> GetCameraPose(PhotonCameraSim* cameraSim) {
-    return GetCameraPose(cameraSim, frc::Timer::GetFPGATimestamp());
+  std::optional<wpi::math::Pose3d> GetCameraPose(PhotonCameraSim* cameraSim) {
+    return GetCameraPose(cameraSim, wpi::Timer::GetFPGATimestamp());
   }
 
   /**
@@ -184,8 +186,8 @@ class VisionSystemSim {
    * @param time Timestamp of when the pose should be observed
    * @return The pose of this camera, or an empty optional if it is invalid
    */
-  std::optional<frc::Pose3d> GetCameraPose(PhotonCameraSim* cameraSim,
-                                           units::second_t time) {
+  std::optional<wpi::math::Pose3d> GetCameraPose(PhotonCameraSim* cameraSim,
+                                                 wpi::units::second_t time) {
     auto robotToCamera = GetRobotToCamera(cameraSim, time);
     if (!robotToCamera) {
       return std::nullopt;
@@ -203,10 +205,10 @@ class VisionSystemSim {
    * @return If the cameraSim was valid and transform was adjusted
    */
   bool AdjustCamera(PhotonCameraSim* cameraSim,
-                    const frc::Transform3d& robotToCamera) {
+                    const wpi::math::Transform3d& robotToCamera) {
     if (camTrfMap.find(cameraSim) != camTrfMap.end()) {
-      camTrfMap.at(cameraSim).AddSample(frc::Timer::GetFPGATimestamp(),
-                                        frc::Pose3d{} + robotToCamera);
+      camTrfMap.at(cameraSim).AddSample(wpi::Timer::GetFPGATimestamp(),
+                                        wpi::math::Pose3d{} + robotToCamera);
       return true;
     } else {
       return false;
@@ -228,11 +230,12 @@ class VisionSystemSim {
    * @return If the cameraSim was valid and transforms were reset
    */
   bool ResetCameraTransforms(PhotonCameraSim* cameraSim) {
-    units::second_t now = frc::Timer::GetFPGATimestamp();
+    wpi::units::second_t now = wpi::Timer::GetFPGATimestamp();
     if (camTrfMap.find(cameraSim) != camTrfMap.end()) {
       auto trfBuffer = camTrfMap.at(cameraSim);
-      frc::Transform3d lastTrf{frc::Pose3d{},
-                               trfBuffer.Sample(now).value_or(frc::Pose3d{})};
+      wpi::math::Transform3d lastTrf{
+          wpi::math::Pose3d{},
+          trfBuffer.Sample(now).value_or(wpi::math::Pose3d{})};
       trfBuffer.Clear();
       AdjustCamera(cameraSim, lastTrf);
       return true;
@@ -312,9 +315,9 @@ class VisionSystemSim {
    *
    * @param layout The field tag layout to get Apriltag poses and IDs from
    */
-  void AddAprilTags(const frc::AprilTagFieldLayout& layout) {
+  void AddAprilTags(const wpi::apriltag::AprilTagFieldLayout& layout) {
     std::vector<VisionTargetSim> targets;
-    for (const frc::AprilTag& tag : layout.GetTags()) {
+    for (const wpi::apriltag::AprilTag& tag : layout.GetTags()) {
       targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
                                            photon::kAprilTag36h11, tag.ID});
     }
@@ -365,8 +368,8 @@ class VisionSystemSim {
    *
    * @return The latest robot pose
    */
-  frc::Pose3d GetRobotPose() {
-    return GetRobotPose(frc::Timer::GetFPGATimestamp());
+  wpi::math::Pose3d GetRobotPose() {
+    return GetRobotPose(wpi::Timer::GetFPGATimestamp());
   }
 
   /**
@@ -375,8 +378,8 @@ class VisionSystemSim {
    * @param timestamp Timestamp of the desired robot pose
    * @return The robot pose
    */
-  frc::Pose3d GetRobotPose(units::second_t timestamp) {
-    return robotPoseBuffer.Sample(timestamp).value_or(frc::Pose3d{});
+  wpi::math::Pose3d GetRobotPose(wpi::units::second_t timestamp) {
+    return robotPoseBuffer.Sample(timestamp).value_or(wpi::math::Pose3d{});
   }
 
   /**
@@ -384,8 +387,8 @@ class VisionSystemSim {
    *
    * @param robotPose The robot pose
    */
-  void ResetRobotPose(const frc::Pose2d& robotPose) {
-    ResetRobotPose(frc::Pose3d{robotPose});
+  void ResetRobotPose(const wpi::math::Pose2d& robotPose) {
+    ResetRobotPose(wpi::math::Pose3d{robotPose});
   }
 
   /**
@@ -393,11 +396,11 @@ class VisionSystemSim {
    *
    * @param robotPose The robot pose
    */
-  void ResetRobotPose(const frc::Pose3d& robotPose) {
+  void ResetRobotPose(const wpi::math::Pose3d& robotPose) {
     robotPoseBuffer.Clear();
-    robotPoseBuffer.AddSample(frc::Timer::GetFPGATimestamp(), robotPose);
+    robotPoseBuffer.AddSample(wpi::Timer::GetFPGATimestamp(), robotPose);
   }
-  frc::Field2d& GetDebugField() { return dbgField; }
+  wpi::Field2d& GetDebugField() { return dbgField; }
 
   /**
    * Periodic update. Ensure this is called repeatedly-- camera performance is
@@ -405,7 +408,9 @@ class VisionSystemSim {
    *
    * @param robotPoseMeters The simulated robot pose in meters
    */
-  void Update(const frc::Pose2d& robotPose) { Update(frc::Pose3d{robotPose}); }
+  void Update(const wpi::math::Pose2d& robotPose) {
+    Update(wpi::math::Pose3d{robotPose});
+  }
 
   /**
    * Periodic update. Ensure this is called repeatedly-- camera performance is
@@ -413,16 +418,16 @@ class VisionSystemSim {
    *
    * @param robotPoseMeters The simulated robot pose in meters
    */
-  void Update(const frc::Pose3d& robotPose) {
+  void Update(const wpi::math::Pose3d& robotPose) {
     for (auto& set : targetSets) {
-      std::vector<frc::Pose2d> posesToAdd{};
+      std::vector<wpi::math::Pose2d> posesToAdd{};
       for (auto& target : set.second) {
         posesToAdd.emplace_back(target.GetPose().ToPose2d());
       }
       dbgField.GetObject(set.first)->SetPoses(posesToAdd);
     }
 
-    units::second_t now = frc::Timer::GetFPGATimestamp();
+    wpi::units::second_t now = wpi::Timer::GetFPGATimestamp();
     robotPoseBuffer.AddSample(now, robotPose);
     dbgField.SetRobotPose(robotPose.ToPose2d());
 
@@ -433,8 +438,8 @@ class VisionSystemSim {
       }
     }
 
-    std::vector<frc::Pose2d> visTgtPoses2d{};
-    std::vector<frc::Pose2d> cameraPoses2d{};
+    std::vector<wpi::math::Pose2d> visTgtPoses2d{};
+    std::vector<wpi::math::Pose2d> cameraPoses2d{};
     bool processed{false};
     for (const auto& entry : camSimMap) {
       auto camSim = entry.second;
@@ -445,12 +450,12 @@ class VisionSystemSim {
         processed = true;
       }
       uint64_t timestampNt = optTimestamp.value();
-      units::second_t latency = camSim->prop.EstLatency();
-      units::second_t timestampCapture =
-          units::microsecond_t{static_cast<double>(timestampNt)} - latency;
+      wpi::units::second_t latency = camSim->prop.EstLatency();
+      wpi::units::second_t timestampCapture =
+          wpi::units::microsecond_t{static_cast<double>(timestampNt)} - latency;
 
-      frc::Pose3d lateRobotPose = GetRobotPose(timestampCapture);
-      frc::Pose3d lateCameraPose =
+      wpi::math::Pose3d lateRobotPose = GetRobotPose(timestampCapture);
+      wpi::math::Pose3d lateCameraPose =
           lateRobotPose + GetRobotToCamera(camSim, timestampCapture).value();
       cameraPoses2d.push_back(lateCameraPose.ToPose2d());
 
@@ -474,13 +479,14 @@ class VisionSystemSim {
 
  private:
   std::unordered_map<std::string, PhotonCameraSim*> camSimMap{};
-  static constexpr units::second_t bufferLength{1.5_s};
+  static constexpr wpi::units::second_t bufferLength{1.5_s};
   std::unordered_map<PhotonCameraSim*,
-                     frc::TimeInterpolatableBuffer<frc::Pose3d>>
+                     wpi::math::TimeInterpolatableBuffer<wpi::math::Pose3d>>
       camTrfMap;
-  frc::TimeInterpolatableBuffer<frc::Pose3d> robotPoseBuffer{bufferLength};
+  wpi::math::TimeInterpolatableBuffer<wpi::math::Pose3d> robotPoseBuffer{
+      bufferLength};
   std::unordered_map<std::string, std::vector<VisionTargetSim>> targetSets{};
-  frc::Field2d dbgField{};
-  const frc::Transform3d kEmptyTrf{};
+  wpi::Field2d dbgField{};
+  const wpi::math::Transform3d kEmptyTrf{};
 };
 }  // namespace photon

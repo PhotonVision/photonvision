@@ -17,8 +17,8 @@
 
 #include <frc/fmt/Eigen.h>
 #include <gtest/gtest.h>
-#include <wpi/print.h>
-#include <wpi/timestamp.h>
+#include <wpi/util/print.hpp>
+#include <wpi/util/timestamp.h>
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 
@@ -159,12 +159,12 @@ void print_cost(casadi_real robot_x, casadi_real robot_y,
   x_guess << robot_x, robot_y, robot_theta;
 
   for (int i = 0; i < 200; i++) {
-    auto start = wpi::Now();
+    auto start = wpi::util::Now();
     auto x_out = constrained_solvepnp::do_optimization(
         true, TAG_COUNT,
         constrained_solvepnp::CameraCalibration{fx, fy, cx, cy}, robot2camera,
         x_guess, field2points, point_observations, 0, 0);
-    auto end = wpi::Now();
+    auto end = wpi::util::Now();
 
     wpi::println("{},{},{}", i, static_cast<bool>(x_out), end - start);
     wpi::println(

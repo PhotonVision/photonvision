@@ -75,9 +75,9 @@ run {
     }
 }
 
-import edu.wpi.first.deployutils.deploy.artifact.*
-import edu.wpi.first.deployutils.deploy.target.RemoteTarget
-import edu.wpi.first.deployutils.deploy.target.location.SshDeployLocation
+import org.wpilib.deployutils.deploy.artifact.*
+import org.wpilib.deployutils.deploy.target.RemoteTarget
+import org.wpilib.deployutils.deploy.target.location.SshDeployLocation
 deploy {
     targets {
         pi(RemoteTarget) {

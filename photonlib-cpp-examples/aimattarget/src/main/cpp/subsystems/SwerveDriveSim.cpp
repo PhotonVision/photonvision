@@ -24,8 +24,8 @@
 
 #include "subsystems/SwerveDriveSim.h"
 
-#include <frc/RobotController.h>
-#include <frc/system/Discretization.h>
+#include <wpi/math/system/Discretization.hpp>
+#include <wpi/system/RobotController.hpp>
 
 template <typename T>
 int sgn(T val) {
@@ -33,14 +33,14 @@ int sgn(T val) {
 }
 
 SwerveDriveSim::SwerveDriveSim(
-    const frc::SimpleMotorFeedforward<units::meters>& driveFF,
-    const frc::DCMotor& driveMotor, double driveGearing,
-    units::meter_t driveWheelRadius,
-    const frc::SimpleMotorFeedforward<units::radians>& steerFF,
-    const frc::DCMotor& steerMotor, double steerGearing,
-    const frc::SwerveDriveKinematics<numModules>& kinematics)
+    const wpi::math::SimpleMotorFeedforward<wpi::units::meters>& driveFF,
+    const wpi::math::DCMotor& driveMotor, double driveGearing,
+    wpi::units::meter_t driveWheelRadius,
+    const wpi::math::SimpleMotorFeedforward<wpi::units::radians>& steerFF,
+    const wpi::math::DCMotor& steerMotor, double steerGearing,
+    const wpi::math::SwerveDriveKinematics<numModules>& kinematics)
     : SwerveDriveSim(
-          frc::LinearSystem<2, 1, 2>{
+          wpi::math::LinearSystem<2, 1, 2>{
               (Eigen::MatrixXd(2, 2) << 0.0, 1.0, 0.0,
                -driveFF.GetKv().to<double>() / driveFF.GetKa().to<double>())
                   .finished(),
@@ -49,7 +49,7 @@ SwerveDriveSim::SwerveDriveSim(
               (Eigen::MatrixXd(2, 2) << 1.0, 0.0, 0.0, 1.0).finished(),
               Eigen::Matrix<double, 2, 1>{0.0, 0.0}},
           driveFF.GetKs(), driveMotor, driveGearing, driveWheelRadius,
-          frc::LinearSystem<2, 1, 2>{
+          wpi::math::LinearSystem<2, 1, 2>{
               (Eigen::MatrixXd(2, 2) << 0.0, 1.0, 0.0,
                -steerFF.GetKv().to<double>() / steerFF.GetKa().to<double>())
                   .finished(),
@@ -60,12 +60,12 @@ SwerveDriveSim::SwerveDriveSim(
           steerFF.GetKs(), steerMotor, steerGearing, kinematics) {}
 
 SwerveDriveSim::SwerveDriveSim(
-    const frc::LinearSystem<2, 1, 2>& drivePlant, units::volt_t driveKs,
-    const frc::DCMotor& driveMotor, double driveGearing,
-    units::meter_t driveWheelRadius,
-    const frc::LinearSystem<2, 1, 2>& steerPlant, units::volt_t steerKs,
-    const frc::DCMotor& steerMotor, double steerGearing,
-    const frc::SwerveDriveKinematics<numModules>& kinematics)
+    const wpi::math::LinearSystem<2, 1, 2>& drivePlant, wpi::units::volt_t driveKs,
+    const wpi::math::DCMotor& driveMotor, double driveGearing,
+    wpi::units::meter_t driveWheelRadius,
+    const wpi::math::LinearSystem<2, 1, 2>& steerPlant, wpi::units::volt_t steerKs,
+    const wpi::math::DCMotor& steerMotor, double steerGearing,
+    const wpi::math::SwerveDriveKinematics<numModules>& kinematics)
     : drivePlant(drivePlant),
       driveKs(driveKs),
       driveMotor(driveMotor),
@@ -78,19 +78,19 @@ SwerveDriveSim::SwerveDriveSim(
       kinematics(kinematics) {}
 
 void SwerveDriveSim::SetDriveInputs(
-    const std::array<units::volt_t, numModules>& inputs) {
-  units::volt_t battVoltage = frc::RobotController::GetBatteryVoltage();
+    const std::array<wpi::units::volt_t, numModules>& inputs) {
+  wpi::units::volt_t battVoltage = wpi::RobotController::GetBatteryVoltage();
   for (int i = 0; i < driveInputs.size(); i++) {
-    units::volt_t input = inputs[i];
+    wpi::units::volt_t input = inputs[i];
     driveInputs[i] = std::clamp(input, -battVoltage, battVoltage);
   }
 }
 
 void SwerveDriveSim::SetSteerInputs(
-    const std::array<units::volt_t, numModules>& inputs) {
-  units::volt_t battVoltage = frc::RobotController::GetBatteryVoltage();
+    const std::array<wpi::units::volt_t, numModules>& inputs) {
+  wpi::units::volt_t battVoltage = wpi::RobotController::GetBatteryVoltage();
   for (int i = 0; i < steerInputs.size(); i++) {
-    units::volt_t input = inputs[i];
+    wpi::units::volt_t input = inputs[i];
     steerInputs[i] = std::clamp(input, -battVoltage, battVoltage);
   }
 }
@@ -98,8 +98,8 @@ void SwerveDriveSim::SetSteerInputs(
 Eigen::Matrix<double, 2, 1> SwerveDriveSim::CalculateX(
     const Eigen::Matrix<double, 2, 2>& discA,
     const Eigen::Matrix<double, 2, 1>& discB,
-    const Eigen::Matrix<double, 2, 1>& x, units::volt_t input,
-    units::volt_t kS) {
+    const Eigen::Matrix<double, 2, 1>& x, wpi::units::volt_t input,
+    wpi::units::volt_t kS) {
   auto Ax = discA * x;
   double nextStateVel = Ax(1, 0);
   double inputToStop = nextStateVel / -discB(1, 0);
@@ -129,18 +129,18 @@ Eigen::Matrix<double, 2, 1> SwerveDriveSim::CalculateX(
   return retVal;
 }
 
-void SwerveDriveSim::Update(units::second_t dt) {
+void SwerveDriveSim::Update(wpi::units::second_t dt) {
   Eigen::Matrix<double, 2, 2> driveDiscA;
   Eigen::Matrix<double, 2, 1> driveDiscB;
-  frc::DiscretizeAB<2, 1>(drivePlant.A(), drivePlant.B(), dt, &driveDiscA,
-                          &driveDiscB);
+  wpi::math::DiscretizeABAB<2, 1>(drivePlant.A(), drivePlant.B(), dt,
+                                  &driveDiscA, &driveDiscB);
 
   Eigen::Matrix<double, 2, 2> steerDiscA;
   Eigen::Matrix<double, 2, 1> steerDiscB;
-  frc::DiscretizeAB<2, 1>(steerPlant.A(), steerPlant.B(), dt, &steerDiscA,
-                          &steerDiscB);
+  wpi::math::DiscretizeABAB<2, 1>(steerPlant.A(), steerPlant.B(), dt,
+                                  &steerDiscA, &steerDiscB);
 
-  std::array<frc::SwerveModulePosition, 4> moduleDeltas;
+  std::array<wpi::math::SwerveModulePosition, 4> moduleDeltas;
 
   for (int i = 0; i < numModules; i++) {
     double prevDriveStatePos = driveStates[i](0, 0);
@@ -150,17 +150,17 @@ void SwerveDriveSim::Update(units::second_t dt) {
     steerStates[i] = CalculateX(steerDiscA, steerDiscB, steerStates[i],
                                 steerInputs[i], steerKs);
     double currentSteerStatePos = steerStates[i](0, 0);
-    moduleDeltas[i] = frc::SwerveModulePosition{
-        units::meter_t{currentDriveStatePos - prevDriveStatePos},
-        frc::Rotation2d{units::radian_t{currentSteerStatePos}}};
+    moduleDeltas[i] = wpi::math::SwerveModulePosition{
+        wpi::units::meter_t{currentDriveStatePos - prevDriveStatePos},
+        wpi::math::Rotation2d{wpi::units::radian_t{currentSteerStatePos}}};
   }
 
-  frc::Twist2d twist = kinematics.ToTwist2d(moduleDeltas);
+  wpi::Twist2d twist = kinematics.ToTwist2d(moduleDeltas);
   pose = pose.Exp(twist);
   omega = twist.dtheta / dt;
 }
 
-void SwerveDriveSim::Reset(const frc::Pose2d& pose, bool preserveMotion) {
+void SwerveDriveSim::Reset(const wpi::math::Pose2d& pose, bool preserveMotion) {
   this->pose = pose;
   if (!preserveMotion) {
     for (int i = 0; i < numModules; i++) {
@@ -171,7 +171,7 @@ void SwerveDriveSim::Reset(const frc::Pose2d& pose, bool preserveMotion) {
   }
 }
 
-void SwerveDriveSim::Reset(const frc::Pose2d& pose,
+void SwerveDriveSim::Reset(const wpi::math::Pose2d& pose,
                            const std::array<Eigen::Matrix<double, 2, 1>,
                                             numModules>& moduleDriveStates,
                            const std::array<Eigen::Matrix<double, 2, 1>,
@@ -182,40 +182,40 @@ void SwerveDriveSim::Reset(const frc::Pose2d& pose,
   omega = kinematics.ToChassisSpeeds(GetModuleStates()).omega;
 }
 
-frc::Pose2d SwerveDriveSim::GetPose() const { return pose; }
+wpi::math::Pose2d SwerveDriveSim::GetPose() const { return pose; }
 
-std::array<frc::SwerveModulePosition, numModules>
+std::array<wpi::math::SwerveModulePosition, numModules>
 SwerveDriveSim::GetModulePositions() const {
-  std::array<frc::SwerveModulePosition, numModules> positions;
+  std::array<wpi::math::SwerveModulePosition, numModules> positions;
   for (int i = 0; i < numModules; i++) {
-    positions[i] = frc::SwerveModulePosition{
-        units::meter_t{driveStates[i](0, 0)},
-        frc::Rotation2d{units::radian_t{steerStates[i](0, 0)}}};
+    positions[i] = wpi::math::SwerveModulePosition{
+        wpi::units::meter_t{driveStates[i](0, 0)},
+        wpi::math::Rotation2d{wpi::units::radian_t{steerStates[i](0, 0)}}};
   }
   return positions;
 }
 
-std::array<frc::SwerveModulePosition, numModules>
-SwerveDriveSim::GetNoisyModulePositions(units::meter_t driveStdDev,
-                                        units::radian_t steerStdDev) {
-  std::array<frc::SwerveModulePosition, numModules> positions;
+std::array<wpi::math::SwerveModulePosition, numModules>
+SwerveDriveSim::GetNoisyModulePositions(wpi::units::meter_t driveStdDev,
+                                        wpi::units::radian_t steerStdDev) {
+  std::array<wpi::math::SwerveModulePosition, numModules> positions;
   for (int i = 0; i < numModules; i++) {
-    positions[i] = frc::SwerveModulePosition{
-        units::meter_t{driveStates[i](0, 0)} +
+    positions[i] = wpi::math::SwerveModulePosition{
+        wpi::units::meter_t{driveStates[i](0, 0)} +
             randDist(generator) * driveStdDev,
-        frc::Rotation2d{units::radian_t{steerStates[i](0, 0)} +
-                        randDist(generator) * steerStdDev}};
+        wpi::math::Rotation2d{wpi::units::radian_t{steerStates[i](0, 0)} +
+                              randDist(generator) * steerStdDev}};
   }
   return positions;
 }
 
-std::array<frc::SwerveModuleState, numModules>
+std::array<wpi::math::SwerveModuleState, numModules>
 SwerveDriveSim::GetModuleStates() {
-  std::array<frc::SwerveModuleState, numModules> states;
+  std::array<wpi::math::SwerveModuleState, numModules> states;
   for (int i = 0; i < numModules; i++) {
-    states[i] = frc::SwerveModuleState{
-        units::meters_per_second_t{driveStates[i](1, 0)},
-        frc::Rotation2d{units::radian_t{steerStates[i](0, 0)}}};
+    states[i] = wpi::math::SwerveModuleState{
+        wpi::units::meters_per_second_t{driveStates[i](1, 0)},
+        wpi::math::Rotation2d{wpi::units::radian_t{steerStates[i](0, 0)}}};
   }
   return states;
 }
@@ -230,12 +230,12 @@ SwerveDriveSim::GetSteerStates() const {
   return steerStates;
 }
 
-units::radians_per_second_t SwerveDriveSim::GetOmega() const { return omega; }
+wpi::units::radians_per_second_t SwerveDriveSim::GetOmega() const { return omega; }
 
-units::ampere_t SwerveDriveSim::GetCurrentDraw(
-    const frc::DCMotor& motor, units::radians_per_second_t velocity,
-    units::volt_t inputVolts, units::volt_t batteryVolts) const {
-  units::volt_t effVolts = inputVolts - velocity / motor.Kv;
+wpi::units::ampere_t SwerveDriveSim::GetCurrentDraw(
+    const wpi::math::DCMotor& motor, wpi::units::radians_per_second_t velocity,
+    wpi::units::volt_t inputVolts, wpi::units::volt_t batteryVolts) const {
+  wpi::units::volt_t effVolts = inputVolts - velocity / motor.Kv;
   if (inputVolts >= 0_V) {
     effVolts = std::clamp(effVolts, 0_V, inputVolts);
   } else {
@@ -245,36 +245,36 @@ units::ampere_t SwerveDriveSim::GetCurrentDraw(
   return retVal;
 }
 
-std::array<units::ampere_t, numModules> SwerveDriveSim::GetDriveCurrentDraw()
+std::array<wpi::units::ampere_t, numModules> SwerveDriveSim::GetDriveCurrentDraw()
     const {
-  std::array<units::ampere_t, numModules> currents;
+  std::array<wpi::units::ampere_t, numModules> currents;
   for (int i = 0; i < numModules; i++) {
-    units::radians_per_second_t speed =
-        units::radians_per_second_t{driveStates[i](1, 0)} * driveGearing /
+    wpi::units::radians_per_second_t speed =
+        wpi::units::radians_per_second_t{driveStates[i](1, 0)} * driveGearing /
         driveWheelRadius.to<double>();
     currents[i] = GetCurrentDraw(driveMotor, speed, driveInputs[i],
-                                 frc::RobotController::GetBatteryVoltage());
+                                 wpi::RobotController::GetBatteryVoltage());
   }
   return currents;
 }
 
-std::array<units::ampere_t, numModules> SwerveDriveSim::GetSteerCurrentDraw()
+std::array<wpi::units::ampere_t, numModules> SwerveDriveSim::GetSteerCurrentDraw()
     const {
-  std::array<units::ampere_t, numModules> currents;
+  std::array<wpi::units::ampere_t, numModules> currents;
   for (int i = 0; i < numModules; i++) {
-    units::radians_per_second_t speed =
-        units::radians_per_second_t{steerStates[i](1, 0) * steerGearing};
+    wpi::units::radians_per_second_t speed =
+        wpi::units::radians_per_second_t{steerStates[i](1, 0) * steerGearing};
     // TODO: If uncommented we get huge current values.. Not sure how to fix
     // atm. :(
     currents[i] = 20_A;
     // currents[i] = GetCurrentDraw(steerMotor, speed, steerInputs[i],
-    // frc::RobotController::GetBatteryVoltage());
+    // wpi::RobotController::GetBatteryVoltage());
   }
   return currents;
 }
 
-units::ampere_t SwerveDriveSim::GetTotalCurrentDraw() const {
-  units::ampere_t total{0};
+wpi::units::ampere_t SwerveDriveSim::GetTotalCurrentDraw() const {
+  wpi::units::ampere_t total{0};
   for (const auto& val : GetDriveCurrentDraw()) {
     total += val;
   }

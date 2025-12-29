@@ -18,7 +18,6 @@
 package org.photonvision.vision.processes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +38,7 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
+import org.wpilib.math.util.Pair;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {

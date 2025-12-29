@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.vision.pipe.CVPipe;
+import org.wpilib.math.filter.LinearFilter;
+import org.wpilib.system.Timer;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {

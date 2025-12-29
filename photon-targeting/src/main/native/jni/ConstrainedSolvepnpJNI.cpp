@@ -41,12 +41,11 @@ extern "C" {
  * Signature: (ZI[D[D[D[D[DDD)[D
  */
 JNIEXPORT jdoubleArray JNICALL
-Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
-  (JNIEnv* env, jclass, jboolean headingFree, jint nTags,
-   jdoubleArray cameraCal, jdoubleArray robot2camera, jdoubleArray xGuess,
-   jdoubleArray field2points, jdoubleArray pointObservations, jdouble gyro_θ,
-   jdouble gyro_error_scale_fac)
-{
+Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization(
+    JNIEnv* env, jclass, jboolean headingFree, jint nTags,
+    jdoubleArray cameraCal, jdoubleArray robot2camera, jdoubleArray xGuess,
+    jdoubleArray field2points, jdoubleArray pointObservations, jdouble gyro_θ,
+    jdouble gyro_error_scale_fac) {
   auto cameraCalVec = convertJDoubleArray(env, cameraCal);
   auto robot2cameraVec = convertJDoubleArray(env, robot2camera);
   auto xGuessVec = convertJDoubleArray(env, xGuess);
@@ -68,8 +67,8 @@ Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
       pointObservationsMat(pointObservationsVec.data(), 2,
                            pointObservationsVec.size() / 2);
 
-  wpi::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
-      constrained_solvepnp::do_optimization(
+  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
+      result = constrained_solvepnp::do_optimization(
           headingFree, nTags, cameraCal_, robot2cameraMat, xGuessMat,
           field2pointsMat, pointObservationsMat, gyro_θ, gyro_error_scale_fac);
 

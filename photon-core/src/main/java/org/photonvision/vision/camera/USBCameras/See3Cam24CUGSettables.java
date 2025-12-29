@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.wpilib.vision.camera.UsbCamera;
 
 /*
  * This class holds the camera quirks for the See3Cam 24UGS.

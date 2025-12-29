@@ -36,9 +36,9 @@
 namespace photon {
 namespace OpenCVHelp {
 
-static frc::Rotation3d NWU_TO_EDN{
+static wpi::math::Rotation3d NWU_TO_EDN{
     (Eigen::Matrix3d() << 0, -1, 0, 0, 0, -1, 1, 0, 0).finished()};
-static frc::Rotation3d EDN_TO_NWU{
+static wpi::math::Rotation3d EDN_TO_NWU{
     (Eigen::Matrix3d() << 0, 0, 1, -1, 0, 0, 0, -1, 0).finished()};
 
 [[maybe_unused]] static std::vector<cv::Point2f> GetConvexHull(
@@ -57,20 +57,22 @@ static frc::Rotation3d EDN_TO_NWU{
   return cv::minAreaRect(points);
 }
 
-static frc::Translation3d TranslationNWUtoEDN(const frc::Translation3d& trl) {
+static wpi::math::Translation3d TranslationNWUtoEDN(
+    const wpi::math::Translation3d& trl) {
   return trl.RotateBy(NWU_TO_EDN);
 }
 
-static frc::Rotation3d RotationNWUtoEDN(const frc::Rotation3d& rot) {
+static wpi::math::Rotation3d RotationNWUtoEDN(
+    const wpi::math::Rotation3d& rot) {
   return -NWU_TO_EDN + (rot + NWU_TO_EDN);
 }
 
 static std::vector<cv::Point3f> TranslationToTVec(
-    const std::vector<frc::Translation3d>& translations) {
+    const std::vector<wpi::math::Translation3d>& translations) {
   std::vector<cv::Point3f> retVal;
   retVal.reserve(translations.size());
   for (size_t i = 0; i < translations.size(); i++) {
-    frc::Translation3d trl = TranslationNWUtoEDN(translations[i]);
+    wpi::math::Translation3d trl = TranslationNWUtoEDN(translations[i]);
     retVal.emplace_back(cv::Point3f{trl.X().to<float>(), trl.Y().to<float>(),
                                     trl.Z().to<float>()});
   }
@@ -78,9 +80,9 @@ static std::vector<cv::Point3f> TranslationToTVec(
 }
 
 static std::vector<cv::Point3f> RotationToRVec(
-    const frc::Rotation3d& rotation) {
+    const wpi::math::Rotation3d& rotation) {
   std::vector<cv::Point3f> retVal{};
-  frc::Rotation3d rot = RotationNWUtoEDN(rotation);
+  wpi::math::Rotation3d rot = RotationNWUtoEDN(rotation);
   retVal.emplace_back(cv::Point3d{
       rot.GetQuaternion().ToRotationVector()(0),
       rot.GetQuaternion().ToRotationVector()(1),
@@ -147,7 +149,7 @@ static std::vector<cv::Point3f> RotationToRVec(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
     const RotTrlTransform3d& camRt,
-    const std::vector<frc::Translation3d>& objectTranslations) {
+    const std::vector<wpi::math::Translation3d>& objectTranslations) {
   std::vector<cv::Point3f> objectPoints = TranslationToTVec(objectTranslations);
   std::vector<cv::Point3f> rvec = RotationToRVec(camRt.GetRotation());
   std::vector<cv::Point3f> tvec = TranslationToTVec({camRt.GetTranslation()});
@@ -177,37 +179,39 @@ static std::vector<T> ReorderCircular(const std::vector<T> elements,
   return reordered;
 }
 
-static frc::Translation3d TranslationEDNToNWU(const frc::Translation3d& trl) {
+static wpi::math::Translation3d TranslationEDNToNWU(
+    const wpi::math::Translation3d& trl) {
   return trl.RotateBy(EDN_TO_NWU);
 }
 
-static frc::Rotation3d RotationEDNToNWU(const frc::Rotation3d& rot) {
+static wpi::math::Rotation3d RotationEDNToNWU(
+    const wpi::math::Rotation3d& rot) {
   return -EDN_TO_NWU + (rot + EDN_TO_NWU);
 }
 
-static frc::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {
+static wpi::math::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {
   cv::Vec3f data{};
   cv::Mat wrapped{tvecInput.rows, tvecInput.cols, CV_32F};
   tvecInput.convertTo(wrapped, CV_32F);
   data = wrapped.at<cv::Vec3f>(cv::Point{0, 0});
-  return TranslationEDNToNWU(frc::Translation3d{units::meter_t{data[0]},
-                                                units::meter_t{data[1]},
-                                                units::meter_t{data[2]}});
+  return TranslationEDNToNWU(wpi::math::Translation3d{wpi::units::meter_t{data[0]},
+                                                      wpi::units::meter_t{data[1]},
+                                                      wpi::units::meter_t{data[2]}});
 }
 
-static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
+static wpi::math::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   cv::Vec3f data{};
   cv::Mat wrapped{rvecInput.rows, rvecInput.cols, CV_32F};
   rvecInput.convertTo(wrapped, CV_32F);
   data = wrapped.at<cv::Vec3f>(cv::Point{0, 0});
   return RotationEDNToNWU(
-      frc::Rotation3d{Eigen::Vector3d{data[0], data[1], data[2]}});
+      wpi::math::Rotation3d{Eigen::Vector3d{data[0], data[1], data[2]}});
 }
 
 [[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_Square(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
-    std::vector<frc::Translation3d> modelTrls,
+    std::vector<wpi::math::Translation3d> modelTrls,
     std::vector<cv::Point2f> imagePoints) {
   modelTrls = ReorderCircular(modelTrls, true, -1);
   imagePoints = ReorderCircular(imagePoints, true, -1);
@@ -224,8 +228,8 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   cv::eigen2cv(distCoeffs, distCoeffsMat);
 
   cv::Vec2d errors{};
-  frc::Transform3d best{};
-  std::optional<frc::Transform3d> alt{std::nullopt};
+  wpi::math::Transform3d best{};
+  std::optional<wpi::math::Transform3d> alt{std::nullopt};
 
   for (int tries = 0; tries < 2; tries++) {
     cv::solvePnPGeneric(objectMat, imagePoints, cameraMat, distCoeffsMat, rvecs,
@@ -233,12 +237,12 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
                         reprojectionError);
 
     errors = reprojectionError.at<cv::Vec2f>(cv::Point{0, 0});
-    best = frc::Transform3d{TVecToTranslation(tvecs.at(0)),
-                            RVecToRotation(rvecs[0])};
+    best = wpi::math::Transform3d{TVecToTranslation(tvecs.at(0)),
+                                  RVecToRotation(rvecs[0])};
 
     if (tvecs.size() > 1) {
-      alt = frc::Transform3d{TVecToTranslation(tvecs.at(1)),
-                             RVecToRotation(rvecs[1])};
+      alt = wpi::math::Transform3d{TVecToTranslation(tvecs.at(1)),
+                                   RVecToRotation(rvecs[1])};
     }
 
     if (!std::isnan(errors[0])) {
@@ -274,7 +278,7 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
 [[maybe_unused]] static std::optional<photon::PnpResult> SolvePNP_SQPNP(
     const Eigen::Matrix<double, 3, 3>& cameraMatrix,
     const Eigen::Matrix<double, 8, 1>& distCoeffs,
-    std::vector<frc::Translation3d> modelTrls,
+    std::vector<wpi::math::Translation3d> modelTrls,
     std::vector<cv::Point2f> imagePoints) {
   std::vector<cv::Point3f> objectMat = TranslationToTVec(modelTrls);
   std::vector<cv::Mat> rvecs{};
@@ -289,15 +293,15 @@ static frc::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
   cv::eigen2cv(distCoeffs, distCoeffsMat);
 
   float error = 0;
-  frc::Transform3d best{};
+  wpi::math::Transform3d best{};
 
   cv::solvePnPGeneric(objectMat, imagePoints, cameraMat, distCoeffsMat, rvecs,
                       tvecs, false, cv::SOLVEPNP_SQPNP, rvec, tvec,
                       reprojectionError);
 
   error = reprojectionError.at<float>(cv::Point{0, 0});
-  best = frc::Transform3d{TVecToTranslation(tvecs.at(0)),
-                          RVecToRotation(rvecs[0])};
+  best = wpi::math::Transform3d{TVecToTranslation(tvecs.at(0)),
+                                RVecToRotation(rvecs[0])};
 
   if (std::isnan(error)) {
     fmt::print("SolvePNP_Square failed!\n");

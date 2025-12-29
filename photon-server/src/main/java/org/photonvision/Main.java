@@ -17,8 +17,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -56,6 +54,7 @@ import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.hardware.hal.HAL;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;

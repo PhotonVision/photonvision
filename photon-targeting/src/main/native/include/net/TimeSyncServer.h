@@ -24,20 +24,20 @@
 #include <memory>
 #include <thread>
 
-#include <wpi/Logger.h>
-#include <wpinet/EventLoopRunner.h>
-#include <wpinet/uv/Buffer.h>
-#include <wpinet/uv/Udp.h>
+#include <wpi/net/EventLoopRunner.hpp>
+#include <wpi/net/uv/Buffer.hpp>
+#include <wpi/net/uv/Udp.hpp>
+#include <wpi/util/Logger.hpp>
 
 namespace wpi {
 namespace tsp {
 
 class TimeSyncServer {
-  using SharedUdpPtr = std::shared_ptr<uv::Udp>;
+  using SharedUdpPtr = std::shared_ptr<wpi::net::uv::Udp>;
 
-  EventLoopRunner m_loopRunner{};
+  wpi::net::EventLoopRunner m_loopRunner{};
 
-  wpi::Logger m_logger;
+  wpi::util::Logger m_logger;
   std::function<uint64_t()> m_timeProvider;
   SharedUdpPtr m_udp;
   int m_port;
@@ -45,7 +45,7 @@ class TimeSyncServer {
   std::thread m_listener;
 
  private:
-  void UdpCallback(uv::Buffer& buf, size_t nbytes, const sockaddr& sender,
+  void UdpCallback(wpi::net::uv::Buffer& buf, size_t nbytes, const sockaddr& sender,
                    unsigned flags);
 
  public:

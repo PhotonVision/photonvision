@@ -21,7 +21,6 @@ import com.diozero.devices.LED;
 import com.diozero.devices.PwmLed;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
-import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +30,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.math.MathUtils;
+import org.wpilib.networktables.NetworkTableEvent;
 
 public class VisionLED implements AutoCloseable {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);

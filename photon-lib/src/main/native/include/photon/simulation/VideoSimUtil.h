@@ -31,12 +31,12 @@
 #include <utility>
 #include <vector>
 
-#include <cscore_cv.h>
-#include <frc/apriltag/AprilTag.h>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/objdetect.hpp>
-#include <units/length.h>
+#include <wpi/apriltag/AprilTag.hpp>
+#include <wpi/cs/cscore_cv.hpp>
+#include <wpi/units/length.hpp>
 
 #include "photon/simulation/SimCameraProperties.h"
 
@@ -53,12 +53,12 @@ namespace VideoSimUtil {
 // required
 static constexpr int kNumTags36h11 = 40;
 
-static constexpr units::meter_t fieldLength{16.54175_m};
-static constexpr units::meter_t fieldWidth{8.0137_m};
+static constexpr wpi::units::meter_t fieldLength{16.54175_m};
+static constexpr wpi::units::meter_t fieldWidth{8.0137_m};
 
 static cv::Mat Get36h11TagImage(int id) {
-  wpi::RawFrame frame;
-  frc::AprilTag::Generate36h11AprilTagImage(&frame, id);
+  wpi::util::RawFrame frame;
+  wpi::apriltag::AprilTag::Generate36h11AprilTagImage(&frame, id);
   cv::Mat markerImage{frame.height, frame.width, CV_8UC1, frame.data,
                       static_cast<size_t>(frame.stride)};
   cv::Mat markerClone = markerImage.clone();
@@ -128,7 +128,7 @@ static const std::vector<cv::Point2f> kTag36h11MarkPts = Get36h11MarkerPts();
 
 /** Updates the properties of this cs::CvSource video stream with the given
  * camera properties. */
-[[maybe_unused]] static void UpdateVideoProp(cs::CvSource& video,
+[[maybe_unused]] static void UpdateVideoProp(wpi::cs::CvSource& video,
                                              const SimCameraProperties& prop) {
   video.SetResolution(prop.GetResWidth(), prop.GetResHeight());
   video.SetFPS(prop.GetFPS().to<int>());
@@ -343,55 +343,56 @@ static void DrawPoly(const std::vector<cv::Point2f>& dstPoints, int thickness,
  * The translations used to draw the field side walls and driver station walls.
  * It is a vector of vectors because the translations are not all connected.
  */
-static std::vector<std::vector<frc::Translation3d>> GetFieldWallLines() {
-  std::vector<std::vector<frc::Translation3d>> list;
+static std::vector<std::vector<wpi::math::Translation3d>> GetFieldWallLines() {
+  std::vector<std::vector<wpi::math::Translation3d>> list;
 
-  const units::meter_t sideHt = 19.5_in;
-  const units::meter_t driveHt = 35_in;
-  const units::meter_t topHt = 78_in;
+  const wpi::units::meter_t sideHt = 19.5_in;
+  const wpi::units::meter_t driveHt = 35_in;
+  const wpi::units::meter_t topHt = 78_in;
 
   // field floor
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, 0_m},
-      frc::Translation3d{fieldLength, 0_m, 0_m},
-      frc::Translation3d{fieldLength, fieldWidth, 0_m},
-      frc::Translation3d{0_m, fieldWidth, 0_m},
-      frc::Translation3d{0_m, 0_m, 0_m}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, 0_m},
+      wpi::math::Translation3d{fieldLength, 0_m, 0_m},
+      wpi::math::Translation3d{fieldLength, fieldWidth, 0_m},
+      wpi::math::Translation3d{0_m, fieldWidth, 0_m},
+      wpi::math::Translation3d{0_m, 0_m, 0_m}});
 
   // right side wall
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, 0_m}, frc::Translation3d{0_m, 0_m, sideHt},
-      frc::Translation3d{fieldLength, 0_m, sideHt},
-      frc::Translation3d{fieldLength, 0_m, 0_m}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, 0_m},
+      wpi::math::Translation3d{0_m, 0_m, sideHt},
+      wpi::math::Translation3d{fieldLength, 0_m, sideHt},
+      wpi::math::Translation3d{fieldLength, 0_m, 0_m}});
 
   // red driverstation
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{fieldLength, 0_m, sideHt},
-      frc::Translation3d{fieldLength, 0_m, topHt},
-      frc::Translation3d{fieldLength, fieldWidth, topHt},
-      frc::Translation3d{fieldLength, fieldWidth, sideHt},
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{fieldLength, 0_m, sideHt},
+      wpi::math::Translation3d{fieldLength, 0_m, topHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, topHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, sideHt},
   });
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{fieldLength, 0_m, driveHt},
-      frc::Translation3d{fieldLength, fieldWidth, driveHt}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{fieldLength, 0_m, driveHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, driveHt}});
 
   // left side wall
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, fieldWidth, 0_m},
-      frc::Translation3d{0_m, fieldWidth, sideHt},
-      frc::Translation3d{fieldLength, fieldWidth, sideHt},
-      frc::Translation3d{fieldLength, fieldWidth, 0_m}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, fieldWidth, 0_m},
+      wpi::math::Translation3d{0_m, fieldWidth, sideHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, sideHt},
+      wpi::math::Translation3d{fieldLength, fieldWidth, 0_m}});
 
   // blue driverstation
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, sideHt},
-      frc::Translation3d{0_m, 0_m, topHt},
-      frc::Translation3d{0_m, fieldWidth, topHt},
-      frc::Translation3d{0_m, fieldWidth, sideHt},
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, sideHt},
+      wpi::math::Translation3d{0_m, 0_m, topHt},
+      wpi::math::Translation3d{0_m, fieldWidth, topHt},
+      wpi::math::Translation3d{0_m, fieldWidth, sideHt},
   });
-  list.emplace_back(std::vector<frc::Translation3d>{
-      frc::Translation3d{0_m, 0_m, driveHt},
-      frc::Translation3d{0_m, fieldWidth, driveHt}});
+  list.emplace_back(std::vector<wpi::math::Translation3d>{
+      wpi::math::Translation3d{0_m, 0_m, driveHt},
+      wpi::math::Translation3d{0_m, fieldWidth, driveHt}});
 
   return list;
 }
@@ -405,19 +406,19 @@ static std::vector<std::vector<frc::Translation3d>> GetFieldWallLines() {
  * floor. E.g. 3 subdivisions would mean 2 lines along the length and 2 lines
  * along the width creating a 3x3 "grid".
  */
-static std::vector<std::vector<frc::Translation3d>> GetFieldFloorLines(
+static std::vector<std::vector<wpi::math::Translation3d>> GetFieldFloorLines(
     int subdivisions) {
-  std::vector<std::vector<frc::Translation3d>> list;
-  const units::meter_t subLength = fieldLength / subdivisions;
-  const units::meter_t subWidth = fieldWidth / subdivisions;
+  std::vector<std::vector<wpi::math::Translation3d>> list;
+  const wpi::units::meter_t subLength = fieldLength / subdivisions;
+  const wpi::units::meter_t subWidth = fieldWidth / subdivisions;
 
   for (int i = 0; i < subdivisions; i++) {
-    list.emplace_back(std::vector<frc::Translation3d>{
-        frc::Translation3d{0_m, subWidth * (i + 1), 0_m},
-        frc::Translation3d{fieldLength, subWidth * (i + 1), 0_m}});
-    list.emplace_back(std::vector<frc::Translation3d>{
-        frc::Translation3d{subLength * (i + 1), 0_m, 0_m},
-        frc::Translation3d{subLength * (i + 1), fieldWidth, 0_m}});
+    list.emplace_back(std::vector<wpi::math::Translation3d>{
+        wpi::math::Translation3d{0_m, subWidth * (i + 1), 0_m},
+        wpi::math::Translation3d{fieldLength, subWidth * (i + 1), 0_m}});
+    list.emplace_back(std::vector<wpi::math::Translation3d>{
+        wpi::math::Translation3d{subLength * (i + 1), 0_m, 0_m},
+        wpi::math::Translation3d{subLength * (i + 1), fieldWidth, 0_m}});
   }
   return list;
 }
@@ -441,19 +442,19 @@ static std::vector<std::vector<frc::Translation3d>> GetFieldFloorLines(
  */
 static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
     const RotTrlTransform3d& camRt, const SimCameraProperties& prop,
-    const std::vector<frc::Translation3d>& trls, double resolution,
+    const std::vector<wpi::math::Translation3d>& trls, double resolution,
     bool isClosed, cv::Mat& destination) {
   resolution = std::hypot(destination.size().height, destination.size().width) *
                resolution;
-  std::vector<frc::Translation3d> pts{trls};
+  std::vector<wpi::math::Translation3d> pts{trls};
   if (isClosed) {
     pts.emplace_back(pts[0]);
   }
   std::vector<std::vector<cv::Point2f>> polyPointList{};
 
   for (size_t i = 0; i < pts.size() - 1; i++) {
-    frc::Translation3d pta = pts[i];
-    frc::Translation3d ptb = pts[i + 1];
+    wpi::math::Translation3d pta = pts[i];
+    wpi::math::Translation3d ptb = pts[i + 1];
 
     std::pair<std::optional<double>, std::optional<double>> inter =
         prop.GetVisibleLine(camRt, pta, ptb);
@@ -463,8 +464,8 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
 
     double inter1 = inter.first.value();
     double inter2 = inter.second.value();
-    frc::Translation3d baseDelta = ptb - pta;
-    frc::Translation3d old_pta = pta;
+    wpi::math::Translation3d baseDelta = ptb - pta;
+    wpi::math::Translation3d old_pta = pta;
     if (inter1 > 0) {
       pta = old_pta + baseDelta * inter1;
     }
@@ -480,8 +481,8 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
 
     double pxDist = std::hypot(pxb.x - pxa.x, pxb.y - pxa.y);
     int subdivisions = static_cast<int>(pxDist / resolution);
-    frc::Translation3d subDelta = baseDelta / (subdivisions + 1);
-    std::vector<frc::Translation3d> subPts{};
+    wpi::math::Translation3d subDelta = baseDelta / (subdivisions + 1);
+    std::vector<wpi::math::Translation3d> subPts{};
     for (int j = 0; j < subdivisions; j++) {
       subPts.emplace_back(pta + (subDelta * (j + 1)));
     }
@@ -501,7 +502,7 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
  * Draw a wireframe of the field to the given image.
  *
  * @param camRt The change in basis from world coordinates to camera
- * coordinates. See RotTrlTransform3d#makeRelativeTo(frc::Pose3d).
+ * coordinates. See RotTrlTransform3d#makeRelativeTo(wpi::math::Pose3d).
  * @param prop The simulated camera's properties.
  * @param resolution Resolution as a fraction(0 - 1) of the video frame's
  * diagonal length in pixels. Line segments will be subdivided if they exceed

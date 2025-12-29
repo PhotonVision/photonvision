@@ -17,20 +17,20 @@
 
 package org.photonvision.common.networktables;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.networktables.BooleanPublisher;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.BooleanTopic;
-import edu.wpi.first.networktables.DoubleArrayPublisher;
-import edu.wpi.first.networktables.DoublePublisher;
-import edu.wpi.first.networktables.IntegerPublisher;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.IntegerTopic;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.ProtobufPublisher;
-import edu.wpi.first.networktables.PubSubOption;
-import edu.wpi.first.networktables.StructPublisher;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.networktables.BooleanPublisher;
+import org.wpilib.networktables.BooleanSubscriber;
+import org.wpilib.networktables.BooleanTopic;
+import org.wpilib.networktables.DoubleArrayPublisher;
+import org.wpilib.networktables.DoublePublisher;
+import org.wpilib.networktables.IntegerPublisher;
+import org.wpilib.networktables.IntegerSubscriber;
+import org.wpilib.networktables.IntegerTopic;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.ProtobufPublisher;
+import org.wpilib.networktables.PubSubOption;
+import org.wpilib.networktables.StructPublisher;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing

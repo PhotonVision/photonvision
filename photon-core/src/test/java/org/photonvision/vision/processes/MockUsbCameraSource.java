@@ -17,14 +17,14 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoMode;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.GenericUSBCameraSettables;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.camera.VideoMode;
 
 public class MockUsbCameraSource extends USBCameraSource {
     /** Used for unit tests to better simulate a usb camera without a camera being present. */

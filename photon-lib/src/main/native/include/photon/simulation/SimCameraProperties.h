@@ -30,11 +30,11 @@
 #include <vector>
 
 #include <Eigen/Core>
-#include <frc/geometry/Rotation2d.h>
-#include <frc/geometry/Translation3d.h>
 #include <photon/estimation/OpenCVHelp.h>
-#include <units/frequency.h>
-#include <units/time.h>
+#include <wpi/math/geometry/Rotation2d.hpp>
+#include <wpi/math/geometry/Translation3d.hpp>
+#include <wpi/units/frequency.hpp>
+#include <wpi/units/time.hpp>
 
 namespace photon {
 
@@ -56,7 +56,9 @@ namespace photon {
 class SimCameraProperties {
  public:
   /** Default constructor which is the same as PERFECT_90DEG */
-  SimCameraProperties() { SetCalibration(960, 720, frc::Rotation2d{90_deg}); }
+  SimCameraProperties() {
+    SetCalibration(960, 720, wpi::math::Rotation2d{90_deg});
+  }
 
   /**
    * Reads camera properties from a PhotonVision config.json file.
@@ -69,7 +71,7 @@ class SimCameraProperties {
    */
   SimCameraProperties(std::string path, int width, int height) {}
 
-  void SetCalibration(int width, int height, frc::Rotation2d fovDiag);
+  void SetCalibration(int width, int height, wpi::math::Rotation2d fovDiag);
   void SetCalibration(int width, int height,
                       const Eigen::Matrix<double, 3, 3>& newCamIntrinsics,
                       const Eigen::Matrix<double, 8, 1>& newDistCoeffs);
@@ -85,8 +87,8 @@ class SimCameraProperties {
    * @param fps The average frames per second the camera should process at.
    * **Exposure time limits FPS if set!**
    */
-  void SetFPS(units::hertz_t fps) {
-    frameSpeed = units::math::max(1 / fps, exposureTime);
+  void SetFPS(wpi::units::hertz_t fps) {
+    frameSpeed = wpi::units::math::max(1 / fps, exposureTime);
   }
 
   /**
@@ -95,9 +97,9 @@ class SimCameraProperties {
    * @param exposureTime The amount of time the "shutter" is open for one frame.
    * Affects motion blur. **Frame speed(from FPS) is limited to this!**
    */
-  void SetExposureTime(units::second_t exposureTime) {
+  void SetExposureTime(wpi::units::second_t exposureTime) {
     this->exposureTime = exposureTime;
-    frameSpeed = units::math::max(frameSpeed, this->exposureTime);
+    frameSpeed = wpi::units::math::max(frameSpeed, this->exposureTime);
   }
 
   /**
@@ -106,7 +108,7 @@ class SimCameraProperties {
    * @param avgLatency The average latency (from image capture to data
    * published) a frame should have
    */
-  void SetAvgLatency(units::second_t avgLatency) {
+  void SetAvgLatency(wpi::units::second_t avgLatency) {
     this->avgLatency = avgLatency;
   }
 
@@ -115,7 +117,7 @@ class SimCameraProperties {
    *
    * @param latencyStdDev The standard deviation of the latency
    */
-  void SetLatencyStdDev(units::second_t latencyStdDev) {
+  void SetLatencyStdDev(wpi::units::second_t latencyStdDev) {
     this->latencyStdDev = latencyStdDev;
   }
 
@@ -159,35 +161,35 @@ class SimCameraProperties {
    *
    * @return The FPS
    */
-  units::hertz_t GetFPS() const { return 1 / frameSpeed; }
+  wpi::units::hertz_t GetFPS() const { return 1 / frameSpeed; }
 
   /**
    * Gets the time per frame of the simulated camera.
    *
    * @return The time per frame
    */
-  units::second_t GetFrameSpeed() const { return frameSpeed; }
+  wpi::units::second_t GetFrameSpeed() const { return frameSpeed; }
 
   /**
    * Gets the exposure time of the simulated camera.
    *
    * @return The exposure time
    */
-  units::second_t GetExposureTime() const { return exposureTime; }
+  wpi::units::second_t GetExposureTime() const { return exposureTime; }
 
   /**
    * Gets the average latency of the simulated camera.
    *
    * @return The average latency
    */
-  units::second_t GetAverageLatency() const { return avgLatency; }
+  wpi::units::second_t GetAverageLatency() const { return avgLatency; }
 
   /**
    * Gets the time per frame of the simulated camera.
    *
    * @return The time per frame
    */
-  units::second_t GetLatencyStdDev() const { return latencyStdDev; }
+  wpi::units::second_t GetLatencyStdDev() const { return latencyStdDev; }
 
   /**
    * The percentage (0 - 100) of this camera's resolution the contour takes up
@@ -203,11 +205,11 @@ class SimCameraProperties {
 
   /** The yaw from the principal point of this camera to the pixel x value.
    * Positive values left. */
-  frc::Rotation2d GetPixelYaw(double pixelX) const {
+  wpi::math::Rotation2d GetPixelYaw(double pixelX) const {
     double fx = camIntrinsics(0, 0);
     double cx = camIntrinsics(0, 2);
     double xOffset = cx - pixelX;
-    return frc::Rotation2d{fx, xOffset};
+    return wpi::math::Rotation2d{fx, xOffset};
   }
 
   /**
@@ -217,11 +219,11 @@ class SimCameraProperties {
    * Note that this angle is naively computed and may be incorrect. See
    * #getCorrectedPixelRot(const cv::Point2d).
    */
-  frc::Rotation2d GetPixelPitch(double pixelY) const {
+  wpi::math::Rotation2d GetPixelPitch(double pixelY) const {
     double fy = camIntrinsics(1, 1);
     double cy = camIntrinsics(1, 2);
     double yOffset = cy - pixelY;
-    return frc::Rotation2d{fy, -yOffset};
+    return wpi::math::Rotation2d{fy, -yOffset};
   }
   /**
    * Finds the yaw and pitch to the given image point. Yaw is positive left, and
@@ -230,9 +232,9 @@ class SimCameraProperties {
    * Note that pitch is naively computed and may be incorrect. See
    * #getCorrectedPixelRot(const cv::Point2d).
    */
-  frc::Rotation3d GetPixelRot(const cv::Point2d& point) const {
-    return frc::Rotation3d{0_rad, GetPixelPitch(point.y).Radians(),
-                           GetPixelYaw(point.x).Radians()};
+  wpi::math::Rotation3d GetPixelRot(const cv::Point2d& point) const {
+    return wpi::math::Rotation3d{0_rad, GetPixelPitch(point.y).Radians(),
+                                 GetPixelYaw(point.x).Radians()};
   }
 
   /**
@@ -260,7 +262,7 @@ class SimCameraProperties {
    * @return Rotation3d with yaw and pitch of the line projected out of the
    * camera from the given pixel (roll is zero).
    */
-  frc::Rotation3d GetCorrectedPixelRot(const cv::Point2d& point) const {
+  wpi::math::Rotation3d GetCorrectedPixelRot(const cv::Point2d& point) const {
     double fx = camIntrinsics(0, 0);
     double cx = camIntrinsics(0, 2);
     double xOffset = cx - point.x;
@@ -269,26 +271,27 @@ class SimCameraProperties {
     double cy = camIntrinsics(1, 2);
     double yOffset = cy - point.y;
 
-    frc::Rotation2d yaw{fx, xOffset};
-    frc::Rotation2d pitch{fy / std::cos(std::atan(xOffset / fx)), -yOffset};
-    return frc::Rotation3d{0_rad, pitch.Radians(), yaw.Radians()};
+    wpi::math::Rotation2d yaw{fx, xOffset};
+    wpi::math::Rotation2d pitch{fy / std::cos(std::atan(xOffset / fx)),
+                                -yOffset};
+    return wpi::math::Rotation3d{0_rad, pitch.Radians(), yaw.Radians()};
   }
 
-  frc::Rotation2d GetHorizFOV() const {
-    frc::Rotation2d left = GetPixelYaw(0);
-    frc::Rotation2d right = GetPixelYaw(resWidth);
+  wpi::math::Rotation2d GetHorizFOV() const {
+    wpi::math::Rotation2d left = GetPixelYaw(0);
+    wpi::math::Rotation2d right = GetPixelYaw(resWidth);
     return left - right;
   }
 
-  frc::Rotation2d GetVertFOV() const {
-    frc::Rotation2d above = GetPixelPitch(0);
-    frc::Rotation2d below = GetPixelPitch(resHeight);
+  wpi::math::Rotation2d GetVertFOV() const {
+    wpi::math::Rotation2d above = GetPixelPitch(0);
+    wpi::math::Rotation2d below = GetPixelPitch(resHeight);
     return below - above;
   }
 
-  frc::Rotation2d GetDiagFOV() const {
-    return frc::Rotation2d{
-        units::math::hypot(GetHorizFOV().Radians(), GetVertFOV().Radians())};
+  wpi::math::Rotation2d GetDiagFOV() const {
+    return wpi::math::Rotation2d{
+        wpi::units::math::hypot(GetHorizFOV().Radians(), GetVertFOV().Radians())};
   }
 
   /**
@@ -303,7 +306,7 @@ class SimCameraProperties {
    * inside the camera frustum, {0.5, 1} would be returned.
    *
    * @param camRt The change in basis from world coordinates to camera
-   * coordinates. See RotTrlTransform3d#makeRelativeTo(frc::Pose3d).
+   * coordinates. See RotTrlTransform3d#makeRelativeTo(wpi::math::Pose3d).
    * @param a The initial translation of the line
    * @param b The final translation of the line
    * @return A Pair of Doubles. The values may be empty:
@@ -316,8 +319,8 @@ class SimCameraProperties {
    * visible in the camera frustum.
    */
   std::pair<std::optional<double>, std::optional<double>> GetVisibleLine(
-      const RotTrlTransform3d& camRt, const frc::Translation3d& a,
-      const frc::Translation3d& b) const;
+      const RotTrlTransform3d& camRt, const wpi::math::Translation3d& a,
+      const wpi::math::Translation3d& b) const;
 
   /**
    * Returns these points after applying this camera's estimated noise.
@@ -349,8 +352,8 @@ class SimCameraProperties {
    *
    * @return The latency estimate
    */
-  units::second_t EstLatency() {
-    return units::math::max(avgLatency + gaussian(generator) * latencyStdDev,
+  wpi::units::second_t EstLatency() {
+    return wpi::units::math::max(avgLatency + gaussian(generator) * latencyStdDev,
                             0_s);
   }
 
@@ -359,8 +362,8 @@ class SimCameraProperties {
    *
    * @return The estimated time until the next frame
    */
-  units::second_t EstSecUntilNextFrame() {
-    return frameSpeed + units::math::max(0_s, EstLatency() - frameSpeed);
+  wpi::units::second_t EstSecUntilNextFrame() {
+    return frameSpeed + wpi::units::math::max(0_s, EstLatency() - frameSpeed);
   }
 
   /**
@@ -532,10 +535,10 @@ class SimCameraProperties {
   Eigen::Matrix<double, 8, 1> distCoeffs;
   double avgErrorPx{0};
   double errorStdDevPx{0};
-  units::second_t frameSpeed{0};
-  units::second_t exposureTime{0};
-  units::second_t avgLatency{0};
-  units::second_t latencyStdDev{0};
+  wpi::units::second_t frameSpeed{0};
+  wpi::units::second_t exposureTime{0};
+  wpi::units::second_t avgLatency{0};
+  wpi::units::second_t latencyStdDev{0};
   std::vector<Eigen::Matrix<double, 3, 1>> viewplanes{};
 };
 }  // namespace photon

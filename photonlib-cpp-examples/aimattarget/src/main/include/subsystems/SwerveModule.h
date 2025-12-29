@@ -24,13 +24,13 @@
 
 #pragma once
 
-#include <frc/Encoder.h>
-#include <frc/controller/PIDController.h>
-#include <frc/kinematics/SwerveModulePosition.h>
-#include <frc/kinematics/SwerveModuleState.h>
-#include <frc/motorcontrol/PWMSparkMax.h>
-#include <frc/simulation/EncoderSim.h>
-#include <units/current.h>
+#include <wpi/hardware/motor/PWMSparkMax.hpp>
+#include <wpi/hardware/rotation/Encoder.hpp>
+#include <wpi/math/controller/PIDController.hpp>
+#include <wpi/math/kinematics/wpi/math/kinematics/SwerveModulePosition.hpppp>
+#include <wpi/math/kinematics/wpi/math/kinematics/SwerveModuleState.hpppp>
+#include <wpi/simulation/EncoderSim.hpp>
+#include <wpi/units/current.hpp>
 
 #include "Constants.h"
 
@@ -38,44 +38,44 @@ class SwerveModule {
  public:
   explicit SwerveModule(const constants::Swerve::ModuleConstants& consts);
   void Periodic();
-  void SetDesiredState(frc::SwerveModuleState newState, bool shouldBeOpenLoop,
-                       bool steerInPlace);
-  frc::Rotation2d GetAbsoluteHeading() const;
-  frc::SwerveModuleState GetState() const;
-  frc::SwerveModulePosition GetPosition() const;
-  units::volt_t GetDriveVoltage() const;
-  units::volt_t GetSteerVoltage() const;
-  units::ampere_t GetDriveCurrentSim() const;
-  units::ampere_t GetSteerCurrentSim() const;
+  void SetDesiredState(wpi::math::SwerveModuleState newState,
+                       bool shouldBeOpenLoop, bool steerInPlace);
+  wpi::math::Rotation2d GetAbsoluteHeading() const;
+  wpi::math::SwerveModuleState GetState() const;
+  wpi::math::SwerveModulePosition GetPosition() const;
+  wpi::units::volt_t GetDriveVoltage() const;
+  wpi::units::volt_t GetSteerVoltage() const;
+  wpi::units::ampere_t GetDriveCurrentSim() const;
+  wpi::units::ampere_t GetSteerCurrentSim() const;
   constants::Swerve::ModuleConstants GetModuleConstants() const;
   void Log();
-  void SimulationUpdate(units::meter_t driveEncoderDist,
-                        units::meters_per_second_t driveEncoderRate,
-                        units::ampere_t driveCurrent,
-                        units::radian_t steerEncoderDist,
-                        units::radians_per_second_t steerEncoderRate,
-                        units::ampere_t steerCurrent);
+  void SimulationUpdate(wpi::units::meter_t driveEncoderDist,
+                        wpi::units::meters_per_second_t driveEncoderRate,
+                        wpi::units::ampere_t driveCurrent,
+                        wpi::units::radian_t steerEncoderDist,
+                        wpi::units::radians_per_second_t steerEncoderRate,
+                        wpi::units::ampere_t steerCurrent);
 
  private:
   const constants::Swerve::ModuleConstants moduleConstants;
 
-  frc::PWMSparkMax driveMotor;
-  frc::Encoder driveEncoder;
-  frc::PWMSparkMax steerMotor;
-  frc::Encoder steerEncoder;
+  wpi::PWMSparkMax driveMotor;
+  wpi::Encoder driveEncoder;
+  wpi::PWMSparkMax steerMotor;
+  wpi::Encoder steerEncoder;
 
-  frc::SwerveModuleState desiredState{};
+  wpi::math::SwerveModuleState desiredState{};
   bool openLoop{false};
 
-  frc::PIDController drivePIDController{constants::Swerve::kDriveKP,
-                                        constants::Swerve::kDriveKI,
-                                        constants::Swerve::kDriveKD};
-  frc::PIDController steerPIDController{constants::Swerve::kSteerKP,
-                                        constants::Swerve::kSteerKI,
-                                        constants::Swerve::kSteerKD};
+  wpi::math::PIDController drivePIDController{constants::Swerve::kDriveKP,
+                                              constants::Swerve::kDriveKI,
+                                              constants::Swerve::kDriveKD};
+  wpi::math::PIDController steerPIDController{constants::Swerve::kSteerKP,
+                                              constants::Swerve::kSteerKI,
+                                              constants::Swerve::kSteerKD};
 
-  frc::sim::EncoderSim driveEncoderSim;
-  units::ampere_t driveCurrentSim{0};
-  frc::sim::EncoderSim steerEncoderSim;
-  units::ampere_t steerCurrentSim{0};
+  wpi::sim::EncoderSim driveEncoderSim;
+  wpi::units::ampere_t driveCurrentSim{0};
+  wpi::sim::EncoderSim steerEncoderSim;
+  wpi::units::ampere_t steerCurrentSim{0};
 };

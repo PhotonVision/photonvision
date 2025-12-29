@@ -17,7 +17,7 @@
 
 package org.photonvision.common.dataflow.websocket;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 public class UIProgramSettings {
     public UIProgramSettings(

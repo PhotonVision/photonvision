@@ -24,19 +24,6 @@
 
 package org.photonvision.simulation;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.cscore.VideoSource.ConnectionStrategy;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.util.PixelFormat;
-import edu.wpi.first.util.WPIUtilJNI;
-import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,6 +47,18 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.util.Pair;
+import org.wpilib.system.RobotController;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.util.WPIUtilJNI;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.apriltag.AprilTagFields;
+import org.wpilib.vision.camera.CvSource;
+import org.wpilib.vision.camera.OpenCvLoader;
+import org.wpilib.vision.camera.VideoSource.ConnectionStrategy;
+import org.wpilib.vision.stream.CameraServer;
 
 /**
  * A handle for simulating {@link PhotonCamera} values. Processing simulated targets through this
@@ -295,8 +294,8 @@ public class PhotonCameraSim implements AutoCloseable {
      */
     public boolean canSeeCorners(Point[] points) {
         for (var point : points) {
-            if (MathUtil.clamp(point.x, 0, prop.getResWidth()) != point.x
-                    || MathUtil.clamp(point.y, 0, prop.getResHeight()) != point.y) {
+            if (Math.clamp(point.x, 0, prop.getResWidth()) != point.x
+                    || Math.clamp(point.y, 0, prop.getResHeight()) != point.y) {
                 return false; // point is outside of resolution
             }
         }
