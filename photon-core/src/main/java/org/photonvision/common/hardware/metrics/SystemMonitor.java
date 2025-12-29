@@ -52,7 +52,7 @@ public class SystemMonitor {
 
     private static SystemMonitor instance;
 
-    private record NetworkTraffic(double sent, double recv) {}
+    private record NetworkTraffic(double sentBitRate, double recvBitRate) {}
 
     ProtobufPublisher<DeviceMetrics> metricPublisher =
             NetworkTablesManager.getInstance()
@@ -61,22 +61,39 @@ public class SystemMonitor {
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
 
-    private static SystemInfo si;
-    private static CentralProcessor cpu;
-    private static OperatingSystem os;
-    private static GlobalMemory mem;
-    private static HardwareAbstractionLayer hal;
-    private static FileStore fs;
-    private static NetworkIF managedIFace;
+    private SystemInfo si;
+    private CentralProcessor cpu;
+    private OperatingSystem os;
+    private GlobalMemory mem;
+    private HardwareAbstractionLayer hal;
+    private FileStore fs;
 
+    private double totalMemory = -1.0;
+
+    private double lastCpuLoad = 0;
+    private long lastCpuUpdate = 0;
     private long[] oldTicks;
-    private long lastNetworkUpdate = 0;
+
+    private NetworkIF monitoredIFace = null;
+    private long lastTrafficUpdate = 0;
+    private long lastBytesSent = 0;
+    private long lastBytesRecv = 0;
+    private NetworkTraffic lastResult = new NetworkTraffic(0, 0);
+
     public boolean writeMetricsToLog = false;
 
     private MetricsManager mm;
 
-    private static final long MB = (1024 * 1024);
+    private final String taskName = "SystemMonitorPublisher";
+    private final double minimumDeltaTime = 0.250; // seconds
+    private final long mebi = (1024 * 1024);
 
+    /**
+     * Returns the singleton instance of SystemMonitor. Creates the instance, thereby initializing it,
+     * on the first call.
+     *
+     * @return instance of SystemMonitor
+     */
     public static SystemMonitor getInstance() {
         if (instance == null) {
             if (Platform.isRaspberryPi()) {
@@ -91,7 +108,7 @@ public class SystemMonitor {
     }
 
     protected SystemMonitor() {
-        logger.info("Starting MetricsManagerOSHI");
+        logger.info("Starting SystemMonitor");
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true);
         GlobalConfig.set(
                 "oshi.os.linux.sensors.cpuTemperature.types",
@@ -105,32 +122,58 @@ public class SystemMonitor {
         mem = hal.getMemory();
 
         try {
-            // get the filesystem for the directory photonvision is running on
+            // get the filesystem for the directory photonvision is running in
             fs = Files.getFileStore(Path.of(""));
         } catch (IOException e) {
             logger.error("Couldn't get FileStore for " + Path.of(""));
             fs = null;
         }
 
+        // initialize CPU monitoring
         oldTicks = cpu.getSystemCpuLoadTicks();
 
-        // iFaces = hal.getNetworkIFs();
-        managedIFace =
-                getNetworkIfByName(
-                        ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
+        // initialize network traffic monitoring
+        selectNetworkIfByName(
+                ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
 
-        lastNetworkUpdate = System.currentTimeMillis();
-
+        // for comparison, TODO: remove before merging with main
         mm = new MetricsManager();
         mm.setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
     }
 
-    public static final String taskName = "SystemMonitorPublisher";
-
+    /**
+     * Starts the periodic system monitor that publishes performance metrics. The metrics are
+     * published every 5 seconds after a 2.5 second startup delay. The monitor can only be started
+     * once and repeated calls do nothing.
+     */
     public void startMonitor() {
+        startMonitor(2500, 5000);
+    }
+
+    /**
+     * Starts the periodic system monitor that publishes performance metrics. The metrics are
+     * published every millisUpdateInterval milliseconds. The monitor can only be started once and
+     * repeated calls do nothing.
+     *
+     * @param millisUpdateInterval the time between updates in units of milliseconds
+     */
+    public void startMonitor(long millisUpdateInterval) {
+        startMonitor(0, millisUpdateInterval);
+    }
+
+    /**
+     * Starts the periodic system monitor that publishes performance metrics. The metrics are
+     * published every millisUpdateInerval seconds after a millisStartDelay startup delay. The monitor
+     * can only be started once and repeated calls do nothing.
+     *
+     * @param millisStartDelay the delay before the metrics are first published
+     * @param millisUpdateInterval the time between updates in units of milliseconds
+     */
+    public void startMonitor(long millisStartDelay, long millisUpdateInterval) {
         if (!TimedTaskManager.getInstance().taskActive(taskName)) {
             logger.debug("Starting SystemMonitor ...");
-            TimedTaskManager.getInstance().addTask(taskName, this::publishMetrics, 2000, 5000);
+            TimedTaskManager.getInstance()
+                    .addTask(taskName, this::publishMetrics, millisStartDelay, millisUpdateInterval);
         } else {
             logger.warn("SystemMonitor already running!");
         }
@@ -161,11 +204,12 @@ public class SystemMonitor {
                         this.getGpuMem(),
                         this.getGpuMemUtil(),
                         this.getUsedDiskPct(),
+                        this.getUseableDiskSpace(),
                         this.getNpuUsage(),
                         this.getIpAddress(),
                         this.getUptime(),
-                        nt.sent,
-                        nt.recv);
+                        nt.sentBitRate,
+                        nt.recvBitRate);
 
         metricPublisher.set(metrics);
 
@@ -184,30 +228,43 @@ public class SystemMonitor {
         sb.append(String.format("CPU Temperature: %.2f °C, ", metrics.cpuTemp()));
         sb.append(String.format("NPU Usage: %s, ", Arrays.toString(metrics.npuUsage())));
         sb.append(String.format("Used Disk: %.2f%%, ", metrics.diskUtilPct()));
+        sb.append(String.format("Usable Disk Space: %.0f MB, ", metrics.diskUsableSpace() / mebi));
         sb.append(String.format("Memory: %.0f / %.0f MB, ", metrics.ramUtil(), metrics.ramMem()));
         sb.append(
                 String.format("GPU Memory: %.0f / %.0f MB, ", metrics.gpuMemUtil(), metrics.gpuMem()));
-        sb.append(String.format("CPU Throttle: %s, ", metrics.cpuThr()));
+        sb.append(
+                String.format("CPU Throttle: %s, ", metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
         sb.append(
                 String.format(
                         "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
-                        metrics.sent() / 1000, metrics.recv() / 1000));
+                        metrics.sentBitRate() / 1000, metrics.recvBitRate() / 1000));
         logger.debug(sb.toString());
     }
 
-    private NetworkIF getNetworkIfByName(String name) {
-        lastNetworkUpdate = System.currentTimeMillis();
+    private void resetNetworkTraffic() {
+        lastBytesSent = monitoredIFace.getBytesSent();
+        lastBytesRecv = monitoredIFace.getBytesRecv();
+        lastTrafficUpdate = System.currentTimeMillis();
+    }
+
+    private NetworkIF selectNetworkIfByName(String name) {
+        if (name.isBlank() || monitoredIFace != null && monitoredIFace.getName().equals(name)) {
+            return monitoredIFace;
+        }
         for (var iFace : hal.getNetworkIFs()) {
             if (iFace.getName().equals(name)) {
-                logger.debug("Monitoring network traffic on '" + iFace.getName() + "'");
+                logger.debug("Monitoring network traffic on '" + name + "'");
+                monitoredIFace = iFace;
+                resetNetworkTraffic();
                 return iFace;
             }
         }
-        logger.warn("Can't retrieve network interface '" + name + "'");
+        logger.warn("Can't monitor network interface '" + name + "'");
         return null;
     }
 
-    public void dumpMetricsToLog() {
+    /** Writes available information about the hardware to the log. */
+    public void logSystemInformation() {
         var sb = new StringBuilder();
         sb.append("*** System Information ***");
         sb.append(System.lineSeparator());
@@ -281,9 +338,43 @@ public class SystemMonitor {
     }
 
     /**
+     * Returns the total space available (in bytes) for the filesystem where PhotonVision is running
+     * (typicallay "/"). This doesn't report on other mounted filesystems, such as USB sticks.
+     *
+     * @return the number of bytes total, or -1 if the command fails
+     */
+    public long getTotalDiskSpace() {
+        if (fs != null) {
+            try {
+                return fs.getTotalSpace();
+            } catch (IOException e) {
+                logger.error("Couldn't retrieve total disk space", e);
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * Returns the free space available (in bytes) for the filesystem where PhotonVision is running
+     * (typicallay "/"). This doesn't report on other mounted filesystems, such as USB sticks.
+     *
+     * @return the number of bytes available, or -1 if the command fails
+     */
+    public long getUseableDiskSpace() {
+        if (fs != null) {
+            try {
+                return fs.getUsableSpace();
+            } catch (IOException e) {
+                logger.error("Couldn't retrieve usable disk space", e);
+            }
+        }
+        return -1;
+    }
+
+    /**
      * Get the percentage of disk space used.
      *
-     * @return The percentage of disk space used, or -1.0 if the command fails.
+     * @return The percentage of disk space used, or -1.0 if the command fails
      */
     public double getUsedDiskPct() {
         double usedPct;
@@ -312,40 +403,75 @@ public class SystemMonitor {
         return temperature;
     }
 
-    double totalMemory = -1.0;
-
+    /**
+     * Returns the total RAM
+     *
+     * @return total RAM in MB
+     */
     public double getTotalMemory() {
         if (totalMemory < 0) {
-            totalMemory = mem.getTotal() / MB;
+            totalMemory = mem.getTotal() / mebi;
         }
         return totalMemory;
     }
 
+    /**
+     * Returns the amount of memory in use
+     *
+     * @return the used RAM in MB
+     */
     public double getUsedMemory() {
-        return (mem.getTotal() - mem.getAvailable()) / MB;
+        return (mem.getTotal() - mem.getAvailable()) / mebi;
     }
 
+    /**
+     * Returns the time since system boot in seconds
+     *
+     * @return the uptime in seconds
+     */
     public long getUptime() {
         return os.getSystemUptime();
     }
 
-    public double getCpuUsage() {
-        var newTicks = cpu.getSystemCpuLoadTicks();
-        var cpuLoad = cpu.getSystemCpuLoadBetweenTicks(oldTicks, newTicks);
-        oldTicks = newTicks;
-        return 100.0 * cpuLoad;
+    /**
+     * The average load on the CPU from 0 to 100% since last called by using the tick counters.
+     *
+     * @return load on the cpu in %
+     */
+    public synchronized double getCpuUsage() {
+        long now = System.currentTimeMillis();
+        double dTime = (now - lastCpuUpdate) / 1000.0;
+        if (dTime > minimumDeltaTime) {
+            var newTicks = cpu.getSystemCpuLoadTicks();
+            lastCpuLoad = 100 * cpu.getSystemCpuLoadBetweenTicks(oldTicks, newTicks);
+            oldTicks = newTicks;
+            lastCpuUpdate = now;
+        }
+        return lastCpuLoad;
     }
 
+    /**
+     * Return the npu usage, if available. Platforms with NPUs will need to override this method to
+     * return a useful value.
+     *
+     * @return the NPU usage or an empty array if not available
+     */
     public double[] getNpuUsage() {
         return new double[0];
     }
 
+    /**
+     * Return a description of the CPU throttle state, if available. Platforms that provide this
+     * information will need to override this method to return a useful value.
+     *
+     * @return the CPU throttle state, or an empty String if not available.
+     */
     public String getCpuThrottleReason() {
         return "";
     }
 
     /**
-     * Get the total GPU memory in MB. This only runs once, as it won't change over time.
+     * Return the total GPU memory in MB. This only runs once, as it won't change over time.
      *
      * @return The total GPU memory in MB, or -1.0 if not avaialable on this platform.
      */
@@ -354,7 +480,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Get the GPU memory utilization as MBs.
+     * Return the GPU memory utilization as MBs.
      *
      * @return The GPU memory utilization in MBs, or -1.0 if not available on this platform.
      */
@@ -363,7 +489,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Get the IP address of the device.
+     * Return the IP address of the device.
      *
      * @return The IP address as a string, or an empty string if the command fails.
      */
@@ -373,68 +499,32 @@ public class SystemMonitor {
         return addr;
     }
 
-    private static NetworkTraffic lastResult = new NetworkTraffic(0, 0);
-
-    private NetworkTraffic getNetworkTraffic() {
+    private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
                 ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
-        if (managedIFace == null || !activeIFaceName.equals(managedIFace.getName())) {
-            managedIFace =
-                    getNetworkIfByName(
-                            ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
-            if (managedIFace == null) {
-                return new NetworkTraffic(-1, -1);
-            }
+        var iFace = selectNetworkIfByName(activeIFaceName);
+        if (iFace == null) {
+            return new NetworkTraffic(-1, -1);
         }
         long now = System.currentTimeMillis();
-        double dTime = (now - lastNetworkUpdate) / 1000.0;
-        if (dTime < 0.1) {
-            // not enough time between calls
-            return lastResult;
+        double dTime = (now - lastTrafficUpdate) / 1000.0;
+        if (dTime > minimumDeltaTime) {
+            // only update if it's been long enough since the last update
+            // otherwise, return the last value
+            iFace.updateAttributes();
+            long bytesSent = iFace.getBytesSent();
+            long bytesRecv = iFace.getBytesRecv();
+            double sentBitRate = 8 * (bytesSent - lastBytesSent) / dTime;
+            double recvBitRate = 8 * (bytesRecv - lastBytesRecv) / dTime;
+            lastBytesSent = bytesSent;
+            lastBytesRecv = bytesRecv;
+            lastResult = new NetworkTraffic(sentBitRate, recvBitRate);
+            lastTrafficUpdate = now;
         }
-        long lastBytesSent = managedIFace.getBytesSent();
-        long lastBytesRecv = managedIFace.getBytesRecv();
-        managedIFace.updateAttributes();
-        long sent = managedIFace.getBytesSent() - lastBytesSent;
-        long recv = managedIFace.getBytesRecv() - lastBytesRecv;
-        lastNetworkUpdate = now;
-        // multiply values by 8 to convert from bytes to bits
-        lastResult = new NetworkTraffic(8 * sent / dTime, 8 * recv / dTime);
         return lastResult;
     }
 
-    public void periodic() {
-        StringBuilder sb = new StringBuilder();
-        double total = 0;
-
-        sb.append("System Metrics Update:\n");
-        total += timeIt(sb, () -> String.format("System Uptime: %d", getUptime()));
-        total += timeIt(sb, () -> "CPU Load: " + Arrays.toString(cpu.getSystemLoadAverage(3)));
-        total += timeIt(sb, () -> String.format("CPU Usage: %.2f%%", getCpuUsage()));
-        total += timeIt(sb, () -> String.format("CPU Temperature: %.2f °C", getCpuTemperature()));
-        total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(getNpuUsage())));
-        total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
-        total +=
-                timeIt(
-                        sb, () -> String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
-        total +=
-                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", getGpuMemUtil(), getGpuMem()));
-        total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
-        total +=
-                timeIt(
-                        sb,
-                        () -> {
-                            var nt = getNetworkTraffic();
-                            return String.format(
-                                    "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
-                                    nt.sent() / 1000, nt.recv() / 1000);
-                        });
-        sb.append(String.format("==========\n%7.3f ms\n", total));
-
-        logger.info(sb.toString());
-    }
-
-    public void testSM() {
+    private void testSM() {
         StringBuilder sb = new StringBuilder();
         double total = 0;
 
@@ -455,7 +545,7 @@ public class SystemMonitor {
         logger.info(sb.toString());
     }
 
-    public void testMM() {
+    private void testMM() {
         StringBuilder sb = new StringBuilder();
         double total = 0;
 
@@ -477,7 +567,7 @@ public class SystemMonitor {
         logger.info(sb.toString());
     }
 
-    public void compare() {
+    private void compare() {
         testSM();
         testMM();
     }
@@ -488,9 +578,9 @@ public class SystemMonitor {
      *
      * @param sb A StringBuilder used to collect the output from the supplier.
      * @param source A supplier that takes no arguments and returns a string.
-     * @return The time (in ms) `source` required to produce the output.
+     * @return The time (in ms) required to produce the output.
      */
-    public double timeIt(StringBuilder sb, Supplier<String> source) {
+    private double timeIt(StringBuilder sb, Supplier<String> source) {
         long start = System.nanoTime();
         String resp = source.get();
         var delta = (System.nanoTime() - start) / 1000000.0;

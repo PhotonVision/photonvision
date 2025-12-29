@@ -300,7 +300,7 @@ public class Main {
         }
 
         logger.debug("Loading SystemMonitor...");
-        SystemMonitor.getInstance().dumpMetricsToLog();
+        SystemMonitor.getInstance().logSystemInformation();
         SystemMonitor.getInstance().writeMetricsToLog = true;
         SystemMonitor.getInstance().startMonitor();
 

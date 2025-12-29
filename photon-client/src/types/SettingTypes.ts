@@ -34,11 +34,12 @@ export interface MetricData {
   gpuMem?: number;
   gpuMemUtil?: number;
   diskUtilPct?: number;
+  diskUsableSpace?: number;
   npuUsage?: number[];
   ipAddress?: string;
   uptime?: number;
-  sent?: number;
-  recv?: number;
+  sentBitRate?: number;
+  recvBitRate?: number;
 }
 
 export enum NetworkConnectionType {

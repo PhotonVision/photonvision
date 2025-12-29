@@ -268,6 +268,7 @@ public class MetricsManager {
                         this.getGpuMem(),
                         this.getGpuMemUtil(),
                         this.getUsedDiskPct(),
+                        0,
                         this.getNpuUsage(),
                         this.getIpAddress(),
                         this.getUptime(),

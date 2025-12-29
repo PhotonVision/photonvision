@@ -83,4 +83,5 @@ message ProtobufDeviceMetrics {
   double uptime = 11;
   double sent = 12;
   double recv = 13;
+  double disk_usable_space = 14;
 }

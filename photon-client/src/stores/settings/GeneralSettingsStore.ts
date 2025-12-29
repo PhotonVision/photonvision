@@ -62,11 +62,12 @@ export const useSettingsStore = defineStore("settings", {
       gpuMem: undefined,
       gpuMemUtil: undefined,
       diskUtilPct: undefined,
+      diskUsableSpace: undefined,
       npuUsage: undefined,
       ipAddress: undefined,
       uptime: undefined,
-      sent: undefined,
-      recv: undefined
+      sentBitRate: undefined,
+      recvBitRate: undefined
     },
     currentFieldLayout: {
       field: {
@@ -98,11 +99,12 @@ export const useSettingsStore = defineStore("settings", {
         gpuMem: data.gpuMem || undefined,
         gpuMemUtil: data.gpuMemUtil || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
+        diskUsableSpace: data.diskUsableSpace || undefined,
         npuUsage: data.npuUsage || undefined,
         ipAddress: data.ipAddress || undefined,
         uptime: data.uptime || undefined,
-        sent: data.sent || undefined,
-        recv: data.recv || undefined
+        sentBitRate: data.sentBitRate || undefined,
+        recvBitRate: data.recvBitRate || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {

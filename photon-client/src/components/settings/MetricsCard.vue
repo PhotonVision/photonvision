@@ -69,9 +69,9 @@ const platformMetrics = computed<MetricItem[]>(() => {
     {
       header: "Network Traffic",
       value:
-        metrics.sent === undefined || metrics.recv === undefined
+        metrics.sentBitRate === undefined || metrics.recvBitRate === undefined
           ? "Missing"
-          : `↑${(metrics.sent / 1e6).toFixed(3).padStart(8)} Mbps | ↓${(metrics.recv / 1e6).toFixed(3).padStart(8)} Mpbs`
+          : `↑${(metrics.sentBitRate / 1e6).toFixed(3).padStart(8)} Mbps | ↓${(metrics.recvBitRate / 1e6).toFixed(3).padStart(8)} Mpbs`
     }
   ];
 
