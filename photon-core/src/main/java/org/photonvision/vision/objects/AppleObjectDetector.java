@@ -127,50 +127,44 @@ public class AppleObjectDetector implements ObjectDetector {
         try (var frameArena = AllocatingSwiftArena.ofConfined()) {
             // Convert to BGRA format (required by Swift side)
             Mat bgra = new Mat();
-            if (in.channels() == 3) {
+            var matFilled = false;
+
+            if (in.channels() == 1) {
+                Imgproc.cvtColor(in, bgra, Imgproc.COLOR_GRAY2BGRA);
+                matFilled = true;
+            } else if (in.channels() == 3) {
                 Imgproc.cvtColor(in, bgra, Imgproc.COLOR_BGR2BGRA);
+                matFilled = true;
             } else if (in.channels() == 4) {
                 bgra = in;
             } else {
-                Imgproc.cvtColor(in, bgra, Imgproc.COLOR_GRAY2BGRA);
+                logger.error("AppleObjectDetector: Input image has unsupported number of channels: " + in.channels());
+                return new ArrayList<>();
             }
 
-            // Get image dimensions
-            int width = bgra.width();
-            int height = bgra.height();
-            int totalBytes = height * width * 4; // BGRA = 4 bytes per pixel
+            var mem = MemorySegment.ofAddress(bgra.dataAddr());
+            var width = in.width();
+            var height = in.height();
 
-            // Allocate memory and copy image data
-            MemorySegment imageData = frameArena.allocate(totalBytes, 1);
-            byte[] buffer = new byte[totalBytes];
-            bgra.get(0, 0, buffer);
-            imageData.copyFrom(MemorySegment.ofArray(buffer));
-
-            // Call Swift detector
             var results =
                     swiftDetector.detect(
-                            imageData,
-                            (long) width,
-                            (long) height,
-                            2, // BGRA pixel format
+                            mem,
+                            width,
+                            height,
                             boxThreshold,
-                            nmsThresh, // Passed but not used by Vision framework
                             frameArena);
 
-            // Convert Swift results to Java
             List<NeuralNetworkPipeResult> detections = new ArrayList<>();
             long count = results.count();
 
             for (int i = 0; i < count; i++) {
                 var detection = results.get(i, frameArena);
 
-                // Swift returns normalized coordinates (0-1), convert to pixel coordinates
-                double x = detection.getX() * width;
-                double y = detection.getY() * height;
                 double w = detection.getWidth() * width;
                 double h = detection.getHeight() * height;
+                double x = detection.getX() * width - w / 2.0;
+                double y = detection.getY() * height - h / 2.0;
 
-                // Create bounding box (x, y are center coordinates in Swift, convert to top-left)
                 Rect2d bbox = new Rect2d(x, y, w, h);
 
                 detections.add(
@@ -178,8 +172,7 @@ public class AppleObjectDetector implements ObjectDetector {
                                 bbox, (int) detection.getClassId(), detection.getConfidence()));
             }
 
-            // Clean up BGRA mat if we created it
-            if (in.channels() == 3 || in.channels() == 1) {
+            if (matFilled) {
                 bgra.release();
             }
 

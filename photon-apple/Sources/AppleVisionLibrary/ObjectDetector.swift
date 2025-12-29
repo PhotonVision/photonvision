@@ -18,6 +18,7 @@ import CoreML
 import CoreImage
 import CoreVideo
 
+
 // MARK: - Debug Logging
 
 /// Print with source location for debugging
@@ -51,7 +52,6 @@ public class ObjectDetector {
         let modelURL = URL(fileURLWithPath: modelPath)
 
         do {
-            // Check if this is an uncompiled .mlmodel file
             let compiledURL: URL
             if modelPath.hasSuffix(".mlmodel") {
                 // Compile the model to a temporary location
@@ -64,20 +64,21 @@ public class ObjectDetector {
             }
 
             let config = MLModelConfiguration()
-            config.computeUnits = .all  // Use all available compute units (CPU, GPU, Neural Engine)
+            config.computeUnits = .all
             let model = try MLModel(contentsOf: compiledURL, configuration: config)
             let vn = try VNCoreMLModel(for: model)
-            self.vnModel = vn
+            vnModel = vn
 
+            var err: (any Error)?
             // Create Vision request with completion handler
-            self.request = VNCoreMLRequest(model: vn) { request, error in
-                if let error = error {
-                    p("Vision request failed: \(error)")
-                }
+            request = VNCoreMLRequest(model: vn) { request, error in
+                err = error
             }
 
-            // Vision framework will handle image scaling automatically
-            // scaleFill will resize and crop the image to fit the model's expected input size
+            if let error = err {
+                throw error
+            }
+
             request!.imageCropAndScaleOption = .scaleFill
 
             p("CoreML model loaded successfully")
@@ -99,29 +100,49 @@ public class ObjectDetector {
     ///   - nmsThreshold: Non-maximum suppression IoU threshold (0.0 - 1.0)
     /// - Returns: Array of detection results
     public func detect(
-        imageData: UnsafeRawPointer,
+        imageData: UnsafeMutableRawPointer,
         width: Int,
         height: Int,
-        pixelFormat: Int32,
         boxThreshold: Double,
-        nmsThreshold: Double
     ) -> DetectionResultArray {
         // Ensure model is loaded
-        guard ensureModelLoaded(), self.vnModel != nil, let request = self.request else {
+        guard ensureModelLoaded(), vnModel != nil, let request = request else {
             p("Model not loaded, returning empty results")
             return DetectionResultArray(results: [])
         }
 
         // Create CVPixelBuffer from BGRA data
         // Vision framework will handle resizing this to the model's input size
-        guard let pixelBuffer = createBGRAPixelBuffer(
-            from: imageData,
-            width: width,
-            height: height
-        ) else {
-            p("Failed to create CVPixelBuffer")
+        // guard let pixelBuffer = createBGRAPixelBuffer(
+        //     from: imageData,
+        //     width: width,
+        //     height: height
+        // ) else {
+        //     p("Failed to create CVPixelBuffer")
+        //     return DetectionResultArray(results: [])
+        // }
+        // p("copy pixel buffer")
+
+        var pixelBuffer: CVPixelBuffer?
+
+        let result = CVPixelBufferCreateWithBytes(
+            kCFAllocatorDefault,
+            width,
+            height,
+            kCVPixelFormatType_32BGRA,
+            imageData,
+            width * 4,        // Bytes per row
+            nil,     // Called when CVPixelBuffer is released
+            nil,                 // Release callback context
+            nil,
+            &pixelBuffer
+        )
+
+        guard result == kCVReturnSuccess, let pixelBuffer = pixelBuffer else {
+            p("Failed to create CVPixelBuffer: \(result)")
             return DetectionResultArray(results: [])
         }
+        p("nocopy pixel buffer")
 
         // Perform detection using Vision framework
         // Vision automatically resizes and crops the image to fit the model
@@ -152,7 +173,6 @@ public class ObjectDetector {
             let topLabel = observation.labels.first
             let classId = topLabel?.identifier.split(separator: " ").first.flatMap { Int32($0) } ?? -1
 
-            // Vision uses bottom-left origin, use midX/midY for center and flip Y coordinate
             return DetectionResult(
                 x: Double(boundingBox.midX),
                 y: Double(1.0 - boundingBox.midY),
@@ -192,54 +212,5 @@ public class ObjectDetector {
         ]
 
         return DetectionResultArray(results: fakeResults)
-    }
-
-    // MARK: - Private Helper Methods
-
-    /// Create a CVPixelBuffer from BGRA image data
-    /// - Parameters:
-    ///   - imageData: Pointer to raw BGRA bytes from Java
-    ///   - width: Image width in pixels
-    ///   - height: Image height in pixels
-    /// - Returns: CVPixelBuffer containing a copy of the image data
-    private func createBGRAPixelBuffer(
-        from imageData: UnsafeRawPointer,
-        width: Int,
-        height: Int
-    ) -> CVPixelBuffer? {
-        var pixelBuffer: CVPixelBuffer?
-        let status = CVPixelBufferCreate(
-            kCFAllocatorDefault,
-            width,
-            height,
-            kCVPixelFormatType_32BGRA,
-            nil,
-            &pixelBuffer
-        )
-
-        guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
-            p("Failed to create CVPixelBuffer: \(status)")
-            return nil
-        }
-
-        CVPixelBufferLockBaseAddress(buffer, [])
-        defer { CVPixelBufferUnlockBaseAddress(buffer, []) }
-
-        guard let destData = CVPixelBufferGetBaseAddress(buffer) else {
-            p("Failed to get CVPixelBuffer base address")
-            return nil
-        }
-
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(buffer)
-        let srcBytesPerRow = width * 4  // BGRA = 4 channels
-
-        // Copy BGRA data row by row
-        for row in 0..<height {
-            let srcRowPtr = imageData.advanced(by: row * srcBytesPerRow)
-            let dstRowPtr = destData.advanced(by: row * bytesPerRow)
-            memcpy(dstRowPtr, srcRowPtr, srcBytesPerRow)
-        }
-
-        return buffer
     }
 }
