@@ -49,11 +49,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - name: Publish SwiftKit to Maven Local (macOS only)
-        if: runner.os == 'macOS'
-        run: |
-          cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
       - name: Delete duplicate toolchains
@@ -63,7 +58,7 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
-        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
+        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check -PphotonAppleForceStubs
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
@@ -232,20 +227,15 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
-      - name: Publish SwiftKit to Maven Local (macOS only)
-        if: runner.os == 'macOS'
-        run: |
-          cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
-      - run: ./gradlew photon-targeting:build photon-lib:build
+      - run: ./gradlew photon-targeting:build photon-lib:build -PphotonAppleForceStubs
         name: Build with Gradle
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PphotonAppleForceStubs
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -PphotonAppleForceStubs
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}

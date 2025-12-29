@@ -3,9 +3,11 @@ plugins {
 }
 
 def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
+def forceStubs = project.hasProperty('photonAppleForceStubs')
+def useRealImplementation = isMacOS && !forceStubs
 
 def javaVersion = (
-        isMacOS   ? 24 :
+        useRealImplementation ? 24 :
         17
 )
 
@@ -17,8 +19,8 @@ java {
 
 
 
-if (isMacOS) {
-    // macOS: Build Swift library and use real implementations
+if (useRealImplementation) {
+    // macOS with real implementation: Build Swift library and use real implementations
     sourceSets {
         main {
             java {
@@ -79,6 +81,12 @@ if (isMacOS) {
             java {
                 srcDirs = [
                     'src/stub/java']  // Use stubs instead
+            }
+        }
+        // Don't compile tests on non-macOS (they require Java 24 APIs)
+        test {
+            java {
+                srcDirs = []
             }
         }
     }
