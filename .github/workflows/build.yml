@@ -44,15 +44,8 @@ jobs:
           submodules: recursive
       - name: Fetch tags
         run: git fetch --tags --force
-      - name: Install Java 24
-        uses: actions/setup-java@v4
-        if: runner.os == 'macOS'
-        with:
-          java-version: 24
-          distribution: temurin
       - name: Install Java 17
         uses: actions/setup-java@v4
-        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -60,7 +53,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal
+          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:jextract
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
       - name: Delete duplicate toolchains
@@ -93,10 +86,10 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
-      - name: Install Java 17
+      - name: Install Java 24
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 24
           distribution: temurin
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -134,10 +127,10 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
-      - name: Install Java 17
+      - name: Install Java 24
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 24
           distribution: temurin
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -232,16 +225,8 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: Install Java 24
-        uses: actions/setup-java@v4
-        if: runner.os == 'macOS'
-        with:
-          java-version: 24
-          distribution: temurin
-          architecture: ${{ matrix.architecture }}
       - name: Install Java 17
         uses: actions/setup-java@v4
-        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -251,7 +236,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal
+          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:jextract
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
@@ -370,16 +355,8 @@ jobs:
           submodules: recursive
       - name: Install Java 24
         uses: actions/setup-java@v4
-        if: runner.os == 'macOS'
         with:
           java-version: 24
-          distribution: temurin
-          architecture: ${{ matrix.architecture }}
-      - name: Install Java 17
-        uses: actions/setup-java@v4
-        if: runner.os != 'macOS'
-        with:
-          java-version: 17
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - name: Install pnpm
@@ -396,7 +373,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal
+          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:jextract
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
@@ -439,15 +416,8 @@ jobs:
     steps:
       - name: Install Java 24
         uses: actions/setup-java@v4
-        if: runner.os == 'macOS'
         with:
           java-version: 24
-          distribution: temurin
-      - name: Install Java 17
-        uses: actions/setup-java@v4
-        if: runner.os != 'macOS'
-        with:
-          java-version: 17
           distribution: temurin
       - uses: actions/download-artifact@v4
         with:
