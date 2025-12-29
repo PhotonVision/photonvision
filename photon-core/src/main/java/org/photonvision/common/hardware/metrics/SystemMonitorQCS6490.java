@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware.metrics;
 
 public class SystemMonitorQCS6490 extends SystemMonitor {
-    
     @Override
     protected String getThermalZoneTypes() {
         return "cpu0-thermal";
