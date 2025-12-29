@@ -24,7 +24,7 @@ package com.photonvision.apple;
  * classes. The static initializer in the JExtract-generated code will try to load libraries, so we
  * extract them to java.library.path first.
  */
-public class AppleVisionLibraryLoader {
+public class PhotonAppleLibraryLoader {
     private static boolean initialized = false;
 
     /**

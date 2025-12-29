@@ -8,11 +8,79 @@ java {
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDirs = ['src/main/java', '.build/plugins/outputs/photon-apple/AppleVisionLibrary/destination/JExtractSwiftPlugin/src/generated/java']
+def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
+
+if (isMacOS) {
+    // macOS: Build Swift library and use real implementations
+    sourceSets {
+        main {
+            java {
+                srcDirs = ['src/main/java', '.build/plugins/outputs/photon-apple/AppleVisionLibrary/destination/JExtractSwiftPlugin/src/generated/java']
+            }
         }
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+
+        // SwiftKit dependencies (only on macOS)
+        api 'org.swift.swiftkit:swiftkit-core:1.0-SNAPSHOT'
+        api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
+    }
+
+    // Task to clean cached dylibs
+    task cleanCachedDylibs(type: Exec) {
+        commandLine 'sh', '-c', 'rm -rf ../photon-server/photonvision_config/nativelibs/*.dylib 2>/dev/null || true'
+        workingDir projectDir
+        doLast {
+            println "Cleaned cached dylibs from photon-server/photonvision_config/nativelibs"
+        }
+    }
+
+    // Task to build Swift library and generate Java bindings
+    task buildSwift(type: Exec) {
+        dependsOn cleanCachedDylibs
+        commandLine 'swift', 'build', '-c', 'release'
+        workingDir projectDir
+    }
+
+    // Package Swift dylibs into JAR resources for portable deployment
+    processResources {
+        dependsOn buildSwift
+        def buildDir = "${projectDir}/.build/release"
+        from(buildDir) {
+            include '*.dylib'
+            into 'native/macos'
+        }
+    }
+
+    // Ensure Swift library is built before compiling Java
+    tasks.compileJava.dependsOn(buildSwift)
+
+    test {
+        useJUnitPlatform()
+        // Skip tests by default (requires macOS and CoreML model)
+        enabled = project.hasProperty('runAppleTests')
+    }
+
+} else {
+    // Linux/Windows: Use stub implementations, skip Swift build
+    sourceSets {
+        main {
+            java {
+                srcDirs = ['src/stub/java']  // Use stubs instead
+            }
+        }
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+        // No SwiftKit dependencies on non-macOS
+    }
+
+    test {
+        useJUnitPlatform()
+        enabled = false  // Can't run tests without real implementation
     }
 }
 
@@ -20,55 +88,3 @@ repositories {
     mavenCentral()
     mavenLocal()
 }
-
-dependencies {
-    // JUnit 5 for testing
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
-
-    // SwiftKit dependencies from local Maven (published by Swift Package Manager)
-    // Use 'api' to expose these to consumers (photon-core needs AllocatingSwiftArena)
-    api 'org.swift.swiftkit:swiftkit-core:1.0-SNAPSHOT'
-    api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
-}
-
-test {
-    useJUnitPlatform()
-    // Skip tests by default (requires macOS and CoreML model)
-    enabled = project.hasProperty('runAppleTests')
-}
-
-// Task to clean cached dylibs before Swift build (critical for preventing stale library issues)
-task cleanCachedDylibs(type: Exec) {
-    commandLine 'sh', '-c', 'rm -rf ../photon-server/photonvision_config/nativelibs/*.dylib 2>/dev/null || true'
-    workingDir projectDir
-    doLast {
-        println "Cleaned cached dylibs from photon-server/photonvision_config/nativelibs"
-    }
-}
-
-// Task to build Swift library and generate Java bindings
-task buildSwift(type: Exec) {
-    dependsOn cleanCachedDylibs
-    commandLine 'swift', 'build', '-c', 'release'
-    workingDir projectDir
-}
-
-// TODO: SwiftKit publishing is broken when parent gradle passes -x flags
-// Manual publish required: cd photon-apple/swift-java && ./gradlew publishToMavenLocal
-// This needs to be run once after cloning or when swift-java is updated
-
-// Package Swift dylibs into JAR resources for portable deployment
-processResources {
-    dependsOn buildSwift
-
-    // Package Swift dylibs from .build/release into JAR at native/macos/
-    def buildDir = "${projectDir}/.build/release"
-
-    from(buildDir) {
-        include '*.dylib'
-        into 'native/macos'
-    }
-}
-
-// Ensure Swift library is built before compiling Java
-tasks.compileJava.dependsOn(buildSwift)

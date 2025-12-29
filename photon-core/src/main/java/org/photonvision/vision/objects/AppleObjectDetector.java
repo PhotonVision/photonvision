@@ -30,7 +30,8 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
-import org.swift.swiftkit.ffm.AllocatingSwiftArena;
+import com.photonvision.apple.SwiftArena;
+
 
 /**
  * Manages an object detector using Apple's CoreML and Vision framework backend.
@@ -48,7 +49,7 @@ public class AppleObjectDetector implements ObjectDetector {
     private AtomicBoolean released = new AtomicBoolean(false);
 
     /** Swift detector arena (must outlive the detector instance) */
-    private final AllocatingSwiftArena detectorArena;
+    private final SwiftArena detectorArena;
 
     /** Swift ObjectDetector instance */
     private final com.photonvision.apple.ObjectDetector swiftDetector;
@@ -75,14 +76,17 @@ public class AppleObjectDetector implements ObjectDetector {
         this.model = model;
 
         try {
+            // Initialize and extract native libraries before creating detector
+            com.photonvision.apple.PhotonAppleLibraryLoader.initialize();
+
             // Create arena for the detector (must outlive the detector)
             // Use ofAuto() instead of ofConfined() to allow access from VisionRunner thread
-            this.detectorArena = AllocatingSwiftArena.ofAuto();
+            this.detectorArena = SwiftArena.ofAuto();
 
             // Initialize Swift ObjectDetector
             this.swiftDetector =
                     com.photonvision.apple.ObjectDetector.init(
-                            model.modelFile.getAbsolutePath(), detectorArena);
+                            model.modelFile.getAbsolutePath(), detectorArena.unwrap());
 
             logger.info("Created AppleObjectDetector for model: " + model.getNickname());
         } catch (Exception e) {
@@ -124,7 +128,7 @@ public class AppleObjectDetector implements ObjectDetector {
             throw new IllegalStateException("AppleObjectDetector has been released");
         }
 
-        try (var frameArena = AllocatingSwiftArena.ofConfined()) {
+        try (var frameArena = SwiftArena.ofConfined()) {
             // Convert to BGRA format (required by Swift side)
             Mat bgra = new Mat();
             var matFilled = false;
@@ -152,13 +156,13 @@ public class AppleObjectDetector implements ObjectDetector {
                             width,
                             height,
                             boxThreshold,
-                            frameArena);
+                            frameArena.unwrap());
 
             List<NeuralNetworkPipeResult> detections = new ArrayList<>();
             long count = results.count();
 
             for (int i = 0; i < count; i++) {
-                var detection = results.get(i, frameArena);
+                var detection = results.get(i, frameArena.unwrap());
 
                 double w = detection.getWidth() * width;
                 double h = detection.getHeight() * height;

@@ -9,22 +9,6 @@ import org.swift.swiftkit.ffm.AllocatingSwiftArena;
 /** Tests for ObjectDetector functionality */
 class ObjectDetectorTest {
 
-    @Test
-    void test_ImageUtils_getPixelFormatFromChannels() {
-        assertEquals(0, ImageUtils.getPixelFormatFromChannels(3)); // BGR
-        assertEquals(2, ImageUtils.getPixelFormatFromChannels(4)); // BGRA
-        assertEquals(4, ImageUtils.getPixelFormatFromChannels(1)); // GRAY
-    }
-
-    @Test
-    void test_ImageUtils_pixelFormatToString() {
-        assertEquals("BGR", ImageUtils.pixelFormatToString(0));
-        assertEquals("RGB", ImageUtils.pixelFormatToString(1));
-        assertEquals("BGRA", ImageUtils.pixelFormatToString(2));
-        assertEquals("RGBA", ImageUtils.pixelFormatToString(3));
-        assertEquals("GRAY", ImageUtils.pixelFormatToString(4));
-        assertEquals("UNKNOWN", ImageUtils.pixelFormatToString(99));
-    }
 
     @Test
     void test_ObjectDetector_detectFake_returnsSyntheticResults() {

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.objects;
 
-import com.photonvision.apple.AppleVisionLibraryLoader;
 import java.io.File;
 import java.util.Arrays;
 import org.opencv.core.Size;
@@ -76,9 +75,6 @@ public class AppleModel implements Model {
 
     @Override
     public ObjectDetector load() {
-        // Initialize and extract native libraries before creating detector
-        AppleVisionLibraryLoader.initialize();
-
         return new AppleObjectDetector(
                 this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
     }
