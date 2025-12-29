@@ -28,8 +28,8 @@ jobs:
         include:
           - os: windows-2022
             architecture: x64
-          - os: macos-14
-            architecture: aarch64
+          - os: macos-26
+            architecture: arm64
           - os: ubuntu-22.04
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
@@ -44,8 +44,15 @@ jobs:
           submodules: recursive
       - name: Fetch tags
         run: git fetch --tags --force
+      - name: Install Java 24
+        uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 24
+          distribution: temurin
       - name: Install Java 17
         uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -211,7 +218,7 @@ jobs:
           - os: windows-2022
             artifact-name: Win64
             architecture: x64
-          - os: macos-14
+          - os: macos-26
             artifact-name: macOS
             architecture: aarch64
           - os: ubuntu-22.04
@@ -225,8 +232,16 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+      - name: Install Java 24
+        uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 24
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
       - name: Install Java 17
         uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -353,8 +368,16 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
+      - name: Install Java 24
+        uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 24
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
       - name: Install Java 17
         uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -414,8 +437,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+      - name: Install Java 24
+        uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 24
+          distribution: temurin
       - name: Install Java 17
         uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin

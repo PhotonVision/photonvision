@@ -2,13 +2,20 @@ plugins {
     id 'java-library'
 }
 
+def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
+
+def javaVersion = (
+        isMacOS   ? 24 :
+        17
+)
+
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(24)
+        languageVersion = JavaLanguageVersion.of(javaVersion)
     }
 }
 
-def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
+
 
 if (isMacOS) {
     // macOS: Build Swift library and use real implementations
