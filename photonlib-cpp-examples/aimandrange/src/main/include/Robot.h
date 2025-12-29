@@ -24,15 +24,15 @@
 
 #pragma once
 
-#include <frc/TimedRobot.h>
-#include <frc/XboxController.h>
 #include <photon/PhotonCamera.h>
+#include <wpi/driverstation/XboxController.hpp>
+#include <wpi/opmode/TimedRobot.hpp>
 
 #include "Constants.h"
 #include "VisionSim.h"
 #include "subsystems/SwerveDrive.h"
 
-class Robot : public frc::TimedRobot {
+class Robot : public wpi::TimedRobot {
  public:
   void RobotInit() override;
   void RobotPeriodic() override;
@@ -54,7 +54,7 @@ class Robot : public frc::TimedRobot {
   photon::PhotonCamera camera{constants::Vision::kCameraName};
   SwerveDrive drivetrain{};
   VisionSim vision{&camera};
-  frc::XboxController controller{0};
+  wpi::XboxController controller{0};
   static constexpr auto VISION_TURN_kP = 0.01;
   static constexpr auto VISION_DES_ANGLE = 0.0_deg;
   static constexpr auto VISION_STRAFE_kP = 0.5;

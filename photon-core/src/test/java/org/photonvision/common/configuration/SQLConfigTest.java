@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -43,6 +42,7 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class SQLConfigTest {
     @TempDir private Path tmpDir;

@@ -19,7 +19,7 @@
 
 #include <Eigen/Core>
 #include <sleipnir/optimization/solver/exit_status.hpp>
-#include <wpi/expected>
+#include <wpi/util/expected>
 
 namespace constrained_solvepnp {
 using casadi_real = double;
@@ -40,7 +40,7 @@ using RobotStateMat = Eigen::Matrix<casadi_real, 3, 1>;
  * to this. The number of columns in field2points and point_observations just be
  * exactly 4x nTags.
  */
-wpi::expected<RobotStateMat, slp::ExitStatus> do_optimization(
+wpi::util::expected<RobotStateMat, slp::ExitStatus> do_optimization(
     bool heading_free, int nTags, CameraCalibration cameraCal,
     // Note that casadi is column major, apparently
     Eigen::Matrix<casadi_real, 4, 4, Eigen::ColMajor> robot2camera,

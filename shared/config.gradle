@@ -1,6 +1,5 @@
 // Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
-nativeUtils.withCrossLinuxArm32()
 nativeUtils.withCrossLinuxArm64()
 nativeUtils.withCrossSystemCore()
 
