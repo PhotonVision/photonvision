@@ -119,6 +119,7 @@ public class VisionSystemSim {
     /**
      * Remove a simulated camera from this vision system.
      *
+     * @param cameraSim The camera to remove
      * @return If the camera was present and removed
      */
     public boolean removeCamera(PhotonCameraSim cameraSim) {
@@ -202,6 +203,7 @@ public class VisionSystemSim {
     /**
      * Reset the transform history for this camera to just the current transform.
      *
+     * @param cameraSim The camera to reset
      * @return If the cameraSim was valid and transforms were reset
      */
     public boolean resetCameraTransforms(PhotonCameraSim cameraSim) {
@@ -214,6 +216,11 @@ public class VisionSystemSim {
         return true;
     }
 
+    /**
+     * Returns all the vision targets on the field.
+     *
+     * @return The vision targets
+     */
     public Set<VisionTargetSim> getVisionTargets() {
         var all = new HashSet<VisionTargetSim>();
         for (var entry : targetSets.entrySet()) {
@@ -222,6 +229,12 @@ public class VisionSystemSim {
         return all;
     }
 
+    /**
+     * Returns all the vision targets of the specified type on the field.
+     *
+     * @param type The type of vision targets to return
+     * @return The vision targets
+     */
     public Set<VisionTargetSim> getVisionTargets(String type) {
         return targetSets.get(type);
     }
@@ -276,18 +289,33 @@ public class VisionSystemSim {
         }
     }
 
+    /** Removes every {@link VisionTargetSim} from the simulated field. */
     public void clearVisionTargets() {
         targetSets.clear();
     }
 
+    /** Removes all simulated AprilTag targets from the simulated field. */
     public void clearAprilTags() {
         removeVisionTargets("apriltag");
     }
 
+    /**
+     * Removes every {@link VisionTargetSim} of the specified type from the simulated field.
+     *
+     * @param type Type of target (e.g. "cargo"). Same as the type passed into {@link
+     *     #addVisionTargets(String, VisionTargetSim...)}
+     * @return The removed targets, or null if no targets of the specified type exist
+     */
     public Set<VisionTargetSim> removeVisionTargets(String type) {
         return targetSets.remove(type);
     }
 
+    /**
+     * Removes the specified {@link VisionTargetSim}s from the simulated field.
+     *
+     * @param targets The targets to remove
+     * @return The targets that were actually removed
+     */
     public Set<VisionTargetSim> removeVisionTargets(VisionTargetSim... targets) {
         var removeList = List.of(targets);
         var removedSet = new HashSet<VisionTargetSim>();
@@ -305,7 +333,11 @@ public class VisionSystemSim {
         return removedSet;
     }
 
-    /** Get the latest robot pose in meters saved by the vision system. */
+    /**
+     * Get the latest robot pose in meters saved by the vision system.
+     *
+     * @return The latest robot pose
+     */
     public Pose3d getRobotPose() {
         return getRobotPose(Timer.getFPGATimestamp());
     }
@@ -314,17 +346,26 @@ public class VisionSystemSim {
      * Get the robot pose in meters saved by the vision system at this timestamp.
      *
      * @param timestamp Timestamp of the desired robot pose
+     * @return The robot pose
      */
     public Pose3d getRobotPose(double timestamp) {
         return robotPoseBuffer.getSample(timestamp).orElse(new Pose3d());
     }
 
-    /** Clears all previous robot poses and sets robotPose at current time. */
+    /**
+     * Clears all previous robot poses and sets robotPose at current time.
+     *
+     * @param robotPose The robot pose
+     */
     public void resetRobotPose(Pose2d robotPose) {
         resetRobotPose(new Pose3d(robotPose));
     }
 
-    /** Clears all previous robot poses and sets robotPose at current time. */
+    /**
+     * Clears all previous robot poses and sets robotPose at current time.
+     *
+     * @param robotPose The robot pose
+     */
     public void resetRobotPose(Pose3d robotPose) {
         robotPoseBuffer.clear();
         robotPoseBuffer.addSample(Timer.getFPGATimestamp(), robotPose);

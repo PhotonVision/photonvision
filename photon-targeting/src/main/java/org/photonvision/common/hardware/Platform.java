@@ -24,7 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "doclint"})
 public enum Platform {
     // WPILib Supported (JNI)
     WINDOWS_64("Windows x64", Platform::getUnknownModel, false, OSType.WINDOWS, true),
