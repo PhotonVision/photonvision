@@ -100,6 +100,8 @@ public class SystemMonitor {
                 instance = new SystemMonitorRaspberryPi();
             } else if (Platform.isRK3588()) {
                 instance = new SystemMonitorRK3588();
+            } else if (Platform.isQCS6490()) {
+                instance = new SystemMonitorQCS6490();
             } else {
                 instance = new SystemMonitor();
             }
