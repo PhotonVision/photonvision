@@ -53,8 +53,8 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
                 msg.getNpuUsage().toArray(),
                 msg.getIpAddress(),
                 msg.getUptime(),
-                msg.getSent(),
-                msg.getRecv());
+                msg.getSentBitRate(),
+                msg.getRecvBitRate());
     }
 
     @Override
@@ -71,7 +71,7 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
         msg.setDiskUsableSpace(value.diskUsableSpace());
         msg.addAllNpuUsage(value.npuUsage());
         msg.setIpAddress(value.ipAddress());
-        msg.setSent(value.sentBitRate());
-        msg.setRecv(value.recvBitRate());
+        msg.setSentBitRate(value.sentBitRate());
+        msg.setRecvBitRate(value.recvBitRate());
     }
 }
