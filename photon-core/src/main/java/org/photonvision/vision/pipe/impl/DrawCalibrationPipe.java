@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.Pair;
 import java.awt.Color;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -28,6 +27,7 @@ import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.util.Pair;
 
 public class DrawCalibrationPipe
         extends MutatingPipe<

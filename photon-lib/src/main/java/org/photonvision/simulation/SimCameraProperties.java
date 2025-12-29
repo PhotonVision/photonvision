@@ -25,19 +25,6 @@
 package org.photonvision.simulation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.wpilibj.DriverStation;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -51,6 +38,18 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
+import org.wpilib.driverstation.DriverStation;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.linalg.Vector;
+import org.wpilib.math.numbers.*;
+import org.wpilib.math.util.Nat;
+import org.wpilib.math.util.Pair;
 
 /**
  * Calibration and performance values for this camera.
@@ -167,7 +166,7 @@ public class SimCameraProperties {
 
     public SimCameraProperties setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
         if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
-            fovDiag = Rotation2d.fromDegrees(MathUtil.clamp(fovDiag.getDegrees(), 1, 179));
+            fovDiag = Rotation2d.fromDegrees(Math.clamp(fovDiag.getDegrees(), 1, 179));
             DriverStation.reportError(
                     "Requested invalid FOV! Clamping between (1, 179) degrees...", false);
         }

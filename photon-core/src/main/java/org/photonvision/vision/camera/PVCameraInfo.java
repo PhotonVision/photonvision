@@ -24,9 +24,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.Arrays;
 import java.util.Objects;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.WRAPPER_OBJECT)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -25,7 +25,7 @@
 #include "subsystems/GamepieceLauncher.h"  // Include the header file
 
 GamepieceLauncher::GamepieceLauncher() {
-  motor = new frc::PWMSparkMax(8);  // Create the motor object for PWM port 8
+  motor = new wpi::PWMSparkMax(8);  // Create the motor object for PWM port 8
   simulationInit();
 }
 
@@ -36,23 +36,23 @@ void GamepieceLauncher::setRunning(bool shouldRun) {
 void GamepieceLauncher::periodic() {
   // Calculate the maximum RPM
   double maxRPM =
-      units::radians_per_second_t(frc::DCMotor::Falcon500(1).freeSpeed)
+      wpi::units::radians_per_second_t(wpi::math::DCMotor::Falcon500(1).freeSpeed)
           .to<double>() *
       60 / (2 * std::numbers::pi);
   curMotorCmd = curDesSpd / maxRPM;
   curMotorCmd = std::clamp(curMotorCmd, 0.0, 1.0);
   motor->Set(curMotorCmd);
 
-  frc::SmartDashboard::PutNumber("GPLauncher Des Spd (RPM)", curDesSpd);
+  wpi::SmartDashboard::PutNumber("GPLauncher Des Spd (RPM)", curDesSpd);
 }
 
 void GamepieceLauncher::simulationPeriodic() {
   launcherSim.SetInputVoltage(curMotorCmd *
-                              frc::RobotController::GetBatteryVoltage());
+                              wpi::RobotController::GetBatteryVoltage());
   launcherSim.Update(0.02_s);
   auto spd = launcherSim.GetAngularVelocity().to<double>() * 60 /
              (2 * std::numbers::pi);
-  frc::SmartDashboard::PutNumber("GPLauncher Act Spd (RPM)", spd);
+  wpi::SmartDashboard::PutNumber("GPLauncher Act Spd (RPM)", spd);
 }
 
 void GamepieceLauncher::simulationInit() {}

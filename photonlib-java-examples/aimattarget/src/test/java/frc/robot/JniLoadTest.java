@@ -26,14 +26,14 @@ package frc.robot;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.timesync.TimeSyncSingleton;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
 
 public class JniLoadTest {
     @Test

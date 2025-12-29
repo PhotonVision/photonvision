@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +34,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 public class VisionSourceManagerTest {
     // Test harness that overrides getConnectedCameras, but uses USB cameras for

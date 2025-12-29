@@ -17,10 +17,9 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.math.MathUtil;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.camera.VideoException;
 
 /*
  * This class holds the windows specific camera quirks for the Arducam ov2311. A windows version is needed because windows doesn't expose the auto exposure properties of the arducam.
@@ -50,7 +49,7 @@ public class ArduOV2311WindowsCameraSettables extends GenericUSBCameraSettables 
     public void setExposureRaw(double exposureRaw) {
         if (exposureRaw >= 0.0) {
             try {
-                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) Math.clamp(exposureRaw, minExposure, maxExposure);
                 camera.setExposureManual(propVal);
                 this.lastExposureRaw = exposureRaw;
             } catch (VideoException e) {

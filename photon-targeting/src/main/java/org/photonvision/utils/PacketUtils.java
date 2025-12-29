@@ -17,8 +17,8 @@
 
 package org.photonvision.utils;
 
-import edu.wpi.first.math.geometry.*;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.wpilib.math.geometry.*;
 
 @SuppressWarnings("doclint")
 public class PacketUtils {

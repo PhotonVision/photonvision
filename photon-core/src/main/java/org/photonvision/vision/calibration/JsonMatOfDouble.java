@@ -19,14 +19,14 @@ package org.photonvision.vision.calibration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Num;
 import java.util.Arrays;
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.photonvision.vision.opencv.Releasable;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.util.Num;
 
 /** JSON-serializable image. Data is stored as a raw JSON array. */
 public class JsonMatOfDouble implements Releasable {

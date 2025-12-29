@@ -24,7 +24,7 @@
 
 package org.photonvision;
 
-import edu.wpi.first.math.geometry.*;
+import org.wpilib.math.geometry.*;
 
 public final class PhotonUtils {
     private PhotonUtils() {
@@ -39,7 +39,7 @@ public final class PhotonUtils {
      * for there to exist a height differential between goal and camera. The larger this differential,
      * the more accurate the distance estimate will be.
      *
-     * <p>Units can be converted using the {@link edu.wpi.first.math.util.Units} class.
+     * <p>Units can be converted using the {@link org.wpilib.math.util.Units} class.
      *
      * @param cameraHeightMeters The physical height of the camera off the floor in meters.
      * @param targetHeightMeters The physical height of the target off the floor in meters. This

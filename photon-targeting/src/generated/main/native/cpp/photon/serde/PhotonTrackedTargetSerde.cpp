@@ -38,8 +38,8 @@ void StructType::Pack(Packet& packet, const PhotonTrackedTarget& value) {
   packet.Pack<int32_t>(value.fiducialId);
   packet.Pack<int32_t>(value.objDetectId);
   packet.Pack<float>(value.objDetectConf);
-  packet.Pack<frc::Transform3d>(value.bestCameraToTarget);
-  packet.Pack<frc::Transform3d>(value.altCameraToTarget);
+  packet.Pack<wpi::math::Transform3d>(value.bestCameraToTarget);
+  packet.Pack<wpi::math::Transform3d>(value.altCameraToTarget);
   packet.Pack<double>(value.poseAmbiguity);
   packet.Pack<std::vector<photon::TargetCorner>>(value.minAreaRectCorners);
   packet.Pack<std::vector<photon::TargetCorner>>(value.detectedCorners);
@@ -54,8 +54,8 @@ PhotonTrackedTarget StructType::Unpack(Packet& packet) {
     .fiducialId = packet.Unpack<int32_t>(),
     .objDetectId = packet.Unpack<int32_t>(),
     .objDetectConf = packet.Unpack<float>(),
-    .bestCameraToTarget = packet.Unpack<frc::Transform3d>(),
-    .altCameraToTarget = packet.Unpack<frc::Transform3d>(),
+    .bestCameraToTarget = packet.Unpack<wpi::math::Transform3d>(),
+    .altCameraToTarget = packet.Unpack<wpi::math::Transform3d>(),
     .poseAmbiguity = packet.Unpack<double>(),
     .minAreaRectCorners = packet.Unpack<std::vector<photon::TargetCorner>>(),
     .detectedCorners = packet.Unpack<std::vector<photon::TargetCorner>>(),
