@@ -53,7 +53,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:jextract
+          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
       - name: Delete duplicate toolchains
@@ -236,7 +236,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:jextract
+          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
@@ -373,7 +373,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:jextract
+          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
