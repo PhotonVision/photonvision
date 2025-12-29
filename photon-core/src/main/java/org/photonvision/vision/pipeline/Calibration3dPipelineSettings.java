@@ -17,9 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.util.Units;
 import org.opencv.core.Size;
 import org.photonvision.vision.frame.FrameDivisor;
+import org.wpilib.math.util.Units;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public int boardHeight = 8;

@@ -33,20 +33,20 @@
 using namespace photon;
 
 void SimCameraProperties::SetCalibration(int width, int height,
-                                         frc::Rotation2d fovDiag) {
+                                         wpi::math::Rotation2d fovDiag) {
   if (fovDiag.Degrees() < 1_deg || fovDiag.Degrees() > 179_deg) {
-    fovDiag = frc::Rotation2d{
-        std::clamp<units::degree_t>(fovDiag.Degrees(), 1_deg, 179_deg)};
-    FRC_ReportError(
-        frc::err::Error,
+    fovDiag = wpi::math::Rotation2d{
+        std::clamp<wpi::units::degree_t>(fovDiag.Degrees(), 1_deg, 179_deg)};
+    WPILIB_ReportError(
+        wpi::err::Error,
         "Requested invalid FOV! Clamping between (1, 179) degrees...");
   }
   double resDiag = std::sqrt(width * width + height * height);
-  double diagRatio = units::math::tan(fovDiag.Radians() / 2.0);
-  frc::Rotation2d fovWidth{
-      units::radian_t{std::atan(diagRatio * (width / resDiag)) * 2}};
-  frc::Rotation2d fovHeight{
-      units::radian_t{std::atan(diagRatio * (height / resDiag)) * 2}};
+  double diagRatio = wpi::units::math::tan(fovDiag.Radians() / 2.0);
+  wpi::math::Rotation2d fovWidth{
+      wpi::units::radian_t{std::atan(diagRatio * (width / resDiag)) * 2}};
+  wpi::math::Rotation2d fovHeight{
+      wpi::units::radian_t{std::atan(diagRatio * (height / resDiag)) * 2}};
 
   Eigen::Matrix<double, 8, 1> newDistCoeffs =
       Eigen::Matrix<double, 8, 1>::Zero();
@@ -54,8 +54,8 @@ void SimCameraProperties::SetCalibration(int width, int height,
   double cx = width / 2.0 - 0.5;
   double cy = height / 2.0 - 0.5;
 
-  double fx = cx / units::math::tan(fovWidth.Radians() / 2.0);
-  double fy = cy / units::math::tan(fovHeight.Radians() / 2.0);
+  double fx = cx / wpi::units::math::tan(fovWidth.Radians() / 2.0);
+  double fy = cy / wpi::units::math::tan(fovHeight.Radians() / 2.0);
 
   Eigen::Matrix<double, 3, 3> newCamIntrinsics;
   newCamIntrinsics << fx, 0.0, cx, 0.0, fy, cy, 0.0, 0.0, 1.0;
@@ -70,29 +70,37 @@ void SimCameraProperties::SetCalibration(
   camIntrinsics = newCamIntrinsics;
   distCoeffs = newDistCoeffs;
 
-  std::array<frc::Translation3d, 4> p{
-      frc::Translation3d{1_m, frc::Rotation3d{0_rad, 0_rad,
-                                              (GetPixelYaw(0) +
-                                               frc::Rotation2d{units::radian_t{
-                                                   -std::numbers::pi / 2.0}})
-                                                  .Radians()}},
-      frc::Translation3d{1_m, frc::Rotation3d{0_rad, 0_rad,
-                                              (GetPixelYaw(width) +
-                                               frc::Rotation2d{units::radian_t{
-                                                   std::numbers::pi / 2.0}})
-                                                  .Radians()}},
-      frc::Translation3d{1_m, frc::Rotation3d{0_rad,
-                                              (GetPixelPitch(0) +
-                                               frc::Rotation2d{units::radian_t{
-                                                   std::numbers::pi / 2.0}})
-                                                  .Radians(),
-                                              0_rad}},
-      frc::Translation3d{1_m, frc::Rotation3d{0_rad,
-                                              (GetPixelPitch(height) +
-                                               frc::Rotation2d{units::radian_t{
-                                                   -std::numbers::pi / 2.0}})
-                                                  .Radians(),
-                                              0_rad}},
+  std::array<wpi::math::Translation3d, 4> p{
+      wpi::math::Translation3d{
+          1_m,
+          wpi::math::Rotation3d{
+              0_rad, 0_rad,
+              (GetPixelYaw(0) +
+               wpi::math::Rotation2d{wpi::units::radian_t{-std::numbers::pi / 2.0}})
+                  .Radians()}},
+      wpi::math::Translation3d{
+          1_m,
+          wpi::math::Rotation3d{
+              0_rad, 0_rad,
+              (GetPixelYaw(width) +
+               wpi::math::Rotation2d{wpi::units::radian_t{std::numbers::pi / 2.0}})
+                  .Radians()}},
+      wpi::math::Translation3d{
+          1_m,
+          wpi::math::Rotation3d{
+              0_rad,
+              (GetPixelPitch(0) +
+               wpi::math::Rotation2d{wpi::units::radian_t{std::numbers::pi / 2.0}})
+                  .Radians(),
+              0_rad}},
+      wpi::math::Translation3d{
+          1_m,
+          wpi::math::Rotation3d{
+              0_rad,
+              (GetPixelPitch(height) +
+               wpi::math::Rotation2d{wpi::units::radian_t{-std::numbers::pi / 2.0}})
+                  .Radians(),
+              0_rad}},
   };
   viewplanes.clear();
   for (size_t i = 0; i < p.size(); i++) {
@@ -103,10 +111,10 @@ void SimCameraProperties::SetCalibration(
 
 std::pair<std::optional<double>, std::optional<double>>
 SimCameraProperties::GetVisibleLine(const RotTrlTransform3d& camRt,
-                                    const frc::Translation3d& a,
-                                    const frc::Translation3d& b) const {
-  frc::Translation3d relA = camRt.Apply(a);
-  frc::Translation3d relB = camRt.Apply(b);
+                                    const wpi::math::Translation3d& a,
+                                    const wpi::math::Translation3d& b) const {
+  wpi::math::Translation3d relA = camRt.Apply(a);
+  wpi::math::Translation3d relB = camRt.Apply(b);
 
   if (relA.X() <= 0_m && relB.X() <= 0_m) {
     return {std::nullopt, std::nullopt};

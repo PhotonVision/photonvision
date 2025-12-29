@@ -46,7 +46,7 @@ This multi-target pose estimate can be accessed using PhotonLib. We suggest usin
       {
         auto multiTagResult = result.MultiTagResult();
         if (multiTagResult.has_value()) {
-          frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
+          wpi::math::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
         }
       }
 

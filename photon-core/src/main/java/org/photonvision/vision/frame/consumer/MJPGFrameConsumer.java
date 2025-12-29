@@ -17,12 +17,12 @@
 
 package org.photonvision.vision.frame.consumer;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.*;
-import edu.wpi.first.util.PixelFormat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.*;
+import org.wpilib.vision.stream.CameraServer;
 
 public class MJPGFrameConsumer implements AutoCloseable {
     private static final double MAX_FRAMERATE = -1;

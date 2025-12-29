@@ -17,11 +17,11 @@
 
 package org.photonvision.common.networktables;
 
-import edu.wpi.first.networktables.RawSubscriber;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.wpilib.networktables.RawSubscriber;
 
 @SuppressWarnings("doclint")
 public class PacketSubscriber<T> implements AutoCloseable {

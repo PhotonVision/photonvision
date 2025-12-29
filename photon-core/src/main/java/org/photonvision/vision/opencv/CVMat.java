@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.opencv;
 
-import edu.wpi.first.util.RawFrame;
 import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Collections;
@@ -27,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.wpilib.util.RawFrame;
 
 public class CVMat implements Releasable {
     private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
