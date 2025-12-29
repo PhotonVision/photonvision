@@ -28,6 +28,11 @@ public class SystemMonitorRK3588 extends SystemMonitor {
     final Pattern pattern = Pattern.compile(regex);
 
     @Override
+    protected String getThermalZoneTypes() {
+        return "bigcore0-thermal";
+    }
+
+    @Override
     public double[] getNpuUsage() {
         try {
             var contents = Files.readString(Path.of("/sys/kernel/debug/rknpu/load"));

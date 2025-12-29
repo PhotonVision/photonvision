@@ -110,10 +110,7 @@ public class SystemMonitor {
     protected SystemMonitor() {
         logger.info("Starting SystemMonitor");
         GlobalConfig.set(GlobalConfig.OSHI_OS_WINDOWS_LOADAVERAGE, true);
-        GlobalConfig.set(
-                "oshi.os.linux.sensors.cpuTemperature.types",
-                GlobalConfig.get("oshi.os.linux.sensors.cpuTemperature.types")
-                        + ",bigcore0-thermal,cpu0-thermal");
+        GlobalConfig.set("oshi.os.linux.sensors.cpuTemperature.types", getThermalZoneTypes());
 
         si = new SystemInfo();
         hal = si.getHardware();
@@ -139,6 +136,24 @@ public class SystemMonitor {
         // for comparison, TODO: remove before merging with main
         mm = new MetricsManager();
         mm.setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
+    }
+
+    /**
+     * Returns a comma-separated list of addtional thermal zone types that should be checked to get
+     * the CPU temperature on Unix systems. The temperature will be reported for the first temperature
+     * zone with a type that mateches an item of this list. If the CPU temperature isn't being
+     * reported correctly for a coprocessor, override this method to return a string with type
+     * associated with the thermal zone for that comprocessor.
+     *
+     * @return String containing a comma-separated list of thermal zone types for reading CPU
+     *     temperature
+     */
+    protected String getThermalZoneTypes() {
+        // Find the thermal zone type by logging on to the coprocessor and running:
+        //     `cat /sys/class/thermal/thermal_zone*/type`
+        // This command will show the types for all thermal zones.
+        //
+        return GlobalConfig.get("oshi.os.linux.sensors.cpuTemperature.types");
     }
 
     /**
