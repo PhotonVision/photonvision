@@ -37,8 +37,18 @@ test {
     enabled = project.hasProperty('runAppleTests')
 }
 
+// Task to clean cached dylibs before Swift build (critical for preventing stale library issues)
+task cleanCachedDylibs(type: Exec) {
+    commandLine 'sh', '-c', 'rm -rf ../photon-server/photonvision_config/nativelibs/*.dylib 2>/dev/null || true'
+    workingDir projectDir
+    doLast {
+        println "Cleaned cached dylibs from photon-server/photonvision_config/nativelibs"
+    }
+}
+
 // Task to build Swift library and generate Java bindings
 task buildSwift(type: Exec) {
+    dependsOn cleanCachedDylibs
     commandLine 'swift', 'build', '-c', 'release'
     workingDir projectDir
 }
