@@ -18,18 +18,15 @@
 package com.photonvision.apple;
 
 /**
- * Stub implementation of NativeLibraryLoader for non-macOS platforms.
- * All library loading operations throw UnsupportedOperationException.
+ * Stub implementation of NativeLibraryLoader for non-macOS platforms. All library loading
+ * operations throw UnsupportedOperationException.
  */
 public class NativeLibraryLoader {
-
     public static synchronized void loadLibrary(String libraryName) {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public static void loadSwiftRuntime() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 }

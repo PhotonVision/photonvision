@@ -26,8 +26,8 @@ import java.nio.file.StandardCopyOption;
 /**
  * Loads native libraries (dylibs) from JAR resources.
  *
- * <p>Swift and CoreML dylibs are packaged in the JAR at native/macos/ and need to be extracted to
- * a directory in java.library.path before loading.
+ * <p>Swift and CoreML dylibs are packaged in the JAR at native/macos/ and need to be extracted to a
+ * directory in java.library.path before loading.
  */
 public class NativeLibraryLoader {
     private static final String NATIVE_LIB_PATH = "/native/macos/";
@@ -66,8 +66,7 @@ public class NativeLibraryLoader {
             if (!Files.exists(extractedLib)) {
                 try (InputStream in = NativeLibraryLoader.class.getResourceAsStream(resourcePath)) {
                     if (in == null) {
-                        throw new UnsatisfiedLinkError(
-                                "Native library not found in JAR: " + resourcePath);
+                        throw new UnsatisfiedLinkError("Native library not found in JAR: " + resourcePath);
                     }
                     Files.copy(in, extractedLib, StandardCopyOption.REPLACE_EXISTING);
                 }

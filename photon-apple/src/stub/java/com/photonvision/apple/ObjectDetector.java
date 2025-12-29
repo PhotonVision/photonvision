@@ -18,21 +18,19 @@
 package com.photonvision.apple;
 
 /**
- * Stub implementation of ObjectDetector for non-macOS platforms.
- * This class is generated from Swift code on macOS.
+ * Stub implementation of ObjectDetector for non-macOS platforms. This class is generated from Swift
+ * code on macOS.
  */
 public final class ObjectDetector {
     private ObjectDetector() {}
 
     public static ObjectDetector init(String modelPath, Object swiftArena) {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public DetectionResultArray detect(
             Object imageData, long width, long height, double boxThreshold, Object swiftArena) {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public DetectionResultArray detectFake(
@@ -43,7 +41,6 @@ public final class ObjectDetector {
             double boxThreshold,
             double nmsThreshold,
             Object swiftArena) {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 }

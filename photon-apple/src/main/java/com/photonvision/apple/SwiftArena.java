@@ -44,8 +44,7 @@ public class SwiftArena implements AutoCloseable {
     /**
      * Create a confined arena that must be explicitly closed.
      *
-     * <p>Use this for short-lived arenas like frame-scoped allocations in try-with-resources
-     * blocks.
+     * <p>Use this for short-lived arenas like frame-scoped allocations in try-with-resources blocks.
      */
     public static SwiftArena ofConfined() {
         return new SwiftArena(AllocatingSwiftArena.ofConfined());
@@ -63,9 +62,9 @@ public class SwiftArena implements AutoCloseable {
     /**
      * Close this arena (only for confined arenas).
      *
-     * <p>For ofAuto() arenas, this is a no-op. For ofConfined() arenas, this would close the arena
-     * if AllocatingSwiftArena supported it. Currently, confined arenas are also automatically
-     * cleaned up.
+     * <p>For ofAuto() arenas, this is a no-op. For ofConfined() arenas, this would close the arena if
+     * AllocatingSwiftArena supported it. Currently, confined arenas are also automatically cleaned
+     * up.
      */
     @Override
     public void close() {

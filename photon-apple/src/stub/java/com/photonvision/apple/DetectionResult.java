@@ -18,8 +18,8 @@
 package com.photonvision.apple;
 
 /**
- * Stub implementation of DetectionResult for non-macOS platforms.
- * This class is generated from Swift code on macOS.
+ * Stub implementation of DetectionResult for non-macOS platforms. This class is generated from
+ * Swift code on macOS.
  */
 public final class DetectionResult {
     private DetectionResult() {}
@@ -32,37 +32,30 @@ public final class DetectionResult {
             int classId,
             double confidence,
             Object swiftArena) {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public double getX() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public double getY() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public double getWidth() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public double getHeight() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public int getClassId() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public double getConfidence() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 }

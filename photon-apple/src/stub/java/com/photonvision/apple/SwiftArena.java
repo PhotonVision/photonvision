@@ -27,18 +27,15 @@ public class SwiftArena implements AutoCloseable {
     private SwiftArena() {}
 
     public static SwiftArena ofAuto() {
-        throw new UnsupportedOperationException(
-                "SwiftArena is only supported on macOS");
+        throw new UnsupportedOperationException("SwiftArena is only supported on macOS");
     }
 
     public static SwiftArena ofConfined() {
-        throw new UnsupportedOperationException(
-                "SwiftArena is only supported on macOS");
+        throw new UnsupportedOperationException("SwiftArena is only supported on macOS");
     }
 
     public Object unwrap() {
-        throw new UnsupportedOperationException(
-                "SwiftArena is only supported on macOS");
+        throw new UnsupportedOperationException("SwiftArena is only supported on macOS");
     }
 
     @Override

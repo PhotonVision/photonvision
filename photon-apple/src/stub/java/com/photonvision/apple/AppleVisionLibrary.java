@@ -18,8 +18,8 @@
 package com.photonvision.apple;
 
 /**
- * Stub implementation of AppleVisionLibrary for non-macOS platforms.
- * This class is generated from Swift code on macOS.
+ * Stub implementation of AppleVisionLibrary for non-macOS platforms. This class is generated from
+ * Swift code on macOS.
  */
 public final class AppleVisionLibrary {
     private AppleVisionLibrary() {}

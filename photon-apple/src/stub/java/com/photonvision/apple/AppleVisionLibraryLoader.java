@@ -18,24 +18,21 @@
 package com.photonvision.apple;
 
 /**
- * Stub implementation of AppleVisionLibraryLoader for non-macOS platforms.
- * All initialization is a no-op since Apple Vision is not available.
+ * Stub implementation of AppleVisionLibraryLoader for non-macOS platforms. All initialization is a
+ * no-op since Apple Vision is not available.
  */
 public class AppleVisionLibraryLoader {
     private static boolean initialized = false;
 
-    /**
-     * No-op initialization on non-macOS platforms.
-     * Does not throw - silently succeeds.
-     */
+    /** No-op initialization on non-macOS platforms. Does not throw - silently succeeds. */
     public static synchronized void initialize() {
         // No-op on non-macOS
         initialized = true;
     }
 
     /**
-     * Always returns true after first call to initialize().
-     * This prevents error logs from attempting to initialize multiple times.
+     * Always returns true after first call to initialize(). This prevents error logs from attempting
+     * to initialize multiple times.
      */
     public static boolean isInitialized() {
         return initialized;

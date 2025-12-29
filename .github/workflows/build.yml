@@ -41,6 +41,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
@@ -48,6 +49,11 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
+      - name: Publish SwiftKit to Maven Local (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          cd photon-apple/swift-java
+          ./gradlew publishToMavenLocal
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
       - name: Delete duplicate toolchains
@@ -218,6 +224,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
       - name: Install Java 17
         uses: actions/setup-java@v4
         with:
@@ -225,6 +232,11 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
+      - name: Publish SwiftKit to Maven Local (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          cd photon-apple/swift-java
+          ./gradlew publishToMavenLocal
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
       - run: ./gradlew photon-lib:publish photon-targeting:publish
@@ -340,6 +352,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
       - name: Install Java 17
         uses: actions/setup-java@v4
         with:
@@ -356,6 +369,11 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
+      - name: Publish SwiftKit to Maven Local (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          cd photon-apple/swift-java
+          ./gradlew publishToMavenLocal
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}

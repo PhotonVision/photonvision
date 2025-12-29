@@ -68,7 +68,8 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/src/generated/**'
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**',
+                    '**/.build/**', '**/photon-apple/swift-java/**'
         }
         toggleOffOn()
         googleJavaFormat()
@@ -81,7 +82,8 @@ spotless {
     groovyGradle {
         target fileTree('.') {
             include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**',
+                    '**/.build/**', '**/photon-apple/swift-java/**'
         }
         greclipse()
         indentWithSpaces(4)
@@ -91,7 +93,8 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**', '**/node_modules/**'
+            exclude '**/build/**', '**/build-*/**', '**/node_modules/**',
+                    '**/.build/**', '**/photon-apple/swift-java/**'
         }
         trimTrailingWhitespace()
         indentWithSpaces(2)

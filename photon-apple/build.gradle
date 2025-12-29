@@ -15,7 +15,10 @@ if (isMacOS) {
     sourceSets {
         main {
             java {
-                srcDirs = ['src/main/java', '.build/plugins/outputs/photon-apple/AppleVisionLibrary/destination/JExtractSwiftPlugin/src/generated/java']
+                srcDirs = [
+                    'src/main/java',
+                    '.build/plugins/outputs/photon-apple/AppleVisionLibrary/destination/JExtractSwiftPlugin/src/generated/java'
+                ]
             }
         }
     }
@@ -62,13 +65,13 @@ if (isMacOS) {
         // Skip tests by default (requires macOS and CoreML model)
         enabled = project.hasProperty('runAppleTests')
     }
-
 } else {
     // Linux/Windows: Use stub implementations, skip Swift build
     sourceSets {
         main {
             java {
-                srcDirs = ['src/stub/java']  // Use stubs instead
+                srcDirs = [
+                    'src/stub/java']  // Use stubs instead
             }
         }
     }

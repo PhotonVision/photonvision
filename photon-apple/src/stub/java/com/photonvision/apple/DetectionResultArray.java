@@ -18,19 +18,17 @@
 package com.photonvision.apple;
 
 /**
- * Stub implementation of DetectionResultArray for non-macOS platforms.
- * This class is generated from Swift code on macOS.
+ * Stub implementation of DetectionResultArray for non-macOS platforms. This class is generated from
+ * Swift code on macOS.
  */
 public final class DetectionResultArray {
     private DetectionResultArray() {}
 
     public long count() {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 
     public DetectionResult get(long index, Object swiftArena) {
-        throw new UnsupportedOperationException(
-                "Apple object detection is only supported on macOS");
+        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
     }
 }

@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.objects;
 
+import com.photonvision.apple.SwiftArena;
 import java.lang.foreign.MemorySegment;
 import java.lang.ref.Cleaner;
 import java.util.ArrayList;
@@ -30,8 +31,6 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
-import com.photonvision.apple.SwiftArena;
-
 
 /**
  * Manages an object detector using Apple's CoreML and Vision framework backend.
@@ -142,7 +141,9 @@ public class AppleObjectDetector implements ObjectDetector {
             } else if (in.channels() == 4) {
                 bgra = in;
             } else {
-                logger.error("AppleObjectDetector: Input image has unsupported number of channels: " + in.channels());
+                logger.error(
+                        "AppleObjectDetector: Input image has unsupported number of channels: "
+                                + in.channels());
                 return new ArrayList<>();
             }
 
@@ -150,13 +151,7 @@ public class AppleObjectDetector implements ObjectDetector {
             var width = in.width();
             var height = in.height();
 
-            var results =
-                    swiftDetector.detect(
-                            mem,
-                            width,
-                            height,
-                            boxThreshold,
-                            frameArena.unwrap());
+            var results = swiftDetector.detect(mem, width, height, boxThreshold, frameArena.unwrap());
 
             List<NeuralNetworkPipeResult> detections = new ArrayList<>();
             long count = results.count();
