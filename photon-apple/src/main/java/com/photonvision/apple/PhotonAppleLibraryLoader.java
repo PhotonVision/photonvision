@@ -30,19 +30,24 @@ public class PhotonAppleLibraryLoader {
     /**
      * Initialize and load all required native libraries.
      *
-     * <p>This extracts dylibs from the JAR to photonvision_config/nativelibs/ and ensures they're
-     * ready for loading. The libraries are loaded in the correct order:
+     * <p>This extracts dylibs from the JAR to photonvision_config/nativelibs/ and loads them
+     * explicitly using System.load() with full paths. The libraries are loaded in the correct order:
      *
      * <ol>
-     *   <li>swiftCore (system library, auto-loaded by dyld from /usr/lib/swift)
-     *   <li>SwiftJava (from swift-java, packaged in JAR)
-     *   <li>SwiftRuntimeFunctions (from swift-java, packaged in JAR)
-     *   <li>AppleVisionLibrary (our Swift code, packaged in JAR)
+     *   <li>swiftCore - System library (dyld loads automatically from shared cache, no explicit
+     *       loading needed)
+     *   <li>SwiftJava - From swift-java, packaged in JAR, extracted and loaded
+     *   <li>SwiftRuntimeFunctions - From swift-java, packaged in JAR, extracted and loaded
+     *   <li>AppleVisionLibrary - Our Swift code, packaged in JAR, extracted and loaded
      * </ol>
      *
-     * <p>Note: On macOS 12.3+, swiftCore is part of the OS and available via dyld. The
-     * JExtract-generated code will call System.loadLibrary("swiftCore"), which works because
-     * /usr/lib/swift is in java.library.path.
+     * <p>IMPORTANT: This must be called before any JExtract-generated Swift classes are loaded,
+     * because their static initializers will try to load these libraries. Loading them here first
+     * ensures the static initializers succeed.
+     *
+     * <p>On macOS 12.3+, swiftCore and other system Swift frameworks are part of the dyld shared
+     * cache and don't need explicit loading - they're automatically resolved when our Swift libraries
+     * are loaded.
      *
      * @throws UnsatisfiedLinkError if any library fails to load
      */
@@ -52,16 +57,20 @@ public class PhotonAppleLibraryLoader {
         }
 
         try {
-            // 1. Swift runtime is part of macOS and will be loaded automatically
+            // 1. Extract libraries from JAR to photonvision_config/nativelibs/
+            NativeLibraryLoader.extractLibrary("SwiftJava");
+            NativeLibraryLoader.extractLibrary("SwiftRuntimeFunctions");
+            NativeLibraryLoader.extractLibrary("AppleVisionLibrary");
+
+            // 2. Load Swift runtime (attempts to preload swiftCore from dyld cache using FFM)
             NativeLibraryLoader.loadSwiftRuntime();
 
-            // 2. Extract SwiftJava (from swift-java, packaged in JAR)
+            // 3. Preload all libraries in the correct order using System.load() with full paths
+            // This ensures they're loaded BEFORE the ObjectDetector static initializer runs
+            // Once loaded, the ObjectDetector's System.loadLibrary() calls will succeed
+            // because the library is already in memory
             NativeLibraryLoader.loadLibrary("SwiftJava");
-
-            // 3. Extract SwiftRuntimeFunctions (from swift-java, packaged in JAR)
             NativeLibraryLoader.loadLibrary("SwiftRuntimeFunctions");
-
-            // 4. Extract our AppleVisionLibrary (packaged in JAR)
             NativeLibraryLoader.loadLibrary("AppleVisionLibrary");
 
             initialized = true;

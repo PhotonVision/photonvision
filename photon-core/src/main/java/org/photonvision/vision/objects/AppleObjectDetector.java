@@ -74,24 +74,17 @@ public class AppleObjectDetector implements ObjectDetector {
     public AppleObjectDetector(AppleModel model, Size inputSize) {
         this.model = model;
 
-        try {
-            // Initialize and extract native libraries before creating detector
-            com.photonvision.apple.PhotonAppleLibraryLoader.initialize();
+        // Create arena for the detector (must outlive the detector)
+        // Use ofAuto() instead of ofConfined() to allow access from VisionRunner thread
+        this.detectorArena = SwiftArena.ofAuto();
 
-            // Create arena for the detector (must outlive the detector)
-            // Use ofAuto() instead of ofConfined() to allow access from VisionRunner thread
-            this.detectorArena = SwiftArena.ofAuto();
+        // Initialize Swift ObjectDetector
+        // Note: Libraries must already be loaded by PhotonAppleLibraryLoader.initialize() in Main
+        this.swiftDetector =
+                com.photonvision.apple.ObjectDetector.init(
+                        model.modelFile.getAbsolutePath(), detectorArena.unwrap());
 
-            // Initialize Swift ObjectDetector
-            this.swiftDetector =
-                    com.photonvision.apple.ObjectDetector.init(
-                            model.modelFile.getAbsolutePath(), detectorArena.unwrap());
-
-            logger.info("Created AppleObjectDetector for model: " + model.getNickname());
-        } catch (Exception e) {
-            logger.error("Failed to create AppleObjectDetector for model " + model.getNickname(), e);
-            throw new RuntimeException("Failed to create AppleObjectDetector", e);
-        }
+        logger.info("Created AppleObjectDetector for model: " + model.getNickname());
 
         // Register cleanup action
         // Note: ofAuto() arenas are automatically cleaned up, no manual close needed

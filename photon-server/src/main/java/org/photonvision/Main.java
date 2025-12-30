@@ -17,10 +17,13 @@
 
 package org.photonvision;
 
+import com.photonvision.apple.PhotonAppleLibraryLoader;
 import edu.wpi.first.hal.HAL;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import org.apache.commons.cli.*;
 import org.photonvision.common.LoadJNI;
@@ -28,6 +31,9 @@ import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
+import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.OsImageData;
@@ -43,6 +49,7 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.objects.AppleModel;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -223,6 +230,52 @@ public class Main {
         if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
             logger.error("This platform is unsupported!");
             System.exit(1);
+        }
+
+        // Initialize Apple Vision libraries early on macOS
+        // This must happen before any AppleObjectDetector classes are loaded
+        if (Platform.getCurrentPlatform().osType == Platform.OSType.MACOS) {
+            try {
+                logger.info("Initializing Apple Vision libraries...");
+                PhotonAppleLibraryLoader.initialize();
+                logger.info("Apple Vision libraries initialized successfully.");
+
+                // Test loading a CoreML model to ensure everything works
+                logger.info("Testing CoreML model loading...");
+                String testModelPathStr = "/Users/vasis/Downloads/ATOM-STORM-6766 coreml_jni main src-test_resources_2025/algae-640-640-yolov11s.mlmodel";
+                File testModelFile = new File(testModelPathStr);
+
+                if (testModelFile.exists()) {
+                    logger.info("Found test model at: " + testModelPathStr);
+
+                    // Create dummy properties for the test model
+                    LinkedList<String> labels = new LinkedList<>(List.of("algae")); // Placeholder label
+                    ModelProperties testProps = new ModelProperties(
+                        Path.of(testModelPathStr),  // Path modelPath
+                        "test-algae-yolov11s",       // String nickname
+                        labels,                       // LinkedList<String> labels
+                        640,                          // int resolutionWidth
+                        640,                          // int resolutionHeight
+                        Family.APPLE,                 // Family family
+                        Version.YOLOV11              // Version version
+                    );
+
+                    AppleModel testModel = new AppleModel(testProps);
+                    logger.info("Created AppleModel: " + testModel);
+
+                    var detector = testModel.load();
+                    logger.info("Successfully loaded Apple detector!");
+                    detector.release();
+                } else {
+                    logger.warn("Test model not found at: " + testModelPathStr);
+                }
+            } catch (UnsatisfiedLinkError e) {
+                logger.error("Failed to initialize Apple Vision libraries. Exiting for debugging.", e);
+                System.exit(1);
+            } catch (Exception e) {
+                logger.error("Failed to initialize Apple Vision libraries due to unexpected error. Exiting for debugging.", e);
+                System.exit(1);
+            }
         }
 
         try {

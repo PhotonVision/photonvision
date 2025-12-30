@@ -19,6 +19,7 @@ package com.photonvision.apple;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.foreign.SymbolLookup;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -32,24 +33,67 @@ import java.nio.file.StandardCopyOption;
 public class NativeLibraryLoader {
     private static final String NATIVE_LIB_PATH = "/native/macos/";
     private static Path libDir = null;
+    private static boolean addedToLibraryPath = false;
+
+    /**
+     * Add the library extraction directory to java.library.path.
+     *
+     * <p>This uses reflection to modify the system property and ClassLoader's usr_paths field, making
+     * extracted libraries discoverable by System.loadLibrary() calls.
+     */
+    public static synchronized void addToJavaLibraryPath() {
+        if (addedToLibraryPath) {
+            return;
+        }
+
+        try {
+            // Create library directory if not exists
+            if (libDir == null) {
+                String pathPrefix = System.getProperty("PATH_PREFIX", "");
+                libDir = Path.of(pathPrefix + "photonvision_config/nativelibs").toAbsolutePath();
+                Files.createDirectories(libDir);
+            }
+
+            // Add to java.library.path system property
+            // Include both our extracted libs directory and /usr/lib/swift for system Swift libraries
+            String currentPath = System.getProperty("java.library.path", "");
+            String pathSeparator = System.getProperty("path.separator");
+            String newPath = libDir.toString() + pathSeparator + "/usr/lib/swift";
+            if (!currentPath.isEmpty()) {
+                newPath = newPath + pathSeparator + currentPath;
+            }
+            System.setProperty("java.library.path", newPath);
+
+            // Reset ClassLoader's cache of java.library.path using reflection
+            // This is necessary because ClassLoader caches the path at startup
+            try {
+                java.lang.reflect.Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
+                sysPathsField.setAccessible(true);
+                sysPathsField.set(null, null);
+            } catch (Exception e) {
+                // If reflection fails, it's not critical - the System.setProperty() above should work
+                // for libraries loaded after this point
+            }
+
+            addedToLibraryPath = true;
+        } catch (IOException e) {
+            throw new UnsatisfiedLinkError("Failed to create library directory: " + e.getMessage());
+        }
+    }
 
     /**
      * Extract a native library from JAR resources to the library directory.
      *
-     * <p>The library will be extracted to photonvision_config/nativelibs/ (which must be in
-     * java.library.path). This method only extracts the library - the actual loading is done via
-     * System.loadLibrary() by the JExtract-generated Swift code.
+     * <p>This extracts the library without loading it. After extraction, the library can be loaded
+     * using System.loadLibrary() if the directory is in java.library.path.
      *
      * @param libraryName Name of the library (e.g., "SwiftJava" for libSwiftJava.dylib)
      * @throws UnsatisfiedLinkError if the library cannot be extracted
      */
-    public static synchronized void loadLibrary(String libraryName) {
+    public static synchronized void extractLibrary(String libraryName) {
         try {
             // Create library directory if not exists
-            // Use a fixed location that can be set in java.library.path at JVM startup
             if (libDir == null) {
-                // Use photonvision_config/nativelibs as our library directory
-                // This path is relative to the working directory
                 String pathPrefix = System.getProperty("PATH_PREFIX", "");
                 libDir = Path.of(pathPrefix + "photonvision_config/nativelibs").toAbsolutePath();
                 Files.createDirectories(libDir);
@@ -62,7 +106,7 @@ public class NativeLibraryLoader {
             String resourcePath = NATIVE_LIB_PATH + libFileName;
             Path extractedLib = libDir.resolve(libFileName);
 
-            // Only extract if not already extracted or if the JAR version is newer
+            // Only extract if not already extracted
             if (!Files.exists(extractedLib)) {
                 try (InputStream in = NativeLibraryLoader.class.getResourceAsStream(resourcePath)) {
                     if (in == null) {
@@ -71,10 +115,6 @@ public class NativeLibraryLoader {
                     Files.copy(in, extractedLib, StandardCopyOption.REPLACE_EXISTING);
                 }
             }
-
-            // Don't call System.loadLibrary() here - let the JExtract-generated code do it
-            // We just needed to extract the library to a directory in java.library.path
-
         } catch (IOException e) {
             throw new UnsatisfiedLinkError(
                     "Failed to extract library: " + libraryName + " - " + e.getMessage());
@@ -82,14 +122,50 @@ public class NativeLibraryLoader {
     }
 
     /**
+     * Load a library using System.load() with the full path.
+     *
+     * @param libraryName Name of the library (e.g., "SwiftJava")
+     * @throws UnsatisfiedLinkError if the library cannot be loaded
+     */
+    public static synchronized void loadLibrary(String libraryName) {
+        try {
+            if (libDir == null) {
+                String pathPrefix = System.getProperty("PATH_PREFIX", "");
+                libDir = Path.of(pathPrefix + "photonvision_config/nativelibs").toAbsolutePath();
+            }
+
+            String libFileName = System.mapLibraryName(libraryName);
+            Path libPath = libDir.resolve(libFileName);
+
+            if (!Files.exists(libPath)) {
+                throw new UnsatisfiedLinkError("Library not found: " + libPath);
+            }
+
+            System.load(libPath.toString());
+        } catch (Exception e) {
+            throw new UnsatisfiedLinkError("Failed to load library: " + libraryName + " - " + e.getMessage());
+        }
+    }
+
+    /**
      * Load the Swift runtime library.
      *
-     * <p>On macOS 12.3+, the Swift runtime is embedded in the OS and doesn't need explicit loading.
-     * Swift-Java's JExtract-generated code will try to load swiftCore via System.loadLibrary(), but
-     * the dyld will automatically provide it from the system.
+     * <p>On macOS 12.3+, swiftCore is in the dyld shared cache. We use FFM's SymbolLookup to load it
+     * via dlopen, which can find libraries in the shared cache.
      */
     public static void loadSwiftRuntime() {
-        // Swift runtime is part of macOS and will be available via dyld
-        // We don't need to do anything special here
+        try {
+            // Use FFM SymbolLookup.libraryLookup() to load swiftCore via dlopen()
+            // This will find it in the dyld shared cache even though no file exists
+            SymbolLookup.libraryLookup("swiftCore", java.lang.foreign.Arena.global());
+        } catch (IllegalArgumentException e) {
+            // If SymbolLookup fails, try System.loadLibrary as fallback
+            try {
+                System.loadLibrary("swiftCore");
+            } catch (UnsatisfiedLinkError e2) {
+                // If both fail, dyld will automatically load swiftCore from the
+                // shared cache when we load our Swift libraries that depend on it
+            }
+        }
     }
 }

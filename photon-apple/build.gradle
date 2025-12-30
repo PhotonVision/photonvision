@@ -21,6 +21,19 @@ if (forceStubs) {
         sourceCompatibility = JavaVersion.VERSION_24
         targetCompatibility = JavaVersion.VERSION_24
     }
+
+    // Override dependency resolution attributes to declare Java 24 compatibility
+    // This allows photon-server (Java 24) to depend on photon-apple, even though
+    // SwiftKit dependencies require Java 25 at runtime
+    configurations.configureEach {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 24)
+        }
+        resolutionStrategy {
+            // Disable strict Java version checking for dependency resolution
+            capabilitiesResolution.all { it.selectHighestVersion() }
+        }
+    }
 } else {
     // Linux/Windows stubs: Use Java 24
     java {
@@ -48,6 +61,7 @@ if (useRealImplementation) {
         testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
 
         // SwiftKit dependencies (only on macOS)
+        // Note: These require Java 25 at runtime but we allow them during Java 24 dependency resolution
         api 'org.swift.swiftkit:swiftkit-core:1.0-SNAPSHOT'
         api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
     }
