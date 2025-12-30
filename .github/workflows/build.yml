@@ -343,8 +343,16 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: Install Java 24
+      - name: Install Java 25 (macOS)
         uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 25
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
+      - name: Install Java 24 (non-macOS)
+        uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 24
           distribution: temurin
@@ -363,19 +371,6 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          # Create init script to force Java 24 toolchain (overrides hardcoded Java 25)
-          mkdir -p ~/.gradle/init.d
-          cat > ~/.gradle/init.d/force-java-24.gradle << 'EOF'
-          allprojects {
-              plugins.withId("java") {
-                  java {
-                      toolchain {
-                          languageVersion = JavaLanguageVersion.of(24)
-                      }
-                  }
-              }
-          }
-          EOF
           ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
