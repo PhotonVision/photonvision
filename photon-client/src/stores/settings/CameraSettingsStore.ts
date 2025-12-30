@@ -91,6 +91,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     maxWhiteBalanceTemp(): number {
       return this.currentCameraSettings.maxWhiteBalanceTemp;
     },
+    fpsLimit(): number {
+      return this.currentCameraSettings.fpsLimit;
+    },
     isConnected(): boolean {
       return this.currentCameraSettings.isConnected;
     },
@@ -141,6 +144,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           minWhiteBalanceTemp: d.minWhiteBalanceTemp,
           maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
           matchedCameraInfo: d.matchedCameraInfo,
+          fpsLimit: d.fpsLimit,
           isConnected: d.isConnected,
           hasConnected: d.hasConnected,
           mismatch: d.mismatch
