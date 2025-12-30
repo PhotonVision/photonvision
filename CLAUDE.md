@@ -190,7 +190,7 @@ PhotonVision supports multiple object detection backends:
 - **Java 25 toolchain** used on macOS for photon-apple (SwiftKit requires Java 25)
 - **Java 24 toolchain** used on Linux/Windows for photon-apple stubs
 - PhotonLib uses Java 17 for FRC compatibility (compiles photon-apple stubs with Java 17)
-- macOS CI: Both Java 24 and 25 installed, JAVA_HOME=24, toolchain=25
+- macOS CI: Install Java 25 first, then Java 24 second (Java 24 becomes JAVA_HOME, Java 25 available as toolchain)
 
 ### photon-apple Module (macOS-only)
 

@@ -343,17 +343,17 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: Install Java 24 (for Gradle)
-        uses: actions/setup-java@v4
-        with:
-          java-version: 24
-          distribution: temurin
-          architecture: ${{ matrix.architecture }}
       - name: Install Java 25 (macOS toolchain for SwiftKit)
         uses: actions/setup-java@v4
         if: runner.os == 'macOS'
         with:
           java-version: 25
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
+      - name: Install Java 24 (for Gradle)
+        uses: actions/setup-java@v4
+        with:
+          java-version: 24
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - name: Install pnpm
