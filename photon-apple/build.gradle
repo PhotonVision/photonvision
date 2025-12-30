@@ -6,12 +6,26 @@ def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
 def forceStubs = project.hasProperty('photonAppleForceStubs')
 def useRealImplementation = isMacOS && !forceStubs
 
-// Use Java 25 on macOS for real impl (SwiftKit requires 25), Java 17 for photonlib stubs
-def javaVersion = forceStubs ? 17 : (isMacOS ? 25 : 24)
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(javaVersion)
+// Configure Java version based on build mode
+if (forceStubs) {
+    // PhotonLib stubs: Use Java 17 for FRC compatibility
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    }
+} else if (useRealImplementation) {
+    // macOS real impl: Declare as Java 24 compatible for dependency resolution
+    // (even though SwiftKit deps require Java 25 at runtime)
+    java {
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
+    }
+} else {
+    // Linux/Windows stubs: Use Java 24
+    java {
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
     }
 }
 
@@ -66,6 +80,13 @@ if (useRealImplementation) {
 
     // Ensure Swift library is built before compiling Java
     tasks.compileJava.dependsOn(buildSwift)
+
+    // Use Java 25 for compilation (SwiftKit requires Java 25)
+    tasks.withType(JavaCompile).configureEach {
+        javaCompiler = javaToolchains.compilerFor {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+    }
 
     test {
         useJUnitPlatform()
