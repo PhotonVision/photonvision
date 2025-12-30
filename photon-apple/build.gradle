@@ -9,7 +9,7 @@ def useRealImplementation = isMacOS && !forceStubs
 def javaVersion = (
         useRealImplementation ? 24 :
         17
-)
+        )
 
 java {
     toolchain {

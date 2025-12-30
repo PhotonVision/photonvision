@@ -29,8 +29,8 @@ public class PhotonAppleLibraryLoader {
     /**
      * Stub initialize method - does nothing on non-macOS platforms.
      *
-     * <p>This is a no-op on non-macOS platforms since the Apple Vision framework is only available
-     * on macOS.
+     * <p>This is a no-op on non-macOS platforms since the Apple Vision framework is only available on
+     * macOS.
      */
     public static synchronized void initialize() {
         // No-op on non-macOS platforms
