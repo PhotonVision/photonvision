@@ -187,10 +187,13 @@ PhotonVision supports multiple object detection backends:
 ### Java Version
 
 - **Gradle runs on Java 24** (Gradle 8.14 doesn't support Java 25)
-- **Java 25 toolchain** used on macOS for photon-apple (SwiftKit requires Java 25)
+- **Java 25 compilation** for photon-apple on macOS (SwiftKit requires Java 25)
+- **Java 24 compatibility** declared via sourceCompatibility/targetCompatibility for dependency resolution
 - **Java 24 toolchain** used on Linux/Windows for photon-apple stubs
 - PhotonLib uses Java 17 for FRC compatibility (compiles photon-apple stubs with Java 17)
 - macOS CI: Install Java 25 first, then Java 24 second (Java 24 becomes JAVA_HOME, Java 25 available as toolchain)
+
+**Note**: photon-apple on macOS compiles with Java 25 but declares Java 24 compatibility to allow photon-server (Java 24) to depend on it during Gradle dependency resolution. Runtime requires Java 25 due to SwiftKit dependencies.
 
 ### photon-apple Module (macOS-only)
 
