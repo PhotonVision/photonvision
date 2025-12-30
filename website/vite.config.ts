@@ -4,7 +4,4 @@ import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
-  server: {
-    allowedHosts: ["dictionaries-motorcycle-regular-years.trycloudflare.com"],
-  },
 });
