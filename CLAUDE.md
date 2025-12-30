@@ -186,9 +186,10 @@ PhotonVision supports multiple object detection backends:
 
 ### Java Version
 
-- **Requires Java 25** for all subprojects
-- photon-apple requires Java 25 toolchain due to Foreign Function & Memory API usage in SwiftKit
-- All subprojects compile with Java 25 (sourceCompatibility and targetCompatibility)
+- **Requires Java 24** for all subprojects
+- photon-apple requires Java 24 toolchain due to Foreign Function & Memory API usage in SwiftKit
+- All subprojects compile with Java 24 (sourceCompatibility and targetCompatibility)
+- SwiftKit uses FFM API in preview mode on Java 24 (stable in Java 25+)
 
 ### photon-apple Module (macOS-only)
 
