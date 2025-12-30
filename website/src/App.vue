@@ -255,7 +255,7 @@ const socialLinks = [
     <section id="video" class="relative">
       <div class="relative">
         <video
-          src="/public/images/in-action.mp4"
+          src="/public/videos/in-action.mp4"
           playsinline
           autoplay
           loop
