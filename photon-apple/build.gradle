@@ -6,10 +6,8 @@ def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
 def forceStubs = project.hasProperty('photonAppleForceStubs')
 def useRealImplementation = isMacOS && !forceStubs
 
-def javaVersion = (
-        useRealImplementation ? 24 :
-        17
-        )
+// Use Java 25 for photonvision app, Java 17 for photonlib (when forceStubs is set)
+def javaVersion = forceStubs ? 17 : 25
 
 java {
     toolchain {
@@ -83,7 +81,7 @@ if (useRealImplementation) {
                     'src/stub/java']  // Use stubs instead
             }
         }
-        // Don't compile tests on non-macOS (they require Java 24 APIs)
+        // Don't compile tests on non-macOS (they require Java 25 APIs)
         test {
             java {
                 srcDirs = []
