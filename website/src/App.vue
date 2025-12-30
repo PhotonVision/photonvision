@@ -103,7 +103,7 @@ const socialLinks = [
     >
       <a href="#" class="flex items-center gap-3 py-2 group">
         <img
-          src="/images/PhotonVision-Icon-BG.png"
+          src="/public/images/PhotonVision-Icon-BG.png"
           alt="PhotonVision"
           class="w-10 h-10 group-hover:scale-110 transition-transform duration-300"
         />
@@ -177,7 +177,7 @@ const socialLinks = [
       >
         <span class="self-center md:self-initial mb-8 md:mb-0 md:me-12 shrink">
           <img
-            src="/images/PhotonVision-Icon-BG.png"
+            src="/public/images/PhotonVision-Icon-BG.png"
             alt="PhotonVision Logo"
             class="max-w-20 md:max-w-80 drop-shadow-2xl md:p-0 transition-transform duration-500"
           />
@@ -225,7 +225,7 @@ const socialLinks = [
           class="absolute -inset-4 bg-gradient-to-r from-primary via-brand-blue to-brand-yellow rounded-2xl blur-xl opacity-30"
         ></div>
         <img
-          src="/images/demo.png"
+          src="/public/images/demo.png"
           alt="Demo of PhotonVision UI"
           loading="lazy"
           class="relative rounded-xl shadow-2xl border border-zinc-700/50"
@@ -255,7 +255,7 @@ const socialLinks = [
     <section id="video" class="relative">
       <div class="relative">
         <video
-          src="/images/in-action.mp4"
+          src="/public/images/in-action.mp4"
           playsinline
           autoplay
           loop
@@ -338,7 +338,7 @@ const socialLinks = [
       >
         <div class="flex items-center gap-4">
           <img
-            src="/images/PhotonVision-Icon-BG.png"
+            src="/public/images/PhotonVision-Icon-BG.png"
             class="w-12 h-12 hover:scale-110 transition-transform duration-300"
             alt="PhotonVision logo"
           />
