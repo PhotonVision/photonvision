@@ -370,7 +370,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:SwiftAndJavaJarSampleLib:build
+          ./gradlew publishToMavenLocal -x :Samples:build
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
