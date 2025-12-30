@@ -66,18 +66,8 @@ if (useRealImplementation) {
         api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
     }
 
-    // Task to clean cached dylibs
-    task cleanCachedDylibs(type: Exec) {
-        commandLine 'sh', '-c', 'rm -rf ../photon-server/photonvision_config/nativelibs/*.dylib 2>/dev/null || true'
-        workingDir projectDir
-        doLast {
-            println "Cleaned cached dylibs from photon-server/photonvision_config/nativelibs"
-        }
-    }
-
     // Task to build Swift library and generate Java bindings
     task buildSwift(type: Exec) {
-        dependsOn cleanCachedDylibs
         commandLine 'swift', 'build', '-c', 'release'
         workingDir projectDir
     }
@@ -85,10 +75,14 @@ if (useRealImplementation) {
     // Package Swift dylibs into JAR resources for portable deployment
     processResources {
         dependsOn buildSwift
+
+        // Package all Swift dylibs from local build
         def buildDir = "${projectDir}/.build/release"
         from(buildDir) {
-            include '*.dylib'
-            into 'native/macos'
+            include 'libAppleVisionLibrary.dylib'
+            include 'libSwiftJava.dylib'
+            include 'libSwiftRuntimeFunctions.dylib'
+            // Package at root of JAR for SwiftLibraries.loadResourceLibrary() to find
         }
     }
 
