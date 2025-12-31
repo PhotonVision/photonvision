@@ -318,11 +318,7 @@ jobs:
             artifact-name: Win64
             architecture: x64
             arch-override: winx64
-          - os: macos-latest
-            artifact-name: macOS
-            architecture: x64
-            arch-override: macx64
-          - os: macos-latest
+          - os: macos-26
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
@@ -412,7 +408,7 @@ jobs:
           - os: windows-latest
             artifact-name: jar-Win64
             extraOpts: ""
-          - os: macos-latest
+          - os: macos-26
             artifact-name: jar-macOS
             architecture: x64
 
