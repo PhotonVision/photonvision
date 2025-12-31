@@ -70,6 +70,5 @@ public class SwiftArena implements AutoCloseable {
     public void close() {
         // AllocatingSwiftArena doesn't have a close method
         // Both ofAuto() and ofConfined() are automatically cleaned up
-        arena.close();
     }
 }

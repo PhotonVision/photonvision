@@ -26,7 +26,6 @@ if (isMacOS && !forceStubs) {
             capabilitiesResolution.all { it.selectHighestVersion() }
         }
     }
-
 } else {
     // PhotonLib stubs: Use Java 17 for FRC compatibility
     java {

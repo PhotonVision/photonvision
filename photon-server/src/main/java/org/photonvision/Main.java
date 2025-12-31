@@ -17,7 +17,6 @@
 
 package org.photonvision;
 
-
 import edu.wpi.first.hal.HAL;
 import java.io.IOException;
 import java.nio.file.Path;

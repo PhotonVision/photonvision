@@ -67,7 +67,7 @@ public enum Platform {
 
     // Bleeding Edge - Partial support for development, no official support for installed use
     MACOS("Mac OS", Platform::getUnknownModel, false, OSType.MACOS, true),
-    
+
     // Completely unsupported
     WINDOWS_32("Windows x86", Platform::getUnknownModel, false, OSType.WINDOWS, false),
     LINUX_ARM32(

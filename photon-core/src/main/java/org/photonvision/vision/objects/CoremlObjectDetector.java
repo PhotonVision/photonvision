@@ -17,17 +17,14 @@
 
 package org.photonvision.vision.objects;
 
-import org.photonvision.apple.SwiftArena;
 import java.lang.foreign.MemorySegment;
-import java.lang.ref.Cleaner;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect2d;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.apple.SwiftArena;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
@@ -72,7 +69,6 @@ public class CoremlObjectDetector implements ObjectDetector {
                         model.modelFile.getAbsolutePath(), arena.unwrap());
 
         logger.info("Created AppleObjectDetector for model: " + model.getNickname());
-
     }
 
     @Override
@@ -94,7 +90,6 @@ public class CoremlObjectDetector implements ObjectDetector {
      */
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThreshold) {
-
         try (var frameArena = SwiftArena.ofConfined()) {
             // Convert to BGRA format (required by Swift side)
             Mat bgra = new Mat();
@@ -161,5 +156,4 @@ public class CoremlObjectDetector implements ObjectDetector {
         // ofConfined arenas are already closed via try-with-resources
         // ofAuto is cleaned up by the GC
     }
-
 }

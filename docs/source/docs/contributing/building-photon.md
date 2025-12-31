@@ -17,7 +17,7 @@ This section contains the build instructions from the source code available at [
 
  WPILib uses JDK 17 for the 2026 season. Photonlib must be built with JDK 17 compatibility.
 
- PhotonVision on macOS uses a library (swift-java) to wrap swift code in java for CoreML based object detection. 
+ PhotonVision on macOS uses a library (swift-java) to wrap swift code in java for CoreML based object detection.
  swift-java requires Java 25 to build. Photonvision and WPILib use Gradle 8. Gradle 8 does not support Java 25. Gradle 9 is required for Java 25. So we build swift-java using Gradle 9 and Java 25 then use Gradle 8 and Java 24 to build photonvision.
 
 
@@ -354,3 +354,8 @@ build action, which can be found [here](https://github.com/PhotonVision/photonvi
 In order to force the Object Detection interface to be visible, it's necessary to hardcode the platform that `Platform.java` returns. This can be done by changing the function that detects the RK3588S/QCS6490 platform to always return true, and changing the `getCurrentPlatform()` function to always return the RK3588S/QCS6490 architecture.
 Alternatively, it's possible to modify the frontend code by changing all instances of `useSettingsStore().general.supportedBackends.length > 0` to `true`, which will force the card to render.
 Make sure to revert these changes before submitting a Pull Request.
+
+#### Building platform specific native code in the monorepo
+
+Platform specific native code can be built in the monorepo by isolating the native code to a new subfolder with its own build.gradle.
+On the desired platform, CI will build the native code and the java wrappers for it. On other platforms, configure the project to use stubs. See photon-apple/build.gradle.
