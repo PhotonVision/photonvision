@@ -17,13 +17,13 @@
 
 package org.photonvision.vision.objects;
 
-import java.lang.foreign.MemorySegment;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.apple.MemorySegmentCompat;
 import org.photonvision.apple.SwiftArena;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -110,7 +110,7 @@ public class CoremlObjectDetector implements ObjectDetector {
                 return new ArrayList<>();
             }
 
-            var mem = MemorySegment.ofAddress(bgra.dataAddr());
+            var mem = MemorySegmentCompat.ofAddress(bgra.dataAddr());
             var width = in.width();
             var height = in.height();
 
