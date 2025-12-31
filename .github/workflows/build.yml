@@ -320,7 +320,7 @@ jobs:
             arch-override: winx64
           - os: macos-26
             artifact-name: macOSArm
-            architecture: x64
+            architecture: aarch64
             arch-override: macarm64
           - os: ubuntu-22.04
             artifact-name: Linux
