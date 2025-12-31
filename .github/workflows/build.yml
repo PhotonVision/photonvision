@@ -319,8 +319,12 @@ jobs:
             architecture: x64
             arch-override: winx64
           - os: macos-26
+            artifact-name: macOS
+            architecture: x64
+            arch-override: macx64
+          - os: macos-26
             artifact-name: macOSArm
-            architecture: aarch64
+            architecture: x64
             arch-override: macarm64
           - os: ubuntu-22.04
             artifact-name: Linux
@@ -374,7 +378,7 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           cd photon-apple/swift-java
-          ./gradlew publishToMavenLocal -x :Samples:build
+          ./gradlew publishToMavenLocal -PskipSamples=true
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
