@@ -81,10 +81,10 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
-      - name: Install Java 24
+      - name: Install Java 17
         uses: actions/setup-java@v4
         with:
-          java-version: 24
+          java-version: 17
           distribution: temurin
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -122,10 +122,10 @@ jobs:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
-      - name: Install Java 24
+      - name: Install Java 17
         uses: actions/setup-java@v4
         with:
-          java-version: 24
+          java-version: 17
           distribution: temurin
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -350,10 +350,18 @@ jobs:
           java-version: 25
           distribution: temurin
           architecture: ${{ matrix.architecture }}
-      - name: Install Java 24 (for Gradle)
+      - name: Install Java 24 (for Gradle on macOS)
         uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
         with:
           java-version: 24
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
+      - name: Install Java 17 (for Gradle on non-macOS)
+        uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
+        with:
+          java-version: 17
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - name: Install pnpm
@@ -411,10 +419,10 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install Java 24
+      - name: Install Java 17
         uses: actions/setup-java@v4
         with:
-          java-version: 24
+          java-version: 17
           distribution: temurin
       - uses: actions/download-artifact@v4
         with:
