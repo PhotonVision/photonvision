@@ -419,8 +419,15 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install Java 17
+      - name: Install Java 25 (macOS)
         uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 25
+          distribution: temurin
+      - name: Install Java 17 (non-macOS)
+        uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
