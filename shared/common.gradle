@@ -3,8 +3,9 @@ apply plugin: "java"
 apply plugin: "jacoco"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_24
-    targetCompatibility = JavaVersion.VERSION_24
+    // Use whatever Java version is running Gradle (Java 17 on most CI, Java 24 on macOS CI)
+    sourceCompatibility = JavaVersion.current()
+    targetCompatibility = JavaVersion.current()
 }
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
