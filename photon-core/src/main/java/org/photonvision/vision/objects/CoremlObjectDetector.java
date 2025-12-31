@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.objects;
 
-import com.photonvision.apple.SwiftArena;
+import org.photonvision.apple.SwiftArena;
 import java.lang.foreign.MemorySegment;
 import java.lang.ref.Cleaner;
 import java.util.ArrayList;
@@ -38,29 +38,19 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
  * <p>This detector uses Apple's Vision framework which provides automatic image preprocessing
  * (resizing, cropping) and built-in NMS (Non-Maximum Suppression).
  */
-public class AppleObjectDetector implements ObjectDetector {
-    private static final Logger logger = new Logger(AppleObjectDetector.class, LogGroup.General);
+public class CoremlObjectDetector implements ObjectDetector {
+    private static final Logger logger = new Logger(CoremlObjectDetector.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it goes out of scope */
-    private final Cleaner cleaner = Cleaner.create();
-
-    /** Atomic boolean to ensure that the native object can only be released once. */
-    private AtomicBoolean released = new AtomicBoolean(false);
-
-    /** Swift detector arena (must outlive the detector instance) */
-    private final SwiftArena detectorArena;
+    private final SwiftArena arena;
 
     /** Swift ObjectDetector instance */
-    private final com.photonvision.apple.ObjectDetector swiftDetector;
+    private final org.photonvision.apple.ObjectDetector swiftDetector;
 
-    private final AppleModel model;
-
-    /** BGR color for letterboxing (gray) */
-    private static final Scalar GRAY_COLOR = new Scalar(114, 114, 114);
+    private final CoremlModel model;
 
     /** Returns the model in use by this detector. */
     @Override
-    public AppleModel getModel() {
+    public CoremlModel getModel() {
         return model;
     }
 
@@ -68,33 +58,21 @@ public class AppleObjectDetector implements ObjectDetector {
      * Creates a new AppleObjectDetector from the given model.
      *
      * @param model The model to create the detector from.
-     * @param inputSize The required image dimensions for the model (used for letterboxing only,
-     *     Vision framework handles actual resizing).
+     * @param inputSize unused - The required image dimensions for the model
      */
-    public AppleObjectDetector(AppleModel model, Size inputSize) {
+    public CoremlObjectDetector(CoremlModel model, Size inputSize) {
         this.model = model;
 
-        // Create arena for the detector (must outlive the detector)
-        // Use ofAuto() instead of ofConfined() to allow access from VisionRunner thread
-        this.detectorArena = SwiftArena.ofAuto();
+        // ofAuto() instead of ofConfined() to allow access from VisionRunner thread
+        this.arena = SwiftArena.ofAuto();
 
         // Initialize Swift ObjectDetector
-        // Note: Libraries must already be loaded by PhotonAppleLibraryLoader.initialize() in Main
         this.swiftDetector =
-                com.photonvision.apple.ObjectDetector.init(
-                        model.modelFile.getAbsolutePath(), detectorArena.unwrap());
+                org.photonvision.apple.ObjectDetector.init(
+                        model.modelFile.getAbsolutePath(), arena.unwrap());
 
         logger.info("Created AppleObjectDetector for model: " + model.getNickname());
 
-        // Register cleanup action
-        // Note: ofAuto() arenas are automatically cleaned up, no manual close needed
-        cleaner.register(
-                this,
-                () -> {
-                    if (released.compareAndSet(false, true)) {
-                        logger.debug("Auto arena cleanup for AppleObjectDetector: " + model.getNickname());
-                    }
-                });
     }
 
     @Override
@@ -116,9 +94,6 @@ public class AppleObjectDetector implements ObjectDetector {
      */
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThreshold) {
-        if (released.get()) {
-            throw new IllegalStateException("AppleObjectDetector has been released");
-        }
 
         try (var frameArena = SwiftArena.ofConfined()) {
             // Convert to BGRA format (required by Swift side)
@@ -183,18 +158,8 @@ public class AppleObjectDetector implements ObjectDetector {
      */
     @Override
     public void release() {
-        if (released.compareAndSet(false, true)) {
-            // ofAuto() arenas are automatically cleaned up, no manual close needed
-            logger.debug("Released AppleObjectDetector for model: " + model.getNickname());
-        }
+        // ofConfined arenas are already closed via try-with-resources
+        // ofAuto is cleaned up by the GC
     }
 
-    /**
-     * Checks if the detector is still valid (not released).
-     *
-     * @return true if the detector is valid, false otherwise
-     */
-    public boolean isValid() {
-        return !released.get();
-    }
 }

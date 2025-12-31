@@ -41,16 +41,16 @@ let javaIncludePath = "\(javaHome)/include"
 #endif
 
 let package = Package(
-  name: "PhotonAppleVision",
+  name: "PhotonApple",
   platforms: [
     .macOS(.v15),
     .iOS(.v18),
   ],
   products: [
     .library(
-      name: "AppleVisionLibrary",
+      name: "PhotonAppleLibrary",
       type: .dynamic,
-      targets: ["AppleVisionLibrary"]
+      targets: ["PhotonAppleLibrary"]
     ),
   ],
   dependencies: [
@@ -59,7 +59,7 @@ let package = Package(
   ],
   targets: [
     .target(
-      name: "AppleVisionLibrary",
+      name: "PhotonAppleLibrary",
       dependencies: [
         .product(name: "SwiftJava", package: "swift-java"),
         .product(name: "CSwiftJavaJNI", package: "swift-java"),
@@ -74,8 +74,8 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "AppleVisionLibraryTests",
-      dependencies: ["AppleVisionLibrary"]
+      name: "PhotonAppleLibraryTests",
+      dependencies: ["PhotonAppleLibrary"]
     ),
   ]
 )

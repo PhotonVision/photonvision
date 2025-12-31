@@ -18,14 +18,12 @@
 package org.photonvision.vision.objects;
 
 import java.io.File;
-import java.util.Arrays;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
 
 /** Manages an Apple CoreML model for object detection using the Apple Vision framework. */
-public class AppleModel implements Model {
+public class CoremlModel implements Model {
     public final File modelFile;
     public final ModelProperties properties;
 
@@ -35,7 +33,7 @@ public class AppleModel implements Model {
      * @param properties The properties to create the model from
      * @throws IllegalArgumentException If the properties are invalid
      */
-    public AppleModel(ModelProperties properties) throws IllegalArgumentException {
+    public CoremlModel(ModelProperties properties) throws IllegalArgumentException {
         // Validate: file must exist
         if (!new File(properties.modelPath().toString()).exists()) {
             throw new IllegalArgumentException("Model file does not exist: " + properties.modelPath());
@@ -44,29 +42,13 @@ public class AppleModel implements Model {
         // Validate: must have labels
         if (properties.labels() == null || properties.labels().isEmpty()) {
             throw new IllegalArgumentException(
-                    "AppleModel properties must have labels: " + properties.modelPath());
-        }
-
-        // Validate: must have resolution
-        if (properties.resolutionWidth() == 0 || properties.resolutionHeight() == 0) {
-            throw new IllegalArgumentException(
-                    "AppleModel properties must have resolution: " + properties.modelPath());
+                    "CoremlModel properties must have labels: " + properties.modelPath());
         }
 
         // Validate: must be APPLE family
-        if (properties.family() != Family.APPLE) {
+        if (properties.family() != Family.COREML) {
             throw new IllegalArgumentException(
-                    "AppleModel properties must have family APPLE: " + properties.family());
-        }
-
-        // Validate: version must be supported (YOLOV8 or YOLOV11)
-        var supportedVersions = Arrays.asList(Version.YOLOV8, Version.YOLOV11);
-        if (!supportedVersions.contains(properties.version())) {
-            throw new IllegalArgumentException(
-                    "AppleModel properties must have version in "
-                            + supportedVersions
-                            + ", got "
-                            + properties.version());
+                    "CoremlModel properties must have family COREML: " + properties.family());
         }
 
         this.modelFile = new File(properties.modelPath().toString());
@@ -75,7 +57,7 @@ public class AppleModel implements Model {
 
     @Override
     public ObjectDetector load() {
-        return new AppleObjectDetector(
+        return new CoremlObjectDetector(
                 this, new Size(properties.resolutionWidth(), properties.resolutionHeight()));
     }
 
@@ -105,7 +87,7 @@ public class AppleModel implements Model {
 
     @Override
     public String toString() {
-        return "AppleModel{"
+        return "CoremlModel{"
                 + "modelFile="
                 + modelFile
                 + ", nickname='"

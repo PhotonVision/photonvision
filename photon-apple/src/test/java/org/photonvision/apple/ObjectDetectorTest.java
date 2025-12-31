@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.photonvision.apple;
+package org.photonvision.apple;
 
 import static org.junit.jupiter.api.Assertions.*;
 

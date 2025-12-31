@@ -68,7 +68,6 @@ dependencies {
         }
     }
 
-    // Include photon-apple on all platforms (uses stubs on non-macOS)
     implementation project(':photon-apple')
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
@@ -85,5 +84,3 @@ task writeCurrentVersion {
 sourceSets.main.java.srcDir "${buildDir}/generated/java/"
 
 compileJava.dependsOn writeCurrentVersion
-
-// Gradle automatically handles dependency build order for project dependencies

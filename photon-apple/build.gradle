@@ -4,17 +4,9 @@ plugins {
 
 def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
 def forceStubs = project.hasProperty('photonAppleForceStubs')
-def useRealImplementation = isMacOS && !forceStubs
 
 // Configure Java version based on build mode
-if (forceStubs) {
-    // PhotonLib stubs: Use Java 17 for FRC compatibility
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(17)
-        }
-    }
-} else if (useRealImplementation) {
+if (isMacOS && !forceStubs) {
     // macOS real impl: Declare as Java 24 compatible for dependency resolution
     // (even though SwiftKit deps require Java 25 at runtime)
     java {
@@ -34,24 +26,24 @@ if (forceStubs) {
             capabilitiesResolution.all { it.selectHighestVersion() }
         }
     }
+
 } else {
-    // Linux/Windows stubs: Use Java 24
+    // PhotonLib stubs: Use Java 17 for FRC compatibility
     java {
-        sourceCompatibility = JavaVersion.VERSION_24
-        targetCompatibility = JavaVersion.VERSION_24
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 
-
-if (useRealImplementation) {
+if (isMacOS && !forceStubs) {
     // macOS with real implementation: Build Swift library and use real implementations
     sourceSets {
         main {
             java {
                 srcDirs = [
                     'src/main/java',
-                    '.build/plugins/outputs/photon-apple/AppleVisionLibrary/destination/JExtractSwiftPlugin/src/generated/java'
+                    '.build/plugins/outputs/photon-apple/PhotonAppleLibrary/destination/JExtractSwiftPlugin/src/generated/java'
                 ]
             }
         }
@@ -79,7 +71,7 @@ if (useRealImplementation) {
         // Package all Swift dylibs from local build
         def buildDir = "${projectDir}/.build/release"
         from(buildDir) {
-            include 'libAppleVisionLibrary.dylib'
+            include 'libPhotonAppleLibrary.dylib'
             include 'libSwiftJava.dylib'
             include 'libSwiftRuntimeFunctions.dylib'
             // Package at root of JAR for SwiftLibraries.loadResourceLibrary() to find

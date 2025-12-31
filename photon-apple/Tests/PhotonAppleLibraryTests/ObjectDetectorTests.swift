@@ -1,5 +1,5 @@
 import XCTest
-@testable import AppleVisionLibrary
+@testable import PhotonAppleLibrary
 
 final class ObjectDetectorTests: XCTestCase {
     func testDetectFake() {

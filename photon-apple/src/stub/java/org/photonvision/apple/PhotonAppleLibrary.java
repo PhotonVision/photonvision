@@ -15,20 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.photonvision.apple;
+package org.photonvision.apple;
 
 /**
- * Stub implementation of DetectionResultArray for non-macOS platforms. This class is generated from
+ * Stub implementation of PhotonAppleLibrary for non-macOS platforms. This class is generated from
  * Swift code on macOS.
  */
-public final class DetectionResultArray {
-    private DetectionResultArray() {}
-
-    public long count() {
-        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
-    }
-
-    public DetectionResult get(long index, Object swiftArena) {
-        throw new UnsupportedOperationException("Apple object detection is only supported on macOS");
-    }
+public final class PhotonAppleLibrary {
+    private PhotonAppleLibrary() {}
 }

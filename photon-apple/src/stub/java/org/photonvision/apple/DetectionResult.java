@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.photonvision.apple;
+package org.photonvision.apple;
 
 /**
  * Stub implementation of DetectionResult for non-macOS platforms. This class is generated from

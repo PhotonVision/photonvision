@@ -58,7 +58,7 @@ import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
-import org.photonvision.vision.objects.AppleModel;
+import org.photonvision.vision.objects.CoremlModel;
 import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
@@ -621,7 +621,7 @@ public class RequestHandler {
                     family = NeuralNetworkModelManager.Family.RKNN;
                     break;
                 case MACOS:
-                    family = NeuralNetworkModelManager.Family.APPLE;
+                    family = NeuralNetworkModelManager.Family.COREML;
                     break;
                 default:
                     ctx.status(400);
@@ -679,7 +679,7 @@ public class RequestHandler {
                             switch (family) {
                                 case RUBIK -> new RubikModel(modelProperties).load();
                                 case RKNN -> new RknnModel(modelProperties).load();
-                                case APPLE -> new AppleModel(modelProperties).load();
+                                case COREML -> new CoremlModel(modelProperties).load();
                             };
                 } catch (RuntimeException e) {
                     ctx.status(400);

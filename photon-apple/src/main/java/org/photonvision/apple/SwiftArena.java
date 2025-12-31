@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package com.photonvision.apple;
+package org.photonvision.apple;
 
 import org.swift.swiftkit.ffm.AllocatingSwiftArena;
 
@@ -70,5 +70,6 @@ public class SwiftArena implements AutoCloseable {
     public void close() {
         // AllocatingSwiftArena doesn't have a close method
         // Both ofAuto() and ofConfined() are automatically cleaned up
+        arena.close();
     }
 }

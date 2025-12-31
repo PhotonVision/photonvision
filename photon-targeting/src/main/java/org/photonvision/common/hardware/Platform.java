@@ -65,8 +65,10 @@ public enum Platform {
     LINUX_ARM64(
             "Linux ARM64", Platform::getLinuxDeviceTreeModel, false, OSType.LINUX, true), // ODROID C2, N2
 
-    // Completely unsupported
+    // Bleeding Edge - Partial support for development, no official support for installed use
     MACOS("Mac OS", Platform::getUnknownModel, false, OSType.MACOS, true),
+    
+    // Completely unsupported
     WINDOWS_32("Windows x86", Platform::getUnknownModel, false, OSType.WINDOWS, false),
     LINUX_ARM32(
             "Linux ARM32", Platform::getUnknownModel, false, OSType.LINUX, false), // ODROID XU4, C1+

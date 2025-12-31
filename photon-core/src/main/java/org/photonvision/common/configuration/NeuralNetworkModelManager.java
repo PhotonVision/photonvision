@@ -38,7 +38,7 @@ import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelP
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.objects.AppleModel;
+import org.photonvision.vision.objects.CoremlModel;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
@@ -202,7 +202,7 @@ public class NeuralNetworkModelManager {
         switch (Platform.getCurrentPlatform()) {
             case LINUX_QCS6490 -> supportedBackends.add(Family.RUBIK);
             case LINUX_RK3588_64 -> supportedBackends.add(Family.RKNN);
-            case MACOS -> supportedBackends.add(Family.APPLE);
+            case MACOS -> supportedBackends.add(Family.COREML);
             default -> {
                 logger.warn(
                         "No supported neural network backends found for this platform: "
@@ -242,7 +242,7 @@ public class NeuralNetworkModelManager {
     public enum Family {
         RKNN(".rknn"),
         RUBIK(".tflite"),
-        APPLE(".mlmodel");
+        COREML(".mlmodel");
 
         private final String fileExtension;
 
@@ -356,8 +356,8 @@ public class NeuralNetworkModelManager {
                 case RUBIK -> {
                     models.get(properties.family()).add(new RubikModel(properties));
                 }
-                case APPLE -> {
-                    models.get(properties.family()).add(new AppleModel(properties));
+                case COREML -> {
+                    models.get(properties.family()).add(new CoremlModel(properties));
                 }
             }
             logger.info(
@@ -398,7 +398,7 @@ public class NeuralNetworkModelManager {
                                         .anyMatch(
                                                 family -> {
                                                     // For APPLE, also check for .mlmodelc (compiled models)
-                                                    if (family == Family.APPLE) {
+                                                    if (family == Family.COREML) {
                                                         return pathStr.endsWith(family.extension())
                                                                 || pathStr.endsWith(".mlmodelc");
                                                     }
