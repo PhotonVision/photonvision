@@ -387,6 +387,17 @@ jobs:
         run: |
           cd photon-apple/swift-java
           ./gradlew publishToMavenLocal -PskipSamples=true
+      - name: Debug - List build directories (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          echo "=== Contents of photon-apple/swift-java/ ==="
+          ls -la photon-apple/swift-java/ || true
+          echo "=== Contents of photon-apple/swift-java/.build/ ==="
+          ls -la photon-apple/swift-java/.build/ || true
+          echo "=== Finding all .build directories ==="
+          find photon-apple/swift-java -type d -name ".build" || true
+          echo "=== Gradle cache locations ==="
+          ls -la photon-apple/swift-java/.gradle/ || true
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
