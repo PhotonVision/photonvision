@@ -99,7 +99,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
 });
 
 const formattedDate = new Intl.DateTimeFormat(undefined, {
-  timeStyle: "long"
+  timeStyle: "medium"
 });
 </script>
 
@@ -107,9 +107,9 @@ const formattedDate = new Intl.DateTimeFormat(undefined, {
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Metrics</span>
-      <span>
+      <span style="font-size: 16px">
         <v-icon start class="open-icon" size="small">mdi-clock-outline</v-icon>
-        Last Update: {{ formattedDate.format(useSettingsStore().lastUpdate) }}
+        Last Update: <span class="update-time">{{ formattedDate.format(useSettingsStore().lastUpdate) }}</span>
       </span>
     </v-card-title>
     <v-card-text class="pt-0 pb-3">
@@ -194,6 +194,10 @@ const formattedDate = new Intl.DateTimeFormat(undefined, {
 .metrics-table {
   width: 100%;
   text-align: center;
+  font-family: monospace !important;
+}
+
+.update-time {
   font-family: monospace !important;
 }
 
