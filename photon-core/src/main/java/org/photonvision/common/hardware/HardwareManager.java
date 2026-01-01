@@ -75,12 +75,6 @@ public class HardwareManager {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
 
-        // this.metricsManager = new MetricsManager();
-        // this.metricsManager.setConfig(hardwareConfig);
-
-        // TimedTaskManager.getInstance()
-        //         .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
-
         ledModeRequest =
                 NetworkTablesManager.getInstance()
                         .kRootTable
@@ -257,8 +251,4 @@ public class HardwareManager {
         }
         statusLED.setStatus(status);
     }
-
-    // public void publishMetrics() {
-    //     metricsManager.publishMetrics();
-    // }
 }

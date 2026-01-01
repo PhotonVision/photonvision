@@ -82,8 +82,6 @@ public class SystemMonitor {
 
     public boolean writeMetricsToLog = false;
 
-    private MetricsManager mm;
-
     private final String taskName = "SystemMonitorPublisher";
     private final double minimumDeltaTime = 0.250; // seconds
     private final long mebi = (1024 * 1024);
@@ -134,10 +132,6 @@ public class SystemMonitor {
         // initialize network traffic monitoring
         selectNetworkIfByName(
                 ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface);
-
-        // for comparison, TODO: remove before merging with main
-        mm = new MetricsManager();
-        mm.setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
     }
 
     /**
@@ -221,7 +215,7 @@ public class SystemMonitor {
                         this.getGpuMem(),
                         this.getGpuMemUtil(),
                         this.getUsedDiskPct(),
-                        this.getUseableDiskSpace(),
+                        this.getUsableDiskSpace(),
                         this.getNpuUsage(),
                         this.getIpAddress(),
                         this.getUptime(),
@@ -377,7 +371,7 @@ public class SystemMonitor {
      *
      * @return the number of bytes available, or -1 if the command fails
      */
-    public long getUseableDiskSpace() {
+    public long getUsableDiskSpace() {
         if (fs != null) {
             try {
                 return fs.getUsableSpace();
@@ -541,6 +535,7 @@ public class SystemMonitor {
         return lastResult;
     }
 
+    /** Used to benchmark retrieving metrics with SystemMonitor. */
     private void testSM() {
         StringBuilder sb = new StringBuilder();
         double total = 0;
@@ -553,40 +548,27 @@ public class SystemMonitor {
         total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
         total +=
                 timeIt(
+                        sb, () -> String.format("Usable Disk Space: %.0f MB, ", getUsableDiskSpace() / mebi));
+        total +=
+                timeIt(
                         sb, () -> String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
         total +=
                 timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", getGpuMemUtil(), getGpuMem()));
         total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
-        sb.append(String.format("==========\n%7.3f ms\n", total));
 
-        logger.info(sb.toString());
-    }
-
-    private void testMM() {
-        StringBuilder sb = new StringBuilder();
-        double total = 0;
-
-        sb.append("MetricsManager Test:\n");
-        total += timeIt(sb, () -> String.format("System Uptime: %.0f", mm.getUptime()));
-        total += timeIt(sb, () -> String.format("CPU Usage: %.2f%%", mm.getCpuUtilization()));
-        total += timeIt(sb, () -> String.format("CPU Temperature: %.2f °C", mm.getCpuTemp()));
-        total += timeIt(sb, () -> String.format("NPU Usage: %s", Arrays.toString(mm.getNpuUsage())));
-        total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", mm.getUsedDiskPct()));
-        total +=
-                timeIt(sb, () -> String.format("Memory: %.0f / %.0f MB", mm.getRamUtil(), mm.getRamMem()));
         total +=
                 timeIt(
                         sb,
-                        () -> String.format("GPU Memory: %.0f / %.0f MB", mm.getGpuMemUtil(), mm.getGpuMem()));
-        total += timeIt(sb, () -> String.format("CPU Throttle: %s", mm.getThrottleReason()));
+                        () -> {
+                            var nt = getNetworkTraffic();
+                            return String.format(
+                                    "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                                    nt.sentBitRate() / 1000, nt.recvBitRate() / 1000);
+                        });
+
         sb.append(String.format("==========\n%7.3f ms\n", total));
 
         logger.info(sb.toString());
-    }
-
-    private void compare() {
-        testSM();
-        testMM();
     }
 
     /**

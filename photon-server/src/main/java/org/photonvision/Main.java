@@ -301,7 +301,6 @@ public class Main {
 
         logger.debug("Loading SystemMonitor...");
         SystemMonitor.getInstance().logSystemInformation();
-        SystemMonitor.getInstance().writeMetricsToLog = true;
         SystemMonitor.getInstance().startMonitor();
 
         // todo - should test mode just add test mode sources, but still allow local usb cameras to be
