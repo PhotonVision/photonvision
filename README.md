@@ -6,7 +6,7 @@ PhotonVision is the free, fast, and easy-to-use computer vision solution for the
 
 The latest release of platform-specific jars and images is found [here](https://github.com/PhotonVision/photonvision/releases).
 
-If you are interested in contributing code or documentation to the project, please [read our getting started page for contributors](https://docs.photonvision.org/en/latest/docs/contributing/index.html) and **[join the Discord](https://discord.gg/wYxTwym) to introduce yourself!** We hope to provide a welcoming community to anyone who is interested in helping.
+If you are interested in contributing code or documentation to the project, please [read our getting started page for contributors](https://docs.photonvision.org/en/latest/docs/contributing/index.html) and **[join the Discord](https://discord.gg/wYxTwym) to introduce yourself!** We hope to provide a welcoming community to anyone who is interested in helping out.
 
 ## Authors
 
