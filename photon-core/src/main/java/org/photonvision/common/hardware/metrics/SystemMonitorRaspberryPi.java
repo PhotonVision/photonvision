@@ -36,9 +36,9 @@ public class SystemMonitorRaspberryPi extends SystemMonitor {
             return "LOW VOLTAGE";
         } else if ((state & 0x08) != 0) {
             return "HIGH TEMP";
-        } else if ((state & 0x1) != 0) {
+        } else if ((state & 0x10000) != 0) {
             return "Prev. Low Voltage";
-        } else if ((state & 0x1) != 0) {
+        } else if ((state & 0x80000) != 0) {
             return "Prev. High Temp";
         }
         return "None";

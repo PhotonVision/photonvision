@@ -36,6 +36,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
@@ -90,7 +91,7 @@ public class SystemMonitor {
      * Returns the singleton instance of SystemMonitor. Creates the instance, thereby initializing it,
      * on the first call.
      *
-     * @return instance of SystemMonitor
+     * @return instance of SystemMonitor.
      */
     public static SystemMonitor getInstance() {
         if (instance == null) {
@@ -120,7 +121,7 @@ public class SystemMonitor {
 
         try {
             // get the filesystem for the directory photonvision is running in
-            fs = Files.getFileStore(Path.of(""));
+            fs = Files.getFileStore(Path.of(ProgramDirectoryUtilities.getProgramDirectory()));
         } catch (IOException e) {
             logger.error("Couldn't get FileStore for " + Path.of(""));
             fs = null;
@@ -142,7 +143,7 @@ public class SystemMonitor {
      * associated with the thermal zone for that comprocessor.
      *
      * @return String containing a comma-separated list of thermal zone types for reading CPU
-     *     temperature
+     *     temperature.
      */
     protected String getThermalZoneTypes() {
         // Find the thermal zone type by logging on to the coprocessor and running:
@@ -158,8 +159,8 @@ public class SystemMonitor {
      * this method when the monitor is running will stop it and restart it with the new delay and
      * update interval.
      *
-     * @param millisStartDelay the delay before the metrics are first published
-     * @param millisUpdateInterval the time between updates in units of milliseconds
+     * @param millisStartDelay the delay before the metrics are first published.
+     * @param millisUpdateInterval the time between updates in units of milliseconds.
      */
     public void startMonitor(long millisStartDelay, long millisUpdateInterval) {
         if (TimedTaskManager.getInstance().taskActive(taskName)) {
@@ -331,9 +332,9 @@ public class SystemMonitor {
 
     /**
      * Returns the total space available (in bytes) for the filesystem where PhotonVision is running
-     * (typicallay "/"). This doesn't report on other mounted filesystems, such as USB sticks.
+     * (typically "/"). This doesn't report on other mounted filesystems, such as USB sticks.
      *
-     * @return the number of bytes total, or -1 if the command fails
+     * @return the number of bytes total, or -1 if the command fails.
      */
     public long getTotalDiskSpace() {
         if (fs != null) {
@@ -348,9 +349,9 @@ public class SystemMonitor {
 
     /**
      * Returns the free space available (in bytes) for the filesystem where PhotonVision is running
-     * (typicallay "/"). This doesn't report on other mounted filesystems, such as USB sticks.
+     * (typically "/"). This doesn't report on other mounted filesystems, such as USB sticks.
      *
-     * @return the number of bytes available, or -1 if the command fails
+     * @return the number of bytes available, or -1 if the command fails.
      */
     public long getUsableDiskSpace() {
         if (fs != null) {
@@ -364,9 +365,9 @@ public class SystemMonitor {
     }
 
     /**
-     * Get the percentage of disk space used.
+     * Returns the percentage of disk space used.
      *
-     * @return The percentage of disk space used, or -1.0 if the command fails
+     * @return The percentage of disk space used, or -1.0 if the command fails.
      */
     public double getUsedDiskPct() {
         double usedPct;
@@ -383,9 +384,9 @@ public class SystemMonitor {
     }
 
     /**
-     * Get the temperature of the CPU
+     * Returns the temperature of the CPU.
      *
-     * @return The temperature of the CPU in °C or -1.0 if it cannot be retrieved
+     * @return The temperature of the CPU in °C or -1.0 if it cannot be retrieved.
      */
     public double getCpuTemperature() {
         double temperature = hal.getSensors().getCpuTemperature();
@@ -396,9 +397,9 @@ public class SystemMonitor {
     }
 
     /**
-     * Returns the total RAM
+     * Returns the total RAM.
      *
-     * @return total RAM in MB
+     * @return total RAM in MB.
      */
     public double getTotalMemory() {
         if (totalMemory < 0) {
@@ -408,27 +409,28 @@ public class SystemMonitor {
     }
 
     /**
-     * Returns the amount of memory in use
+     * Returns the amount of memory in use.
      *
-     * @return the used RAM in MB
+     * @return the used RAM in MB.
      */
     public double getUsedMemory() {
         return (mem.getTotal() - mem.getAvailable()) / mebi;
     }
 
     /**
-     * Returns the time since system boot in seconds
+     * Returns the time since system boot in seconds.
      *
-     * @return the uptime in seconds
+     * @return the uptime in seconds.
      */
     public long getUptime() {
         return os.getSystemUptime();
     }
 
     /**
-     * The average load on the CPU from 0 to 100% since last called by using the tick counters.
+     * Returns the average load on the CPU from 0 to 100% since last called by using the tick
+     * counters.
      *
-     * @return load on the cpu in %
+     * @return load on the cpu in %.
      */
     public synchronized double getCpuUsage() {
         long now = System.currentTimeMillis();
@@ -446,7 +448,7 @@ public class SystemMonitor {
      * Return the npu usage, if available. Platforms with NPUs will need to override this method to
      * return a useful value.
      *
-     * @return the NPU usage or an empty array if not available
+     * @return the NPU usage or an empty array if not available.
      */
     public double[] getNpuUsage() {
         return new double[0];
@@ -463,7 +465,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Return the total GPU memory in MB. This only runs once, as it won't change over time.
+     * Return the total GPU memory in MB.
      *
      * @return The total GPU memory in MB, or -1.0 if not avaialable on this platform.
      */
@@ -491,6 +493,12 @@ public class SystemMonitor {
         return addr;
     }
 
+    /**
+     * Returns a NetworkTraffic instance containing the average sent and recieved network traffic
+     * since the last time this was called.
+     *
+     * @return NetworkTraffic instance with data in bits/second.
+     */
     private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
                 ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
@@ -516,7 +524,10 @@ public class SystemMonitor {
         return lastResult;
     }
 
-    /** Used to benchmark retrieving metrics with SystemMonitor. */
+    /**
+     * Benchmarks SystemMonitor by timing the calls to retrieve metrics and writes the results to the
+     * log.
+     */
     private void testSM() {
         StringBuilder sb = new StringBuilder();
         double total = 0;
@@ -553,11 +564,12 @@ public class SystemMonitor {
     }
 
     /**
-     * Measures the time (in ms) that a String Supplier takes. This can be used to compare different
-     * ways of gathering the same metric.
+     * Updates a StringBuilder with the result of calling `source` prepended by the time required to
+     * run `source`, and returns the time (in ms) that a String Supplier takes. This can be used to
+     * compare different ways of gathering the same metric.
      *
      * @param sb A StringBuilder used to collect the output from the supplier.
-     * @param source A supplier that takes no arguments and returns a string.
+     * @param source A supplier that takes no arguments and returns a String.
      * @return The time (in ms) required to produce the output.
      */
     private double timeIt(StringBuilder sb, Supplier<String> source) {
