@@ -194,6 +194,7 @@ const formattedDate = new Intl.DateTimeFormat(undefined, {
 .metrics-table {
   width: 100%;
   text-align: center;
+  font-family: monospace !important;
 }
 
 $stats-table-border: rgba(255, 255, 255, 0.5);
