@@ -307,33 +307,8 @@ jobs:
           name: photonlib-offline
           path: output/*.zip
 
-  build-package:
-    needs: [build-gradle, build-offline-docs]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            artifact-name: Win64
-            architecture: x64
-            arch-override: winx64
-          - os: macos-26
-            artifact-name: macOS
-            architecture: aarch64
-            arch-override: macarm64
-          - os: ubuntu-22.04
-            artifact-name: Linux
-            architecture: x64
-            arch-override: linuxx64
-          - os: ubuntu-22.04
-            artifact-name: LinuxArm64
-            architecture: x64
-            arch-override: linuxarm64
-
-    runs-on: ${{ matrix.os }}
-    name: "Build fat JAR - ${{ matrix.artifact-name }}"
-
+  # Shared steps for build-package jobs
+  x-build-package-steps: &build-package-steps
     steps:
       - uses: actions/checkout@v4
         with:
@@ -403,8 +378,63 @@ jobs:
           name: photon-targeting_jar-${{ matrix.artifact-name }}
           path: photon-targeting/build/libs
 
+  build-package-macos:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-26
+            artifact-name: macOS
+            architecture: aarch64
+            arch-override: macarm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    <<: *build-package-steps
+
+  build-package-windows:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: Win64
+            architecture: x64
+            arch-override: winx64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    <<: *build-package-steps
+
+  build-package:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact-name: Linux
+            architecture: x64
+            arch-override: linuxx64
+          - os: ubuntu-22.04
+            artifact-name: LinuxArm64
+            architecture: x64
+            arch-override: linuxarm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    <<: *build-package-steps
+
   run-smoketest-native:
-    needs: [build-package]
+    needs: [build-package, build-package-macos, build-package-windows]
 
     strategy:
       fail-fast: false
@@ -590,7 +620,7 @@ jobs:
       - run: ${{!contains(needs.*.result, 'failure')}}
 
   release:
-    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-package-macos, build-package-windows, build-image, combine]
     if: github.ref == ('refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.repository == 'PhotonVision/photonvision'
     runs-on: ubuntu-22.04
     steps:
