@@ -307,9 +307,26 @@ jobs:
           name: photonlib-offline
           path: output/*.zip
 
-  # Shared steps for build-package jobs
-  x-build-package-steps: &build-package-steps
-    steps:
+  build-package:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact-name: Linux
+            architecture: x64
+            arch-override: linuxx64
+          - os: ubuntu-22.04
+            artifact-name: LinuxArm64
+            architecture: x64
+            arch-override: linuxarm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    steps: &build-package-steps
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -393,7 +410,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
-    <<: *build-package-steps
+    steps: *build-package-steps
 
   build-package-windows:
     needs: [build-gradle, build-offline-docs]
@@ -410,28 +427,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
-    <<: *build-package-steps
-
-  build-package:
-    needs: [build-gradle, build-offline-docs]
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-22.04
-            artifact-name: Linux
-            architecture: x64
-            arch-override: linuxx64
-          - os: ubuntu-22.04
-            artifact-name: LinuxArm64
-            architecture: x64
-            arch-override: linuxarm64
-
-    runs-on: ${{ matrix.os }}
-    name: "Build fat JAR - ${{ matrix.artifact-name }}"
-
-    <<: *build-package-steps
+    steps: *build-package-steps
 
   run-smoketest-native:
     needs: [build-package, build-package-macos, build-package-windows]
