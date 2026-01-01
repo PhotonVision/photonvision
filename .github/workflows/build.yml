@@ -374,6 +374,14 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
+      - name: Cache Swift build artifacts (macOS only)
+        uses: actions/cache@v4
+        if: runner.os == 'macOS'
+        with:
+          path: photon-apple/swift-java/.build
+          key: ${{ runner.os }}-swift-java-build-${{ hashFiles('photon-apple/swift-java/Package.swift', 'photon-apple/swift-java/gradle.properties', 'photon-apple/swift-java/settings.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-swift-java-build-
       - name: Publish SwiftKit to Maven Local (macOS only)
         if: runner.os == 'macOS'
         run: |
