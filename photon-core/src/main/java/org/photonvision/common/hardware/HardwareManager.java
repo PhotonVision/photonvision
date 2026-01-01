@@ -48,8 +48,6 @@ public class HardwareManager {
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
 
-    // private final MetricsManager metricsManager;
-
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
 

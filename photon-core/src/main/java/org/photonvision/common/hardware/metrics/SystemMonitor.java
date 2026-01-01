@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Time;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -155,7 +154,9 @@ public class SystemMonitor {
 
     /**
      * Starts the periodic system monitor that publishes performance metrics. The metrics are
-     * published every millisUpdateInerval seconds after a millisStartDelay startup delay. Calling this method when the monitor is running will stop it and restart it with the new delay and update interval.
+     * published every millisUpdateInerval seconds after a millisStartDelay startup delay. Calling
+     * this method when the monitor is running will stop it and restart it with the new delay and
+     * update interval.
      *
      * @param millisStartDelay the delay before the metrics are first published
      * @param millisUpdateInterval the time between updates in units of milliseconds
