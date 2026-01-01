@@ -324,7 +324,7 @@ jobs:
             arch-override: macx64
           - os: macos-26
             artifact-name: macOSArm
-            architecture: x64
+            architecture: aarch64
             arch-override: macarm64
           - os: ubuntu-22.04
             artifact-name: Linux
@@ -378,10 +378,10 @@ jobs:
         uses: actions/cache@v4
         if: runner.os == 'macOS'
         with:
-          path: photon-apple/swift-java/.build
-          key: ${{ runner.os }}-swift-java-build-${{ hashFiles('photon-apple/swift-java/Package.swift', 'photon-apple/swift-java/gradle.properties', 'photon-apple/swift-java/settings.gradle') }}
+          path: photon-apple/.build
+          key: ${{ runner.os }}-photon-apple-build-${{ hashFiles('photon-apple/swift-java/Package.swift', 'photon-apple/swift-java/gradle.properties', 'photon-apple/swift-java/settings.gradle') }}
           restore-keys: |
-            ${{ runner.os }}-swift-java-build-
+            ${{ runner.os }}-photon-apple-build-
       - name: Publish SwiftKit to Maven Local (macOS only)
         if: runner.os == 'macOS'
         run: |
