@@ -366,6 +366,25 @@ public class VisionSourceManager {
     }
 
     public synchronized boolean deleteVisionSource(String uniqueName) {
+        // If this is a source camera with duplicates, deactivate all duplicates
+        var dependentDuplicates = duplicateDependencies.get(uniqueName);
+        if (dependentDuplicates != null && !dependentDuplicates.isEmpty()) {
+            logger.info(
+                    "Deleting source camera "
+                            + uniqueName
+                            + ". Deactivating "
+                            + dependentDuplicates.size()
+                            + " dependent duplicate(s)");
+
+            // Deactivate all dependent duplicates
+            for (var duplicateUniqueName : new ArrayList<>(dependentDuplicates)) {
+                deactivateVisionSource(duplicateUniqueName);
+            }
+
+            duplicateDependencies.remove(uniqueName);
+        }
+
+        // Deactivate if active, then remove from config
         deactivateVisionSource(uniqueName);
         var config = disabledCameraConfigs.remove(uniqueName);
         ConfigManager.getInstance().getConfig().removeCameraConfig(uniqueName);
@@ -381,9 +400,7 @@ public class VisionSourceManager {
         return config != null;
     }
 
-    /**
-     * Called when a source camera is deactivated or deleted. Handles cleanup of dependent duplicates.
-     */
+    /** Called when a source camera is deactivated. Deactivates all dependent duplicates. */
     private synchronized void handleSourceCameraRemoval(String sourceUniqueName) {
         var dependentDuplicates = duplicateDependencies.get(sourceUniqueName);
         if (dependentDuplicates == null || dependentDuplicates.isEmpty()) {
@@ -393,7 +410,7 @@ public class VisionSourceManager {
         logger.info(
                 "Source camera "
                         + sourceUniqueName
-                        + " removed. Deactivating "
+                        + " deactivated. Deactivating "
                         + dependentDuplicates.size()
                         + " dependent duplicate(s)");
 
