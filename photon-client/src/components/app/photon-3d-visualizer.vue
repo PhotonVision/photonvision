@@ -8,8 +8,10 @@ import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 const {
   ArrowHelper,
   BoxGeometry,
+  CameraHelper,
   Color,
   ConeGeometry,
+  Group,
   Mesh,
   MeshNormalMaterial,
   PerspectiveCamera,
@@ -19,6 +21,18 @@ const {
   WebGLRenderer
 } = await import("three");
 const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+
+import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { createPerspectiveCamera } from "@/lib/ThreeUtils";
+import { useTheme } from "vuetify";
+
+const theme = useTheme();
+
+const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats[
+    useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex
+  ].resolution
+);
 
 const props = defineProps<{
   targets: PhotonTarget[];
@@ -32,15 +46,18 @@ let controls: TrackballControls | undefined;
 let previousTargets: Object3D[] = [];
 const drawTargets = (targets: PhotonTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
-  if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+  if (!scene || !camera || !renderer || !controls) {
     return;
   }
+
+  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
+  else scene.background = new Color(0x000000);
 
   scene.remove(...previousTargets);
   previousTargets = [];
 
   targets.forEach((target) => {
-    if (target.pose === undefined) return;
+    if (!target.pose) return;
 
     const geometry = new BoxGeometry(0.3 / 5, 0.2, 0.2);
     const material = new MeshNormalMaterial();
@@ -70,6 +87,18 @@ const drawTargets = (targets: PhotonTarget[]) => {
     previousTargets.push(arrow);
   });
 
+  if (calibrationCoeffs) {
+    // And show camera frustum
+    const calibCamera = createPerspectiveCamera(calibrationCoeffs.resolution, calibrationCoeffs.cameraIntrinsics, 10);
+    const helper = new CameraHelper(calibCamera);
+    const helperGroup = new Group();
+    helperGroup.add(helper);
+    // Flip to +Z forward
+    helperGroup.rotateX(-Math.PI / 2.0);
+    helperGroup.rotateY(-Math.PI / 2.0);
+    previousTargets.push(helperGroup);
+  }
+
   if (previousTargets.length > 0) {
     scene.add(...previousTargets);
   }
@@ -78,7 +107,7 @@ const onWindowResize = () => {
   const container = document.getElementById("container");
   const canvas = document.getElementById("view");
 
-  if (container === null || canvas === null || camera === undefined || renderer === undefined) {
+  if (!container || !canvas || !camera || !renderer) {
     return;
   }
 
@@ -89,7 +118,7 @@ const onWindowResize = () => {
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 };
 const resetCamFirstPerson = () => {
-  if (scene === undefined || camera === undefined || controls === undefined) {
+  if (!scene || !camera || !controls) {
     return;
   }
 
@@ -103,7 +132,7 @@ const resetCamFirstPerson = () => {
   }
 };
 const resetCamThirdPerson = () => {
-  if (scene === undefined || camera === undefined || controls === undefined) {
+  if (!scene || !camera || !controls) {
     return;
   }
 
@@ -122,10 +151,11 @@ onMounted(async () => {
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
   const canvas = document.getElementById("view");
-  if (canvas === null) return;
+  if (!canvas) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
-  scene.background = new Color(0xa9a9a9);
+  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
+  else scene.background = new Color(0x000000);
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
@@ -169,7 +199,7 @@ onMounted(async () => {
   controls.update();
 
   const animate = () => {
-    if (scene === undefined || camera === undefined || renderer === undefined || controls === undefined) {
+    if (!scene || !camera || !renderer || !controls) {
       return;
     }
 
@@ -192,18 +222,31 @@ watchEffect(() => {
 
 <template>
   <div id="container" style="width: 100%">
-    <v-row>
-      <v-col align-self="stretch" style="display: flex; justify-content: center">
-        <canvas id="view" />
+    <div class="d-flex flex-wrap pt-0 pb-2">
+      <v-col cols="12" md="6" class="pl-0">
+        <v-card-title class="pa-0"> Target Visualization </v-card-title>
       </v-col>
-    </v-row>
-    <v-row style="margin-bottom: 24px">
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamFirstPerson"> First Person </v-btn>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
+        <v-btn
+          style="width: 100%"
+          color="buttonActive"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCamFirstPerson"
+        >
+          First Person
+        </v-btn>
       </v-col>
-      <v-col style="display: flex; justify-content: center">
-        <v-btn color="secondary" @click="resetCamThirdPerson"> Third Person </v-btn>
+      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
+        <v-btn
+          style="width: 100%"
+          color="buttonActive"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="resetCamThirdPerson"
+        >
+          Third Person
+        </v-btn>
       </v-col>
-    </v-row>
+    </div>
+    <canvas id="view" class="w-100" />
   </div>
 </template>
