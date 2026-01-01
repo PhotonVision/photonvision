@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, onBeforeMount, ref } from "vue";
-import { useStateStore } from "@/stores/StateStore";
+import { computed } from "vue";
 
 interface MetricItem {
   header: string;
@@ -99,35 +98,8 @@ const platformMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
-const metricsLastFetched = ref("Never");
-const fetchMetrics = () => {
-  useSettingsStore()
-    .requestMetricsUpdate()
-    .catch((error) => {
-      if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Unable to fetch metrics! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to fetch metrics."
-        });
-      }
-    })
-    .finally(() => {
-      const pad = (num: number): string => {
-        return String(num).padStart(2, "0");
-      };
-
-      const date = new Date();
-      metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    });
-};
-
-onBeforeMount(() => {
-  fetchMetrics();
+const formattedDate = new Intl.DateTimeFormat(undefined, {
+  timeStyle: "long"
 });
 </script>
 
@@ -135,10 +107,10 @@ onBeforeMount(() => {
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Metrics</span>
-      <v-btn variant="text" @click="fetchMetrics">
-        <v-icon start class="open-icon" size="large">mdi-reload</v-icon>
-        Last Fetched: {{ metricsLastFetched }}
-      </v-btn>
+      <span>
+        <v-icon start class="open-icon" size="small">mdi-clock-outline</v-icon>
+        Last Update: {{ formattedDate.format(useSettingsStore().lastUpdate) }}
+      </span>
     </v-card-title>
     <v-card-text class="pt-0 pb-3">
       <v-card-subtitle class="pa-0" style="font-size: 16px">General</v-card-subtitle>

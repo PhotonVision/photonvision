@@ -995,11 +995,6 @@ public class RequestHandler {
         }
     }
 
-    public static void onMetricsPublishRequest(Context ctx) {
-        // HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
-    }
-
     private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
 
     public static void onCalibrationRemoveRequest(Context ctx) {
