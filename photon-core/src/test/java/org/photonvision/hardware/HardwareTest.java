@@ -35,29 +35,30 @@ import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.VisionLED;
-import org.photonvision.common.hardware.metrics.MetricsManager;
+import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareTest {
     @Test
     public void testHardware() {
         LoadJNI.loadLibraries();
-        MetricsManager mm = new MetricsManager();
+        // MetricsManager mm = new MetricsManager();
+        SystemMonitor sm = SystemMonitor.getInstance();
 
         if (!Platform.isRaspberryPi()) return;
 
         System.out.println("Testing on platform: " + Platform.getPlatformName());
 
         System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + mm.getRamMem() + "MB");
-        System.out.println("Temperature: " + mm.getCpuTemp() + "C");
-        System.out.println("Utilization: : " + mm.getCpuUtilization() + "%");
+        System.out.println("Total RAM: " + sm.getTotalMemory() + "MB");
+        System.out.println("Temperature: " + sm.getCpuTemperature() + "C");
+        System.out.println("Utilization: : " + sm.getCpuUsage() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + mm.getGpuMem() + "MB");
+        System.out.println("Memory: " + sm.getGpuMem() + "MB");
 
         System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + mm.getRamUtil() + "MB");
+        System.out.println("Used RAM: : " + sm.getUsedMemory() + "MB");
     }
 
     @Test
