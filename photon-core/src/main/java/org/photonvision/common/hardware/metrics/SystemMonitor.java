@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Time;
 import java.util.Arrays;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -154,40 +155,19 @@ public class SystemMonitor {
 
     /**
      * Starts the periodic system monitor that publishes performance metrics. The metrics are
-     * published every 5 seconds after a 2.5 second startup delay. The monitor can only be started
-     * once and repeated calls do nothing.
-     */
-    public void startMonitor() {
-        startMonitor(2500, 5000);
-    }
-
-    /**
-     * Starts the periodic system monitor that publishes performance metrics. The metrics are
-     * published every millisUpdateInterval milliseconds. The monitor can only be started once and
-     * repeated calls do nothing.
-     *
-     * @param millisUpdateInterval the time between updates in units of milliseconds
-     */
-    public void startMonitor(long millisUpdateInterval) {
-        startMonitor(0, millisUpdateInterval);
-    }
-
-    /**
-     * Starts the periodic system monitor that publishes performance metrics. The metrics are
-     * published every millisUpdateInerval seconds after a millisStartDelay startup delay. The monitor
-     * can only be started once and repeated calls do nothing.
+     * published every millisUpdateInerval seconds after a millisStartDelay startup delay. Calling this method when the monitor is running will stop it and restart it with the new delay and update interval.
      *
      * @param millisStartDelay the delay before the metrics are first published
      * @param millisUpdateInterval the time between updates in units of milliseconds
      */
     public void startMonitor(long millisStartDelay, long millisUpdateInterval) {
-        if (!TimedTaskManager.getInstance().taskActive(taskName)) {
-            logger.debug("Starting SystemMonitor ...");
-            TimedTaskManager.getInstance()
-                    .addTask(taskName, this::publishMetrics, millisStartDelay, millisUpdateInterval);
-        } else {
-            logger.warn("SystemMonitor already running!");
+        if (TimedTaskManager.getInstance().taskActive(taskName)) {
+            logger.debug("Stopping running SystemMonitor!");
+            TimedTaskManager.getInstance().cancelTask(taskName);
         }
+        logger.debug("Starting SystemMonitor with " + millisUpdateInterval + " ms update interval.");
+        TimedTaskManager.getInstance()
+                .addTask(taskName, this::publishMetrics, millisStartDelay, millisUpdateInterval);
     }
 
     private void publishMetrics() {
