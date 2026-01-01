@@ -322,10 +322,6 @@ jobs:
             artifact-name: macOS
             architecture: aarch64
             arch-override: macarm64
-          - os: macos-26
-            artifact-name: macOSArm
-            architecture: aarch64
-            arch-override: macarm64
           - os: ubuntu-22.04
             artifact-name: Linux
             architecture: x64
