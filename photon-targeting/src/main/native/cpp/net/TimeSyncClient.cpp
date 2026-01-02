@@ -17,20 +17,14 @@
 
 #include "net/TimeSyncClient.h"
 
-#include <atomic>
 #include <chrono>
 #include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <iostream>
 #include <mutex>
-#include <thread>
 
 #include <Eigen/Core>
 #include <wpi/Logger.h>
 #include <wpi/print.h>
 #include <wpi/struct/Struct.h>
-#include <wpinet/UDPClient.h>
 #include <wpinet/uv/util.h>
 
 #include "ntcore_cpp.h"

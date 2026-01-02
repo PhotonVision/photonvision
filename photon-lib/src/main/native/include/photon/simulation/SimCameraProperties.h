@@ -24,15 +24,12 @@
 
 #pragma once
 
-#include <algorithm>
 #include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include <Eigen/Core>
-#include <frc/Errors.h>
-#include <frc/MathUtil.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Translation3d.h>
 #include <photon/estimation/OpenCVHelp.h>

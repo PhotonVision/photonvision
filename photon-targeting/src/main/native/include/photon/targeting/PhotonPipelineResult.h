@@ -18,16 +18,13 @@
 #pragma once
 
 #include <span>
-#include <string>
 #include <utility>
 
 #include <units/time.h>
-#include <wpi/SmallVector.h>
 
 #include "MultiTargetPNPResult.h"
 #include "PhotonTrackedTarget.h"
 #include "fmt/base.h"
-#include "photon/dataflow/structures/Packet.h"
 #include "photon/struct/PhotonPipelineResultStruct.h"
 
 namespace photon {

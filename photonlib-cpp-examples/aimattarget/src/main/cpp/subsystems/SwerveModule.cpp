@@ -24,7 +24,6 @@
 
 #include "subsystems/SwerveModule.h"
 
-#include <iostream>
 #include <string>
 
 #include <frc/MathUtil.h>
