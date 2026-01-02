@@ -54,7 +54,7 @@ jobs:
         run: |
           find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
           du -h . | sort -h
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-24.04'
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
@@ -70,7 +70,7 @@ jobs:
           ./gradlew clean
   playwright-tests:
     name: "Playwright E2E tests"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       # Checkout code.
@@ -111,7 +111,7 @@ jobs:
           retention-days: 30
   build-gradle:
     name: "Gradle Build"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       # Checkout code.
@@ -383,7 +383,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: jar-Linux
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
