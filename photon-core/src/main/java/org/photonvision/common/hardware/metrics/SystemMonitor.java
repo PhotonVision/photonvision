@@ -425,7 +425,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Return the npu usage, if available. Platforms with NPUs will need to override this method to
+     * Returns the npu usage, if available. Platforms with NPUs will need to override this method to
      * return a useful value.
      *
      * @return the NPU usage or an empty array if not available.
@@ -435,7 +435,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Return a description of the CPU throttle state, if available. Platforms that provide this
+     * Returns a description of the CPU throttle state, if available. Platforms that provide this
      * information will need to override this method to return a useful value.
      *
      * @return the CPU throttle state, or an empty String if not available.
@@ -445,7 +445,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Return the total GPU memory in MiB.
+     * Returns the total GPU memory in MiB.
      *
      * @return The total GPU memory in MiB, or -1.0 if not avaialable on this platform.
      */
@@ -454,7 +454,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Return the GPU memory utilization as MiBs.
+     * Returns the GPU memory utilization as MiBs.
      *
      * @return The GPU memory utilization in MiBs, or -1.0 if not available on this platform.
      */
