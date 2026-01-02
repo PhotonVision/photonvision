@@ -366,19 +366,19 @@ public class VisionSourceManager {
     }
 
     public synchronized boolean deleteVisionSource(String uniqueName) {
-        // If this is a source camera with duplicates, deactivate all duplicates
+        // If this is a source camera with duplicates, delete all duplicates
         var dependentDuplicates = duplicateDependencies.get(uniqueName);
         if (dependentDuplicates != null && !dependentDuplicates.isEmpty()) {
             logger.info(
                     "Deleting source camera "
                             + uniqueName
-                            + ". Deactivating "
+                            + ". Deleting "
                             + dependentDuplicates.size()
                             + " dependent duplicate(s)");
 
             // Deactivate all dependent duplicates
             for (var duplicateUniqueName : new ArrayList<>(dependentDuplicates)) {
-                deactivateVisionSource(duplicateUniqueName);
+                deleteVisionSource(duplicateUniqueName);
             }
 
             duplicateDependencies.remove(uniqueName);
