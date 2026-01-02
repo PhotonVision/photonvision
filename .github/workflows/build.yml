@@ -62,12 +62,10 @@ jobs:
         working-directory: photonlib-java-examples
         run: |
           ./gradlew build
-          ./gradlew clean
       - name: Build C++ examples
         working-directory: photonlib-cpp-examples
         run: |
           ./gradlew build
-          ./gradlew clean
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-22.04
