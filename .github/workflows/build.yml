@@ -61,11 +61,22 @@ jobs:
       # Download prebuilt photonlib artifacts
       - uses: actions/download-artifact@v4
         with:
-          pattern: maven-${{ matrix.artifact-name }}
-      - name: Install photonlib to maven local
+          name: maven-${{ matrix.artifact-name }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: maven-Athena
+      - name: Move to maven local
         run: |
           mkdir -p ~/.m2/repository/
-          mv ~/maven/org ~/.m2/repository/
+          mv maven/org ~/.m2/repository/
+      - name: Install photonlib to maven local
+        run: |
+          for vendordep_folder in photonlib-*-examples/*/; do
+            # Filter for projects only
+            if [ -e $vendordep_folder/build.gradle ]; then
+              cp vendordep/photonlib-json-1.0.json $vendordep_folder/vendordeps/
+            fi
+          done
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
