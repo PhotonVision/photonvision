@@ -56,7 +56,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class ShapeBenchmarkTest {
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

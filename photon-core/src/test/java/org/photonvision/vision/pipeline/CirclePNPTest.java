@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -40,7 +41,7 @@ public class CirclePNPTest {
 
     @BeforeEach
     public void Init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test
@@ -132,7 +133,7 @@ public class CirclePNPTest {
 
     // used to run VisualVM for profiling, which won't run on unit tests.
     public static void main(String[] args) {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),

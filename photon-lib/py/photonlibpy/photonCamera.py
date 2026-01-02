@@ -74,6 +74,12 @@ class PhotonCamera:
         self._driverModeSubscriber = self._cameraTable.getBooleanTopic(
             "driverMode"
         ).subscribe(False)
+        self._fpsLimitPublisher = self._cameraTable.getIntegerTopic(
+            "fpsLimitRequest"
+        ).publish()
+        self._fpsLimitSubscriber = self._cameraTable.getIntegerTopic(
+            "fpsLimit"
+        ).subscribe(-1)
         self._inputSaveImgEntry = self._cameraTable.getIntegerTopic(
             "inputSaveImgCmd"
         ).getEntry(0)
@@ -189,6 +195,22 @@ class PhotonCamera:
         """
 
         self._driverModePublisher.set(driverMode)
+
+    def getFPSLimit(self) -> int:
+        """Returns the current FPS limit set on the camera.
+
+        :returns: The current FPS limit.
+        """
+
+        return self._fpsLimitSubscriber.get()
+
+    def setFPSLimit(self, fpsLimit: int) -> None:
+        """Sets the FPS limit on the camera.
+
+        :param fpsLimit: The FPS limit to set. Set to -1 for unlimited FPS.
+        """
+
+        self._fpsLimitPublisher.set(fpsLimit)
 
     def takeInputSnapshot(self) -> None:
         """Request the camera to save a new image file from the input camera stream with overlays. Images

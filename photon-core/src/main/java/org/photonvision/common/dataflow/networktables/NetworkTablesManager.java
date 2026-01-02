@@ -45,8 +45,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.scripting.ScriptEventType;
-import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 
@@ -183,7 +181,6 @@ public class NetworkTablesManager {
             logger.info(msg);
             HardwareManager.getInstance().setNTConnected(true);
 
-            ScriptManager.queueEvent(ScriptEventType.kNTConnected);
             getInstance().broadcastVersion();
             getInstance().broadcastConnectedStatus();
 
@@ -253,6 +250,8 @@ public class NetworkTablesManager {
         String mac = NetworkUtils.getMacAddress();
         if (!mac.equals(currentMacAddress)) {
             logger.debug("MAC address changed! New MAC address is " + mac + ", was " + currentMacAddress);
+            kCoprocTable.getSubTable(currentMacAddress).getEntry("hostname").unpublish();
+            kCoprocTable.getSubTable(currentMacAddress).getEntry("cameraNames").unpublish();
             currentMacAddress = mac;
         }
         if (mac.isEmpty()) {
@@ -260,7 +259,13 @@ public class NetworkTablesManager {
             return;
         }
 
-        String hostname = ConfigManager.getInstance().getConfig().getNetworkConfig().hostname;
+        var config = ConfigManager.getInstance().getConfig();
+        String hostname;
+        if (config.getNetworkConfig().shouldManage) {
+            hostname = config.getNetworkConfig().hostname;
+        } else {
+            hostname = CameraServerJNI.getHostname();
+        }
         if (hostname == null || hostname.isEmpty()) {
             logger.error("Cannot check hostname and camera names, hostname is not set!");
             return;

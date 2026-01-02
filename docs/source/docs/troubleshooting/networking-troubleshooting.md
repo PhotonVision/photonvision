@@ -11,8 +11,8 @@ A few issues make up the majority of support requests. Run through this checklis
   - Even if there's a switch between your laptop and coprocessor, you'll still want a radio or router in the loop somehow.
   - The FRC radio is the _only_ router we will officially support due to the innumerable variations between routers.
 - (Raspberry Pi, Orange Pi & Limelight only) have you flashed the correct image, and is it [up to date](https://github.com/PhotonVision/photonvision/releases/latest)?
-- Is your robot code using a **2025** version of WPILib, and is your coprocessor using the most up to date **2025** release?
-  - 2022, 2023, 2024, and 2025 versions of either cannot be mix-and-matched!
+- Is your robot code using a **2026** version of WPILib, and is your coprocessor using the most up to date **2026** release?
+  - 2022, 2023, 2024, 2025, and 2026 versions of either cannot be mix-and-matched!
   - Your PhotonVision version can be checked on the settings tab.
 - Is your team number correctly set on the settings tab?
 
@@ -30,7 +30,7 @@ Please check that:
 1\. You don't have the NetworkTables Server on (toggleable in the settings tab). Turn this off when doing work on a robot.
 2\. You have your team number set properly in the settings tab.
 3\. Your camera name in the `PhotonCamera` constructor matches the name in the UI.
-4\. You are using the 2025 version of WPILib and RoboRIO image.
+4\. You are using the 2026 version of WPILib and RoboRIO image.
 5\. Your robot is on.
 
 If all of the above are met and you still have issues, feel free to {ref}`contact us <index:contact us>` and provide the following information:

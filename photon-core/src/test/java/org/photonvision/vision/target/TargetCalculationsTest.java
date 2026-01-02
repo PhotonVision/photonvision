@@ -32,7 +32,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
@@ -63,7 +63,7 @@ public class TargetCalculationsTest {
 
     @BeforeAll
     public static void setup() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

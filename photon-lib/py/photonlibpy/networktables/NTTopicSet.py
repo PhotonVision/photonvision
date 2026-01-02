@@ -47,6 +47,13 @@ class NTTopicSet:
 
         self.driverModeSubscriber.getTopic().publish().setDefault(False)
 
+        self.fpsLimitPublisher = self.subTable.getIntegerTopic("fpsLimit").publish()
+        self.fpsLimitSubscriber = self.subTable.getIntegerTopic(
+            "fpsLimitRequest"
+        ).subscribe(-1)
+
+        self.fpsLimitSubscriber.getTopic().publish().setDefault(-1)
+
         self.latencyMillisEntry = self.subTable.getDoubleTopic(
             "latencyMillis"
         ).publish()

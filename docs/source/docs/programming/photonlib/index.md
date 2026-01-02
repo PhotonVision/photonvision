@@ -9,4 +9,5 @@ using-target-data
 robot-pose-estimator
 driver-mode-pipeline-index
 controlling-led
+fps-limiter
 ```

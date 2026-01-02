@@ -15,24 +15,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.scripting;
+package org.photonvision.common.hardware;
 
-public enum ScriptEventType {
-    kProgramInit("Program Init"),
-    kProgramExit("Program Exit"),
-    kNTConnected("NT Connected"),
-    kLEDOn("LED On"),
-    kLEDOff("LED Off"),
-    kEnterDriverMode("Enter Driver Mode"),
-    kExitDriverMode("Exit Driver Mode"),
-    kFoundTarget("Found Target"),
-    kFoundMultipleTarget("Found Multiple Target"),
-    kLostTarget("Lost Target"),
-    kPipelineLag("Pipeline Lag");
+public enum PhotonStatus {
+    // Nominal states
+    NT_CONNECTED_TARGETS_VISIBLE,
+    NT_CONNECTED_TARGETS_MISSING,
+    NT_DISCONNECTED_TARGETS_VISIBLE,
+    NT_DISCONNECTED_TARGETS_MISSING,
 
-    public final String value;
+    // Error states
+    GENERIC_ERROR(true);
 
-    ScriptEventType(String value) {
-        this.value = value;
+    final boolean error;
+
+    PhotonStatus() {
+        this(false);
+    }
+
+    PhotonStatus(boolean error) {
+        this.error = error;
+    }
+
+    boolean isError() {
+        return this.error;
     }
 }

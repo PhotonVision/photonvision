@@ -68,7 +68,6 @@ public class Server {
                                                             it.anyHost();
                                                         });
                                             }));
-
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -129,6 +128,7 @@ public class Server {
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
+        app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
@@ -161,6 +161,13 @@ public class Server {
         app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
+
+        /* Testing API Events */
+
+        app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
+
+        app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
+        app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
 
         app.start(port);
     }
