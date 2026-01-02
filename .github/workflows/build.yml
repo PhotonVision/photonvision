@@ -14,8 +14,23 @@ env:
 
 jobs:
 
+  check-for-non-functional-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.filter.outputs.src }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            src:
+              - '!(website|docs)/**'
+
   validation:
     name: "Validation"
+    needs: check-for-non-functional-changes
+    if: needs.check-for-non-functional-changes.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -140,6 +155,8 @@ jobs:
         run: ./gradlew test jacocoTestReport --stacktrace
   build-offline-docs:
     name: "Build Offline Docs"
+    needs: check-for-non-functional-changes
+    if: needs.check-for-non-functional-changes.outputs.should_run == 'true'
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
