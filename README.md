@@ -72,6 +72,8 @@ PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vis
 
 * [FasterXML](https://github.com/FasterXML) - Specifically [jackson](https://github.com/FasterXML/jackson)
 
+* [OSHI](https://github.com/oshi/oshi)
+
 ## License
 
 PhotonVision is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html).
