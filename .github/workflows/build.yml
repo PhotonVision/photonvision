@@ -28,13 +28,16 @@ jobs:
         include:
           - os: windows-2022
             architecture: x64
+            artifact-name: Win64
           - os: macos-14
             architecture: aarch64
-          - os: ubuntu-22.04
+            artifact-name: macOS
+          - os: ubuntu-24.04
+            artifact-name: Linux
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
-    needs: [validation]
+    needs: [validation, build-photonlib-host, build-photonlib-docker]
 
     steps:
       - name: Checkout code
@@ -55,9 +58,14 @@ jobs:
           find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
           du -h . | sort -h
         if: matrix.os == 'ubuntu-22.04'
-      # Need to publish to maven local first, so that C++ sim can pick it up
-      - name: Publish photonlib to maven local
-        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
+      # Download prebuilt photonlib artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: maven-${{ matrix.artifact-name }}
+      - name: Install photonlib to maven local
+        run: |
+          mkdir -p ~/.m2/repository/
+          mv ~/maven/org ~/.m2/repository/
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
@@ -208,7 +216,7 @@ jobs:
           - os: macos-14
             artifact-name: macOS
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
