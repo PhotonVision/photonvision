@@ -38,6 +38,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.KernelLogLogger;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -370,6 +371,10 @@ public class Main {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
             System.exit(0);
         }
+
+        logger.debug("Loading SystemMonitor...");
+        SystemMonitor.getInstance().logSystemInformation();
+        SystemMonitor.getInstance().startMonitor(500, 1000);
 
         // todo - should test mode just add test mode sources, but still allow local usb cameras to be
         // added?

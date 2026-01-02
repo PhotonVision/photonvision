@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, onBeforeMount, ref } from "vue";
-import { useStateStore } from "@/stores/StateStore";
+import { computed } from "vue";
 
 interface MetricItem {
   header: string;
@@ -30,17 +29,17 @@ const platformMetrics = computed<MetricItem[]>(() => {
   const stats = [
     {
       header: "CPU Temp",
-      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp}°C`
+      value: metrics.cpuTemp === undefined || metrics.cpuTemp == -1 ? "Unknown" : `${metrics.cpuTemp.toFixed(1)}°C`
     },
     {
       header: "CPU Usage",
-      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil}%`
+      value: metrics.cpuUtil === undefined ? "Unknown" : `${metrics.cpuUtil.toFixed(1)}%`
     },
     {
       header: "CPU Memory Usage",
       value:
         metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
-          ? `${metrics.ramUtil}MB of ${metrics.ramMem}MB`
+          ? `${metrics.ramUtil} of ${metrics.ramMem} MiB`
           : "Unknown"
     },
     {
@@ -64,7 +63,14 @@ const platformMetrics = computed<MetricItem[]>(() => {
     },
     {
       header: "Disk Usage",
-      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct}%`
+      value: metrics.diskUtilPct === undefined ? "Unknown" : `${metrics.diskUtilPct.toFixed(1)}%`
+    },
+    {
+      header: "Network Traffic",
+      value:
+        metrics.sentBitRate === undefined || metrics.recvBitRate === undefined
+          ? "Missing"
+          : `↑${(metrics.sentBitRate / 1e6).toFixed(3).padStart(7, "\u00A0")} Mbps | ↓${(metrics.recvBitRate / 1e6).toFixed(3).padStart(7, "\u00A0")} Mbps`
     }
   ];
 
@@ -78,7 +84,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (metrics.gpuMem && metrics.gpuMemUtil && metrics.gpuMem > 0 && metrics.gpuMemUtil > 0) {
     stats.push({
       header: "GPU Memory Usage",
-      value: `${metrics.gpuMemUtil}MB of ${metrics.gpuMem}MB`
+      value: `${metrics.gpuMemUtil} of ${metrics.gpuMem} MiB`
     });
   }
 
@@ -92,35 +98,8 @@ const platformMetrics = computed<MetricItem[]>(() => {
   return stats;
 });
 
-const metricsLastFetched = ref("Never");
-const fetchMetrics = () => {
-  useSettingsStore()
-    .requestMetricsUpdate()
-    .catch((error) => {
-      if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Unable to fetch metrics! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to fetch metrics."
-        });
-      }
-    })
-    .finally(() => {
-      const pad = (num: number): string => {
-        return String(num).padStart(2, "0");
-      };
-
-      const date = new Date();
-      metricsLastFetched.value = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    });
-};
-
-onBeforeMount(() => {
-  fetchMetrics();
+const formattedDate = new Intl.DateTimeFormat(undefined, {
+  timeStyle: "medium"
 });
 </script>
 
@@ -128,10 +107,9 @@ onBeforeMount(() => {
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Metrics</span>
-      <v-btn variant="text" @click="fetchMetrics">
-        <v-icon start class="open-icon" size="large">mdi-reload</v-icon>
-        Last Fetched: {{ metricsLastFetched }}
-      </v-btn>
+      <span class="metrics-update-time">
+        Last Update: <span>{{ formattedDate.format(useSettingsStore().lastMetricsUpdate) }}</span>
+      </span>
     </v-card-title>
     <v-card-text class="pt-0 pb-3">
       <v-card-subtitle class="pa-0" style="font-size: 16px">General</v-card-subtitle>
@@ -215,6 +193,12 @@ onBeforeMount(() => {
 .metrics-table {
   width: 100%;
   text-align: center;
+  font-family: monospace !important;
+}
+
+.metrics-update-time {
+  font-family: monospace !important;
+  font-size: 16px;
 }
 
 $stats-table-border: rgba(255, 255, 255, 0.5);

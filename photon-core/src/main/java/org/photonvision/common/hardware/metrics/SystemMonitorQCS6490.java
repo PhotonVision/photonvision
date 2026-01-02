@@ -15,24 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.scripting;
+package org.photonvision.common.hardware.metrics;
 
-public enum ScriptEventType {
-    kProgramInit("Program Init"),
-    kProgramExit("Program Exit"),
-    kNTConnected("NT Connected"),
-    kLEDOn("LED On"),
-    kLEDOff("LED Off"),
-    kEnterDriverMode("Enter Driver Mode"),
-    kExitDriverMode("Exit Driver Mode"),
-    kFoundTarget("Found Target"),
-    kFoundMultipleTarget("Found Multiple Target"),
-    kLostTarget("Lost Target"),
-    kPipelineLag("Pipeline Lag");
-
-    public final String value;
-
-    ScriptEventType(String value) {
-        this.value = value;
+public class SystemMonitorQCS6490 extends SystemMonitor {
+    @Override
+    protected String getThermalZoneTypes() {
+        return "cpu0-thermal";
     }
 }
