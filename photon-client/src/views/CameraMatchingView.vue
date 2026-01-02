@@ -311,7 +311,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 <v-btn
                   color="secondary"
                   style="width: 100%"
-                  :disabled="isCameraDuplicate(module)"
+                  :disabled="isCameraDuplicate(module) || !module.matchedCameraInfo.PVUsbCameraInfo"
                   :loading="duplicatingCamera"
                   :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
                   @click="duplicateCamera(module.uniqueName)"
