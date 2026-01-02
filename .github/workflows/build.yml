@@ -388,7 +388,6 @@ jobs:
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
             artifact-name: jar-Win64
-            extraOpts: ""
           - os: macos-latest
             artifact-name: jar-macOS
             architecture: x64
