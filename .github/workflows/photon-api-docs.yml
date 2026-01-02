@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Download docs artifact
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           pattern: docs-*
       - run: find .
@@ -106,7 +106,7 @@ jobs:
       needs: [build_demo]
       runs-on: ubuntu-24.04
       steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: built-demo
       - run: find .
