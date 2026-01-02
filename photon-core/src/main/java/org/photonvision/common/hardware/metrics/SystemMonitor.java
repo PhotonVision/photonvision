@@ -81,7 +81,8 @@ public class SystemMonitor {
     private long lastBytesRecv = 0;
     private NetworkTraffic lastResult = new NetworkTraffic(0, 0);
 
-    // Set this to true to enable logging the contents of the DeviceMetrics class that is sent to NT and the UI.
+    // Set this to true to enable logging the contents of the DeviceMetrics class that is sent to NT
+    // and the UI.
     public boolean writeMetricsToLog = false;
 
     private final String taskName = "SystemMonitorPublisher";
@@ -279,9 +280,11 @@ public class SystemMonitor {
                 "  Current Frequency: "
                         + Arrays.stream(cpu.getCurrentFreq())
                                 .mapToObj(FormatUtil::formatHertz)
-                                .collect(Collectors.joining(", ")) + "\n");
+                                .collect(Collectors.joining(", "))
+                        + "\n");
         for (PhysicalProcessor core : cpu.getPhysicalProcessors()) {
-            sb.append("  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")\n");
+            sb.append(
+                    "  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")\n");
         }
         var myProc = os.getCurrentProcess();
         sb.append("Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID() + "\n");
@@ -473,7 +476,8 @@ public class SystemMonitor {
      * Returns a NetworkTraffic instance containing the average sent and recieved network traffic
      * since the last time this was called.
      *
-     * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the data isn't available.
+     * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the
+     *     data isn't available.
      */
     private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
@@ -521,7 +525,8 @@ public class SystemMonitor {
                 timeIt(
                         sb, () -> String.format("Memory: %.0f / %.0f MiB", getUsedMemory(), getTotalMemory()));
         total +=
-                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MiB", getGpuMemUtil(), getGpuMem()));
+                timeIt(
+                        sb, () -> String.format("GPU Memory: %.0f / %.0f MiB", getGpuMemUtil(), getGpuMem()));
         total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
 
         total +=
