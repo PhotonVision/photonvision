@@ -39,7 +39,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
       header: "CPU Memory Usage",
       value:
         metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
-          ? `${metrics.ramUtil}MB of ${metrics.ramMem}MB`
+          ? `${metrics.ramUtil}MiB of ${metrics.ramMem}MiB`
           : "Unknown"
     },
     {
@@ -84,7 +84,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (metrics.gpuMem && metrics.gpuMemUtil && metrics.gpuMem > 0 && metrics.gpuMemUtil > 0) {
     stats.push({
       header: "GPU Memory Usage",
-      value: `${metrics.gpuMemUtil}MB of ${metrics.gpuMem}MB`
+      value: `${metrics.gpuMemUtil}MiB of ${metrics.gpuMem}MiB`
     });
   }
 

@@ -81,6 +81,7 @@ public class SystemMonitor {
     private long lastBytesRecv = 0;
     private NetworkTraffic lastResult = new NetworkTraffic(0, 0);
 
+    // Set this to true to enable logging the contents of the DeviceMetrics class that is sent to NT and the UI.
     public boolean writeMetricsToLog = false;
 
     private final String taskName = "SystemMonitorPublisher";
@@ -221,10 +222,10 @@ public class SystemMonitor {
         sb.append(String.format("CPU Temperature: %.2f °C, ", metrics.cpuTemp()));
         sb.append(String.format("NPU Usage: %s, ", Arrays.toString(metrics.npuUsage())));
         sb.append(String.format("Used Disk: %.2f%%, ", metrics.diskUtilPct()));
-        sb.append(String.format("Usable Disk Space: %.0f MB, ", metrics.diskUsableSpace() / mebi));
-        sb.append(String.format("Memory: %.0f / %.0f MB, ", metrics.ramUtil(), metrics.ramMem()));
+        sb.append(String.format("Usable Disk Space: %.0f MiB, ", metrics.diskUsableSpace() / mebi));
+        sb.append(String.format("Memory: %.0f / %.0f MiB, ", metrics.ramUtil(), metrics.ramMem()));
         sb.append(
-                String.format("GPU Memory: %.0f / %.0f MB, ", metrics.gpuMemUtil(), metrics.gpuMem()));
+                String.format("GPU Memory: %.0f / %.0f MiB, ", metrics.gpuMemUtil(), metrics.gpuMem()));
         sb.append(
                 String.format("CPU Throttle: %s, ", metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
         sb.append(
@@ -259,73 +260,48 @@ public class SystemMonitor {
     /** Writes available information about the hardware to the log. */
     public void logSystemInformation() {
         var sb = new StringBuilder();
-        sb.append("*** System Information ***");
-        sb.append(System.lineSeparator());
-        sb.append("Operating System: " + os.toString());
-        sb.append(System.lineSeparator());
-        sb.append("  System Uptime: " + FormatUtil.formatElapsedSecs(getUptime()));
-        sb.append(System.lineSeparator());
-        sb.append("  Elevated Privileges: " + os.isElevated());
-        sb.append(System.lineSeparator());
+        sb.append("*** System Information ***\n");
+        sb.append("Operating System: " + os.toString() + "\n");
+        sb.append("  System Uptime: " + FormatUtil.formatElapsedSecs(getUptime()) + "\n");
+        sb.append("  Elevated Privileges: " + os.isElevated() + "\n");
 
         var computerSystem = hal.getComputerSystem();
-        sb.append("System: " + computerSystem.toString());
-        sb.append(System.lineSeparator());
-        sb.append("  Manufacturer: " + computerSystem.getManufacturer());
-        sb.append(System.lineSeparator());
-        sb.append("  Firmware: " + computerSystem.getFirmware());
-        sb.append(System.lineSeparator());
-        sb.append("  Baseboard: " + computerSystem.getBaseboard());
-        sb.append(System.lineSeparator());
-        sb.append("  Model: " + computerSystem.getModel());
-        sb.append(System.lineSeparator());
-        sb.append("  Serial Number: " + computerSystem.getSerialNumber());
-        sb.append(System.lineSeparator());
+        sb.append("System: " + computerSystem.toString() + "\n");
+        sb.append("  Manufacturer: " + computerSystem.getManufacturer() + "\n");
+        sb.append("  Firmware: " + computerSystem.getFirmware() + "\n");
+        sb.append("  Baseboard: " + computerSystem.getBaseboard() + "\n");
+        sb.append("  Model: " + computerSystem.getModel() + "\n");
+        sb.append("  Serial Number: " + computerSystem.getSerialNumber() + "\n");
 
-        sb.append("CPU Info: " + cpu.toString());
-        sb.append(System.lineSeparator());
-        sb.append("  Max Frequency: " + FormatUtil.formatHertz(cpu.getMaxFreq()));
-        sb.append(System.lineSeparator());
+        sb.append("CPU Info: " + cpu.toString() + "\n");
+        sb.append("  Max Frequency: " + FormatUtil.formatHertz(cpu.getMaxFreq()) + "\n");
         sb.append(
                 "  Current Frequency: "
                         + Arrays.stream(cpu.getCurrentFreq())
                                 .mapToObj(FormatUtil::formatHertz)
-                                .collect(Collectors.joining(", ")));
-        sb.append(System.lineSeparator());
+                                .collect(Collectors.joining(", ")) + "\n");
         for (PhysicalProcessor core : cpu.getPhysicalProcessors()) {
-            sb.append("  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")");
-            sb.append(System.lineSeparator());
+            sb.append("  Core " + core.getPhysicalProcessorNumber() + " (" + core.getEfficiency() + ")\n");
         }
         var myProc = os.getCurrentProcess();
-        sb.append("Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID());
-        sb.append(System.lineSeparator());
+        sb.append("Current Process: " + myProc.getName() + ", PID: " + myProc.getProcessID() + "\n");
         // sb.append("  Command Line: " + myProc.getCommandLine());
-        sb.append("  Kernel Time: " + myProc.getKernelTime());
-        sb.append(System.lineSeparator());
-        sb.append("  User Time: " + myProc.getUserTime());
-        sb.append(System.lineSeparator());
-        sb.append("  Cumulative Load: " + myProc.getProcessCpuLoadCumulative());
-        sb.append(System.lineSeparator());
-        sb.append("  Up Time: " + myProc.getUpTime());
-        sb.append(System.lineSeparator());
-        sb.append("  Priority: " + myProc.getPriority());
-        sb.append(System.lineSeparator());
-        sb.append("  User: " + myProc.getUser());
-        sb.append(System.lineSeparator());
-        sb.append("  Threads: " + myProc.getThreadCount());
-        sb.append(System.lineSeparator());
+        sb.append("  Kernel Time: " + myProc.getKernelTime() + "\n");
+        sb.append("  User Time: " + myProc.getUserTime() + "\n");
+        sb.append("  Cumulative Load: " + myProc.getProcessCpuLoadCumulative() + "\n");
+        sb.append("  Up Time: " + myProc.getUpTime() + "\n");
+        sb.append("  Priority: " + myProc.getPriority() + "\n");
+        sb.append("  User: " + myProc.getUser() + "\n");
+        sb.append("  Threads: " + myProc.getThreadCount() + "\n");
 
-        sb.append("Network Interfaces");
-        sb.append(System.lineSeparator());
+        sb.append("Network Interfaces\n");
         for (NetworkIF iFace : hal.getNetworkIFs()) {
-            sb.append("  Interface: " + iFace.toString());
-            sb.append(System.lineSeparator());
+            sb.append("  Interface: " + iFace.toString() + "\n");
         }
 
-        sb.append("Graphics Cards");
+        sb.append("Graphics Cards\n");
         for (GraphicsCard gc : hal.getGraphicsCards()) {
-            sb.append("  Card: " + gc.toString());
-            sb.append(System.lineSeparator());
+            sb.append("  Card: " + gc.toString() + "\n");
         }
         logger.info(sb.toString());
     }
@@ -390,7 +366,8 @@ public class SystemMonitor {
      */
     public double getCpuTemperature() {
         double temperature = hal.getSensors().getCpuTemperature();
-        if (temperature < 0.1 || Double.isNaN(temperature)) {
+        // OSHI returns 0 or NaN if the temperature isn't available.
+        if (temperature == 0.0 || Double.isNaN(temperature)) {
             temperature = -1.0;
         }
         return temperature;
@@ -399,7 +376,7 @@ public class SystemMonitor {
     /**
      * Returns the total RAM.
      *
-     * @return total RAM in MB.
+     * @return total RAM in MiB.
      */
     public double getTotalMemory() {
         if (totalMemory < 0) {
@@ -411,7 +388,7 @@ public class SystemMonitor {
     /**
      * Returns the amount of memory in use.
      *
-     * @return the used RAM in MB.
+     * @return the used RAM in MiB.
      */
     public double getUsedMemory() {
         return (mem.getTotal() - mem.getAvailable()) / mebi;
@@ -465,39 +442,38 @@ public class SystemMonitor {
     }
 
     /**
-     * Return the total GPU memory in MB.
+     * Return the total GPU memory in MiB.
      *
-     * @return The total GPU memory in MB, or -1.0 if not avaialable on this platform.
+     * @return The total GPU memory in MiB, or -1.0 if not avaialable on this platform.
      */
     public double getGpuMem() {
         return -1.0;
     }
 
     /**
-     * Return the GPU memory utilization as MBs.
+     * Return the GPU memory utilization as MiBs.
      *
-     * @return The GPU memory utilization in MBs, or -1.0 if not available on this platform.
+     * @return The GPU memory utilization in MiBs, or -1.0 if not available on this platform.
      */
     public double getGpuMemUtil() {
         return -1.0;
     }
 
     /**
-     * Return the IP address of the device.
+     * Returns the IP address of the device.
      *
      * @return The IP address as a string, or an empty string if the command fails.
      */
     public String getIpAddress() {
         String dev = ConfigManager.getInstance().getConfig().getNetworkConfig().networkManagerIface;
-        String addr = NetworkUtils.getIPAddresses(dev);
-        return addr;
+        return NetworkUtils.getIPAddresses(dev);
     }
 
     /**
      * Returns a NetworkTraffic instance containing the average sent and recieved network traffic
      * since the last time this was called.
      *
-     * @return NetworkTraffic instance with data in bits/second.
+     * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the data isn't available.
      */
     private synchronized NetworkTraffic getNetworkTraffic() {
         String activeIFaceName =
@@ -540,12 +516,12 @@ public class SystemMonitor {
         total += timeIt(sb, () -> String.format("Used Disk: %.2f%%", getUsedDiskPct()));
         total +=
                 timeIt(
-                        sb, () -> String.format("Usable Disk Space: %.0f MB, ", getUsableDiskSpace() / mebi));
+                        sb, () -> String.format("Usable Disk Space: %.0f MiB, ", getUsableDiskSpace() / mebi));
         total +=
                 timeIt(
-                        sb, () -> String.format("Memory: %.0f / %.0f MB", getUsedMemory(), getTotalMemory()));
+                        sb, () -> String.format("Memory: %.0f / %.0f MiB", getUsedMemory(), getTotalMemory()));
         total +=
-                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MB", getGpuMemUtil(), getGpuMem()));
+                timeIt(sb, () -> String.format("GPU Memory: %.0f / %.0f MiB", getGpuMemUtil(), getGpuMem()));
         total += timeIt(sb, () -> String.format("CPU Throttle: %s", getCpuThrottleReason()));
 
         total +=
