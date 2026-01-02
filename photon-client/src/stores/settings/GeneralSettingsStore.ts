@@ -16,7 +16,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  lastUpdate: Date;
+  lastMetricsUpdate: Date;
   currentFieldLayout;
 }
 
@@ -77,7 +77,7 @@ export const useSettingsStore = defineStore("settings", {
       },
       tags: []
     },
-    lastUpdate: new Date()
+    lastMetricsUpdate: new Date()
   }),
   getters: {
     gpuAccelerationEnabled(): boolean {
@@ -89,7 +89,7 @@ export const useSettingsStore = defineStore("settings", {
   },
   actions: {
     updateMetricsFromWebsocket(data: Required<MetricData>) {
-      this.lastUpdate = new Date();
+      this.lastMetricsUpdate = new Date();
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
         cpuUtil: data.cpuUtil || undefined,

@@ -39,7 +39,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
       header: "CPU Memory Usage",
       value:
         metrics.ramUtil && metrics.ramMem && metrics.ramUtil >= 0 && metrics.ramMem >= 0
-          ? `${metrics.ramUtil}MiB of ${metrics.ramMem}MiB`
+          ? `${metrics.ramUtil} of ${metrics.ramMem} MiB`
           : "Unknown"
     },
     {
@@ -70,7 +70,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
       value:
         metrics.sentBitRate === undefined || metrics.recvBitRate === undefined
           ? "Missing"
-          : `↑${(metrics.sentBitRate / 1e6).toFixed(3).padStart(8)} Mbps | ↓${(metrics.recvBitRate / 1e6).toFixed(3).padStart(8)} Mbps`
+          : `↑${(metrics.sentBitRate / 1e6).toFixed(3).padStart(7, "\u00A0")} Mbps | ↓${(metrics.recvBitRate / 1e6).toFixed(3).padStart(7, "\u00A0")} Mbps`
     }
   ];
 
@@ -84,7 +84,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (metrics.gpuMem && metrics.gpuMemUtil && metrics.gpuMem > 0 && metrics.gpuMemUtil > 0) {
     stats.push({
       header: "GPU Memory Usage",
-      value: `${metrics.gpuMemUtil}MiB of ${metrics.gpuMem}MiB`
+      value: `${metrics.gpuMemUtil} of ${metrics.gpuMem} MiB`
     });
   }
 
@@ -107,9 +107,8 @@ const formattedDate = new Intl.DateTimeFormat(undefined, {
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Metrics</span>
-      <span style="font-size: 16px">
-        <v-icon start class="open-icon" size="small">mdi-clock-outline</v-icon>
-        Last Update: <span class="update-time">{{ formattedDate.format(useSettingsStore().lastUpdate) }}</span>
+      <span class="metrics-update-time">
+        Last Update: <span>{{ formattedDate.format(useSettingsStore().lastMetricsUpdate) }}</span>
       </span>
     </v-card-title>
     <v-card-text class="pt-0 pb-3">
@@ -197,8 +196,9 @@ const formattedDate = new Intl.DateTimeFormat(undefined, {
   font-family: monospace !important;
 }
 
-.update-time {
+.metrics-update-time {
   font-family: monospace !important;
+  font-size: 16px;
 }
 
 $stats-table-border: rgba(255, 255, 255, 0.5);
