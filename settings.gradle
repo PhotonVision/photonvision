@@ -3,3 +3,6 @@ include 'photon-core'
 include 'photon-server'
 include 'photon-lib'
 include 'photon-docs'
+
+// Include photon-apple on all platforms (uses stubs on non-macOS)
+include 'photon-apple'

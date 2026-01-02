@@ -69,6 +69,8 @@ dependencies {
         }
     }
 
+    implementation project(':photon-apple')
+
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
 }
 

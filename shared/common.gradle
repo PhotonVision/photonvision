@@ -3,8 +3,9 @@ apply plugin: "java"
 apply plugin: "jacoco"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    // Use whatever Java version is running Gradle (Java 17 on most CI, Java 24 on macOS CI)
+    sourceCompatibility = JavaVersion.current()
+    targetCompatibility = JavaVersion.current()
 }
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
@@ -65,7 +66,7 @@ test {
 }
 
 jacoco {
-    toolVersion = "0.8.10"
+    toolVersion = "0.8.13"
     reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
 

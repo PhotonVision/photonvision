@@ -8,7 +8,18 @@ This section contains the build instructions from the source code available at [
 
 **Java Development Kit:**
 
- This project requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2026+. **Windows Users must use the JDK that ships with WPILib.** For other platforms, you can follow the instructions to install JDK 17 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-17-lts).
+ PhotonLib requires Java Development Kit (JDK) 17 to be compiled. This is the same Java version that comes with WPILib for 2026+. **Windows Users must use the JDK that ships with WPILib.** For other platforms, you can follow the instructions to install JDK 17 for your platform [here](https://bell-sw.com/pages/downloads/#jdk-17-lts).
+
+ The PhotonVision server application requires JDK 17 to be compiled on Windows and Linux.
+ On macOS, it requires JDK 24 and JDK 25 (both JDK 24 and JDK 25 must be installed with JAVA_HOME pointing at JDK 24).
+
+ **JDK Version Split**
+
+ WPILib uses JDK 17 for the 2026 season. Photonlib must be built with JDK 17 compatibility.
+
+ PhotonVision on macOS uses a library (swift-java) to wrap swift code in java for CoreML based object detection.
+ swift-java requires Java 25 to build. Photonvision and WPILib use Gradle 8. Gradle 8 does not support Java 25. Gradle 9 is required for Java 25. So we build swift-java using Gradle 9 and Java 25 then use Gradle 8 and Java 24 to build photonvision.
+
 
 **Node JS:**
 
@@ -56,6 +67,41 @@ pnpm run dev
 ```
 
 This allows you to make UI changes quickly without having to spend time rebuilding the jar. Hot reload is enabled, so changes that you make and save are reflected in the UI immediately. Running this command will give you the URL for accessing the UI, which is on a different port than normal. You must use the printed URL to use hot reload.
+
+### One time build the UI
+
+To build the UI once and have it be served directly by PhotonVision, issue the following command in the root directory:
+
+```{eval-rst}
+.. tab-set::
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      ``./gradlew buildAndCopyUI``
+
+   .. tab-item:: macOS
+      :sync: macos
+
+      ``./gradlew buildAndCopyUI``
+
+   .. tab-item:: Windows (cmd)
+      :sync: windows
+
+      ``gradlew buildAndCopyUI``
+```
+
+### macOS only - Compile swift-java
+
+On macOS, before building PhotonVision, it is required to build swift-java one time.
+
+To build swift-java, issue the following from the root directory:
+
+```bash
+git submodule update --init --recursive
+cd photon-apple/swift-java
+./gradlew publishToMavenLocal -x :Samples:build
+```
 
 ### Build and Run PhotonVision
 
@@ -308,3 +354,8 @@ build action, which can be found [here](https://github.com/PhotonVision/photonvi
 In order to force the Object Detection interface to be visible, it's necessary to hardcode the platform that `Platform.java` returns. This can be done by changing the function that detects the RK3588S/QCS6490 platform to always return true, and changing the `getCurrentPlatform()` function to always return the RK3588S/QCS6490 architecture.
 Alternatively, it's possible to modify the frontend code by changing all instances of `useSettingsStore().general.supportedBackends.length > 0` to `true`, which will force the card to render.
 Make sure to revert these changes before submitting a Pull Request.
+
+#### Building platform specific native code in the monorepo
+
+Platform specific native code can be built in the monorepo by isolating the native code to a new subfolder with its own build.gradle.
+On the desired platform, CI will build the native code and the java wrappers for it. On other platforms, configure the project to use stubs. See photon-apple/build.gradle.

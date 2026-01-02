@@ -38,6 +38,7 @@ import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelP
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.objects.CoremlModel;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
@@ -201,6 +202,7 @@ public class NeuralNetworkModelManager {
         switch (Platform.getCurrentPlatform()) {
             case LINUX_QCS6490 -> supportedBackends.add(Family.RUBIK);
             case LINUX_RK3588_64 -> supportedBackends.add(Family.RKNN);
+            case MACOS -> supportedBackends.add(Family.COREML);
             default -> {
                 logger.warn(
                         "No supported neural network backends found for this platform: "
@@ -239,7 +241,8 @@ public class NeuralNetworkModelManager {
 
     public enum Family {
         RKNN(".rknn"),
-        RUBIK(".tflite");
+        RUBIK(".tflite"),
+        COREML(".mlmodel");
 
         private final String fileExtension;
 
@@ -308,7 +311,12 @@ public class NeuralNetworkModelManager {
             return Optional.empty();
         }
 
-        return models.get(supportedBackends.get(0)).stream().findFirst();
+        ArrayList<Model> backendModels = models.get(supportedBackends.get(0));
+        if (backendModels == null) {
+            return Optional.empty();
+        }
+
+        return backendModels.stream().findFirst();
     }
 
     // Do checking later on, when we create the model object
@@ -348,6 +356,9 @@ public class NeuralNetworkModelManager {
                 case RUBIK -> {
                     models.get(properties.family()).add(new RubikModel(properties));
                 }
+                case COREML -> {
+                    models.get(properties.family()).add(new CoremlModel(properties));
+                }
             }
             logger.info(
                     "Loaded model "
@@ -381,9 +392,19 @@ public class NeuralNetworkModelManager {
             files
                     .filter(Files::isRegularFile)
                     .filter(
-                            path ->
-                                    supportedBackends.stream()
-                                            .anyMatch(family -> path.toString().endsWith(family.extension())))
+                            path -> {
+                                String pathStr = path.toString();
+                                return supportedBackends.stream()
+                                        .anyMatch(
+                                                family -> {
+                                                    // For APPLE, also check for .mlmodelc (compiled models)
+                                                    if (family == Family.COREML) {
+                                                        return pathStr.endsWith(family.extension())
+                                                                || pathStr.endsWith(".mlmodelc");
+                                                    }
+                                                    return pathStr.endsWith(family.extension());
+                                                });
+                            })
                     .forEach(this::loadModel);
         } catch (IOException e) {
             logger.error("Failed to discover models at " + modelsDirectory.getAbsolutePath(), e);

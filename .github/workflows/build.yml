@@ -29,7 +29,7 @@ jobs:
           - os: windows-2022
             architecture: x64
           - os: macos-14
-            architecture: aarch64
+            architecture: arm64
           - os: ubuntu-22.04
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
@@ -41,6 +41,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
@@ -57,7 +58,7 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
-        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
+        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check -PphotonAppleForceStubs
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
@@ -205,7 +206,7 @@ jobs:
           - os: windows-2022
             artifact-name: Win64
             architecture: x64
-          - os: macos-14
+          - os: macos-26
             artifact-name: macOS
             architecture: aarch64
           - os: ubuntu-22.04
@@ -218,6 +219,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          submodules: recursive
       - name: Install Java 17
         uses: actions/setup-java@v4
         with:
@@ -225,15 +227,15 @@ jobs:
           distribution: temurin
           architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
-      - run: ./gradlew photon-targeting:build photon-lib:build
+      - run: ./gradlew photon-targeting:build photon-lib:build -PphotonAppleForceStubs
         name: Build with Gradle
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PphotonAppleForceStubs
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -PphotonAppleForceStubs
       - uses: actions/upload-artifact@v4
         with:
           name: maven-${{ matrix.artifact-name }}
@@ -312,18 +314,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            artifact-name: Win64
-            architecture: x64
-            arch-override: winx64
-          - os: macos-latest
-            artifact-name: macOS
-            architecture: x64
-            arch-override: macx64
-          - os: macos-latest
-            artifact-name: macOSArm
-            architecture: x64
-            arch-override: macarm64
           - os: ubuntu-22.04
             artifact-name: Linux
             architecture: x64
@@ -336,12 +326,28 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
-    steps:
+    steps: &build-package-steps
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install Java 17
+          submodules: recursive
+      - name: Install Java 25 (macOS toolchain for SwiftKit)
         uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 25
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
+      - name: Install Java 24 (for Gradle on macOS)
+        uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 24
+          distribution: temurin
+          architecture: ${{ matrix.architecture }}
+      - name: Install Java 17 (for Gradle on non-macOS)
+        uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -356,6 +362,19 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
+      - name: Cache Swift build artifacts (macOS only)
+        uses: actions/cache@v4
+        if: runner.os == 'macOS'
+        with:
+          path: photon-apple/.build
+          key: ${{ matrix.artifact-name }}-photon-apple-build-${{ hashFiles('photon-apple/swift-java/Package.swift', 'photon-apple/swift-java/gradle.properties', 'photon-apple/swift-java/settings.gradle') }}
+          restore-keys: |
+            ${{ matrix.artifact-name }}-photon-apple-build-
+      - name: Publish SwiftKit to Maven Local (macOS only)
+        if: runner.os == 'macOS'
+        run: |
+          cd photon-apple/swift-java
+          ./gradlew publishToMavenLocal -PskipSamples=true
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
@@ -376,8 +395,42 @@ jobs:
           name: photon-targeting_jar-${{ matrix.artifact-name }}
           path: photon-targeting/build/libs
 
+  build-package-macos:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-26
+            artifact-name: macOS
+            architecture: aarch64
+            arch-override: macarm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    steps: *build-package-steps
+
+  build-package-windows:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: Win64
+            architecture: x64
+            arch-override: winx64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    steps: *build-package-steps
+
   run-smoketest-native:
-    needs: [build-package]
+    needs: [build-package, build-package-macos, build-package-windows]
 
     strategy:
       fail-fast: false
@@ -389,15 +442,21 @@ jobs:
           - os: windows-latest
             artifact-name: jar-Win64
             extraOpts: ""
-          - os: macos-latest
+          - os: macos-26
             artifact-name: jar-macOS
-            architecture: x64
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install Java 17
+      - name: Install Java 25 (macOS)
         uses: actions/setup-java@v4
+        if: runner.os == 'macOS'
+        with:
+          java-version: 25
+          distribution: temurin
+      - name: Install Java 17 (non-macOS)
+        uses: actions/setup-java@v4
+        if: runner.os != 'macOS'
         with:
           java-version: 17
           distribution: temurin
@@ -557,7 +616,7 @@ jobs:
       - run: ${{!contains(needs.*.result, 'failure')}}
 
   release:
-    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    needs: [build-photonlib-vendorjson, build-package, build-package-macos, build-package-windows, build-image, combine]
     if: github.ref == ('refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.repository == 'PhotonVision/photonvision'
     runs-on: ubuntu-22.04
     steps:
