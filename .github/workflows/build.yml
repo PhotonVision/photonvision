@@ -69,12 +69,17 @@ jobs:
         run: |
           mkdir -p ~/.m2/repository/
           mv maven/org ~/.m2/repository/
-      - name: Install photonlib to maven local
+      - name: Copy vendordeps
+        shell: bash
         run: |
           for vendordep_folder in photonlib-*-examples/*/; do
+          # Remove trailing slash for cross-platform compatibility
+            vendordep_folder="${vendordep_folder%/}"
+
             # Filter for projects only
-            if [ -e $vendordep_folder/build.gradle ]; then
-              cp vendordep/photonlib-json-1.0.json $vendordep_folder/vendordeps/
+            if [ -e "$vendordep_folder/build.gradle" ]; then
+              mkdir -p "$vendordep_folder/vendordeps/"
+              cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
             fi
           done
       - name: Build Java examples
