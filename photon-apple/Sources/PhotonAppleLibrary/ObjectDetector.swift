@@ -26,6 +26,10 @@ fileprivate func p(_ message: String, function: String = #function, line: Int = 
     print("[ObjectDetector.swift:\(line)](\(function)) \(message)")
 }
 
+fileprivate func d(_ message: String, function: String = #function, line: Int = #line) {
+    // print("[ObjectDetector.swift:\(line)](\(function)) \(message)")
+}
+
 // MARK: - Object Detector
 
 /// Object detector using Apple's Vision framework
@@ -142,7 +146,6 @@ public class ObjectDetector {
             p("Failed to create CVPixelBuffer: \(result)")
             return DetectionResultArray(results: [])
         }
-        p("nocopy pixel buffer")
 
         // Perform detection using Vision framework
         // Vision automatically resizes and crops the image to fit the model
@@ -163,7 +166,7 @@ public class ObjectDetector {
         // Filter by confidence threshold
         // Note: Vision framework already performs NMS internally, so we don't need to do it manually
         let filteredObservations = observations.filter { $0.confidence >= Float(boxThreshold) }
-        p("Detected \(observations.count) objects, \(filteredObservations.count) above threshold \(boxThreshold)")
+        d("Detected \(observations.count) objects, \(filteredObservations.count) above threshold \(boxThreshold)")
 
         // Convert to DetectionResult array
         let results = filteredObservations.map { observation -> DetectionResult in
