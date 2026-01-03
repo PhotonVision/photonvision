@@ -15,15 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.metrics.cmds;
+package org.photonvision.common.hardware.metrics;
 
-import org.photonvision.common.configuration.HardwareConfig;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class RK3588Cmds extends LinuxCmds {
-    /** Applies pi-specific commands, ignoring any input configuration */
-    public void initCmds(HardwareConfig config) {
-        super.initCmds(config);
+public class SystemMonitorRK3588 extends SystemMonitor {
+    final String regex = "Core\\d:\\s*(\\d+)%";
+    final Pattern pattern = Pattern.compile(regex);
 
+    @Override
+    protected String getThermalZoneTypes() {
         // CPU Temperature
         /* The RK3588 chip has 7 thermal zones that can be accessed via:
          *       /sys/class/thermal/thermal_zoneX/temp
@@ -42,10 +47,19 @@ public class RK3588Cmds extends LinuxCmds {
          *   - http://forum.armsom.org/t/topic/51/3
          *   - https://lore.kernel.org/lkml/7276280.TLKafQO6qx@archbook/
          */
-        cpuTemperatureCommand =
-                "cat /sys/class/thermal/thermal_zone1/temp | awk '{printf \"%.1f\", $1/1000}'";
+        return "bigcore0-thermal";
+    }
 
-        npuUsageCommand =
-                "cat /sys/kernel/debug/rknpu/load | grep -o '[0-9]\\+%' | sed 's/%//g' | paste -sd ','";
+    @Override
+    public double[] getNpuUsage() {
+        try {
+            var contents = Files.readString(Path.of("/sys/kernel/debug/rknpu/load"));
+            Matcher matcher = pattern.matcher(contents);
+            double[] results =
+                    matcher.results().map(mr -> mr.group(1)).mapToDouble(Double::parseDouble).toArray();
+            return results;
+        } catch (IOException e) {
+            return new double[0];
+        }
     }
 }

@@ -994,11 +994,6 @@ public class RequestHandler {
         }
     }
 
-    public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
-    }
-
     /**
      * Get the calibration JSON for a specific observation. Excludes camera image data
      *

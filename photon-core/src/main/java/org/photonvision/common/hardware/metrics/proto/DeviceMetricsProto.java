@@ -49,9 +49,12 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
                 msg.getGpuMem(),
                 msg.getGpuMemUtil(),
                 msg.getDiskUtilPct(),
+                msg.getDiskUsableSpace(),
                 msg.getNpuUsage().toArray(),
                 msg.getIpAddress(),
-                msg.getUptime());
+                msg.getUptime(),
+                msg.getSentBitRate(),
+                msg.getRecvBitRate());
     }
 
     @Override
@@ -65,7 +68,10 @@ public class DeviceMetricsProto implements Protobuf<DeviceMetrics, ProtobufDevic
         msg.setRamUtil(value.ramUtil());
         msg.setGpuMemUtil(value.gpuMemUtil());
         msg.setDiskUtilPct(value.diskUtilPct());
+        msg.setDiskUsableSpace(value.diskUsableSpace());
         msg.addAllNpuUsage(value.npuUsage());
         msg.setIpAddress(value.ipAddress());
+        msg.setSentBitRate(value.sentBitRate());
+        msg.setRecvBitRate(value.recvBitRate());
     }
 }

@@ -15,25 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.metrics.cmds;
+package org.photonvision.common.hardware.metrics;
 
-import org.photonvision.common.configuration.HardwareConfig;
-
-public class FileCmds extends CmdBase {
+public class SystemMonitorQCS6490 extends SystemMonitor {
     @Override
-    public void initCmds(HardwareConfig config) {
-        cpuTemperatureCommand = config.cpuTempCommand;
-        cpuUtilizationCommand = config.cpuUtilCommand;
-        cpuThrottleReasonCmd = config.cpuThrottleReasonCmd;
-
-        ramMemCommand = config.cpuMemoryCommand;
-        ramUtilCommand = config.ramUtilCommand;
-
-        gpuMemCommand = config.gpuMemoryCommand;
-        gpuMemUtilCommand = config.gpuMemUsageCommand;
-
-        diskUsageCommand = config.diskUsageCommand;
-
-        uptimeCommand = config.cpuUptimeCommand;
+    protected String getThermalZoneTypes() {
+        return "cpu0-thermal";
     }
 }
