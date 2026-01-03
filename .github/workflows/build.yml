@@ -18,8 +18,8 @@ jobs:
     name: "Validation"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: gradle/actions/wrapper-validation@v4
+      - uses: actions/checkout@v6
+      - uses: gradle/actions/wrapper-validation@v5
   build-examples:
 
     strategy:
@@ -41,13 +41,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -99,13 +99,13 @@ jobs:
     steps:
       # Checkout code.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -114,7 +114,7 @@ jobs:
         with:
           version: 10
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Setup tests
@@ -127,7 +127,7 @@ jobs:
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -140,13 +140,13 @@ jobs:
     steps:
       # Checkout code.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -155,7 +155,7 @@ jobs:
         with:
           version: 10
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Gradle Build
@@ -166,8 +166,8 @@ jobs:
     name: "Build Offline Docs"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install graphviz
@@ -184,7 +184,7 @@ jobs:
         working-directory: docs
         run: |
           make html
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: built-docs
           path: docs/build/html
@@ -194,12 +194,12 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [validation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -214,7 +214,7 @@ jobs:
           mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
 
       # Upload it here so it shows up in releases
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: photonlib-vendor-json
           path: photon-lib/build/generated/vendordeps/photonlib-*.json
@@ -239,11 +239,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [validation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -258,7 +258,7 @@ jobs:
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -283,7 +283,7 @@ jobs:
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
     needs: [validation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Config Git
@@ -299,7 +299,7 @@ jobs:
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -309,7 +309,7 @@ jobs:
     needs: [build-photonlib-docker, build-photonlib-host]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - run: git fetch --tags --force
@@ -324,7 +324,7 @@ jobs:
         name: ZIP stuff up
         working-directory: output
       - run: ls output
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: photonlib-offline
           path: output/*.zip
@@ -361,11 +361,11 @@ jobs:
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -375,7 +375,7 @@ jobs:
         with:
           version: 10
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
@@ -391,11 +391,11 @@ jobs:
         if: ${{ (matrix.arch-override != 'none') }}
       - run: ./gradlew photon-server:shadowJar
         if: ${{ (matrix.arch-override == 'none') }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: photon-targeting_jar-${{ matrix.artifact-name }}
           path: photon-targeting/build/libs
@@ -420,7 +420,7 @@ jobs:
 
     steps:
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -525,7 +525,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v7
@@ -566,13 +566,15 @@ jobs:
           sudo mv ${imagedir}/* ${tardir}/
           sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         name: Upload image
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
 
   matrix-checker:
+    # This job always runs last to set the overall result based on the matrix jobs. If any matrix job failed, this job will fail.
+    # This makes it so that we don't need to add each matrix job individually to CI checks.
     runs-on: ubuntu-latest
     needs: [build-image]
     if: always()
@@ -621,7 +623,7 @@ jobs:
             **/photonlib*.zip
         if: github.event_name == 'push'
       - name: Create Vendor JSON Repo PR
-        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
+        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@HEAD
         with:
           repo: PhotonVision/vendor-json-repo
           token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
