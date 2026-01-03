@@ -99,7 +99,9 @@ jobs:
       - name: Build Python examples
         working-directory: photonlib-python-examples
         run: |
-          ./run.sh
+          ./run.sh aimandrange/
+          ./run.sh aimattarget/
+          ./run.sh poseest/
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04
