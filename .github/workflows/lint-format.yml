@@ -18,7 +18,7 @@ jobs:
       - uses: gradle/actions/wrapper-validation@v4
   wpiformat:
     name: "wpiformat"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Fetch all history and metadata
@@ -26,10 +26,10 @@ jobs:
           git fetch --prune --unshallow
           git checkout -b pr
           git branch -f main origin/main
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v4
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
       - name: Install wpiformat
         run: pip3 install wpiformat==2025.79
       - name: Run
@@ -54,7 +54,7 @@ jobs:
   javaformat:
     name: "Java Formatting"
     needs: [validation]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -77,7 +77,7 @@ jobs:
     defaults:
       run:
         working-directory: photon-client
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Install pnpm

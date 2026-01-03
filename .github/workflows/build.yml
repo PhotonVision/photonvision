@@ -30,7 +30,7 @@ jobs:
             architecture: x64
           - os: macos-14
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
@@ -54,7 +54,7 @@ jobs:
         run: |
           find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
           du -h . | sort -h
-        if: matrix.os == 'ubuntu-22.04'
+        if: matrix.os == 'ubuntu-24.04'
       # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
@@ -70,7 +70,7 @@ jobs:
           ./gradlew clean
   playwright-tests:
     name: "Playwright E2E tests"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       # Checkout code.
@@ -111,7 +111,7 @@ jobs:
           retention-days: 30
   build-gradle:
     name: "Gradle Build"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       # Checkout code.
@@ -140,12 +140,12 @@ jobs:
         run: ./gradlew test jacocoTestReport --stacktrace
   build-offline-docs:
     name: "Build Offline Docs"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       - name: Install graphviz
         run: |
           sudo apt-get update
@@ -167,7 +167,7 @@ jobs:
 
   build-photonlib-vendorjson:
     name: "Build Vendor JSON"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     needs: [validation]
     steps:
       - uses: actions/checkout@v4
@@ -208,7 +208,7 @@ jobs:
           - os: macos-14
             artifact-name: macOS
             architecture: aarch64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
 
     name: "Photonlib - Build Host - ${{ matrix.artifact-name }}"
@@ -254,7 +254,7 @@ jobs:
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
 
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     container: ${{ matrix.container }}
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
     needs: [validation]
@@ -283,14 +283,14 @@ jobs:
   combine:
     name: Combine
     needs: [build-photonlib-docker, build-photonlib-host]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - run: git fetch --tags --force
       # download all maven-* artifacts to outputs/
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           path: output
@@ -324,11 +324,11 @@ jobs:
             artifact-name: macOSArm
             architecture: x64
             arch-override: macarm64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: Linux
             architecture: x64
             arch-override: linuxx64
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: LinuxArm64
             architecture: x64
             arch-override: linuxarm64
@@ -359,7 +359,7 @@ jobs:
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
@@ -383,12 +383,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04
+          - os: ubuntu-24.04
             artifact-name: jar-Linux
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
             artifact-name: jar-Win64
-            extraOpts: ""
           - os: macos-latest
             artifact-name: jar-macOS
             architecture: x64
@@ -401,7 +400,7 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
       - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
@@ -505,7 +504,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: jar-${{ matrix.artifact-name }}
       - uses: photonvision/photon-image-runner@HEAD
@@ -559,25 +558,25 @@ jobs:
   release:
     needs: [build-photonlib-vendorjson, build-package, build-image, combine]
     if: github.ref == ('refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.repository == 'PhotonVision/photonvision'
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # Download all fat JARs
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           pattern: jar-*
       # Download offline photonlib
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           pattern: photonlib-offline
       # Download vendor json
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           pattern: photonlib-vendor-json
       # Download all images
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           merge-multiple: true
           pattern: image-*
