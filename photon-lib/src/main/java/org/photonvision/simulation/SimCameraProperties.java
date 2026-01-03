@@ -391,7 +391,7 @@ public class SimCameraProperties {
     }
 
     /**
-     * The percentage(0 - 100) of this camera's resolution the contour takes up in pixels of the
+     * The percentage (0 - 100) of this camera's resolution the contour takes up in pixels of the
      * image.
      *
      * @param points Points of the contour

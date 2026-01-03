@@ -170,7 +170,7 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
      *     the camera's image to be processed. Match this with your contour filtering settings in the
      *     PhotonVision GUI.
      * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
@@ -192,7 +192,7 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
      *     the camera's image to be processed. Match this with your contour filtering settings in the
      *     PhotonVision GUI.
      * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
@@ -220,8 +220,8 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * Returns the minimum percentage(0 - 100) a detected target must take up of the camera's image to
-     * be processed.
+     * Returns the minimum percentage (0 - 100) a detected target must take up of the camera's image
+     * to be processed.
      *
      * @return The percentage
      */
@@ -337,8 +337,8 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * Sets the minimum percentage(0 - 100) a detected target must take up of the camera's image to be
-     * processed.
+     * Sets the minimum percentage (0 - 100) a detected target must take up of the camera's image to
+     * be processed.
      *
      * @param areaPercent The percentage
      */

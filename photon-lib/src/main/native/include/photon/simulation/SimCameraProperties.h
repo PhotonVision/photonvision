@@ -193,8 +193,8 @@ class SimCameraProperties {
   units::second_t GetLatencyStdDev() const { return latencyStdDev; }
 
   /**
-   * The percentage(0 - 100) of this camera's resolution the contour takes up in
-   * pixels of the image.
+   * The percentage (0 - 100) of this camera's resolution the contour takes up
+   * in pixels of the image.
    *
    * @param points Points of the contour
    * @return The percentage

@@ -103,8 +103,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    * with a timestamp.
    */
   units::second_t GetTimestamp() const {
-    return units::microsecond_t{
-        static_cast<double>(metadata.captureTimestampMicros)};
+    return ntReceiveTimestamp - GetLatency();
   }
 
   /**

@@ -51,7 +51,7 @@ class PhotonCameraSim:
 
         :param camera:               The camera to be simulated
         :param prop:                 Properties of this camera such as FOV and FPS
-        :param minTargetAreaPercent: The minimum percentage(0 - 100) a detected target must take up of
+        :param minTargetAreaPercent: The minimum percentage (0 - 100) a detected target must take up of
                                      the camera's image to be processed. Match this with your contour filtering settings in the
                                      PhotonVision GUI.
         :param maxSightRangeMeters:  Maximum distance at which the target is illuminated to your camera.
@@ -206,7 +206,7 @@ class PhotonCameraSim:
         return None
 
     def setMinTargetAreaPercent(self, areaPercent: float) -> None:
-        """The minimum percentage(0 - 100) a detected target must take up of the camera's image to be
+        """The minimum percentage (0 - 100) a detected target must take up of the camera's image to be
         processed.
         """
         self.minTargetAreaPercent = areaPercent

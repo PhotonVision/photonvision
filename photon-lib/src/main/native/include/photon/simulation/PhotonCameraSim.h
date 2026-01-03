@@ -87,7 +87,7 @@ class PhotonCameraSim {
    *
    * @param camera The camera to be simulated
    * @param prop Properties of this camera such as FOV and FPS
-   * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected
+   * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected
    * target must take up of the camera's image to be processed. Match this with
    * your contour filtering settings in the PhotonVision GUI.
    * @param maxSightRange Maximum distance at which the target is
@@ -105,7 +105,7 @@ class PhotonCameraSim {
   inline PhotonCamera* GetCamera() { return cam; }
 
   /**
-   * Returns the minimum percentage(0 - 100) a detected target must take up of
+   * Returns the minimum percentage (0 - 100) a detected target must take up of
    * the camera's image to be processed.
    *
    * @return The percentage
@@ -165,7 +165,7 @@ class PhotonCameraSim {
   std::optional<uint64_t> ConsumeNextEntryTime();
 
   /**
-   * Sets the minimum percentage(0 - 100) a detected target must take up of the
+   * Sets the minimum percentage (0 - 100) a detected target must take up of the
    * camera's image to be processed.
    *
    * @param areaPercent The percentage
