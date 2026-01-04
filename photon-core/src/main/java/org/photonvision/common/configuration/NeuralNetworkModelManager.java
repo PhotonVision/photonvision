@@ -212,12 +212,23 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Returns the singleton instance of the NeuralNetworkModelManager
+     * Returns the singleton instance of the NeuralNetworkModelManager. Call getInstance() to use the
+     * default (no reset), or getInstance(true) to reset.
      *
      * @return The singleton instance
      */
     public static NeuralNetworkModelManager getInstance() {
-        if (INSTANCE == null) {
+        return getInstance(false);
+    }
+
+    /**
+     * Returns the singleton instance of the NeuralNetworkModelManager, optionally resetting it.
+     *
+     * @param reset If true, resets the instance
+     * @return The singleton instance
+     */
+    public static NeuralNetworkModelManager getInstance(boolean reset) {
+        if (INSTANCE == null || reset) {
             INSTANCE = new NeuralNetworkModelManager();
         }
         return INSTANCE;
@@ -405,9 +416,7 @@ public class NeuralNetworkModelManager {
         for (ModelProperties model : getShippedProperties(modelsDirectory).getModels()) {
             if (supportedBackends.contains(model.family())) {
                 supportedProperties.addModelProperties(model);
-            } else {
-                logger.warn(
-                        "Skipping model " + model.nickname() + " as it is not supported on this platform.");
+                logger.debug("Added shipped model: " + model.modelPath().getFileName().toString());
             }
         }
 

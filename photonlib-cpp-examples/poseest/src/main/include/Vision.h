@@ -24,19 +24,18 @@
 
 #pragma once
 
-#include <photon/PhotonCamera.h>
-#include <photon/PhotonPoseEstimator.h>
-#include <photon/estimation/VisionEstimation.h>
-#include <photon/simulation/VisionSystemSim.h>
-#include <photon/simulation/VisionTargetSim.h>
-#include <photon/targeting/PhotonPipelineResult.h>
-
 #include <functional>
 #include <limits>
 #include <memory>
 
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/apriltag/AprilTagFields.h>
+#include <photon/PhotonCamera.h>
+#include <photon/PhotonPoseEstimator.h>
+#include <photon/estimation/VisionEstimation.h>
+#include <photon/simulation/VisionSystemSim.h>
+#include <photon/simulation/VisionTargetSim.h>
+#include <photon/targeting/PhotonPipelineResult.h>
 
 #include "Constants.h"
 

@@ -93,12 +93,12 @@ deploy {
                     if (project.hasProperty('tgtUser')) {
                         user = tgtUser
                     } else {
-                        user = "pi"
+                        user = "photon"
                     }
                     if (project.hasProperty('tgtPw')) {
                         password = tgtPw
                     } else {
-                        password = "raspberry"
+                        password = "vision"
                     }
                 }
             }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import ObjectDetectionCard from "@/components/settings/ObjectDetectionCard.vue";
-import NetworkingCard from "@/components/settings/NetworkingCard.vue";
+import GlobalSettingsCard from "@/components/settings/GlobalSettingsCard.vue";
 import LightingControlCard from "@/components/settings/LEDControlCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import ApriltagControlCard from "@/components/settings/ApriltagControlCard.vue";
@@ -10,7 +10,7 @@ import DeviceCard from "@/components/settings/DeviceCard.vue";
 <template>
   <div class="pa-3">
     <DeviceCard />
-    <NetworkingCard />
+    <GlobalSettingsCard />
     <ObjectDetectionCard v-if="useSettingsStore().general.supportedBackends.length > 0" />
     <LightingControlCard v-if="useSettingsStore().lighting.supported" />
     <Suspense>

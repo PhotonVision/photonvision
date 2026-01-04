@@ -18,24 +18,22 @@
 package org.photonvision.common.util.file;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.ext.NioPathDeserializer;
+import com.fasterxml.jackson.databind.ext.NioPathSerializer;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -45,34 +43,17 @@ import org.eclipse.jetty.io.EofException;
 public class JacksonUtils {
     public static class UIMap extends HashMap<String, Object> {}
 
-    // Custom Path serializer that outputs just the path string without file:/ prefix
-    public static class PathSerializer extends JsonSerializer<Path> {
+    // Custom Path key deserializer for Maps with Path keys
+    public static class PathKeySerializer
+            extends com.fasterxml.jackson.databind.JsonSerializer<Path> {
         @Override
         public void serialize(Path value, JsonGenerator gen, SerializerProvider serializers)
                 throws IOException {
             if (value == null) {
                 gen.writeNull();
             } else {
-                gen.writeString(value.toString());
+                gen.writeFieldName(value.toUri().toString());
             }
-        }
-    }
-
-    // Custom Path deserializer that reads path strings
-    public static class PathDeserializer extends JsonDeserializer<Path> {
-        @Override
-        public Path deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            String pathString = p.getValueAsString();
-            if (pathString == null || pathString.isEmpty()) {
-                return null;
-            }
-
-            // Handle case where old serialized data might still have file:/ prefix
-            if (pathString.startsWith("file:/")) {
-                pathString = pathString.substring(6); // Remove "file:/" prefix
-            }
-
-            return Paths.get(pathString);
         }
     }
 
@@ -83,13 +64,7 @@ public class JacksonUtils {
             if (key == null || key.isEmpty()) {
                 return null;
             }
-
-            // Handle case where old serialized data might still have file:/ prefix
-            if (key.startsWith("file:/")) {
-                key = key.substring(6); // Remove "file:/" prefix
-            }
-
-            return Paths.get(key);
+            return Paths.get(URI.create(key));
         }
     }
 
@@ -99,8 +74,9 @@ public class JacksonUtils {
                 BasicPolymorphicTypeValidator.builder().allowIfBaseType(baseType).build();
 
         SimpleModule pathModule = new SimpleModule();
-        pathModule.addSerializer(Path.class, new PathSerializer());
-        pathModule.addDeserializer(Path.class, new PathDeserializer());
+        pathModule.addSerializer(Path.class, new NioPathSerializer());
+        pathModule.addKeySerializer(Path.class, new PathKeySerializer());
+        pathModule.addDeserializer(Path.class, new NioPathDeserializer());
         pathModule.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
         return JsonMapper.builder()
@@ -149,48 +125,6 @@ public class JacksonUtils {
             return objectMapper.readValue(jsonFile, ref);
         }
         return null;
-    }
-
-    public static <T> T deserialize(Path path, Class<T> ref, StdDeserializer<T> deserializer)
-            throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(ref, deserializer);
-
-        // Add Path support to custom deserializer case as well
-        module.addSerializer(Path.class, new PathSerializer());
-        module.addDeserializer(Path.class, new PathDeserializer());
-        module.addKeyDeserializer(Path.class, new PathKeyDeserializer());
-
-        objectMapper.registerModule(module);
-
-        File jsonFile = new File(path.toString());
-        if (jsonFile.exists() && jsonFile.length() > 0) {
-            return objectMapper.readValue(jsonFile, ref);
-        }
-        return null;
-    }
-
-    public static <T> void serialize(Path path, T object, Class<T> ref, StdSerializer<T> serializer)
-            throws IOException {
-        serialize(path, object, ref, serializer, true);
-    }
-
-    public static <T> void serialize(
-            Path path, T object, Class<T> ref, StdSerializer<T> serializer, boolean forceSync)
-            throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(ref, serializer);
-
-        // Add Path support to custom serializer case as well
-        module.addSerializer(Path.class, new PathSerializer());
-        module.addDeserializer(Path.class, new PathDeserializer());
-        module.addKeyDeserializer(Path.class, new PathKeyDeserializer());
-
-        objectMapper.registerModule(module);
-        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
-        saveJsonString(json, path, forceSync);
     }
 
     private static void saveJsonString(String json, Path path, boolean forceSync) throws IOException {

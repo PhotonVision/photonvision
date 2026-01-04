@@ -38,7 +38,8 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
     if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
       if (calib !== undefined) {
-        // For each error, square it, sum the squares, and divide by total points N
+        // Mean overall reprojection error
+        // Calculated as average of each observation's mean error
         if (calib.meanErrors.length)
           format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
         else format.mean = NaN;
@@ -141,7 +142,7 @@ const downloadCalibBoard = async () => {
       break;
 
     case CalibrationBoardTypes.Charuco:
-      // Add pregenerated charuco
+      // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
       doc.addImage(charucoImage, "PNG", 0.25, 1.5, 8, 8);
@@ -249,27 +250,31 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <th>Horizontal FOV</th>
               <th>Vertical FOV</th>
               <th>Diagonal FOV</th>
-              <th>Info</th>
             </tr>
           </thead>
           <tbody style="cursor: pointer">
-            <tr v-for="(value, index) in getUniqueVideoFormatsByResolution()" :key="index">
-              <td>{{ getResolutionString(value.resolution) }}</td>
-              <td>
-                {{ value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-" }}
-              </td>
-              <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-              <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-              <v-tooltip location="bottom">
-                <template #activator="{ props }">
-                  <td v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <v-icon size="small" color="primary">mdi-information</v-icon>
+            <v-tooltip
+              v-for="(value, index) in getUniqueVideoFormatsByResolution()"
+              :key="index"
+              transition=""
+              location="bottom"
+              :open-delay="100"
+            >
+              <template #activator="{ props }">
+                <tr :key="index" v-bind="props" @click="setSelectedVideoFormat(value)">
+                  <td>{{ getResolutionString(value.resolution) }}</td>
+                  <td>
+                    {{
+                      value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-"
+                    }}
                   </td>
-                </template>
-                <span>View calibration information</span>
-              </v-tooltip>
-            </tr>
+                  <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                </tr>
+              </template>
+              <span>View calibration information</span>
+            </v-tooltip>
           </tbody>
         </v-table>
       </v-card-text>
@@ -308,7 +313,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'Charuco']"
+              :items="['Chessboard', 'ChArUco']"
               :disabled="isCalibrating"
             />
             <v-alert
@@ -319,7 +324,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               color="warning"
               icon="mdi-alert-box"
               text="The usage of chessboards can result in bad calibration results if multiple
-              similar images are taken. We strongly recommend that teams use Charuco boards instead!"
+              similar images are taken. We strongly recommend that teams use ChArUco boards instead!"
             />
             <pv-select
               v-if="boardType !== CalibrationBoardTypes.Charuco"
@@ -336,7 +341,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               v-if="boardType === CalibrationBoardTypes.Charuco"
               v-model="tagFamily"
               label="Tag Family"
-              tooltip="Dictionary of aruco markers on the charuco board"
+              tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
               :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
               :disabled="isCalibrating"

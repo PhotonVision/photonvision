@@ -27,10 +27,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
   }),
   getters: {
     needsCameraConfiguration(): boolean {
-      return (
-        JSON.stringify(useCameraSettingsStore().cameras[PlaceholderCameraSettings.uniqueName]) ===
-        JSON.stringify(PlaceholderCameraSettings)
-      );
+      return useCameraSettingsStore().cameras["Placeholder Name"] === PlaceholderCameraSettings;
     },
     // TODO update types to update this value being undefined. This would be a decently large change.
     currentCameraSettings(): UiCameraConfiguration {
@@ -45,7 +42,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     // This method only exists due to just how lazy I am and my dislike of consolidating the pipeline type enums (which mind you, suck as is)
     currentWebsocketPipelineType(): WebsocketPipelineType {
-      return this.currentPipelineType - 2;
+      return this.currentPipelineType - 3;
     },
     currentVideoFormat(): VideoFormat {
       return this.currentCameraSettings.validVideoFormats[this.currentPipelineSettings.cameraVideoModeIndex];
@@ -76,6 +73,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     isCalibrationMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
     },
+    isFocusMode(): boolean {
+      return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.FocusCamera;
+    },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;
     },
@@ -90,6 +90,9 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     },
     maxWhiteBalanceTemp(): number {
       return this.currentCameraSettings.maxWhiteBalanceTemp;
+    },
+    fpsLimit(): number {
+      return this.currentCameraSettings.fpsLimit;
     },
     isConnected(): boolean {
       return this.currentCameraSettings.isConnected;
@@ -141,6 +144,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           minWhiteBalanceTemp: d.minWhiteBalanceTemp,
           maxWhiteBalanceTemp: d.maxWhiteBalanceTemp,
           matchedCameraInfo: d.matchedCameraInfo,
+          fpsLimit: d.fpsLimit,
           isConnected: d.isConnected,
           hasConnected: d.hasConnected,
           mismatch: d.mismatch

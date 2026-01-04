@@ -28,23 +28,18 @@ public class HardwareConfig {
 
     // LED control
     public final ArrayList<Integer> ledPins;
-    public final String ledSetCommand;
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledBrightnessRange;
-    public final String ledDimCommand;
-    public final String ledBlinkCommand;
+    public final int ledPWMFrequency;
     public final ArrayList<Integer> statusRGBPins;
+    public final boolean statusRGBActiveHigh;
 
-    // Metrics
-    public final String cpuTempCommand;
-    public final String cpuMemoryCommand;
-    public final String cpuUtilCommand;
-    public final String cpuThrottleReasonCmd;
-    public final String cpuUptimeCommand;
-    public final String gpuMemoryCommand;
-    public final String ramUtilCommand;
-    public final String gpuMemUsageCommand;
-    public final String diskUsageCommand;
+    // Custom GPIO
+    public final String getGPIOCommand;
+    public final String setGPIOCommand;
+    public final String setPWMCommand;
+    public final String setPWMFrequencyCommand;
+    public final String releaseGPIOCommand;
 
     // Device stuff
     public final String restartHardwareCommand;
@@ -55,42 +50,32 @@ public class HardwareConfig {
             String deviceLogoPath,
             String supportURL,
             ArrayList<Integer> ledPins,
-            String ledSetCommand,
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
-            String ledDimCommand,
-            String ledBlinkCommand,
+            int ledPwmFrequency,
             ArrayList<Integer> statusRGBPins,
-            String cpuTempCommand,
-            String cpuMemoryCommand,
-            String cpuUtilCommand,
-            String cpuThrottleReasonCmd,
-            String cpuUptimeCommand,
-            String gpuMemoryCommand,
-            String ramUtilCommand,
-            String gpuMemUsageCommand,
-            String diskUsageCommand,
+            boolean statusRGBActiveHigh,
+            String getGPIOCommand,
+            String setGPIOCommand,
+            String setPWMCommand,
+            String setPWMFrequencyCommand,
+            String releaseGPIOCommand,
             String restartHardwareCommand,
             double vendorFOV) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
         this.ledPins = ledPins;
-        this.ledSetCommand = ledSetCommand;
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
-        this.ledDimCommand = ledDimCommand;
-        this.ledBlinkCommand = ledBlinkCommand;
+        this.ledPWMFrequency = ledPwmFrequency;
         this.statusRGBPins = statusRGBPins;
-        this.cpuTempCommand = cpuTempCommand;
-        this.cpuMemoryCommand = cpuMemoryCommand;
-        this.cpuUtilCommand = cpuUtilCommand;
-        this.cpuThrottleReasonCmd = cpuThrottleReasonCmd;
-        this.cpuUptimeCommand = cpuUptimeCommand;
-        this.gpuMemoryCommand = gpuMemoryCommand;
-        this.ramUtilCommand = ramUtilCommand;
-        this.gpuMemUsageCommand = gpuMemUsageCommand;
-        this.diskUsageCommand = diskUsageCommand;
+        this.statusRGBActiveHigh = statusRGBActiveHigh;
+        this.getGPIOCommand = getGPIOCommand;
+        this.setGPIOCommand = setGPIOCommand;
+        this.setPWMCommand = setPWMCommand;
+        this.setPWMFrequencyCommand = setPWMFrequencyCommand;
+        this.releaseGPIOCommand = releaseGPIOCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
     }
@@ -100,21 +85,16 @@ public class HardwareConfig {
         deviceLogoPath = "";
         supportURL = "";
         ledPins = new ArrayList<>();
-        ledSetCommand = "";
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
-        ledDimCommand = "";
-        ledBlinkCommand = "";
+        ledPWMFrequency = 0;
         statusRGBPins = new ArrayList<>();
-        cpuTempCommand = "";
-        cpuMemoryCommand = "";
-        cpuUtilCommand = "";
-        cpuThrottleReasonCmd = "";
-        cpuUptimeCommand = "";
-        gpuMemoryCommand = "";
-        ramUtilCommand = "";
-        gpuMemUsageCommand = "";
-        diskUsageCommand = "";
+        statusRGBActiveHigh = false;
+        getGPIOCommand = "";
+        setGPIOCommand = "";
+        setPWMCommand = "";
+        setPWMFrequencyCommand = "";
+        releaseGPIOCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
     }
@@ -127,19 +107,14 @@ public class HardwareConfig {
     }
 
     /**
-     * @return True if any command has been configured to a non-default empty, false otherwise
+     * @return True if any gpio command has been configured to be non-empty, false otherwise
      */
-    public final boolean hasCommandsConfigured() {
-        return cpuTempCommand != ""
-                || cpuMemoryCommand != ""
-                || cpuUtilCommand != ""
-                || cpuThrottleReasonCmd != ""
-                || cpuUptimeCommand != ""
-                || gpuMemoryCommand != ""
-                || ramUtilCommand != ""
-                || ledBlinkCommand != ""
-                || gpuMemUsageCommand != ""
-                || diskUsageCommand != "";
+    public final boolean hasGPIOCommandsConfigured() {
+        return getGPIOCommand != ""
+                || setGPIOCommand != ""
+                || setPWMCommand != ""
+                || setPWMFrequencyCommand != ""
+                || releaseGPIOCommand != "";
     }
 
     @Override
@@ -152,36 +127,26 @@ public class HardwareConfig {
                 + supportURL
                 + ", ledPins="
                 + ledPins
-                + ", ledSetCommand="
-                + ledSetCommand
                 + ", ledsCanDim="
                 + ledsCanDim
                 + ", ledBrightnessRange="
                 + ledBrightnessRange
-                + ", ledDimCommand="
-                + ledDimCommand
-                + ", ledBlinkCommand="
-                + ledBlinkCommand
+                + ", ledPWMFrequency="
+                + ledPWMFrequency
                 + ", statusRGBPins="
                 + statusRGBPins
-                + ", cpuTempCommand="
-                + cpuTempCommand
-                + ", cpuMemoryCommand="
-                + cpuMemoryCommand
-                + ", cpuUtilCommand="
-                + cpuUtilCommand
-                + ", cpuThrottleReasonCmd="
-                + cpuThrottleReasonCmd
-                + ", cpuUptimeCommand="
-                + cpuUptimeCommand
-                + ", gpuMemoryCommand="
-                + gpuMemoryCommand
-                + ", ramUtilCommand="
-                + ramUtilCommand
-                + ", gpuMemUsageCommand="
-                + gpuMemUsageCommand
-                + ", diskUsageCommand="
-                + diskUsageCommand
+                + ", statusRGBActiveHigh"
+                + statusRGBActiveHigh
+                + ", getGPIOCommand="
+                + getGPIOCommand
+                + ", setGPIOCommand="
+                + setGPIOCommand
+                + ", setPWMCommand="
+                + setPWMCommand
+                + ", setPWMFrequencyCommand="
+                + setPWMFrequencyCommand
+                + ", releaseGPIOCommand="
+                + releaseGPIOCommand
                 + ", restartHardwareCommand="
                 + restartHardwareCommand
                 + ", vendorFOV="

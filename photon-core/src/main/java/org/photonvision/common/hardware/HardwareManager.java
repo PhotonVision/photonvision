@@ -17,23 +17,27 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.DeviceMode;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import com.diozero.sbc.BoardPinInfo;
+import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Supplier;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
-import org.photonvision.common.hardware.metrics.MetricsManager;
+import org.photonvision.common.hardware.gpio.CustomAdapter;
+import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.common.util.TimedTaskManager;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -43,8 +47,6 @@ public class HardwareManager {
 
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
-
-    private final MetricsManager metricsManager;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
@@ -59,8 +61,6 @@ public class HardwareManager {
 
     public final VisionLED visionLED; // May be null if no LED is specified
 
-    private final PigpioSocket pigpioSocket; // will be null unless on Raspi
-
     public static HardwareManager getInstance() {
         if (instance == null) {
             var conf = ConfigManager.getInstance().getConfig();
@@ -73,12 +73,6 @@ public class HardwareManager {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
 
-        this.metricsManager = new MetricsManager();
-        this.metricsManager.setConfig(hardwareConfig);
-
-        TimedTaskManager.getInstance()
-                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 1000);
-
         ledModeRequest =
                 NetworkTablesManager.getInstance()
                         .kRootTable
@@ -88,32 +82,44 @@ public class HardwareManager {
                 NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
         ledModeState.set(VisionLEDMode.kDefault.value);
 
-        CustomGPIO.setConfig(hardwareConfig);
+        // Device factory is lazy to prevent creating one if it will go unused.
+        Supplier<NativeDeviceFactoryInterface> lazyDeviceFactory =
+                new Supplier<NativeDeviceFactoryInterface>() {
+                    NativeDeviceFactoryInterface deviceFactory = null;
 
-        if (Platform.isRaspberryPi()) {
-            pigpioSocket = new PigpioSocket();
-        } else {
-            pigpioSocket = null;
-        }
+                    @Override
+                    public NativeDeviceFactoryInterface get() {
+                        if (deviceFactory == null) {
+                            if (hardwareConfig.hasGPIOCommandsConfigured()) {
+                                deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
+                            } else {
+                                deviceFactory = DeviceFactoryHelper.getNativeDeviceFactory();
+                            }
+                        }
+
+                        return deviceFactory;
+                    }
+                };
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                        ? new StatusLED(
+                                lazyDeviceFactory.get(),
+                                hardwareConfig.statusRGBPins,
+                                hardwareConfig.statusRGBActiveHigh)
                         : null;
-
-        if (statusLED != null) {
-            TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::statusLEDUpdate, 150);
-        }
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
                         ? null
                         : new VisionLED(
+                                lazyDeviceFactory.get(),
                                 hardwareConfig.ledPins,
+                                hardwareConfig.ledsCanDim,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                pigpioSocket,
+                                hardwareConfig.ledPWMFrequency,
                                 ledModeState::set);
 
         ledModeListener =
@@ -133,6 +139,33 @@ public class HardwareManager {
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    }
+
+    public static NativeDeviceFactoryInterface configureCustomGPIO(HardwareConfig hardwareConfig) {
+        // Create a new adapter and device factory using the commands from hardwareConfig
+        CustomAdapter adapter =
+                new CustomAdapter(
+                        hardwareConfig.getGPIOCommand,
+                        hardwareConfig.setGPIOCommand,
+                        hardwareConfig.setPWMCommand,
+                        hardwareConfig.setPWMFrequencyCommand,
+                        hardwareConfig.setPWMFrequencyCommand);
+        CustomDeviceFactory deviceFactory = new CustomDeviceFactory(adapter);
+        BoardPinInfo pinInfo = deviceFactory.getBoardPinInfo();
+
+        // Populate pin info according to hardware config
+        for (int pin : hardwareConfig.ledPins) {
+            if (hardwareConfig.ledsCanDim) {
+                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.PWM_OUTPUT, DeviceMode.DIGITAL_OUTPUT));
+            } else {
+                pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+            }
+        }
+        for (int pin : hardwareConfig.statusRGBPins) {
+            pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
+        }
+
+        return deviceFactory;
     }
 
     public void setBrightnessPercent(int percent) {
@@ -170,62 +203,50 @@ public class HardwareManager {
 
     // API's supporting status LEDs
 
-    private Map<String, Boolean> pipelineTargets = new HashMap<String, Boolean>();
+    private Set<String> pipelineTargets = new HashSet<String>();
     private boolean ntConnected = false;
-    private boolean systemRunning = false;
-    private int blinkCounter = 0;
 
     public void setTargetsVisibleStatus(String uniqueName, boolean hasTargets) {
-        pipelineTargets.put(uniqueName, hasTargets);
+        if (hasTargets) {
+            pipelineTargets.add(uniqueName);
+        } else {
+            pipelineTargets.remove(uniqueName);
+        }
+        updateStatus();
     }
 
     public void setNTConnected(boolean isConnected) {
-        this.ntConnected = isConnected;
+        ntConnected = isConnected;
+        updateStatus();
     }
 
-    public void setRunning(boolean isRunning) {
-        this.systemRunning = isRunning;
-    }
-
-    private void statusLEDUpdate() {
-        // make blinky
-        boolean blinky = ((blinkCounter % 3) > 0);
-
-        // check if any pipeline has a visible target
-        boolean anyTarget = false;
-        for (var t : this.pipelineTargets.values()) {
-            if (t) {
-                anyTarget = true;
-            }
+    public void setError(PhotonStatus status) {
+        if (status == null || !status.isError()) {
+            updateStatus();
+        } else if (statusLED != null) {
+            statusLED.setStatus(status);
         }
+    }
 
-        if (this.systemRunning) {
-            if (!this.ntConnected) {
-                if (anyTarget) {
-                    // Blue Flashing
-                    statusLED.setRGB(false, false, blinky);
-                } else {
-                    // Yellow flashing
-                    statusLED.setRGB(blinky, blinky, false);
-                }
+    private void updateStatus() {
+        if (statusLED == null) {
+            return;
+        }
+        PhotonStatus status;
+        boolean anyTarget = !pipelineTargets.isEmpty();
+        if (ntConnected) {
+            if (anyTarget) {
+                status = PhotonStatus.NT_CONNECTED_TARGETS_VISIBLE;
             } else {
-                if (anyTarget) {
-                    // Blue
-                    statusLED.setRGB(false, false, blinky);
-                } else {
-                    // blinky green
-                    statusLED.setRGB(false, blinky, false);
-                }
+                status = PhotonStatus.NT_CONNECTED_TARGETS_MISSING;
             }
         } else {
-            // Faulted, not running... blinky red
-            statusLED.setRGB(blinky, false, false);
+            if (anyTarget) {
+                status = PhotonStatus.NT_DISCONNECTED_TARGETS_VISIBLE;
+            } else {
+                status = PhotonStatus.NT_DISCONNECTED_TARGETS_MISSING;
+            }
         }
-
-        blinkCounter++;
-    }
-
-    public void publishMetrics() {
-        metricsManager.publishMetrics();
+        statusLED.setStatus(status);
     }
 }

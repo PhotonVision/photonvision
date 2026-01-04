@@ -15,12 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-
 #include <iostream>
 #include <span>
 #include <vector>
+
+#include <fmt/core.h>
+#include <fmt/ranges.h>
 
 #include "org_photonvision_jni_ConstrainedSolvepnpJni.h"
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
@@ -84,9 +84,8 @@ Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
   std::cout << "observations:\n" << pointObservationsMat << std::endl;
 #endif
 
-  wpi::expected<constrained_solvepnp::RobotStateMat,
-                sleipnir::SolverExitCondition>
-      result = constrained_solvepnp::do_optimization(
+  wpi::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
+      constrained_solvepnp::do_optimization(
           headingFree, nTags, cameraCal_, robot2cameraMat, xGuessMat,
           field2pointsMat, pointObservationsMat, gyro_θ, gyro_error_scale_fac);
 

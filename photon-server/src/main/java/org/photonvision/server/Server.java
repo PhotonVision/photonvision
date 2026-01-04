@@ -68,7 +68,6 @@ public class Server {
                                                             it.anyHost();
                                                         });
                                             }));
-
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -129,13 +128,13 @@ public class Server {
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
+        app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
-        app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);
@@ -148,6 +147,7 @@ public class Server {
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
         app.post("/api/calibration/importFromData", RequestHandler::onDataCalibrationImportRequest);
+        app.post("/api/calibration/remove", RequestHandler::onCalibrationRemoveRequest);
 
         // Object detection
         app.post("/api/objectdetection/import", RequestHandler::onImportObjectDetectionModelRequest);
@@ -160,6 +160,13 @@ public class Server {
         app.post("/api/objectdetection/delete", RequestHandler::onDeleteObjectDetectionModelRequest);
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
+
+        /* Testing API Events */
+
+        app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
+
+        app.post("/api/test/activateTestMode", TestRequestHandler::testMode);
+        app.post("/api/test/override/platform", TestRequestHandler::handlePlatformOverrideRequest);
 
         app.start(port);
     }
