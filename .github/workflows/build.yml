@@ -20,78 +20,80 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: gradle/actions/wrapper-validation@v5
-  build-examples:
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-2022
-            architecture: x64
-            artifact-name: Win64
-          - os: macos-14
-            architecture: arm64
-            artifact-name: macOS
-          - os: ubuntu-24.04
-            artifact-name: Linux
+  # build-examples:
 
-    name: "Photonlib - Build Examples - ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    needs: [build-photonlib-host, build-photonlib-docker]
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - os: windows-2022
+  #           architecture: x64
+  #           artifact-name: Win64
+  #         - os: macos-14
+  #           architecture: arm64
+  #           artifact-name: macOS
+  #         - os: ubuntu-24.04
+  #           artifact-name: Linux
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Fetch tags
-        run: git fetch --tags --force
-      - name: Install Java 17
-        uses: actions/setup-java@v5
-        with:
-          java-version: 17
-          distribution: temurin
-      - name: Install RoboRIO Toolchain
-        run: ./gradlew installRoboRioToolchain
-      - name: Delete duplicate toolchains
-        run: |
-          find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
-          du -h . | sort -h
-        if: matrix.os == 'ubuntu-24.04'
-      # Download prebuilt photonlib artifacts
-      - uses: actions/download-artifact@v4
-        with:
-          name: maven-${{ matrix.artifact-name }}
-      - uses: actions/download-artifact@v4
-        with:
-          name: maven-Athena
-      - name: Move to maven local
-        run: |
-          mkdir -p ~/.m2/repository/
-          mv maven/org ~/.m2/repository/
-      - name: Copy vendordeps
-        shell: bash
-        run: |
-          for vendordep_folder in photonlib-*-examples/*/; do
-          # Remove trailing slash for cross-platform compatibility
-            vendordep_folder="${vendordep_folder%/}"
+  #   name: "Photonlib - Build Examples - ${{ matrix.os }}"
+  #   runs-on: ${{ matrix.os }}
+  #   needs: [build-photonlib-host, build-photonlib-docker]
 
-            # Filter for projects only
-            if [ -e "$vendordep_folder/build.gradle" ]; then
-              mkdir -p "$vendordep_folder/vendordeps/"
-              cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
-            fi
-          done
-      - name: Build Java examples
-        working-directory: photonlib-java-examples
-        run: |
-          ./gradlew build
-          ./gradlew clean
-      - name: Build C++ examples
-        working-directory: photonlib-cpp-examples
-        run: |
-          ./gradlew build
-          ./gradlew clean
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Fetch tags
+  #       run: git fetch --tags --force
+  #     - name: Install Java 17
+  #       uses: actions/setup-java@v5
+  #       with:
+  #         java-version: 17
+  #         distribution: temurin
+  #     - name: Install RoboRIO Toolchain
+  #       run: ./gradlew installRoboRioToolchain
+  #     - name: Delete duplicate toolchains
+  #       run: |
+  #         find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
+  #         du -h . | sort -h
+  #       if: matrix.os == 'ubuntu-24.04'
+  #     # Download prebuilt photonlib artifacts
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: maven-${{ matrix.artifact-name }}
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: maven-Athena
+  #     - name: Move to maven local
+  #       run: |
+  #         mkdir -p ~/.m2/repository/
+  #         mv maven/org ~/.m2/repository/
+  #     - name: Copy vendordeps
+  #       shell: bash
+  #       run: |
+  #         for vendordep_folder in photonlib-*-examples/*/; do
+  #         # Remove trailing slash for cross-platform compatibility
+  #           vendordep_folder="${vendordep_folder%/}"
+
+  #           # Filter for projects only
+  #           if [ -e "$vendordep_folder/build.gradle" ]; then
+  #             mkdir -p "$vendordep_folder/vendordeps/"
+  #             cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
+  #           fi
+  #         done
+  #     - name: Build Java examples
+  #       working-directory: photonlib-java-examples
+  #       run: |
+  #         ./gradlew build
+  #         ./gradlew clean
+  #     - name: Build C++ examples
+  #       working-directory: photonlib-cpp-examples
+  #       run: |
+  #         ./gradlew build
+  #         ./gradlew clean
+
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04
@@ -257,11 +259,34 @@ jobs:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -x check
       - uses: actions/upload-artifact@v6
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
+      - name: Install RoboRIO Toolchain
+        run: ./gradlew installRoboRioToolchain
+      - name: Delete duplicate toolchains
+        if: matrix.os == 'ubuntu-24.04'
+        run: |
+          find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
+          du -h . | sort -h
+        # Need to publish to maven local first, so that C++ sim can pick it up
+      - name: Publish photonlib to maven local
+        run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
+      - name: Clean so we don't run out of memory
+        run: ./gradlew clean
+      - name: Build Java examples
+        working-directory: photonlib-java-examples
+        run: |
+          ./gradlew build
+          ./gradlew clean
+      - name: Build C++ examples
+        working-directory: photonlib-cpp-examples
+        run: |
+          ./gradlew build
+          ./gradlew clean
+
 
   build-photonlib-docker:
     strategy:
