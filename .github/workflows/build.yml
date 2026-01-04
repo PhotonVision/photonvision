@@ -399,6 +399,10 @@ jobs:
             artifact-name: macOSArm
             architecture: arm64
             arch-override: macarm64
+          - os: macos-latest
+            artifact-name: macOS
+            architecture: x64
+            arch-override: macx64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
