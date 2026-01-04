@@ -78,15 +78,18 @@ jobs:
           python-version: 3.12
       
       - name: Build and configure RobotPy (bash)
-        working-directory: photon-lib/py
+        working-directory: photon-lib
         if: runner.os != 'Windows'
         run: |
+          cd py
           ./buildAndTest.sh
           ./enableUsingDevBuilds.sh
 
       - name: Build and configure RobotPy (pwsh)
+        working-directory: photon-lib
         if: runner.os == 'Windows'
         run: |
+          cd py
           ./buildandTest.bat
           ./enableUsingDevBuilds.bat
 
