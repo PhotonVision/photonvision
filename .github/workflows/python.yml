@@ -125,5 +125,6 @@ jobs:
         run: |
           for folder in photonlib-python-examples/*/;
           do
+            echo $folder
             ./run.sh $folder
           done
