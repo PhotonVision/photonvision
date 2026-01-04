@@ -125,4 +125,4 @@ jobs:
         shell: bash
         run: |
           for folder in photonlib-python-examples/*; do
-            ./run.sh ${{env.folder}}
+            ./run.sh ${{folder}}
