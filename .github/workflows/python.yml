@@ -81,13 +81,13 @@ jobs:
         working-directory: photon-lib/py
         if: ${{ runner.os != 'Windows' }}
         run: |
-          ./buildAndTest.sh &&
+          ./buildAndTest.sh
           ./enableUsingDevBuilds.sh
 
       - name: Build and configure RobotPy (pwsh)
         if: ${{ runner.os == 'Windows' }}
         run: |
-          ./buildandTest.bat &&
+          ./buildandTest.bat
           ./enableUsingDevBuilds.bat
 
       - name: Build Python examples (bash)
