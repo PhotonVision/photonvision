@@ -396,7 +396,7 @@ jobs:
       matrix:
         include:
           - os: macos-latest
-            artifact-name: macOS
+            artifact-name: macOSArm
             architecture: arm64
             arch-override: macarm64
 
