@@ -66,10 +66,8 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
   
   buildPythonExamples:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.12]
         os: [ubuntu-24.04, windows-2022, macos-14]
     steps:
       - name: Set up Python
@@ -77,16 +75,17 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: Build Python examples on Linux
+      - name: Build Python examples
         working-directory: photonlib-python-examples
-        if: ${{ runner.os == 'Linux' }}
+        if: ${{ runner.os != 'Windows' }}
         run: |
-          ./run.sh *
-
-      - name: Build Python examples on Windows
-        working-directory: photonlib-python-examples
+          for folder in photonlib-python-examples/*/; do
+            ./run.sh ${{ env.folder }}
+          done
         if: ${{ runner.os == 'Windows' }}
         run: |
-          ./run.bat aimandrange/
-          ./run.bat aimattarget/
-          ./run.bat poseest/
+          for folder in photonlib-python-examples/*/; do
+          # Remove trailing slash for cross-platform compatibility
+            folder="${folder%/}"
+            ./run.bat ${{ env.folder }}
+          done
