@@ -23,7 +23,7 @@ const DEFAULT_COLOR = "blue";
 const typeLabels = {
   percentage: "%",
   temperature: "°C",
-  mb: " MB"
+  mb: " MB/s"
 };
 
 const theme = useTheme();
@@ -41,7 +41,18 @@ const getOptions = (data: ChartData[] = []) => {
       formatter: (params: any) => {
         const p = params[0];
         const append = typeLabels[props.type];
-        return `<div style="text-align: right;">${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })}<br/>${p.value[1].toFixed(props.type === "mb" ? 3 : 2)}${append}</div>`;
+        const fmsLimitLabel = "FMS Limit - 7.000 MB/s";
+
+        var tooltip = `<div style="text-align: right;">`;
+        const seriesData = `${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })} - ${p.value[1].toFixed(props.type === "mb" ? 3 : 2)}${append}`;
+        
+        if (props.type === "mb") {
+          if (p.value[1] >= 7) tooltip += seriesData + `<br/>${fmsLimitLabel}`;
+          else tooltip += fmsLimitLabel + `<br/>${seriesData}`;
+        }
+        else tooltip += seriesData;
+        
+        return `${tooltip}</div>`;
       },
       backgroundColor: theme.themes.value[theme.global.name.value].colors.background,
       textStyle: {
@@ -123,6 +134,19 @@ const getSeries = (data: ChartData[] = []) => {
       type: "line",
       showSymbol: false,
       data: data.map((d) => [d.time, d.value]),
+      markLine: props.type === "mb" ?{
+        symbol: 'none',
+        lineStyle: {
+          color: 'red',
+          width: 1
+        },
+        label: {
+          show: false,
+        },
+        data: [
+          { yAxis: 7 }
+        ]
+      } : null,
       lineStyle: {
         color:
           theme.global.name.value === "LightTheme"

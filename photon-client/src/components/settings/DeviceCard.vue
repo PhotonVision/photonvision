@@ -301,29 +301,14 @@ const platformMetrics = computed<MetricItem[]>(() => {
     });
   }
 
-  return stats;
-});
-
-const fetchMetrics = () => {
-  useSettingsStore()
-    .requestMetricsUpdate()
-    .catch((error) => {
-      if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Unable to fetch metrics! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to fetch metrics."
-        });
-      }
+  if (metrics.recvBitRate && metrics.recvBitRate !== -1) {
+    stats.push({
+      header: "Received Bit Rate",
+      value: `${metrics.recvBitRate / 1e6} MB/s`
     });
-};
+  }
 
-onBeforeMount(() => {
-  fetchMetrics();
+  return stats;
 });
 
 const cpuUsageData = ref<{ time: number; value: number }[]>([]);
@@ -344,9 +329,9 @@ watch(useSettingsStore().metricsHistory, () => {
     time: entry.time,
     value: entry.metrics.cpuTemp ?? 0
   }));
-  networkUsageData.value = useStateStore().networkUsageHistory.map((entry) => ({
+  networkUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
     time: entry.time,
-    value: entry.usage ?? 0
+    value: entry.metrics.sentBitRate === -1 ? -1 : (entry.metrics.sentBitRate ?? 0) / 1e6
   }));
 });
 </script>
@@ -493,10 +478,6 @@ watch(useSettingsStore().metricsHistory, () => {
       <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
         <v-card-title class="d-flex justify-space-between">
           <span>Device Metrics</span>
-          <v-btn variant="text" class="refresh" @click="fetchMetrics">
-            <v-icon start class="open-icon">mdi-reload</v-icon>
-            Force Refresh
-          </v-btn>
         </v-card-title>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3">
@@ -515,16 +496,16 @@ watch(useSettingsStore().metricsHistory, () => {
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
+            <span>{{ cpuTempData.at(-1)?.value == -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
           <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Network Usage</span>
-            <span>{{ networkUsageData.at(-1)?.value.toFixed(3) }} MB</span>
+            <span>{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} MB/s</span>
           </div>
-          <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="6" color="green" />
+          <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
         </v-card-text>
       </v-card>
     </v-col>
