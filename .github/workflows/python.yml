@@ -84,7 +84,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel pytest mypy
+          pip install setuptools wheel pytest mypy numpy wpilib robotpy-wpimath robotpy-apriltag robotpy-cscore pyntcore
       
       - name: Build and configure PhotonLibPy (bash)
         working-directory: ./photon-lib/py
@@ -113,5 +113,5 @@ jobs:
         run: |
           $folders = Get-ChildItem -Path "D:\a\photonvision\photonvision\photonlib-python-examples" -Directory -Recurse
           foreach ($FOLDER in $folders) {
-            ./run.bat ${{ env.FOLDER }}
+            .\\run.bat ${{ env.FOLDER }}
           }
