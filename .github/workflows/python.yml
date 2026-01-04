@@ -74,6 +74,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+      
+      - name: Build and configure RobotPy
+        working-directory: photon-lib/py
+        if: ${{ runner.os != 'Windows' }}
+        run: |
+          ./buildAndTest.sh &&
+          ./enableUsingDevBuilds.sh
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          ./buildandTest.bat &&
+          ./enableUsingDevBuilds.bat
 
       - name: Build Python examples
         working-directory: photonlib-python-examples
