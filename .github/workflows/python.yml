@@ -66,37 +66,38 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
   
   buildPythonExamples:
-    strategy:
-      matrix:
-        os: [ubuntu-24.04, windows-2022, macos-14]
+    runs-on: [ubuntu-24.04, windows-2022, macos-14]
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
       
-      - name: Build and configure RobotPy
+      - name: Build and configure RobotPy (bash)
         working-directory: photon-lib/py
         if: ${{ runner.os != 'Windows' }}
         run: |
           ./buildAndTest.sh &&
           ./enableUsingDevBuilds.sh
+
+      - name: Build and configure RobotPy (pwsh)
         if: ${{ runner.os == 'Windows' }}
         run: |
           ./buildandTest.bat &&
           ./enableUsingDevBuilds.bat
 
-      - name: Build Python examples
+      - name: Build Python examples (bash)
         working-directory: photonlib-python-examples
         if: ${{ runner.os != 'Windows' }}
         run: |
           for folder in photonlib-python-examples/*/; do
             ./run.sh ${{ env.folder }}
-          done
+      
+      - name: Build Python examples (pwsh)
+        working-directory: photonlib-python-examples
         if: ${{ runner.os == 'Windows' }}
         run: |
           for folder in photonlib-python-examples/*/; do
           # Remove trailing slash for cross-platform compatibility
             folder="${folder%/}"
             ./run.bat ${{ env.folder }}
-          done
