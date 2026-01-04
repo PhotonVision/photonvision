@@ -121,7 +121,7 @@ jobs:
           ./enableUsingDevBuilds.bat
 
       - name: Build Python examples
-        #working-directory: photonlib-python-examples
+        working-directory: /
         shell: bash
         run: |
           for folder in photonlib-python-examples/*/;
