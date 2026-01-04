@@ -113,5 +113,5 @@ jobs:
         run: |
           $folders = Get-ChildItem -Path "D:\a\photonvision\photonvision\photonlib-python-examples" -Directory -Recurse
           foreach ($FOLDER in $folders) {
-            .\\run.bat ${{ env.FOLDER }}
+            ./run.bat ${{ env.FOLDER }}
           }
