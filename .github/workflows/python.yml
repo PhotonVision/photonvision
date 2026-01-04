@@ -81,14 +81,14 @@ jobs:
         with:
           python-version: 3.12
       
-      - name: Build and configure RobotPy (bash)
+      - name: Build and configure PhotonLibPy (bash)
         working-directory: ./photon-lib/py
         if: runner.os != 'Windows'
         run: |
           ./buildAndTest.sh
           ./enableUsingDevBuilds.sh
 
-      - name: Build and configure RobotPy (pwsh)
+      - name: Build and configure PhotonLibPy (pwsh)
         working-directory: ./photon-lib/py
         if: runner.os == 'Windows'
         run: |
@@ -99,14 +99,14 @@ jobs:
         working-directory: photonlib-python-examples
         if: runner.os != 'Windows'
         run: |
-          for folder in photonlib-python-examples/*; do
+          for (folder in photonlib-python-examples/*) do
             ./run.sh ${{ env.folder }}
       
       - name: Build Python examples (pwsh)
         working-directory: photonlib-python-examples
         if: runner.os == 'Windows'
         run: |
-          for folder in photonlib-python-examples/*; do
-          # Remove trailing slash for cross-platform compatibility
-            folder="${folder%/}"
-            ./run.bat ${{ env.folder }}
+          foreach ($FOLDER in photonlib-python-examples/*) {
+            FOLDER="${FOLDER%/}"
+            ./run.bat ${{ env.FOLDER }}
+          }
