@@ -99,14 +99,14 @@ jobs:
         working-directory: photonlib-python-examples
         if: runner.os != 'Windows'
         run: |
-          for folder in photonlib-python-examples/*/; do
+          for folder in photonlib-python-examples/*; do
             ./run.sh ${{ env.folder }}
       
       - name: Build Python examples (pwsh)
         working-directory: photonlib-python-examples
         if: runner.os == 'Windows'
         run: |
-          for folder in photonlib-python-examples/*/; do
+          for folder in photonlib-python-examples/*; do
           # Remove trailing slash for cross-platform compatibility
             folder="${folder%/}"
             ./run.bat ${{ env.folder }}
