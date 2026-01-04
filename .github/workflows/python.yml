@@ -100,15 +100,7 @@ jobs:
           ./buildandTest.bat
           ./enableUsingDevBuilds.bat
 
-      - name: Build Python examples (Linux/MacOS)
-        if: runner.os != 'Windows'
-        working-directory: photonlib-python-examples
-        run: |
-          for folder in photonlib-python-examples/*; do
-            ./run.sh ${{ env.folder }}
-
-      - name: Build Python examples (Windows)
-        if: runner.os == 'Windows'
+      - name: Build Python examples
         working-directory: photonlib-python-examples
         shell: bash
         run: |
