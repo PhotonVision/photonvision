@@ -50,7 +50,7 @@ jobs:
             mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@master
+        uses: actions/upload-artifact@v5
         with:
           name: dist
           path: ./photon-lib/py/dist/
