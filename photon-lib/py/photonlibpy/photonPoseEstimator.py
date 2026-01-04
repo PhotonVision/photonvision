@@ -128,7 +128,7 @@ class PhotonPoseEstimator:
             return False
 
         # If no targets seen, trivial case -- can't do estimation
-        return cameraResult.targets
+        return len(cameraResult.targets) > 0
 
     def estimatePnpDistanceTrigSolvePose(
         self, result: PhotonPipelineResult
