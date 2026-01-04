@@ -87,11 +87,15 @@ public class VisionModule {
     private int inputStreamPort = -1;
     private int outputStreamPort = -1;
 
+    private int fpsLimit = -1;
+
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
 
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
+
+    boolean mismatch;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
         logger =
@@ -99,6 +103,8 @@ public class VisionModule {
                         VisionModule.class,
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
+
+        mismatch = false;
 
         cameraQuirks = visionSource.getCameraConfiguration().cameraQuirks;
 
@@ -130,7 +136,8 @@ public class VisionModule {
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
-                        getChangeSubscriber());
+                        getChangeSubscriber(),
+                        this::getFPSLimit);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         changeSubscriberHandle = DataChangeService.getInstance().addSubscriber(changeSubscriber);
 
@@ -144,7 +151,9 @@ public class VisionModule {
                         pipelineManager::getRequestedIndex,
                         this::setPipeline,
                         pipelineManager::getDriverMode,
-                        this::setDriverMode);
+                        this::setDriverMode,
+                        this::getFPSLimit,
+                        this::setFPSLimit);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
@@ -160,7 +169,7 @@ public class VisionModule {
 
         // Set vendor FOV
         if (isVendorCamera()) {
-            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV();
+            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
@@ -568,6 +577,10 @@ public class VisionModule {
 
         ret.deactivated = config.deactivated;
 
+        ret.mismatch = this.mismatch;
+
+        ret.fpsLimit = this.fpsLimit;
+
         // TODO refactor into helper method
         var temp = new HashMap<Integer, HashMap<String, Object>>();
         var videoModes = visionSource.getSettables().getAllVideoModes();
@@ -608,6 +621,28 @@ public class VisionModule {
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
 
         return ret;
+    }
+
+    /**
+     * Set FPS limit for this vision module. This will cause our processing thread to sleep in order
+     * to increase our processing time to match the provided fps. If our processing time is longer
+     * than the frame period, the FPS limit will not be reached.
+     *
+     * @param fps
+     */
+    public void setFPSLimit(int fps) {
+        this.fpsLimit = fps;
+        saveAndBroadcastAll();
+    }
+
+    /**
+     * Get the current FPS limit for this vision module. This limit cannot be exceeded, but may be
+     * lower depending on processing time.
+     *
+     * @return the FPS limit
+     */
+    public int getFPSLimit() {
+        return fpsLimit;
     }
 
     public CameraConfiguration getStateAsCameraConfig() {
@@ -669,6 +704,16 @@ public class VisionModule {
             visionSource.getSettables().addCalibration(newCalibration);
         } else {
             logger.error("Got null calibration?");
+        }
+
+        saveAndBroadcastAll();
+    }
+
+    public void removeCalibrationFromConfig(Size unrotatedImageSize) {
+        if (unrotatedImageSize != null) {
+            visionSource.getSettables().removeCalibration(unrotatedImageSize);
+        } else {
+            logger.error("Got null size?");
         }
 
         saveAndBroadcastAll();

@@ -17,8 +17,6 @@
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 
-#include <fmt/core.h>
-
 #include <chrono>
 #include <cstdio>
 #include <iostream>
@@ -28,6 +26,7 @@
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
 #include <Eigen/LU>
+#include <fmt/core.h>
 #include <frc/fmt/Eigen.h>
 #include <wpi/timestamp.h>
 
@@ -157,8 +156,7 @@ struct ProblemState {
 #undef MAKE_ARGV
 };
 
-wpi::expected<constrained_solvepnp::RobotStateMat,
-              sleipnir::SolverExitCondition>
+wpi::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
 constrained_solvepnp::do_optimization(
     bool heading_free, int nTags,
     constrained_solvepnp::CameraCalibration cameraCal,
@@ -174,7 +172,7 @@ constrained_solvepnp::do_optimization(
     if constexpr (VERBOSE) fmt::println("Got unexpected num cols!");
     // TODO find a new error code
     return wpi::unexpected{
-        sleipnir::SolverExitCondition::kNonfiniteInitialCostOrConstraints};
+        slp::ExitStatus::NONFINITE_INITIAL_COST_OR_CONSTRAINTS};
   }
 
   // rescale observations to homogenous pixel coordinates
@@ -204,7 +202,7 @@ constrained_solvepnp::do_optimization(
   auto problemOpt = createProblem(nTags, heading_free);
   if (!problemOpt) {
     return wpi::unexpected{
-        sleipnir::SolverExitCondition::kNonfiniteInitialCostOrConstraints};
+        slp::ExitStatus::NONFINITE_INITIAL_COST_OR_CONSTRAINTS};
   }
 
   ProblemState<3> pState{robot2camera,     field2points, point_observations,
@@ -234,7 +232,7 @@ constrained_solvepnp::do_optimization(
 
     // Check for diverging iterates
     if (x.template lpNorm<Eigen::Infinity>() > 1e20 || !x.allFinite()) {
-      return wpi::unexpected{sleipnir::SolverExitCondition::kDivergingIterates};
+      return wpi::unexpected{slp::ExitStatus::DIVERGING_ITERATES};
     }
 
     GradMat g = pState.calculateGradJ(x);
@@ -255,7 +253,7 @@ constrained_solvepnp::do_optimization(
     auto H_ldlt = H.ldlt();
     if (H_ldlt.info() != Eigen::Success) {
       std::cerr << "LDLT decomp failed! H=" << std::endl << H << std::endl;
-      return wpi::unexpected{sleipnir::SolverExitCondition::kLocallyInfeasible};
+      return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
     }
 
     // Make sure H is positive definite (all eigenvalues are > 0)
@@ -279,8 +277,7 @@ constrained_solvepnp::do_optimization(
 
         if (H_ldlt.info() != Eigen::Success) {
           std::cerr << "LDLT decomp failed! H=" << std::endl << H << std::endl;
-          return wpi::unexpected{
-              sleipnir::SolverExitCondition::kLocallyInfeasible};
+          return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
         }
 
         // If our eigenvalues aren't positive definite, pick a new δ for next
@@ -290,8 +287,7 @@ constrained_solvepnp::do_optimization(
 
           // If the Hessian perturbation is too high, report failure
           if (δ > 1e20) {
-            return wpi::unexpected{
-                sleipnir::SolverExitCondition::kLocallyInfeasible};
+            return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
           }
         } else {
           // Done!
@@ -302,8 +298,7 @@ constrained_solvepnp::do_optimization(
       }
 
       if (i_reg == MAX_REG_STEPS) {
-        return wpi::unexpected{
-            sleipnir::SolverExitCondition::kLocallyInfeasible};
+        return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
       }
     } else {
       // std::printf("Already regularized\n");
@@ -346,8 +341,7 @@ constrained_solvepnp::do_optimization(
 
         // If our step size shrank too much, report local infesibility
         if (alpha < α_min_frac * γConstraint) {
-          return wpi::unexpected{
-              sleipnir::SolverExitCondition::kLocallyInfeasible};
+          return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
         }
       }
     }

@@ -24,9 +24,6 @@
 
 #include "photon/PhotonCamera.h"
 
-#include <hal/FRCUsageReporting.h>
-#include <net/TimeSyncServer.h>
-
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -36,6 +33,8 @@
 #include <frc/Errors.h>
 #include <frc/RobotController.h>
 #include <frc/Timer.h>
+#include <hal/FRCUsageReporting.h>
+#include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/mat.hpp>
 #include <wpi/json.h>
@@ -197,6 +196,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
+      fpsLimitSubscriber(rootTable->GetIntegerTopic("fpsLimit").Subscribe(-1)),
+      fpsLimitPublisher(
+          rootTable->GetIntegerTopic("fpsLimitRequest").Publish()),
       heartbeatSubscriber(
           rootTable->GetIntegerTopic("heartbeat").Subscribe(-1)),
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
@@ -323,6 +325,14 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
   driverModePublisher.Set(driverMode);
 }
 
+bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
+
+int PhotonCamera::GetFPSLimit() const { return fpsLimitSubscriber.Get(); }
+
+void PhotonCamera::SetFPSLimit(int fpsLimit) {
+  fpsLimitPublisher.Set(fpsLimit);
+}
+
 void PhotonCamera::TakeInputSnapshot() {
   inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
 }
@@ -330,8 +340,6 @@ void PhotonCamera::TakeInputSnapshot() {
 void PhotonCamera::TakeOutputSnapshot() {
   outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1);
 }
-
-bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) { pipelineIndexPub.Set(index); }
 

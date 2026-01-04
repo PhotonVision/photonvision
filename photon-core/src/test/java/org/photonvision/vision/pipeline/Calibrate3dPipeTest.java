@@ -32,12 +32,12 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -51,8 +51,8 @@ import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 public class Calibrate3dPipeTest {
     @BeforeAll
     public static void init() throws IOException {
-        TestUtils.loadLibraries();
-        MrCalJNILoader.forceLoad();
+        LoadJNI.loadLibraries();
+        LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
 
         var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
@@ -278,6 +278,18 @@ public class Calibrate3dPipeTest {
 
         System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
         System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
+
+        // calculate RMS error
+        double totalSquaredError = 0.0;
+        long totalPoints = 0;
+        for (var obs : cal.getObservations()) {
+            double sumErrorSq =
+                    obs.reprojectionErrors.stream().mapToDouble(d -> d.x * d.x + d.y * d.y).sum();
+            totalSquaredError += sumErrorSq;
+            totalPoints += obs.reprojectionErrors.size();
+        }
+        double rmsError = Math.sqrt(totalSquaredError / totalPoints);
+        System.out.println("RMS Reprojection Error: " + rmsError);
 
         // Confirm we didn't get leaky on our mat usage
         // assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this

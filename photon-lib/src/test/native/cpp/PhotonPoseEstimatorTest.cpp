@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+#include "photon/PhotonPoseEstimator.h"
+
 #include <map>
 #include <utility>
 #include <vector>
@@ -30,13 +32,12 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <gtest/gtest.h>
 #include <units/angle.h>
 #include <units/length.h>
 #include <wpi/SmallVector.h>
 
-#include "gtest/gtest.h"
 #include "photon/PhotonCamera.h"
-#include "photon/PhotonPoseEstimator.h"
 #include "photon/dataflow/structures/Packet.h"
 #include "photon/simulation/PhotonCameraSim.h"
 #include "photon/simulation/SimCameraProperties.h"

@@ -54,24 +54,14 @@ dependencies {
 
 test {
     useJUnitPlatform()
-    testLogging {
-        events "passed", "skipped", "failed", "standardOut", "standardError"
-    }
-    workingDir = new File("${rootDir}")
-    finalizedBy jacocoTestReport
-}
-
-tasks.register('testHeadless', Test) {
-    group = "verification"
-    systemProperty("java.awt.headless", "true")
-    useJUnitPlatform()
+    systemProperty("java.awt.headless", !project.hasProperty("enableTestUi"))
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
         exceptionFormat = "full"
         showStandardStreams = true
     }
-    exclude '**/*BenchmarkTest*'
-    workingDir = "../"
+    workingDir = new File("${rootDir}")
+    finalizedBy jacocoTestReport
 }
 
 jacoco {
@@ -80,7 +70,7 @@ jacoco {
 }
 
 jacocoTestReport {
-    dependsOn testHeadless
+    dependsOn test
 
     reports {
         xml.required = true

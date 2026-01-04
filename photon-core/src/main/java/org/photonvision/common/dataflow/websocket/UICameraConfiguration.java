@@ -52,6 +52,9 @@ public class UICameraConfiguration {
     public double minWhiteBalanceTemp;
     public double maxWhiteBalanceTemp;
     public PVCameraInfo matchedCameraInfo;
+    public boolean mismatch;
+
+    public int fpsLimit;
 
     // Status for if the underlying device is present and such
     public boolean isConnected;

@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
@@ -46,7 +47,7 @@ public class VisionModuleManagerTest {
         String classpathStr = System.getProperty("java.class.path");
         System.out.print(classpathStr);
 
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         if (!LibraryLoader.loadTargeting()) fail();
     }
 

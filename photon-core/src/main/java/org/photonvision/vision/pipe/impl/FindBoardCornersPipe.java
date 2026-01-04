@@ -280,14 +280,30 @@ public class FindBoardCornersPipe
             }
             board.matchImagePoints(detectedCornersList, detectedIds, objPoints, imgPoints);
 
-            // draw the charuco board
+            // Draw the ChArUco board
             Objdetect.drawDetectedCornersCharuco(
                     outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red Text
 
             imgPoints.copyTo(outBoardCorners);
             objPoints.copyTo(objPts);
 
-            // Since charuco can still detect without the whole board we need to send "fake" (all
+            // Mrcal wants our top-left corner at 0, 0. But charuco hands us the first corner at the first
+            // board intersection, which is inset a couple mm. Adjust such that the top-left corner is at
+            // 0,0
+            {
+                // don't trust any particular ordering
+                List<Point3> pointList = objPts.toList();
+                double minX = pointList.stream().mapToDouble(p -> p.x).min().orElse(0.0);
+                double minY = pointList.stream().mapToDouble(p -> p.y).min().orElse(0.0);
+
+                // Shift all object points so that the origin is at (0,0)
+                List<Point3> shiftedPoints =
+                        pointList.stream().map(p -> new Point3(p.x - minX, p.y - minY, p.z)).toList();
+
+                objPts.fromList(shiftedPoints);
+            }
+
+            // Since ChArUco can still detect without the whole board we need to send "fake" (all
             // values less than zero) points and then tell it to ignore that corner by setting the
             // corresponding level to -1. Calibrate3dPipe deals with piping this into the correct format
             // for each backend
@@ -298,12 +314,17 @@ public class FindBoardCornersPipe
                         new Point3[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
                 levels = new float[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
 
+                // cache
+                var outBoardCornersList = outBoardCorners.toList();
+                var outObjPtsList = objPts.toList();
+
                 for (int i = 0; i < detectedIds.total(); i++) {
                     int id = (int) detectedIds.get(i, 0)[0];
-                    boardCorners[id] = outBoardCorners.toList().get(i);
-                    objectPoints[id] = objPts.toList().get(i);
+                    boardCorners[id] = outBoardCornersList.get(i);
+                    objectPoints[id] = outObjPtsList.get(i);
                     levels[id] = 1.0f;
                 }
+
                 for (int i = 0; i < boardCorners.length; i++) {
                     if (boardCorners[i] == null) {
                         boardCorners[i] = new Point(-1, -1);
@@ -320,8 +341,7 @@ public class FindBoardCornersPipe
             objPoints.release();
             detectedCorners.release();
             detectedIds.release();
-
-        } else { // If not Charuco then do chessboard
+        } else { // If not ChArUco then do chessboard
             // Reduce the image size to be much more manageable
             // Note that opencv will copy the frame if no resize is requested; we can skip
             // this since we

@@ -10,14 +10,20 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
+import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
     // Only show the input stream in Color Picking Mode
     if (useStateStore().colorPickingMode) return [0];
 
-    // Only show the output stream in Driver Mode or Calibration Mode
-    if (useCameraSettingsStore().isDriverMode || useCameraSettingsStore().isCalibrationMode) return [1];
+    // Only show the output stream in Driver Mode or Calibration Mode or Focus Mode
+    if (
+      useCameraSettingsStore().isDriverMode ||
+      useCameraSettingsStore().isCalibrationMode ||
+      useCameraSettingsStore().isFocusMode
+    )
+      return [1];
 
     const ret: number[] = [];
     if (useCameraSettingsStore().currentPipelineSettings.inputShouldShow) {
@@ -54,12 +60,25 @@ const arducamWarningShown = computed<boolean>(() => {
   );
 });
 
+const cameraMismatchWarningShown = computed<boolean>(() => {
+  return (
+    Object.values(useCameraSettingsStore().cameras)
+      // Ignore placeholder camera
+      .filter((camera) => camera !== PlaceholderCameraSettings)
+      .some((camera) => camera.mismatch)
+  );
+});
+
 const conflictingHostnameShown = computed<boolean>(() => {
   return useSettingsStore().general.conflictingHostname;
 });
 
 const conflictingCameraShown = computed<boolean>(() => {
   return useSettingsStore().general.conflictingCameras.length > 0;
+});
+
+const fpsLimitWarningShown = computed<boolean>(() => {
+  return Object.values(useCameraSettingsStore().cameras).some((c) => c.fpsLimit > 0);
 });
 
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
@@ -92,6 +111,19 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       </span>
     </v-alert>
     <v-alert
+      v-if="fpsLimitWarningShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+    >
+      <span
+        >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
+        information.
+      </span>
+    </v-alert>
+    <v-alert
       v-if="conflictingCameraShown"
       class="mb-3"
       color="error"
@@ -104,6 +136,21 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </v-alert>
+    <v-banner
+      v-if="cameraMismatchWarningShown"
+      v-model="cameraMismatchWarningShown"
+      rounded
+      color="error"
+      dark
+      class="mb-3"
+      icon="mdi-alert-circle-outline"
+    >
+      <span
+        >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
+        Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
+        activated.
+      </span>
+    </v-banner>
     <v-row no-gutters>
       <v-col cols="12" class="pb-3 pr-lg-3" lg="8" align-self="stretch">
         <CamerasCard v-model="cameraViewType" />
@@ -116,6 +163,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
     <PipelineConfigCard />
 
     <!-- TODO - not sure this belongs here -->
+    <!-- Need v-model to allow the dialog to be dismissed and v-if to only display when cameras need configuration -->
     <v-dialog
       v-if="useCameraSettingsStore().needsCameraConfiguration"
       v-model="showCameraSetupDialog"

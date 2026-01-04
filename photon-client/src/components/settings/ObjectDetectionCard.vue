@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, inject } from "vue";
-import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
-import pvInput from "@/components/common/pv-input.vue";
+import { type ObjectDetectionModelProperties } from "@/types/SettingTypes";
+import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import { useTheme } from "vuetify";
+import { axiosPost } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 const showImportDialog = ref(false);
@@ -43,34 +43,25 @@ const handleImport = async () => {
     timeout: -1
   });
 
-  axios
-    .post("/objectdetection/import", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
+  axiosPost("/objectdetection/import", "import an object detection model", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: ({ progress }) => {
+      const uploadPercentage = (progress || 0) * 100.0;
+      if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+          color: "secondary",
+          timeout: -1
         });
       } else {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "Processing uploaded Object Detection Model...",
+          color: "secondary",
+          timeout: -1
         });
       }
-    });
+    }
+  });
 
   showImportDialog.value = false;
 
@@ -82,41 +73,9 @@ const handleImport = async () => {
 };
 
 const deleteModel = async (model: ObjectDetectionModelProperties) => {
-  useStateStore().showSnackbarMessage({
-    message: "Deleting Object Detection Model...",
-    color: "secondary",
-    timeout: -1
+  axiosPost("/objectdetection/delete", "delete an object detection model", {
+    modelPath: model.modelPath
   });
-
-  axios
-    .post("/objectdetection/delete", {
-      modelPath: model.modelPath
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
-  confirmDeleteDialog.value.show = false;
 };
 
 const renameModel = async (model: ObjectDetectionModelProperties, newName: string) => {
@@ -126,35 +85,10 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
     timeout: -1
   });
 
-  axios
-    .post("/objectdetection/rename", {
-      modelPath: model.modelPath.replace("file:", ""),
-      newName: newName
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  axiosPost("/objectdetection/rename", "rename an object detection model", {
+    modelPath: model.modelPath,
+    newName: newName
+  });
   showRenameDialog.value.show = false;
 };
 
@@ -181,36 +115,8 @@ const openExportIndividualModelPrompt = () => {
 };
 
 const showNukeDialog = ref(false);
-const expected = "Delete Models";
-const yesDeleteMyModelsText = ref("");
 const nukeModels = () => {
-  axios
-    .post("/objectdetection/nuke")
-    .then(() => {
-      useStateStore().showSnackbarMessage({
-        message: "Successfully dispatched the clear models command.",
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          message: "The backend is unable to fulfill the request to clear the models.",
-          color: "error"
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          message: "Error while trying to process the request! The backend didn't respond.",
-          color: "error"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "An error occurred while trying to process the request.",
-          color: "error"
-        });
-      }
-    });
-  showNukeDialog.value = false;
+  axiosPost("/objectdetection/nuke", "clear and reset object detection models");
 };
 
 const showBulkImportDialog = ref(false);
@@ -221,51 +127,27 @@ const handleBulkImport = () => {
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  axios
-    .post("/objectdetection/bulkimport", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
-        const uploadPercentage = (progress || 0) * 100.0;
-        if (uploadPercentage < 99.5) {
-          useStateStore().showSnackbarMessage({
-            message: "Object Detection Models Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
-            color: "secondary",
-            timeout: -1
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            message: "Importing New Object Detection Models...",
-            color: "secondary",
-            timeout: -1
-          });
-        }
-      }
-    })
-    .then((response) => {
-      useStateStore().showSnackbarMessage({
-        message: response.data.text || response.data,
-        color: "success"
-      });
-    })
-    .catch((error) => {
-      if (error.response) {
+  axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    onUploadProgress: ({ progress }) => {
+      const uploadPercentage = (progress || 0) * 100.0;
+      if (uploadPercentage < 99.5) {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
+          message: "Object Detection Models Upload in Progress",
+          color: "secondary",
+          timeout: -1,
+          progressBar: uploadPercentage,
+          progressBarColor: "primary"
         });
       } else {
         useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
+          message: "Importing New Object Detection Models...",
+          color: "secondary",
+          timeout: -1
         });
       }
-    });
-
+    }
+  });
   showImportDialog.value = false;
   importFile.value = null;
 };
@@ -342,6 +224,7 @@ const handleBulkImport = () => {
                     v-model="importVersion"
                     variant="underlined"
                     label="Model Version"
+                    data-testid="import-version-select"
                     :items="
                       useSettingsStore().general.supportedBackends?.includes('RKNN')
                         ? ['YOLOv5', 'YOLOv8', 'YOLO11']
@@ -442,7 +325,7 @@ const handleBulkImport = () => {
                 <th>Info</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody data-testid="model-table">
               <tr v-for="model in supportedModels" :key="model.modelPath">
                 <td>{{ model.nickname }}</td>
                 <td>{{ model.labels.join(", ") }}</td>
@@ -485,35 +368,20 @@ const handleBulkImport = () => {
             </tbody>
           </v-table>
 
-          <v-dialog v-model="confirmDeleteDialog.show" width="600">
-            <v-card color="surface" dark>
-              <v-card-title>Delete Object Detection Model</v-card-title>
-              <v-card-text class="pt-0">
-                Are you sure you want to delete the model {{ confirmDeleteDialog.model.nickname }}?
-                <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-                  <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="buttonPassive"
-                    @click="confirmDeleteDialog.show = false"
-                  >
-                    Cancel
-                  </v-btn>
-                  <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                    color="error"
-                    @click="deleteModel(confirmDeleteDialog.model)"
-                  >
-                    Delete
-                  </v-btn>
-                </v-card-actions>
-              </v-card-text>
-            </v-card>
-          </v-dialog>
+          <pv-delete-modal
+            v-model="confirmDeleteDialog.show"
+            :width="500"
+            :on-confirm="() => deleteModel(confirmDeleteDialog.model)"
+            title="Delete Object Detection Model"
+            :description="`Are you sure you want to delete the model ${confirmDeleteDialog.model.nickname}?`"
+            delete-text="Delete model"
+          />
+
           <v-dialog v-model="showRenameDialog.show" width="600">
             <v-card color="surface" dark>
               <v-card-title>Rename Object Detection Model</v-card-title>
               <v-card-text class="pt-0">
-                Enter a new name for the model {{ showRenameDialog.model.nickname }}:
+                Enter a new name for the model "{{ showRenameDialog.model.nickname }}":
                 <div class="pa-5 pb-0">
                   <v-text-field v-model="showRenameDialog.newName" hide-details label="New Name" variant="underlined" />
                 </div>
@@ -550,7 +418,7 @@ const handleBulkImport = () => {
                 <a
                   ref="exportIndividualModel"
                   style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath.replace('file:', '')}`"
+                  :href="`http://${address}/api/objectdetection/exportIndividual?modelPath=${showInfo.model.modelPath}`"
                   :download="`${showInfo.model.nickname}_${showInfo.model.family}_${showInfo.model.version}_${showInfo.model.resolutionWidth}x${showInfo.model.resolutionHeight}_${showInfo.model.labels.join('_')}.${showInfo.model.family.toLowerCase()}`"
                   target="_blank"
                 />
@@ -569,64 +437,15 @@ const handleBulkImport = () => {
       </v-row>
     </div>
 
-    <v-dialog v-model="showNukeDialog" width="800" dark>
-      <v-card color="surface" flat>
-        <v-card-title style="display: flex; justify-content: center">
-          <span class="open-label">
-            <v-icon end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-            Clear and Reset Object Detection Models
-            <v-icon end color="error" class="open-icon ma-1" size="large">mdi-alert-outline</v-icon>
-          </span>
-        </v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          <v-row class="align-center text-white">
-            <v-col cols="12" md="6">
-              <span> This will delete ALL OF YOUR MODELS and re-extract the default models. </span>
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-btn
-                color="buttonActive"
-                style="float: right"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="openExportPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
-                <span class="open-label">Backup Models</span>
-                <a
-                  ref="exportModels"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="`http://${address}/api/objectdetection/export`"
-                  download="photonvision-object-detection-models-export.zip"
-                  target="_blank"
-                />
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 pb-0">
-          <pv-input
-            v-model="yesDeleteMyModelsText"
-            :label="'Type &quot;' + expected + '&quot;:'"
-            :label-cols="6"
-            :input-cols="6"
-          />
-        </v-card-text>
-        <v-card-text class="pt-10px">
-          <v-btn
-            color="error"
-            width="100%"
-            :disabled="yesDeleteMyModelsText.toLowerCase() !== expected.toLowerCase()"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-            @click="nukeModels"
-          >
-            <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
-            <span class="open-label">
-              {{ $vuetify.display.mdAndUp ? "Delete models, I have backed up what I need" : "Delete Models" }}
-            </span>
-          </v-btn>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+    <pv-delete-modal
+      v-model="showNukeDialog"
+      :on-backup="openExportPrompt"
+      :on-confirm="nukeModels"
+      title="Delete and Reset All Object Detection Models"
+      :description="'This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone.'"
+      :expected-confirmation-text="'Delete Models'"
+      delete-text="Delete all models"
+    />
   </v-card>
 </template>
 

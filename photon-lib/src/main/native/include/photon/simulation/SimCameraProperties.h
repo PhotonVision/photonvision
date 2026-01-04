@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <photon/estimation/OpenCVHelp.h>
-
 #include <algorithm>
 #include <random>
 #include <string>
@@ -37,6 +35,7 @@
 #include <frc/MathUtil.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Translation3d.h>
+#include <photon/estimation/OpenCVHelp.h>
 #include <units/frequency.h>
 #include <units/time.h>
 

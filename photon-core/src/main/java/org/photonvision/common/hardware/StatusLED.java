@@ -17,17 +17,21 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.devices.LED;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import java.util.List;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
+import org.photonvision.common.util.TimedTaskManager;
 
-public class StatusLED {
-    public final GPIOBase redLED;
-    public final GPIOBase greenLED;
-    public final GPIOBase blueLED;
+public class StatusLED implements AutoCloseable {
+    public final LED redLED;
+    public final LED greenLED;
+    public final LED blueLED;
+    protected int blinkCounter;
 
-    public StatusLED(List<Integer> statusLedPins) {
+    protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
+
+    public StatusLED(
+            NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
             for (int i = 0; i < 3 - statusLedPins.size(); i++) {
@@ -35,24 +39,53 @@ public class StatusLED {
             }
         }
 
-        if (Platform.isRaspberryPi()) {
-            redLED = new PigpioPin(statusLedPins.get(0));
-            greenLED = new PigpioPin(statusLedPins.get(1));
-            blueLED = new PigpioPin(statusLedPins.get(2));
-        } else {
-            redLED = new CustomGPIO(statusLedPins.get(0));
-            greenLED = new CustomGPIO(statusLedPins.get(1));
-            blueLED = new CustomGPIO(statusLedPins.get(2));
-        }
+        // Outputs are active-low for a common-anode RGB LED
+        redLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
+        greenLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
+        blueLED = new LED(deviceFactory, statusLedPins.get(2), activeHigh, false);
+
+        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }
 
-    public void setRGB(boolean r, boolean g, boolean b) {
-        // Outputs are active-low, so invert the level applied
-        redLED.setState(!r);
-        redLED.setBrightness(r ? 0 : 100);
-        greenLED.setState(!g);
-        greenLED.setBrightness(g ? 0 : 100);
-        blueLED.setState(!b);
-        blueLED.setBrightness(b ? 0 : 100);
+    protected void setRGB(boolean r, boolean g, boolean b) {
+        redLED.setOn(r);
+        greenLED.setOn(g);
+        blueLED.setOn(b);
+    }
+
+    public void setStatus(PhotonStatus status) {
+        this.status = status;
+    }
+
+    protected void updateLED() {
+        boolean blink = blinkCounter > 0;
+
+        switch (status) {
+            case NT_CONNECTED_TARGETS_VISIBLE ->
+                    // Blue
+                    setRGB(false, false, true);
+            case NT_CONNECTED_TARGETS_MISSING ->
+                    // Blinking Green
+                    setRGB(false, blink, false);
+            case NT_DISCONNECTED_TARGETS_VISIBLE ->
+                    // Blinking Blue
+                    setRGB(false, false, blink);
+            case NT_DISCONNECTED_TARGETS_MISSING ->
+                    // Blinking Yellow
+                    setRGB(blink, blink, false);
+            case GENERIC_ERROR ->
+                    // Blinking Red
+                    setRGB(blink, false, false);
+        }
+
+        blinkCounter++;
+        blinkCounter %= 3;
+    }
+
+    @Override
+    public void close() {
+        redLED.close();
+        greenLED.close();
+        blueLED.close();
     }
 }
