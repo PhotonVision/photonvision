@@ -5,6 +5,7 @@ pluginManagement {
         maven {
             url = uri('https://maven.photonvision.org/releases')
         }
+        mavenLocal()
     }
 }
 
