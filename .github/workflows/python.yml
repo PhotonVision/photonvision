@@ -104,5 +104,5 @@ jobs:
         working-directory: photonlib-python-examples
         shell: bash
         run: |
-          for (folder in photonlib-python-examples/*) do
+          for folder in photonlib-python-examples/*; do
             ./run.sh ${{ env.folder }}
