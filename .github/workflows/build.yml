@@ -51,10 +51,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-      - name: Install Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
       - name: Install RoboRIO Toolchain
         run: ./gradlew installRoboRioToolchain
       - name: Delete duplicate toolchains
@@ -96,12 +92,6 @@ jobs:
         run: |
           ./gradlew build
           ./gradlew clean
-      - name: Build Python examples
-        working-directory: photonlib-python-examples
-        run: |
-          ./run.sh aimandrange/
-          ./run.sh aimattarget/
-          ./run.sh poseest/
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04

@@ -64,3 +64,31 @@ jobs:
 
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+  
+  buildPythonExamples:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.12]
+        os: [ubuntu-24.04, windows-2022, macos-14]
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+
+      - name: Build Python examples on Linux
+        working-directory: photonlib-python-examples
+        if: ${{ runner.os == 'Linux' }}
+        run: |
+          ./run.sh aimandrange/
+          ./run.sh aimattarget/
+          ./run.sh poseest/
+
+      - name: Build Python examples on Windows
+        working-directory: photonlib-python-examples
+        if: ${{ runner.os == 'Windows' }}
+        run: |
+          ./run.bat aimandrange/
+          ./run.bat aimattarget/
+          ./run.bat poseest/
