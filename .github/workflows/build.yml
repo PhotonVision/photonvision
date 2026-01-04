@@ -37,7 +37,7 @@ jobs:
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
-    needs: [validation, build-photonlib-host, build-photonlib-docker]
+    needs: [build-photonlib-host, build-photonlib-docker]
 
     steps:
       - name: Checkout code
