@@ -110,8 +110,7 @@ jobs:
       - name: Build Python examples (pwsh)
         #working-directory: photonlib-python-examples
         if: runner.os == 'Windows'
+        shell: bash
         run: |
-          $folders = Get-ChildItem -Path "D:\a\photonvision\photonvision\photonlib-python-examples" -Directory -Recurse
-          foreach ($FOLDER in $folders) {
-            ./run.bat ${{ env.FOLDER }}
-          }
+          for (folder in photonlib-python-examples) do
+            ./run.bat ${{ env.folder }}
