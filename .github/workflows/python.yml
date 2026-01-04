@@ -81,9 +81,7 @@ jobs:
         working-directory: photonlib-python-examples
         if: ${{ runner.os == 'Linux' }}
         run: |
-          ./run.sh aimandrange/
-          ./run.sh aimattarget/
-          ./run.sh poseest/
+          ./run.sh *
 
       - name: Build Python examples on Windows
         working-directory: photonlib-python-examples
