@@ -112,5 +112,5 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          for (folder in photonlib-python-examples) do
+          for folder in photonlib-python-examples; do
             ./run.bat ${{ env.folder }}
