@@ -15,11 +15,10 @@ plugins {
 
 allprojects {
     repositories {
-        mavenCentral()
+        maven { url = "https://frcmaven.wpi.edu/ui/native/ex-mvn/" }
         mavenLocal()
         maven { url = "https://maven.photonvision.org/releases" }
         maven { url = "https://maven.photonvision.org/snapshots" }
-        maven { url = "https://jogamp.org/deployment/maven/" }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
