@@ -46,7 +46,6 @@ ext {
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
-    // A list, for legacy reasons, with only the current platform contained
     wpilibNativeName = wpilibTools.platformMapper.currentPlatform.platformName;
     jniPlatform = wpilibTools.platformMapper.wpilibClassifier;
 
