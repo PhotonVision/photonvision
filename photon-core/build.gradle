@@ -36,13 +36,13 @@ dependencies {
 
     // The JNI libraries use wpilibNatives, the java libraries use implementation
     if (jniPlatform == "linuxarm64") {
-        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$jniPlatform") {
             transitive = false
         }
-        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$jniPlatform") {
             transitive = false
         }
-        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$jniPlatform") {
             transitive = false
         }
     }
