@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.0.6
+  IMAGE_VERSION: v2026.1
 
 jobs:
 
@@ -274,8 +274,8 @@ jobs:
         # Need to publish to maven local first, so that C++ sim can pick it up
       - name: Publish photonlib to maven local
         run: ./gradlew photon-targeting:publishtomavenlocal photon-lib:publishtomavenlocal -x check
-      - name: Clean so we don't run out of memory
-        run: ./gradlew clean
+      # - name: Clean so we don't run out of memory
+      #   run: ./gradlew clean
       - name: Build Java examples
         working-directory: photonlib-java-examples
         run: |
