@@ -59,7 +59,7 @@ dependencies {
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
-    wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
+    wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$jniPlatform") {
         transitive = false
     }
 

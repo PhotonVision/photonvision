@@ -48,14 +48,7 @@ ext {
 
     // A list, for legacy reasons, with only the current platform contained
     wpilibNativeName = wpilibTools.platformMapper.currentPlatform.platformName;
-    def nativeName = wpilibNativeName
-    if (wpilibNativeName == "linuxx64") nativeName = "linuxx86-64";
-    if (wpilibNativeName == "winx64") nativeName = "windowsx86-64";
-    if (wpilibNativeName == "macx64" || wpilibNativeName == "macarm64") {
-        wpilibNativeName = "macuniversal";
-        nativeName = "osxuniversal";
-    }
-    jniPlatform = nativeName
+    jniPlatform = wpilibTools.platformMapper.wpilibClassifier;
 
     println("Building for platform " + jniPlatform + " wpilib: " + wpilibNativeName)
     println("Using Wpilib: " + wpilibVersion)
