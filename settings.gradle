@@ -1,6 +1,6 @@
 pluginManagement {
     repositories {
-        maven { url = "https://frcmaven.wpi.edu/ui/native/ex-mvn/" }
+        maven { url = "https://frcmaven.wpi.edu/artifactory/ex-mvn/" }
         gradlePluginPortal()
         maven {
             url = uri('https://maven.photonvision.org/releases')
