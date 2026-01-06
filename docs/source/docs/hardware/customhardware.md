@@ -46,37 +46,29 @@ The following diagram shows the GPIO pin numbering of the 40-pin header on Raspb
 
 Using numbers to identify Orange Pi pins is cumbersome, so it is best to specify the pins by their names using strings instead (eg. `"GPIO1_B7"`). The mapping between GPIO lines and physical pins varies depending on which Orange Pi model you are using. The below diagrams show the pin names for the Orange Pi 5 series.
 
-Orange Pi 5/5B:
+Orange Pi 5/5B ([Details](http://www.orangepi.org/orangepiwiki/index.php/26_Pin_Interface_Pin_Description)):
 
-```{image} http://www.orangepi.org/img/pi5-fix/pi5-23.png
+```{image} images/opi5-pinout.png
 :alt: Orange Pi 5 Pinout
 ```
 
-[Details](http://www.orangepi.org/orangepiwiki/index.php/26_Pin_Interface_Pin_Description)
+Orange Pi 5 Plus ([User Manual](https://drive.google.com/drive/folders/1Ov3mZqnMOf_8wpNt9rDxoGIR1ray2iiy)):
 
-Orange Pi 5 Plus:
-
-```{image} http://www.orangepi.org/img/pi5plus-v2.1/11.webp
+```{image} images/opi5-plus-pinout.png
 :alt: Orange Pi 5 Plus Pinout
 ```
 
-[Details (User Manual)](https://drive.google.com/drive/folders/1Ov3mZqnMOf_8wpNt9rDxoGIR1ray2iiy)
+Orange Pi 5 Pro ([User Manual](https://drive.google.com/drive/folders/1j3gmf31XBuKPBeNIQOqqh9X_7SFCOv0s)):
 
-Orange Pi 5 Pro:
-
-```{image} http://www.orangepi.org/img/pi5-pro/pi5-pro-07.png
+```{image} images/opi5-pro-pinout.png
 :alt: Orange Pi 5 Pro Pinout
 ```
 
-[Details (User Manual)](https://drive.google.com/drive/folders/1j3gmf31XBuKPBeNIQOqqh9X_7SFCOv0s)
+Orange Pi 5 Max ([User Manual](https://drive.google.com/drive/folders/1kzMRI95yaXLbQuK86fUbs92NJ6QOYIGO)):
 
-Orange Pi 5 Max:
-
-```{image} http://www.orangepi.org/img/pi5-max/max-15.png
+```{image} images/opi5-max-pinout.png
 :alt: Orange Pi 5 Max Pinout
 ```
-
-[Details (User Manual)](https://drive.google.com/drive/folders/1kzMRI95yaXLbQuK86fUbs92NJ6QOYIGO)
 
 :::
 ::::
