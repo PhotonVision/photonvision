@@ -90,6 +90,7 @@ jobs:
 
       - name: Build wheel
         working-directory: ./photon-lib/py
+        if: runner.os != 'Windows'
         run: |
           python setup.py sdist bdist_wheel
 
