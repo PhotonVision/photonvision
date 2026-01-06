@@ -6,23 +6,27 @@ export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
 };
 
-export const forceReloadPage = async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  // Poll the backend until it's responsive
-  let backendActive = false;
-  let pollLimit = 200;
-  while (!backendActive && pollLimit > 0) {
+export const statusCheck = async (timeout: number): Promise<boolean> => {
+  // Poll the backend until it's responsive or we hit the timeout
+  let pollLimit = Math.floor(timeout / 100);
+  while (pollLimit > 0) {
     try {
       pollLimit--;
-      console.log("Polling backend for status..." + pollLimit);
       await axios.get("/status");
-      backendActive = true;
+      return true;
     } catch {
       // Backend not ready yet, wait and retry
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
+
+  return false;
+};
+
+export const forceReloadPage = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  await statusCheck(20000);
 
   window.location.reload();
 };
