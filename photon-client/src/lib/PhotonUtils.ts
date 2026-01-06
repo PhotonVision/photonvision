@@ -6,6 +6,15 @@ export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
 };
 
+/**
+ * Checks the status of the backend by polling the "/status" endpoint.
+ *
+ * This function will repeatedly attempt to send a GET request to the backend
+ * until a successful response is received or the specified timeout is reached.
+ *
+ * @param timeout - The maximum time in milliseconds to wait for a successful response.
+ * @returns A promise that resolves to a boolean indicating whether the backend is responsive (true) or not (false).
+ */
 export const statusCheck = async (timeout: number): Promise<boolean> => {
   // Poll the backend until it's responsive or we hit the timeout
   let pollLimit = Math.floor(timeout / 100);
@@ -23,6 +32,10 @@ export const statusCheck = async (timeout: number): Promise<boolean> => {
   return false;
 };
 
+/**
+ * Forces a page reload after a brief delay and a status check.
+ *
+ */
 export const forceReloadPage = async () => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 

@@ -8,8 +8,8 @@ import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
-const restartProgram = () => {
-  axiosPost("/utils/restartProgram", "restart PhotonVision");
+const restartProgram = async () => {
+  await axiosPost("/utils/restartProgram", "restart PhotonVision");
   forceReloadPage();
 };
 const restartDevice = () => {
@@ -23,7 +23,7 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = () => {
+const handleOfflineUpdate = async () => {
   const files = offlineUpdate.value.files;
   if (files.length === 0) return;
 
@@ -36,7 +36,7 @@ const handleOfflineUpdate = () => {
     timeout: -1
   });
 
-  axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+  await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: ({ progress }) => {
       const uploadPercentage = (progress || 0) * 100.0;
@@ -116,8 +116,8 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(false);
-const nukePhotonConfigDirectory = () => {
-  axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
+const nukePhotonConfigDirectory = async () => {
+  await axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
   forceReloadPage();
 };
 </script>

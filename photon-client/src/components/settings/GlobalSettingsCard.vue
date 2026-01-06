@@ -225,7 +225,6 @@ watchEffect(() => {
           v-show="!useSettingsStore().network.networkingDisabled"
           v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
           v-model="tempSettingsStruct.staticIp"
-          @onEnter="onStaticIpEnter"
           :input-cols="12 - 4"
           label="Static IP"
           :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
@@ -234,6 +233,7 @@ watchEffect(() => {
             !useSettingsStore().network.canManage ||
             useSettingsStore().network.networkingDisabled
           "
+          @onEnter="onStaticIpEnter"
         />
         <pv-input
           v-show="!useSettingsStore().network.networkingDisabled"
