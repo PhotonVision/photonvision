@@ -70,9 +70,12 @@ public class RGBStatusLED implements StatusLED {
             PinIdentifier bluePin,
             boolean activeHigh) {
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(redPin.info(deviceFactory), activeHigh, false);
-        greenLED = new LED(greenPin.info(deviceFactory), activeHigh, false);
-        blueLED = new LED(bluePin.info(deviceFactory), activeHigh, false);
+        redLED =
+                new LED(deviceFactory, redPin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
+        greenLED =
+                new LED(deviceFactory, greenPin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
+        blueLED =
+                new LED(deviceFactory, bluePin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }
