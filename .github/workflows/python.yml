@@ -88,7 +88,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel pytest mypy numpy wpilib pyntcore opencv-python robotpy==2026.1.1b1 pyfrc
 
-      - name: Build wheel (Windows)
+      - name: Build wheel
+        working-directory: ./photon-lib/py
+        run: |
+          python setup.py sdist bdist_wheel
+
+      - name: Run Unit Tests (Unix)
+        working-directory: ./photon-lib/py
+        if: runner.os != 'Windows'
+        run: |
+            pip install --no-cache-dir dist/*.whl
+            pytest
+
+      - name: Run Unit Tests (Windows)
         working-directory: ./photon-lib/py
         if: runner.os == 'Windows'
         shell: cmd
@@ -97,19 +109,7 @@ jobs:
           echo installing dist/%%f
           pip install --no-cache-dir dist/%%f
           )
-          python setup.py sdist bdist_wheel
-
-      - name: Build wheel (Unix)
-        working-directory: ./photon-lib/py
-        if: runner.os != 'Windows'
-        run: |
-          python setup.py sdist bdist_wheel
-
-      - name: Run Unit Tests
-        working-directory: ./photon-lib/py
-        run: |
-            pip install --no-cache-dir dist/*.whl
-            pytest
+          pytest
       
       - name: Build and configure PhotonLibPy (bash)
         working-directory: ./photon-lib/py
