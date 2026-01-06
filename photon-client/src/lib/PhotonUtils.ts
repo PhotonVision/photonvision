@@ -6,6 +6,27 @@ export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
 };
 
+export const forceReloadPage = async () => {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  // Poll the backend until it's responsive
+  let backendActive = false;
+  let pollLimit = 200;
+  while (!backendActive && pollLimit > 0) {
+    try {
+      pollLimit--;
+      console.log("Polling backend for status..." + pollLimit);
+      await axios.get("/status");
+      backendActive = true;
+    } catch {
+      // Backend not ready yet, wait and retry
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  }
+
+  window.location.reload();
+};
+
 export const getResolutionString = (resolution: Resolution): string => `${resolution.width}x${resolution.height}`;
 
 export const parseJsonFile = async <T extends Record<string, any>>(file: File): Promise<T> => {
