@@ -9,6 +9,7 @@ import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
 import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
+import { statusCheck } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
@@ -63,16 +64,16 @@ const isValidHostname = (v: string | undefined) => {
 };
 
 // When the user hits Enter in the Static IP field, save and redirect
-const onStaticIpEnter = (newIp: string) => {
-  if (!isValidIPv4(newIp)) return;
+const onStaticIpEnter = async (newIP: string) => {
+  if (!isValidIPv4(newIP)) return;
 
   // Kick off save so backend applies change, then navigate
   saveGeneralSettings();
 
-  // Give the backend a moment to switch networking, then redirect
+  await statusCheck(5000, newIP);
   // Keep current hash route (e.g., #/settings)
   const hash = window.location.hash || "";
-  const url = `http://${newIp}:5800/${hash}`;
+  const url = `http://${newIP}:5800/${hash}`;
   setTimeout(() => {
     window.location.href = url;
   }, 1000);

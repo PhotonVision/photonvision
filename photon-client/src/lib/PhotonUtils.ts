@@ -15,13 +15,13 @@ export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
  * @param timeout - The maximum time in milliseconds to wait for a successful response.
  * @returns A promise that resolves to a boolean indicating whether the backend is responsive (true) or not (false).
  */
-export const statusCheck = async (timeout: number): Promise<boolean> => {
+export const statusCheck = async (timeout: number, ip?: string): Promise<boolean> => {
   // Poll the backend until it's responsive or we hit the timeout
   let pollLimit = Math.floor(timeout / 100);
   while (pollLimit > 0) {
     try {
       pollLimit--;
-      await axios.get("/status");
+      await axios.get(ip ? `http://${ip}/status` : "/status");
       return true;
     } catch {
       // Backend not ready yet, wait and retry
