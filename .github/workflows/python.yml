@@ -88,8 +88,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install setuptools wheel pytest mypy numpy wpilib pyntcore opencv-python robotpy==2026.1.1b1 pyfrc
 
-      - name: Build wheel
+      - name: Build wheel (Windows)
         working-directory: ./photon-lib/py
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          for %%f in (dist/*.whl) do (
+          echo installing dist/%%f
+          pip install --no-cache-dir dist/%%f
+          )
+          python setup.py sdist bdist_wheel
+
+      - name: Build wheel (Unix)
+        working-directory: ./photon-lib/py
+        if: runner.os != 'Windows'
         run: |
           python setup.py sdist bdist_wheel
 
