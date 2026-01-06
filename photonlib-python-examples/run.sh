@@ -22,4 +22,4 @@ export PYTHONPATH=$PHOTONLIBPY_ROOT
 cd $1
 
 # Run the example
-python3 robot.py sim & robotpy sim
+python robot.py sim
