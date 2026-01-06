@@ -13,7 +13,7 @@ const restartProgram = async () => {
   forceReloadPage();
 };
 const restartDevice = () => {
-  axiosPost("/utils/restartDevice", "restart the device");
+  await axiosPost("/utils/restartDevice", "restart the device");
   forceReloadPage();
 };
 
