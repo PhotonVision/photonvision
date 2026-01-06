@@ -67,13 +67,13 @@ public class VisionLED implements AutoCloseable {
                 pin -> {
                     PinInfo pinInfo = pin.info(deviceFactory);
                     if (ledsCanDim && pinInfo.isPwmOutputSupported()) {
-                        PwmLed led = new PwmLed(pinInfo.getPwmNum());
+                        PwmLed led = new PwmLed(deviceFactory, pinInfo.getPwmNum());
                         if (pwmFrequency > 0) {
                             led.setPwmFrequency(pwmFrequency);
                         }
                         dimmableVisionLEDs.add(led);
                     } else {
-                        visionLEDs.add(new LED(pinInfo, true, false));
+                        visionLEDs.add(new LED(deviceFactory, pinInfo.getDeviceNumber(), true, false));
                     }
                 });
         pipelineModeSupplier = () -> false;
