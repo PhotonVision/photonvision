@@ -26,6 +26,11 @@ export const statusCheck = async (timeout: number): Promise<boolean> => {
 export const forceReloadPage = async () => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
+  useStateStore().showSnackbarMessage({
+    message: "Reloading the page to apply changes...",
+    color: "success"
+  });
+
   await statusCheck(20000);
 
   window.location.reload();
