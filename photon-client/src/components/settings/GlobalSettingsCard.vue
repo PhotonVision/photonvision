@@ -63,22 +63,6 @@ const isValidHostname = (v: string | undefined) => {
   return hostnameRegex.test(v);
 };
 
-// When the user hits Enter in the Static IP field, save and redirect
-const onStaticIpEnter = async (newIP: string) => {
-  if (!isValidIPv4(newIP)) return;
-
-  // Kick off save so backend applies change, then navigate
-  saveGeneralSettings();
-
-  await statusCheck(5000, newIP);
-  // Keep current hash route (e.g., #/settings)
-  const hash = window.location.hash || "";
-  const url = `http://${newIP}:5800/${hash}`;
-  setTimeout(() => {
-    window.location.href = url;
-  }, 1000);
-};
-
 const settingsHaveChanged = (): boolean => {
   const a = useSettingsStore().network;
   const b = tempSettingsStruct.value;
@@ -97,9 +81,7 @@ const settingsHaveChanged = (): boolean => {
   );
 };
 
-const saveGeneralSettings = () => {
-  const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
-
+const saveGeneralSettings = async () => {
   // replace undefined members with empty strings for backend
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
@@ -114,6 +96,10 @@ const saveGeneralSettings = () => {
     staticIp: tempSettingsStruct.value.staticIp
   };
 
+  const changingStaticIP =
+    useSettingsStore().network.connectionType === NetworkConnectionType.Static &&
+    tempSettingsStruct.value.staticIp !== useSettingsStore().network.staticIp;
+
   useSettingsStore()
     .updateGeneralSettings(payload)
     .then((response) => {
@@ -125,19 +111,10 @@ const saveGeneralSettings = () => {
     .catch((error) => {
       resetTempSettingsStruct();
       if (error.response) {
-        if (error.status === 504 || changingStaticIp) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: `Connection lost! Try the new static IP at ${useSettingsStore().network.staticIp}:5800 or ${
-              useSettingsStore().network.hostname
-            }:5800?`
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: error.response.data.text || error.response.data
-          });
-        }
+        useStateStore().showSnackbarMessage({
+          color: "error",
+          message: error.response.data.text || error.response.data
+        });
       } else if (error.request) {
         useStateStore().showSnackbarMessage({
           color: "error",
@@ -150,6 +127,17 @@ const saveGeneralSettings = () => {
         });
       }
     });
+
+  if (changingStaticIP) {
+    await statusCheck(5000, tempSettingsStruct.value.staticIp);
+
+    // Keep current hash route (e.g., #/settings)
+    const hash = window.location.hash || "";
+    const url = `http://${tempSettingsStruct.value.staticIp}:5800/${hash}`;
+    setTimeout(() => {
+      window.location.href = url;
+    }, 1000);
+  }
 };
 
 const currentNetworkInterfaceIndex = computed<number | undefined>({
@@ -234,7 +222,6 @@ watchEffect(() => {
             !useSettingsStore().network.canManage ||
             useSettingsStore().network.networkingDisabled
           "
-          @onEnter="onStaticIpEnter"
         />
         <pv-input
           v-show="!useSettingsStore().network.networkingDisabled"
