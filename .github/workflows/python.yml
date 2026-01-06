@@ -90,23 +90,14 @@ jobs:
 
       - name: Build wheel
         working-directory: ./photon-lib/py
-        if: runner.os != 'Windows'
         run: |
           python setup.py sdist bdist_wheel
 
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
-        if: runner.os != 'Windows'
         run: |
             pip install --no-cache-dir dist/*.whl
             pytest
-
-      - name: Run mypy type checking
-        uses: liskin/gh-problem-matcher-wrap@v3
-        with:
-          linters: mypy
-          run: |
-            mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
       
       - name: Build and configure PhotonLibPy (bash)
         working-directory: ./photon-lib/py
@@ -121,6 +112,14 @@ jobs:
         run: |
           ./buildandTest.bat
           ./enableUsingDevBuilds.bat
+
+    
+      - name: Run mypy type checking
+        uses: liskin/gh-problem-matcher-wrap@v3
+        with:
+          linters: mypy
+          run: |
+            mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
       - name: Build Python examples
         shell: bash
