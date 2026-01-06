@@ -107,7 +107,6 @@ jobs:
 
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
-        if: runner.os != 'Windows'
         run: |
             pip install --no-cache-dir dist/*.whl
             pytest
