@@ -171,13 +171,20 @@ public class HardwareManager {
         return deviceFactory;
     }
 
+    /*
+     * This is used to generate integer IDs for custom named pins, deep in the
+     * unused range for gpio numbers. These IDs will still be recognized as a
+     * normal gpio number by most of diozero's code, but not by PinIdentifier.
+     */
+    static int namedPinID = Integer.MIN_VALUE;
+
     protected static PinInfo addCustomGPIOPin(
             BoardPinInfo pinInfo, PinIdentifier pin, Collection<DeviceMode> modes) {
         if (pin instanceof PinIdentifier.NumberedPin) {
             int number = pin.getDeviceNumber();
             return pinInfo.addGpioPinInfo(number, number, modes);
         } else if (pin instanceof PinIdentifier.NamedPin) {
-            int number = pin.getDeviceNumber();
+            int number = namedPinID++;
             String name = ((PinIdentifier.NamedPin) pin).name;
             return pinInfo.addGpioPinInfo(number, name, number, modes);
         } else {

@@ -43,9 +43,24 @@ public class StatusLED implements AutoCloseable {
         }
 
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(statusLedPins.get(0).info(deviceFactory), activeHigh, false);
-        greenLED = new LED(statusLedPins.get(1).info(deviceFactory), activeHigh, false);
-        blueLED = new LED(statusLedPins.get(2).info(deviceFactory), activeHigh, false);
+        redLED =
+                new LED(
+                        deviceFactory,
+                        statusLedPins.get(0).info(deviceFactory).getDeviceNumber(),
+                        activeHigh,
+                        false);
+        greenLED =
+                new LED(
+                        deviceFactory,
+                        statusLedPins.get(1).info(deviceFactory).getDeviceNumber(),
+                        activeHigh,
+                        false);
+        blueLED =
+                new LED(
+                        deviceFactory,
+                        statusLedPins.get(2).info(deviceFactory).getDeviceNumber(),
+                        activeHigh,
+                        false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
     }

@@ -117,7 +117,7 @@ public interface PinIdentifier {
 
     public static PinIdentifier fromInfo(PinInfo info) throws NoSuchDeviceException {
         int number = info.getDeviceNumber();
-        if (number != PinInfo.NOT_DEFINED) {
+        if (number > PinInfo.NOT_DEFINED) {
             return numbered(number);
         }
         String name = info.getName();
