@@ -7,15 +7,17 @@ import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import MetricsChart from "./MetricsChart.vue";
 import { useTheme } from "vuetify";
-import { axiosPost } from "@/lib/PhotonUtils";
+import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
 const restartProgram = () => {
   axiosPost("/utils/restartProgram", "restart PhotonVision");
+  forceReloadPage();
 };
 const restartDevice = () => {
   axiosPost("/utils/restartDevice", "restart the device");
+  forceReloadPage();
 };
 
 const address = inject<string>("backendHost");
@@ -24,7 +26,7 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = () => {
+const handleOfflineUpdate = async () => {
   const files = offlineUpdate.value.files;
   if (files.length === 0) return;
   const formData = new FormData();
@@ -34,7 +36,7 @@ const handleOfflineUpdate = () => {
     color: "secondary",
     timeout: -1
   });
-  axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+  await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: ({ progress }) => {
       const uploadPercentage = (progress || 0) * 100.0;
@@ -55,6 +57,7 @@ const handleOfflineUpdate = () => {
       }
     }
   });
+  forceReloadPage();
 };
 
 const exportLogFile = ref();
@@ -113,6 +116,7 @@ const handleSettingsImport = () => {
 const showFactoryReset = ref(false);
 const nukePhotonConfigDirectory = () => {
   axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
+  forceReloadPage();
 };
 
 interface MetricItem {
