@@ -523,6 +523,12 @@ public class VisionSourceManager {
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
+        
+        // And same with duplicate cameras
+        vmm.getModules().stream()
+                .map(it -> it.getCameraConfiguration().matchedCameraInfo)
+                .filter(info -> info instanceof PVCameraInfo.PVDuplicateCameraInfo)
+                .forEach(cameraInfos::add);
 
         checkMismatches(cameraInfos);
 

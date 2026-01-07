@@ -293,14 +293,14 @@ public sealed interface PVCameraInfo {
     @JsonTypeName("PVDuplicateCameraInfo")
     public static final class PVDuplicateCameraInfo implements PVCameraInfo {
         public final String sourceUniqueName;
-        public final String displayName;
+        public final String name;
 
         @JsonCreator
         public PVDuplicateCameraInfo(
                 @JsonProperty("sourceUniqueName") String sourceUniqueName,
-                @JsonProperty("displayName") String displayName) {
+                @JsonProperty("name") String name) {
             this.sourceUniqueName = sourceUniqueName;
-            this.displayName = displayName;
+            this.name = name;
         }
 
         @Override
@@ -310,7 +310,7 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String name() {
-            return displayName.replaceAll("[^\\x00-\\x7F]", "");
+            return name.replaceAll("[^\\x00-\\x7F]", "");
         }
 
         @Override
@@ -334,20 +334,20 @@ public sealed interface PVCameraInfo {
             if (obj == null) return false;
             if (!(obj instanceof PVDuplicateCameraInfo info)) return false;
 
-            return sourceUniqueName.equals(info.sourceUniqueName) && displayName.equals(info.displayName);
+            return sourceUniqueName.equals(info.sourceUniqueName) && name.equals(info.name);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(sourceUniqueName, displayName);
+            return Objects.hash(sourceUniqueName, name);
         }
 
         @Override
         public String toString() {
             return "PVDuplicateCameraInfo[type="
                     + type()
-                    + ", displayName='"
-                    + displayName
+                    + ", name='"
+                    + name
                     + "', sourceUniqueName='"
                     + sourceUniqueName
                     + "']";

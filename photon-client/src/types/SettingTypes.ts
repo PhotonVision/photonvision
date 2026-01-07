@@ -109,7 +109,7 @@ export interface PVFileCameraInfo {
 
 export interface PVDuplicateCameraInfo {
   sourceUniqueName: string;
-  displayName: string;
+  name: string;
 
   // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
   uniquePath: string;

@@ -49,7 +49,7 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
           v-if="cameraInfoFor(camera).sourceUniqueName !== undefined && cameraInfoFor(camera).sourceUniqueName !== null"
         >
           <td>Source Camera:</td>
-          <td>{{ cameraInfoFor(camera).displayName || cameraInfoFor(camera).sourceUniqueName }}</td>
+          <td>{{ cameraInfoFor(camera).name || cameraInfoFor(camera).sourceUniqueName }}</td>
         </tr>
         <tr v-if="cameraInfoFor(camera).baseName !== undefined && cameraInfoFor(camera).baseName !== null">
           <td>Base Name:</td>
