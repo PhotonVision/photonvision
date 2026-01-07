@@ -87,12 +87,12 @@ public class Vision {
 
     public void periodic() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera.getAllUnreadResults()) {
-            visionEst = photonEstimator.estimateCoprocMultiTagPose(change);
+        for (var result : camera.getAllUnreadResults()) {
+            visionEst = photonEstimator.estimateCoprocMultiTagPose(result);
             if (visionEst.isEmpty()) {
-                visionEst = photonEstimator.estimateLowestAmbiguityPose(change);
+                visionEst = photonEstimator.estimateLowestAmbiguityPose(result);
             }
-            updateEstimationStdDevs(visionEst, change.getTargets());
+            updateEstimationStdDevs(visionEst, result.getTargets());
 
             if (Robot.isSimulation()) {
                 visionEst.ifPresentOrElse(
