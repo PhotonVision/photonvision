@@ -127,7 +127,7 @@ jobs:
         working-directory: photonlib-python-examples
         shell: bash
         run: |
-          for folder in photonlib-python-examples*/;
+          for folder in */;
           do
             echo $folder
             ./photonlib-python-examples/run.sh $folder
