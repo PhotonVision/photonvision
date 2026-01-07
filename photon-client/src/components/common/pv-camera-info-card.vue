@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useStateStore } from "@/stores/StateStore";
 import { PVCameraInfo } from "@/types/SettingTypes";
 
 const { camera } = defineProps({
@@ -7,6 +8,17 @@ const { camera } = defineProps({
     required: true
   }
 });
+
+const cameraInfoForUuid: any = (sourceUniqueName) => {
+  return (
+    useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniqueName === sourceUniqueName) || {
+      PVFileCameraInfo: undefined,
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined,
+      PVDuplicateCameraInfo: undefined
+    }
+  );
+};
 
 const cameraInfoFor: any = (camera: PVCameraInfo) => {
   if (camera.PVUsbCameraInfo) {
@@ -49,7 +61,7 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
           v-if="cameraInfoFor(camera).sourceUniqueName !== undefined && cameraInfoFor(camera).sourceUniqueName !== null"
         >
           <td>Source Camera:</td>
-          <td>{{ cameraInfoFor(camera).name || cameraInfoFor(camera).sourceUniqueName }}</td>
+          <td>{{ cameraInfoFor(cameraInfoForUuid(cameraInfoFor(camera).sourceUniqeName)).name }}</td>
         </tr>
         <tr v-if="cameraInfoFor(camera).baseName !== undefined && cameraInfoFor(camera).baseName !== null">
           <td>Base Name:</td>
