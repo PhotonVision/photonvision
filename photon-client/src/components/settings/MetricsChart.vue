@@ -43,15 +43,14 @@ const getOptions = (data: ChartData[] = []) => {
         const append = typeLabels[props.type];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
-        var tooltip = `<div style="text-align: right;">`;
+        let tooltip = '<div style="text-align: right;">';
         const seriesData = `${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })} - ${p.value[1].toFixed(props.type === "mb" ? 3 : 2)}${append}`;
-        
+
         if (props.type === "mb") {
           if (p.value[1] >= 7) tooltip += seriesData + `<br/>${fmsLimitLabel}`;
           else tooltip += fmsLimitLabel + `<br/>${seriesData}`;
-        }
-        else tooltip += seriesData;
-        
+        } else tooltip += seriesData;
+
         return `${tooltip}</div>`;
       },
       backgroundColor: theme.themes.value[theme.global.name.value].colors.background,
@@ -134,19 +133,20 @@ const getSeries = (data: ChartData[] = []) => {
       type: "line",
       showSymbol: false,
       data: data.map((d) => [d.time, d.value]),
-      markLine: props.type === "mb" ?{
-        symbol: 'none',
-        lineStyle: {
-          color: 'red',
-          width: 1
-        },
-        label: {
-          show: false,
-        },
-        data: [
-          { yAxis: 7 }
-        ]
-      } : null,
+      markLine:
+        props.type === "mb"
+          ? {
+              symbol: "none",
+              lineStyle: {
+                color: "red",
+                width: 1
+              },
+              label: {
+                show: false
+              },
+              data: [{ yAxis: 7 }]
+            }
+          : null,
       lineStyle: {
         width: 1.5,
         color:

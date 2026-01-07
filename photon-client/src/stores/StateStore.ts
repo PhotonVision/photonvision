@@ -184,10 +184,6 @@ export const useStateStore = defineStore("state", {
         progressBarColor: data.progressBarColor || "",
         timeout: data.timeout || 2000
       };
-    },
-    addNetworkUsageHistory(bytes: number) {
-      // this.networkUsageHistory.push({ time: Date.now(), usage: bytes / 1e6 });
-      // while (this.networkUsageHistory.length > MAX_METRIC_HISTORY) this.networkUsageHistory.shift();
     }
   }
 });
