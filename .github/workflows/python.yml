@@ -130,5 +130,5 @@ jobs:
           for folder in */;
           do
             echo $folder
-            ./photonlib-python-examples/run.sh $folder
+            ./run.sh $folder
           done
