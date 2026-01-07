@@ -9,6 +9,7 @@ import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
 import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
+import { statusCheck } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 
@@ -80,9 +81,7 @@ const settingsHaveChanged = (): boolean => {
   );
 };
 
-const saveGeneralSettings = () => {
-  const changingStaticIp = useSettingsStore().network.connectionType === NetworkConnectionType.Static;
-
+const saveGeneralSettings = async () => {
   // replace undefined members with empty strings for backend
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
@@ -97,42 +96,58 @@ const saveGeneralSettings = () => {
     staticIp: tempSettingsStruct.value.staticIp
   };
 
-  useSettingsStore()
-    .updateGeneralSettings(payload)
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
+  const changingStaticIP =
+    useSettingsStore().network.connectionType === NetworkConnectionType.Static &&
+    tempSettingsStruct.value.staticIp !== useSettingsStore().network.staticIp;
 
-      // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
-    })
-    .catch((error) => {
-      resetTempSettingsStruct();
-      if (error.response) {
-        if (error.status === 504 || changingStaticIp) {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: `Connection lost! Try the new static IP at ${useSettingsStore().network.staticIp}:5800 or ${
-              useSettingsStore().network.hostname
-            }:5800?`
-          });
-        } else {
-          useStateStore().showSnackbarMessage({
-            color: "error",
-            message: error.response.data.text || error.response.data
-          });
-        }
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+  try {
+    const response = await useSettingsStore().updateGeneralSettings(payload);
+    useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
+
+    // Update the local settings cause the backend checked their validity. Assign is to deref value
+    useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
+  } catch (error: any) {
+    resetTempSettingsStruct();
+    if (error.response) {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: error.response.data.text || error.response.data
+      });
+    } else if (error.request) {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "Error while trying to process the request! The backend didn't respond."
+      });
+    } else {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "An error occurred while trying to process the request."
+      });
+    }
+    return;
+  }
+
+  if (changingStaticIP) {
+    const status = await statusCheck(5000, tempSettingsStruct.value.staticIp);
+
+    if (!status) {
+      useStateStore().showSnackbarMessage({
+        message:
+          "Warning: Unable to verify new static IP address! You may need to manually navigate to the new address: http://" +
+          tempSettingsStruct.value.staticIp +
+          ":5800",
+        color: "warning"
+      });
+      return;
+    }
+
+    // Keep current hash route (e.g., #/settings)
+    const hash = window.location.hash || "";
+    const url = `http://${tempSettingsStruct.value.staticIp}:5800/${hash}`;
+    setTimeout(() => {
+      window.location.href = url;
+    }, 1000);
+  }
 };
 
 const currentNetworkInterfaceIndex = computed<number | undefined>({

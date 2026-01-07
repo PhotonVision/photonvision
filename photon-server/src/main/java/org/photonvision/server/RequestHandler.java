@@ -75,6 +75,11 @@ public class RequestHandler {
 
     private static boolean testMode = false;
 
+    public static void onStatusRequest(Context ctx) {
+        ctx.status(200);
+        ctx.result("not dead yet");
+    }
+
     public static void setTestMode(boolean isTestMode) {
         testMode = isTestMode;
     }

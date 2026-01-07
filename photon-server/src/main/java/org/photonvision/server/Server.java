@@ -117,6 +117,8 @@ public class Server {
                 });
 
         /* API Events */
+        app.get("/api/status", RequestHandler::onStatusRequest);
+
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
