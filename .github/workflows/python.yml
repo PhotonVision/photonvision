@@ -43,6 +43,7 @@ jobs:
             pytest
 
       - name: Run mypy type checking
+        uses: liskin/gh-problem-matcher-wrap@v3
         with:
           linters: mypy
           run: |
@@ -126,6 +127,7 @@ jobs:
 
     
       - name: Run mypy type checking
+        uses: liskin/gh-problem-matcher-wrap@v3
         with:
           linters: mypy
           run: |
