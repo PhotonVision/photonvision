@@ -48,7 +48,43 @@ Another necessary argument for creating a `PhotonPoseEstimator` is the `Transfor
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above) and `Transform3d`. PhotonPoseEstimator offers nine possible "strategies" for calculating a pose from a pipeline result:
+The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above) and `Transform3d`.
+
+```{eval-rst}
+.. tab-set-code::
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+    :language: java
+    :lines: 63
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+    :language: c++
+    :lines: 149-150
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+    :language: python
+    :lines: 45-48
+```
+
+## Using a `PhotonPoseEstimator`
+
+To use your `PhotonPoseEstimator`, you must create a `PhotonCamera` and feed the results into your `PhotonPoseEstimator`. To do this, you must first set the name of your camera in Photon Client. From there you can define the camera in code.
+
+```{eval-rst}
+.. tab-set-code::
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+     :language: java
+     :lines: 62
+
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+     :language: c++
+     :lines: 151
+
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 44
+```
+
+When taking in a result from a `PhotonCamera`, PhotonPoseEstimator offers nine possible "strategies" for calculating a pose from a pipeline result in the form of methods that you can call, following the pattern `estimate<strategy name>Pose`:
 
 - Coprocessor MultiTag (`estimateCoprocMultiTagPose`)
   - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
@@ -72,58 +108,28 @@ The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (s
     flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
     This also requires addHeadingData to be called every frame so heading data is up to date.
 
-```{eval-rst}
-.. tab-set-code::
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
-    :language: java
-    :lines: 63
-
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
-    :language: c++
-    :lines: 149-150
-
-   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
-    :language: python
-    :lines: 45-48
-```
-
-## Using a `PhotonPoseEstimator`
-
-The final prerequisite to using your `PhotonPoseEstimator` is creating a `PhotonCamera`. To do this, you must set the name of your camera in Photon Client. From there you can define the camera in code.
-
-```{eval-rst}
-.. tab-set-code::
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
-     :language: java
-     :lines: 62
-
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
-     :language: c++
-     :lines: 151
-
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
-     :language: python
-     :lines: 44
-```
-
-Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to do estimation with one of MultiTag methods, check if the result is empty, then fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`. For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedSolvepnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator.
+Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to
+1. do estimation with one of MultiTag methods, check if the result is empty, then
+2. fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`.
 
 ```{eval-rst}
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
     :language: java
-    :lines: 89-115
+    :lines: 91-94
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
     :language: c++
-    :lines: 77-100
+    :lines: 79-82
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
-     :lines: 51-54
+     :lines: 52-54
 ```
 
-You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`.
+For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedSolvepnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator.
+
+Once you have the `Optional<EstimatedRobotPose>`, you can check to see if there's an actual pose inside, and act accordingly. You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`. For Java and C++, the examples pass a method from the drivetrain to a `Vision` object, with the parameter being called `estConsumer`. Python calls the drivetrain directly.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -138,6 +144,21 @@ You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
      :lines: 56-58
+```
+
+```{eval-rst}
+.. tab-set-code::
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+    :language: java
+    :lines: 89-115
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+    :language: c++
+    :lines: 77-100
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 51-54
 ```
 
 ## Complete Examples

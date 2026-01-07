@@ -743,7 +743,7 @@ public class PhotonPoseEstimator {
      * takes place on the RoboRIO, and typically takes not more than 2ms. See {@link
      * org.photonvision.jni.ConstrainedSolvepnpJni} for tuning handles this strategy exposes.
      * Internally, the cost function is a sum-squared of pixel reprojection error + (optionally)
-     * heading error heading scale factor. This strategy needs addHeadingData called every frame so
+     * heading error * heading scale factor. This strategy needs addHeadingData called every frame so
      * heading data is up-to-date.
      *
      * @param cameraResult A pipeline result from the camera.

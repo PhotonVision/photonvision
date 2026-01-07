@@ -102,7 +102,12 @@ class PhotonPoseEstimator {
    * @param strategy The strategy it should use to determine the best pose.
    * @param robotToCamera Transform3d from the center of the robot to the camera
    * mount positions (ie, robot ➔ camera).
+   * @deprecated Use individual estimation methods with the 2 argument
+   * constructor instead.
    */
+  [[deprecated(
+      "Use individual estimation methods with the 2 argument constructor "
+      "instead.")]]
   explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
                                PoseStrategy strategy,
                                frc::Transform3d robotToCamera);
@@ -118,14 +123,20 @@ class PhotonPoseEstimator {
    * Get the Position Estimation Strategy being used by the Position Estimator.
    *
    * @return the strategy
+   * @deprecated Use individual estimation methods instead.
    */
-  PoseStrategy GetPoseStrategy() const { return strategy; }
+  [[deprecated("Use individual estimation methods instead.")]]
+  PoseStrategy GetPoseStrategy() const {
+    return strategy;
+  }
 
   /**
    * Set the Position Estimation Strategy used by the Position Estimator.
    *
    * @param strategy the strategy to set
+   * @deprecated Use individual estimation methods instead.
    */
+  [[deprecated("Use individual estimation methods instead.")]]
   inline void SetPoseStrategy(PoseStrategy strat) {
     if (strategy != strat) {
       InvalidatePoseCache();
@@ -138,22 +149,30 @@ class PhotonPoseEstimator {
    * only one tag can be seen. Must NOT be MULTI_TAG_PNP
    *
    * @param strategy the strategy to set
+   * @deprecated Use individual estimation methods instead.
    */
+  [[deprecated("Use individual estimation methods instead.")]]
   void SetMultiTagFallbackStrategy(PoseStrategy strategy);
 
   /**
    * Return the reference position that is being used by the estimator.
    *
    * @return the referencePose
+   * @deprecated Use individual estimation methods instead.
    */
-  frc::Pose3d GetReferencePose() const { return referencePose; }
+  [[deprecated("Use individual estimation methods instead.")]]
+  frc::Pose3d GetReferencePose() const {
+    return referencePose;
+  }
 
   /**
    * Update the stored reference pose for use when using the
    * CLOSEST_TO_REFERENCE_POSE strategy.
    *
    * @param referencePose the referencePose to set
+   * @deprecated Use individual estimation methods instead.
    */
+  [[deprecated("Use individual estimation methods instead.")]]
   inline void SetReferencePose(frc::Pose3d referencePose) {
     if (this->referencePose != referencePose) {
       InvalidatePoseCache();
@@ -184,8 +203,12 @@ class PhotonPoseEstimator {
    * using the CLOSEST_TO_LAST_POSE strategy.
    *
    * @param lastPose the lastPose to set
+   * @deprecated Use individual estimation methods instead.
    */
-  inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
+  [[deprecated("Use individual estimation methods instead.")]]
+  inline void SetLastPose(frc::Pose3d lastPose) {
+    this->lastPose = lastPose;
+  }
 
   /**
    * Add robot heading data to the buffer. Must be called periodically for the
@@ -253,7 +276,9 @@ class PhotonPoseEstimator {
    * @param distCoeffsData The camera calibration distortion coefficients. Only
    * required if doing multitag-on-rio, and may be nullopt otherwise.
    * @param constrainedPnpParams Constrained SolvePNP params, if needed.
+   * @deprecated Use individual estimation methods instead.
    */
+  [[deprecated("Use individual estimation methods instead.")]]
   std::optional<EstimatedRobotPose> Update(
       const photon::PhotonPipelineResult& result,
       std::optional<photon::PhotonCamera::CameraMatrix> cameraMatrixData =
@@ -359,7 +384,7 @@ class PhotonPoseEstimator {
    * more than 2ms. See
    * photon::VisionEstimation::EstimateRobotPoseConstrainedSolvePNP for tuning
    * handles this strategy exposes. Internally, the cost function is a
-   * sum-squared of pixel reprojection error + (optionally) heading error
+   * sum-squared of pixel reprojection error + (optionally) heading error *
    * heading scale factor. This strategy needs addHeadingData called every frame
    * so heading data is up-to-date.
    *
