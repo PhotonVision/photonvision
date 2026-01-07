@@ -43,7 +43,8 @@ const getOptions = (data: ChartData[] = []) => {
         const append = typeLabels[props.type];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
-        let tooltip = '<div style="text-align: right;">';
+        // prettier-ignore
+        let tooltip = "<div style=\"text-align: right;\">";
         const seriesData = `${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })} - ${p.value[1].toFixed(props.type === "mb" ? 3 : 2)}${append}`;
 
         if (props.type === "mb") {
