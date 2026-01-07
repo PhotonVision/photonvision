@@ -129,18 +129,19 @@ const saveGeneralSettings = async () => {
     });
 
   if (changingStaticIP) {
-    let status = await statusCheck(5000, tempSettingsStruct.value.staticIp);
+    const status = await statusCheck(5000, tempSettingsStruct.value.staticIp);
 
     if (!status) {
       useStateStore().showSnackbarMessage({
         message:
           "Warning: Unable to verify new static IP address! You may need to manually navigate to the new address: http://" +
-          tempSettingsStruct.value.staticIp + ":5800",
+          tempSettingsStruct.value.staticIp +
+          ":5800",
         color: "warning"
       });
       return;
     }
-    
+
     // Keep current hash route (e.g., #/settings)
     const hash = window.location.hash || "";
     const url = `http://${tempSettingsStruct.value.staticIp}:5800/${hash}`;
