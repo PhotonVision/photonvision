@@ -220,6 +220,8 @@ jobs:
           path: photon-lib/build/generated/vendordeps/photonlib-*.json
 
   build-photonlib-host:
+    env:
+      MACOSX_DEPLOYMENT_TARGET: 14
     strategy:
       fail-fast: false
       matrix:
@@ -252,7 +254,7 @@ jobs:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
-      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts -x check
+      - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v6
         with:
           name: maven-${{ matrix.artifact-name }}
