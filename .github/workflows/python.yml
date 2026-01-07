@@ -43,9 +43,6 @@ jobs:
             pytest
 
       - name: Run mypy type checking
-        uses: liskin/gh-problem-matcher-wrap@v3
-        with:
-          linters: mypy
           run: |
             mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
@@ -127,9 +124,6 @@ jobs:
 
     
       - name: Run mypy type checking
-        uses: liskin/gh-problem-matcher-wrap@v3
-        with:
-          linters: mypy
           run: |
             mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
