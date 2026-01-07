@@ -312,17 +312,18 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
               <v-col cols="6" md="3" class="pb-0 pb-md-3">
                 <v-tooltip>
                   <template #activator="{ props }">
-                    <v-btn
-                      v-bind="props"
-                      color="secondary"
-                      style="width: 100%"
-                      :disabled="isCameraDuplicate(module) || !module.matchedCameraInfo.PVUsbCameraInfo"
-                      :loading="duplicatingCamera"
-                      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                      @click="duplicateCamera(module.uniqueName)"
-                    >
-                      <v-icon size="large">mdi-content-copy</v-icon>
-                    </v-btn>
+                    <div v-bind="props" style="width: 100%">
+                      <v-btn
+                        color="secondary"
+                        style="width: 100%"
+                        :disabled="isCameraDuplicate(module) || !module.matchedCameraInfo.PVUsbCameraInfo"
+                        :loading="duplicatingCamera"
+                        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                        @click="duplicateCamera(module.uniqueName)"
+                      >
+                        <v-icon size="large">mdi-content-copy</v-icon>
+                      </v-btn>
+                    </div>
                   </template>
                   <template #default>
                     {{
