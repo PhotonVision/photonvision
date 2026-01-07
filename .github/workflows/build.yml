@@ -222,18 +222,14 @@ jobs:
           path: photon-lib/build/generated/vendordeps/photonlib-*.json
 
   build-photonlib-host:
-    env:
-      MACOSX_DEPLOYMENT_TARGET: 14
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-2022
             artifact-name: Win64
-            architecture: x64
-          - os: macos-14
+          - os: macos-26
             artifact-name: macOS
-            architecture: aarch64
           - os: ubuntu-24.04
             artifact-name: Linux
 
@@ -249,7 +245,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
