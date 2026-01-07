@@ -129,7 +129,7 @@ const generalMetrics = computed<MetricItem[]>(() => {
     { header: "Version", value: useSettingsStore().general.version || "Unknown" },
     { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
     { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
-    { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "Unknown" }
+    { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "None detected" }
   ];
 
   if (!useSettingsStore().network.networkingDisabled) {
