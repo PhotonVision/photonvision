@@ -454,8 +454,7 @@ TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
-                                        frc::Transform3d{});
+  photon::PhotonPoseEstimator estimator(aprilTags, frc::Transform3d{});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {

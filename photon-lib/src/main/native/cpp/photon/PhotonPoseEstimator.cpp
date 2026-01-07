@@ -42,6 +42,7 @@
 #include <units/angle.h>
 #include <units/math.h>
 #include <units/time.h>
+#include <wpi/deprecated.h>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -51,7 +52,7 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-
+WPI_IGNORE_DEPRECATED
 namespace photon {
 
 namespace detail {
