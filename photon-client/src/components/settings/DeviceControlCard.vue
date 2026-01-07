@@ -12,7 +12,7 @@ const restartProgram = async () => {
   await axiosPost("/utils/restartProgram", "restart PhotonVision");
   forceReloadPage();
 };
-const restartDevice = () => {
+const restartDevice = async () => {
   await axiosPost("/utils/restartDevice", "restart the device");
   forceReloadPage();
 };
