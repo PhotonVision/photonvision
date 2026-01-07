@@ -100,33 +100,32 @@ const saveGeneralSettings = async () => {
     useSettingsStore().network.connectionType === NetworkConnectionType.Static &&
     tempSettingsStruct.value.staticIp !== useSettingsStore().network.staticIp;
 
-  useSettingsStore()
-    .updateGeneralSettings(payload)
-    .then((response) => {
-      useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
+  try {
+    const response = await useSettingsStore().updateGeneralSettings(payload);
+    useStateStore().showSnackbarMessage({ message: response.data.text || response.data, color: "success" });
 
-      // Update the local settings cause the backend checked their validity. Assign is to deref value
-      useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
-    })
-    .catch((error) => {
-      resetTempSettingsStruct();
-      if (error.response) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: error.response.data.text || error.response.data
-        });
-      } else if (error.request) {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "Error while trying to process the request! The backend didn't respond."
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          color: "error",
-          message: "An error occurred while trying to process the request."
-        });
-      }
-    });
+    // Update the local settings cause the backend checked their validity. Assign is to deref value
+    useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
+  } catch (error: any) {
+    resetTempSettingsStruct();
+    if (error.response) {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: error.response.data.text || error.response.data
+      });
+    } else if (error.request) {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "Error while trying to process the request! The backend didn't respond."
+      });
+    } else {
+      useStateStore().showSnackbarMessage({
+        color: "error",
+        message: "An error occurred while trying to process the request."
+      });
+    }
+    return;
+  }
 
   if (changingStaticIP) {
     const status = await statusCheck(5000, tempSettingsStruct.value.staticIp);
