@@ -33,6 +33,7 @@
 #include <units/angle.h>
 #include <units/length.h>
 #include <wpi/SmallVector.h>
+#include <wpi/deprecated.h>
 
 #include "gtest/gtest.h"
 #include "photon/PhotonCamera.h"
@@ -45,6 +46,7 @@
 #include "photon/targeting/PhotonPipelineResult.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
 #include "photon/targeting/PnpResult.h"
+WPI_IGNORE_DEPRECATED
 
 static std::vector<frc::AprilTag> tags = {
     {0, frc::Pose3d(units::meter_t(3), units::meter_t(3), units::meter_t(3),
