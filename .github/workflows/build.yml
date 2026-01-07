@@ -28,10 +28,8 @@ jobs:
       matrix:
         include:
           - os: windows-2022
-            architecture: x64
             artifact-name: Win64
           - os: macos-14
-            architecture: arm64
             artifact-name: macOS
           - os: ubuntu-24.04
             artifact-name: Linux
@@ -60,10 +58,10 @@ jobs:
           du -h . | sort -h
         if: matrix.os == 'ubuntu-24.04'
       # Download prebuilt photonlib artifacts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: maven-${{ matrix.artifact-name }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: maven-Athena
       - name: Move to maven local
@@ -335,11 +333,9 @@ jobs:
         include:
           - os: ubuntu-24.04
             artifact-name: Linux
-            architecture: x64
             arch-override: linuxx64
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
-            architecture: x64
             arch-override: linuxarm64
 
     runs-on: ${{ matrix.os }}
@@ -354,7 +350,6 @@ jobs:
         with:
           java-version: 17
           distribution: temurin
-          architecture: ${{ matrix.architecture }}
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -394,11 +389,9 @@ jobs:
         include:
           - os: macos-latest
             artifact-name: macOSArm
-            architecture: arm64
             arch-override: macarm64
           - os: macos-latest
             artifact-name: macOS
-            architecture: x64
             arch-override: macx64
 
     runs-on: ${{ matrix.os }}
@@ -415,7 +408,6 @@ jobs:
         include:
           - os: windows-latest
             artifact-name: Win64
-            architecture: x64
             arch-override: winx64
 
     runs-on: ${{ matrix.os }}
@@ -437,7 +429,6 @@ jobs:
             artifact-name: jar-Win64
           - os: macos-latest
             artifact-name: jar-macOS
-            architecture: x64
 
     runs-on: ${{ matrix.os }}
 
