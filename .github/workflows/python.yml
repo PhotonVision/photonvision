@@ -33,8 +33,7 @@ jobs:
 
       - name: Build wheel
         working-directory: ./photon-lib/py
-        run: |
-          python setup.py sdist bdist_wheel
+        run: python setup.py sdist bdist_wheel
 
       - name: Run Unit Tests
         working-directory: ./photon-lib/py
@@ -43,8 +42,7 @@ jobs:
             pytest
 
       - name: Run mypy type checking
-        run: |
-            mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
+        run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@master
@@ -87,8 +85,7 @@ jobs:
 
       - name: Build wheel
         working-directory: ./photon-lib/py
-        run: |
-          python setup.py sdist bdist_wheel
+        run: python setup.py sdist bdist_wheel
 
       - name: Run Unit Tests (Unix)
         working-directory: ./photon-lib/py
@@ -124,13 +121,13 @@ jobs:
 
     
       - name: Run mypy type checking
-        run: |
-            mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
+        run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
 
       - name: Build Python examples
+        working-directory: photonlib-python-examples
         shell: bash
         run: |
-          for folder in photonlib-python-examples/*/;
+          for folder in photonlib-python-examples*/;
           do
             echo $folder
             ./photonlib-python-examples/run.sh $folder
