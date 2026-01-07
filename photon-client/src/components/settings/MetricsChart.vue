@@ -23,7 +23,7 @@ const DEFAULT_COLOR = "blue";
 const typeLabels = {
   percentage: "%",
   temperature: "°C",
-  mb: " MB/s"
+  mb: " Mb/s"
 };
 
 const theme = useTheme();
@@ -41,7 +41,7 @@ const getOptions = (data: ChartData[] = []) => {
       formatter: (params: any) => {
         const p = params[0];
         const append = typeLabels[props.type];
-        const fmsLimitLabel = "FMS Limit - 7.000 MB/s";
+        const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
         var tooltip = `<div style="text-align: right;">`;
         const seriesData = `${new Date(p.value[0]).toLocaleTimeString([], { hour12: false })} - ${p.value[1].toFixed(props.type === "mb" ? 3 : 2)}${append}`;

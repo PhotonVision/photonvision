@@ -304,7 +304,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (metrics.recvBitRate && metrics.recvBitRate !== -1) {
     stats.push({
       header: "Received Bit Rate",
-      value: `${metrics.recvBitRate / 1e6} MB/s`
+      value: `${metrics.recvBitRate / 1e6} Mb/s`
     });
   }
 
@@ -503,7 +503,7 @@ watch(useSettingsStore().metricsHistory, () => {
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>Network Usage</span>
-            <span>{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} MB/s</span>
+            <span>{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span>
           </div>
           <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
         </v-card-text>
