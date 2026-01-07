@@ -148,6 +148,7 @@ const getSeries = (data: ChartData[] = []) => {
         ]
       } : null,
       lineStyle: {
+        width: 1.5,
         color:
           theme.global.name.value === "LightTheme"
             ? theme.themes.value[theme.global.name.value].colors.primary
@@ -165,15 +166,15 @@ const getSeries = (data: ChartData[] = []) => {
               offset: 0,
               color:
                 theme.global.name.value === "LightTheme"
-                  ? `${theme.themes.value[theme.global.name.value].colors.primary}80`
-                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.35)`
+                  ? `${theme.themes.value[theme.global.name.value].colors.primary}40`
+                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
             },
             {
               offset: 1,
               color:
                 theme.global.name.value === "LightTheme"
-                  ? `${theme.themes.value[theme.global.name.value].colors.primary}00`
-                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0)`
+                  ? `${theme.themes.value[theme.global.name.value].colors.primary}40`
+                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
             }
           ]
         }
