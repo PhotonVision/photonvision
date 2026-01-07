@@ -13,6 +13,7 @@ export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
  * until a successful response is received or the specified timeout is reached.
  *
  * @param timeout - The maximum time in milliseconds to wait for a successful response.
+ * @param ip - Optional IP address of the backend server. If not provided, the default endpoint is used. This is meant for the case where the backend is running on a different IP than the frontend.
  * @returns A promise that resolves to a boolean indicating whether the backend is responsive (true) or not (false).
  */
 export const statusCheck = async (timeout: number, ip?: string): Promise<boolean> => {
@@ -34,7 +35,6 @@ export const statusCheck = async (timeout: number, ip?: string): Promise<boolean
 
 /**
  * Forces a page reload after a brief delay and a status check.
- *
  */
 export const forceReloadPage = async () => {
   await new Promise((resolve) => setTimeout(resolve, 1000));
