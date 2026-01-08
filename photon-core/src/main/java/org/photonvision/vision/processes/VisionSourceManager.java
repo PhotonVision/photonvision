@@ -43,6 +43,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.DuplicateVisionSource;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
@@ -81,6 +82,10 @@ public class VisionSourceManager {
     // Map of (unique name) -> (all CameraConfigurations) that have been registered
     protected final HashMap<String, CameraConfiguration> disabledCameraConfigs = new HashMap<>();
 
+    // Track which duplicates depend on which sources
+    // Key: source uniqueName, Value: list of duplicate uniqueNames
+    private final HashMap<String, List<String>> duplicateDependencies = new HashMap<>();
+
     // The subset of cameras that are "active", converted to VisionModules
     public VisionModuleManager vmm = new VisionModuleManager();
 
@@ -110,9 +115,12 @@ public class VisionSourceManager {
             if (deserializedConfigs.containsKey(config.uniqueName)) {
                 logger.error(
                         "Duplicate unique name for config " + config.uniqueName + " -- not overwriting");
-            } else if (deserializedConfigs.values().stream()
-                    .map(it -> it.matchedCameraInfo)
-                    .anyMatch(checkDuplicateCamera)) {
+            } else if (config.matchedCameraInfo.type() != CameraType.DuplicateCamera
+                    && deserializedConfigs.values().stream()
+                            .map(it -> it.matchedCameraInfo)
+                            .anyMatch(checkDuplicateCamera)) {
+                // Skip uniquePath check for duplicate cameras - multiple duplicates of the same source
+                // are intentional and should all be loaded
                 logger.error(
                         "Duplicate camera type & path for config " + config.uniqueName + " -- not overwriting");
             } else {
@@ -122,9 +130,20 @@ public class VisionSourceManager {
 
         // 2. create sources -> VMMs for all active cameras and add to our VMM. We don't care about if
         // the underlying device is currently connected or not.
+        // IMPORTANT: Process non-duplicate cameras first, so duplicate cameras can find their sources
         deserializedConfigs.values().stream()
                 .filter(it -> !it.deactivated)
+                .sorted(
+                        (a, b) -> {
+                            boolean aIsDuplicate =
+                                    a.matchedCameraInfo instanceof PVCameraInfo.PVDuplicateCameraInfo;
+                            boolean bIsDuplicate =
+                                    b.matchedCameraInfo instanceof PVCameraInfo.PVDuplicateCameraInfo;
+                            return Boolean.compare(
+                                    aIsDuplicate, bIsDuplicate); // false < true, so non-duplicates first
+                        })
                 .map(this::loadVisionSourceFromCamConfig)
+                .filter(it -> it != null) // Filter out null sources (e.g., duplicates with missing source)
                 .map(vmm::addSource)
                 .forEach(VisionModule::start);
 
@@ -154,6 +173,23 @@ public class VisionSourceManager {
             return false;
         }
 
+        // If this is a duplicate, check if source is available
+        if (deactivatedConfig.get().matchedCameraInfo
+                instanceof PVCameraInfo.PVDuplicateCameraInfo dupInfo) {
+            var sourceModule =
+                    vmm.getModules().stream()
+                            .filter(m -> m.uniqueName().equals(dupInfo.sourceUniqueName))
+                            .findFirst()
+                            .orElse(null);
+            if (sourceModule == null) {
+                logger.error(
+                        "Cannot reactivate duplicate - source camera not active: " + dupInfo.sourceUniqueName);
+                // Restore state
+                this.disabledCameraConfigs.put(uniqueName, deactivatedConfig.get());
+                return false;
+            }
+        }
+
         // Check if the camera is already in use by another module
         if (vmm.getModules().stream()
                 .anyMatch(
@@ -167,6 +203,10 @@ public class VisionSourceManager {
                     "Camera unique-path already in use by active VisionModule! Cannot reactivate "
                             + deactivatedConfig.get().nickname);
         }
+
+        // Track if this is a source camera so we can reactivate duplicates afterward
+        boolean isSourceCamera =
+                !(deactivatedConfig.get().matchedCameraInfo instanceof PVCameraInfo.PVDuplicateCameraInfo);
 
         // transform the camera info all the way to a VisionModule and then start it
         var created =
@@ -184,6 +224,9 @@ public class VisionSourceManager {
         if (!created) {
             // Couldn't create a VM for this config - restore state
             this.disabledCameraConfigs.put(uniqueName, deactivatedConfig.get());
+        } else if (isSourceCamera) {
+            // This was a source camera - try to reactivate its duplicates
+            handleSourceCameraReactivation(uniqueName);
         }
 
         // We have a new camera! Tell the world about it
@@ -223,6 +266,9 @@ public class VisionSourceManager {
 
         module.start();
 
+        // Check if this new camera is a source for any disabled duplicates
+        handleSourceCameraReactivation(module.uniqueName());
+
         // We have a new camera! Tell the world about it
         DataChangeService.getInstance()
                 .publishEvent(
@@ -235,7 +281,110 @@ public class VisionSourceManager {
         return true;
     }
 
+    /**
+     * Create a duplicate of an existing active camera
+     *
+     * @param sourceUniqueName The unique name of the source camera to duplicate
+     * @return The unique name of the created duplicate, or null if failed
+     */
+    public synchronized String createDuplicateCamera(String sourceUniqueName) {
+        // 1. Find the source VisionModule
+        var sourceModule =
+                vmm.getModules().stream()
+                        .filter(module -> module.uniqueName().equals(sourceUniqueName))
+                        .findFirst()
+                        .orElse(null);
+
+        if (sourceModule == null) {
+            logger.error("Cannot create duplicate - source camera not found: " + sourceUniqueName);
+            return null;
+        }
+
+        // 2. Create a new configuration for the duplicate
+        var sourceConfig = sourceModule.getCameraConfiguration();
+        var duplicateUniqueName = java.util.UUID.randomUUID().toString();
+
+        // Generate a unique nickname by checking existing names
+        var currentNicknames = new ArrayList<String>();
+        this.disabledCameraConfigs.values().stream()
+                .map(it -> it.nickname)
+                .forEach(currentNicknames::add);
+        this.vmm.getModules().stream()
+                .map(it -> it.getCameraConfiguration().nickname)
+                .forEach(currentNicknames::add);
+
+        // Find a unique duplicate name
+        String duplicateNickname = sourceConfig.nickname + " (Duplicate)";
+        int duplicateNumber = 2;
+        while (currentNicknames.contains(duplicateNickname)) {
+            duplicateNickname = sourceConfig.nickname + " (Duplicate " + duplicateNumber + ")";
+            duplicateNumber++;
+        }
+
+        var duplicateCameraInfo =
+                new PVCameraInfo.PVDuplicateCameraInfo(sourceUniqueName, duplicateNickname);
+
+        var duplicateConfig = new CameraConfiguration(duplicateUniqueName, duplicateCameraInfo);
+
+        // Set the nickname explicitly
+        duplicateConfig.nickname = duplicateNickname;
+
+        // Copy FOV and quirks from source
+        duplicateConfig.FOV = sourceConfig.FOV;
+        duplicateConfig.cameraQuirks = sourceConfig.cameraQuirks;
+
+        // 3. Create the duplicate vision source
+        var duplicateSource = new DuplicateVisionSource(duplicateConfig, sourceModule.visionSource);
+
+        // 4. Add to VMM and start
+        var duplicateModule = vmm.addSource(duplicateSource);
+        duplicateModule.start();
+
+        // 5. Track the dependency relationship
+        duplicateDependencies
+                .computeIfAbsent(sourceUniqueName, k -> new ArrayList<>())
+                .add(duplicateUniqueName);
+
+        // 6. Save and broadcast
+        duplicateModule.saveAndBroadcastAll();
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+        pushUiUpdate();
+
+        logger.info(
+                "Created duplicate camera '"
+                        + duplicateConfig.nickname
+                        + "' from source '"
+                        + sourceConfig.nickname
+                        + "'");
+
+        return duplicateUniqueName;
+    }
+
     public synchronized boolean deleteVisionSource(String uniqueName) {
+        // If this is a source camera with duplicates, delete all duplicates
+        var dependentDuplicates = duplicateDependencies.get(uniqueName);
+        if (dependentDuplicates != null && !dependentDuplicates.isEmpty()) {
+            logger.info(
+                    "Deleting source camera "
+                            + uniqueName
+                            + ". Deleting "
+                            + dependentDuplicates.size()
+                            + " dependent duplicate(s)");
+
+            // Deactivate all dependent duplicates
+            for (var duplicateUniqueName : new ArrayList<>(dependentDuplicates)) {
+                deleteVisionSource(duplicateUniqueName);
+            }
+
+            duplicateDependencies.remove(uniqueName);
+        }
+
+        // Deactivate if active, then remove from config
         deactivateVisionSource(uniqueName);
         var config = disabledCameraConfigs.remove(uniqueName);
         ConfigManager.getInstance().getConfig().removeCameraConfig(uniqueName);
@@ -249,6 +398,58 @@ public class VisionSourceManager {
         pushUiUpdate();
 
         return config != null;
+    }
+
+    /** Called when a source camera is deactivated. Deactivates all dependent duplicates. */
+    private synchronized void handleSourceCameraRemoval(String sourceUniqueName) {
+        var dependentDuplicates = duplicateDependencies.get(sourceUniqueName);
+        if (dependentDuplicates == null || dependentDuplicates.isEmpty()) {
+            return;
+        }
+
+        logger.info(
+                "Source camera "
+                        + sourceUniqueName
+                        + " deactivated. Deactivating "
+                        + dependentDuplicates.size()
+                        + " dependent duplicate(s)");
+
+        // Deactivate all dependent duplicates
+        for (var duplicateUniqueName : new ArrayList<>(dependentDuplicates)) {
+            deactivateVisionSource(duplicateUniqueName);
+        }
+
+        duplicateDependencies.remove(sourceUniqueName);
+    }
+
+    /** Called when a source camera is reactivated. Attempts to reactivate dependent duplicates. */
+    private synchronized void handleSourceCameraReactivation(String sourceUniqueName) {
+        // Find all disabled duplicates that reference this source
+        var duplicatesToReactivate =
+                disabledCameraConfigs.values().stream()
+                        .filter(
+                                config -> config.matchedCameraInfo instanceof PVCameraInfo.PVDuplicateCameraInfo)
+                        .filter(
+                                config ->
+                                        ((PVCameraInfo.PVDuplicateCameraInfo) config.matchedCameraInfo)
+                                                .sourceUniqueName.equals(sourceUniqueName))
+                        .map(config -> config.uniqueName)
+                        .toList();
+
+        if (duplicatesToReactivate.isEmpty()) {
+            return;
+        }
+
+        logger.info(
+                "Source camera "
+                        + sourceUniqueName
+                        + " reactivated. Reactivating "
+                        + duplicatesToReactivate.size()
+                        + " dependent duplicate(s)");
+
+        for (var duplicateUniqueName : duplicatesToReactivate) {
+            reactivateDisabledCameraConfig(duplicateUniqueName);
+        }
     }
 
     public synchronized boolean deactivateVisionSource(String uniqueName) {
@@ -272,6 +473,9 @@ public class VisionSourceManager {
         disabledCameraConfigs.put(removedConfig.get().uniqueName, removedConfig.get());
 
         logger.info("Disabled the VisionModule for " + removedConfig.get().nickname);
+
+        // Check if this was a source camera with duplicates
+        handleSourceCameraRemoval(uniqueName);
 
         pushUiUpdate();
 
@@ -318,6 +522,12 @@ public class VisionSourceManager {
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
+                .forEach(cameraInfos::add);
+        
+        // And same with duplicate cameras
+        vmm.getModules().stream()
+                .map(it -> it.getCameraConfiguration().matchedCameraInfo)
+                .filter(info -> info instanceof PVCameraInfo.PVDuplicateCameraInfo)
                 .forEach(cameraInfos::add);
 
         checkMismatches(cameraInfos);
@@ -504,7 +714,41 @@ public class VisionSourceManager {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
+                    case DuplicateCamera -> {
+                        // This is a duplicate camera - find the source and wrap it
+                        var dupInfo = (PVCameraInfo.PVDuplicateCameraInfo) configuration.matchedCameraInfo;
+                        var sourceModule =
+                                vmm.getModules().stream()
+                                        .filter(m -> m.uniqueName().equals(dupInfo.sourceUniqueName))
+                                        .findFirst()
+                                        .orElse(null);
+
+                        if (sourceModule == null) {
+                            logger.warn(
+                                    "Source camera not found for duplicate "
+                                            + configuration.nickname
+                                            + " (source: "
+                                            + dupInfo.sourceUniqueName
+                                            + "). Marking as deactivated.");
+                            configuration.deactivated = true;
+                            disabledCameraConfigs.put(configuration.uniqueName, configuration);
+                            yield null;
+                        }
+
+                        // Create duplicate vision source and track dependency
+                        var duplicateSource =
+                                new DuplicateVisionSource(configuration, sourceModule.visionSource);
+                        duplicateDependencies
+                                .computeIfAbsent(dupInfo.sourceUniqueName, k -> new ArrayList<>())
+                                .add(configuration.uniqueName);
+
+                        yield duplicateSource;
+                    }
                 };
+
+        if (source == null) {
+            return null; // Duplicate with missing source
+        }
 
         if (source.getFrameProvider() == null) {
             logger.error("Frame provider is null?");
