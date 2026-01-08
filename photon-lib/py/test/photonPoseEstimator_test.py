@@ -15,10 +15,9 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
-from test import testUtil
 
 import wpimath.units
-from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
+from photonlibpy import PhotonCamera, PhotonPoseEstimator
 from photonlibpy.estimation import TargetModel
 from photonlibpy.simulation import PhotonCameraSim, SimCameraProperties, VisionTargetSim
 from photonlibpy.targeting import (
@@ -138,10 +137,11 @@ def test_lowestAmbiguityStrategy():
     )
 
     estimator = PhotonPoseEstimator(
-        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, Transform3d()
+        aprilTags,
+        Transform3d(),
     )
 
-    estimatedPose = estimator.update()
+    estimatedPose = estimator.estimateLowestAmbiguityPose(cameraOne.result)
 
     assert estimatedPose is not None
 
@@ -179,8 +179,6 @@ def test_pnpDistanceTrigSolve():
 
     estimator = PhotonPoseEstimator(
         aprilTags,
-        PoseStrategy.PNP_DISTANCE_TRIG_SOLVE,
-        cameraOne,
         compoundTestTransform,
     )
 
@@ -198,7 +196,7 @@ def test_pnpDistanceTrigSolve():
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
     )
-    estimatedRobotPose = estimator.update(result)
+    estimatedRobotPose = estimator.estimatePnpDistanceTrigSolvePose(result)
 
     assert estimatedRobotPose is not None
     pose = estimatedRobotPose.estimatedPose
@@ -224,7 +222,7 @@ def test_pnpDistanceTrigSolve():
     estimator.addHeadingData(
         result.getTimestampSeconds(), realPose.rotation().toRotation2d()
     )
-    estimatedRobotPose = estimator.update(result)
+    estimatedRobotPose = estimator.estimatePnpDistanceTrigSolvePose(result)
 
     assert estimatedRobotPose is not None
     pose = estimatedRobotPose.estimatedPose
@@ -271,13 +269,10 @@ def test_multiTagOnCoprocStrategy():
 
     estimator = PhotonPoseEstimator(
         AprilTagFieldLayout(),
-        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-        cameraOne,
         Transform3d(),
     )
 
-    estimatedPose = estimator.update()
-
+    estimatedPose = estimator.estimateCoprocMultiTagPose(cameraOne.result)
     assert estimatedPose is not None
 
     pose = estimatedPose.estimatedPose
@@ -286,98 +281,6 @@ def test_multiTagOnCoprocStrategy():
     assertEquals(1, pose.x, 0.01)
     assertEquals(3, pose.y, 0.01)
     assertEquals(2, pose.z, 0.01)
-
-
-def test_cacheIsInvalidated():
-    aprilTags = fakeAprilTagFieldLayout()
-    cameraOne = PhotonCameraInjector()
-
-    estimator = PhotonPoseEstimator(
-        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, Transform3d()
-    )
-
-    # Initial state, expect no timestamp.
-    assertEquals(-1, estimator._poseCacheTimestampSeconds)
-
-    # First result is 17s after epoch start.
-    timestamps = testUtil.PipelineTimestamps(captureTimestampMicros=17_000_000)
-    latencySecs = timestamps.pipelineLatencySecs()
-
-    # No targets, expect empty result
-    cameraOne.result = PhotonPipelineResult(
-        timestamps.receiveTimestampMicros(),
-        metadata=timestamps.toPhotonPipelineMetadata(),
-    )
-    estimatedPose = estimator.update()
-
-    assert estimatedPose is None
-    assertEquals(
-        timestamps.receiveTimestampMicros() * 1e-6 - latencySecs,
-        estimator._poseCacheTimestampSeconds,
-        1e-3,
-    )
-
-    # Set actual result
-    timestamps.incrementTimeMicros(2_500_000)
-    result = PhotonPipelineResult(
-        timestamps.receiveTimestampMicros(),
-        [
-            PhotonTrackedTarget(
-                3.0,
-                -4.0,
-                9.0,
-                4.0,
-                0,
-                Transform3d(Translation3d(1, 2, 3), Rotation3d(1, 2, 3)),
-                Transform3d(Translation3d(1, 2, 3), Rotation3d(1, 2, 3)),
-                [
-                    TargetCorner(1, 2),
-                    TargetCorner(3, 4),
-                    TargetCorner(5, 6),
-                    TargetCorner(7, 8),
-                ],
-                [
-                    TargetCorner(1, 2),
-                    TargetCorner(3, 4),
-                    TargetCorner(5, 6),
-                    TargetCorner(7, 8),
-                ],
-                0.7,
-            )
-        ],
-        metadata=timestamps.toPhotonPipelineMetadata(),
-    )
-    cameraOne.result = result
-    estimatedPose = estimator.update()
-    assert estimatedPose is not None
-    expectedTimestamp = timestamps.receiveTimestampMicros() * 1e-6 - latencySecs
-    assertEquals(expectedTimestamp, estimatedPose.timestampSeconds, 1e-3)
-    assertEquals(expectedTimestamp, estimator._poseCacheTimestampSeconds, 1e-3)
-
-    # And again -- pose cache should mean this is empty
-    cameraOne.result = result
-    estimatedPose = estimator.update()
-    assert estimatedPose is None
-    # Expect the old timestamp to still be here
-    assertEquals(expectedTimestamp, estimator._poseCacheTimestampSeconds, 1e-3)
-
-    # Set new field layout -- right after, the pose cache timestamp should be -1
-    estimator.fieldTags = AprilTagFieldLayout([AprilTag()], 0, 0)
-    assertEquals(-1, estimator._poseCacheTimestampSeconds)
-    # Update should cache the current timestamp (20) again
-    cameraOne.result = result
-    estimatedPose = estimator.update()
-
-    assert estimatedPose is not None
-
-    assertEquals(expectedTimestamp, estimatedPose.timestampSeconds, 1e-3)
-    assertEquals(expectedTimestamp, estimator._poseCacheTimestampSeconds, 1e-3)
-
-    # Setting a value from None to a non-None should invalidate the cache.
-    assert estimator.referencePose is None
-    estimator.referencePose = Pose3d(3, 3, 3, Rotation3d())
-
-    assertEquals(-1, estimator._poseCacheTimestampSeconds)
 
 
 def assertEquals(expected, actual, epsilon=0.0):
