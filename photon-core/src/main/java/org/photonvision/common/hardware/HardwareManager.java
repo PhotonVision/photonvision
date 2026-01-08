@@ -106,7 +106,7 @@ public class HardwareManager {
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(
+                        ? StatusLED.create(
                                 lazyDeviceFactory.get(),
                                 hardwareConfig.statusRGBPins,
                                 hardwareConfig.statusRGBActiveHigh)
