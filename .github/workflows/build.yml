@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.0.6
+  IMAGE_VERSION: v2026.1.0
 
 jobs:
 
@@ -18,8 +18,9 @@ jobs:
     name: "Validation"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: gradle/actions/wrapper-validation@v4
+      - uses: actions/checkout@v6
+      - uses: gradle/actions/wrapper-validation@v5
+
   build-examples:
 
     strategy:
@@ -27,27 +28,25 @@ jobs:
       matrix:
         include:
           - os: windows-2022
-            architecture: x64
             artifact-name: Win64
           - os: macos-14
-            architecture: aarch64
             artifact-name: macOS
           - os: ubuntu-24.04
             artifact-name: Linux
 
     name: "Photonlib - Build Examples - ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
-    needs: [validation, build-photonlib-host, build-photonlib-docker]
+    needs: [build-photonlib-host, build-photonlib-docker]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -59,10 +58,10 @@ jobs:
           du -h . | sort -h
         if: matrix.os == 'ubuntu-24.04'
       # Download prebuilt photonlib artifacts
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: maven-${{ matrix.artifact-name }}
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: maven-Athena
       - name: Move to maven local
@@ -92,6 +91,7 @@ jobs:
         run: |
           ./gradlew build
           ./gradlew clean
+
   playwright-tests:
     name: "Playwright E2E tests"
     runs-on: ubuntu-24.04
@@ -99,13 +99,13 @@ jobs:
     steps:
       # Checkout code.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -114,7 +114,7 @@ jobs:
         with:
           version: 10
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Setup tests
@@ -127,7 +127,7 @@ jobs:
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -140,13 +140,13 @@ jobs:
     steps:
       # Checkout code.
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -155,7 +155,7 @@ jobs:
         with:
           version: 10
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
       - name: Gradle Build
@@ -166,8 +166,8 @@ jobs:
     name: "Build Offline Docs"
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Install graphviz
@@ -184,7 +184,7 @@ jobs:
         working-directory: docs
         run: |
           make html
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: built-docs
           path: docs/build/html
@@ -194,12 +194,12 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [validation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -214,24 +214,22 @@ jobs:
           mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
 
       # Upload it here so it shows up in releases
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: photonlib-vendor-json
           path: photon-lib/build/generated/vendordeps/photonlib-*.json
 
   build-photonlib-host:
     env:
-      MACOSX_DEPLOYMENT_TARGET: 13
+      MACOSX_DEPLOYMENT_TARGET: 14
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-2022
             artifact-name: Win64
-            architecture: x64
-          - os: macos-14
+          - os: macos-26
             artifact-name: macOS
-            architecture: aarch64
           - os: ubuntu-24.04
             artifact-name: Linux
 
@@ -239,15 +237,14 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: [validation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
-          architecture: ${{ matrix.architecture }}
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
@@ -258,7 +255,7 @@ jobs:
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -283,7 +280,7 @@ jobs:
     name: "Photonlib - Build Docker - ${{ matrix.artifact-name }}"
     needs: [validation]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Config Git
@@ -299,7 +296,7 @@ jobs:
         if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -309,7 +306,7 @@ jobs:
     needs: [build-photonlib-docker, build-photonlib-host]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - run: git fetch --tags --force
@@ -324,58 +321,43 @@ jobs:
         name: ZIP stuff up
         working-directory: output
       - run: ls output
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: photonlib-offline
           path: output/*.zip
 
-  build-package:
+  build-package-linux:
     needs: [build-gradle, build-offline-docs]
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest
-            artifact-name: Win64
-            architecture: x64
-            arch-override: winx64
-          - os: macos-latest
-            artifact-name: macOS
-            architecture: x64
-            arch-override: macx64
-          - os: macos-latest
-            artifact-name: macOSArm
-            architecture: x64
-            arch-override: macarm64
           - os: ubuntu-24.04
             artifact-name: Linux
-            architecture: x64
             arch-override: linuxx64
           - os: ubuntu-24.04
             artifact-name: LinuxArm64
-            architecture: x64
             arch-override: linuxarm64
 
     runs-on: ${{ matrix.os }}
     name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
-    steps:
-      - uses: actions/checkout@v4
+    steps: &build-package-steps
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
-          architecture: ${{ matrix.architecture }}
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
@@ -391,17 +373,52 @@ jobs:
         if: ${{ (matrix.arch-override != 'none') }}
       - run: ./gradlew photon-server:shadowJar
         if: ${{ (matrix.arch-override == 'none') }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: photon-targeting_jar-${{ matrix.artifact-name }}
           path: photon-targeting/build/libs
 
+  build-package-macos:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            artifact-name: macOSArm
+            arch-override: macarm64
+          - os: macos-latest
+            artifact-name: macOS
+            arch-override: macx64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    steps: *build-package-steps
+
+  build-package-windows:
+    needs: [build-gradle, build-offline-docs]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: Win64
+            arch-override: winx64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
+
+    steps: *build-package-steps
+
   run-smoketest-native:
-    needs: [build-package]
+    needs: [build-package-linux, build-package-macos, build-package-windows]
 
     strategy:
       fail-fast: false
@@ -414,13 +431,12 @@ jobs:
             artifact-name: jar-Win64
           - os: macos-latest
             artifact-name: jar-macOS
-            architecture: x64
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Install Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: temurin
@@ -433,7 +449,7 @@ jobs:
         if: ${{ (matrix.os) == 'windows-latest' }}
 
   build-image:
-    needs: [build-package]
+    needs: [build-package-linux]
 
     strategy:
       fail-fast: false
@@ -525,7 +541,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: actions/download-artifact@v7
@@ -566,13 +582,15 @@ jobs:
           sudo mv ${imagedir}/* ${tardir}/
           sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         name: Upload image
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
 
   matrix-checker:
+    # This job always runs last to set the overall result based on the matrix jobs. If any matrix job failed, this job will fail.
+    # This makes it so that we don't need to add each matrix job individually to CI checks.
     runs-on: ubuntu-latest
     needs: [build-image]
     if: always()
@@ -580,7 +598,8 @@ jobs:
       - run: ${{!contains(needs.*.result, 'failure')}}
 
   release:
-    needs: [build-photonlib-vendorjson, build-package, build-image, combine]
+    # Require smoketest-native so that if those fail, we don't release broken artifacts
+    needs: [build-photonlib-vendorjson, build-image, combine, build-package-linux, build-package-macos, build-package-windows, run-smoketest-native]
     if: github.ref == ('refs/heads/main' || startsWith(github.ref, 'refs/tags/v')) && github.repository == 'PhotonVision/photonvision'
     runs-on: ubuntu-24.04
     steps:
@@ -621,7 +640,7 @@ jobs:
             **/photonlib*.zip
         if: github.event_name == 'push'
       - name: Create Vendor JSON Repo PR
-        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@main
+        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@HEAD
         with:
           repo: PhotonVision/vendor-json-repo
           token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
