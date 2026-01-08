@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.NoSuchDeviceException;
 import com.diozero.api.PinInfo;
 import com.diozero.devices.LED;
 import com.diozero.devices.PwmLed;
@@ -67,13 +68,19 @@ public class VisionLED implements AutoCloseable {
                 pin -> {
                     PinInfo pinInfo = pin.info(deviceFactory);
                     if (ledsCanDim && pinInfo.isPwmOutputSupported()) {
-                        PwmLed led = new PwmLed(deviceFactory, pinInfo.getPwmNum());
-                        if (pwmFrequency > 0) {
-                            led.setPwmFrequency(pwmFrequency);
+                        try {
+                            PwmLed led = new PwmLed(deviceFactory, pinInfo.getPwmNum());
+                            if (pwmFrequency > 0) {
+                                led.setPwmFrequency(pwmFrequency);
+                            }
+                            dimmableVisionLEDs.add(led);
+                        } catch (NoSuchDeviceException e) {
                         }
-                        dimmableVisionLEDs.add(led);
                     } else {
-                        visionLEDs.add(new LED(deviceFactory, pinInfo.getDeviceNumber(), true, false));
+                        try {
+                            visionLEDs.add(new LED(deviceFactory, pinInfo.getDeviceNumber(), true, false));
+                        } catch (NoSuchDeviceException e) {
+                        }
                     }
                 });
         pipelineModeSupplier = () -> false;
