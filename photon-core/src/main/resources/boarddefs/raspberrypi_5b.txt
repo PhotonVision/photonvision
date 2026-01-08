@@ -1,0 +1,57 @@
+# GPIO Chip Mapping - Chip, Id, Label
+Chip, 0, pinctrl-rp1
+#Chip, 10, ignore-chip10
+#Chip, 11, ignore-chip11
+#Chip, 12, ignore-chip12
+#Chip, 13, ignore-chip13
+
+# GPIO Header info - General, Header, Physical Pin, Name
+General, J8, 1, 3v3
+General, J8, 2, 5v
+General, J8, 4, 5v
+General, J8, 6, GND
+General, J8, 9, GND
+General, J8, 14, GND
+General, J8, 17, 3v3
+General, J8, 20, GND
+General, J8, 25, GND
+General, J8, 30, GND
+General, J8, 34, GND
+General, J8, 39, GND
+
+# For enabling sysfs PWM, see
+# https://jumpnowtek.com/rpi/Using-the-Raspberry-Pi-Hardware-PWM-timers.html
+
+# GPIO, Header, GPIO#, Name,      Physical Pin, Chip, Line, Modes
+GPIO,   J8,     0,     ID_SDA,    27,           0,    0,    DIGITAL_INPUT | DIGITAL_OUTPUT
+GPIO,   J8,     1,     ID_SCL,    28,           0,    1,    DIGITAL_INPUT | DIGITAL_OUTPUT
+GPIO,   J8,     2,     SDA1,      3,            0,    2,    DIGITAL_INPUT | DIGITAL_OUTPUT # SDA1
+GPIO,   J8,     3,     SCL1,      5,            0,    3,    DIGITAL_INPUT | DIGITAL_OUTPUT # SCL1
+GPIO,   J8,     4,     GPIO_GCLK, 7,            0,    4,    DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO_GCLK
+GPIO,   J8,     5,     GPIO5,     29,           0,    5,    DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO5
+GPIO,   J8,     6,     GPIO6,     31,           0,    6,    DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO6
+GPIO,   J8,     7,     SPI_CE1_N, 26,           0,    7,    DIGITAL_INPUT | DIGITAL_OUTPUT # SPI_CE1_N "spi0 CS1"
+GPIO,   J8,     8,     SPI_CE0_N, 24,           0,    8,    DIGITAL_INPUT | DIGITAL_OUTPUT # SPI_CE0_N "spi0 CS0"
+GPIO,   J8,     9,     SPI_MISO,  21,           0,    9,    DIGITAL_INPUT | DIGITAL_OUTPUT # SPI_MISO
+GPIO,   J8,     10,    SPI_MOSI,  19,           0,    10,   DIGITAL_INPUT | DIGITAL_OUTPUT # SPI_MOSI
+GPIO,   J8,     11,    SPI_SCLK,  23,           0,    11,   DIGITAL_INPUT | DIGITAL_OUTPUT # SPI_SCLK
+#GPIO,  J8,     12,    GPIO12,    32,           0,    12,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO12, Alt0 = PWM0
+PWM,    J8,     12,    GPIO12,    32,           0,    12, 0, 0, DIGITAL_INPUT | DIGITAL_OUTPUT | PWM_OUTPUT   # GPIO12, Alt0 = PWM0
+#GPIO,  J8,     13,    GPIO13,    33,           0,    13,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO13, Alt0 = PWM1
+PWM,    J8,     13,    GPIO13,    33,           0,    13, 0, 1, DIGITAL_INPUT | DIGITAL_OUTPUT | PWM_OUTPUT   # GPIO13, Alt0 = PWM1
+GPIO,   J8,     14,    TXD1,      8,            0,    14,   DIGITAL_INPUT | DIGITAL_OUTPUT # TXD1
+GPIO,   J8,     15,    RXD1,      10,           0,    15,   DIGITAL_INPUT | DIGITAL_OUTPUT # RXD1
+GPIO,   J8,     16,    GPIO16,    36,           0,    16,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO16, Alt4 = SPI1-CE2
+GPIO,   J8,     17,    GPIO17,    11,           0,    17,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO17, Alt4 = SPI1-CE1
+#GPIO,  J8,     18,    GPIO18,    12,           0,    18,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO18, Alt0 = PCM-CLK, Alt4 = SPI1-CE0, Alt5 = PWM0
+PWM,    J8,     18,    GPIO18,    12,           0,    18, 0, 0, DIGITAL_INPUT | DIGITAL_OUTPUT | PWM_OUTPUT # GPIO18
+#GPIO,  J8,     19,    GPIO19,    35,           0,    19,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO19, Alt4 = SPI1-MISO, Alt5 = PWM1
+PWM,    J8,     19,    GPIO19,    35,           0,    19, 0, 1, DIGITAL_INPUT | DIGITAL_OUTPUT | PWM_OUTPUT # GPIO19
+GPIO,   J8,     20,    GPIO20,    38,           0,    20,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO20, Alt4 = SPI1-MOSI
+GPIO,   J8,     21,    GPIO21,    40,           0,    21,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO21, Alt4 = SPI1-SCLK
+GPIO,   J8,     22,    GPIO22,    15,           0,    22,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO22
+GPIO,   J8,     23,    GPIO23,    16,           0,    23,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO23
+GPIO,   J8,     24,    GPIO24,    18,           0,    24,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO24
+GPIO,   J8,     25,    GPIO25,    22,           0,    25,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO25
+GPIO,   J8,     26,    GPIO26,    37,           0,    26,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO26
+GPIO,   J8,     27,    GPIO27,    13,           0,    27,   DIGITAL_INPUT | DIGITAL_OUTPUT # GPIO27
