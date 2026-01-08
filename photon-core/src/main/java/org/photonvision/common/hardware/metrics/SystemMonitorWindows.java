@@ -27,7 +27,7 @@ public class SystemMonitorWindows extends SystemMonitor {
      *
      * <p>We could include jLibreHardwareMonitor as a dependency for our Windows jar, but
      * LibreHardwareMonitor installs Winring0.sys, which is a kernel-level driver with an unfixed
-     * severe vulnerability. Windows defender flags Winring0 as a vulnuratble driver and blocks it
+     * severe vulnerability. Windows defender flags Winring0 as a vulnerable driver and blocks it
      * from installing.
      *
      * <p>In the end, it isn't worth the risk to include this dependency, so we don't do CPU
