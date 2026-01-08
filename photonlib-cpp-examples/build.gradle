@@ -4,6 +4,7 @@ plugins {
 
 allprojects {
     repositories {
+        maven { url = "https://frcmaven.wpi.edu/artifactory/ex-mvn/" }
         mavenCentral()
         mavenLocal()
         maven { url = "https://maven.photonvision.org/releases" }

@@ -1,4 +1,4 @@
-apply plugin: 'edu.wpi.first.WpilibTools'
+apply plugin: 'org.photonvision.tools.WpilibTools'
 
 import java.nio.file.Path
 
@@ -36,13 +36,13 @@ dependencies {
 
     // The JNI libraries use wpilibNatives, the java libraries use implementation
     if (jniPlatform == "linuxarm64") {
-        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$jniPlatform") {
             transitive = false
         }
-        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$jniPlatform") {
             transitive = false
         }
-        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$wpilibNativeName") {
+        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$jniPlatform") {
             transitive = false
         }
     }
@@ -59,14 +59,8 @@ dependencies {
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
-    // Only include mrcal natives on platforms that we build for
-    if (!(jniPlatform in [
-                "osxx86-64",
-                "osxarm64"
-            ])) {
-        wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
-            transitive = false
-        }
+    wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$jniPlatform") {
+        transitive = false
     }
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'
