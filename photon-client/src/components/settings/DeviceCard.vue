@@ -388,7 +388,12 @@ watch(useSettingsStore().metricsHistory, () => {
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
-            <tooltipped-label label="Network Usage" icon="mdi-information" location="top" tooltip="This FMS limit is for ALL robot communication, not just PhotonVision. If you are experiencing bandwidth issues but are under this limit, check other sources." />
+            <tooltipped-label
+              label="Network Usage"
+              icon="mdi-information"
+              location="top"
+              tooltip="This FMS limit is for ALL robot communication, not just PhotonVision. If you are experiencing bandwidth issues but are under this limit, check other sources."
+            />
             <span
               >{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span
             >

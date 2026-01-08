@@ -2,7 +2,7 @@
 defineProps<{
   label?: string;
   tooltip?: string;
-  icon? : string;
+  icon?: string;
   location?: "top" | "bottom" | "left" | "right";
 }>();
 </script>
