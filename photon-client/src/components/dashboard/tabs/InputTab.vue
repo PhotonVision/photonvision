@@ -158,6 +158,15 @@ const interactiveCols = computed(() =>
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)
       "
     />
+    <pv-switch
+      v-model="useCameraSettingsStore().currentPipelineSettings.blockForFrames"
+      label="Low Latency Mode"
+      :switch-cols="interactiveCols"
+      tooltip="When enabled, waits for the next camera frame for lowest latency. When disabled, uses the most recent available frame for higher FPS."
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ blockForFrames: args }, false)
+      "
+    />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       label="Orientation"

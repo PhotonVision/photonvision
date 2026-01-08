@@ -47,6 +47,7 @@ public abstract class CpuImageProcessor extends FrameProvider {
     private final RotateImagePipe m_rImagePipe = new RotateImagePipe();
     private final GrayscalePipe m_grayPipe = new GrayscalePipe();
     FrameThresholdType m_processType;
+    boolean m_blockForFrames = true;
 
     private final Object m_mutex = new Object();
 
@@ -128,5 +129,12 @@ public abstract class CpuImageProcessor extends FrameProvider {
     @Override
     public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
         // We don't actually do zero-copy, so this method is a no-op
+    }
+
+    @Override
+    public void requestBlockForFrames(boolean blockForFrames) {
+        synchronized (m_mutex) {
+            this.m_blockForFrames = blockForFrames;
+        }
     }
 }

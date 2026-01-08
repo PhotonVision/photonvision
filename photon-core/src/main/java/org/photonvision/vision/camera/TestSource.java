@@ -82,6 +82,12 @@ public class TestSource extends VisionSource {
             }
 
             @Override
+            public void requestBlockForFrames(boolean blockForFrames) {
+                // TODO Auto-generated method stub
+                throw new UnsupportedOperationException("Unimplemented method 'requestBlockForFrames'");
+            }
+
+            @Override
             public void release() {
                 // TODO Auto-generated method stub
                 throw new UnsupportedOperationException("Unimplemented method 'release'");

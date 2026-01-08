@@ -84,6 +84,8 @@ export interface PipelineSettings {
 
   cameraAutoWhiteBalance: boolean;
   cameraWhiteBalanceTemp: number;
+
+  blockForFrames: boolean;
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -148,7 +150,8 @@ export const DefaultPipelineSettings: Omit<
   cameraAutoWhiteBalance: false,
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
-  cameraMaxExposureRaw: 2
+  cameraMaxExposureRaw: 2,
+  blockForFrames: true
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
