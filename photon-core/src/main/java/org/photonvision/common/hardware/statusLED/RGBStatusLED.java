@@ -17,8 +17,10 @@
 
 package org.photonvision.common.hardware.statusLED;
 
+import com.diozero.api.NoSuchDeviceException;
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import org.jetbrains.annotations.Nullable;
 import org.photonvision.common.configuration.PinIdentifier;
 import org.photonvision.common.configuration.StatusLedConfig;
 import org.photonvision.common.hardware.PhotonStatus;
@@ -68,7 +70,8 @@ public class RGBStatusLED implements StatusLED {
             PinIdentifier redPin,
             PinIdentifier greenPin,
             PinIdentifier bluePin,
-            boolean activeHigh) {
+            boolean activeHigh)
+            throws NoSuchDeviceException {
         // Outputs are active-low for a common-anode RGB LED
         redLED =
                 new LED(deviceFactory, redPin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
@@ -78,6 +81,18 @@ public class RGBStatusLED implements StatusLED {
                 new LED(deviceFactory, bluePin.info(deviceFactory).getDeviceNumber(), activeHigh, false);
 
         TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
+    }
+
+    @Nullable
+    static StatusLED create(
+            NativeDeviceFactoryInterface deviceFactory,
+            List<PinIdentifier> statusLedPins,
+            boolean activeHigh) {
+        try {
+            return new StatusLED(deviceFactory, statusLedPins, activeHigh);
+        } catch (NoSuchDeviceException e) {
+            return null;
+        }
     }
 
     protected void setRGB(boolean r, boolean g, boolean b) {
