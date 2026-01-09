@@ -9,6 +9,7 @@ import MetricsChart from "./MetricsChart.vue";
 import { useTheme } from "vuetify";
 import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
 
 const theme = useTheme();
 
@@ -202,20 +203,20 @@ const cpuMemoryUsageData = ref<{ time: number; value: number }[]>([]);
 const cpuTempData = ref<{ time: number; value: number }[]>([]);
 const networkUsageData = ref<{ time: number; value: number }[]>([]);
 
-watch(useSettingsStore().metricsHistory, () => {
-  cpuUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+watch(metricsHistorySnapshot, () => {
+  cpuUsageData.value = metricsHistorySnapshot.value.map((entry) => ({
     time: entry.time,
     value: entry.metrics.cpuUtil ?? 0
   }));
-  cpuMemoryUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+  cpuMemoryUsageData.value = metricsHistorySnapshot.value.map((entry) => ({
     time: entry.time,
     value: entry.metrics.ramUtil === -1 ? -1 : ((entry.metrics.ramUtil ?? 0) / (entry.metrics.ramMem ?? -1.0)) * 100
   }));
-  cpuTempData.value = useSettingsStore().metricsHistory.map((entry) => ({
+  cpuTempData.value = metricsHistorySnapshot.value.map((entry) => ({
     time: entry.time,
     value: entry.metrics.cpuTemp ?? 0
   }));
-  networkUsageData.value = useSettingsStore().metricsHistory.map((entry) => ({
+  networkUsageData.value = metricsHistorySnapshot.value.map((entry) => ({
     time: entry.time,
     value: entry.metrics.sentBitRate === -1 ? -1 : (entry.metrics.sentBitRate ?? 0) / 1e6
   }));
