@@ -16,6 +16,11 @@ export interface NTConnectionStatus {
   clients?: number;
 }
 
+interface NetworkUsageEntry {
+  time: number;
+  usage: number;
+}
+
 interface StateStore {
   backendConnected: boolean;
   websocket?: AutoReconnectingWebsocket;
@@ -24,6 +29,7 @@ interface StateStore {
   sidebarFolded: boolean;
   logMessages: LogMessage[];
   currentCameraUniqueName: string;
+  networkUsageHistory: NetworkUsageEntry[];
 
   backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
@@ -64,6 +70,7 @@ export const useStateStore = defineStore("state", {
         localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
       logMessages: [],
       currentCameraUniqueName: Object.keys(cameraStore.cameras)[0],
+      networkUsageHistory: [],
 
       backendResults: {
         0: {
