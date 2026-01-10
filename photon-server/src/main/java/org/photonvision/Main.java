@@ -142,8 +142,8 @@ public class Main {
                                     "WPI2026"));
 
             camConf2026.FOV = TestUtils.WPI2026Images.FOV;
-            // how do we do calibrations?
-            //camConf2026.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
+            // pose accuracy doesnt matter that much for this so just use the Lifecam calibration
+            camConf2026.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
 
             var pipeline2026 = new AprilTagPipelineSettings();
             var path_split = Path.of(camConf2026.matchedCameraInfo.path()).getFileName().toString();
