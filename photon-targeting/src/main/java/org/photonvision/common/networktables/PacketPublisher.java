@@ -25,6 +25,7 @@ import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 
+@SuppressWarnings("doclint")
 public class PacketPublisher<T> implements AutoCloseable {
     public final RawPublisher publisher;
     private final PacketSerde<T> photonStruct;

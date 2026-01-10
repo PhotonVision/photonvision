@@ -28,6 +28,7 @@ import org.photonvision.targeting.serde.PhotonStructSerializable;
  * Represents a point in an image at the corner of the minimum-area bounding rectangle, in pixels.
  * Origin at the top left, plus-x to the right, plus-y down.
  */
+@SuppressWarnings("doclint")
 public class TargetCorner implements ProtobufSerializable, PhotonStructSerializable<TargetCorner> {
     public double x;
     public double y;
@@ -59,7 +60,10 @@ public class TargetCorner implements ProtobufSerializable, PhotonStructSerializa
         return "(" + x + "," + y + ')';
     }
 
+    /** TargetCorner protobuf for serialization. */
     public static final TargetCornerProto proto = new TargetCornerProto();
+
+    /** TargetCorner PhotonStruct for serialization. */
     public static final TargetCornerSerde photonStruct = new TargetCornerSerde();
 
     @Override

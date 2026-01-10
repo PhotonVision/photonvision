@@ -32,6 +32,8 @@ import org.photonvision.jni.TimeSyncServer;
 public class TimeSyncSingleton {
     private static TimeSyncServer INSTANCE = null;
 
+    private TimeSyncSingleton() {}
+
     public static boolean load() {
         if (INSTANCE == null) {
             try {

@@ -40,7 +40,7 @@ public class VisionTargetSim {
      * Describes a vision target located somewhere on the field that your vision system can detect.
      *
      * @param pose Pose3d of the tag in field-relative coordinates
-     * @param model TargetModel which describes the shape of the target
+     * @param model TargetModel which describes the geometry of the target
      */
     public VisionTargetSim(Pose3d pose, TargetModel model) {
         this.pose = pose;
@@ -52,7 +52,7 @@ public class VisionTargetSim {
      * Describes a fiducial tag located somewhere on the field that your vision system can detect.
      *
      * @param pose Pose3d of the tag in field-relative coordinates
-     * @param model TargetModel which describes the shape of the target(tag)
+     * @param model TargetModel which describes the geometry of the target(tag)
      * @param id The ID of this fiducial tag
      */
     public VisionTargetSim(Pose3d pose, TargetModel model, int id) {
@@ -61,18 +61,38 @@ public class VisionTargetSim {
         this.fiducialID = id;
     }
 
+    /**
+     * Sets the pose of this target on the field.
+     *
+     * @param pose The pose in field-relative coordinates
+     */
     public void setPose(Pose3d pose) {
         this.pose = pose;
     }
 
+    /**
+     * Sets the model describing this target's geometry.
+     *
+     * @param model The model of the target
+     */
     public void setModel(TargetModel model) {
         this.model = model;
     }
 
+    /**
+     * Returns the pose of this target on the field.
+     *
+     * @return The pose in field-relative coordinates
+     */
     public Pose3d getPose() {
         return pose;
     }
 
+    /**
+     * Returns the model describing this target's geometry.
+     *
+     * @return The model of the target
+     */
     public TargetModel getModel() {
         return model;
     }

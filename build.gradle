@@ -112,5 +112,6 @@ subprojects {
         options.addStringOption("charset", "utf-8")
         options.addStringOption("docencoding", "utf-8")
         options.addStringOption("encoding", "utf-8")
+        options.addBooleanOption("Xdoclint/package:-org.photonvision.proto,-org.photonvision.struct,-org.photonvision.targeting.proto,-org.photonvision.jni", true)
     }
 }

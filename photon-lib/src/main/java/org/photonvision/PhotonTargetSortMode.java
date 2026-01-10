@@ -27,6 +27,7 @@ package org.photonvision;
 import java.util.Comparator;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+@SuppressWarnings("doclint")
 public enum PhotonTargetSortMode {
     Smallest(Comparator.comparingDouble(PhotonTrackedTarget::getArea)),
     Largest(Smallest.m_comparator.reversed()),

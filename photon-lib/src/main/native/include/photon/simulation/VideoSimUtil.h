@@ -73,6 +73,16 @@ static std::unordered_map<int, cv::Mat> LoadAprilTagImages() {
   return retVal;
 }
 
+/**
+ * Gets the points representing the corners of this image. Because image pixels
+ * are accessed through a cv::Mat, the point (0,0) actually represents the
+ * center of the top-left pixel and not the actual top-left corner.
+ *
+ * <p>Order of corners returned is: [BL, BR, TR, TL]
+ *
+ * @param size Size of image
+ * @return The corners
+ */
 static std::vector<cv::Point2f> GetImageCorners(const cv::Size& size) {
   std::vector<cv::Point2f> retVal{};
   retVal.emplace_back(cv::Point2f{-0.5f, size.height - 0.5f});
@@ -82,6 +92,12 @@ static std::vector<cv::Point2f> GetImageCorners(const cv::Size& size) {
   return retVal;
 }
 
+/**
+ * Gets the points representing the marker(black square) corners.
+ *
+ * @param scale The scale of the tag image (10*scale x 10*scale image)
+ * @return The points
+ */
 static std::vector<cv::Point2f> Get36h11MarkerPts(int scale) {
   cv::Rect2f roi36h11{cv::Point2f{1, 1}, cv::Point2f{8, 8}};
   roi36h11.x *= scale;
@@ -96,6 +112,11 @@ static std::vector<cv::Point2f> Get36h11MarkerPts(int scale) {
   return pts;
 }
 
+/**
+ * Gets the points representing the marker(black square) corners.
+ *
+ * @return The points
+ */
 static std::vector<cv::Point2f> Get36h11MarkerPts() {
   return Get36h11MarkerPts(1);
 }
@@ -104,12 +125,26 @@ static const std::unordered_map<int, cv::Mat> kTag36h11Images =
     LoadAprilTagImages();
 static const std::vector<cv::Point2f> kTag36h11MarkPts = Get36h11MarkerPts();
 
+/** Updates the properties of this cs::CvSource video stream with the given
+ * camera properties. */
 [[maybe_unused]] static void UpdateVideoProp(cs::CvSource& video,
                                              const SimCameraProperties& prop) {
   video.SetResolution(prop.GetResWidth(), prop.GetResHeight());
   video.SetFPS(prop.GetFPS().to<int>());
 }
-
+/**
+ * Warps the image of a specific 36h11 AprilTag onto the destination image at
+ * the given points.
+ *
+ * @param tagId The id of the specific tag to warp onto the destination image
+ * @param dstPoints Points(4) in destination image where the tag marker(black
+ * square) corners should be warped onto.
+ * @param antialiasing If antialiasing should be performed by automatically
+ *     supersampling/interpolating the warped image. This should be used if
+ * better stream quality is desired or target detection is being done on the
+ * stream, but can hurt performance.
+ * @param destination The destination image to place the warped tag image onto.
+ */
 [[maybe_unused]] static void Warp165h5TagImage(
     int tagId, const std::vector<cv::Point2f>& dstPoints, bool antialiasing,
     cv::Mat& destination) {
@@ -232,14 +267,32 @@ static const std::vector<cv::Point2f> kTag36h11MarkPts = Get36h11MarkerPts();
   cv::copyTo(tempRoi, destination(boundingRect), tempMask);
 }
 
+/**
+ * Given a line thickness in a 640x480 image, try to scale to the given
+ * destination image resolution.
+ *
+ * @param thickness480p A hypothetical line thickness in a 640x480 image
+ * @param destination The destination image to scale to
+ * @return Scaled thickness which cannot be less than 1
+ */
 static double GetScaledThickness(double thickness480p,
-                                 const cv::Mat& destinationMat) {
-  double scaleX = destinationMat.size().width / 640.0;
-  double scaleY = destinationMat.size().height / 480.0;
+                                 const cv::Mat& destination) {
+  double scaleX = destination.size().width / 640.0;
+  double scaleY = destination.size().height / 480.0;
   double minScale = std::min(scaleX, scaleY);
   return std::max(thickness480p * minScale, 1.0);
 }
 
+/**
+ * Draw a filled ellipse in the destination image.
+ *
+ * @param dstPoints The points in the destination image representing the
+ * rectangle in which the ellipse is inscribed.
+ * @param color The color of the ellipse. This is a scalar with BGR values
+ * (0-255)
+ * @param destination The destination image to draw onto. The image should be in
+ * the BGR color space.
+ */
 [[maybe_unused]] static void DrawInscribedEllipse(
     const std::vector<cv::Point2f>& dstPoints, const cv::Scalar& color,
     cv::Mat& destination) {
@@ -261,6 +314,16 @@ static void DrawPoly(const std::vector<cv::Point2f>& dstPoints, int thickness,
   }
 }
 
+/**
+ * Draws a contour around the given points and text of the id onto the
+ * destination image.
+ *
+ * @param id Fiducial ID number to draw
+ * @param dstPoints Points representing the four corners of the tag marker(black
+ * square) in the destination image.
+ * @param destination The destination image to draw onto. The image should be in
+ * the BGR color space.
+ */
 [[maybe_unused]] static void DrawTagDetection(
     int id, const std::vector<cv::Point2f>& dstPoints, cv::Mat& destination) {
   double thickness = GetScaledThickness(1, destination);
@@ -275,6 +338,10 @@ static void DrawPoly(const std::vector<cv::Point2f>& dstPoints, int thickness,
               static_cast<int>(thickness), cv::LINE_AA);
 }
 
+/**
+ * The translations used to draw the field side walls and driver station walls.
+ * It is a vector of vectors because the translations are not all connected.
+ */
 static std::vector<std::vector<frc::Translation3d>> GetFieldWallLines() {
   std::vector<std::vector<frc::Translation3d>> list;
 
@@ -328,6 +395,15 @@ static std::vector<std::vector<frc::Translation3d>> GetFieldWallLines() {
   return list;
 }
 
+/**
+ * The translations used to draw the field floor subdivisions (not the floor
+ * outline). It is a vector of vectors because the translations are not all
+ * connected.
+ *
+ * @param subdivisions How many "subdivisions" along the width/length of the
+ * floor. E.g. 3 subdivisions would mean 2 lines along the length and 2 lines
+ * along the width creating a 3x3 "grid".
+ */
 static std::vector<std::vector<frc::Translation3d>> GetFieldFloorLines(
     int subdivisions) {
   std::vector<std::vector<frc::Translation3d>> list;
@@ -345,6 +421,23 @@ static std::vector<std::vector<frc::Translation3d>> GetFieldFloorLines(
   return list;
 }
 
+/**
+ * Convert 3D lines represented by the given series of translations into a
+ * polygon(s) in the camera's image.
+ *
+ * @param camRt The change in basis from world coordinates to camera
+ * coordinates. See RotTrlTransform3d#makeRelativeTo(Pose3d).
+ * @param prop The simulated camera's properties.
+ * @param trls A sequential series of translations defining the polygon to be
+ * drawn.
+ * @param resolution Resolution as a fraction(0 - 1) of the video frame's
+ * diagonal length in pixels. Line segments will be subdivided if they exceed
+ * this resolution.
+ * @param isClosed If the final translation should also draw a line to the first
+ * translation.
+ * @param destination The destination image that is being drawn to.
+ * @return A list of polygons(which are an array of points)
+ */
 static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
     const RotTrlTransform3d& camRt, const SimCameraProperties& prop,
     const std::vector<frc::Translation3d>& trls, double resolution,
@@ -403,6 +496,25 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
   return polyPointList;
 }
 
+/**
+ * Draw a wireframe of the field to the given image.
+ *
+ * @param camRt The change in basis from world coordinates to camera
+ * coordinates. See RotTrlTransform3d#makeRelativeTo(frc::Pose3d).
+ * @param prop The simulated camera's properties.
+ * @param resolution Resolution as a fraction(0 - 1) of the video frame's
+ * diagonal length in pixels. Line segments will be subdivided if they exceed
+ * this resolution.
+ * @param wallThickness Thickness of the lines used for drawing the field walls
+ * in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
+ * @param wallColor Color of the lines used for drawing the field walls.
+ * @param floorSubdivisions A NxN "grid" is created from the floor where this
+ * parameter is N, which defines the floor lines.
+ * @param floorThickness Thickness of the lines used for drawing the field floor
+ * grid in pixels. This is scaled by #getScaledThickness(double, cv::Mat).
+ * @param floorColor Color of the lines used for drawing the field floor grid.
+ * @param destination The destination image to draw to.
+ */
 [[maybe_unused]] static void DrawFieldWireFrame(
     const RotTrlTransform3d& camRt, const SimCameraProperties& prop,
     double resolution, double wallThickness, const cv::Scalar& wallColor,

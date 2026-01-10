@@ -30,8 +30,11 @@ public class MultiTargetPNPResult
     private static final int MAX_IDS = 32;
 
     public PnpResult estimatedPose = new PnpResult();
+
+    /** The fiducial IDs used to calculate this multi-target result. */
     public List<Short> fiducialIDsUsed = List.of();
 
+    /** Used for serialization and tests. */
     public MultiTargetPNPResult() {}
 
     public MultiTargetPNPResult(PnpResult results, List<Short> ids) {
@@ -72,9 +75,10 @@ public class MultiTargetPNPResult
                 + "]";
     }
 
+    /** MultiTargetPNPResult protobuf for serialization. */
     public static final MultiTargetPNPResultProto proto = new MultiTargetPNPResultProto();
 
-    // tODO!
+    /** MultiTargetPNPResult PhotonStruct for serialization. */
     public static final MultiTargetPNPResultSerde photonStruct = new MultiTargetPNPResultSerde();
 
     @Override

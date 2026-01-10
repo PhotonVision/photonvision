@@ -20,6 +20,7 @@ package org.photonvision.utils;
 import edu.wpi.first.math.geometry.*;
 import org.photonvision.common.dataflow.structures.Packet;
 
+@SuppressWarnings("doclint")
 public class PacketUtils {
     public static final int ROTATION2D_BYTE_SIZE = Double.BYTES;
     public static final int QUATERNION_BYTE_SIZE = Double.BYTES * 4;

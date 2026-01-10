@@ -23,6 +23,7 @@ import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 
+@SuppressWarnings("doclint")
 public class PacketSubscriber<T> implements AutoCloseable {
     public static class PacketResult<U> {
         public final U value;
