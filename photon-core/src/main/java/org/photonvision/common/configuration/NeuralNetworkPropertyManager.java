@@ -18,6 +18,7 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -125,6 +126,7 @@ public class NeuralNetworkPropertyManager {
      *
      * @return A list of all models
      */
+    @JsonIgnore
     public ModelProperties[] getModels() {
         return modelPathToProperties.values().toArray(new ModelProperties[0]);
     }

@@ -45,8 +45,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.scripting.ScriptEventType;
-import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 
@@ -69,6 +67,8 @@ public class NetworkTablesManager {
 
     // Creating the alert up here since it should be persistent
     private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
@@ -95,6 +95,7 @@ public class NetworkTablesManager {
 
         // This should start as false, since we don't know if there's a conflict yet
         conflictAlert.set(false);
+        mismatchAlert.set(false);
 
         // Get the UI state in sync with the backend. NT should fire a callback when it
         // first connects to the robot
@@ -113,6 +114,14 @@ public class NetworkTablesManager {
     public static NetworkTablesManager getInstance() {
         if (INSTANCE == null) INSTANCE = new NetworkTablesManager();
         return INSTANCE;
+    }
+
+    public void setMismatchAlert(boolean on, String message) {
+        if (mismatchAlert != null) {
+            mismatchAlert.set(on);
+            mismatchAlert.setText(message);
+            SmartDashboard.updateValues();
+        }
     }
 
     private void logNtMessage(NetworkTableEvent event) {
@@ -172,7 +181,6 @@ public class NetworkTablesManager {
             logger.info(msg);
             HardwareManager.getInstance().setNTConnected(true);
 
-            ScriptManager.queueEvent(ScriptEventType.kNTConnected);
             getInstance().broadcastVersion();
             getInstance().broadcastConnectedStatus();
 
@@ -242,6 +250,8 @@ public class NetworkTablesManager {
         String mac = NetworkUtils.getMacAddress();
         if (!mac.equals(currentMacAddress)) {
             logger.debug("MAC address changed! New MAC address is " + mac + ", was " + currentMacAddress);
+            kCoprocTable.getSubTable(currentMacAddress).getEntry("hostname").unpublish();
+            kCoprocTable.getSubTable(currentMacAddress).getEntry("cameraNames").unpublish();
             currentMacAddress = mac;
         }
         if (mac.isEmpty()) {
@@ -249,7 +259,13 @@ public class NetworkTablesManager {
             return;
         }
 
-        String hostname = ConfigManager.getInstance().getConfig().getNetworkConfig().hostname;
+        var config = ConfigManager.getInstance().getConfig();
+        String hostname;
+        if (config.getNetworkConfig().shouldManage) {
+            hostname = config.getNetworkConfig().hostname;
+        } else {
+            hostname = CameraServerJNI.getHostname();
+        }
         if (hostname == null || hostname.isEmpty()) {
             logger.error("Cannot check hostname and camera names, hostname is not set!");
             return;

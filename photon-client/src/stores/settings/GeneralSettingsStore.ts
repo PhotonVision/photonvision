@@ -16,6 +16,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
+  lastMetricsUpdate: Date;
   currentFieldLayout;
 }
 
@@ -62,9 +63,12 @@ export const useSettingsStore = defineStore("settings", {
       gpuMem: undefined,
       gpuMemUtil: undefined,
       diskUtilPct: undefined,
+      diskUsableSpace: undefined,
       npuUsage: undefined,
       ipAddress: undefined,
-      uptime: undefined
+      uptime: undefined,
+      sentBitRate: undefined,
+      recvBitRate: undefined
     },
     currentFieldLayout: {
       field: {
@@ -72,7 +76,8 @@ export const useSettingsStore = defineStore("settings", {
         width: 8.2296
       },
       tags: []
-    }
+    },
+    lastMetricsUpdate: new Date()
   }),
   getters: {
     gpuAccelerationEnabled(): boolean {
@@ -83,10 +88,8 @@ export const useSettingsStore = defineStore("settings", {
     }
   },
   actions: {
-    requestMetricsUpdate() {
-      return axios.post("/utils/publishMetrics");
-    },
     updateMetricsFromWebsocket(data: Required<MetricData>) {
+      this.lastMetricsUpdate = new Date();
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
         cpuUtil: data.cpuUtil || undefined,
@@ -96,9 +99,12 @@ export const useSettingsStore = defineStore("settings", {
         gpuMem: data.gpuMem || undefined,
         gpuMemUtil: data.gpuMemUtil || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
+        diskUsableSpace: data.diskUsableSpace || undefined,
         npuUsage: data.npuUsage || undefined,
         ipAddress: data.ipAddress || undefined,
-        uptime: data.uptime || undefined
+        uptime: data.uptime || undefined,
+        sentBitRate: data.sentBitRate || undefined,
+        recvBitRate: data.recvBitRate || undefined
       };
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {

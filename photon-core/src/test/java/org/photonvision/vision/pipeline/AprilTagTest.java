@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import edu.wpi.first.math.geometry.Translation3d;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -33,7 +34,7 @@ import org.photonvision.vision.target.TargetModel;
 public class AprilTagTest {
     @BeforeEach
     public void setup() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         ConfigManager.getInstance().load();
     }
 
@@ -109,7 +110,6 @@ public class AprilTagTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
         pipeline.getSettings().tagFamily = AprilTagFamily.kTag16h5;
 
         var frameProvider =

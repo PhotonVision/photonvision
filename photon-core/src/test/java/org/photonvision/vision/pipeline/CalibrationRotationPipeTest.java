@@ -29,13 +29,12 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.estimation.OpenCVHelp;
-import org.photonvision.mrcal.MrCalJNILoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
@@ -49,8 +48,8 @@ import org.photonvision.vision.target.TrackedTarget;
 public class CalibrationRotationPipeTest {
     @BeforeAll
     public static void init() throws IOException {
-        TestUtils.loadLibraries();
-        MrCalJNILoader.forceLoad();
+        LoadJNI.loadLibraries();
+        LoadJNI.forceLoad(LoadJNI.JNITypes.MRCAL);
 
         var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);

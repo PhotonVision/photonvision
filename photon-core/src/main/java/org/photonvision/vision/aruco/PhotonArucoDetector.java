@@ -90,7 +90,7 @@ public class PhotonArucoDetector implements Releasable {
             // each detection has a Mat of corners
             Mat cornerMat = cornerMats.get(i);
 
-            // Aruco detection returns corners (BR, BL, TL, TR).
+            // ArUco detection returns corners (BR, BL, TL, TR).
             // For parity with AprilTags and photonlib, we want (BL, BR, TR, TL).
             double[] xCorners = {
                 cornerMat.get(0, 1)[0],

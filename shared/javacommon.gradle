@@ -85,8 +85,8 @@ publishing {
             artifact javadocJar
 
             artifactId = "${baseArtifactId}-java"
-            groupId artifactGroupId
-            version pubVersion
+            groupId = artifactGroupId
+            version = pubVersion
         }
     }
 
@@ -97,10 +97,10 @@ publishing {
             if (project.hasProperty('copyOfflineArtifacts')) {
                 url(localMavenURL)
             } else {
-                url(photonMavenURL)
+                url = photonMavenURL
                 credentials {
-                    username 'ghactions'
-                    password System.getenv("ARTIFACTORY_API_KEY")
+                    username = 'ghactions'
+                    password =  System.getenv("ARTIFACTORY_API_KEY")
                 }
             }
         }
@@ -112,7 +112,7 @@ test {
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
     testLogging {
         events "failed"
-        exceptionFormat "full"
+        exceptionFormat = "full"
         showStandardStreams = true
     }
     forkEvery = 1

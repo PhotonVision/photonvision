@@ -22,16 +22,17 @@
  * SOFTWARE.
  */
 
+#include "photon/simulation/VisionSystemSim.h"
+
 #include <chrono>
 #include <thread>
 #include <tuple>
 #include <vector>
 
+#include <gtest/gtest.h>
 #include <wpi/deprecated.h>
 
-#include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
-#include "photon/simulation/VisionSystemSim.h"
 
 // Ignore GetLatestResult warnings
 WPI_IGNORE_DEPRECATED

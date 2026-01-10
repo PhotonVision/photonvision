@@ -1,4 +1,4 @@
-apply plugin: 'edu.wpi.first.WpilibTools'
+apply plugin: 'org.photonvision.tools.WpilibTools'
 
 import java.nio.file.Path
 
@@ -282,7 +282,7 @@ if (!project.hasProperty('copyOfflineArtifacts')) {
 
                 artifactId = "${nativeName}-json"
                 groupId = "org.photonvision"
-                version "1.0"
+                version = "1.0"
             }
         }
     }
@@ -344,8 +344,8 @@ publishing {
                 artifact combinedHeadersZip
 
                 artifactId = "${nativeName}-combinedcpp"
-                groupId artifactGroupId
-                version pubVersion
+                groupId = artifactGroupId
+                version = pubVersion
             }
         }
     }
@@ -363,6 +363,9 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 
 nativeTasks.addToSourceSetResources(sourceSets.test)
 
+dependencies {
+    wpilibNatives project(":photon-targeting")
+}
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")

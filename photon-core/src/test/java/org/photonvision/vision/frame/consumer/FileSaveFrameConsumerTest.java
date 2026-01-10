@@ -41,24 +41,20 @@ import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
-import org.photonvision.jni.WpilibLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 
 public class FileSaveFrameConsumerTest {
     NetworkTableInstance inst = null;
 
     @BeforeAll
-    public static void init() throws UnsatisfiedLinkError, IOException {
-        if (!WpilibLoader.loadLibraries()) {
+    public static void init() throws IOException {
+        if (!LibraryLoader.loadWpiLibraries()) {
             fail();
         }
 
-        try {
-            if (!PhotonTargetingJniLoader.load()) fail();
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
+        if (!LibraryLoader.loadTargeting()) {
+            fail();
         }
     }
 

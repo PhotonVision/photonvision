@@ -10,7 +10,7 @@ nativeUtils.wpi.configureDependencies {
     wpimathVersion = wpimathVersion
     opencvYear = 'frc'+openCVYear
     opencvVersion = openCVversion
-    niLibVersion = "2025.0.0"
+    niLibVersion = "2026.1.0"
 }
 
 // Configure warnings and errors
@@ -45,7 +45,7 @@ model {
 
 task copyAllOutputs(type: Copy) {
     def outputsFolder = file("$project.buildDir/outputs")
-    destinationDir outputsFolder
+    destinationDir = outputsFolder
 }
 
 ext.addTaskToCopyAllOutputs = { task ->
@@ -127,8 +127,14 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
 
         project.build.dependsOn task
 
-        project.artifacts {
-            task
+        // If the zip artifact matches the platform we're building for (either host or whatever the ArchOverride is), and it's a shared library built in release mode, add it to the list of artifacts the project exposes for use
+        if (key.contains(wpilibTools.getPlatformMapper().getWpilibClassifier()) && !key.contains("debug") && !key.contains("static")) {
+            // For more information, see https://docs.gradle.org/current/userguide/variant_model.html and the outgoingVariants task
+            project.artifacts.add("wpilibNatives", task)
+        } else {
+            project.artifacts {
+                task
+            }
         }
         addTaskToCopyAllOutputs(task)
     }

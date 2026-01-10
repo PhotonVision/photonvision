@@ -26,16 +26,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
-import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class TestUtils {
-    public static boolean loadLibraries() {
-        return WpilibLoader.loadLibraries();
-    }
-
     @SuppressWarnings("unused")
     public enum WPI2019Image {
         kCargoAngledDark48in(1.2192),

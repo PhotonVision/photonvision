@@ -22,17 +22,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.wpi.first.cscore.VideoMode;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
@@ -47,13 +47,8 @@ public class VisionModuleManagerTest {
         String classpathStr = System.getProperty("java.class.path");
         System.out.print(classpathStr);
 
-        TestUtils.loadLibraries();
-        try {
-            if (!PhotonTargetingJniLoader.load()) fail();
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
-        }
+        LoadJNI.loadLibraries();
+        if (!LibraryLoader.loadTargeting()) fail();
     }
 
     private static class TestSource extends VisionSource {

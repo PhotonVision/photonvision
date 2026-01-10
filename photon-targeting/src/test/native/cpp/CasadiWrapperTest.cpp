@@ -15,13 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cstdio>
 #include <iostream>
 #include <vector>
 
+#include <gtest/gtest.h>
 #include <wpi/timestamp.h>
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"

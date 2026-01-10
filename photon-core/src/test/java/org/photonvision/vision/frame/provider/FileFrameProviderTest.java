@@ -23,13 +23,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.Frame;
 
 public class FileFrameProviderTest {
     @BeforeAll
     public static void initPath() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

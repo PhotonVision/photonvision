@@ -32,9 +32,9 @@ import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
-import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -72,6 +72,17 @@ public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
+
+    private static boolean testMode = false;
+
+    public static void onStatusRequest(Context ctx) {
+        ctx.status(200);
+        ctx.result("not dead yet");
+    }
+
+    public static void setTestMode(boolean isTestMode) {
+        testMode = isTestMode;
+    }
 
     private record CommonCameraUniqueName(String cameraUniqueName) {}
 
@@ -518,7 +529,7 @@ public class RequestHandler {
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
             DataCalibrationImportRequest request =
-                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+                    kObjectMapper.readValue(ctx.req().getInputStream(), DataCalibrationImportRequest.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
@@ -655,45 +666,42 @@ public class RequestHandler {
                 Files.copy(modelFileStream, modelPath, StandardCopyOption.REPLACE_EXISTING);
             }
 
+            int idx = modelFile.filename().lastIndexOf('.');
+            String nickname = modelFile.filename().substring(0, idx);
+
             ModelProperties modelProperties =
-                    new ModelProperties(
-                            modelPath,
-                            modelFile.filename().replaceAll("." + family.extension(), ""),
-                            labels,
-                            width,
-                            height,
-                            family,
-                            version);
+                    new ModelProperties(modelPath, nickname, labels, width, height, family, version);
 
-            ObjectDetector objDetector = null;
-
-            try {
-                objDetector =
-                        switch (family) {
-                            case RUBIK -> new RubikModel(modelProperties).load();
-                            case RKNN -> new RknnModel(modelProperties).load();
-                        };
-            } catch (RuntimeException e) {
-                ctx.status(400);
-                ctx.result("Failed to load object detection model: " + e.getMessage());
+            if (!testMode) {
+                ObjectDetector objDetector = null;
 
                 try {
-                    Files.deleteIfExists(modelPath);
-                } catch (IOException ex) {
-                    e.addSuppressed(ex);
-                }
+                    objDetector =
+                            switch (family) {
+                                case RUBIK -> new RubikModel(modelProperties).load();
+                                case RKNN -> new RknnModel(modelProperties).load();
+                            };
+                } catch (RuntimeException e) {
+                    ctx.status(400);
+                    ctx.result("Failed to load object detection model: " + e.getMessage());
 
-                logger.error("Failed to load object detection model", e);
-                return;
-            } finally {
-                // this finally block will run regardless of what happens in try/catch
-                // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
-                // for a summary on how finally works
-                if (objDetector != null) {
-                    objDetector.release();
+                    try {
+                        Files.deleteIfExists(modelPath);
+                    } catch (IOException ex) {
+                        e.addSuppressed(ex);
+                    }
+
+                    logger.error("Failed to load object detection model", e);
+                    return;
+                } finally {
+                    // this finally block will run regardless of what happens in try/catch
+                    // please see https://docs.oracle.com/javase/tutorial/essential/exceptions/finally.html
+                    // for a summary on how finally works
+                    if (objDetector != null) {
+                        objDetector.release();
+                    }
                 }
             }
-
             ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
@@ -846,33 +854,30 @@ public class RequestHandler {
         }
     }
 
-    private record DeleteObjectDetectionModelRequest(String modelPath) {}
+    private record DeleteObjectDetectionModelRequest(Path modelPath) {}
 
     public static void onDeleteObjectDetectionModelRequest(Context ctx) {
         logger.info("Deleting object detection model");
-        Path modelPath;
 
         try {
             DeleteObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), DeleteObjectDetectionModelRequest.class);
 
-            modelPath = Path.of(request.modelPath.substring(7));
-
-            if (modelPath == null) {
+            if (request.modelPath == null) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
                 return;
             }
 
-            if (!modelPath.toFile().exists()) {
+            if (!request.modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
                 logger.error("The provided model path does not exist");
                 return;
             }
 
-            if (!modelPath.toFile().delete()) {
+            if (!request.modelPath.toFile().delete()) {
                 ctx.status(500);
                 ctx.result("Unable to delete the model file");
                 logger.error("Unable to delete the model file");
@@ -882,7 +887,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .removeModel(modelPath)) {
+                    .removeModel(request.modelPath)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
@@ -906,26 +911,24 @@ public class RequestHandler {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
-    private record RenameObjectDetectionModelRequest(String modelPath, String newName) {}
+    private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
 
     public static void onRenameObjectDetectionModelRequest(Context ctx) {
         try {
             RenameObjectDetectionModelRequest request =
                     JacksonUtils.deserialize(ctx.body(), RenameObjectDetectionModelRequest.class);
 
-            Path modelPath = Path.of(request.modelPath);
-
-            if (modelPath == null) {
+            if (request.modelPath == null) {
                 ctx.status(400);
                 ctx.result("The provided model path was malformed");
                 logger.error("The provided model path was malformed");
                 return;
             }
 
-            if (!modelPath.toFile().exists()) {
+            if (!request.modelPath.toFile().exists()) {
                 ctx.status(400);
                 ctx.result("The provided model path does not exist");
-                logger.error("The model path: " + modelPath + " does not exist");
+                logger.error("The model path: " + request.modelPath + " does not exist");
                 return;
             }
 
@@ -939,7 +942,7 @@ public class RequestHandler {
             if (!ConfigManager.getInstance()
                     .getConfig()
                     .neuralNetworkPropertyManager()
-                    .renameModel(modelPath, request.newName)) {
+                    .renameModel(request.modelPath, request.newName)) {
                 ctx.status(400);
                 ctx.result("The model's information was not found in the config");
                 logger.error("The model's information was not found in the config");
@@ -996,9 +999,79 @@ public class RequestHandler {
         }
     }
 
-    public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
+    /**
+     * Get the calibration JSON for a specific observation. Excludes camera image data
+     *
+     * <p>This is excluded from UICalibrationCoefficients by default to save bandwidth on large
+     * calibrations
+     */
+    public static void onCalibrationJsonRequest(Context ctx) {
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            ctx.status(404);
+            return;
+        }
+
+        CameraCalibrationCoefficients calList =
+                module.getStateAsCameraConfig().calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        ctx.json(calList);
+        ctx.status(200);
+    }
+
+    private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
+
+    public static void onCalibrationRemoveRequest(Context ctx) {
+        try {
+            CalibrationRemoveRequest request =
+                    kObjectMapper.readValue(ctx.body(), CalibrationRemoveRequest.class);
+
+            logger.info(
+                    "Attempting to remove calibration for camera: "
+                            + request.cameraUniqueName
+                            + " with a resolution of "
+                            + request.width
+                            + "x"
+                            + request.height);
+
+            VisionSourceManager.getInstance()
+                    .vmm
+                    .getModule(request.cameraUniqueName)
+                    .removeCalibrationFromConfig(new Size(request.width, request.height));
+
+            ctx.status(200);
+            ctx.result(
+                    "Successfully removed calibration for resolution: "
+                            + request.width
+                            + "x"
+                            + request.height);
+            logger.info(
+                    "Successfully removed calibration for resolution: "
+                            + request.width
+                            + "x"
+                            + request.height);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+            logger.error("Failed to process calibration removed request", e);
+        } catch (Exception e) {
+            ctx.status(500).result("Failed to removed calibration");
+            logger.error("Unexpected error while attempting to remove calibration", e);
+        }
     }
 
     public static void onCalibrationSnapshotRequest(Context ctx) {
@@ -1026,28 +1099,18 @@ public class RequestHandler {
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from
-        // 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        var mat = calList.observations.get(observationIdx).annotateImage();
+        if (mat == null) {
+            ctx.status(404);
+            return;
+        }
+
         var jpegBytes = new MatOfByte();
-        Mat img = null;
-        try {
-            img =
-                    Imgcodecs.imread(
-                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-        if (img == null || img.empty()) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-
-        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
-
+        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
         ctx.result(jpegBytes.toArray());
+
+        mat.release();
         jpegBytes.release();
 
         ctx.status(200);

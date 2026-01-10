@@ -88,7 +88,7 @@ Cameras capable of capturing a good image with very short exposures will also he
 
 ### Using Multiple Cameras
 
-Keeping the target(s) in view of the robot often requires more than one camera. PhotonVision has no hardcoded limit on the number of cameras supported. The limit is usually dependant on CPU (can all frames be processed fast enough?) and USB bandwidth (Can all cameras send their images without overwhelming the bus?).
+Keeping the target(s) in view of the robot often requires more than one camera. PhotonVision has no hardcoded limit on the number of cameras supported. The limit is usually dependent on CPU (can all frames be processed fast enough?) and USB bandwidth (Can all cameras send their images without overwhelming the bus?).
 
 Note that cameras are not synchronized together. Frames are captured and processed asynchronously. Robot Code must fuse estimates together. For more information, see {ref}`the programming reference. <docs/programming/index:programming reference>`.
 
