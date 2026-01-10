@@ -106,6 +106,34 @@ public class TestUtils {
         }
     }
 
+    public enum WPI2026Images {
+        kBlueAllianceZone,
+        kBlueBumpAndTrench,
+        kBlueHub,
+        kBlueOutpostFuelSpread,
+        kBlueTrench3,
+        kBlueTrenchWithKitbot3,
+        kFuelPair,
+        kFuelPile,
+        kFuelTriplet2,
+        kRedBumpAndTrench,
+        kRedDS1,
+        kRedHub2,
+        kRedHubBackClose;
+
+        public static final double FOV = 85.0;
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2026", filename + ".jpg");
+        }
+
+        WPI2026Images() {
+            this.path = getPath();
+        }
+    }
+
     public enum WPI2024Images {
         kBackAmpZone_117in,
         kSpeakerCenter_143in;

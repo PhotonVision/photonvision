@@ -129,36 +129,36 @@ public class Main {
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
-        CameraConfiguration camConf2024 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
-        if (camConf2024 == null || true) {
-            camConf2024 =
+        CameraConfiguration camConf2026 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2026");
+        if (camConf2026 == null || true) {
+            camConf2026 =
                     new CameraConfiguration(
                             PVCameraInfo.fromFileInfo(
                                     TestUtils.getResourcesFolderPath(true)
                                             .resolve("testimages")
-                                            .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
+                                            .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
                                             .toString(),
-                                    "WPI2024"));
+                                    "WPI2026"));
 
-            camConf2024.FOV = TestUtils.WPI2024Images.FOV;
-            // same camera as 2023
-            camConf2024.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
+            camConf2026.FOV = TestUtils.WPI2026Images.FOV;
+            // how do we do calibrations?
+            //camConf2026.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
 
-            var pipeline2024 = new AprilTagPipelineSettings();
-            var path_split = Path.of(camConf2024.matchedCameraInfo.path()).getFileName().toString();
-            pipeline2024.pipelineNickname = path_split.replace(".jpg", "");
-            pipeline2024.targetModel = TargetModel.kAprilTag6p5in_36h11;
-            pipeline2024.tagFamily = AprilTagFamily.kTag36h11;
-            pipeline2024.inputShouldShow = true;
-            pipeline2024.solvePNPEnabled = true;
+            var pipeline2026 = new AprilTagPipelineSettings();
+            var path_split = Path.of(camConf2026.matchedCameraInfo.path()).getFileName().toString();
+            pipeline2026.pipelineNickname = path_split.replace(".jpg", "");
+            pipeline2026.targetModel = TargetModel.kAprilTag6p5in_36h11;
+            pipeline2026.tagFamily = AprilTagFamily.kTag36h11;
+            pipeline2026.inputShouldShow = true;
+            pipeline2026.solvePNPEnabled = true;
 
-            var psList2024 = new ArrayList<CVPipelineSettings>();
-            psList2024.add(pipeline2024);
-            camConf2024.pipelineSettings = psList2024;
+            var psList2026 = new ArrayList<CVPipelineSettings>();
+            psList2026.add(pipeline2026);
+            camConf2026.pipelineSettings = psList2026;
         }
 
-        var cameraConfigs = List.of(camConf2024);
+        var cameraConfigs = List.of(camConf2026);
 
         ConfigManager.getInstance().unloadCameraConfigs();
         cameraConfigs.stream().forEach(ConfigManager.getInstance()::addCameraConfiguration);
