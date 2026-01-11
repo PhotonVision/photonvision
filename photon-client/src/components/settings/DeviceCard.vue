@@ -191,7 +191,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (metrics.recvBitRate && metrics.recvBitRate !== -1) {
     stats.push({
       header: "Received Bit Rate",
-      value: `${metrics.recvBitRate / 1e6} Mb/s`
+      value: `${(metrics.recvBitRate / 1e6).toFixed(3)} Mb/s`
     });
   }
 
@@ -393,7 +393,7 @@ watch(metricsHistorySnapshot, () => {
               label="Network Usage"
               icon="mdi-information"
               location="top"
-              tooltip="This FMS limit is for ALL robot communication, not just PhotonVision. If you are experiencing bandwidth issues but are under this limit, check other sources."
+              tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
             />
             <span
               >{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span
