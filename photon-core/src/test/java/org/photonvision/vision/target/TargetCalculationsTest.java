@@ -132,8 +132,8 @@ public class TargetCalculationsTest {
                         3, 3, new double[] {1142.341323, 0, 621.384201309, 0, 1139.92214, 349.897631, 0, 0, 1});
         JsonMatOfDouble testDistortion =
                 new JsonMatOfDouble(
-                        5,
                         1,
+                        5,
                         new double[] {
                             0.186841202993646,
                             -1.482894102216622,
