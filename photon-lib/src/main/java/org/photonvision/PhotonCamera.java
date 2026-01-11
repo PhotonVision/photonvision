@@ -115,6 +115,14 @@ public class PhotonCamera implements AutoCloseable {
     private final Alert disconnectAlert;
     private final Alert timesyncAlert;
 
+    /**
+     * Sets whether or not coprocessor version checks will occur. Setting this to true will silence
+     * all console warnings about coproccessor connection, so be careful when enabling this and ensure
+     * all your coprocessors are communicating to the robot properly and everything has matching
+     * versions.
+     *
+     * @param enabled Whether or not to enable coprocessor version checks
+     */
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
@@ -179,7 +187,7 @@ public class PhotonCamera implements AutoCloseable {
         verifyDependencies();
     }
 
-    public static void verifyDependencies() {
+    static void verifyDependencies() {
         // spotless:off
         if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
             String bfw = """
@@ -287,6 +295,8 @@ public class PhotonCamera implements AutoCloseable {
      * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
      * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
      * make sure to call this frequently enough to avoid old results being discarded, too!
+     *
+     * @return The list of pipeline results
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
         verifyVersion();
@@ -311,6 +321,8 @@ public class PhotonCamera implements AutoCloseable {
      *
      * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
      * results, or provide duplicate ones!
+     *
+     * @return The latest pipeline result
      */
     @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
@@ -501,8 +513,11 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
-     * to 0
+     * Returns the camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms
+     * are set to 0
+     *
+     * @return The distortion coefficients in a 8x1 matrix, if they are published by the camera. Empty
+     *     otherwise.
      */
     public Optional<Matrix<N8, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
