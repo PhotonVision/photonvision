@@ -76,9 +76,9 @@ export type ConfigurableNetworkSettings = Omit<
 export interface PVCameraInfoBase {
   /*
   Huge hack. In Jackson, this is set based on the underlying type -- this
-  then maps to one of the 3 subclasses here below. Not sure how to best deal with this.
+  then maps to one of the subclasses here below. Not sure how to best deal with this.
   */
-  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo";
+  cameraTypename: "PVUsbCameraInfo" | "PVCSICameraInfo" | "PVFileCameraInfo" | "PVDuplicateCameraInfo";
 }
 
 export interface PVUsbCameraInfo {
@@ -107,11 +107,20 @@ export interface PVFileCameraInfo {
   uniquePath: string;
 }
 
+export interface PVDuplicateCameraInfo {
+  sourceUniqueName: string;
+  name: string;
+
+  // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
+  uniquePath: string;
+}
+
 // This camera info will only ever hold one of its members - the others should be undefined.
 export class PVCameraInfo {
   PVUsbCameraInfo: PVUsbCameraInfo | undefined;
   PVCSICameraInfo: PVCSICameraInfo | undefined;
   PVFileCameraInfo: PVFileCameraInfo | undefined;
+  PVDuplicateCameraInfo: PVDuplicateCameraInfo | undefined;
 }
 
 export interface VsmState {
@@ -279,6 +288,11 @@ export interface UiCameraConfiguration {
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
+
+  isDuplicateCamera: boolean;
+  sourceUniqueName?: string;
+  sourceCameraNickname?: string;
+  inputSettingsReadOnly: boolean;
 }
 
 export interface CameraSettingsChangeRequest {
@@ -442,12 +456,15 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
       uniquePath: "/dev/foobar2"
     },
     PVCSICameraInfo: undefined,
-    PVUsbCameraInfo: undefined
+    PVUsbCameraInfo: undefined,
+    PVDuplicateCameraInfo: undefined
   },
   fpsLimit: -1,
   isConnected: true,
   hasConnected: true,
-  mismatch: false
+  mismatch: false,
+  isDuplicateCamera: false,
+  inputSettingsReadOnly: false
 });
 
 export enum CalibrationBoardTypes {

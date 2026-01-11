@@ -71,6 +71,10 @@ export interface WebsocketCameraSettingsUpdate {
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
+  isDuplicateCamera?: boolean;
+  sourceUniqueName?: string;
+  sourceCameraNickname?: string;
+  inputSettingsReadOnly?: boolean;
 }
 export interface WebsocketNTUpdate {
   connected: boolean;

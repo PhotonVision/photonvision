@@ -9,6 +9,10 @@ import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
 import { useDisplay } from "vuetify";
 
+// Check if this camera is a duplicate (read-only input settings)
+const isReadOnly = computed(() => useCameraSettingsStore().cameraIsDuplicate);
+const sourceCameraName = computed(() => useCameraSettingsStore().getSourceCameraName);
+
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
 const cameraRotations = computed(() =>
   ["Normal", "90° CW", "180°", "90° CCW"].map((v, i) => ({
@@ -72,10 +76,18 @@ const interactiveCols = computed(() =>
 
 <template>
   <div>
+    <v-alert v-if="isReadOnly" type="info" class="mb-4">
+      This is a duplicate camera. Input settings are controlled by
+      <strong>{{ sourceCameraName || "the source camera" }}</strong
+      >. For all intents and purposes, duplicate cameras are distinct cameras share only input settings and camera feed
+      with the camera that they duplicate. Camera calibrations are NOT shared between duplicate cameras and their source
+      camera, and must be imported manually.
+    </v-alert>
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
       label="Auto Exposure"
       :switch-cols="interactiveCols"
+      :disabled="isReadOnly"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
@@ -83,7 +95,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
-      :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure"
+      :disabled="useCameraSettingsStore().currentCameraSettings.pipelineSettings.cameraAutoExposure || isReadOnly"
       label="Exposure"
       tooltip="Directly controls how long the camera shutter remains open. Units are dependant on the underlying driver."
       :min="useCameraSettingsStore().minExposureRaw"
@@ -100,6 +112,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
+      :disabled="isReadOnly"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
       "
@@ -112,6 +125,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
+      :disabled="isReadOnly"
       @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)"
     />
     <pv-slider
@@ -121,6 +135,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
+      :disabled="isReadOnly"
       tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
@@ -133,6 +148,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="100"
       :slider-cols="interactiveCols"
+      :disabled="isReadOnly"
       tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
@@ -142,6 +158,7 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
       label="Auto White Balance"
       :switch-cols="interactiveCols"
+      :disabled="isReadOnly"
       tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoWhiteBalance: args }, false)
@@ -149,7 +166,7 @@ const interactiveCols = computed(() =>
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraWhiteBalanceTemp"
-      :disabled="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance"
+      :disabled="useCameraSettingsStore().currentPipelineSettings.cameraAutoWhiteBalance || isReadOnly"
       label="White Balance Temperature"
       :min="useCameraSettingsStore().minWhiteBalanceTemp"
       :max="useCameraSettingsStore().maxWhiteBalanceTemp"
@@ -164,6 +181,7 @@ const interactiveCols = computed(() =>
       tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
       :items="cameraRotations"
       :select-cols="interactiveCols"
+      :disabled="isReadOnly"
       @update:modelValue="
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)
       "
@@ -174,6 +192,7 @@ const interactiveCols = computed(() =>
       tooltip="Resolution and FPS the camera should directly capture at"
       :items="cameraResolutions"
       :select-cols="interactiveCols"
+      :disabled="isReadOnly"
       @update:modelValue="(args) => handleResolutionChange(args)"
     />
     <pv-select
@@ -182,6 +201,7 @@ const interactiveCols = computed(() =>
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
       :select-cols="interactiveCols"
+      :disabled="isReadOnly"
       @update:modelValue="(args) => handleStreamResolutionChange(args)"
     />
     <pv-switch

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useStateStore } from "@/stores/StateStore";
 import { PVCameraInfo } from "@/types/SettingTypes";
 
 const { camera } = defineProps({
@@ -7,6 +8,17 @@ const { camera } = defineProps({
     required: true
   }
 });
+
+const cameraInfoForUuid: any = (sourceUniqueName) => {
+  return (
+    useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniqueName === sourceUniqueName) || {
+      PVFileCameraInfo: undefined,
+      PVCSICameraInfo: undefined,
+      PVUsbCameraInfo: undefined,
+      PVDuplicateCameraInfo: undefined
+    }
+  );
+};
 
 const cameraInfoFor: any = (camera: PVCameraInfo) => {
   if (camera.PVUsbCameraInfo) {
@@ -17,6 +29,9 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
   }
   if (camera.PVFileCameraInfo) {
     return camera.PVFileCameraInfo;
+  }
+  if (camera.PVDuplicateCameraInfo) {
+    return camera.PVDuplicateCameraInfo;
   }
   return {};
 };
@@ -39,7 +54,14 @@ const cameraInfoFor: any = (camera: PVCameraInfo) => {
           <td v-if="camera.PVUsbCameraInfo" class="mb-3">USB Camera</td>
           <td v-else-if="camera.PVCSICameraInfo" class="mb-3">CSI Camera</td>
           <td v-else-if="camera.PVFileCameraInfo" class="mb-3">File Camera</td>
+          <td v-else-if="camera.PVDuplicateCameraInfo" class="mb-3">Duplicate Camera</td>
           <td v-else>Unidentified Camera Type</td>
+        </tr>
+        <tr
+          v-if="cameraInfoFor(camera).sourceUniqueName !== undefined && cameraInfoFor(camera).sourceUniqueName !== null"
+        >
+          <td>Source Camera:</td>
+          <td>{{ cameraInfoFor(cameraInfoForUuid(cameraInfoFor(camera).sourceUniqeName)).name }}</td>
         </tr>
         <tr v-if="cameraInfoFor(camera).baseName !== undefined && cameraInfoFor(camera).baseName !== null">
           <td>Base Name:</td>

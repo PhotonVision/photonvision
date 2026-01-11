@@ -32,29 +32,34 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider extends CpuImageProcessor {
-    private final Logger logger;
+    protected final Logger logger;
 
-    private UsbCamera camera = null;
-    private CvSink cvSink = null;
+    protected UsbCamera camera = null;
+    protected CvSink cvSink = null;
 
     @SuppressWarnings("SpellCheckingInspection")
-    private VisionSourceSettables settables;
+    protected VisionSourceSettables settables;
 
-    private Runnable connectedCallback;
+    protected Runnable connectedCallback;
 
-    private long lastTime = 0;
+    protected long lastTime = 0;
 
     // subscribers are lightweight, and I'm lazy
-    private final BooleanSubscriber useNewBehaviorSub;
+    protected final BooleanSubscriber useNewBehaviorSub;
 
-    @SuppressWarnings("SpellCheckingInspection")
-    public USBFrameProvider(
-            UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+    /**
+     * Protected constructor for subclasses that want to provide their own CvSink. Used by
+     * DuplicateFrameProvider to create a unique CvSink and avoid CameraServer caching.
+     */
+    protected USBFrameProvider(
+            UsbCamera camera,
+            CvSink cvSink,
+            VisionSourceSettables visionSettables,
+            Runnable connectedCallback,
+            String loggerName) {
         this.camera = camera;
-        this.cvSink = CameraServer.getVideo(this.camera);
-        this.logger =
-                new Logger(
-                        USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
+        this.cvSink = cvSink;
+        this.logger = new Logger(USBFrameProvider.class, loggerName, LogGroup.Camera);
         this.cvSink.setEnabled(true);
 
         this.settables = visionSettables;
@@ -64,6 +69,17 @@ public class USBFrameProvider extends CpuImageProcessor {
 
         useNewBehaviorSub = useNewBehaviorTopic.subscribe(false);
         this.connectedCallback = connectedCallback;
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
+    public USBFrameProvider(
+            UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
+        this(
+                camera,
+                CameraServer.getVideo(camera),
+                visionSettables,
+                connectedCallback,
+                visionSettables.getConfiguration().nickname);
     }
 
     @Override
