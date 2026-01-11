@@ -49,6 +49,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -196,6 +197,8 @@ public class Main {
             pipeline2026.tagFamily = AprilTagFamily.kTag36h11;
             pipeline2026.inputShouldShow = true;
             pipeline2026.solvePNPEnabled = true;
+            pipeline2026.streamingFrameDivisor = FrameDivisor.QUARTER;
+            pipeline2026.decimate = 4;
 
             var psList2026 = new ArrayList<CVPipelineSettings>();
             psList2026.add(pipeline2026);
