@@ -191,7 +191,7 @@ const platformMetrics = computed<MetricItem[]>(() => {
   if (metrics.recvBitRate && metrics.recvBitRate !== -1) {
     stats.push({
       header: "Received Bit Rate",
-      value: `${(metrics.recvBitRate / 1e6).toFixed(3)} Mb/s`
+      value: `${(metrics.recvBitRate / 1e6).toFixed(5)} Mb/s`
     });
   }
 
