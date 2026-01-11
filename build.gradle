@@ -2,7 +2,7 @@ import edu.wpi.first.toolchain.*
 
 plugins {
     id "cpp"
-    id "com.diffplug.spotless" version "6.24.0"
+    id "com.diffplug.spotless" version "8.1.0"
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "edu.wpi.first.GradleRIO" version "2026.1.1"
     id 'org.photonvision.tools.WpilibTools' version '2.3.1-photon'
