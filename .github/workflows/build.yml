@@ -169,8 +169,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
-          # This is limited to 3.13 because of pipreqs
-          python-version: 3.13
+          python-version: 3.14
       - name: Install graphviz
         run: |
           sudo apt-get update
