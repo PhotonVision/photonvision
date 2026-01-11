@@ -156,7 +156,7 @@ public class VisionEstimation {
      * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
      * @param robot2camera The {@link Transform3d} from the robot odometry frame to the camera optical
      *     frame
-     * @param robotPoseSeed An initial guess at robot pose, refined via optimizaiton. Better guesses
+     * @param robotPoseSeed An initial guess at robot pose, refined via optimization. Better guesses
      *     will converge faster.
      * @param tagLayout The known tag layout on the field
      * @param tagModel The physical size of the AprilTags

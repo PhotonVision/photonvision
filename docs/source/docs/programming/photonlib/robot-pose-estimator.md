@@ -48,91 +48,88 @@ Another necessary argument for creating a `PhotonPoseEstimator` is the `Transfor
 
 ## Creating a `PhotonPoseEstimator`
 
-The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above), `PoseStrategy`, `PhotonCamera`, and `Transform3d`. `PoseStrategy` has nine possible values:
-
-- MULTI_TAG_PNP_ON_COPROCESSOR
-  - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
-  - Must configure the AprilTagFieldLayout properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
-- LOWEST_AMBIGUITY
-  - Choose the Pose with the lowest ambiguity.
-- CLOSEST_TO_CAMERA_HEIGHT
-  - Choose the Pose which is closest to the camera height.
-- CLOSEST_TO_REFERENCE_POSE
-  - Choose the Pose which is closest to the pose from setReferencePose().
-- CLOSEST_TO_LAST_POSE
-  - Choose the Pose which is closest to the last pose calculated.
-- AVERAGE_BEST_TARGETS
-  - Choose the Pose which is the average of all the poses from each tag.
-- MULTI_TAG_PNP_ON_RIO
-  - A slower, older version of MULTI_TAG_PNP_ON_COPROCESSOR, not recommended for use.
-- PNP_DISTANCE_TRIG_SOLVE
-  - Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
-    to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
-    data is up-to-date. Based on a reference implementation by [FRC Team 6328 Mechanical Advantage](https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98).
-- CONSTRAINED_SOLVEPNP
-  - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
-    flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
-    This also requires addHeadingData to be called every frame so heading data is up to date.
-    If Multi-Tag PNP is enabled on the coprocessor, it will be used to provide an initial seed to
-    the optimization algorithm -- otherwise, the multi-tag fallback strategy will be used as the
-    seed.
+The PhotonPoseEstimator has a constructor that takes an `AprilTagFieldLayout` (see above) and `Transform3d`.
 
 ```{eval-rst}
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
     :language: java
-    :lines: 65-66
+    :lines: 63
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
     :language: c++
-    :lines: 150-153
+    :lines: 149-150
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
     :language: python
-    :lines: 45-50
+    :lines: 45-48
 ```
-
-:::{note}
-Python still takes a `PhotonCamera` in the constructor, so you must create the camera as shown in the next section and then return and use it to create the `PhotonPoseEstimator`.
-:::
 
 ## Using a `PhotonPoseEstimator`
 
-The final prerequisite to using your `PhotonPoseEstimator` is creating a `PhotonCamera`. To do this, you must set the name of your camera in Photon Client. From there you can define the camera in code.
+To use your `PhotonPoseEstimator`, you must create a `PhotonCamera` and feed the results into your `PhotonPoseEstimator`. To do this, you must first set the name of your camera in Photon Client. From there you can define the camera in code.
 
 ```{eval-rst}
 .. tab-set-code::
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
      :language: java
-     :lines: 63
+     :lines: 62
 
-    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
+    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
      :language: c++
-     :lines: 55
+     :lines: 151
 
     .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
      :lines: 44
 ```
 
-Calling `update()` on your `PhotonPoseEstimator` will return an `EstimatedRobotPose`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated.
+When taking in a result from a `PhotonCamera`, PhotonPoseEstimator offers nine possible "strategies" for calculating a pose from a pipeline result in the form of methods that you can call, following the pattern `estimate<strategy name>Pose`:
+
+- Coprocessor MultiTag (`estimateCoprocMultiTagPose`)
+  - Calculates a new robot position estimate by combining all visible tag corners. Recommended for all teams as it will be the most accurate.
+  - Must configure the AprilTagFieldLayout properly in the UI, please see {ref}`here <docs/apriltag-pipelines/multitag:multitag localization>` for more information.
+- Lowest Ambiguity (`estimateLowestAmbiguityPose`)
+  - Choose the Pose with the lowest ambiguity.
+- Closest to Camera Height (`estimateClosestToCameraHeightPose`)
+  - Choose the Pose which is closest to the camera height.
+- Closest to Reference Pose (`estimateClosestToReferencePose`)
+  - Choose the Pose which is closest to the pose that is passed into the function.
+- Average Best Targets (`estimateAverageBestTargetsPose`)
+  - Choose the Pose which is the average of all the poses from each tag.
+- roboRio MultiTag (`estimateRioMultiTagPose`)
+  - A slower, older version of Coprocessor MultiTag, not recommended for use.
+- PnP Distance Trig Solve (`estimatePnpDistanceTrigSolvePose`)
+  - Use distance data from best visible tag to compute a Pose. This runs on the RoboRIO in order
+    to access the robot's yaw heading, and MUST have addHeadingData called every frame so heading
+    data is up-to-date. Based on a reference implementation by [FRC Team 6328 Mechanical Advantage](https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98).
+- Constrained SolvePnP (`estimateConstrainedSolvepnpPose`)
+  - Solve a constrained version of the Perspective-n-Point problem with the robot's drivebase
+    flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
+    This also requires addHeadingData to be called every frame so heading data is up to date.
+
+Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to
+1. do estimation with one of MultiTag methods, check if the result is empty, then
+2. fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`.
 
 ```{eval-rst}
 .. tab-set-code::
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
     :language: java
-    :lines: 93-116
+    :lines: 91-94
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
     :language: c++
-    :lines: 80-100
+    :lines: 79-82
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
-     :lines: 53
+     :lines: 52-54
 ```
 
-You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`.
+For Constrained SolvePnP, it's recommended to do the previously mentioned steps, and then feed the pose (if it exists) into `estimateConstrainedSolvepnpPose`, and if the Constrained SolvePnP result is empty, simply feed the seed pose into your drivetrain pose estimator.
+
+Once you have the `Optional<EstimatedRobotPose>`, you can check to see if there's an actual pose inside, and act accordingly. You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/en/latest/docs/software/advanced-controls/state-space/state-space-pose-estimators.html) with the result from the `PhotonPoseEstimator` every loop using `addVisionMeasurement()`. For Java and C++, the examples pass a method from the drivetrain to a `Vision` object, with the parameter being called `estConsumer`. Python calls the drivetrain directly.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -146,7 +143,22 @@ You should be updating your [drivetrain pose estimator](https://docs.wpilib.org/
 
    .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
      :language: python
-     :lines: 54-57
+     :lines: 56-58
+```
+
+```{eval-rst}
+.. tab-set-code::
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
+    :language: java
+    :lines: 89-115
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-cpp-examples/poseest/src/main/include/Vision.h
+    :language: c++
+    :lines: 77-100
+
+   .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/refs/heads/main/photonlib-python-examples/poseest/robot.py
+     :language: python
+     :lines: 51-54
 ```
 
 ## Complete Examples
