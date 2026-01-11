@@ -73,6 +73,8 @@ public class VideoSimUtil {
         kTag36h11MarkerPts = get36h11MarkerPts();
     }
 
+    private VideoSimUtil() {}
+
     /** Updates the properties of this CvSource video stream with the given camera properties. */
     public static void updateVideoProp(CvSource video, SimCameraProperties prop) {
         video.setResolution(prop.getResWidth(), prop.getResHeight());
@@ -87,6 +89,7 @@ public class VideoSimUtil {
      * <p>Order of corners returned is: [BL, BR, TR, TL]
      *
      * @param size Size of image
+     * @return The corners
      */
     public static Point[] getImageCorners(Size size) {
         return new Point[] {
@@ -116,7 +119,11 @@ public class VideoSimUtil {
                 frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
     }
 
-    /** Gets the points representing the marker(black square) corners. */
+    /**
+     * Gets the points representing the marker(black square) corners.
+     *
+     * @return The points
+     */
     public static Point[] get36h11MarkerPts() {
         return get36h11MarkerPts(1);
     }
@@ -125,6 +132,7 @@ public class VideoSimUtil {
      * Gets the points representing the marker(black square) corners.
      *
      * @param scale The scale of the tag image (10*scale x 10*scale image)
+     * @return The points
      */
     public static Point[] get36h11MarkerPts(int scale) {
         var roi36h11 = new Rect(new Point(1, 1), new Size(8, 8));
@@ -276,12 +284,12 @@ public class VideoSimUtil {
      * resolution.
      *
      * @param thickness480p A hypothetical line thickness in a 640x480 image
-     * @param destinationImg The destination image to scale to
+     * @param destination The destination image to scale to
      * @return Scaled thickness which cannot be less than 1
      */
-    public static double getScaledThickness(double thickness480p, Mat destinationImg) {
-        double scaleX = destinationImg.width() / 640.0;
-        double scaleY = destinationImg.height() / 480.0;
+    public static double getScaledThickness(double thickness480p, Mat destination) {
+        double scaleX = destination.width() / 640.0;
+        double scaleY = destination.height() / 480.0;
         double minScale = Math.min(scaleX, scaleY);
         return Math.max(thickness480p * minScale, 1.0);
     }

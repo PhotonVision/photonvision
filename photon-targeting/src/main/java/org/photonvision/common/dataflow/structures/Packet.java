@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 /** A packet that holds byte-packed data to be sent over NetworkTables. */
+@SuppressWarnings("doclint")
 public class Packet {
     // Data stored in the packet.
     byte[] packetData;
