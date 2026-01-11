@@ -18,7 +18,6 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
@@ -113,7 +112,6 @@ public class TestUtils {
 
         public static final Rotation2d FOV = Rotation2d.fromDegrees(85.0);
         public final Path path;
-
 
         Path getPath() {
             var filename = this.toString().substring(1);

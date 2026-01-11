@@ -19,7 +19,6 @@ package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Rotation2d;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -145,16 +144,17 @@ public class Main {
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
-        CameraConfiguration camConf2026 = ConfigManager.getInstance().getConfig().getCameraConfigurations()
-                .get("WPI2026");
+        CameraConfiguration camConf2026 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2026");
         if (camConf2026 == null) {
-            camConf2026 = new CameraConfiguration(
-                    PVCameraInfo.fromFileInfo(
-                            TestUtils.getResourcesFolderPath(true)
-                                    .resolve("testimages")
-                                    .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
-                                    .toString(),
-                            "WPI2026"));
+            camConf2026 =
+                    new CameraConfiguration(
+                            PVCameraInfo.fromFileInfo(
+                                    TestUtils.getResourcesFolderPath(true)
+                                            .resolve("testimages")
+                                            .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
+                                            .toString(),
+                                    "WPI2026"));
 
             camConf2026.FOV = TestUtils.WPI2026Images.FOV.getDegrees();
 
@@ -172,18 +172,13 @@ public class Main {
             double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
             double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
 
-            JsonMatOfDouble testCameraMatrix = new JsonMatOfDouble(
-                    3, 3, new double[] {
-                            fx, 0, cx, 0, fy, cy, 0, 0, 1 });
-            JsonMatOfDouble testDistortion = new JsonMatOfDouble(
-                    1,
-                    5,
-                    new double[] {
-                            0, 0, 0, 0, 0
-                    });
+            JsonMatOfDouble testCameraMatrix =
+                    new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
+            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
 
             camConf2026.calibrations.add(
-                    new CameraCalibrationCoefficients(new Size(4000, 1868),
+                    new CameraCalibrationCoefficients(
+                            new Size(4000, 1868),
                             testCameraMatrix,
                             testDistortion,
                             new double[0],
