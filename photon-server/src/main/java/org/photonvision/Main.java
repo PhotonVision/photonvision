@@ -341,8 +341,7 @@ public class Main {
         SystemMonitor.getInstance().logSystemInformation();
         SystemMonitor.getInstance().startMonitor(500, 1000);
 
-        // todo - should test mode just add test mode sources, but still allow local usb
-        // cameras to be
+        // todo - should test mode just add test mode sources, but still allow local usb cameras to be
         // added?
         if (!isTestMode) {
             logger.debug("Loading VisionSourceManager...");
