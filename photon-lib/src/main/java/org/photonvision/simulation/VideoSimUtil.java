@@ -50,7 +50,8 @@ import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 
 public class VideoSimUtil {
-    public static final int kNumTags36h11 = 30;
+    // Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID required
+    public static final int kNumTags36h11 = 40;
 
     // All 36h11 tag images
     private static final Map<Integer, Mat> kTag36h11Images = new HashMap<>();
