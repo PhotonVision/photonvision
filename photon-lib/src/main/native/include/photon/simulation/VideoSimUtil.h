@@ -50,7 +50,8 @@ int sgn(T val) {
 
 namespace photon {
 namespace VideoSimUtil {
-// Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID required
+// Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID
+// required
 static constexpr int kNumTags36h11 = 40;
 
 static constexpr units::meter_t fieldLength{16.54175_m};
