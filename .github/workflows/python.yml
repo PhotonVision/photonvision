@@ -87,38 +87,19 @@ jobs:
         working-directory: ./photon-lib/py
         run: python setup.py sdist bdist_wheel
 
-      - name: Run Unit Tests (Unix)
+      - name: Build and configure PhotonLibPy
         working-directory: ./photon-lib/py
-        if: runner.os != 'Windows'
-        run: |
-            pip install --no-cache-dir dist/*.whl
-            pytest
-
-      - name: Run Unit Tests (Windows)
-        working-directory: ./photon-lib/py
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: |
-          for %%f in (dist/*.whl) do (
-          echo installing dist/%%f
-          pip install --no-cache-dir dist/%%f
-          )
-          pytest
-
-      - name: Build and configure PhotonLibPy (bash)
-        working-directory: ./photon-lib/py
-        if: runner.os != 'Windows'
+        shell: bash
         run: |
           ./buildAndTest.sh
           ./enableUsingDevBuilds.sh
 
-      - name: Build and configure PhotonLibPy (pwsh)
+      - name: Run Unit Tests
         working-directory: ./photon-lib/py
-        if: runner.os == 'Windows'
+        shell: bash
         run: |
-          ./buildandTest.bat
-          ./enableUsingDevBuilds.bat
-
+            pip install --no-cache-dir dist/*.whl
+            pytest
 
       - name: Run mypy type checking
         run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
