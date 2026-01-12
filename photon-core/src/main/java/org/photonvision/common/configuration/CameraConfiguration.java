@@ -191,9 +191,10 @@ public class CameraConfiguration {
     }
 
     /**
-     * Remove a calibration from our list.
+     * Remove a calibration from our list. If found, the calibration will be "released". If not found,
+     * no-op.
      *
-     * @param calibration The calibration to remove
+     * @param unrotatedImageSize The resolution to remove.
      */
     public void removeCalibration(Size unrotatedImageSize) {
         logger.info("deleting calibration " + unrotatedImageSize);
