@@ -48,6 +48,22 @@ public class EstimatedRobotPose {
      *
      * @param estimatedPose estimated pose
      * @param timestampSeconds timestamp of the estimate
+     * @param targetsUsed list of targets used
+     * @param strategy pose strategy
+     */
+    public EstimatedRobotPose(
+            Pose3d estimatedPose, double timestampSeconds, List<PhotonTrackedTarget> targetsUsed) {
+        this.estimatedPose = estimatedPose;
+        this.timestampSeconds = timestampSeconds;
+        this.targetsUsed = targetsUsed;
+        this.strategy = null;
+    }
+
+    /**
+     * Constructs an EstimatedRobotPose
+     *
+     * @param estimatedPose estimated pose
+     * @param timestampSeconds timestamp of the estimate
      */
     public EstimatedRobotPose(
             Pose3d estimatedPose,

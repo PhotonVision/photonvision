@@ -75,6 +75,11 @@ public class RequestHandler {
 
     private static boolean testMode = false;
 
+    public static void onStatusRequest(Context ctx) {
+        ctx.status(200);
+        ctx.result("not dead yet");
+    }
+
     public static void setTestMode(boolean isTestMode) {
         testMode = isTestMode;
     }
@@ -992,11 +997,6 @@ public class RequestHandler {
             ctx.status(500).result("Failed to change camera nickname");
             logger.error("Unexpected error while changing camera nickname", e);
         }
-    }
-
-    public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
     }
 
     /**

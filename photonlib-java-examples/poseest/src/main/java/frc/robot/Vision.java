@@ -38,7 +38,6 @@ import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
@@ -61,10 +60,7 @@ public class Vision {
     public Vision(EstimateConsumer estConsumer) {
         this.estConsumer = estConsumer;
         camera = new PhotonCamera(kCameraName);
-
-        photonEstimator =
-                new PhotonPoseEstimator(kTagLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, kRobotToCam);
-        photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -91,9 +87,12 @@ public class Vision {
 
     public void periodic() {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var change : camera.getAllUnreadResults()) {
-            visionEst = photonEstimator.update(change);
-            updateEstimationStdDevs(visionEst, change.getTargets());
+        for (var result : camera.getAllUnreadResults()) {
+            visionEst = photonEstimator.estimateCoprocMultiTagPose(result);
+            if (visionEst.isEmpty()) {
+                visionEst = photonEstimator.estimateLowestAmbiguityPose(result);
+            }
+            updateEstimationStdDevs(visionEst, result.getTargets());
 
             if (Robot.isSimulation()) {
                 visionEst.ifPresentOrElse(

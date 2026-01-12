@@ -40,6 +40,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * <p>However, we do expect that the actual logic which fills out values in the entries will be
  * different for sim vs. real camera
  */
+@SuppressWarnings("doclint")
 public class NTTopicSet {
     public NetworkTable subTable;
 

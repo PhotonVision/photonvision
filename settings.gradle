@@ -1,3 +1,15 @@
+pluginManagement {
+    repositories {
+        maven { url = "https://frcmaven.wpi.edu/artifactory/ex-mvn/" }
+        mavenCentral()
+        gradlePluginPortal()
+        maven {
+            url = uri('https://maven.photonvision.org/releases')
+        }
+        mavenLocal()
+    }
+}
+
 include 'photon-targeting'
 include 'photon-core'
 include 'photon-server'
