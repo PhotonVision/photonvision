@@ -103,6 +103,8 @@ public class SystemMonitor {
                 instance = new SystemMonitorRK3588();
             } else if (Platform.isQCS6490()) {
                 instance = new SystemMonitorQCS6490();
+            } else if (Platform.isWindows()) {
+                instance = new SystemMonitorWindows();
             } else {
                 instance = new SystemMonitor();
             }

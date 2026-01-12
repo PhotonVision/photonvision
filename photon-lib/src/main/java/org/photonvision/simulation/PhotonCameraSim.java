@@ -69,7 +69,9 @@ import org.photonvision.targeting.PnpResult;
 public class PhotonCameraSim implements AutoCloseable {
     private final PhotonCamera cam;
 
+    @SuppressWarnings("doclint")
     protected NTTopicSet ts = new NTTopicSet();
+
     private long heartbeatCounter = 1;
 
     /** This simulated camera's {@link SimCameraProperties} */
@@ -168,7 +170,7 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
      *     the camera's image to be processed. Match this with your contour filtering settings in the
      *     PhotonVision GUI.
      * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
@@ -190,7 +192,7 @@ public class PhotonCameraSim implements AutoCloseable {
      *
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of
+     * @param minTargetAreaPercent The minimum percentage (0 - 100) a detected target must take up of
      *     the camera's image to be processed. Match this with your contour filtering settings in the
      *     PhotonVision GUI.
      * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
@@ -208,22 +210,50 @@ public class PhotonCameraSim implements AutoCloseable {
         this.maxSightRangeMeters = maxSightRangeMeters;
     }
 
+    /**
+     * Returns the camera being simulated.
+     *
+     * @return The camera
+     */
     public PhotonCamera getCamera() {
         return cam;
     }
 
+    /**
+     * Returns the minimum percentage (0 - 100) a detected target must take up of the camera's image
+     * to be processed.
+     *
+     * @return The percentage
+     */
     public double getMinTargetAreaPercent() {
         return minTargetAreaPercent;
     }
 
+    /**
+     * Returns the minimum number of pixels a detected target must take up in the camera's image to be
+     * processed.
+     *
+     * @return The number of pixels
+     */
     public double getMinTargetAreaPixels() {
         return minTargetAreaPercent / 100.0 * prop.getResArea();
     }
 
+    /**
+     * Returns the maximum distance at which the target is illuminated to your camera. Note that
+     * minimum target area of the image is separate from this.
+     *
+     * @return The distance in meters
+     */
     public double getMaxSightRangeMeters() {
         return maxSightRangeMeters;
     }
 
+    /**
+     * Returns the order the targets are sorted in the pipeline result.
+     *
+     * @return The target sorting order
+     */
     public PhotonTargetSortMode getTargetSortMode() {
         return sortMode;
     }
@@ -261,6 +291,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * Determines if all target points are inside the camera's image.
      *
      * @param points The target's 2d image points
+     * @return True if all the target points are inside the camera's image, false otherwise.
      */
     public boolean canSeeCorners(Point[] points) {
         for (var point : points) {
@@ -306,30 +337,40 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     /**
-     * The minimum percentage(0 - 100) a detected target must take up of the camera's image to be
-     * processed.
+     * Sets the minimum percentage (0 - 100) a detected target must take up of the camera's image to
+     * be processed.
+     *
+     * @param areaPercent The percentage
      */
     public void setMinTargetAreaPercent(double areaPercent) {
         this.minTargetAreaPercent = areaPercent;
     }
 
     /**
-     * The minimum number of pixels a detected target must take up in the camera's image to be
+     * Sets the minimum number of pixels a detected target must take up in the camera's image to be
      * processed.
+     *
+     * @param areaPx The number of pixels
      */
     public void setMinTargetAreaPixels(double areaPx) {
         this.minTargetAreaPercent = areaPx / prop.getResArea() * 100;
     }
 
     /**
-     * Maximum distance at which the target is illuminated to your camera. Note that minimum target
-     * area of the image is separate from this.
+     * Sets the maximum distance at which the target is illuminated to your camera. Note that minimum
+     * target area of the image is separate from this.
+     *
+     * @param rangeMeters The distance in meters
      */
     public void setMaxSightRange(double rangeMeters) {
         this.maxSightRangeMeters = rangeMeters;
     }
 
-    /** Defines the order the targets are sorted in the pipeline result. */
+    /**
+     * Defines the order the targets are sorted in the pipeline result.
+     *
+     * @param sortMode The target sorting order
+     */
     public void setTargetSortMode(PhotonTargetSortMode sortMode) {
         if (sortMode != null) this.sortMode = sortMode;
     }
@@ -338,6 +379,8 @@ public class PhotonCameraSim implements AutoCloseable {
      * Sets whether the raw video stream simulation is enabled.
      *
      * <p>Note: This may increase loop times.
+     *
+     * @param enabled Whether or not to enable the raw video stream
      */
     public void enableRawStream(boolean enabled) {
         videoSimRawEnabled = enabled;
@@ -347,6 +390,8 @@ public class PhotonCameraSim implements AutoCloseable {
      * Sets whether a wireframe of the field is drawn to the raw video stream.
      *
      * <p>Note: This will dramatically increase loop times.
+     *
+     * @param enabled Whether or not to enable the wireframe in the raw video stream
      */
     public void enableDrawWireframe(boolean enabled) {
         videoSimWireframeEnabled = enabled;
@@ -363,7 +408,11 @@ public class PhotonCameraSim implements AutoCloseable {
         videoSimWireframeResolution = resolution;
     }
 
-    /** Sets whether the processed video stream simulation is enabled. */
+    /**
+     * Sets whether the processed video stream simulation is enabled.
+     *
+     * @param enabled Whether or not to enable the processed video stream
+     */
     public void enableProcessedStream(boolean enabled) {
         videoSimProcEnabled = enabled;
     }

@@ -19,6 +19,7 @@ package org.photonvision;
 
 import edu.wpi.first.hal.HAL;
 import java.io.File;
+import edu.wpi.first.math.geometry.Rotation2d;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -28,6 +29,7 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.cli.*;
+import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -48,7 +50,11 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraLensModel;
+import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -144,36 +150,67 @@ public class Main {
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
-        CameraConfiguration camConf2024 =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2024");
-        if (camConf2024 == null || true) {
-            camConf2024 =
+        CameraConfiguration camConf2026 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2026");
+        if (camConf2026 == null) {
+            camConf2026 =
                     new CameraConfiguration(
                             PVCameraInfo.fromFileInfo(
                                     TestUtils.getResourcesFolderPath(true)
                                             .resolve("testimages")
-                                            .resolve(TestUtils.WPI2024Images.kSpeakerCenter_143in.path)
+                                            .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
                                             .toString(),
-                                    "WPI2024"));
+                                    "WPI2026"));
 
-            camConf2024.FOV = TestUtils.WPI2024Images.FOV;
-            // same camera as 2023
-            camConf2024.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
+            camConf2026.FOV = TestUtils.WPI2026Images.FOV.getDegrees();
 
-            var pipeline2024 = new AprilTagPipelineSettings();
-            var path_split = Path.of(camConf2024.matchedCameraInfo.path()).getFileName().toString();
-            pipeline2024.pipelineNickname = path_split.replace(".jpg", "");
-            pipeline2024.targetModel = TargetModel.kAprilTag6p5in_36h11;
-            pipeline2024.tagFamily = AprilTagFamily.kTag36h11;
-            pipeline2024.inputShouldShow = true;
-            pipeline2024.solvePNPEnabled = true;
+            // stolen from SimCameraProperties
+            int resWidth = (int) TestUtils.WPI2026Images.resolution.width;
+            int resHeight = (int) TestUtils.WPI2026Images.resolution.height;
+            double cx = resWidth / 2.0 - 0.5;
+            double cy = resHeight / 2.0 - 0.5;
 
-            var psList2024 = new ArrayList<CVPipelineSettings>();
-            psList2024.add(pipeline2024);
-            camConf2024.pipelineSettings = psList2024;
+            double resDiag = Math.hypot(resWidth, resHeight);
+            double diagRatio = Math.tan(TestUtils.WPI2026Images.FOV.getRadians() / 2);
+            var fovWidth = new Rotation2d(Math.atan(diagRatio * (resWidth / resDiag)) * 2);
+            var fovHeight = new Rotation2d(Math.atan(diagRatio * (resHeight / resDiag)) * 2);
+
+            double fx = cx / Math.tan(fovWidth.getRadians() / 2.0);
+            double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
+
+            JsonMatOfDouble testCameraMatrix =
+                    new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
+            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
+
+            camConf2026.calibrations.add(
+                    new CameraCalibrationCoefficients(
+                            new Size(4000, 1868),
+                            testCameraMatrix,
+                            testDistortion,
+                            new double[0],
+                            List.of(),
+                            new Size(),
+                            1,
+                            CameraLensModel.LENSMODEL_OPENCV));
+
+            logger.info("Added test camera calibration for WPI2026 " + camConf2026.calibrations);
+
+            var pipeline2026 = new AprilTagPipelineSettings();
+            var path_split = Path.of(camConf2026.matchedCameraInfo.path()).getFileName().toString();
+            pipeline2026.pipelineNickname = path_split.replace(".jpg", "");
+            pipeline2026.targetModel = TargetModel.kAprilTag6p5in_36h11;
+            pipeline2026.tagFamily = AprilTagFamily.kTag36h11;
+            pipeline2026.inputShouldShow = true;
+            pipeline2026.solvePNPEnabled = true;
+            pipeline2026.streamingFrameDivisor = FrameDivisor.QUARTER;
+            pipeline2026.decimate = 4;
+
+            var psList2026 = new ArrayList<CVPipelineSettings>();
+            psList2026.add(pipeline2026);
+            camConf2026.pipelineSettings = psList2026;
         }
 
-        var cameraConfigs = List.of(camConf2024);
+        var cameraConfigs = List.of(camConf2026);
 
         ConfigManager.getInstance().unloadCameraConfigs();
         cameraConfigs.stream().forEach(ConfigManager.getInstance()::addCameraConfiguration);
@@ -293,7 +330,8 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
-        // We don't want to trigger an exit in test mode or smoke test. This is specifically for MacOS.
+        // We don't want to trigger an exit in test mode or smoke test. This is
+        // specifically for MacOS.
         if (!(Platform.isSupported() || isSmoketest || isTestMode)) {
             logger.error("This platform is unsupported!");
             System.exit(1);

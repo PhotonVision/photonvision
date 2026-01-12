@@ -93,12 +93,11 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
-                                        frc::Transform3d{});
+  photon::PhotonPoseEstimator estimator(aprilTags, frc::Transform3d{});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
   ASSERT_TRUE(estimatedPose);
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
@@ -154,12 +153,11 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(17_s);
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::CLOSEST_TO_CAMERA_HEIGHT, {{0_m, 0_m, 4_m}, {}});
+  photon::PhotonPoseEstimator estimator(aprilTags, {{0_m, 0_m, 4_m}, {}});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToCameraHeightPose(result);
   }
   ASSERT_TRUE(estimatedPose);
 
@@ -203,14 +201,13 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(17));
 
-  photon::PhotonPoseEstimator estimator(aprilTags,
-                                        photon::CLOSEST_TO_REFERENCE_POSE, {});
-  estimator.SetReferencePose(
-      frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToReferencePose(
+        result,
+        frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
   ASSERT_TRUE(estimatedPose);
@@ -254,14 +251,13 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(17));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::CLOSEST_TO_LAST_POSE,
-                                        {});
-  estimator.SetLastPose(
-      frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToReferencePose(
+        result,
+        frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
   ASSERT_TRUE(estimatedPose);
@@ -295,9 +291,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
       std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(21));
 
-  // std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateClosestToReferencePose(result, pose);
   }
 
   ASSERT_TRUE(estimatedPose);
@@ -327,8 +322,7 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
   frc::Transform3d compoundTestTransform = frc::Transform3d(
       -12_in, -11_in, 3_m, frc::Rotation3d(37_deg, 6_deg, 60_deg));
 
-  photon::PhotonPoseEstimator estimator(
-      aprilTags, photon::PNP_DISTANCE_TRIG_SOLVE, compoundTestTransform);
+  photon::PhotonPoseEstimator estimator(aprilTags, compoundTestTransform);
 
   /* real pose of the robot base to test against */
   frc::Pose3d realPose =
@@ -344,7 +338,7 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimatePnpDistanceTrigSolvePose(result);
   }
 
   ASSERT_TRUE(estimatedPose);
@@ -374,7 +368,7 @@ TEST(PhotonPoseEstimatorTest, PnpDistanceTrigSolve) {
 
   estimatedPose = std::nullopt;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimatePnpDistanceTrigSolvePose(result);
   }
 
   ASSERT_TRUE(estimatedPose);
@@ -419,12 +413,11 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
-                                        {});
+  photon::PhotonPoseEstimator estimator(aprilTags, {});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateAverageBestTargetsPose(result);
   }
 
   ASSERT_TRUE(estimatedPose);
@@ -437,101 +430,7 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Z()), .01);
 }
 
-TEST(PhotonPoseEstimatorTest, PoseCache) {
-  photon::PhotonCamera cameraOne = photon::PhotonCamera("test2");
-
-  std::vector<photon::PhotonTrackedTarget> targets{
-      photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.7, corners, detectedCorners},
-      photon::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.3, corners, detectedCorners},
-      photon::PhotonTrackedTarget{
-          9.0, -2.0, 19.0, 3.0, 0, -1, -1.f,
-          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
-                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
-          0.4, corners, detectedCorners}};
-
-  cameraOne.test = true;
-
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
-                                        {});
-
-  // empty input, expect empty out
-  cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000},
-      std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(1));
-
-  std::optional<photon::EstimatedRobotPose> estimatedPose;
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_FALSE(estimatedPose);
-
-  // Set result, and update -- expect present and timestamp to be 15
-  cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 3000, 1000}, targets, std::nullopt}};
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
-
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  ASSERT_TRUE(estimatedPose);
-  EXPECT_NEAR((15_s - 3_ms).to<double>(),
-              estimatedPose.value().timestamp.to<double>(), 1e-6);
-
-  // And again -- pose cache should result in returning std::nullopt
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_FALSE(estimatedPose);
-
-  // If the camera produces a result that is > 1 micro second later,
-  // the pose cache should not be hit.
-  cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(16));
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_NEAR((16_s - 3_ms).to<double>(),
-              estimatedPose.value().timestamp.to<double>(), 1e-6);
-
-  // And again -- pose cache should result in returning std::nullopt
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  EXPECT_FALSE(estimatedPose);
-
-  // Setting ReferencePose should also clear the cache
-  estimator.SetReferencePose(frc::Pose3d(units::meter_t(1), units::meter_t(2),
-                                         units::meter_t(3), frc::Rotation3d()));
-
-  for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
-  }
-
-  ASSERT_TRUE(estimatedPose);
-  EXPECT_NEAR((16_s - 3_ms).to<double>(),
-              estimatedPose.value().timestamp.to<double>(), 1e-6);
-}
-
-TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
+TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
   photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
 
   std::vector<photon::PhotonTrackedTarget> targets{
@@ -555,12 +454,15 @@ TEST(PhotonPoseEstimatorTest, MultiTagOnRioFallback) {
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
 
-  photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
-                                        frc::Transform3d{});
+  photon::PhotonPoseEstimator estimator(aprilTags, frc::Transform3d{});
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
-    estimatedPose = estimator.Update(result);
+    estimatedPose = estimator.EstimateCoprocMultiTagPose(result);
+  }
+  ASSERT_FALSE(estimatedPose);
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
   }
   ASSERT_TRUE(estimatedPose);
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
@@ -584,16 +486,6 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
   EXPECT_NEAR(testResult.GetTimestamp().to<double>(),
               test2.GetTimestamp().to<double>(), 0.001);
-}
-
-TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
-  photon::PhotonPoseEstimator estimator(
-      frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
-      photon::CONSTRAINED_SOLVEPNP, frc::Transform3d());
-
-  photon::PhotonPipelineResult result;
-  auto estimate = estimator.Update(result);
-  EXPECT_FALSE(estimate.has_value());
 }
 
 TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
@@ -639,14 +531,17 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
 
   photon::PhotonPoseEstimator estimator(
       frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::k2024Crescendo),
-      photon::CONSTRAINED_SOLVEPNP, kRobotToCam);
+      kRobotToCam);
+
+  auto estimatedMultiTagPose =
+      estimator.EstimateCoprocMultiTagPose(cameraOne.testResult[0]);
 
   estimator.AddHeadingData(cameraOne.testResult[0].GetTimestamp(),
                            frc::Rotation2d());
 
-  auto estimatedPose =
-      estimator.Update(cameraOne.testResult[0], cameraMat, distortion,
-                       photon::ConstrainedSolvepnpParams{true, 0});
+  auto estimatedPose = estimator.EstimateConstrainedSolvepnpPose(
+      cameraOne.testResult[0], cameraMat, distortion,
+      estimatedMultiTagPose->estimatedPose, true, 0);
 
   ASSERT_TRUE(estimatedPose.has_value());
 

@@ -27,7 +27,7 @@
 import drivetrain
 import wpilib
 import wpimath.geometry
-from photonlibpy import PhotonCamera, PhotonPoseEstimator, PoseStrategy
+from photonlibpy import PhotonCamera, PhotonPoseEstimator
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
 kRobotToCam = wpimath.geometry.Transform3d(
@@ -44,14 +44,15 @@ class MyRobot(wpilib.TimedRobot):
         self.cam = PhotonCamera("YOUR CAMERA NAME")
         self.camPoseEst = PhotonPoseEstimator(
             AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
-            PoseStrategy.LOWEST_AMBIGUITY,
-            self.cam,
             kRobotToCam,
         )
 
     def robotPeriodic(self) -> None:
-        camEstPose = self.camPoseEst.update()
-        if camEstPose:
+        for result in self.cam.getAllUnreadResults():
+            camEstPose = self.camPoseEst.estimateCoprocMultiTagPose(result)
+            if camEstPose is None:
+                camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
+
             self.swerve.addVisionPoseEstimate(
                 camEstPose.estimatedPose, camEstPose.timestampSeconds
             )

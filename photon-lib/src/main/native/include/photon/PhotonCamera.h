@@ -179,20 +179,29 @@ class PhotonCamera {
   using DistortionMatrix = Eigen::Matrix<double, 8, 1>;
 
   /**
-   * @brief Get the camera calibration matrix, in standard OpenCV form
+   * Get the camera calibration matrix, in standard OpenCV form
    *
    * @return std::optional<cv::Mat>
    */
   std::optional<CameraMatrix> GetCameraMatrix();
 
   /**
-   * @brief Get the camera calibration distortion coefficients, in OPENCV8 form.
-   * Higher order terms are set to zero.
+   * Returns the camera calibration's distortion coefficients, in OPENCV8 form.
+   * Higher-order terms are set to 0
    *
-   * @return std::optional<cv::Mat>
+   * @return The distortion coefficients in a 8x1 matrix, if they are published
+   * by the camera. Empty otherwise.
    */
   std::optional<DistortionMatrix> GetDistCoeffs();
 
+  /**
+   * Sets whether or not coprocessor version checks will occur. Setting this to
+   * true will silence all console warnings about coproccessor connection, so be
+   * careful when enabling this and ensure all your coprocessors are
+   * communicating to the robot properly and everything has matching versions.
+   *
+   * @param enabled Whether or not to enable coprocessor version checks
+   */
   static void SetVersionCheckEnabled(bool enabled);
 
   std::shared_ptr<nt::NetworkTable> GetCameraTable() const { return rootTable; }

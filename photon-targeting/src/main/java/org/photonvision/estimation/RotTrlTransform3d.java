@@ -62,6 +62,7 @@ public class RotTrlTransform3d {
         this(trf.getRotation(), trf.getTranslation());
     }
 
+    /** Constructs the identity transform -- maps an initial pose to itself. */
     public RotTrlTransform3d() {
         this(new Rotation3d(), new Translation3d());
     }
@@ -76,24 +77,40 @@ public class RotTrlTransform3d {
         return new RotTrlTransform3d(pose.getRotation(), pose.getTranslation()).inverse();
     }
 
-    /** The inverse of this transformation. Applying the inverse will "undo" this transformation. */
+    /**
+     * The inverse of this transformation. Applying the inverse will "undo" this transformation.
+     *
+     * @return The inverse transformation
+     */
     public RotTrlTransform3d inverse() {
         var inverseRot = rot.unaryMinus();
         var inverseTrl = trl.rotateBy(inverseRot).unaryMinus();
         return new RotTrlTransform3d(inverseRot, inverseTrl);
     }
 
-    /** This transformation as a Transform3d (as if of the origin) */
+    /**
+     * This transformation as a Transform3d (as if of the origin)
+     *
+     * @return The Transform2d
+     */
     public Transform3d getTransform() {
         return new Transform3d(trl, rot);
     }
 
-    /** The translation component of this transformation */
+    /**
+     * The translation component of this transformation
+     *
+     * @return The Translation3d
+     */
     public Translation3d getTranslation() {
         return trl;
     }
 
-    /** The rotation component of this transformation */
+    /**
+     * The rotation component of this transformation
+     *
+     * @return The Rotation3d
+     */
     public Rotation3d getRotation() {
         return rot;
     }
