@@ -1,7 +1,7 @@
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2026.1.1-beta-1"
+    id "edu.wpi.first.GradleRIO" version "2026.1.1"
 }
 
 repositories {
@@ -11,8 +11,8 @@ repositories {
 
 wpi.maven.useLocal = false
 wpi.maven.useDevelopment = false
-wpi.versions.wpilibVersion = "2026.1.1-beta-1"
-wpi.versions.wpimathVersion = "2026.1.1-beta-1"
+wpi.versions.wpilibVersion = "2026.1.1"
+wpi.versions.wpimathVersion = "2026.1.1"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -37,6 +37,8 @@ deploy {
                 frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
                     files = project.fileTree('src/main/deploy')
                     directory = '/home/lvuser/deploy'
+                    deleteOldFiles = false // Change to true to delete files on roboRIO that no
+                    // longer exist in deploy directory of this project
                 }
             }
         }

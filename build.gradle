@@ -2,10 +2,10 @@ import edu.wpi.first.toolchain.*
 
 plugins {
     id "cpp"
-    id "com.diffplug.spotless" version "6.24.0"
+    id "com.diffplug.spotless" version "8.1.0"
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
-    id "edu.wpi.first.GradleRIO" version "2026.1.1-beta-1"
-    id 'org.photonvision.tools.WpilibTools' version '2.2.0-photon'
+    id "edu.wpi.first.GradleRIO" version "2026.1.1"
+    id 'org.photonvision.tools.WpilibTools' version '2.3.3-photon'
     id 'com.google.protobuf' version '0.9.3' apply false
     id 'edu.wpi.first.GradleJni' version '1.1.0'
     id "org.ysb33r.doxygen" version "2.0.0" apply false
@@ -32,16 +32,16 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2026.1.1-beta-1"
+    wpilibVersion = "2026.1.1"
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
     javalinVersion = "6.7.0"
-    libcameraDriverVersion = "dev-v2025.0.4-3-g95e2b38"
-    rknnVersion = "dev-v2025.0.0-7-g83c1bf3"
-    rubikVersion = "dev-v2025.1.0-7-g39588a8"
-    frcYear = "2026beta"
-    mrcalVersion = "dev-v2025.0.0-6-g475031a";
+    libcameraDriverVersion = "v2026.0.0"
+    rknnVersion = "v2026.0.1"
+    rubikVersion = "v2026.0.1"
+    frcYear = "2026"
+    mrcalVersion = "v2026.0.0";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

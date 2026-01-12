@@ -158,7 +158,7 @@ public class PipelineManager {
             case CAL_3D_INDEX -> calibration3dPipeline;
             case DRIVERMODE_INDEX -> driverModePipeline;
             case FOCUS_INDEX -> focusPipeline;
-                // Just return the current user pipeline, we're not on a built-in one
+            // Just return the current user pipeline, we're not on a built-in one
             default -> currentUserPipeline;
         };
     }
