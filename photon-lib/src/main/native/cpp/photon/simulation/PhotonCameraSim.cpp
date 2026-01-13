@@ -34,14 +34,11 @@
 
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
-    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
-                      frc::AprilTagFieldLayout::LoadField(
-                          frc::AprilTagField::kDefaultField)) {}
+    : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG()) {}
 
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera,
-                                 const SimCameraProperties& props,
-                                 const frc::AprilTagFieldLayout& tagLayout)
-    : prop{props}, cam{camera}, tagLayout{tagLayout} {
+                                 const SimCameraProperties& props)
+    : prop{props}, cam{camera} {
   SetMinTargetAreaPixels(kDefaultMinAreaPx);
   videoSimRaw =
       frc::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
@@ -109,7 +106,7 @@ std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
 }
 PhotonPipelineResult PhotonCameraSim::Process(
     units::second_t latency, const frc::Pose3d& cameraPose,
-    std::vector<VisionTargetSim> targets) {
+    std::vector<VisionTargetSim> targets, const frc::AprilTagFieldLayout& tagLayout) {
   std::sort(targets.begin(), targets.end(),
             [cameraPose](const VisionTargetSim& t1, const VisionTargetSim& t2) {
               units::meter_t dist1 =
