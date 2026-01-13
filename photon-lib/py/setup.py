@@ -4,15 +4,13 @@ import subprocess
 from setuptools import find_packages, setup
 
 gitDescribeResult = (
-    subprocess.check_output(
-        ["git", "describe", "--tags", "--match=v*", "--exclude=*rc*", "--always"]
-    )
+    subprocess.check_output(["git", "describe", "--tags", "--match=v*", "--always"])
     .decode("utf-8")
     .strip()
 )
 
 m = re.search(
-    r"(v[0-9]{4}\.[0-9]{1}\.[0-9]{1})-?((?:beta)?(?:alpha)?)-?([0-9\.]*)",
+    r"v([0-9]{4}\.[0-9]{1}\.[0-9]{1})-?((?:beta|alpha|rc)?)-?([0-9\.]*)",
     gitDescribeResult,
 )
 
@@ -26,7 +24,7 @@ if m:
         prefix = m.group(1)
         maturity = m.group(2)
         suffix = m.group(3).replace(".", "")
-        versionString = f"{prefix}.{maturity}.{suffix}"
+        versionString = f"{prefix}{maturity}{suffix}"
     else:
         split = gitDescribeResult.split("-")
         if len(split) == 3:
@@ -35,8 +33,7 @@ if m:
             versionString = f"{year[1:]}post{commits}"
             print("using dev release " + versionString)
         else:
-            year = gitDescribeResult
-            versionString = year[1:]
+            versionString = gitDescribeResult[1:]
             print("using full release " + versionString)
 
 
