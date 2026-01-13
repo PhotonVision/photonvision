@@ -580,13 +580,11 @@ jobs:
           imagedir=$(dirname ${{ steps.generate_image.outputs.image }})
           tardir=${new_image_name}
           sudo mkdir --parents ${tardir}
-          sudo mv ${imagedir}/* ${tardir}/
-          sudo tar -I 'xz -T0' -ckf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
+          sudo cp ${imagedir}/* ${tardir}/
+          sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
           # Point smoketest to the tar.xz we just created
-          og_image=$(realpath ${new_image_name}.tar.xz)
-          echo "Moved image file: ${og_image}"
-          echo "smoketest_image_loc=${og_image}" >> $GITHUB_ENV
+          echo "smoketest_image_loc=${{ steps.generate_image.outputs.image }}" >> $GITHUB_ENV
           ls
 
       - uses: actions/upload-artifact@v6
