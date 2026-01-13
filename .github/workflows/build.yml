@@ -555,9 +555,7 @@ jobs:
           minimum_free_mb: ${{ matrix.minimum_free_mb }}
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
-          commands: |
-            chmod +x scripts/armrunner.sh
-            ./scripts/armrunner.sh
+          commands: ./scripts/armrunner.sh
 
       - name: Compress image
         # Compress the standard images
@@ -569,7 +567,7 @@ jobs:
           sudo xz -T 0 -v $new_image_name
           echo "smoketest_image_loc=${new_image_name}" >> $GITHUB_ENV
 
-      - name: Tar built image
+      - name: Tar built image (Rubik)
         # Build the RubikPi3-specific tar file
         if: ${{ startsWith(matrix.image_suffix, 'rubik') }}
         run: |
@@ -582,7 +580,8 @@ jobs:
           sudo mv ${imagedir}/* ${tardir}/
           sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
-          echo "smoketest_image_loc=${tardir}" >> $GITHUB_ENV
+          og_image=$(find ${tardir} -name "*.img" -type f)
+          echo "smoketest_image_loc=${og_image}" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v6
         name: Upload image
@@ -590,10 +589,11 @@ jobs:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
 
+        # This is done after uploading the image to avoid contaminating the image with logs, caches, etc.
       - uses: photonvision/photon-image-runner@HEAD
         name: Smoketest Image
         with:
-          image_url: ${{ env.smoketest_image_loc }}
+          image_url: file://${{ env.smoketest_image_loc }}
           minimum_free_mb: ${{ matrix.minimum_free_mb }}
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
