@@ -562,14 +562,11 @@ jobs:
         if: ${{ ! startsWith(matrix.image_suffix, 'rubik') }}
         run: |
           set -ex
-          ls
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
           new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
           sudo mv ${{ steps.generate_image.outputs.image }} $new_image_name
           sudo xz -T 0 -kv $new_image_name
           echo "smoketest_image_loc=${new_image_name}" >> $GITHUB_ENV
-          echo "Moved image file: ${new_image_name}"
-          ls
 
       - name: Tar built image (Rubik)
         # Build the RubikPi3-specific tar file
@@ -586,7 +583,7 @@ jobs:
           sudo mv ${imagedir}/* ${tardir}/
           sudo tar -I 'xz -T0' -ckf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
-          og_image=$(find ${tardir} -name "*.img" -type f)
+          og_image=$(find ${tardir} -name "*.img.xz" -type f)
           echo "Moved image file: ${og_image}"
           echo "smoketest_image_loc=${og_image}" >> $GITHUB_ENV
           ls
