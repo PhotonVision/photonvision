@@ -1,7 +1,7 @@
 import typing
 
 import wpilib
-from robotpy_apriltag import AprilTagFieldLayout
+from robotpy_apriltag import AprilTagFieldLayout, AprilTagField
 from wpilib import Field2d
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
 
@@ -22,7 +22,7 @@ class VisionSystemSim:
     camera target info.
     """
 
-    def __init__(self, visionSystemName: str):
+    def __init__(self, visionSystemName: str, tagLayout: AprilTagFieldLayout | None = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)):
         """A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
         running PhotonVision, detecting targets placed on the field. :class:`.VisionTargetSim`s added to
         this class will be detected by the :class:`.PhotonCameraSim`s added to this class. This class
@@ -30,6 +30,7 @@ class VisionSystemSim:
         camera target info.
 
         :param visionSystemName: The specific identifier for this vision system in NetworkTables.
+        :param tagLayout: The field layout to use for AprilTag detection. If not provided, the default field layout will be used.
         """
         self.dbgField: Field2d = Field2d()
         self.bufferLength: seconds = 1.5
@@ -45,6 +46,9 @@ class VisionSystemSim:
 
         self.tableName: str = "VisionSystemSim-" + visionSystemName
         wpilib.SmartDashboard.putData(self.tableName + "/Sim Field", self.dbgField)
+        self.tagLayout = tagLayout
+        self.addAprilTags(tagLayout)
+
 
     def getCameraSim(self, name: str) -> PhotonCameraSim | None:
         """Get one of the simulated cameras."""
@@ -316,7 +320,7 @@ class VisionSystemSim:
             cameraPoses2d.append(lateCameraPose.toPose2d())
 
             # process a PhotonPipelineResult with visible targets
-            camResult = camSim.process(latency, lateCameraPose, allTargets)
+            camResult = camSim.process(latency, lateCameraPose, allTargets, self.tagLayout)
             # publish this info to NT at estimated timestamp of receive
             # needs a timestamp in microseconds
             camSim.submitProcessedFrame(camResult, timestampNt * 1.0e6)
