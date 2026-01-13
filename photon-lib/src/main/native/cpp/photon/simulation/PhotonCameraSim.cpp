@@ -106,7 +106,8 @@ std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
 }
 PhotonPipelineResult PhotonCameraSim::Process(
     units::second_t latency, const frc::Pose3d& cameraPose,
-    std::vector<VisionTargetSim> targets, const frc::AprilTagFieldLayout& tagLayout) {
+    std::vector<VisionTargetSim> targets,
+    const frc::AprilTagFieldLayout& tagLayout) {
   std::sort(targets.begin(), targets.end(),
             [cameraPose](const VisionTargetSim& t1, const VisionTargetSim& t2) {
               units::meter_t dist1 =

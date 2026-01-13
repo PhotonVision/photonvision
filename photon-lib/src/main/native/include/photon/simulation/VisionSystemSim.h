@@ -59,7 +59,11 @@ class VisionSystemSim {
    * NetworkTables.
    * @param tagLayout The field layout to use for AprilTag detection
    */
-  explicit VisionSystemSim(std::string visionSystemName, const frc::AprilTagFieldLayout& tagLayout = frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)): tagLayout(tagLayout) {
+  explicit VisionSystemSim(std::string visionSystemName,
+                           const frc::AprilTagFieldLayout& tagLayout =
+                               frc::AprilTagFieldLayout::LoadField(
+                                   frc::AprilTagField::kDefaultField))
+      : tagLayout(tagLayout) {
     std::string tableName = "VisionSystemSim-" + visionSystemName;
     frc::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
     AddAprilTags(tagLayout);
@@ -453,7 +457,8 @@ class VisionSystemSim {
           lateRobotPose + GetRobotToCamera(camSim, timestampCapture).value();
       cameraPoses2d.push_back(lateCameraPose.ToPose2d());
 
-      auto camResult = camSim->Process(latency, lateCameraPose, allTargets, tagLayout);
+      auto camResult =
+          camSim->Process(latency, lateCameraPose, allTargets, tagLayout);
       camSim->SubmitProcessedFrame(camResult, timestampNt);
       for (const auto& target : camResult.GetTargets()) {
         auto trf = target.GetBestCameraToTarget();

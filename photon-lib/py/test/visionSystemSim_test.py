@@ -307,7 +307,8 @@ def test_distanceCalc(distParam, pitchParam, heightParam) -> None:
     )
 
     visionSysSim = VisionSystemSim(
-        "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife", AprilTagFieldLayout()
+        "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife",
+        AprilTagFieldLayout(),
     )
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
@@ -545,7 +546,6 @@ def test_PoseEstimationRotated() -> None:
     cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(90.0))
     cameraSim.setMinTargetAreaPixels(20.0)
 
-    
     robotPose = Pose2d(Translation2d(5.0, 1.0), Rotation2d.fromDegrees(-5.0))
     visionSysSim.addVisionTargets(
         [VisionTargetSim(tagList[0].pose, TargetModel.AprilTag36h11(), 0)]

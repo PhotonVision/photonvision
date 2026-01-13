@@ -5,7 +5,7 @@ import cscore as cs
 import cv2 as cv
 import numpy as np
 import wpilib
-from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
+from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Transform3d
 from wpimath.units import meters, seconds
 
@@ -250,7 +250,11 @@ class PhotonCameraSim:
         raise Exception("Processed stream not implemented")
 
     def process(
-        self, latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim], tagLayout: AprilTagFieldLayout
+        self,
+        latency: seconds,
+        cameraPose: Pose3d,
+        targets: list[VisionTargetSim],
+        tagLayout: AprilTagFieldLayout,
     ) -> PhotonPipelineResult:
         # Sort targets by distance to camera - furthest to closest
         def distance(target: VisionTargetSim):
