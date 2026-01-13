@@ -28,6 +28,7 @@ class VisionSystemSim:
         tagLayout: AprilTagFieldLayout | None = AprilTagFieldLayout.loadField(
             AprilTagField.kDefaultField
         ),
+        targetModel: TargetModel = TargetModel.AprilTag36h11()
     ):
         """A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
         running PhotonVision, detecting targets placed on the field. :class:`.VisionTargetSim`s added to
@@ -53,6 +54,7 @@ class VisionSystemSim:
         self.tableName: str = "VisionSystemSim-" + visionSystemName
         wpilib.SmartDashboard.putData(self.tableName + "/Sim Field", self.dbgField)
         self.tagLayout = tagLayout
+        self.targetModel = targetModel
         self.addAprilTags(tagLayout)
 
     def getCameraSim(self, name: str) -> PhotonCameraSim | None:
@@ -225,7 +227,7 @@ class VisionSystemSim:
             # TODO this was done to make the python gods happy. Confirm that this is desired or if types dont matter
             assert tag_pose is not None
             targets.append(
-                VisionTargetSim(tag_pose, TargetModel.AprilTag36h11(), tag.ID)
+                VisionTargetSim(tag_pose, self.targetModel, tag.ID)
             )
         self.addVisionTargets(targets, "apriltag")
 

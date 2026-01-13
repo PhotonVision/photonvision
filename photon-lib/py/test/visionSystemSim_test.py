@@ -462,7 +462,7 @@ def test_PoseEstimation() -> None:
     fieldWidth: meters = 27.0
     layout = AprilTagFieldLayout(tagList, fieldLength, fieldWidth)
 
-    visionSysSim = VisionSystemSim("Test", layout)
+    visionSysSim = VisionSystemSim("Test", layout, TargetModel.AprilTag16h5())
     camera = PhotonCamera("camera")
     cameraSim = PhotonCameraSim(camera)
     visionSysSim.addCamera(cameraSim, Transform3d())
