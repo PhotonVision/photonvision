@@ -69,6 +69,7 @@ public class VisionSystemSim {
     private final Transform3d kEmptyTrf = new Transform3d();
 
     private final AprilTagFieldLayout tagLayout;
+    private final TargetModel targetModel;
 
     /**
      * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
@@ -94,10 +95,26 @@ public class VisionSystemSim {
      * @param tagLayout The field layout to use for AprilTag detection
      */
     public VisionSystemSim(String visionSystemName, AprilTagFieldLayout tagLayout) {
+        this(visionSystemName, tagLayout, TargetModel.kAprilTag36h11);
+    }
+
+    /**
+     * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
+     * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
+     * this class will be detected by the {@link PhotonCameraSim}s added to this class. This class
+     * should be updated periodically with the robot's current pose in order to publish the simulated
+     * camera target info.
+     *
+     * @param visionSystemName The specific identifier for this vision system in NetworkTables.
+     * @param tagLayout The field layout to use for AprilTag detection
+     * @param targetModel The model to use for vision targets.
+     */
+    public VisionSystemSim(String visionSystemName, AprilTagFieldLayout tagLayout, TargetModel targetModel) {
         dbgField = new Field2d();
         String tableName = "VisionSystemSim-" + visionSystemName;
         SmartDashboard.putData(tableName + "/Sim Field", dbgField);
         this.tagLayout = tagLayout;
+        this.targetModel = targetModel;
         addAprilTags(tagLayout);
     }
 
@@ -288,7 +305,7 @@ public class VisionSystemSim {
                     "apriltag",
                     new VisionTargetSim(
                             tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
-                            TargetModel.kAprilTag36h11,
+                            targetModel,
                             tag.ID));
         }
     }

@@ -28,7 +28,7 @@ class VisionSystemSim:
         tagLayout: AprilTagFieldLayout | None = AprilTagFieldLayout.loadField(
             AprilTagField.kDefaultField
         ),
-        targetModel: TargetModel = TargetModel.AprilTag36h11()
+        targetModel: TargetModel = TargetModel.AprilTag36h11(),
     ):
         """A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
         running PhotonVision, detecting targets placed on the field. :class:`.VisionTargetSim`s added to
@@ -38,6 +38,7 @@ class VisionSystemSim:
 
         :param visionSystemName: The specific identifier for this vision system in NetworkTables.
         :param tagLayout: The field layout to use for AprilTag detection. If not provided, the default field layout will be used.
+        :param targetModel: The model to use for vision targets.
         """
         self.dbgField: Field2d = Field2d()
         self.bufferLength: seconds = 1.5
@@ -226,9 +227,7 @@ class VisionSystemSim:
             tag_pose = layout.getTagPose(tag.ID)
             # TODO this was done to make the python gods happy. Confirm that this is desired or if types dont matter
             assert tag_pose is not None
-            targets.append(
-                VisionTargetSim(tag_pose, self.targetModel, tag.ID)
-            )
+            targets.append(VisionTargetSim(tag_pose, self.targetModel, tag.ID))
         self.addVisionTargets(targets, "apriltag")
 
     def clearVisionTargets(self) -> None:

@@ -58,12 +58,15 @@ class VisionSystemSim {
    * @param visionSystemName The specific identifier for this vision system in
    * NetworkTables.
    * @param tagLayout The field layout to use for AprilTag detection
+   * @param targetModel The model to use for vision targets
    */
-  explicit VisionSystemSim(std::string visionSystemName,
-                           const frc::AprilTagFieldLayout& tagLayout =
-                               frc::AprilTagFieldLayout::LoadField(
-                                   frc::AprilTagField::kDefaultField))
-      : tagLayout(tagLayout) {
+  explicit VisionSystemSim(
+      std::string visionSystemName,
+      const frc::AprilTagFieldLayout& tagLayout =
+          frc::AprilTagFieldLayout::LoadField(
+              frc::AprilTagField::kDefaultField),
+      const photon::TargetModel targetModel = photon::kAprilTag36h11)
+      : tagLayout(tagLayout), targetModel(targetModel) {
     std::string tableName = "VisionSystemSim-" + visionSystemName;
     frc::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
     AddAprilTags(tagLayout);
@@ -322,7 +325,7 @@ class VisionSystemSim {
     std::vector<VisionTargetSim> targets;
     for (const frc::AprilTag& tag : layout.GetTags()) {
       targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
-                                           photon::kAprilTag36h11, tag.ID});
+                                           targetModel, tag.ID});
     }
     AddVisionTargets("apriltag", targets);
   }
@@ -487,5 +490,6 @@ class VisionSystemSim {
   frc::Field2d dbgField{};
   const frc::Transform3d kEmptyTrf{};
   const frc::AprilTagFieldLayout& tagLayout;
+  const photon::TargetModel targetModel;
 };
 }  // namespace photon

@@ -419,7 +419,7 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   units::meter_t fieldLength{54};
   units::meter_t fieldWidth{27};
   frc::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
-  photon::VisionSystemSim visionSysSim{"Test", layout};
+  photon::VisionSystemSim visionSysSim{"Test", layout, photon::kAprilTag16h5};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
