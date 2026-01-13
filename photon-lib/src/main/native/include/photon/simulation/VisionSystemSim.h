@@ -59,7 +59,7 @@ class VisionSystemSim {
    * NetworkTables.
    * @param tagLayout The field layout to use for AprilTag detection
    */
-  explicit VisionSystemSim(std::string visionSystemName, const frc::AprilTagFieldLayout& tagLayout = frc::AprilTagFieldLayout::LoadField(frc::AprilTagFields::kDefaultField)): tagLayout(tagLayout) {
+  explicit VisionSystemSim(std::string visionSystemName, const frc::AprilTagFieldLayout& tagLayout = frc::AprilTagFieldLayout::LoadField(frc::AprilTagField::kDefaultField)): tagLayout(tagLayout) {
     std::string tableName = "VisionSystemSim-" + visionSystemName;
     frc::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
     AddAprilTags(tagLayout);
