@@ -26,6 +26,7 @@ package org.photonvision.simulation;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -67,6 +68,8 @@ public class VisionSystemSim {
 
     private final Transform3d kEmptyTrf = new Transform3d();
 
+    private final AprilTagFieldLayout tagLayout;
+
     /**
      * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
      * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
@@ -77,9 +80,25 @@ public class VisionSystemSim {
      * @param visionSystemName The specific identifier for this vision system in NetworkTables.
      */
     public VisionSystemSim(String visionSystemName) {
+        this(visionSystemName, AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField));
+    }
+
+    /**
+     * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
+     * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
+     * this class will be detected by the {@link PhotonCameraSim}s added to this class. This class
+     * should be updated periodically with the robot's current pose in order to publish the simulated
+     * camera target info.
+     *
+     * @param visionSystemName The specific identifier for this vision system in NetworkTables.
+     * @param tagLayout The field layout to use for AprilTag detection
+     */
+    public VisionSystemSim(String visionSystemName, AprilTagFieldLayout tagLayout) {
         dbgField = new Field2d();
         String tableName = "VisionSystemSim-" + visionSystemName;
         SmartDashboard.putData(tableName + "/Sim Field", dbgField);
+        this.tagLayout = tagLayout;
+        addAprilTags(tagLayout);
     }
 
     /** Get one of the simulated cameras. */
@@ -431,7 +450,7 @@ public class VisionSystemSim {
             cameraPoses2d.add(lateCameraPose.toPose2d());
 
             // process a PhotonPipelineResult with visible targets
-            var camResult = camSim.process(latencyMillis, lateCameraPose, allTargets);
+            var camResult = camSim.process(latencyMillis, lateCameraPose, allTargets, tagLayout);
             // publish this info to NT at estimated timestamp of receive
             camSim.submitProcessedFrame(camResult, timestampNT);
             // display debug results
