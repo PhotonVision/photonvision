@@ -583,7 +583,8 @@ jobs:
           sudo mv ${imagedir}/* ${tardir}/
           sudo tar -I 'xz -T0' -ckf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
 
-          og_image=$(find ${tardir} -name "*.img.xz" -type f)
+          # Point smoketest to the tar.xz we just created
+          og_image=$(realpath ${new_image_name}.tar.xz)
           echo "Moved image file: ${og_image}"
           echo "smoketest_image_loc=${og_image}" >> $GITHUB_ENV
           ls
