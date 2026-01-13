@@ -573,19 +573,14 @@ jobs:
         if: ${{ startsWith(matrix.image_suffix, 'rubik') }}
         run: |
           set -ex
-          ls
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
-          new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
-
+          tardir=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
           imagedir=$(dirname ${{ steps.generate_image.outputs.image }})
-          tardir=${new_image_name}
           sudo mkdir --parents ${tardir}
           sudo cp ${imagedir}/* ${tardir}/
-          sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
-
-          # Point smoketest to the tar.xz we just created
+          sudo tar -I 'xz -T0' -cf ${tardir}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
+          # Point smoketest to the old image
           echo "smoketest_image_loc=${{ steps.generate_image.outputs.image }}" >> $GITHUB_ENV
-          ls
 
       - uses: actions/upload-artifact@v6
         name: Upload image
