@@ -79,7 +79,9 @@ const deleteModel = async (model: ObjectDetectionModelProperties) => {
     modelPath: model.modelPath
   });
 
-  forceReloadPage();
+  useSettingsStore().general.availableModels = useSettingsStore().general.availableModels.filter(
+    (m) => m.modelPath !== model.modelPath
+  );
 };
 
 const renameModel = async (model: ObjectDetectionModelProperties, newName: string) => {
