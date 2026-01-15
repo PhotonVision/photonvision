@@ -219,8 +219,7 @@ public enum Platform {
         if (OS_NAME.startsWith("Linux")) {
             if (isSystemCore()) {
                 return LINUX_SYSTEMCORE;
-            } else
-            if (isPiSBC()) {
+            } else if (isPiSBC()) {
                 if (OS_ARCH.equals("arm") || OS_ARCH.equals("arm32")) {
                     return LINUX_RASPBIAN32;
                 } else if (OS_ARCH.equals("aarch64") || OS_ARCH.equals("arm64")) {
