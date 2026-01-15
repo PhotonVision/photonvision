@@ -57,7 +57,7 @@ setup(
     package_data={"photonlibpy": ["py.typed"]},
     version=versionString,
     install_requires=[
-        "numpy==2.3.5",
+        "numpy~=2.3",
         "wpilib==2026.1.1",
         "robotpy-wpimath==2026.1.1",
         "robotpy-apriltag==2026.1.1",
