@@ -904,6 +904,12 @@ public class RequestHandler {
 
             ctx.status(200).result("Successfully deleted object detection model");
 
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error deleting object detection model: " + e.getMessage());
@@ -951,6 +957,12 @@ public class RequestHandler {
 
             NeuralNetworkModelManager.getInstance().discoverModels();
             ctx.status(200).result("Successfully renamed object detection model");
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error renaming object detection model: " + e.getMessage());
