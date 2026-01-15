@@ -5,7 +5,7 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { type ObjectDetectionModelProperties } from "@/types/SettingTypes";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import { useTheme } from "vuetify";
-import { axiosPost } from "@/lib/PhotonUtils";
+import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 
 const theme = useTheme();
 const showImportDialog = ref(false);
@@ -43,7 +43,7 @@ const handleImport = async () => {
     timeout: -1
   });
 
-  axiosPost("/objectdetection/import", "import an object detection model", formData, {
+  await axiosPost("/objectdetection/import", "import an object detection model", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: ({ progress }) => {
       const uploadPercentage = (progress || 0) * 100.0;
@@ -70,12 +70,16 @@ const handleImport = async () => {
   importHeight.value = null;
   importWidth.value = null;
   importVersion.value = null;
+
+  forceReloadPage();
 };
 
 const deleteModel = async (model: ObjectDetectionModelProperties) => {
-  axiosPost("/objectdetection/delete", "delete an object detection model", {
+  await axiosPost("/objectdetection/delete", "delete an object detection model", {
     modelPath: model.modelPath
   });
+
+  forceReloadPage();
 };
 
 const renameModel = async (model: ObjectDetectionModelProperties, newName: string) => {
@@ -85,11 +89,13 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
     timeout: -1
   });
 
-  axiosPost("/objectdetection/rename", "rename an object detection model", {
+  await axiosPost("/objectdetection/rename", "rename an object detection model", {
     modelPath: model.modelPath,
     newName: newName
   });
   showRenameDialog.value.show = false;
+
+  forceReloadPage();
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
@@ -115,19 +121,21 @@ const openExportIndividualModelPrompt = () => {
 };
 
 const showNukeDialog = ref(false);
-const nukeModels = () => {
-  axiosPost("/objectdetection/nuke", "clear and reset object detection models");
+const nukeModels = async () => {
+  await axiosPost("/objectdetection/nuke", "clear and reset object detection models");
+
+  forceReloadPage();
 };
 
 const showBulkImportDialog = ref(false);
 const importFile = ref<File | null>(null);
-const handleBulkImport = () => {
+const handleBulkImport = async () => {
   if (importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
+  await axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
     headers: { "Content-Type": "multipart/form-data" },
     onUploadProgress: ({ progress }) => {
       const uploadPercentage = (progress || 0) * 100.0;
@@ -150,6 +158,8 @@ const handleBulkImport = () => {
   });
   showImportDialog.value = false;
   importFile.value = null;
+
+  forceReloadPage();
 };
 </script>
 
