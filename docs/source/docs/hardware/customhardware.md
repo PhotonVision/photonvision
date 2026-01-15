@@ -19,14 +19,16 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "statusRGBPins" : [ ],
-        "statusRGBActiveHigh" : false,
+        "statusLEDType": "RGB",
+        "statusLEDPins" : [ ],
+        "statusLEDActiveHigh" : false,
       }
 ```
 
-:::{note}
-No hardware boards with status RGB LED pins or non-dimming LED's have been tested yet. Please reach out to the development team if these features are desired, they can assist with configuration and testing.
-:::
+There are currently two types of status LEDs supported:
+
+* RGB (default): A singular LED mixing separate red, green, and blue inputs
+* LL: A pair of independent Green and yellow LEDs
 
 ### GPIO Pinout
 
@@ -144,8 +146,9 @@ Here is a complete example `hardwareConfig.json`:
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
         "ledPWMFrequency" : 0,
-        "statusRGBPins" : [ ],
-        "statusRGBActiveHigh" : false,
+        "statusLEDType": "RGB",
+        "statusLEDPins" : [ ],
+        "statusLEDActiveHigh" : false,
         "getGPIOCommand" : "getGPIO {p}",
         "setGPIOCommand" : "setGPIO {p} {s}",
         "setPWMCommand" : "setPWM {p} {v}",

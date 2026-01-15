@@ -35,6 +35,7 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
+import org.photonvision.common.hardware.statusLED.StatusLED;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -102,12 +103,11 @@ public class HardwareManager {
                 };
 
         statusLED =
-                hardwareConfig.statusRGBPins.size() == 3
-                        ? new StatusLED(
-                                lazyDeviceFactory.get(),
-                                hardwareConfig.statusRGBPins,
-                                hardwareConfig.statusRGBActiveHigh)
-                        : null;
+                StatusLED.ofType(
+                        hardwareConfig.statusLEDType,
+                        lazyDeviceFactory.get(),
+                        hardwareConfig.statusLEDPins,
+                        hardwareConfig.statusLEDActiveHigh);
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
@@ -161,7 +161,7 @@ public class HardwareManager {
                 pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
             }
         }
-        for (int pin : hardwareConfig.statusRGBPins) {
+        for (int pin : hardwareConfig.statusLEDPins) {
             pinInfo.addGpioPinInfo(pin, pin, List.of(DeviceMode.DIGITAL_OUTPUT));
         }
 
