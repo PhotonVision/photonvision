@@ -76,10 +76,6 @@ const deleteModel = (model: ObjectDetectionModelProperties) => {
   axiosPost("/objectdetection/delete", "delete an object detection model", {
     modelPath: model.modelPath
   });
-
-  useSettingsStore().general.availableModels = useSettingsStore().general.availableModels.filter(
-    (m) => m.modelPath !== model.modelPath
-  );
 };
 
 const renameModel = (model: ObjectDetectionModelProperties, newName: string) => {
@@ -94,12 +90,6 @@ const renameModel = (model: ObjectDetectionModelProperties, newName: string) => 
     newName: newName
   });
   showRenameDialog.value.show = false;
-
-  useSettingsStore().general.availableModels.forEach((m) => {
-    if (m.modelPath === model.modelPath) {
-      m.nickname = newName;
-    }
-  });
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
