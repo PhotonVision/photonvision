@@ -95,7 +95,11 @@ const renameModel = async (model: ObjectDetectionModelProperties, newName: strin
   });
   showRenameDialog.value.show = false;
 
-  forceReloadPage();
+  useSettingsStore().general.availableModels.forEach((m) => {
+    if (m.modelPath === model.modelPath) {
+      m.nickname = newName;
+    }
+  });
 };
 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
