@@ -1,0 +1,13 @@
+Package: pv-system-viewer
+Version: 0.1.0
+Description: PhotonVision System Viewer - A simple interface to see all PhotonVision cameras.
+Section: development
+Priority: optional
+Maintainer: PhotonVision Team
+Architecture: all
+Source: local
+X-Port: 5804
+X-Has-UI: true
+X-Auto-Start: true
+X-Icon-Path: /usr/share/pv-system-viewer.png
+X-Display-Name: PhotonVision System Viewer
