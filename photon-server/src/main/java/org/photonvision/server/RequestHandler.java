@@ -1393,4 +1393,24 @@ public class RequestHandler {
             return;
         }
     }
+
+    private record SwapCamerasRequest(String cameraUniqueName, String otherCameraUniqueName) {}
+
+    public static void onSwapCamerasRequest(Context ctx) {
+        logger.info(ctx.queryString());
+        try {
+            SwapCamerasRequest request = kObjectMapper.readValue(ctx.body(), SwapCamerasRequest.class);
+
+            logger.info(
+                    "Swapping cameras: "
+                            + request.cameraUniqueName
+                            + " and "
+                            + request.otherCameraUniqueName);
+        } catch (IOException e) {
+            ctx.status(401);
+            logger.error("Failed to process swap cameras request", e);
+            ctx.result("Failed to process swap cameras request");
+            return;
+        }
+    }
 }
