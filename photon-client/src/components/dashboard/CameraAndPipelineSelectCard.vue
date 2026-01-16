@@ -150,6 +150,7 @@ const createNewPipeline = () => {
   const type = newPipelineType.value;
   if (type === WebsocketPipelineType.DriverMode || type === WebsocketPipelineType.Calib3d) return;
   useCameraSettingsStore().createNewPipeline(newPipelineName.value, type);
+  useCameraSettingsStore().changeCurrentPipelineIndex(useCameraSettingsStore().pipelineNames.length - 1, true);
   showPipelineCreationDialog.value = false;
 };
 const cancelPipelineCreation = () => {
@@ -213,9 +214,10 @@ const cancelChangePipelineType = () => {
   showPipelineTypeChangeDialog.value = false;
 };
 
-// Pipeline duplication'
+// Pipeline duplication
 const duplicateCurrentPipeline = () => {
   useCameraSettingsStore().duplicatePipeline(useCameraSettingsStore().currentCameraSettings.currentPipelineIndex);
+  useCameraSettingsStore().changeCurrentPipelineIndex(useCameraSettingsStore().pipelineNames.length - 1, true);
 };
 
 // Change Props whenever the pipeline settings are changed
