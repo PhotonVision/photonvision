@@ -3,7 +3,7 @@
   "supportURL" : "https://limelightvision.io",
   "ledPins" : [ 17, 18 ],
   "ledsCanDim" : false,
-  "statusLEDType": "LL",
+  "statusLEDType": "Green-Yellow",
   "statusLEDPins": [ 5, 4 ],
   "statusLEDActiveHigh": false,
   "vendorFOV" : 75.76079874010732
