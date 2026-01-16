@@ -4,7 +4,7 @@ plugins {
     id "cpp"
     id "com.diffplug.spotless" version "8.1.0"
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
-    id "edu.wpi.first.GradleRIO" version "2026.1.1"
+    id "edu.wpi.first.GradleRIO" version "2026.2.1"
     id 'org.photonvision.tools.WpilibTools' version '2.3.3-photon'
     id 'com.google.protobuf' version '0.9.3' apply false
     id 'edu.wpi.first.GradleJni' version '1.1.0'
@@ -32,7 +32,7 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2026.1.1"
+    wpilibVersion = "2026.2.1"
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
