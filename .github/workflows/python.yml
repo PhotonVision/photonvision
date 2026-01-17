@@ -65,13 +65,15 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           name: dist
-          path: ./photon-lib/py/dist/
+          path: dist/
+
+      - name: Install package
+        shell: bash
+        run: pip install --no-cache-dir dist/*.whl
 
       - name: Run Unit Tests
-        working-directory: ./photon-lib/py
-        run: |
-            pip install --no-cache-dir dist/*.whl
-            pytest
+        shell: bash
+        run: pytest photon-lib/py/test/
 
       - name: Run mypy type checking
         run: mypy --show-column-numbers --config-file photon-lib/py/pyproject.toml photon-lib
