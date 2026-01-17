@@ -15,6 +15,7 @@ import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
 import { useTheme } from "vuetify";
+import PvSelect from "@/components/common/pv-select.vue";
 
 const theme = useTheme();
 
@@ -61,6 +62,19 @@ const deleteThisCamera = (cameraUniqueName: string) => {
   deletingCamera.value = cameraUniqueName;
   axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName }).finally(() => {
     deletingCamera.value = null;
+  });
+};
+
+const swapDialog = ref({ show: false, cameraInfo: null as PVCameraInfo | null, cameraUniqueName: "" });
+const otherCamera = ref({ cameraInfo: null as PVCameraInfo | null, cameraUniqueName: "" });
+
+const swapCamera = (cameraUniqueName: string, otherCameraUniqueName: string) => {
+  axiosPost("/utils/swapCameras", "swap two camera assignments", {
+    cameraUniqueName: cameraUniqueName,
+    otherCameraUniqueName: otherCameraUniqueName
+  }).finally(() => {
+    swapDialog.value.show = false;
+    otherCamera.value = { cameraInfo: null, cameraUniqueName: "" };
   });
 };
 
@@ -274,6 +288,25 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   <v-icon size="x-large">mdi-trash-can-outline</v-icon>
                 </v-btn>
               </v-col>
+              <v-col cols="6" md="3">
+                <v-btn
+                  class="pa-0"
+                  color="buttonPassive"
+                  style="width: 100%"
+                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  tooltip="Swap Camera"
+                  @click="
+                    () =>
+                      (swapDialog = {
+                        show: true,
+                        cameraInfo: module.matchedCameraInfo,
+                        cameraUniqueName: module.uniqueName
+                      })
+                  "
+                >
+                  <v-icon size="x-large">mdi-swap-horizontal</v-icon>
+                </v-btn>
+              </v-col>
             </v-row>
           </v-card-text>
         </v-card>
@@ -464,6 +497,47 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         <v-card-text v-else>
           <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
+      </v-card>
+    </v-dialog>
+
+    <!-- Camera swapping modal -->
+    <v-dialog v-model="swapDialog.show" max-width="800">
+      <v-card flat color="surface">
+        <v-card-title class="d-flex justify-space-between">
+          <span>Swap Camera Configs</span>
+        </v-card-title>
+        <v-row>
+          <v-col> {{ cameraInfoFor(swapDialog.cameraInfo).name }}</v-col>
+          <v-col><v-icon size="x-large" color="buttonPassive">mdi-swap-horizontal</v-icon> </v-col>
+          <v-col>
+            <pv-select
+              v-model="otherCamera.cameraUniqueName"
+              label="Other Camera"
+              :select-cols="8"
+              :items="
+                activeVisionModules
+                  .map((it) =>
+                    cameraInfoFor(it.matchedCameraInfo).uniquePath !== cameraInfoFor(swapDialog.cameraInfo).uniquePath
+                      ? {
+                          name: `${cameraInfoFor(it.matchedCameraInfo).name} (${cameraInfoFor(it.matchedCameraInfo).path})`,
+                          value: cameraInfoFor(it.matchedCameraInfo).uniquePath
+                        }
+                      : null
+                  )
+                  .filter((it) => it !== null)
+              "
+            />
+          </v-col>
+        </v-row>
+        <v-btn
+          :disabled="otherCamera.cameraUniqueName === '' || otherCamera.cameraUniqueName === null"
+          color="buttonPassive"
+          style="width: 100%"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          @click="swapCamera(swapDialog.cameraUniqueName, otherCamera.cameraUniqueName)"
+        >
+          <span>Swap Cameras</span>
+        </v-btn>
       </v-card>
     </v-dialog>
 
