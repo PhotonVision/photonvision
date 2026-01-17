@@ -26,7 +26,7 @@ const importWidth = ref<number | null>(null);
 const importVersion = ref<string | null>(null);
 
 // TODO gray out the button when model is uploading
-const handleImport = async () => {
+const handleImport = () => {
   if (importModelFile.value === null) return;
 
   const formData = new FormData();
@@ -72,13 +72,13 @@ const handleImport = async () => {
   importVersion.value = null;
 };
 
-const deleteModel = async (model: ObjectDetectionModelProperties) => {
+const deleteModel = (model: ObjectDetectionModelProperties) => {
   axiosPost("/objectdetection/delete", "delete an object detection model", {
     modelPath: model.modelPath
   });
 };
 
-const renameModel = async (model: ObjectDetectionModelProperties, newName: string) => {
+const renameModel = (model: ObjectDetectionModelProperties, newName: string) => {
   useStateStore().showSnackbarMessage({
     message: "Renaming Object Detection Model...",
     color: "secondary",
