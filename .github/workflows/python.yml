@@ -107,6 +107,7 @@ jobs:
 
       - name: Install PhotonLibPy package
         working-directory: ./photon-lib/py
+        shell: bash
         run: |
             pip install --no-cache-dir dist/*.whl
 
