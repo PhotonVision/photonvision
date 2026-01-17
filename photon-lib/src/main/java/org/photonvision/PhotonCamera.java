@@ -45,7 +45,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.WPILibVersion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -189,50 +188,6 @@ public class PhotonCamera implements AutoCloseable {
 
     static void verifyDependencies() {
         // spotless:off
-        if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
-            String bfw = """
-
-
-
-
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>                                          \s
-                    >>> You are running an incompatible version  \s
-                    >>> of PhotonVision !                        \s
-                    >>>                                          \s
-                    >>> PhotonLib """
-                    + PhotonVersion.versionString
-                    + " is built for WPILib "
-                    + PhotonVersion.wpilibTargetVersion
-                    + "\n"
-                    + ">>> but you are using WPILib "
-                    + WPILibVersion.Version
-                    + """
-                    \n>>>                                          \s
-                    >>> This is neither tested nor supported.    \s
-                    >>> You MUST update WPILib, PhotonLib, or both.
-                    >>> Check `./gradlew dependencies` and ensure\s
-                    >>> all mentions of OpenCV match the version \s
-                    >>> that PhotonLib was built for. If you find a
-                    >>> a mismatched version in a dependency, you\s
-                    >>> must take steps to update the version of \s
-                    >>> OpenCV used in that dependency. If you do\s
-                    >>> not control that dependency and an updated\s
-                    >>> version is not available, contact the    \s
-                    >>> developers of that dependency.           \s
-                    >>>                                          \s
-                    >>> Your code will now crash.                \s
-                    >>> We hope your day gets better.            \s
-                    >>>                                          \s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    """;
-
-            DriverStation.reportWarning(bfw, false);
-            DriverStation.reportError(bfw, false);
-            throw new UnsupportedOperationException(bfw);
-        }
         if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
             String bfw = """
 
