@@ -1401,11 +1401,7 @@ public class RequestHandler {
         try {
             SwapCamerasRequest request = kObjectMapper.readValue(ctx.body(), SwapCamerasRequest.class);
 
-            logger.info(
-                    "Swapping cameras: "
-                            + request.uniquePath
-                            + " and "
-                            + request.otherUniquePath);
+            logger.info("Swapping cameras: " + request.uniquePath + " and " + request.otherUniquePath);
         } catch (IOException e) {
             ctx.status(401);
             logger.error("Failed to process swap cameras request", e);
