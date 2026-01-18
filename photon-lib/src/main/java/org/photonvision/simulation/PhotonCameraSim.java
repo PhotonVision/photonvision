@@ -25,7 +25,6 @@
 package org.photonvision.simulation;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.OpenCvLoader;
@@ -376,7 +375,10 @@ public class PhotonCameraSim implements AutoCloseable {
     }
 
     public PhotonPipelineResult process(
-            double latencyMillis, Pose3d cameraPose, List<VisionTargetSim> targets, AprilTagFieldLayout tagLayout) {
+            double latencyMillis,
+            Pose3d cameraPose,
+            List<VisionTargetSim> targets,
+            AprilTagFieldLayout tagLayout) {
         // sort targets by distance to camera
         targets = new ArrayList<>(targets);
         targets.sort(

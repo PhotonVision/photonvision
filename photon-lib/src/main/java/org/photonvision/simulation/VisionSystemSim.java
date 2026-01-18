@@ -109,7 +109,8 @@ public class VisionSystemSim {
      * @param tagLayout The field layout to use for AprilTag detection
      * @param targetModel The model to use for vision targets.
      */
-    public VisionSystemSim(String visionSystemName, AprilTagFieldLayout tagLayout, TargetModel targetModel) {
+    public VisionSystemSim(
+            String visionSystemName, AprilTagFieldLayout tagLayout, TargetModel targetModel) {
         dbgField = new Field2d();
         String tableName = "VisionSystemSim-" + visionSystemName;
         SmartDashboard.putData(tableName + "/Sim Field", dbgField);

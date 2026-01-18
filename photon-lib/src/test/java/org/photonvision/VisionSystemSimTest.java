@@ -115,7 +115,8 @@ class VisionSystemSimTest {
         final var targetModel = new TargetModel(1.0, 1.0);
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 2), new Rotation3d(0, 0, Math.PI));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -185,7 +186,8 @@ class VisionSystemSimTest {
         final var targetModel = new TargetModel(3.0, 3.0);
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -211,7 +213,8 @@ class VisionSystemSimTest {
                 new Pose3d(new Translation3d(15.98, 0, 2), new Rotation3d(0, 0, Math.PI));
         var robotToCamera =
                 new Transform3d(new Translation3d(0, 0, 1), new Rotation3d(0, -Math.PI / 4, 0));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, robotToCamera);
@@ -236,7 +239,8 @@ class VisionSystemSimTest {
         final var targetModel = new TargetModel(0.1, 0.1);
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -260,7 +264,8 @@ class VisionSystemSimTest {
         final var targetModel = new TargetModel(1.0, 1.0);
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -286,7 +291,8 @@ class VisionSystemSimTest {
         final var targetModel = new TargetModel(0.5, 0.5);
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, 3 * Math.PI / 4));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -311,7 +317,8 @@ class VisionSystemSimTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, 3 * Math.PI / 4));
         final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+        var visionSysSim =
+                new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -380,7 +387,9 @@ class VisionSystemSimTest {
 
         var visionSysSim =
                 new VisionSystemSim(
-                        "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), targetModel);
+                        "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!",
+                        new AprilTagFieldLayout(new ArrayList<>(), 0, 0),
+                        targetModel);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());
@@ -424,7 +433,9 @@ class VisionSystemSimTest {
         final var targetPoseR =
                 new Pose3d(new Translation3d(15.98, -2, 0), new Rotation3d(0, 0, Math.PI));
 
-        var visionSysSim = new VisionSystemSim("Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), TargetModel.kAprilTag16h5);
+        var visionSysSim =
+                new VisionSystemSim(
+                        "Test", new AprilTagFieldLayout(new ArrayList<>(), 0, 0), TargetModel.kAprilTag16h5);
         var camera = new PhotonCamera(inst, "camera");
         var cameraSim = new PhotonCameraSim(camera);
         visionSysSim.addCamera(cameraSim, new Transform3d());

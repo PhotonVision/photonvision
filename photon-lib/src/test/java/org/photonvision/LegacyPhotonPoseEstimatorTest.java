@@ -550,7 +550,10 @@ class LegacyPhotonPoseEstimatorTest {
             var realPose = new Pose3d(7.3, 4.42, 0, new Rotation3d(0, 0, 2.197));
             PhotonPipelineResult result =
                     cameraOneSim.process(
-                            1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets, aprilTags);
+                            1,
+                            realPose.transformBy(estimator.getRobotToCameraTransform()),
+                            simTargets,
+                            aprilTags);
             var bestTarget = result.getBestTarget();
             assertNotNull(bestTarget);
             assertEquals(0, bestTarget.fiducialId);
@@ -572,7 +575,10 @@ class LegacyPhotonPoseEstimatorTest {
             realPose = new Pose3d(4.81, 2.38, 0, new Rotation3d(0, 0, 2.818));
             result =
                     cameraOneSim.process(
-                            1, realPose.transformBy(estimator.getRobotToCameraTransform()), simTargets, aprilTags);
+                            1,
+                            realPose.transformBy(estimator.getRobotToCameraTransform()),
+                            simTargets,
+                            aprilTags);
 
             estimator.addHeadingData(result.getTimestampSeconds(), realPose.getRotation().toRotation2d());
             estimatedPose = estimator.update(result);
