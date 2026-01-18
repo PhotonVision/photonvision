@@ -62,7 +62,7 @@ class VisionSystemSim {
    */
   explicit VisionSystemSim(
       std::string visionSystemName,
-      const frc::AprilTagFieldLayout& tagLayout =
+      const frc::AprilTagFieldLayout tagLayout =
           frc::AprilTagFieldLayout::LoadField(
               frc::AprilTagField::kDefaultField),
       const photon::TargetModel targetModel = photon::kAprilTag36h11)
@@ -489,7 +489,7 @@ class VisionSystemSim {
   std::unordered_map<std::string, std::vector<VisionTargetSim>> targetSets{};
   frc::Field2d dbgField{};
   const frc::Transform3d kEmptyTrf{};
-  const frc::AprilTagFieldLayout& tagLayout;
+  const frc::AprilTagFieldLayout tagLayout;
   const photon::TargetModel targetModel;
 };
 }  // namespace photon
