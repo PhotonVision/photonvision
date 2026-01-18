@@ -555,38 +555,48 @@ jobs:
           minimum_free_mb: ${{ matrix.minimum_free_mb }}
           root_location: ${{ matrix.root_location || 'partition=2' }}
           shrink_image: ${{ matrix.shrink_image || 'yes' }}
-          commands: |
-            chmod +x scripts/armrunner.sh
-            ./scripts/armrunner.sh
-            java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
+          commands: ./scripts/armrunner.sh
 
       - name: Compress image
         # Compress the standard images
         if: ${{ ! startsWith(matrix.image_suffix, 'rubik') }}
         run: |
+          set -ex
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
           new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
           sudo mv ${{ steps.generate_image.outputs.image }} $new_image_name
-          sudo xz -T 0 -v $new_image_name
+          sudo xz -T 0 -kv $new_image_name
+          echo "smoketest_image_loc=${new_image_name}" >> $GITHUB_ENV
 
-      - name: Tar built image
+      - name: Tar built image (Rubik)
         # Build the RubikPi3-specific tar file
         if: ${{ startsWith(matrix.image_suffix, 'rubik') }}
         run: |
+          set -ex
           new_jar=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
-          new_image_name=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
-
+          tardir=$(basename "${new_jar/.jar/_${{ matrix.image_suffix }}.img}")
           imagedir=$(dirname ${{ steps.generate_image.outputs.image }})
-          tardir=${new_image_name}
           sudo mkdir --parents ${tardir}
-          sudo mv ${imagedir}/* ${tardir}/
-          sudo tar -I 'xz -T0' -cf ${new_image_name}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
+          sudo cp ${imagedir}/* ${tardir}/
+          sudo tar -I 'xz -T0' -cf ${tardir}.tar.xz ${tardir} --checkpoint=10000 --checkpoint-action=echo='%T'
+          # Point smoketest to the old image
+          echo "smoketest_image_loc=${{ steps.generate_image.outputs.image }}" >> $GITHUB_ENV
 
       - uses: actions/upload-artifact@v6
         name: Upload image
         with:
           name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
+
+        # This is done after uploading the image to avoid contaminating the image with logs, caches, etc.
+      - uses: photonvision/photon-image-runner@HEAD
+        name: Smoketest Image
+        with:
+          image_url: file://${{ env.smoketest_image_loc }}
+          minimum_free_mb: ${{ matrix.minimum_free_mb }}
+          root_location: ${{ matrix.root_location || 'partition=2' }}
+          shrink_image: ${{ matrix.shrink_image || 'yes' }}
+          commands: java -jar *.jar --smoketest --platform=${{ matrix.plat_override }}
 
   matrix-checker:
     # This job always runs last to set the overall result based on the matrix jobs. If any matrix job failed, this job will fail.
