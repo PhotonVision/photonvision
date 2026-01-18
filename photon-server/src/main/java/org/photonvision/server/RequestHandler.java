@@ -1394,7 +1394,7 @@ public class RequestHandler {
         }
     }
 
-    private record SwapCamerasRequest(String cameraUniqueName, String otherCameraUniqueName) {}
+    private record SwapCamerasRequest(String uniquePath, String otherUniquePath) {}
 
     public static void onSwapCamerasRequest(Context ctx) {
         logger.info(ctx.queryString());
@@ -1403,9 +1403,9 @@ public class RequestHandler {
 
             logger.info(
                     "Swapping cameras: "
-                            + request.cameraUniqueName
+                            + request.uniquePath
                             + " and "
-                            + request.otherCameraUniqueName);
+                            + request.otherUniquePath);
         } catch (IOException e) {
             ctx.status(401);
             logger.error("Failed to process swap cameras request", e);
