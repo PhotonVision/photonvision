@@ -254,7 +254,7 @@ class PhotonCameraSim:
         latency: seconds,
         cameraPose: Pose3d,
         targets: list[VisionTargetSim],
-        tagLayout: AprilTagFieldLayout,
+        tagLayout: AprilTagFieldLayout | None,
     ) -> PhotonPipelineResult:
         # Sort targets by distance to camera - furthest to closest
         def distance(target: VisionTargetSim):
@@ -400,23 +400,24 @@ class PhotonCameraSim:
 
         multiTagResults: MultiTargetPNPResult | None = None
 
-        visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(
-            detectableTgts, tagLayout
-        )
-
-        if len(visibleLayoutTags) > 1:
-            usedIds = [tag.ID for tag in visibleLayoutTags]
-            # sort target order sorts in ascending order by default
-            usedIds.sort()
-            pnpResult = VisionEstimation.estimateCamPosePNP(
-                self.prop.getIntrinsics(),
-                self.prop.getDistCoeffs(),
-                detectableTgts,
-                tagLayout,
-                TargetModel.AprilTag36h11(),
+        if tagLayout is not None:
+            visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(
+                detectableTgts, tagLayout
             )
-            if pnpResult is not None:
-                multiTagResults = MultiTargetPNPResult(pnpResult, usedIds)
+
+            if len(visibleLayoutTags) > 1:
+                usedIds = [tag.ID for tag in visibleLayoutTags]
+                # sort target order sorts in ascending order by default
+                usedIds.sort()
+                pnpResult = VisionEstimation.estimateCamPosePNP(
+                    self.prop.getIntrinsics(),
+                    self.prop.getDistCoeffs(),
+                    detectableTgts,
+                    tagLayout,
+                    TargetModel.AprilTag36h11(),
+                )
+                if pnpResult is not None:
+                    multiTagResults = MultiTargetPNPResult(pnpResult, usedIds)
 
         # put this simulated data to NT
         self.heartbeatCounter += 1

@@ -56,7 +56,9 @@ class VisionSystemSim:
         wpilib.SmartDashboard.putData(self.tableName + "/Sim Field", self.dbgField)
         self.tagLayout = tagLayout
         self.targetModel = targetModel
-        self.addAprilTags(tagLayout)
+
+        if tagLayout is not None:
+            self.addAprilTags(tagLayout)
 
     def getCameraSim(self, name: str) -> PhotonCameraSim | None:
         """Get one of the simulated cameras."""
