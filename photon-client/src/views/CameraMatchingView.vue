@@ -65,8 +65,8 @@ const deleteThisCamera = (cameraUniqueName: string) => {
   });
 };
 
-const swapDialog = ref({ show: false, cameraInfo: null as PVCameraInfo | null, cameraUniqueName: "" });
-const otherCamera = ref({ cameraInfo: null as PVCameraInfo | null, cameraUniqueName: "" });
+const swapDialog = ref({ show: false, cameraName: "", uniquePath: "" });
+const otherCamera = ref({ cameraName: "", uniquePath: "" });
 
 const swapCamera = (cameraUniqueName: string, otherCameraUniqueName: string) => {
   axiosPost("/utils/swapCameras", "swap two camera assignments", {
@@ -74,7 +74,7 @@ const swapCamera = (cameraUniqueName: string, otherCameraUniqueName: string) => 
     otherCameraUniqueName: otherCameraUniqueName
   }).finally(() => {
     swapDialog.value.show = false;
-    otherCamera.value = { cameraInfo: null, cameraUniqueName: "" };
+    otherCamera.value = { cameraName: "", uniquePath: "" };
   });
 };
 
@@ -299,8 +299,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                     () =>
                       (swapDialog = {
                         show: true,
-                        cameraInfo: module.matchedCameraInfo,
-                        cameraUniqueName: module.uniqueName
+                        cameraName: cameraInfoFor(module.matchedCameraInfo).name,
+                        uniquePath: cameraInfoFor(module.matchedCameraInfo).uniquePath
                       })
                   "
                 >
@@ -507,19 +507,19 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <span>Swap Camera Configs</span>
         </v-card-title>
         <v-row>
-          <v-col> {{ cameraInfoFor(swapDialog.cameraInfo).name }}</v-col>
+          <v-col> {{ swapDialog.cameraName }}</v-col>
           <v-col><v-icon size="x-large" color="buttonPassive">mdi-swap-horizontal</v-icon> </v-col>
           <v-col>
             <pv-select
-              v-model="otherCamera.cameraUniqueName"
+              v-model="otherCamera.uniquePath"
               label="Other Camera"
               :select-cols="8"
               :items="
                 activeVisionModules
                   .map((it) =>
-                    cameraInfoFor(it.matchedCameraInfo).uniquePath !== cameraInfoFor(swapDialog.cameraInfo).uniquePath
+                    cameraInfoFor(it.matchedCameraInfo).uniquePath !== swapDialog.uniquePath
                       ? {
-                          name: `${cameraInfoFor(it.matchedCameraInfo).name} (${cameraInfoFor(it.matchedCameraInfo).path})`,
+                          name: `${cameraInfoFor(it.matchedCameraInfo).name}`,
                           value: cameraInfoFor(it.matchedCameraInfo).uniquePath
                         }
                       : null
@@ -530,11 +530,11 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           </v-col>
         </v-row>
         <v-btn
-          :disabled="otherCamera.cameraUniqueName === '' || otherCamera.cameraUniqueName === null"
+          :disabled="otherCamera.uniquePath === '' || otherCamera.uniquePath === null"
           color="buttonPassive"
           style="width: 100%"
           :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          @click="swapCamera(swapDialog.cameraUniqueName, otherCamera.cameraUniqueName)"
+          @click="swapCamera(swapDialog.uniquePath, otherCamera.uniquePath)"
         >
           <span>Swap Cameras</span>
         </v-btn>
