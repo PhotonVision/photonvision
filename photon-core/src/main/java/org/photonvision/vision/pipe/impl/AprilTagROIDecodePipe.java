@@ -36,11 +36,11 @@ import org.photonvision.vision.pipe.CVPipe;
 /**
  * Pipe that decodes AprilTags within ROIs detected by ML. For each ROI from ML detection, it
  * extracts a sub-image, runs the traditional WPILib AprilTag detector, and maps the detected corner
- * coordinates back to full-frame coordinates.
+ * coordinates and homography back to full-frame coordinates.
  *
- * <p>CRITICAL: This class contains the coordinate mapping logic. The homography does NOT need
- * transformation - only corner and center coordinates need mapping. Pose estimation in
- * AprilTagPoseEstimatorPipe uses corners exclusively.
+ * <p>CRITICAL: Both corner coordinates AND the homography matrix must be transformed from ROI
+ * coordinates to full-frame coordinates. The pose estimator (AprilTagPoseEstimator) uses the
+ * homography matrix internally, not just the corners.
  */
 public class AprilTagROIDecodePipe
         extends CVPipe<
@@ -177,8 +177,8 @@ public class AprilTagROIDecodePipe
     /**
      * Maps detection coordinates from ROI space to full-frame space.
      *
-     * <p>CRITICAL: The homography does NOT need transformation - only corners and center. Pose
-     * estimation uses corners exclusively (see AprilTagPoseEstimatorPipe.java).
+     * <p>CRITICAL: Both corners AND homography must be transformed. The pose estimator uses the
+     * homography matrix internally for pose estimation, not just the corners.
      *
      * @param det The detection in ROI coordinates
      * @param roiOffset The ROI rectangle defining the offset from full frame origin
@@ -196,16 +196,58 @@ public class AprilTagROIDecodePipe
         double centerX = det.getCenterX() + roiOffset.x;
         double centerY = det.getCenterY() + roiOffset.y;
 
-        // Homography is passed through unchanged - it's not used for pose estimation
+        // Transform homography from ROI coordinates to full-frame coordinates
+        double[] transformedHomography =
+                transformHomography(det.getHomography(), roiOffset.x, roiOffset.y);
+
         return new AprilTagDetection(
                 det.getFamily(),
                 det.getId(),
                 det.getHamming(),
                 det.getDecisionMargin(),
-                det.getHomography(), // Unchanged - not used for pose estimation
+                transformedHomography,
                 centerX,
                 centerY,
                 mappedCorners);
+    }
+
+    /**
+     * Transforms a homography matrix from ROI coordinates to full-frame coordinates.
+     *
+     * <p>The homography H satisfies: [x_roi, y_roi, 1]^T ~ H * [X_tag, Y_tag, 1]^T
+     *
+     * <p>To convert to full-frame coordinates where x_full = x_roi + offsetX, y_full = y_roi +
+     * offsetY, we compute H_full = T * H_roi where T is the translation matrix: | 1 0 offsetX | | 0
+     * 1 offsetY | | 0 0 1 |
+     *
+     * <p>The UMich AprilTag library stores homography as row-major 3x3: [h00, h01, h02, h10, h11,
+     * h12, h20, h21, h22]
+     *
+     * @param h The original homography (9 elements, row-major 3x3)
+     * @param offsetX The x offset from ROI origin to full-frame origin
+     * @param offsetY The y offset from ROI origin to full-frame origin
+     * @return The transformed homography in full-frame coordinates
+     */
+    private double[] transformHomography(double[] h, int offsetX, int offsetY) {
+        // T * H where T = [[1,0,tx],[0,1,ty],[0,0,1]]
+        // (T*H)[0][j] = 1*H[0][j] + 0*H[1][j] + tx*H[2][j] = H[0][j] + tx*H[2][j]
+        // (T*H)[1][j] = 0*H[0][j] + 1*H[1][j] + ty*H[2][j] = H[1][j] + ty*H[2][j]
+        // (T*H)[2][j] = 0*H[0][j] + 0*H[1][j] + 1*H[2][j] = H[2][j]
+
+        double[] result = new double[9];
+        // Row 0: H[0][j] + offsetX * H[2][j]
+        result[0] = h[0] + offsetX * h[6];
+        result[1] = h[1] + offsetX * h[7];
+        result[2] = h[2] + offsetX * h[8];
+        // Row 1: H[1][j] + offsetY * H[2][j]
+        result[3] = h[3] + offsetY * h[6];
+        result[4] = h[4] + offsetY * h[7];
+        result[5] = h[5] + offsetY * h[8];
+        // Row 2: unchanged
+        result[6] = h[6];
+        result[7] = h[7];
+        result[8] = h[8];
+        return result;
     }
 
     /**
