@@ -7,6 +7,7 @@ import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useDisplay } from "vuetify";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
@@ -18,6 +19,12 @@ const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
+
+// Check if ML detection is available on this platform
+const mlDetectionAvailable = computed(() => {
+  const supportedBackends = useSettingsStore().general.supportedBackends || [];
+  return supportedBackends.length > 0;
+});
 </script>
 
 <template>
@@ -88,5 +95,67 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
+
+    <!-- ML-Assisted Detection Section -->
+    <v-divider class="mt-3 mb-2" v-if="mlDetectionAvailable" />
+    <div v-if="mlDetectionAvailable" class="ml-settings-section">
+      <p class="text-subtitle-2 mb-2">AI-Assisted Detection (NPU)</p>
+      <pv-switch
+        v-model="currentPipelineSettings.useMLDetection"
+        :switch-cols="interactiveCols"
+        label="Enable AI Detection"
+        tooltip="Use NPU-accelerated ML model for faster AprilTag detection. Requires compatible hardware (RK3588 or QCS6490)"
+        @update:modelValue="
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useMLDetection: value }, false)
+        "
+      />
+      <div v-if="currentPipelineSettings.useMLDetection">
+        <pv-slider
+          v-model="currentPipelineSettings.mlConfidenceThreshold"
+          :slider-cols="interactiveCols"
+          label="Confidence Threshold"
+          tooltip="Minimum confidence score for ML detection (0-1). Higher values reduce false positives"
+          :min="0.1"
+          :max="1.0"
+          :step="0.05"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlConfidenceThreshold: value }, false)
+          "
+        />
+        <pv-slider
+          v-model="currentPipelineSettings.mlNmsThreshold"
+          :slider-cols="interactiveCols"
+          label="NMS Threshold"
+          tooltip="Non-maximum suppression threshold for overlapping detections (0-1)"
+          :min="0.1"
+          :max="1.0"
+          :step="0.05"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlNmsThreshold: value }, false)
+          "
+        />
+        <pv-slider
+          v-model="currentPipelineSettings.mlRoiExpansionFactor"
+          :slider-cols="interactiveCols"
+          label="ROI Expansion"
+          tooltip="Factor to expand detected regions for traditional decoding (1.0-2.0). Larger values help with edge cases"
+          :min="1.0"
+          :max="2.0"
+          :step="0.1"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlRoiExpansionFactor: value }, false)
+          "
+        />
+        <pv-switch
+          v-model="currentPipelineSettings.mlFallbackToTraditional"
+          :switch-cols="interactiveCols"
+          label="Fallback to Traditional"
+          tooltip="If ML detection finds no tags, fall back to traditional full-frame detection"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlFallbackToTraditional: value }, false)
+          "
+        />
+      </div>
+    </div>
   </div>
 </template>
