@@ -83,7 +83,7 @@ Details about a particular calibration can be viewed by clicking on that resolut
 More info on what these parameters mean can be found in [OpenCV's docs](https://docs.opencv.org/4.8.0/d4/d94/tutorial_camera_calibration.html)
 :::
 
-- Fx/Fy: Estimated camera focal length, in mm
+- Fx/Fy: Estimated camera focal length, in pixels
 - Fx/Cy: Estimated camera optical center, in pixels. This should be at about the center of the image
 - Distortion: OpenCV camera model distortion coefficients
 - FOV: calculated using estimated focal length and image size. Useful for gut-checking calibration results
