@@ -187,7 +187,7 @@ const viewingImg = ref(0);
                           .getCalibrationCoeffs(props.videoFormat.resolution)
                           ?.cameraIntrinsics.data[0].toFixed(2) || 0.0
                       }}
-                      mm
+                      px
                     </td>
                   </tr>
                   <tr>
@@ -198,7 +198,7 @@ const viewingImg = ref(0);
                           .getCalibrationCoeffs(props.videoFormat.resolution)
                           ?.cameraIntrinsics.data[4].toFixed(2) || 0.0
                       }}
-                      mm
+                      px
                     </td>
                   </tr>
                   <tr>
