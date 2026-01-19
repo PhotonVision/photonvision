@@ -21,10 +21,7 @@ const interactiveCols = computed(() =>
 );
 
 // Check if ML detection is available on this platform
-const mlDetectionAvailable = computed(() => {
-  const supportedBackends = useSettingsStore().general.supportedBackends || [];
-  return supportedBackends.length > 0;
-});
+const mlDetectionAvailable = computed(() => useSettingsStore().general.supportedBackends.length > 0);
 </script>
 
 <template>
