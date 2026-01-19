@@ -70,6 +70,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final AprilTagROIDetectionPipe mlDetectionPipe = new AprilTagROIDetectionPipe();
     private final AprilTagROIDecodePipe mlDecodePipe = new AprilTagROIDecodePipe();
     private boolean mlAvailable = false;
+    private boolean mlWasAvailable = false; 
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
@@ -164,17 +165,24 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     decodeParams.detectorConfig.refineEdges = settings.refineEdges;
                     mlDecodePipe.setParams(decodeParams);
 
-                    logger.info("ML-assisted AprilTag detection enabled");
+                    if (!mlWasAvailable) {
+                        logger.info("ML-assisted AprilTag detection enabled");
+                    }
                 } else {
                     mlAvailable = false;
-                    logger.warn("ML-assisted detection enabled but no AprilTag model found");
+                    if (mlWasAvailable) {
+                        logger.warn("ML-assisted detection enabled but no AprilTag model found");
+                    }
                 }
             } else {
-                logger.debug("ML-assisted detection not available on this platform");
+                if (mlWasAvailable) {
+                    logger.debug("ML-assisted detection not available on this platform");
+                }
             }
         } else {
             mlAvailable = false;
         }
+        mlWasAvailable = mlAvailable;
     }
 
     @Override
