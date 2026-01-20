@@ -73,7 +73,8 @@ public class AprilTagROIDecodePipe
 
         public ROIDecodeParams() {
             detectorConfig = new AprilTagDetector.Config();
-            detectorConfig.numThreads = 1; 
+            detectorConfig.numThreads = 1;
+            detectorConfig.quadDecimate = 1; 
             quadParams = new AprilTagDetector.QuadThresholdParameters();
             // Match the defaults from AprilTagPipeline
             quadParams.minClusterPixels = 5;
