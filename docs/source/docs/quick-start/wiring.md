@@ -2,7 +2,11 @@
 
 ## Coprocessor with regulator
 
-1. **IT IS STRONGLY RECOMMENDED** to use one of the recommended power regulators to prevent vision from cutting out from voltage drops while operating the robot. We recommend wiring the regulator directly to the power header pins or using a locking USB C cable. In any case we recommend hot gluing the connector.
+1. **IT IS STRONGLY RECOMMENDED** to use one of the recommended power regulators to prevent vision from cutting out from voltage drops while operating the robot. We recommend wiring the regulator directly to the power header pins using either of the two methods listed below or using a locking USB C cable.
+    * Method 1: Soldering to GPIO Header Pins
+        * Using 20 AWG or preferably 18 AWG wires, solder two wires from the regulator to the power header pins on the coprocessor and cover with heat-shrink tubing.
+    * Method 2: Using a Wire-to-Board Connector
+        * Using a wire-to-board connector with 20 AWG or preferably 18 AWG wires, connect two wires from the regulator to the power header pins on the coprocessor. To prevent the connector from becoming unseated, we recommend applying hot glue to the connector.
 
 2. Run an ethernet cable from your coprocessor to your network switch / radio.
 
