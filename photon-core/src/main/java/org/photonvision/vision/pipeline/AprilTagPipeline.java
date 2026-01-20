@@ -163,6 +163,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     decodeParams.minDecisionMargin = settings.decisionMargin;
                     decodeParams.detectorConfig.numThreads = 1;
                     decodeParams.detectorConfig.refineEdges = settings.refineEdges;
+                    decodeParams.detectorConfig.quadDecimate = 1; // No decimation for ROI - maximize accuracy
                     mlDecodePipe.setParams(decodeParams);
 
                     if (!mlWasAvailable) {
