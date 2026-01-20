@@ -1,0 +1,7 @@
+{
+  "deviceName" : "Limelight 3",
+  "supportURL" : "https://limelightvision.io",
+  "ledPins" : [ 13, 18 ],
+  "ledsCanDim" : true,
+  "vendorFOV" : 75.76079874010732
+}
