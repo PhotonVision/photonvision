@@ -852,6 +852,12 @@ public class RequestHandler {
             ctx.result("There was an error while saving the uploaded object detection models");
             logger.error("There was an error while saving the uploaded object detection models");
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     private record DeleteObjectDetectionModelRequest(Path modelPath) {}
@@ -898,17 +904,17 @@ public class RequestHandler {
 
             ctx.status(200).result("Successfully deleted object detection model");
 
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error deleting object detection model: " + e.getMessage());
             logger.error("Error deleting object detection model", e);
         }
-
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
@@ -951,6 +957,12 @@ public class RequestHandler {
 
             NeuralNetworkModelManager.getInstance().discoverModels();
             ctx.status(200).result("Successfully renamed object detection model");
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error renaming object detection model: " + e.getMessage());
@@ -970,6 +982,12 @@ public class RequestHandler {
             ctx.result("Error clearing object detection models: " + e.getMessage());
             logger.error("Error clearing object detection models", e);
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     public static void onDeviceRestartRequest(Context ctx) {

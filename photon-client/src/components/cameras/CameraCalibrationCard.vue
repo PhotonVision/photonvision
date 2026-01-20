@@ -99,6 +99,7 @@ const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
+const requestedVideoFormatIndex = ref(0);
 
 // Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
 const tooManyPoints = computed(
@@ -191,6 +192,7 @@ const startCalibration = () => {
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
   // isCalibrating.value = true;
   calibCanceled.value = false;
+  requestedVideoFormatIndex.value = useStateStore().calibrationData.videoFormatIndex;
 };
 const showCalibEndDialog = ref(false);
 const calibCanceled = ref(false);
@@ -559,7 +561,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               {{
                 useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
                   getResolutionString(f.resolution)
-                )[useStateStore().calibrationData.videoFormatIndex]
+                )[requestedVideoFormatIndex]
               }}!
             </v-card-text>
           </template>
