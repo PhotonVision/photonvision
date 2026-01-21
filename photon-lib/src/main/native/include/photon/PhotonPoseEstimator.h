@@ -294,7 +294,7 @@ class PhotonPoseEstimator {
    *
    * @param cameraResult A pipeline result from the camera.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
   std::optional<EstimatedRobotPose> EstimateLowestAmbiguityPose(
       PhotonPipelineResult cameraResult);
@@ -306,7 +306,7 @@ class PhotonPoseEstimator {
    *
    * @param cameraResult A pipeline result from the camera.
    * @return An EstimatedRobotPose with an estimated pose, timestamp and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
   std::optional<EstimatedRobotPose> EstimateClosestToCameraHeightPose(
       PhotonPipelineResult cameraResult);
@@ -319,7 +319,7 @@ class PhotonPoseEstimator {
    * @param referencePose reference pose to check vector magnitude difference
    * against.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
   std::optional<EstimatedRobotPose> EstimateClosestToReferencePose(
       PhotonPipelineResult cameraResult, frc::Pose3d referencePose);
@@ -331,7 +331,8 @@ class PhotonPoseEstimator {
    *
    * @param cameraResult A pipeline result from the camera.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate or std::nullopt if there's no targets,
+   * no multi-tag results, or multi-tag is disabled in the web UI.
    */
   std::optional<EstimatedRobotPose> EstimateCoprocMultiTagPose(
       PhotonPipelineResult cameraResult);
@@ -345,7 +346,8 @@ class PhotonPoseEstimator {
    * @param cameraMatrix Camera intrinsics from camera calibration data.
    * @param distCoeffs Distortion coefficients from camera calibration data.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's less than 2
+   * targets visible or SolvePnP fails.
    */
   std::optional<EstimatedRobotPose> EstimateRioMultiTagPose(
       PhotonPipelineResult cameraResult, PhotonCamera::CameraMatrix camMat,
@@ -363,7 +365,8 @@ class PhotonPoseEstimator {
    *
    * @param cameraResult A pipeline result from the camera.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's no targets
+   * or heading data.
    */
   std::optional<EstimatedRobotPose> EstimatePnpDistanceTrigSolvePose(
       PhotonPipelineResult cameraResult);
@@ -372,7 +375,7 @@ class PhotonPoseEstimator {
    * Return the average of the best target poses using ambiguity as weight.
    * @param cameraResult A pipeline result from the camera.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's no targets.
    */
   std::optional<EstimatedRobotPose> EstimateAverageBestTargetsPose(
       PhotonPipelineResult cameraResult);
@@ -401,7 +404,8 @@ class PhotonPoseEstimator {
    * changing our robot heading estimate against the tag corner reprojection
    * error cost.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
+   * targets used to create the estimate, or std::nullopt if there's no targets
+   * or heading data, or if the solver fails to solve the problem.
    */
   std::optional<EstimatedRobotPose> EstimateConstrainedSolvepnpPose(
       photon::PhotonPipelineResult cameraResult,
