@@ -540,7 +540,6 @@ public class PhotonCameraSim implements AutoCloseable {
                             OpenCVHelp.pointsToCorners(minAreaRectPts),
                             OpenCVHelp.pointsToCorners(noisyTargetCorners)));
         }
-
         // render visible tags to raw video frame
         if (videoSimRawEnabled) {
             // draw field wireframe

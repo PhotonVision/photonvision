@@ -180,6 +180,28 @@ class VisionSystemSimTest {
     }
 
     @Test
+    public void testBunchaTargets() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera(inst, "camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+
+        for (int i = 0; i < 100; i++) {
+            final var targetPose =
+                    new Pose3d(new Translation3d(15.98 + i * 0.1, 0, 1), new Rotation3d(0, 0, Math.PI));
+            visionSysSim.addVisionTargets(new VisionTargetSim(targetPose, new TargetModel(0.5, 0.5), i));
+        }
+
+        var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(5));
+        visionSysSim.update(robotPose);
+
+        var res = waitForSequenceNumber(camera, 1);
+
+        assertEquals(50, res.getTargets().size());
+    }
+
+    @Test
     public void testNotVisibleVert1() {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI));
