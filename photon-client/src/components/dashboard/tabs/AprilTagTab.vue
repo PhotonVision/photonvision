@@ -143,6 +143,18 @@ const mlDetectionAvailable = computed(() => useSettingsStore().general.supported
             (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlRoiExpansionFactor: value }, false)
           "
         />
+        <pv-slider
+          v-model="currentPipelineSettings.mlLargeRoiFallbackRatio"
+          :slider-cols="interactiveCols"
+          label="Large ROI Fallback"
+          tooltip="If total ROI area exceeds this ratio of frame area, fall back to traditional detection (0-1). Lower values trigger fallback sooner when tags are close."
+          :min="0.1"
+          :max="1.0"
+          :step="0.05"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlLargeRoiFallbackRatio: value }, false)
+          "
+        />
         <pv-switch
           v-model="currentPipelineSettings.mlFallbackToTraditional"
           :switch-cols="interactiveCols"
