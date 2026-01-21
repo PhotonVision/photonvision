@@ -47,6 +47,11 @@ public class SortContoursPipe
             }
         }
 
+        // If max targets is set to 0, return all contours
+        if (params.maxTargets() == 0) {
+            return m_sortedContours;
+        }
+
         return new ArrayList<>(m_sortedContours.subList(0, Math.min(in.size(), params.maxTargets())));
     }
 

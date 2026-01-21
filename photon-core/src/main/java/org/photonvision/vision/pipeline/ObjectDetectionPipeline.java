@@ -83,7 +83,7 @@ public class ObjectDetectionPipeline
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? MAX_MULTI_TARGET_RESULTS : 1,
+                settings.outputShowMultipleTargets ? settings.outputMaximumTargets : 1,
                         frameStaticProperties));
 
         filterContoursPipe.setParams(
