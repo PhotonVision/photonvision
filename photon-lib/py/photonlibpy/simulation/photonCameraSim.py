@@ -271,6 +271,9 @@ class PhotonCameraSim:
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
 
         for tgt in targets:
+            if len(detectableTgts) >= 50:
+                break
+
             # pose isn't visible, skip to next
             if not self.canSeeTargetPose(cameraPose, tgt):
                 continue
