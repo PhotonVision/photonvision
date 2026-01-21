@@ -163,7 +163,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     decodeParams.minDecisionMargin = settings.decisionMargin;
                     decodeParams.detectorConfig.numThreads = 1;
                     decodeParams.detectorConfig.refineEdges = settings.refineEdges;
-                    decodeParams.detectorConfig.quadDecimate = 1; // No decimation for ROI - maximize accuracy
+                    decodeParams.detectorConfig.quadDecimate = 1; // Base: no decimation for small ROIs
+                    decodeParams.adaptiveDecimateEnabled = true; // Use decimate=2 for large ROIs
+                    decodeParams.adaptiveDecimateThreshold = 40000; // ~200x200 pixels
                     mlDecodePipe.setParams(decodeParams);
 
                     if (!mlWasAvailable) {
@@ -351,6 +353,18 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         List<Rect2d> rois = mlResult.output;
 
         if (rois.isEmpty()) {
+            return new MLDetectionResult(new ArrayList<>(), totalNanos);
+        }
+
+        // Check if ROIs cover too much of the frame - if so, traditional detection is faster
+        double frameArea = frame.processedImage.getMat().cols() * frame.processedImage.getMat().rows();
+        double totalRoiArea = 0;
+        for (Rect2d roi : rois) {
+            totalRoiArea += roi.width * roi.height * settings.mlRoiExpansionFactor * settings.mlRoiExpansionFactor;
+        }
+
+        if (totalRoiArea / frameArea > settings.mlLargeRoiFallbackRatio) {
+            // ROIs are too large - skip per-ROI decoding and return empty to trigger fallback
             return new MLDetectionResult(new ArrayList<>(), totalNanos);
         }
 

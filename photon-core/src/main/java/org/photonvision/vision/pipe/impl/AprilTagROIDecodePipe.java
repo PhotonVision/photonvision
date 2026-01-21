@@ -71,10 +71,19 @@ public class AprilTagROIDecodePipe
         public int maxHammingDistance = 0;
         public double minDecisionMargin = 35;
 
+        /** Enable adaptive decimation for large ROIs to improve performance */
+        public boolean adaptiveDecimateEnabled = true;
+
+        /**
+         * ROI area threshold (pixels) above which decimation=2 is used.
+         * Default: 40000 (~200x200 pixels)
+         */
+        public int adaptiveDecimateThreshold = 40000;
+
         public ROIDecodeParams() {
             detectorConfig = new AprilTagDetector.Config();
             detectorConfig.numThreads = 1;
-            detectorConfig.quadDecimate = 1; 
+            detectorConfig.quadDecimate = 1;
             quadParams = new AprilTagDetector.QuadThresholdParameters();
             // Match the defaults from AprilTagPipeline
             quadParams.minClusterPixels = 5;
@@ -88,6 +97,7 @@ public class AprilTagROIDecodePipe
 
     private AprilTagDetector detector;
     private AprilTagFamily currentFamily;
+    private float currentDecimate = 1.0f;
 
     public AprilTagROIDecodePipe() {
         detector = new AprilTagDetector();
@@ -118,6 +128,23 @@ public class AprilTagROIDecodePipe
             roiRect = clampToFrame(roiRect, frameWidth, frameHeight);
             if (roiRect.width <= 0 || roiRect.height <= 0) {
                 continue;
+            }
+
+            // Adaptive decimation: use decimate=2 for large ROIs to improve performance
+            if (params.adaptiveDecimateEnabled) {
+                int roiArea = roiRect.width * roiRect.height;
+                float effectiveDecimate =
+                        (roiArea > params.adaptiveDecimateThreshold) ? 2.0f : 1.0f;
+
+                if (effectiveDecimate != currentDecimate) {
+                    AprilTagDetector.Config adaptedConfig = new AprilTagDetector.Config();
+                    adaptedConfig.numThreads = params.detectorConfig.numThreads;
+                    adaptedConfig.quadDecimate = effectiveDecimate;
+                    adaptedConfig.refineEdges = params.detectorConfig.refineEdges;
+                    adaptedConfig.quadSigma = params.detectorConfig.quadSigma;
+                    detector.setConfig(adaptedConfig);
+                    currentDecimate = effectiveDecimate;
+                }
             }
 
             if (DEBUG_COORDINATE_MAPPING) {
@@ -169,6 +196,9 @@ public class AprilTagROIDecodePipe
 
                 allDetections.add(mappedDetection);
             }
+
+            // Release the submat to prevent memory accumulation
+            roiMat.release();
         }
 
         return deduplicateByTagId(allDetections);
