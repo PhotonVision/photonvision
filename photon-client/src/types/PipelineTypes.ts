@@ -235,6 +235,7 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   mlRoiExpansionFactor: number;
   mlFallbackToTraditional: boolean;
   mlModelName: string | null;
+  mlLargeRoiFallbackRatio: number;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">
@@ -265,7 +266,8 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   mlNmsThreshold: 0.45,
   mlRoiExpansionFactor: 1.2,
   mlFallbackToTraditional: true,
-  mlModelName: null
+  mlModelName: null,
+  mlLargeRoiFallbackRatio: 0.25
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
