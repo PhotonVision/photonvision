@@ -2,10 +2,6 @@
 
 ## Physical Networking
 
-:::{warning}
-When using PhotonVision off robot, you _MUST_ plug the coprocessor into a physical router/radio. You can then connect your laptop/device used to view the webdashboard to the same network. Any other networking setup will not work and will not be supported in any capacity.
-:::
-
 ::::{tab-set}
 
 :::{tab-item} New Radio (2025 - present)
@@ -38,6 +34,29 @@ Rename each device from the default "photonvision" to a unique hostname (e.g., "
 ```{image} images/editHostname.png
 :alt: The hostname can be edited in the settings page under the network section.
 ```
+
+## Test Networking
+
+By default, PhotonVision will attempt to obtain an IP address from a router through DHCP, and fall back to a self-assigned link-local address if that fails. With either of these methods, it is best to access the PhotonVision web dashboard through its hostname and port (`photonvision.local:5800` by default) since its IP address is not known ahead of time. (An mDNS resolver is required to use `.local` hostnames, often installed by default.)
+
+::::{tab-set}
+
+:::{tab-item} DHCP (Router)
+
+If PhotonVision is connected to a DHCP server such as a router, it will obtain a dynamic IP address assignment (like “192.168.0.101” or “10.TE.AM.200”). If a DHCP server (router) is not found on the network, it falls back to a link-local address. Nearly all host computers will support a DHCP network without extra thought, as long as an incompatible static IP address was not configured on the host computer.
+
+:::
+
+:::{tab-item} Link-Local (Direct)
+
+If PhotonVision is directly wired to the host computer, a randomly-generated link-local IP address (like “169.254.36.176”) will be self-assigned. This requires the host computer to also self-assign a link-local address for communication to be established. Many host computers do this by default, although sometimes additional configuration or installations are required to enable the link-local service.
+
+:::
+::::
+
+:::{warning}
+Both DHCP and link-local address assignment are disabled if PhotonVision is configured with a static IP address, which may make your camera inaccessible on a test network.
+:::
 
 ## Robot Networking
 
