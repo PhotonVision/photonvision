@@ -45,7 +45,15 @@ import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 
 public class VisionEstimation {
-    /** Get the visible {@link AprilTag}s which are in the tag layout using the visible tag IDs. */
+    private VisionEstimation() {}
+
+    /**
+     * Get the list of visible {@link AprilTag}s which are in the tag layout using the visible tag
+     * IDs.
+     *
+     * @param visTags The list of targets to search for visible tags.
+     * @param tagLayout The tag layout to search
+     */
     public static List<AprilTag> getVisibleLayoutTags(
             List<PhotonTrackedTarget> visTags, AprilTagFieldLayout tagLayout) {
         return visTags.stream()
@@ -74,6 +82,7 @@ public class VisionEstimation {
      * @param distCoeffs The camera distortion matrix in standard opencv form
      * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
      * @param tagLayout The known tag layout on the field
+     * @param tagModel The model describing the tag's geometry
      * @return The transformation that maps the field origin to the camera pose. Ensure the {@link
      *     PnpResult} are present before utilizing them.
      */
@@ -156,7 +165,7 @@ public class VisionEstimation {
      * @param visTags The visible tags reported by PV. Non-tag targets are automatically excluded.
      * @param robot2camera The {@link Transform3d} from the robot odometry frame to the camera optical
      *     frame
-     * @param robotPoseSeed An initial guess at robot pose, refined via optimizaiton. Better guesses
+     * @param robotPoseSeed An initial guess at robot pose, refined via optimization. Better guesses
      *     will converge faster.
      * @param tagLayout The known tag layout on the field
      * @param tagModel The physical size of the AprilTags

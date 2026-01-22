@@ -40,6 +40,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
  * <p>However, we do expect that the actual logic which fills out values in the entries will be
  * different for sim vs. real camera
  */
+@SuppressWarnings("doclint")
 public class NTTopicSet {
     public NetworkTable subTable;
 
@@ -56,6 +57,8 @@ public class NTTopicSet {
     public BooleanTopic recordingEntry;
     public BooleanPublisher recordingPublisher;
     public BooleanSubscriber recordingSubscriber;
+    public IntegerPublisher fpsLimitPublisher;
+    public IntegerSubscriber fpsLimitSubscriber;
 
     public DoublePublisher latencyMillisEntry;
     public DoublePublisher fpsEntry;
@@ -108,6 +111,10 @@ public class NTTopicSet {
         recordingSubscriber = subTable.getBooleanTopic("recordingRequest").subscribe(false);
 
         recordingSubscriber.getTopic().publish().setDefault(false);
+        fpsLimitPublisher = subTable.getIntegerTopic("fpsLimit").publish();
+        fpsLimitSubscriber = subTable.getIntegerTopic("fpsLimitRequest").subscribe(-1);
+
+        fpsLimitSubscriber.getTopic().publish().setDefault(-1);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         fpsEntry = subTable.getDoubleTopic("fps").publish();
@@ -140,6 +147,8 @@ public class NTTopicSet {
 
         if (recordingPublisher != null) recordingPublisher.close();
         if (recordingSubscriber != null) recordingSubscriber.close();
+        if (fpsLimitPublisher != null) fpsLimitPublisher.close();
+        if (fpsLimitSubscriber != null) fpsLimitSubscriber.close();
 
         if (latencyMillisEntry != null) latencyMillisEntry.close();
         if (fpsEntry != null) fpsEntry.close();

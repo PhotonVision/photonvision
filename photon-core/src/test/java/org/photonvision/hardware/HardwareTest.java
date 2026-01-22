@@ -27,37 +27,20 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.VisionLED;
-import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareTest {
-    @Test
-    public void testHardware() {
+    @BeforeAll
+    public static void init() {
         LoadJNI.loadLibraries();
-        MetricsManager mm = new MetricsManager();
-
-        if (!Platform.isRaspberryPi()) return;
-
-        System.out.println("Testing on platform: " + Platform.getPlatformName());
-
-        System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + mm.getRamMem() + "MB");
-        System.out.println("Temperature: " + mm.getCpuTemp() + "C");
-        System.out.println("Utilization: : " + mm.getCpuUtilization() + "%");
-
-        System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + mm.getGpuMem() + "MB");
-
-        System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + mm.getRamUtil() + "MB");
     }
 
     @Test

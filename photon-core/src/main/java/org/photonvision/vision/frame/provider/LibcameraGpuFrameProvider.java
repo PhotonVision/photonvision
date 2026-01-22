@@ -136,6 +136,11 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     }
 
     @Override
+    public void requestBlockForFrames(boolean blockForFrames) {
+        // GPU provider always blocks for frames, so this is a no-op
+    }
+
+    @Override
     public void release() {
         synchronized (settables.CAMERA_LOCK) {
             LibCameraJNI.stopCamera(settables.r_ptr);

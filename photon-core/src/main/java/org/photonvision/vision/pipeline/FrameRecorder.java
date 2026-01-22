@@ -34,6 +34,7 @@ import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.opencv.CVMat;
@@ -85,10 +86,10 @@ public class FrameRecorder implements Releasable {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
         this.strat = HardwareManager.getInstance().getRecordingStrategy();
 
-        double availableSpace = HardwareManager.getInstance().metricsManager.getDiskSpaceAvailable();
+        double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
 
         // Check if we're under 4 GB of available space, if so exit
-        if (availableSpace < 4 * 1024 * 1024) {
+        if (availableSpace < 4 * 1024) {
             logger.error(
                     "Low disk space available ("
                             + availableSpace / 1024
@@ -165,10 +166,10 @@ public class FrameRecorder implements Releasable {
         }
 
         if (frameCounter % 100 == 0) {
-            double availableSpace = HardwareManager.getInstance().metricsManager.getDiskSpaceAvailable();
+            double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
 
             // Check if we're under 4 GB of available space, if so stop recording
-            if (availableSpace < 4 * 1024 * 1024) {
+            if (availableSpace < 4 * 1024) {
                 logger.error(
                         "Low disk space available (" + availableSpace / 1024 + " MB). Stopping FrameRecorder.");
                 stopRecording();

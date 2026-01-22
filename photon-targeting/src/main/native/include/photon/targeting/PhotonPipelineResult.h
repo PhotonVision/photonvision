@@ -94,7 +94,10 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
   }
 
   /**
-   * Returns the estimated time the frame was taken,
+   * Returns the estimated time the frame was taken, in the Time Sync Server's
+   * time base (nt::Now). This is calculated using the estimated offset between
+   * Time Sync Server time and local time. The robot shall run a server, so the
+   * offset shall be 0.
    * This is much more accurate than using GetLatency()
    * @return The timestamp in seconds or -1 if this result was not initiated
    * with a timestamp.
@@ -105,8 +108,11 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
 
   /**
    * Return the latest mulit-target result, as calculated on your coprocessor.
-   * Be sure to check getMultiTagResult().estimatedPose.isPresent before using
+   * Be sure to check `MultiTagResult().has_value()` before using
    * the pose estimate!
+   *
+   * @return The multi-target result. Empty if there's no multi-target
+   * result/Multi-Target Estimation is disabled in the UI.
    */
   const std::optional<MultiTargetPNPResult>& MultiTagResult() const {
     return multitagResult;

@@ -48,8 +48,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
-import org.photonvision.common.scripting.ScriptEventType;
-import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionModule;
@@ -207,7 +205,6 @@ public class NetworkTablesManager {
             logger.info(msg);
             HardwareManager.getInstance().setNTConnected(true);
 
-            ScriptManager.queueEvent(ScriptEventType.kNTConnected);
             getInstance().broadcastVersion();
             getInstance().broadcastConnectedStatus();
 

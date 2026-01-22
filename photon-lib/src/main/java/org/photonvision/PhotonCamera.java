@@ -45,7 +45,6 @@ import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.WPILibVersion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -68,6 +67,8 @@ public class PhotonCamera implements AutoCloseable {
     BooleanSubscriber driverModeSubscriber;
     BooleanPublisher recordingPublisher;
     BooleanSubscriber recordingSubscriber;
+    IntegerPublisher fpsLimitPublisher;
+    IntegerSubscriber fpsLimitSubscriber;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -85,9 +86,8 @@ public class PhotonCamera implements AutoCloseable {
         driverModeSubscriber.close();
         recordingPublisher.close();
         recordingSubscriber.close();
+        fpsLimitSubscriber.close();
         versionEntry.close();
-        inputSaveImgEntry.close();
-        outputSaveImgEntry.close();
         pipelineIndexRequest.close();
         pipelineIndexState.close();
         ledModeRequest.close();
@@ -115,6 +115,14 @@ public class PhotonCamera implements AutoCloseable {
     private final Alert disconnectAlert;
     private final Alert timesyncAlert;
 
+    /**
+     * Sets whether or not coprocessor version checks will occur. Setting this to true will silence
+     * all console warnings about coproccessor connection, so be careful when enabling this and ensure
+     * all your coprocessors are communicating to the robot properly and everything has matching
+     * versions.
+     *
+     * @param enabled Whether or not to enable coprocessor version checks
+     */
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
     }
@@ -150,6 +158,8 @@ public class PhotonCamera implements AutoCloseable {
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         recordingPublisher = cameraTable.getBooleanTopic("recordingRequest").publish();
         recordingSubscriber = cameraTable.getBooleanTopic("recording").subscribe(false);
+        fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
+        fpsLimitSubscriber = cameraTable.getIntegerTopic("fpsLimit").subscribe(-1);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
@@ -179,52 +189,8 @@ public class PhotonCamera implements AutoCloseable {
         verifyDependencies();
     }
 
-    public static void verifyDependencies() {
+    static void verifyDependencies() {
         // spotless:off
-        if (!WPILibVersion.Version.equals(PhotonVersion.wpilibTargetVersion)) {
-            String bfw = """
-
-
-
-
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>                                          \s
-                    >>> You are running an incompatible version  \s
-                    >>> of PhotonVision !                        \s
-                    >>>                                          \s
-                    >>> PhotonLib """
-                    + PhotonVersion.versionString
-                    + " is built for WPILib "
-                    + PhotonVersion.wpilibTargetVersion
-                    + "\n"
-                    + ">>> but you are using WPILib "
-                    + WPILibVersion.Version
-                    + """
-                    \n>>>                                          \s
-                    >>> This is neither tested nor supported.    \s
-                    >>> You MUST update WPILib, PhotonLib, or both.
-                    >>> Check `./gradlew dependencies` and ensure\s
-                    >>> all mentions of OpenCV match the version \s
-                    >>> that PhotonLib was built for. If you find a
-                    >>> a mismatched version in a dependency, you\s
-                    >>> must take steps to update the version of \s
-                    >>> OpenCV used in that dependency. If you do\s
-                    >>> not control that dependency and an updated\s
-                    >>> version is not available, contact the    \s
-                    >>> developers of that dependency.           \s
-                    >>>                                          \s
-                    >>> Your code will now crash.                \s
-                    >>> We hope your day gets better.            \s
-                    >>>                                          \s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    """;
-
-            DriverStation.reportWarning(bfw, false);
-            DriverStation.reportError(bfw, false);
-            throw new UnsupportedOperationException(bfw);
-        }
         if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
             String bfw = """
 
@@ -287,6 +253,8 @@ public class PhotonCamera implements AutoCloseable {
      * getAllUnreadResults() will return different (potentially empty) result arrays. Be careful to
      * call this exactly ONCE per loop of your robot code! FIFO depth is limited to 20 changes, so
      * make sure to call this frequently enough to avoid old results being discarded, too!
+     *
+     * @return The list of pipeline results
      */
     public List<PhotonPipelineResult> getAllUnreadResults() {
         verifyVersion();
@@ -311,6 +279,8 @@ public class PhotonCamera implements AutoCloseable {
      *
      * <p>Replaced by {@link #getAllUnreadResults()} over getLatestResult, as this function can miss
      * results, or provide duplicate ones!
+     *
+     * @return The latest pipeline result
      */
     @Deprecated(since = "2024", forRemoval = true)
     public PhotonPipelineResult getLatestResult() {
@@ -395,6 +365,24 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setRecording(boolean recording) {
         recordingPublisher.set(recording);
+    }
+
+    /**
+     * Gets the FPS limit set on the camera.
+     *
+     * @return The current FPS limit.
+     */
+    public int getFPSLimit() {
+        return (int) fpsLimitSubscriber.get();
+    }
+
+    /**
+     * Sets the FPS limit on the camera.
+     *
+     * @param fps The FPS limit to set. Set to -1 for unlimited FPS.
+     */
+    public void setFPSLimit(int fps) {
+        fpsLimitPublisher.set(fps);
     }
 
     /**
@@ -501,8 +489,11 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * The camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms are set
-     * to 0
+     * Returns the camera calibration's distortion coefficients, in OPENCV8 form. Higher-order terms
+     * are set to 0
+     *
+     * @return The distortion coefficients in a 8x1 matrix, if they are published by the camera. Empty
+     *     otherwise.
      */
     public Optional<Matrix<N8, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();

@@ -1,9 +1,10 @@
 plugins {
-    id "com.diffplug.spotless" version "6.1.2"
+    id "com.diffplug.spotless" version "8.1.0"
 }
 
 allprojects {
     repositories {
+        maven { url = "https://frcmaven.wpi.edu/artifactory/ex-mvn/" }
         mavenCentral()
         mavenLocal()
         maven { url = "https://maven.photonvision.org/releases" }

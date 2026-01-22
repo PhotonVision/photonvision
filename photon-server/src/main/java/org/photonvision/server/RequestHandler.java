@@ -32,7 +32,6 @@ import java.util.LinkedList;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.apache.commons.io.FileUtils;
-import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.Size;
@@ -76,6 +75,11 @@ public class RequestHandler {
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
     private static boolean testMode = false;
+
+    public static void onStatusRequest(Context ctx) {
+        ctx.status(200);
+        ctx.result("not dead yet");
+    }
 
     public static void setTestMode(boolean isTestMode) {
         testMode = isTestMode;
@@ -526,7 +530,7 @@ public class RequestHandler {
     public static void onDataCalibrationImportRequest(Context ctx) {
         try {
             DataCalibrationImportRequest request =
-                    kObjectMapper.readValue(ctx.body(), DataCalibrationImportRequest.class);
+                    kObjectMapper.readValue(ctx.req().getInputStream(), DataCalibrationImportRequest.class);
 
             var uploadCalibrationEvent =
                     new IncomingWebSocketEvent<>(
@@ -578,7 +582,7 @@ public class RequestHandler {
                         case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
-                            // Add more versions as necessary for new models
+                        // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);
                             ctx.result("The provided version was not valid");
@@ -849,6 +853,12 @@ public class RequestHandler {
             ctx.result("There was an error while saving the uploaded object detection models");
             logger.error("There was an error while saving the uploaded object detection models");
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     private record DeleteObjectDetectionModelRequest(Path modelPath) {}
@@ -895,17 +905,17 @@ public class RequestHandler {
 
             ctx.status(200).result("Successfully deleted object detection model");
 
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error deleting object detection model: " + e.getMessage());
             logger.error("Error deleting object detection model", e);
         }
-
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
@@ -948,6 +958,12 @@ public class RequestHandler {
 
             NeuralNetworkModelManager.getInstance().discoverModels();
             ctx.status(200).result("Successfully renamed object detection model");
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error renaming object detection model: " + e.getMessage());
@@ -967,6 +983,12 @@ public class RequestHandler {
             ctx.result("Error clearing object detection models: " + e.getMessage());
             logger.error("Error clearing object detection models", e);
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
@@ -996,9 +1018,39 @@ public class RequestHandler {
         }
     }
 
-    public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
+    /**
+     * Get the calibration JSON for a specific observation. Excludes camera image data
+     *
+     * <p>This is excluded from UICalibrationCoefficients by default to save bandwidth on large
+     * calibrations
+     */
+    public static void onCalibrationJsonRequest(Context ctx) {
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            ctx.status(404);
+            return;
+        }
+
+        CameraCalibrationCoefficients calList =
+                module.getStateAsCameraConfig().calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        ctx.json(calList);
+        ctx.status(200);
     }
 
     private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
@@ -1066,28 +1118,18 @@ public class RequestHandler {
             return;
         }
 
-        // encode as jpeg to save even more space. reduces size of a 1280p image from
-        // 300k to 25k
+        // encode as jpeg to save even more space. reduces size of a 1280p image from 300k to 25k
+        var mat = calList.observations.get(observationIdx).annotateImage();
+        if (mat == null) {
+            ctx.status(404);
+            return;
+        }
+
         var jpegBytes = new MatOfByte();
-        Mat img = null;
-        try {
-            img =
-                    Imgcodecs.imread(
-                            calList.observations.get(observationIdx).snapshotDataLocation.toString());
-        } catch (Exception e) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-        if (img == null || img.empty()) {
-            ctx.status(500);
-            ctx.result("Unable to read calibration image");
-            return;
-        }
-
-        Imgcodecs.imencode(".jpg", img, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
-
+        Imgcodecs.imencode(".jpg", mat, jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 60));
         ctx.result(jpegBytes.toArray());
+
+        mat.release();
         jpegBytes.release();
 
         ctx.status(200);

@@ -10,6 +10,7 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import { ref } from "vue";
 
 interface GeneralSettingsStore {
   general: GeneralSettings;
@@ -18,6 +19,50 @@ interface GeneralSettingsStore {
   metrics: MetricData;
   currentFieldLayout;
 }
+
+interface MetricsEntry {
+  time: number;
+  metrics: MetricData;
+}
+
+class MetricsHistory {
+  private MAX_METRIC_HISTORY = 60;
+  private UPDATE_INTERVAL_MS = 900;
+
+  private buffer: (MetricsEntry | undefined)[];
+  private size: number;
+  private index = 0;
+  private count = 0;
+  private lastUpdate = 0;
+
+  constructor(size = this.MAX_METRIC_HISTORY) {
+    this.size = size;
+    this.buffer = new Array<MetricsEntry | undefined>(size);
+  }
+
+  update(value: MetricsEntry): boolean {
+    const now = Date.now();
+    if (now - this.lastUpdate < this.UPDATE_INTERVAL_MS) return false;
+
+    this.lastUpdate = now;
+    this.buffer[this.index] = value;
+    this.index = (this.index + 1) % this.size;
+    this.count = Math.min(this.count + 1, this.size);
+    return true;
+  }
+
+  getHistory(): MetricsEntry[] {
+    const result: MetricsEntry[] = new Array(this.count);
+    for (let i = 0; i < this.count; i++) {
+      const idx = (this.index - this.count + i + this.size) % this.size;
+      result[i] = this.buffer[idx]!;
+    }
+    return result;
+  }
+}
+
+const metricsHistoryBuffer = new MetricsHistory();
+export const metricsHistorySnapshot = ref<MetricsEntry[]>([]);
 
 export const useSettingsStore = defineStore("settings", {
   state: (): GeneralSettingsStore => ({
@@ -64,9 +109,12 @@ export const useSettingsStore = defineStore("settings", {
       gpuMem: undefined,
       gpuMemUtil: undefined,
       diskUtilPct: undefined,
+      diskUsableSpace: undefined,
       npuUsage: undefined,
       ipAddress: undefined,
-      uptime: undefined
+      uptime: undefined,
+      sentBitRate: undefined,
+      recvBitRate: undefined
     },
     currentFieldLayout: {
       field: {
@@ -85,9 +133,6 @@ export const useSettingsStore = defineStore("settings", {
     }
   },
   actions: {
-    requestMetricsUpdate() {
-      return axios.post("/utils/publishMetrics");
-    },
     updateMetricsFromWebsocket(data: Required<MetricData>) {
       this.metrics = {
         cpuTemp: data.cpuTemp || undefined,
@@ -98,10 +143,16 @@ export const useSettingsStore = defineStore("settings", {
         gpuMem: data.gpuMem || undefined,
         gpuMemUtil: data.gpuMemUtil || undefined,
         diskUtilPct: data.diskUtilPct || undefined,
+        diskUsableSpace: data.diskUsableSpace || undefined,
         npuUsage: data.npuUsage || undefined,
         ipAddress: data.ipAddress || undefined,
-        uptime: data.uptime || undefined
+        uptime: data.uptime || undefined,
+        sentBitRate: data.sentBitRate || undefined,
+        recvBitRate: data.recvBitRate || undefined
       };
+      if (metricsHistoryBuffer.update({ time: Date.now(), metrics: this.metrics })) {
+        metricsHistorySnapshot.value = metricsHistoryBuffer.getHistory();
+      }
     },
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
       this.general = {

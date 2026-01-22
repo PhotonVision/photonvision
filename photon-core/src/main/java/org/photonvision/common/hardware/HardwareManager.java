@@ -26,13 +26,11 @@ import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.commons.io.FileUtils;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
@@ -41,11 +39,10 @@ import org.photonvision.common.dataflow.networktables.NTDriverStation;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
-import org.photonvision.common.hardware.metrics.MetricsManager;
+import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 import org.photonvision.vision.processes.VisionModule;
 
@@ -57,8 +54,6 @@ public class HardwareManager {
 
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
-
-    public final MetricsManager metricsManager;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
@@ -84,12 +79,6 @@ public class HardwareManager {
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
-
-        this.metricsManager = new MetricsManager();
-        this.metricsManager.setConfig(hardwareConfig);
-
-        TimedTaskManager.getInstance()
-                .addTask("Metrics Publisher", this.metricsManager::publishMetrics, 5000);
 
         ledModeRequest =
                 NetworkTablesManager.getInstance()
@@ -268,10 +257,6 @@ public class HardwareManager {
         statusLED.setStatus(status);
     }
 
-    public void publishMetrics() {
-        metricsManager.publishMetrics();
-    }
-
     /**
      * Ensures there is enough space for new recordings by clearing stored recordings to free up disk
      * space. This method should delete the oldest recordings, prioritizing recordings from matches
@@ -300,7 +285,7 @@ public class HardwareManager {
      * @return true if enough space was cleared, false otherwise
      */
     public boolean reserveRecordingSpace(double requestedSpace) {
-        if (metricsManager.getDiskSpaceAvailable() > requestedSpace * 1024) {
+        if (SystemMonitor.getInstance().getUsableDiskSpace() > requestedSpace * 1024 * 1024) {
             return true; // Enough space already available
         }
 
@@ -356,8 +341,7 @@ public class HardwareManager {
         practiceRecordings.sort(
                 (a, b) -> a.getFileName().toString().compareTo(b.getFileName().toString()));
 
-        while (requestedSpace * 1024
-                > HardwareManager.getInstance().metricsManager.getDiskSpaceAvailable()) {
+        while (requestedSpace * 1024 * 1024 > SystemMonitor.getInstance().getUsableDiskSpace()) {
             Path toDelete = null;
             if (!practiceRecordings.isEmpty()) {
                 toDelete = practiceRecordings.remove(0);

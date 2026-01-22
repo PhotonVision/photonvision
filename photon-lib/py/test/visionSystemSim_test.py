@@ -78,6 +78,35 @@ def test_VisibilityCupidShuffle() -> None:
     assert camera.getLatestResult().hasTargets()
 
 
+def test_bunchaTargets() -> None:
+    visionSysSim = VisionSystemSim("Test")
+    camera = PhotonCamera("camera")
+    cameraSim = PhotonCameraSim(camera)
+    visionSysSim.addCamera(cameraSim, Transform3d())
+
+    cameraSim.prop.setCalibrationFromFOV(640, 480, fovDiag=Rotation2d.fromDegrees(80.0))
+
+    for i in range(100):
+        targetPose = Pose3d(
+            Translation3d(15.98 + i * 0.1, 0.0, 2.0), Rotation3d(0, 0, math.pi)
+        )
+        visionSysSim.addVisionTargets(
+            [
+                VisionTargetSim(
+                    targetPose,
+                    TargetModel.createPlanar(width=1.0, height=1.0),
+                    4774 + i,
+                )
+            ]
+        )
+
+    robotPose = Pose2d(Translation2d(2.0, 0.0), Rotation2d.fromDegrees(5.0))
+
+    visionSysSim.update(robotPose)
+
+    assert len(camera.getLatestResult().getTargets()) == 50
+
+
 def test_NotVisibleVert1() -> None:
     targetPose = Pose3d(Translation3d(15.98, 0.0, 2.0), Rotation3d(0, 0, math.pi))
 

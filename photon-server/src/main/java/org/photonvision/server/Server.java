@@ -68,7 +68,6 @@ public class Server {
                                                             it.anyHost();
                                                         });
                                             }));
-
                             javalinConfig.requestLogger.http(
                                     (ctx, ms) -> {
                                         StringJoiner joiner =
@@ -118,6 +117,8 @@ public class Server {
                 });
 
         /* API Events */
+        app.get("/api/status", RequestHandler::onStatusRequest);
+
         // Settings
         app.post("/api/settings", RequestHandler::onSettingsImportRequest);
         app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsExportRequest);
@@ -129,13 +130,13 @@ public class Server {
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsRequest);
         app.post("/api/settings/camera/setNickname", RequestHandler::onCameraNicknameChangeRequest);
         app.get("/api/settings/camera/getCalibImages", RequestHandler::onCameraCalibImagesRequest);
+        app.get("/api/settings/camera/getCalibration", RequestHandler::onCalibrationJsonRequest);
 
         // Utilities
         app.post("/api/utils/offlineUpdate", RequestHandler::onOfflineUpdateRequest);
         app.get("/api/utils/photonvision-journalctl.txt", RequestHandler::onLogExportRequest);
         app.post("/api/utils/restartProgram", RequestHandler::onProgramRestartRequest);
         app.post("/api/utils/restartDevice", RequestHandler::onDeviceRestartRequest);
-        app.post("/api/utils/publishMetrics", RequestHandler::onMetricsPublishRequest);
         app.get("/api/utils/getImageSnapshots", RequestHandler::onImageSnapshotsRequest);
         app.get("/api/utils/getCalSnapshot", RequestHandler::onCalibrationSnapshotRequest);
         app.get("/api/utils/getCalibrationJSON", RequestHandler::onCalibrationExportRequest);

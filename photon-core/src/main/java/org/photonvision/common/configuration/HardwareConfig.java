@@ -42,17 +42,6 @@ public class HardwareConfig {
     public final String setPWMFrequencyCommand;
     public final String releaseGPIOCommand;
 
-    // Metrics
-    public final String cpuTempCommand;
-    public final String cpuMemoryCommand;
-    public final String cpuUtilCommand;
-    public final String cpuThrottleReasonCmd;
-    public final String cpuUptimeCommand;
-    public final String gpuMemoryCommand;
-    public final String ramUtilCommand;
-    public final String gpuMemUsageCommand;
-    public final String diskUsageCommand;
-
     // Device stuff
     public final String restartHardwareCommand;
     public final double vendorFOV; // -1 for unmanaged
@@ -74,15 +63,6 @@ public class HardwareConfig {
             String setPWMCommand,
             String setPWMFrequencyCommand,
             String releaseGPIOCommand,
-            String cpuTempCommand,
-            String cpuMemoryCommand,
-            String cpuUtilCommand,
-            String cpuThrottleReasonCmd,
-            String cpuUptimeCommand,
-            String gpuMemoryCommand,
-            String ramUtilCommand,
-            String gpuMemUsageCommand,
-            String diskUsageCommand,
             String restartHardwareCommand,
             double vendorFOV,
             RecordingStrategy recordingStrategy) {
@@ -100,15 +80,6 @@ public class HardwareConfig {
         this.setPWMCommand = setPWMCommand;
         this.setPWMFrequencyCommand = setPWMFrequencyCommand;
         this.releaseGPIOCommand = releaseGPIOCommand;
-        this.cpuTempCommand = cpuTempCommand;
-        this.cpuMemoryCommand = cpuMemoryCommand;
-        this.cpuUtilCommand = cpuUtilCommand;
-        this.cpuThrottleReasonCmd = cpuThrottleReasonCmd;
-        this.cpuUptimeCommand = cpuUptimeCommand;
-        this.gpuMemoryCommand = gpuMemoryCommand;
-        this.ramUtilCommand = ramUtilCommand;
-        this.gpuMemUsageCommand = gpuMemUsageCommand;
-        this.diskUsageCommand = diskUsageCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
         this.recordingStrategy = recordingStrategy;
@@ -129,15 +100,6 @@ public class HardwareConfig {
         setPWMCommand = "";
         setPWMFrequencyCommand = "";
         releaseGPIOCommand = "";
-        cpuTempCommand = "";
-        cpuMemoryCommand = "";
-        cpuUtilCommand = "";
-        cpuThrottleReasonCmd = "";
-        cpuUptimeCommand = "";
-        gpuMemoryCommand = "";
-        ramUtilCommand = "";
-        gpuMemUsageCommand = "";
-        diskUsageCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
         recordingStrategy = RecordingStrategy.SNAPSHOTS;
@@ -148,21 +110,6 @@ public class HardwareConfig {
      */
     public final boolean hasPresetFOV() {
         return vendorFOV > 0;
-    }
-
-    /**
-     * @return True if any info command has been configured to be non-empty, false otherwise
-     */
-    public final boolean hasCommandsConfigured() {
-        return cpuTempCommand != ""
-                || cpuMemoryCommand != ""
-                || cpuUtilCommand != ""
-                || cpuThrottleReasonCmd != ""
-                || cpuUptimeCommand != ""
-                || gpuMemoryCommand != ""
-                || ramUtilCommand != ""
-                || gpuMemUsageCommand != ""
-                || diskUsageCommand != "";
     }
 
     /**
@@ -206,24 +153,6 @@ public class HardwareConfig {
                 + setPWMFrequencyCommand
                 + ", releaseGPIOCommand="
                 + releaseGPIOCommand
-                + ", cpuTempCommand="
-                + cpuTempCommand
-                + ", cpuMemoryCommand="
-                + cpuMemoryCommand
-                + ", cpuUtilCommand="
-                + cpuUtilCommand
-                + ", cpuThrottleReasonCmd="
-                + cpuThrottleReasonCmd
-                + ", cpuUptimeCommand="
-                + cpuUptimeCommand
-                + ", gpuMemoryCommand="
-                + gpuMemoryCommand
-                + ", ramUtilCommand="
-                + ramUtilCommand
-                + ", gpuMemUsageCommand="
-                + gpuMemUsageCommand
-                + ", diskUsageCommand="
-                + diskUsageCommand
                 + ", restartHardwareCommand="
                 + restartHardwareCommand
                 + ", vendorFOV="
