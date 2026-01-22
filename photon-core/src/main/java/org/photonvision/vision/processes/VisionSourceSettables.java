@@ -55,6 +55,8 @@ public abstract class VisionSourceSettables {
         cameraPropertiesCached = true;
     }
 
+    public abstract void setSaturation(double saturation);
+
     public abstract void setExposureRaw(double exposureRaw);
 
     public abstract double getMinExposureRaw();
