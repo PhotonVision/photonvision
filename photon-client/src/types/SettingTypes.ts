@@ -13,7 +13,7 @@ export interface GeneralSettings {
   supportedBackends: string[];
   conflictingHostname: boolean;
   conflictingCameras: string;
-  recordingStrategy: string;
+  recordingStrategy: string; 
   supportedRecordingStrategies: string[];
 }
 
@@ -397,7 +397,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   hasConnected: true,
   mismatch: false,
   recordings: []
-};
+});
 
 export enum CalibrationBoardTypes {
   Chessboard = 0,
