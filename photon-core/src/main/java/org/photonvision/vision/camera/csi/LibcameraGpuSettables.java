@@ -132,6 +132,11 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     }
 
     @Override
+    public void setSaturation(double saturation) {
+        // TODO need to implement this on JNI side as well
+    }
+
+    @Override
     public void setExposureRaw(double exposureRaw) {
         logger.debug("Setting exposure to " + exposureRaw);
 
