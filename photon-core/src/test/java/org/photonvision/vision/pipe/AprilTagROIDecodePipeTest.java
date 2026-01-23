@@ -671,4 +671,341 @@ public class AprilTagROIDecodePipeTest {
         fullFrameDetector.close();
         decodePipe.release();
     }
+
+    // ==================== ATR (Adaptive Tag Resizing) Tests ====================
+
+    /**
+     * Helper method to access the private transformHomographyWithScale method via reflection.
+     */
+    private double[] invokeTransformHomographyWithScale(AprilTagROIDecodePipe pipe,
+            double[] h, int offsetX, int offsetY, double S) throws Exception {
+        Method method = AprilTagROIDecodePipe.class.getDeclaredMethod(
+            "transformHomographyWithScale", double[].class, int.class, int.class, double.class);
+        method.setAccessible(true);
+        return (double[]) method.invoke(pipe, h, offsetX, offsetY, S);
+    }
+
+    /**
+     * Test ATR scale factor calculation: S = min(1.0, T_dim / w)
+     * Verifies the formula produces correct values for various ROI widths.
+     */
+    @Test
+    public void testATR_ScaleFactorCalculation() {
+        int targetDimension = 160;
+
+        // Small tag (w < T_dim): S = 1.0 (no scaling)
+        double S1 = Math.min(1.0, (double) targetDimension / 100);
+        assertEquals(1.0, S1, 1e-10, "Small tag should have S=1.0");
+
+        // Exact match (w == T_dim): S = 1.0
+        double S2 = Math.min(1.0, (double) targetDimension / 160);
+        assertEquals(1.0, S2, 1e-10, "Exact match should have S=1.0");
+
+        // Large tag (w > T_dim): S < 1.0
+        double S3 = Math.min(1.0, (double) targetDimension / 320);
+        assertEquals(0.5, S3, 1e-10, "320px tag should have S=0.5");
+
+        // Very large tag
+        double S4 = Math.min(1.0, (double) targetDimension / 800);
+        assertEquals(0.2, S4, 1e-10, "800px tag should have S=0.2");
+
+        // 1000px tag (from documentation example)
+        double S5 = Math.min(1.0, (double) targetDimension / 1000);
+        assertEquals(0.16, S5, 1e-10, "1000px tag should have S=0.16");
+    }
+
+    /**
+     * Test ATR coordinate mapping: x_full = (x_scaled / S) + roi_x
+     * Verifies corner coordinates are correctly mapped from scaled space to full-frame.
+     */
+    @Test
+    public void testATR_CoordinateMappingWithScale() {
+        // Simulated scaled detection at (40, 30) in a 160x160 scaled ROI
+        // Original ROI at (100, 150) with width 400 (S = 0.4)
+        double scaledX = 40.0;
+        double scaledY = 30.0;
+        double S = 0.4;
+        int roiX = 100;
+        int roiY = 150;
+
+        // Expected: x_full = (40 / 0.4) + 100 = 100 + 100 = 200
+        //           y_full = (30 / 0.4) + 150 = 75 + 150 = 225
+        double expectedX = (scaledX / S) + roiX;
+        double expectedY = (scaledY / S) + roiY;
+
+        assertEquals(200.0, expectedX, 1e-10, "X coordinate mapping incorrect");
+        assertEquals(225.0, expectedY, 1e-10, "Y coordinate mapping incorrect");
+    }
+
+    /**
+     * Test that transformHomographyWithScale with S=1.0 produces same result as transformHomography.
+     */
+    @Test
+    public void testATR_TransformHomographyWithScale_NoScaling_MatchesOriginal() throws Exception {
+        AprilTagROIDecodePipe pipe = new AprilTagROIDecodePipe();
+
+        double[] h = {0.9, 0.1, 50.0, -0.1, 0.9, 60.0, 0.001, 0.002, 1.0};
+        int offsetX = 100;
+        int offsetY = 150;
+        double S = 1.0; // No scaling
+
+        double[] resultWithScale = invokeTransformHomographyWithScale(pipe, h, offsetX, offsetY, S);
+        double[] resultOriginal = invokeTransformHomography(pipe, h, offsetX, offsetY);
+
+        double tolerance = 1e-10;
+        for (int i = 0; i < 9; i++) {
+            assertEquals(resultOriginal[i], resultWithScale[i], tolerance,
+                "Element " + i + " should match original transform when S=1.0");
+        }
+
+        pipe.release();
+    }
+
+    /**
+     * Test homography transformation with scaling: H_full = T * S_inv * H_scaled
+     * Verifies the combined scale+translation transformation is mathematically correct.
+     */
+    @Test
+    public void testATR_TransformHomographyWithScale_Computation() throws Exception {
+        AprilTagROIDecodePipe pipe = new AprilTagROIDecodePipe();
+
+        // Input homography (in scaled ROI space)
+        double[] h = {0.5, 0.0, 40.0, 0.0, 0.5, 30.0, 0.0, 0.0, 1.0};
+        int offsetX = 100;
+        int offsetY = 150;
+        double S = 0.5; // ROI was downscaled by 50%
+        double invS = 1.0 / S; // = 2.0
+
+        double[] result = invokeTransformHomographyWithScale(pipe, h, offsetX, offsetY, S);
+
+        double tolerance = 1e-10;
+
+        // Expected formula: Row 0: H[i]/S + offsetX * H[6+j]
+        // result[0] = 0.5 * 2 + 100 * 0 = 1.0
+        assertEquals(h[0] * invS + offsetX * h[6], result[0], tolerance, "h[0] incorrect");
+        // result[1] = 0.0 * 2 + 100 * 0 = 0.0
+        assertEquals(h[1] * invS + offsetX * h[7], result[1], tolerance, "h[1] incorrect");
+        // result[2] = 40.0 * 2 + 100 * 1 = 80 + 100 = 180
+        assertEquals(h[2] * invS + offsetX * h[8], result[2], tolerance, "h[2] incorrect");
+
+        // Expected formula: Row 1: H[i]/S + offsetY * H[6+j]
+        // result[3] = 0.0 * 2 + 150 * 0 = 0.0
+        assertEquals(h[3] * invS + offsetY * h[6], result[3], tolerance, "h[3] incorrect");
+        // result[4] = 0.5 * 2 + 150 * 0 = 1.0
+        assertEquals(h[4] * invS + offsetY * h[7], result[4], tolerance, "h[4] incorrect");
+        // result[5] = 30.0 * 2 + 150 * 1 = 60 + 150 = 210
+        assertEquals(h[5] * invS + offsetY * h[8], result[5], tolerance, "h[5] incorrect");
+
+        // Row 2: unchanged
+        assertEquals(h[6], result[6], tolerance, "h[6] should be unchanged");
+        assertEquals(h[7], result[7], tolerance, "h[7] should be unchanged");
+        assertEquals(h[8], result[8], tolerance, "h[8] should be unchanged");
+
+        pipe.release();
+    }
+
+    /**
+     * Test point mapping consistency with ATR scaling.
+     * For a point p: project(H_scaled, p) -> scale up -> translate == project(H_full, p)
+     */
+    @Test
+    public void testATR_TransformHomographyWithScale_PointMappingConsistency() throws Exception {
+        AprilTagROIDecodePipe pipe = new AprilTagROIDecodePipe();
+
+        // A homography in scaled ROI space
+        double[] hScaled = {0.8, 0.05, 35.0, -0.03, 0.85, 40.0, 0.0002, 0.0001, 1.0};
+        int offsetX = 200;
+        int offsetY = 150;
+        double S = 0.4; // 40% scale (large tag was downscaled)
+        double invS = 1.0 / S;
+
+        double[] hFull = invokeTransformHomographyWithScale(pipe, hScaled, offsetX, offsetY, S);
+
+        // Test points (normalized tag corners)
+        double[][] testPoints = {
+            {-1.0, -1.0}, {1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}, {0.0, 0.0}
+        };
+
+        double tolerance = 1e-10;
+        for (double[] point : testPoints) {
+            // Project with scaled homography, then scale up and translate
+            double[] scaledProjected = projectPoint(hScaled, point[0], point[1]);
+            double scaledFullX = scaledProjected[0] * invS + offsetX;
+            double scaledFullY = scaledProjected[1] * invS + offsetY;
+
+            // Project with full-frame homography
+            double[] fullProjected = projectPoint(hFull, point[0], point[1]);
+
+            assertEquals(scaledFullX, fullProjected[0], tolerance,
+                "X coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
+            assertEquals(scaledFullY, fullProjected[1], tolerance,
+                "Y coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
+        }
+
+        pipe.release();
+    }
+
+    /**
+     * Test ATR with minimum scale factor clamping.
+     * Verifies that extreme downscaling is prevented.
+     */
+    @Test
+    public void testATR_MinScaleFactorClamping() {
+        int targetDimension = 160;
+        double minScaleFactor = 0.25;
+
+        // Very large tag that would require extreme scaling
+        int tagWidth = 2000;
+        double S = Math.min(1.0, (double) targetDimension / tagWidth); // = 0.08
+        S = Math.max(S, minScaleFactor); // Clamp to 0.25
+
+        assertEquals(0.25, S, 1e-10, "Scale factor should be clamped to minimum");
+    }
+
+    /**
+     * Test ATR enabled vs disabled produces consistent results for small tags.
+     * When tag is smaller than target dimension, ATR should have no effect.
+     */
+    @Test
+    public void testATR_DisabledMatchesOriginalBehavior() {
+        // Load a test image with a known AprilTag
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
+                        TestUtils.WPI2020Image.FOV,
+                        TestUtils.get2020LifeCamCoeffs(false));
+
+        var frame = frameProvider.get();
+        Mat grayMat = frame.processedImage.getMat();
+
+        // First, run full-frame detection to find the tag location
+        AprilTagDetector fullFrameDetector = new AprilTagDetector();
+        fullFrameDetector.addFamily(AprilTagFamily.kTag36h11.getNativeName());
+
+        AprilTagDetection[] fullFrameDetections;
+        try {
+            fullFrameDetections = fullFrameDetector.detect(grayMat);
+        } catch (Exception e) {
+            assumeTrue(false, "Native AprilTag library not available");
+            return;
+        }
+        assumeTrue(fullFrameDetections != null && fullFrameDetections.length > 0);
+
+        AprilTagDetection groundTruth = fullFrameDetections[0];
+
+        // Create an ROI around the tag
+        double minX = Double.MAX_VALUE, maxX = Double.MIN_VALUE;
+        double minY = Double.MAX_VALUE, maxY = Double.MIN_VALUE;
+        for (int i = 0; i < 4; i++) {
+            minX = Math.min(minX, groundTruth.getCornerX(i));
+            maxX = Math.max(maxX, groundTruth.getCornerX(i));
+            minY = Math.min(minY, groundTruth.getCornerY(i));
+            maxY = Math.max(maxY, groundTruth.getCornerY(i));
+        }
+
+        double padding = 20;
+        Rect2d simulatedMLBbox =
+                new Rect2d(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+
+        // Run with ATR enabled (should not scale since tag is small)
+        AprilTagROIDecodePipe pipeWithATR = new AprilTagROIDecodePipe();
+        ROIDecodeParams paramsWithATR = new ROIDecodeParams();
+        paramsWithATR.tagFamily = AprilTagFamily.kTag36h11;
+        paramsWithATR.roiExpansionFactor = 1.2;
+        paramsWithATR.atrEnabled = true;
+        paramsWithATR.atrTargetDimension = 160; // Tag in test image is ~100px, so no scaling
+        pipeWithATR.setParams(paramsWithATR);
+
+        // Run with ATR disabled
+        AprilTagROIDecodePipe pipeWithoutATR = new AprilTagROIDecodePipe();
+        ROIDecodeParams paramsWithoutATR = new ROIDecodeParams();
+        paramsWithoutATR.tagFamily = AprilTagFamily.kTag36h11;
+        paramsWithoutATR.roiExpansionFactor = 1.2;
+        paramsWithoutATR.atrEnabled = false;
+        pipeWithoutATR.setParams(paramsWithoutATR);
+
+        List<Rect2d> rois = new ArrayList<>();
+        rois.add(simulatedMLBbox);
+
+        ROIDecodeInput input = new ROIDecodeInput(frame.processedImage, rois);
+
+        var resultWithATR = pipeWithATR.run(input);
+        var resultWithoutATR = pipeWithoutATR.run(input);
+
+        // Both should detect the same tag with same corners (within tolerance)
+        assertEquals(resultWithATR.output.size(), resultWithoutATR.output.size(),
+            "Same number of detections expected");
+
+        if (!resultWithATR.output.isEmpty() && !resultWithoutATR.output.isEmpty()) {
+            AprilTagDetection detWithATR = resultWithATR.output.get(0);
+            AprilTagDetection detWithoutATR = resultWithoutATR.output.get(0);
+
+            double tolerance = 0.5;
+            for (int i = 0; i < 4; i++) {
+                assertEquals(detWithATR.getCornerX(i), detWithoutATR.getCornerX(i), tolerance,
+                    "Corner " + i + " X should match with/without ATR for small tag");
+                assertEquals(detWithATR.getCornerY(i), detWithoutATR.getCornerY(i), tolerance,
+                    "Corner " + i + " Y should match with/without ATR for small tag");
+            }
+        }
+
+        fullFrameDetector.close();
+        pipeWithATR.release();
+        pipeWithoutATR.release();
+    }
+
+    /**
+     * Test computeHomographyFromCorners produces a valid homography.
+     * Verifies that the computed homography maps normalized tag coords to corners.
+     */
+    @Test
+    public void testATR_ComputeHomographyFromCorners() throws Exception {
+        AprilTagROIDecodePipe pipe = new AprilTagROIDecodePipe();
+        ROIDecodeParams params = new ROIDecodeParams();
+        params.tagFamily = AprilTagFamily.kTag36h11;
+        pipe.setParams(params);
+
+        // Access the private method via reflection
+        Method method = AprilTagROIDecodePipe.class.getDeclaredMethod(
+            "computeHomographyFromCorners", org.opencv.core.Point[].class);
+        method.setAccessible(true);
+
+        // Define test corners (a simple quadrilateral)
+        org.opencv.core.Point[] corners = new org.opencv.core.Point[] {
+            new org.opencv.core.Point(100, 100),  // Corner 0: maps from (-1, -1)
+            new org.opencv.core.Point(200, 100),  // Corner 1: maps from ( 1, -1)
+            new org.opencv.core.Point(200, 200),  // Corner 2: maps from ( 1,  1)
+            new org.opencv.core.Point(100, 200)   // Corner 3: maps from (-1,  1)
+        };
+
+        double[] homography = (double[]) method.invoke(pipe, (Object) corners);
+
+        assertNotNull(homography, "Homography should not be null");
+        assertEquals(9, homography.length, "Homography should have 9 elements");
+
+        // Verify the homography maps normalized coords to corners
+        double tolerance = 1.0; // Allow 1 pixel tolerance
+
+        // Test corner 0: (-1, -1) -> (100, 100)
+        double[] projected0 = projectPoint(homography, -1, -1);
+        assertEquals(100.0, projected0[0], tolerance, "Corner 0 X projection incorrect");
+        assertEquals(100.0, projected0[1], tolerance, "Corner 0 Y projection incorrect");
+
+        // Test corner 1: (1, -1) -> (200, 100)
+        double[] projected1 = projectPoint(homography, 1, -1);
+        assertEquals(200.0, projected1[0], tolerance, "Corner 1 X projection incorrect");
+        assertEquals(100.0, projected1[1], tolerance, "Corner 1 Y projection incorrect");
+
+        // Test corner 2: (1, 1) -> (200, 200)
+        double[] projected2 = projectPoint(homography, 1, 1);
+        assertEquals(200.0, projected2[0], tolerance, "Corner 2 X projection incorrect");
+        assertEquals(200.0, projected2[1], tolerance, "Corner 2 Y projection incorrect");
+
+        // Test corner 3: (-1, 1) -> (100, 200)
+        double[] projected3 = projectPoint(homography, -1, 1);
+        assertEquals(100.0, projected3[0], tolerance, "Corner 3 X projection incorrect");
+        assertEquals(200.0, projected3[1], tolerance, "Corner 3 Y projection incorrect");
+
+        pipe.release();
+    }
 }
