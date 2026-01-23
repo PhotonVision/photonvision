@@ -42,8 +42,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public double mlRoiExpansionFactor = 1.2;
     public boolean mlFallbackToTraditional = true;
     public String mlModelName = null;
-    /** If total ROI area exceeds this ratio of frame area, fall back to traditional detection */
-    public double mlLargeRoiFallbackRatio = 0.25;
 
     // 3d settings
 
@@ -83,8 +81,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + (mlFallbackToTraditional ? 1231 : 1237);
         result = prime * result + ((mlModelName == null) ? 0 : mlModelName.hashCode());
-        temp = Double.doubleToLongBits(mlLargeRoiFallbackRatio);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 
@@ -117,8 +113,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (mlModelName == null) {
             if (other.mlModelName != null) return false;
         } else if (!mlModelName.equals(other.mlModelName)) return false;
-        if (Double.doubleToLongBits(mlLargeRoiFallbackRatio)
-                != Double.doubleToLongBits(other.mlLargeRoiFallbackRatio)) return false;
         return true;
     }
 }

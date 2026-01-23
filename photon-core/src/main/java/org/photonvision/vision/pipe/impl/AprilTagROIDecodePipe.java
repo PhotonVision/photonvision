@@ -23,10 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.core.Rect2d;
@@ -75,19 +71,10 @@ public class AprilTagROIDecodePipe
         public int maxHammingDistance = 0;
         public double minDecisionMargin = 35;
 
-        /** Enable adaptive decimation for large ROIs to improve performance */
-        public boolean adaptiveDecimateEnabled = true;
-
-        /**
-         * ROI area threshold (pixels) above which decimation=2 is used.
-         * Default: 40000 (~200x200 pixels)
-         */
-        public int adaptiveDecimateThreshold = 40000;
-
         public ROIDecodeParams() {
             detectorConfig = new AprilTagDetector.Config();
             detectorConfig.numThreads = 1;
-            detectorConfig.quadDecimate = 1;
+            detectorConfig.quadDecimate = 1; 
             quadParams = new AprilTagDetector.QuadThresholdParameters();
             // Match the defaults from AprilTagPipeline
             quadParams.minClusterPixels = 5;
@@ -99,33 +86,11 @@ public class AprilTagROIDecodePipe
         }
     }
 
-    /** Number of parallel threads for ROI processing */
-    private static final int NUM_DETECTOR_THREADS = Math.max(2, Runtime.getRuntime().availableProcessors() - 1);
-
-    /** Thread pool for parallel ROI processing */
-    private final ExecutorService executorService;
-
-    /** Pool of AprilTag detectors (one per thread) */
-    private final List<AprilTagDetector> detectorPool;
-
-    /** Tracks which detectors are in use to support dynamic pool sizing */
-    private final boolean[] detectorInUse;
-
+    private AprilTagDetector detector;
     private AprilTagFamily currentFamily;
 
     public AprilTagROIDecodePipe() {
-        // Create thread pool
-        executorService = Executors.newFixedThreadPool(NUM_DETECTOR_THREADS);
-
-        // Create detector pool - one detector per thread
-        detectorPool = new ArrayList<>(NUM_DETECTOR_THREADS);
-        detectorInUse = new boolean[NUM_DETECTOR_THREADS];
-        for (int i = 0; i < NUM_DETECTOR_THREADS; i++) {
-            detectorPool.add(new AprilTagDetector());
-            detectorInUse[i] = false;
-        }
-
-        logger.info("Created AprilTagROIDecodePipe with " + NUM_DETECTOR_THREADS + " parallel detectors");
+        detector = new AprilTagDetector();
     }
 
     @Override
@@ -136,17 +101,12 @@ public class AprilTagROIDecodePipe
             return allDetections;
         }
 
-        if (input.rois.isEmpty()) {
-            return allDetections;
-        }
-
         Mat fullFrame = input.grayFrame.getMat();
         int frameWidth = fullFrame.cols();
         int frameHeight = fullFrame.rows();
 
-        // Pre-compute expanded ROIs and filter invalid ones
-        List<Rect> validRois = new ArrayList<>();
         for (Rect2d roi : input.rois) {
+            // Expand the ROI and track the EXPANDED coordinates for mapping
             Rect2d expandedROI = expandBbox(roi, params.roiExpansionFactor, frameWidth, frameHeight);
             Rect roiRect = toIntRect(expandedROI);
 
@@ -154,109 +114,64 @@ public class AprilTagROIDecodePipe
                 continue;
             }
 
+            // Clamp to frame bounds (defensive)
             roiRect = clampToFrame(roiRect, frameWidth, frameHeight);
             if (roiRect.width <= 0 || roiRect.height <= 0) {
                 continue;
             }
 
-            validRois.add(roiRect);
-        }
+            if (DEBUG_COORDINATE_MAPPING) {
+                logger.debug(
+                        "Original ROI: x="
+                                + roi.x
+                                + ", y="
+                                + roi.y
+                                + ", w="
+                                + roi.width
+                                + ", h="
+                                + roi.height);
+                logger.debug(
+                        "Expanded ROI (used for mapping): x="
+                                + roiRect.x
+                                + ", y="
+                                + roiRect.y
+                                + ", w="
+                                + roiRect.width
+                                + ", h="
+                                + roiRect.height);
+            }
 
-        if (validRois.isEmpty()) {
-            return allDetections;
-        }
+            // Extract submat - coordinates in detection will be relative to (0,0) of this submat
+            Mat roiMat = fullFrame.submat(roiRect);
+            AprilTagDetection[] roiDetections = detector.detect(roiMat);
 
-        // If only one ROI, process it directly without thread overhead
-        if (validRois.size() == 1) {
-            Rect roiRect = validRois.get(0);
-            allDetections.addAll(processROI(fullFrame, roiRect, detectorPool.get(0)));
-            return deduplicateByTagId(allDetections);
-        }
+            for (AprilTagDetection det : roiDetections) {
+                if (det.getHamming() > params.maxHammingDistance) continue;
+                if (det.getDecisionMargin() < params.minDecisionMargin) continue;
 
-        // Process multiple ROIs in parallel
-        List<Future<List<AprilTagDetection>>> futures = new ArrayList<>();
+                // Map coordinates using the EXPANDED ROI offset
+                AprilTagDetection mappedDetection = mapToFullFrame(det, roiRect);
 
-        for (int i = 0; i < validRois.size(); i++) {
-            final Rect roiRect = validRois.get(i);
-            final int detectorIndex = i % NUM_DETECTOR_THREADS;
-            final AprilTagDetector detector = detectorPool.get(detectorIndex);
+                if (DEBUG_COORDINATE_MAPPING) {
+                    logger.debug(
+                            "Tag "
+                                    + det.getId()
+                                    + " corner 0: ROI=("
+                                    + det.getCornerX(0)
+                                    + ", "
+                                    + det.getCornerY(0)
+                                    + "), Full=("
+                                    + mappedDetection.getCornerX(0)
+                                    + ", "
+                                    + mappedDetection.getCornerY(0)
+                                    + ")");
+                }
 
-            futures.add(executorService.submit(() -> processROI(fullFrame, roiRect, detector)));
-        }
-
-        // Collect results from all futures
-        for (Future<List<AprilTagDetection>> future : futures) {
-            try {
-                allDetections.addAll(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                logger.error("Error processing ROI in parallel", e);
+                allDetections.add(mappedDetection);
             }
         }
 
         return deduplicateByTagId(allDetections);
-    }
-
-    /**
-     * Processes a single ROI and returns detected AprilTags mapped to full-frame coordinates.
-     *
-     * @param fullFrame The full grayscale frame
-     * @param roiRect The ROI rectangle (already expanded and clamped)
-     * @param detector The AprilTag detector to use (from the pool)
-     * @return List of AprilTagDetection objects in full-frame coordinates
-     */
-    private List<AprilTagDetection> processROI(Mat fullFrame, Rect roiRect, AprilTagDetector detector) {
-        List<AprilTagDetection> detections = new ArrayList<>();
-
-        if (DEBUG_COORDINATE_MAPPING) {
-            logger.debug(
-                    "Processing ROI: x="
-                            + roiRect.x
-                            + ", y="
-                            + roiRect.y
-                            + ", w="
-                            + roiRect.width
-                            + ", h="
-                            + roiRect.height);
-        }
-
-        // Extract submat - coordinates in detection will be relative to (0,0) of this submat
-        Mat roiMat = fullFrame.submat(roiRect);
-
-        // Synchronized detection to avoid concurrent access to same detector
-        AprilTagDetection[] roiDetections;
-        synchronized (detector) {
-            roiDetections = detector.detect(roiMat);
-        }
-
-        for (AprilTagDetection det : roiDetections) {
-            if (det.getHamming() > params.maxHammingDistance) continue;
-            if (det.getDecisionMargin() < params.minDecisionMargin) continue;
-
-            // Map coordinates using the EXPANDED ROI offset
-            AprilTagDetection mappedDetection = mapToFullFrame(det, roiRect);
-
-            if (DEBUG_COORDINATE_MAPPING) {
-                logger.debug(
-                        "Tag "
-                                + det.getId()
-                                + " corner 0: ROI=("
-                                + det.getCornerX(0)
-                                + ", "
-                                + det.getCornerY(0)
-                                + "), Full=("
-                                + mappedDetection.getCornerX(0)
-                                + ", "
-                                + mappedDetection.getCornerY(0)
-                                + ")");
-            }
-
-            detections.add(mappedDetection);
-        }
-
-        // Release the submat to prevent memory accumulation
-        roiMat.release();
-
-        return detections;
     }
 
     /**
@@ -407,37 +322,23 @@ public class AprilTagROIDecodePipe
 
     @Override
     public void setParams(ROIDecodeParams newParams) {
-        // Update all detectors in the pool
-        for (AprilTagDetector detector : detectorPool) {
-            if (newParams.tagFamily != currentFamily) {
-                detector.clearFamilies();
-                detector.addFamily(newParams.tagFamily.getNativeName());
-            }
-
-            detector.setConfig(newParams.detectorConfig);
-            detector.setQuadThresholdParameters(newParams.quadParams);
-        }
-
         if (newParams.tagFamily != currentFamily) {
+            detector.clearFamilies();
+            detector.addFamily(newParams.tagFamily.getNativeName());
             currentFamily = newParams.tagFamily;
         }
+
+        detector.setConfig(newParams.detectorConfig);
+        detector.setQuadThresholdParameters(newParams.quadParams);
 
         super.setParams(newParams);
     }
 
     @Override
     public void release() {
-        // Shutdown the executor service
-        if (executorService != null) {
-            executorService.shutdown();
+        if (detector != null) {
+            detector.close();
+            detector = null;
         }
-
-        // Release all detectors in the pool
-        for (AprilTagDetector detector : detectorPool) {
-            if (detector != null) {
-                detector.close();
-            }
-        }
-        detectorPool.clear();
     }
 }
