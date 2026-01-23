@@ -43,9 +43,9 @@ public class MultiTargetPNPPipe
     @Override
     protected Optional<MultiTargetPNPResult> process(List<TrackedTarget> targetList) {
         if (params == null
-                || params.cameraCoefficients == null
-                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients.getDistCoeffsMat() == null) {
+                || params.cameraCoefficients() == null
+                || params.cameraCoefficients().getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients().getDistCoeffsMat() == null) {
             if (!hasWarned) {
                 logger.warn(
                         "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
@@ -62,7 +62,7 @@ public class MultiTargetPNPPipe
         var tagIDsUsed = new ArrayList<Short>();
         for (var target : targetList) {
             int id = target.getFiducialId();
-            if (params.atfl.getTagPose(id).isPresent()) tagIDsUsed.add((short) id);
+            if (params.atfl().getTagPose(id).isPresent()) tagIDsUsed.add((short) id);
         }
 
         // Only run with multiple targets
@@ -72,11 +72,11 @@ public class MultiTargetPNPPipe
 
         var estimatedPose =
                 VisionEstimation.estimateCamPosePNP(
-                        params.cameraCoefficients.cameraIntrinsics.getAsWpilibMat(),
-                        params.cameraCoefficients.distCoeffs.getAsWpilibMat(),
+                        params.cameraCoefficients().cameraIntrinsics.getAsWpilibMat(),
+                        params.cameraCoefficients().distCoeffs.getAsWpilibMat(),
                         TrackedTarget.simpleFromTrackedTargets(targetList),
-                        params.atfl,
-                        params.targetModel);
+                        params.atfl(),
+                        params.targetModel());
 
         if (estimatedPose.isPresent()) {
             return Optional.of(new MultiTargetPNPResult(estimatedPose.get(), tagIDsUsed));
@@ -85,18 +85,8 @@ public class MultiTargetPNPPipe
         }
     }
 
-    public static class MultiTargetPNPPipeParams {
-        private final CameraCalibrationCoefficients cameraCoefficients;
-        private final AprilTagFieldLayout atfl;
-        private final TargetModel targetModel;
-
-        public MultiTargetPNPPipeParams(
-                CameraCalibrationCoefficients cameraCoefficients,
-                AprilTagFieldLayout atfl,
-                TargetModel targetModel) {
-            this.cameraCoefficients = cameraCoefficients;
-            this.atfl = atfl;
-            this.targetModel = targetModel;
-        }
-    }
+    public static record MultiTargetPNPPipeParams(
+            CameraCalibrationCoefficients cameraCoefficients,
+            AprilTagFieldLayout atfl,
+            TargetModel targetModel) {}
 }

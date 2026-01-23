@@ -15,52 +15,30 @@
 ## along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ###############################################################################
 
-import enum
 from typing import Optional
 
+import hal
 import wpilib
+import wpimath.units
 from robotpy_apriltag import AprilTagFieldLayout
-from wpimath.geometry import Pose2d, Pose3d, Transform3d
+from wpimath.geometry import (
+    Pose2d,
+    Pose3d,
+    Rotation2d,
+    Rotation3d,
+    Transform3d,
+    Translation2d,
+    Translation3d,
+)
+from wpimath.interpolation import TimeInterpolatableRotation2dBuffer
 
 from .estimatedRobotPose import EstimatedRobotPose
-from .photonCamera import PhotonCamera
 from .targeting.photonPipelineResult import PhotonPipelineResult
 
 
-class PoseStrategy(enum.Enum):
-    """
-    Position estimation strategies that can be used by the PhotonPoseEstimator class.
-    """
-
-    LOWEST_AMBIGUITY = enum.auto()
-    """Choose the Pose with the lowest ambiguity."""
-
-    CLOSEST_TO_CAMERA_HEIGHT = enum.auto()
-    """Choose the Pose which is closest to the camera height."""
-
-    CLOSEST_TO_REFERENCE_POSE = enum.auto()
-    """Choose the Pose which is closest to a set Reference position."""
-
-    CLOSEST_TO_LAST_POSE = enum.auto()
-    """Choose the Pose which is closest to the last pose calculated."""
-
-    AVERAGE_BEST_TARGETS = enum.auto()
-    """Return the average of the best target poses using ambiguity as weight."""
-
-    MULTI_TAG_PNP_ON_COPROCESSOR = enum.auto()
-    """
-    Use all visible tags to compute a single pose estimate on coprocessor.
-    This option needs to be enabled on the PhotonVision web UI as well.
-    """
-
-    MULTI_TAG_PNP_ON_RIO = enum.auto()
-    """
-    Use all visible tags to compute a single pose estimate.
-    This runs on the RoboRIO, and can take a lot of time.
-    """
-
-
 class PhotonPoseEstimator:
+    instance_count = 1
+
     """
     The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
     given timestamp on the field to produce a single robot in field pose, using the strategy set
@@ -70,8 +48,6 @@ class PhotonPoseEstimator:
     def __init__(
         self,
         fieldTags: AprilTagFieldLayout,
-        strategy: PoseStrategy,
-        camera: PhotonCamera,
         robotToCamera: Transform3d,
     ):
         """Create a new PhotonPoseEstimator.
@@ -80,23 +56,21 @@ class PhotonPoseEstimator:
                            with respect to the FIRST field using the Field Coordinate System.
                            Note that setting the origin of this layout object will affect the
                            results from this class.
-        :param strategy: The strategy it should use to determine the best pose.
-        :param camera: PhotonCamera
         :param robotToCamera: Transform3d from the center of the robot to the camera mount position (i.e.,
                                 robot ➔ camera) in the Robot Coordinate System.
         """
         self._fieldTags = fieldTags
-        self._primaryStrategy = strategy
-        self._camera = camera
         self.robotToCamera = robotToCamera
 
-        self._multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY
         self._reportedErrors: set[int] = set()
-        self._poseCacheTimestampSeconds = -1.0
-        self._lastPose: Optional[Pose3d] = None
-        self._referencePose: Optional[Pose3d] = None
+        self._headingBuffer = TimeInterpolatableRotation2dBuffer(1)
 
-        # TODO: Implement HAL reporting
+        # Usage reporting
+        hal.report(
+            hal.tResourceType.kResourceType_PhotonPoseEstimator.value,
+            PhotonPoseEstimator.instance_count,
+        )
+        PhotonPoseEstimator.instance_count += 1
 
     @property
     def fieldTags(self) -> AprilTagFieldLayout:
@@ -116,160 +90,120 @@ class PhotonPoseEstimator:
 
         :param fieldTags: the AprilTagFieldLayout
         """
-        self._checkUpdate(self._fieldTags, fieldTags)
         self._fieldTags = fieldTags
 
-    @property
-    def primaryStrategy(self) -> PoseStrategy:
-        """Get the Position Estimation Strategy being used by the Position Estimator.
-
-        :returns: the strategy
+    def addHeadingData(
+        self, timestampSeconds: wpimath.units.seconds, heading: Rotation2d | Rotation3d
+    ) -> None:
         """
-        return self._primaryStrategy
+        Add robot heading data to buffer. Must be called periodically for the **PNP_DISTANCE_TRIG_SOLVE** strategy.
 
-    @primaryStrategy.setter
-    def primaryStrategy(self, strategy: PoseStrategy):
-        """Set the Position Estimation Strategy used by the Position Estimator.
-
-        :param strategy: the strategy to set
+        :param timestampSeconds :timestamp of the robot heading data
+        :param heading: field-relative robot heading at given timestamp
         """
-        self._checkUpdate(self._primaryStrategy, strategy)
-        self._primaryStrategy = strategy
+        if isinstance(heading, Rotation3d):
+            heading = heading.toRotation2d()
+        self._headingBuffer.addSample(timestampSeconds, heading)
 
-    @property
-    def multiTagFallbackStrategy(self) -> PoseStrategy:
-        return self._multiTagFallbackStrategy
-
-    @multiTagFallbackStrategy.setter
-    def multiTagFallbackStrategy(self, strategy: PoseStrategy):
-        """Set the Position Estimation Strategy used in multi-tag mode when only one tag can be seen. Must
-        NOT be MULTI_TAG_PNP
-
-        :param strategy: the strategy to set
+    def resetHeadingData(
+        self, timestampSeconds: wpimath.units.seconds, heading: Rotation2d | Rotation3d
+    ) -> None:
         """
-        self._checkUpdate(self._multiTagFallbackStrategy, strategy)
-        if (
-            strategy is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR
-            or strategy is PoseStrategy.MULTI_TAG_PNP_ON_RIO
-        ):
-            wpilib.reportWarning(
-                "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
-                False,
-            )
-            strategy = PoseStrategy.LOWEST_AMBIGUITY
-        self._multiTagFallbackStrategy = strategy
+        Clears all heading data in the buffer, and adds a new seed. Useful for preventing estimates
+        from utilizing heading data provided prior to a pose or rotation reset.
 
-    @property
-    def referencePose(self) -> Optional[Pose3d]:
-        """Return the reference position that is being used by the estimator.
-
-        :returns: the referencePose
+        :param timestampSeconds: timestamp of the robot heading data
+        :param  heading: field-relative robot heading at given timestamp
         """
-        return self._referencePose
+        self._headingBuffer.clear()
+        self.addHeadingData(timestampSeconds, heading)
 
-    @referencePose.setter
-    def referencePose(self, referencePose: Pose3d | Pose2d):
-        """Update the stored reference pose for use when using the **CLOSEST_TO_REFERENCE_POSE**
-        strategy.
-
-        :param referencePose: the referencePose to set
+    def _shouldEstimate(self, cameraResult: PhotonPipelineResult) -> bool:
         """
-        if isinstance(referencePose, Pose2d):
-            referencePose = Pose3d(referencePose)
-        self._checkUpdate(self._referencePose, referencePose)
-        self._referencePose = referencePose
+        :param cameraResult: A pipeline result from the camera.
 
-    @property
-    def lastPose(self) -> Optional[Pose3d]:
-        return self._lastPose
-
-    @lastPose.setter
-    def lastPose(self, lastPose: Pose3d | Pose2d):
-        """Update the stored last pose. Useful for setting the initial estimate when using the
-        **CLOSEST_TO_LAST_POSE** strategy.
-
-        :param lastPose: the lastPose to set
+        :returns: Whether or not estimation should be done.
         """
-        if isinstance(lastPose, Pose2d):
-            lastPose = Pose3d(lastPose)
-        self._checkUpdate(self._lastPose, lastPose)
-        self._lastPose = lastPose
-
-    def _invalidatePoseCache(self) -> None:
-        self._poseCacheTimestampSeconds = -1.0
-
-    def _checkUpdate(self, oldObj, newObj) -> None:
-        if oldObj != newObj and oldObj is not None and oldObj is not newObj:
-            self._invalidatePoseCache()
-
-    def update(
-        self, cameraResult: Optional[PhotonPipelineResult] = None
-    ) -> Optional[EstimatedRobotPose]:
-        """
-        Updates the estimated position of the robot. Returns empty if:
-
-         - The timestamp of the provided pipeline result is the same as in the previous call to
-         ``update()``.
-
-         - No targets were found in the pipeline results.
-
-        :param cameraResult: The latest pipeline result from the camera
-
-        :returns: an :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used to
-                   create the estimate.
-        """
-        if not cameraResult:
-            if not self._camera:
-                wpilib.reportError("[PhotonPoseEstimator] Missing camera!", False)
-                return None
-            cameraResult = self._camera.getLatestResult()
-
         if cameraResult.getTimestampSeconds() < 0:
-            return None
+            return False
 
-        # If the pose cache timestamp was set, and the result is from the same
-        # timestamp, return an
-        # empty result
-        if (
-            self._poseCacheTimestampSeconds > 0.0
-            and abs(
-                self._poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()
-            )
-            < 1e-6
-        ):
-            return None
+        # If no targets seen, trivial case -- can't do estimation
+        return len(cameraResult.targets) > 0
 
-        # Remember the timestamp of the current result used
-        self._poseCacheTimestampSeconds = cameraResult.getTimestampSeconds()
-
-        # If no targets seen, trivial case -- return empty result
-        if not cameraResult.targets:
-            return None
-
-        return self._update(cameraResult, self._primaryStrategy)
-
-    def _update(
-        self, cameraResult: PhotonPipelineResult, strat: PoseStrategy
-    ) -> Optional[EstimatedRobotPose]:
-        if strat is PoseStrategy.LOWEST_AMBIGUITY:
-            estimatedPose = self._lowestAmbiguityStrategy(cameraResult)
-        elif strat is PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR:
-            estimatedPose = self._multiTagOnCoprocStrategy(cameraResult)
-        else:
-            wpilib.reportError(
-                "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", False
-            )
-            return None
-
-        if not estimatedPose:
-            self._lastPose = None
-
-        return estimatedPose
-
-    def _multiTagOnCoprocStrategy(
+    def estimatePnpDistanceTrigSolvePose(
         self, result: PhotonPipelineResult
     ) -> Optional[EstimatedRobotPose]:
-        if result.multitagResult is not None:
+        """
+
+        Return the estimated position of the robot by using distance data from best visible tag to
+        compute a Pose. This runs on the RoboRIO in order to access the robot's yaw heading, and MUST
+        have addHeadingData called every frame so heading data is up-to-date.
+
+        Yields a Pose2d in estimatedRobotPose (0 for z, roll, pitch)
+
+        https://www.chiefdelphi.com/t/frc-6328-mechanical-advantage-2025-build-thread/477314/98
+
+
+        :param result: A pipeline result from the camera.
+        :returns: An :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used
+          to create the estimate.
+        """
+        if (
+            not self._shouldEstimate(result)
+            or (bestTarget := result.getBestTarget()) is None
+        ):
+            return None
+
+        if (
+            headingSample := self._headingBuffer.sample(result.getTimestampSeconds())
+        ) is None:
+            return None
+
+        if (tagPose := self._fieldTags.getTagPose(bestTarget.fiducialId)) is None:
+            return None
+
+        camToTagTranslation = (
+            Translation3d(
+                bestTarget.getBestCameraToTarget().translation().norm(),
+                Rotation3d(
+                    0,
+                    -wpimath.units.degreesToRadians(bestTarget.getPitch()),
+                    -wpimath.units.degreesToRadians(bestTarget.getYaw()),
+                ),
+            )
+            .rotateBy(self.robotToCamera.rotation())
+            .toTranslation2d()
+            .rotateBy(headingSample)
+        )
+
+        fieldToCameraTranslation = (
+            tagPose.toPose2d().translation() - camToTagTranslation
+        )
+        camToRobotTranslation: Translation2d = -(
+            self.robotToCamera.translation().toTranslation2d()
+        )
+        camToRobotTranslation = camToRobotTranslation.rotateBy(headingSample)
+        robotPose = Pose2d(
+            fieldToCameraTranslation + camToRobotTranslation, headingSample
+        )
+
+        return EstimatedRobotPose(
+            Pose3d(robotPose), result.getTimestampSeconds(), result.getTargets()
+        )
+
+    def estimateCoprocMultiTagPose(
+        self, result: PhotonPipelineResult
+    ) -> Optional[EstimatedRobotPose]:
+        """
+        Return the estimated position of the robot by using all visible tags to compute a single
+        pose estimate on coprocessor. This option needs to be enabled on the PhotonVision web UI as
+        well.
+
+        :param result: A pipeline result from the camera.
+        :returns: An :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used
+          to create the estimate.
+        """
+        if result.multitagResult is not None and self._shouldEstimate(result):
             best_tf = result.multitagResult.estimatedPose.best
             best = (
                 Pose3d()
@@ -281,23 +215,22 @@ class PhotonPoseEstimator:
                 best,
                 result.getTimestampSeconds(),
                 result.targets,
-                PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             )
         else:
-            return self._update(result, self._multiTagFallbackStrategy)
+            return None
 
-    def _lowestAmbiguityStrategy(
+    def estimateLowestAmbiguityPose(
         self, result: PhotonPipelineResult
     ) -> Optional[EstimatedRobotPose]:
         """
-        Return the estimated position of the robot with the lowest position ambiguity from a List of
-        pipeline results.
+        Return the estimated position of the robot with the lowest position ambiguity from a pipeline results.
 
-        :param result: pipeline result
-
-        :returns: the estimated position of the robot in the FCS and the estimated timestamp of this
-                  estimation.
+        :param result: A pipeline result from the camera.
+        :returns: An :class:`EstimatedRobotPose` with an estimated pose, timestamp, and targets used
+          to create the estimate.
         """
+        if not self._shouldEstimate(result):
+            return None
         lowestAmbiguityTarget = None
 
         lowestAmbiguityScore = 10.0
@@ -328,7 +261,6 @@ class PhotonPoseEstimator:
             ).transformBy(self.robotToCamera.inverse()),
             result.getTimestampSeconds(),
             result.targets,
-            PoseStrategy.LOWEST_AMBIGUITY,
         )
 
     def _reportFiducialPoseError(self, fiducialId: int) -> None:

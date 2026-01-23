@@ -10,5 +10,5 @@ AprilTags are a common type of visual fiducial marker. Visual fiducial markers a
 A more technical explanation can be found in the [WPILib documentation](https://docs.wpilib.org/en/latest/docs/software/vision-processing/apriltag/apriltag-intro.html).
 
 :::{note}
-You can get FIRST's [official PDF of the targets used in 2025 here](https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/Apriltag_Images_and_User_Guide.pdf).
+You can get FIRST's [official PDF of the targets used in 2026 here](https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-apriltag-images-user-guide.pdf).
 :::

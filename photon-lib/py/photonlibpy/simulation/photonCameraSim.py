@@ -51,7 +51,7 @@ class PhotonCameraSim:
 
         :param camera:               The camera to be simulated
         :param prop:                 Properties of this camera such as FOV and FPS
-        :param minTargetAreaPercent: The minimum percentage(0 - 100) a detected target must take up of
+        :param minTargetAreaPercent: The minimum percentage (0 - 100) a detected target must take up of
                                      the camera's image to be processed. Match this with your contour filtering settings in the
                                      PhotonVision GUI.
         :param maxSightRangeMeters:  Maximum distance at which the target is illuminated to your camera.
@@ -206,7 +206,7 @@ class PhotonCameraSim:
         return None
 
     def setMinTargetAreaPercent(self, areaPercent: float) -> None:
-        """The minimum percentage(0 - 100) a detected target must take up of the camera's image to be
+        """The minimum percentage (0 - 100) a detected target must take up of the camera's image to be
         processed.
         """
         self.minTargetAreaPercent = areaPercent
@@ -271,6 +271,9 @@ class PhotonCameraSim:
         camRt = RotTrlTransform3d.makeRelativeTo(cameraPose)
 
         for tgt in targets:
+            if len(detectableTgts) >= 50:
+                break
+
             # pose isn't visible, skip to next
             if not self.canSeeTargetPose(cameraPose, tgt):
                 continue
@@ -420,14 +423,15 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
-        now_micros = wpilib.Timer.getFPGATimestamp() * 1e6
+        publishTimestampMicros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
+            ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
-                int(now_micros - latency * 1e6),
-                int(now_micros),
-                self.heartbeatCounter,
+                captureTimestampMicros=int(publishTimestampMicros - latency * 1e6),
+                publishTimestampMicros=int(publishTimestampMicros),
+                sequenceID=self.heartbeatCounter,
                 # Pretend like we heard a pong recently
-                int(np.random.uniform(950, 1050)),
+                timeSinceLastPong=int(np.random.uniform(950, 1050)),
             ),
             targets=detectableTgts,
             multitagResult=multiTagResults,
@@ -477,11 +481,11 @@ class PhotonCameraSim:
 
         intrinsics = self.prop.getIntrinsics()
         intrinsicsView = intrinsics.flatten().tolist()
-        self.ts.cameraIntrinsicsPublisher.set(intrinsicsView, receiveTimestamp_us)
+        self.ts.cameraIntrinsicsPublisher.set(list(intrinsicsView), receiveTimestamp_us)
 
         distortion = self.prop.getDistCoeffs()
         distortionView = distortion.flatten().tolist()
-        self.ts.cameraDistortionPublisher.set(distortionView, receiveTimestamp_us)
+        self.ts.cameraDistortionPublisher.set(list(distortionView), receiveTimestamp_us)
 
         self.ts.heartbeatPublisher.set(self.heartbeatCounter, receiveTimestamp_us)
         self.heartbeatCounter += 1

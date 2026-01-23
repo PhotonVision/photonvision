@@ -21,16 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -39,22 +36,11 @@ import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
-    private static Path tmpDir;
+    @TempDir private static Path tmpDir;
 
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
-        try {
-            tmpDir = Files.createTempDirectory("SQLConfigTest");
-        } catch (IOException e) {
-            System.out.println("Couldn't create temporary directory, using current directory");
-            tmpDir = Path.of("jdbc_test", "temp");
-        }
-    }
-
-    @AfterAll
-    public static void cleanUp() throws IOException {
-        Files.walk(tmpDir).sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+        LoadJNI.loadLibraries();
     }
 
     @Test

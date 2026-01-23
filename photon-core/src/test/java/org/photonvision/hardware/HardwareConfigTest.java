@@ -17,14 +17,17 @@
 
 package org.photonvision.hardware;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
+import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
@@ -37,9 +40,11 @@ public class HardwareConfigTest {
             assertEquals(config.deviceName, "PhotonVision");
             assertEquals(config.deviceLogoPath, "photonvision.png");
             assertEquals(config.supportURL, "https://support.photonvision.com");
-            Assertions.assertArrayEquals(
-                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
-            CustomGPIO.setConfig(config);
+            // Ensure defaults are not null
+            assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
+            NativeDeviceFactoryInterface deviceFactory = HardwareManager.configureCustomGPIO(config);
+            assertTrue(deviceFactory instanceof CustomDeviceFactory);
+            deviceFactory.close();
 
         } catch (IOException e) {
             e.printStackTrace();

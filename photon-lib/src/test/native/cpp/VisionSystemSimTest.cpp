@@ -22,16 +22,17 @@
  * SOFTWARE.
  */
 
+#include "photon/simulation/VisionSystemSim.h"
+
 #include <chrono>
 #include <thread>
 #include <tuple>
 #include <vector>
 
+#include <gtest/gtest.h>
 #include <wpi/deprecated.h>
 
-#include "gtest/gtest.h"
 #include "photon/PhotonUtils.h"
-#include "photon/simulation/VisionSystemSim.h"
 
 // Ignore GetLatestResult warnings
 WPI_IGNORE_DEPRECATED
@@ -114,6 +115,29 @@ TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
           frc::Rotation3d{0_deg, 0_deg, units::radian_t{std::numbers::pi}}});
   visionSysSim.Update(robotPose);
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
+}
+
+TEST_F(VisionSystemSimTest, TestBunchaTargets) {
+  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::PhotonCamera camera{"camera"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
+
+  std::vector<photon::VisionTargetSim> targets;
+  for (int i = 0; i < 100; i++) {
+    targets.emplace_back(
+        frc::Pose3d{
+            frc::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
+            frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}},
+        photon::TargetModel{0.5_m, 0.5_m}, i);
+  }
+  visionSysSim.AddVisionTargets(targets);
+
+  frc::Pose2d robotPose{frc::Translation2d{5_m, 0_m}, frc::Rotation2d{5_deg}};
+  visionSysSim.Update(robotPose);
+
+  ASSERT_EQ(camera.GetLatestResult().targets.size(), 50u);
 }
 
 TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
@@ -220,7 +244,6 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg, units::radian_t{3 * std::numbers::pi / 4}}};
-  frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{GetParam() * -1.0}};
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
@@ -231,8 +254,8 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
       targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
 
   // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
-  robotPose =
-      frc::Pose2d{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{GetParam()}};
+  frc::Pose2d robotPose{frc::Translation2d{10_m, 0_m},
+                        frc::Rotation2d{GetParam()}};
   visionSysSim.Update(robotPose);
 
   const auto result = camera.GetLatestResult();

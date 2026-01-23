@@ -3,14 +3,13 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { TargetModel } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
-import { computed, getCurrentInstance } from "vue";
+import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
+import { useDisplay } from "vuetify";
+const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
-  (getCurrentInstance()?.proxy.$vuetify.breakpoint.mdAndDown || false) &&
-  (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode)
-    ? 9
-    : 8
+  mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
 );
 </script>
 
@@ -30,7 +29,9 @@ const interactiveCols = computed(() =>
         { name: '2025 Algae (16.25in)', value: TargetModel.ReefscapeAlgae }
       ]"
       :select-cols="interactiveCols"
-      @input="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)
+      "
     />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.cornerDetectionAccuracyPercentage"
@@ -39,7 +40,7 @@ const interactiveCols = computed(() =>
       label="Contour simplification Percentage"
       :min="0"
       :max="100"
-      @input="
+      @update:modelValue="
         (value) =>
           useCameraSettingsStore().changeCurrentPipelineSetting({ cornerDetectionAccuracyPercentage: value }, false)
       "

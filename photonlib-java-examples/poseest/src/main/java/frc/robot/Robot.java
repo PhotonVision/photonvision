@@ -46,7 +46,7 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         drivetrain = new SwerveDrive();
-        vision = new Vision();
+        vision = new Vision(drivetrain::addVisionMeasurement);
 
         controller = new XboxController(0);
 
@@ -61,16 +61,8 @@ public class Robot extends TimedRobot {
         // Update drivetrain subsystem
         drivetrain.periodic();
 
-        // Correct pose estimate with vision measurements
-        var visionEst = vision.getEstimatedGlobalPose();
-        visionEst.ifPresent(
-                est -> {
-                    // Change our trust in the measurement based on the tags we can see
-                    var estStdDevs = vision.getEstimationStdDevs();
-
-                    drivetrain.addVisionMeasurement(
-                            est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
-                });
+        // Update vision
+        vision.periodic();
 
         // Test/Example only!
         // Apply an offset to pose estimator to test vision correction

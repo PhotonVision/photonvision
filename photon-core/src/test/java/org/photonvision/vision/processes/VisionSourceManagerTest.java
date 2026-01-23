@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.processes;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
@@ -29,11 +29,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
 
 public class VisionSourceManagerTest {
@@ -59,9 +59,7 @@ public class VisionSourceManagerTest {
 
     @BeforeAll
     public static void loadLibraries() {
-        TestUtils.loadLibraries();
-        assertDoesNotThrow(PhotonTargetingJniLoader::load);
-        assertTrue(PhotonTargetingJniLoader.isWorking);
+        assertTrue(LoadJNI.loadLibraries());
 
         // Broadcast all still calls into configmanager (ew) so set that up here
         ConfigManager.getInstance().load();
@@ -276,5 +274,56 @@ public class VisionSourceManagerTest {
         assertEquals(3, vsm.getVsmState().allConnectedCameras.size());
         assertEquals(2, vsm.getVsmState().disabledConfigs.size());
         assertEquals(1, vsm.vmm.getModules().size());
+    }
+
+    @Test
+    public void testMismatch() throws InterruptedException {
+        var vsm = new TestVsm();
+
+        // Create a saved camera configuration that expects a device at /dev/video0 with a name
+        PVCameraInfo savedInfo =
+                PVCameraInfo.fromUsbCameraInfo(
+                        new UsbCameraInfo(
+                                0, "/dev/video0", "CamA", new String[] {"/dev/v4l/by-path/1"}, 111, 222));
+        CameraConfiguration savedConf = new CameraConfiguration(savedInfo);
+        savedConf.deactivated = false;
+        savedConf.nickname = "SavedCam";
+
+        // Register the saved config so VSM creates a VisionModule
+        vsm.registerLoadedConfigs(List.of(savedConf));
+
+        // Now simulate a connected camera at same uniquePath but with a different name (mismatch)
+        List<PVCameraInfo> currentInfo =
+                List.of(
+                        PVCameraInfo.fromUsbCameraInfo(
+                                new UsbCameraInfo(
+                                        0,
+                                        "/dev/video0",
+                                        "CamDifferent",
+                                        new String[] {"/dev/v4l/by-path/1"},
+                                        111,
+                                        222)));
+
+        // Trigger state evaluation
+        vsm.checkMismatches(currentInfo);
+
+        // The module should have detected a mismatch
+        assertTrue(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
+
+        // Now simulate the device being disconnected
+        currentInfo = List.of();
+        vsm.checkMismatches(currentInfo);
+
+        // Mismatch should be cleared when device is disconnected
+        assertFalse(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
+
+        // Test with a matching camera info
+        currentInfo = List.of(savedInfo);
+        vsm.checkMismatches(currentInfo);
+
+        // The mismatch should be cleared
+        assertFalse(vsm.getVisionModules().stream().anyMatch(m -> m.mismatch));
+
+        vsm.teardown();
     }
 }

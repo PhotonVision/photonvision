@@ -9,12 +9,6 @@ from numpy import *
 
 def generate_costs(num_tags, robot_heading_free):
 
-    # Camera calibration parameters
-    fx = ca.SX.sym("fx")
-    fy = ca.SX.sym("fy")
-    cx = ca.SX.sym("cx")
-    cy = ca.SX.sym("cy")
-
     # Decision variables
     robot_x = ca.SX.sym("robot_x")
     robot_y = ca.SX.sym("robot_y")
@@ -60,22 +54,24 @@ def generate_costs(num_tags, robot_heading_free):
     z = camera2point[2, :]
 
     # Observed coordinates
-    u_observed = point_observations[0, :]
-    v_observed = point_observations[1, :]
+    # Note that instead of using camera calibration, we expect the caller to provide
+    # "normalized pixel coordinates". Convert from (u, v) coordinates to normalized
+    # (x'', y'') coordinates with:
+    # x'' = (u - c_x) / f_x
+    # y'' = (u - c_y) / f_y
+    xʼʼ_observed = point_observations[0, :]
+    yʼʼ_observed = point_observations[1, :]
 
-    # Project to image plane
-    X = x / z
-    Y = y / z
-
-    u = fx * X + cx
-    v = fy * Y + cy
+    # Where we expected to see the landmarks at, in normalized pixel coordinates
+    xʼʼ = x / z
+    yʼʼ = y / z
 
     # Reprojection error
-    u_err = u - u_observed
-    v_err = v - v_observed
+    xʼʼ_err = xʼʼ - xʼʼ_observed
+    yʼʼ_err = yʼʼ - yʼʼ_observed
 
     # Frobenius norm - sqrt(sum squared of each component). Square to remove sqrt
-    J = ca.norm_fro(u_err) ** 2 + ca.norm_fro(v_err) ** 2
+    J = ca.norm_fro(xʼʼ_err) ** 2 + ca.norm_fro(yʼʼ_err) ** 2
 
     # And penalize gyro error excursion
     if not robot_heading_free:
@@ -93,10 +89,10 @@ def generate_costs(num_tags, robot_heading_free):
         robot_x,
         robot_y,
         robot_θ,
-        fx,
-        fy,
-        cx,
-        cy,
+        # fx,
+        # fy,
+        # cx,
+        # cy,
         robot2camera,
         field2points,
         point_observations,
@@ -107,10 +103,10 @@ def generate_costs(num_tags, robot_heading_free):
         "robot_x",
         "robot_y",
         "robot_θ",
-        "fx",
-        "fy",
-        "cx",
-        "cy",
+        # "fx",
+        # "fy",
+        # "cx",
+        # "cy",
         "robot2camera",
         "field2points",
         "point_observations",

@@ -1,0 +1,9 @@
+cppHeaderFileInclude {
+  \.h$
+}
+
+modifiableFileExclude {
+  photon-lib/py/photonlibpy/generated/
+  photon-targeting/src/generated/
+  photon-targeting/src/main/native/cpp/photon/constrained_solvepnp/generate/
+}

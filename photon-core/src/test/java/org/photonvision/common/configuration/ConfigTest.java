@@ -17,6 +17,9 @@
 
 package org.photonvision.common.configuration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -25,10 +28,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
@@ -48,7 +51,7 @@ public class ConfigTest {
 
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         var path = Path.of("testconfigdir");
         configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
         configMgr.load();
@@ -76,7 +79,7 @@ public class ConfigTest {
     @Test
     @Order(1)
     public void serializeConfig() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);
@@ -87,9 +90,9 @@ public class ConfigTest {
                         Path.of(configMgr.configDirectoryFile.toString(), "cameras", "TestCamera")
                                 .toAbsolutePath()
                                 .toString());
-        Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
+        assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
 
-        Assertions.assertTrue(
+        assertTrue(
                 Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
                 "networkSettings.json file not found!");
     }
@@ -104,17 +107,17 @@ public class ConfigTest {
         var apriltagPipelineSettings =
                 configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(2);
 
-        Assertions.assertEquals(REFLECTIVE_PIPELINE_SETTINGS, reflectivePipelineSettings);
-        Assertions.assertEquals(COLORED_SHAPE_PIPELINE_SETTINGS, coloredShapePipelineSettings);
-        Assertions.assertEquals(APRIL_TAG_PIPELINE_SETTINGS, apriltagPipelineSettings);
+        assertEquals(REFLECTIVE_PIPELINE_SETTINGS, reflectivePipelineSettings);
+        assertEquals(COLORED_SHAPE_PIPELINE_SETTINGS, coloredShapePipelineSettings);
+        assertEquals(APRIL_TAG_PIPELINE_SETTINGS, apriltagPipelineSettings);
 
-        Assertions.assertTrue(
+        assertTrue(
                 reflectivePipelineSettings instanceof ReflectivePipelineSettings,
                 "Config loaded pipeline settings for index 0 not of expected type ReflectivePipelineSettings!");
-        Assertions.assertTrue(
+        assertTrue(
                 coloredShapePipelineSettings instanceof ColoredShapePipelineSettings,
                 "Config loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
-        Assertions.assertTrue(
+        assertTrue(
                 apriltagPipelineSettings instanceof AprilTagPipelineSettings,
                 "Config loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
     }
@@ -184,7 +187,7 @@ public class ConfigTest {
         AprilTagPipelineSettings settings =
                 (AprilTagPipelineSettings)
                         JacksonUtils.deserialize(tempFile.toPath(), CVPipelineSettings.class);
-        Assertions.assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
+        assertEquals(TargetModel.kAprilTag6in_16h5, settings.targetModel);
 
         tempFile.delete();
     }

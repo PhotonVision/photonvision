@@ -39,7 +39,6 @@ import java.util.Map;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -51,7 +50,8 @@ import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 
 public class VideoSimUtil {
-    public static final int kNumTags36h11 = 30;
+    // Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID required
+    public static final int kNumTags36h11 = 40;
 
     // All 36h11 tag images
     private static final Map<Integer, Mat> kTag36h11Images = new HashMap<>();
@@ -74,6 +74,8 @@ public class VideoSimUtil {
         kTag36h11MarkerPts = get36h11MarkerPts();
     }
 
+    private VideoSimUtil() {}
+
     /** Updates the properties of this CvSource video stream with the given camera properties. */
     public static void updateVideoProp(CvSource video, SimCameraProperties prop) {
         video.setResolution(prop.getResWidth(), prop.getResHeight());
@@ -85,37 +87,44 @@ public class VideoSimUtil {
      * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
      * actual top-left corner.
      *
+     * <p>Order of corners returned is: [BL, BR, TR, TL]
+     *
      * @param size Size of image
+     * @return The corners
      */
     public static Point[] getImageCorners(Size size) {
         return new Point[] {
-            new Point(-0.5, -0.5),
-            new Point(size.width - 0.5, -0.5),
+            new Point(-0.5, size.height - 0.5),
             new Point(size.width - 0.5, size.height - 0.5),
-            new Point(-0.5, size.height - 0.5)
+            new Point(size.width - 0.5, -0.5),
+            new Point(-0.5, -0.5)
         };
     }
 
     /**
      * Gets the 10x10 (grayscale) image of a specific 36h11 AprilTag.
      *
+     * <p>WARNING: This creates a {@link RawFrame} instance but does not close it, which would result
+     * in a resource leak if the {@link Mat} is garbage-collected. Unfortunately, closing the {@code
+     * RawFrame} inside this function would delete the underlying data that backs the {@code
+     * ByteBuffer} that is passed to the {@code Mat} constructor (see comments on <a
+     * href="https://github.com/PhotonVision/photonvision/pull/2023">PR 2023</a> for details).
+     * Luckily, this method is private and is (as of Aug 2025) only used to populate the {@link
+     * #kTag36h11Images} static map at static-initialization time.
+     *
      * @param id The fiducial id of the desired tag
      */
     private static Mat get36h11TagImage(int id) {
         RawFrame frame = AprilTag.generate36h11AprilTagImage(id);
-
-        var buf = frame.getData();
-        byte[] arr = new byte[buf.remaining()];
-        buf.get(arr);
-        // frame.close();
-
-        var mat = new MatOfByte(arr).reshape(1, 10).submat(new Rect(0, 0, 10, 10));
-        mat.dump();
-
-        return mat;
+        return new Mat(
+                frame.getHeight(), frame.getWidth(), CvType.CV_8UC1, frame.getData(), frame.getStride());
     }
 
-    /** Gets the points representing the marker(black square) corners. */
+    /**
+     * Gets the points representing the marker(black square) corners.
+     *
+     * @return The points
+     */
     public static Point[] get36h11MarkerPts() {
         return get36h11MarkerPts(1);
     }
@@ -124,6 +133,7 @@ public class VideoSimUtil {
      * Gets the points representing the marker(black square) corners.
      *
      * @param scale The scale of the tag image (10*scale x 10*scale image)
+     * @return The points
      */
     public static Point[] get36h11MarkerPts(int scale) {
         var roi36h11 = new Rect(new Point(1, 1), new Size(8, 8));
@@ -275,12 +285,12 @@ public class VideoSimUtil {
      * resolution.
      *
      * @param thickness480p A hypothetical line thickness in a 640x480 image
-     * @param destinationImg The destination image to scale to
+     * @param destination The destination image to scale to
      * @return Scaled thickness which cannot be less than 1
      */
-    public static double getScaledThickness(double thickness480p, Mat destinationImg) {
-        double scaleX = destinationImg.width() / 640.0;
-        double scaleY = destinationImg.height() / 480.0;
+    public static double getScaledThickness(double thickness480p, Mat destination) {
+        double scaleX = destination.width() / 640.0;
+        double scaleY = destination.height() / 480.0;
         double minScale = Math.min(scaleX, scaleY);
         return Math.max(thickness480p * minScale, 1.0);
     }

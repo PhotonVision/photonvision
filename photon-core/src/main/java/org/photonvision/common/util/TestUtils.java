@@ -18,6 +18,7 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import java.awt.HeadlessException;
@@ -25,15 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
-import org.photonvision.jni.WpilibLoader;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class TestUtils {
-    public static boolean loadLibraries() {
-        return WpilibLoader.loadLibraries();
-    }
-
     @SuppressWarnings("unused")
     public enum WPI2019Image {
         kCargoAngledDark48in(1.2192),
@@ -50,7 +49,7 @@ public class TestUtils {
         kRocketPanelAngleDark48in(1.2192),
         kRocketPanelAngleDark60in(1.524);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -88,7 +87,7 @@ public class TestUtils {
         kRedLoading_084in(2.1336),
         kRedLoading_108in(2.7432);
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -104,11 +103,31 @@ public class TestUtils {
         }
     }
 
+    public enum WPI2026Images {
+        // 4000 x 1868 px
+        // Galaxy S23, 6.3mm focal length
+        kBlueOutpostFuelSpread;
+
+        public static final Size resolution = new Size(4000, 1868);
+
+        public static final Rotation2d FOV = Rotation2d.fromDegrees(85.0);
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2026", filename + ".jpg");
+        }
+
+        WPI2026Images() {
+            this.path = getPath();
+        }
+    }
+
     public enum WPI2024Images {
         kBackAmpZone_117in,
         kSpeakerCenter_143in;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Path path;
 
@@ -127,7 +146,7 @@ public class TestUtils {
         k162_36_Straight,
         k383_60_Angle2;
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final Translation2d approxPose;
         public final Path path;
@@ -154,7 +173,7 @@ public class TestUtils {
         kTerminal12ft6in(Units.feetToMeters(12.5)),
         kTerminal22ft6in(Units.feetToMeters(22.5));
 
-        public static double FOV = 68.5;
+        public static final double FOV = 68.5;
 
         public final double distanceMeters;
         public final Path path;
@@ -370,6 +389,20 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static void printTestResults(CVPipelineResult pipelineResult) {
+        double fps = 1000 / pipelineResult.getLatencyMillis();
+        System.out.print(
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
+        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
+    }
+
+    public static void printTestResultsWithLocation(CVPipelineResult pipelineResult) {
+        printTestResults(pipelineResult);
+        System.out.println(
+                "Found targets at "
+                        + pipelineResult.targets.stream().map(TrackedTarget::getBestCameraToTarget3d).toList());
     }
 
     public static Path getTestMode2023ImagePath() {

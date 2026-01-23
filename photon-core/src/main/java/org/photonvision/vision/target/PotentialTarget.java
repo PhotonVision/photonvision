@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.target;
 
 import java.util.ArrayList;
@@ -26,7 +27,6 @@ import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 public class PotentialTarget implements Releasable {
-
     public final Contour m_mainContour;
     public final List<Contour> m_subContours;
     public final CVShape shape;
@@ -56,11 +56,11 @@ public class PotentialTarget implements Releasable {
     }
 
     public PotentialTarget(NeuralNetworkPipeResult det) {
-        this.shape = new CVShape(new Contour(det.bbox), ContourShape.Quadrilateral);
+        this.shape = new CVShape(new Contour(det.bbox()), ContourShape.Quadrilateral);
         this.m_mainContour = this.shape.getContour();
         m_subContours = List.of();
-        this.clsId = det.classIdx;
-        this.confidence = det.confidence;
+        this.clsId = det.classIdx();
+        this.confidence = det.confidence();
     }
 
     public PotentialTarget(CVShape cvShape) {

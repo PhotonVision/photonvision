@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -35,7 +36,7 @@ public class ColoredShapePipelineTest {
         TestUtils.showImage(
                 colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
                 "Pipeline output: Triangle.");
-        printTestResults(colouredShapePipelineResult);
+        TestUtils.printTestResults(colouredShapePipelineResult);
     }
 
     public static void testQuadrilateralDetection(
@@ -46,7 +47,7 @@ public class ColoredShapePipelineTest {
         TestUtils.showImage(
                 colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
                 "Pipeline output: Quadrilateral.");
-        printTestResults(colouredShapePipelineResult);
+        TestUtils.printTestResults(colouredShapePipelineResult);
     }
 
     public static void testCustomShapeDetection(
@@ -57,7 +58,7 @@ public class ColoredShapePipelineTest {
         TestUtils.showImage(
                 colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
                 "Pipeline output: Custom.");
-        printTestResults(colouredShapePipelineResult);
+        TestUtils.printTestResults(colouredShapePipelineResult);
     }
 
     @Test
@@ -69,7 +70,7 @@ public class ColoredShapePipelineTest {
         TestUtils.showImage(
                 colouredShapePipelineResult.inputAndOutputFrame.processedImage.getMat(),
                 "Pipeline output: Circle.");
-        printTestResults(colouredShapePipelineResult);
+        TestUtils.printTestResults(colouredShapePipelineResult);
     }
 
     @Test
@@ -89,7 +90,7 @@ public class ColoredShapePipelineTest {
     }
 
     public static void main(String[] args) {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
         System.out.println(
                 TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false));
         var frameProvider =
@@ -114,12 +115,5 @@ public class ColoredShapePipelineTest {
         testCustomShapeDetection(pipeline, settings, frameProvider.get());
         //        testCircleShapeDetection(pipeline, settings, frameProvider.get());
         //        testPowercellDetection(settings, pipeline);
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.print(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
     }
 }

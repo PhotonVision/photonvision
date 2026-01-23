@@ -8,24 +8,38 @@ PhotonLibPy is a minimal, pure-python implementation of PhotonLib.
 
 ## Online Install - Java/C++
 
-Click on the WPI icon on the top right of your VS Code window or hit Ctrl+Shift+P (Cmd+Shift+P on macOS) to bring up the command palette. Type, "Manage Vendor Libraries" and select the "WPILib: Manage Vendor Libraries" option. Then, select the "Install new library (online)" option.
+Click on the WPILib logo in the activity bar to access the Vendor Dependencies interface.
 
-```{image} images/adding-offline-library.png
+```{image} images/wpilib-vendor-dependencies.png
+:scale: 50%
+:align: center
+:alt: WPILib Vendor Dependencies
 ```
 
-Paste the following URL into the box that pops up:
+Select the install button for the "PhotonLib" dependency.
 
-`https://maven.photonvision.org/repository/internal/org/photonvision/photonlib-json/1.0/photonlib-json-1.0.json`
+```{image} images/photonlib-install.png
+:scale: 50%
+:align: center
+:alt: PhotonLib Install Button
+```
 
 :::{note}
-It is recommended to Build Robot Code at least once when connected to the Internet before heading to an area where Internet connectivity is limited (for example, a competition). This ensures that the relevant files are downloaded to your filesystem.
+The Dependency Manager will automatically build your program when it loses focus. This allows you to use the changed dependencies.
 :::
+
+When an update is available for PhotonLib, a "To Latest" button will become available. This will update the vendordep to the latest version of PhotonLib.
+
+```{image} images/photonlib-to-latest.png
+:align: center
+:alt: PhotonLib Update Button
+```
 
 Refer to [The WPILib docs](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) for more details on installing vendor libraries.
 
 ## Offline Install - Java/C++
 
-Download the latest PhotonLib release from our GitHub releases page (named something like `` photonlib-VERSION.zip` ``), and extract the contents to `$HOME/wpilib/YEAR`. This adds PhotonLib maven artifacts to your local maven repository. PhotonLib will now also appear available in the "install vendor libraries (offline)" menu in WPILib VSCode. Refer to [the WPILib docs](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#installing-libraries) for more details on installing vendor libraries offline.
+Download the latest PhotonLib release from our [GitHub releases page](https://github.com/PhotonVision/photonvision/releases) (named in the format `photonlib-VERSION.zip`), and extract the contents to `~/wpilib/YYYY/vendordeps` (where YYYY is the year and ~ is `C:\Users\Public` on Windows). This adds PhotonLib maven artifacts to your local maven repository. PhotonLib will now also appear available in the "install vendor libraries (offline)" menu in WPILib VSCode. Refer to [the WPILib docs](https://docs.wpilib.org/en/stable/docs/software/vscode-overview/3rd-party-libraries.html#how-does-it-work) for more details on installing vendor libraries offline.
 
 ## Install - Python
 
@@ -44,5 +58,5 @@ See [The WPILib/RobotPy docs](https://docs.wpilib.org/en/stable/docs/software/py
 
 In cases where you want to test a specific version of PhotonLib, make sure you have finished the steps in Online Install - Java/C++ and then manually change the version string in the PhotonLib vendordep json file(at ``/path/to/your/project/vendordep/photonlib.json``) to your desired version.
 
-```{image} images/photonlib-vendordep-json.png
+```{image} images/photonlib-vendordep-json.jpg
 ```

@@ -24,6 +24,7 @@ import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.opencv.core.Size;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -187,6 +188,24 @@ public class CameraConfiguration {
                             calibrations.remove(it);
                         });
         calibrations.add(calibration);
+    }
+
+    /**
+     * Remove a calibration from our list. If found, the calibration will be "released". If not found,
+     * no-op.
+     *
+     * @param unrotatedImageSize The resolution to remove.
+     */
+    public void removeCalibration(Size unrotatedImageSize) {
+        logger.info("deleting calibration " + unrotatedImageSize);
+        calibrations.stream()
+                .filter(it -> it.unrotatedImageSize.equals(unrotatedImageSize))
+                .findAny()
+                .ifPresent(
+                        (it) -> {
+                            it.release();
+                            calibrations.remove(it);
+                        });
     }
 
     /**

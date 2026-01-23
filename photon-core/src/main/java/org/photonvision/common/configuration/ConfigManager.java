@@ -34,6 +34,7 @@ import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -51,7 +52,8 @@ public class ConfigManager {
     private final Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
-    // special case flag to disable flushing settings to disk at shutdown. Avoids the jvm shutdown
+    // special case flag to disable flushing settings to disk at shutdown. Avoids
+    // the jvm shutdown
     // hook overwriting the settings we just uploaded
     private boolean flushOnShutdown = true;
     private boolean allowWriteTask = true;
@@ -62,7 +64,8 @@ public class ConfigManager {
         ATOMIC_ZIP
     }
 
-    // This logic decides which kind of ConfigManager we load as the default. If we want to switch
+    // This logic decides which kind of ConfigManager we load as the default. If we
+    // want to switch
     // back to the legacy config manager, change this constant
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
 
@@ -109,18 +112,21 @@ public class ConfigManager {
             } catch (IOException e) {
                 logger.error("Exception moving cameras to cameras_bak!", e);
 
-                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes needs us to
+                // Try to just copy from cams to cams-bak instead of moving? Windows sometimes
+                // needs us to
                 // do that
                 try {
                     org.apache.commons.io.FileUtils.copyDirectory(maybeCams, maybeCamsBak);
                 } catch (IOException e1) {
-                    // So we can't move to cams_bak, and we can't copy and delete either? We just have to give
+                    // So we can't move to cams_bak, and we can't copy and delete either? We just
+                    // have to give
                     // up here on preserving the old folder
                     logger.error("Exception while backup-copying cameras to cameras_bak!", e);
                     e1.printStackTrace();
                 }
 
-                // Delete the directory because we were successfully able to load the config but were unable
+                // Delete the directory because we were successfully able to load the config but
+                // were unable
                 // to save or copy the folder.
                 if (maybeCams.exists()) FileUtils.deleteDirectory(maybeCams.toPath());
             }
@@ -217,6 +223,29 @@ public class ConfigManager {
         return out;
     }
 
+    public File getObjectDetectionExportAsZip() {
+        File out =
+                Path.of(System.getProperty("java.io.tmpdir"), "photonvision-object-detection-models.zip")
+                        .toFile();
+        // We create the properties file inside of the models directory so that when we zip it, it's
+        // included in the zip and simplifies packaging
+        File tempProperties =
+                Path.of(getModelsDirectory().toString(), "photonvision-object-detection-models.json")
+                        .toFile();
+        try {
+            JacksonUtils.serialize(
+                    tempProperties.toPath(), this.getConfig().neuralNetworkPropertyManager());
+            ZipUtil.pack(getModelsDirectory(), out);
+            // Now delete the tempProperties
+            if (tempProperties.exists()) {
+                Files.delete(tempProperties.toPath());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
     public void setNetworkSettings(NetworkConfig networkConfig) {
         getConfig().setNetworkConfig(networkConfig);
         requestSave();
@@ -292,6 +321,10 @@ public class ConfigManager {
 
     public boolean saveUploadedAprilTagFieldLayout(Path uploadPath) {
         return m_provider.saveUploadedAprilTagFieldLayout(uploadPath);
+    }
+
+    public boolean saveUploadedNeuralNetworkProperties(Path uploadPath) {
+        return m_provider.saveUploadedNeuralNetworkProperties(uploadPath);
     }
 
     public void requestSave() {

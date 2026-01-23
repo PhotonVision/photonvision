@@ -1,0 +1,24 @@
+{
+  "name": "photonvision-website",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite-ssg build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@toolwind/anchors": "^1.0.10",
+    "prettier": "^3.5.3",
+    "typescript": "~5.7.2",
+    "vite": "^7.1.2",
+    "vite-ssg": "^28.2.2"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.12",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "tailwindcss": "^4.1.12",
+    "vue": "^3.5.25"
+  }
+}

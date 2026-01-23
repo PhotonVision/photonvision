@@ -128,6 +128,8 @@ public class NetworkConfig {
                 + setDHCPcommand
                 + ", shouldManage="
                 + shouldManage
+                + ", shouldPublishProto="
+                + shouldPublishProto
                 + "]";
     }
 }

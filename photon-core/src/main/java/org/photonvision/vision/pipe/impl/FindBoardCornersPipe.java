@@ -17,10 +17,10 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -54,7 +54,7 @@ public class FindBoardCornersPipe
     // Since we return results in real-time, we want to ensure it goes as fast as
     // possible
     // and fails as fast as possible.
-    final int findChessboardFlags =
+    static final int findChessboardFlags =
             Calib3d.CALIB_CB_NORMALIZE_IMAGE
                     | Calib3d.CALIB_CB_ADAPTIVE_THRESH
                     | Calib3d.CALIB_CB_FILTER_QUADS
@@ -91,30 +91,30 @@ public class FindBoardCornersPipe
          * number of corners.
          */
         this.patternSize =
-                params.type == UICalibrationData.BoardType.CHESSBOARD
-                        ? new Size(params.boardWidth - 1, params.boardHeight - 1)
-                        : new Size(params.boardWidth, params.boardHeight);
+                params.type() == UICalibrationData.BoardType.CHESSBOARD
+                        ? new Size(params.boardWidth() - 1, params.boardHeight() - 1)
+                        : new Size(params.boardWidth(), params.boardHeight());
 
         // Chessboard and dot board have different 3D points to project as a dot board
         // has alternating
         // dots per column
-        if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
+        if (params.type() == UICalibrationData.BoardType.CHESSBOARD) {
             // Here we can create an NxN grid since a chessboard is rectangular
             for (int heightIdx = 0; heightIdx < patternSize.height; heightIdx++) {
                 for (int widthIdx = 0; widthIdx < patternSize.width; widthIdx++) {
-                    double boardYCoord = heightIdx * params.gridSize;
-                    double boardXCoord = widthIdx * params.gridSize;
+                    double boardYCoord = heightIdx * params.gridSize();
+                    double boardXCoord = widthIdx * params.gridSize();
                     objectPoints.push_back(new MatOfPoint3f(new Point3(boardXCoord, boardYCoord, 0.0)));
                 }
             }
-        } else if (params.type == UICalibrationData.BoardType.CHARUCOBOARD) {
+        } else if (params.type() == UICalibrationData.BoardType.CHARUCOBOARD) {
             board =
                     new CharucoBoard(
-                            new Size(params.boardWidth, params.boardHeight),
-                            (float) params.gridSize,
-                            (float) params.markerSize,
-                            Objdetect.getPredefinedDictionary(params.tagFamily.getValue()));
-            board.setLegacyPattern(params.useOldPattern);
+                            new Size(params.boardWidth(), params.boardHeight()),
+                            (float) params.gridSize(),
+                            (float) params.markerSize(),
+                            Objdetect.getPredefinedDictionary(params.tagFamily().getValue()));
+            board.setLegacyPattern(params.useOldPattern());
             detector = new CharucoDetector(board);
             detector.getDetectorParameters().set_adaptiveThreshConstant(10);
             detector.getDetectorParameters().set_adaptiveThreshWinSizeMin(11);
@@ -122,7 +122,7 @@ public class FindBoardCornersPipe
             detector.getDetectorParameters().set_adaptiveThreshWinSizeMax(91);
 
         } else {
-            logger.error("Can't create pattern for unknown board type " + params.type);
+            logger.error("Can't create pattern for unknown board type " + params.type());
         }
     }
 
@@ -145,7 +145,7 @@ public class FindBoardCornersPipe
      * @return
      */
     private double getFindCornersScaleFactor(Mat inFrame) {
-        return 1.0 / params.divisor.value;
+        return 1.0 / params.divisor().value;
     }
 
     /**
@@ -170,9 +170,7 @@ public class FindBoardCornersPipe
             // +1 idx Neighbor distance
             double[] startPoint = inPoints.get(pointIdx, 0);
             double[] endPoint = inPoints.get(pointIdx + 1, 0);
-            double deltaX = startPoint[0] - endPoint[0];
-            double deltaY = startPoint[1] - endPoint[1];
-            double distToNext = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            double distToNext = Math.hypot(startPoint[0] - endPoint[0], startPoint[1] - endPoint[1]);
 
             minSpacing = Math.min(distToNext, minSpacing);
         }
@@ -185,8 +183,8 @@ public class FindBoardCornersPipe
      * @return the size to scale the input mat to
      */
     private Size getFindCornersImgSize(Mat in) {
-        int width = in.cols() / params.divisor.value;
-        int height = in.rows() / params.divisor.value;
+        int width = in.cols() / params.divisor().value;
+        int height = in.rows() / params.divisor().value;
         return new Size(width, height);
     }
 
@@ -222,7 +220,7 @@ public class FindBoardCornersPipe
      */
     private Size getWindowSize(MatOfPoint2f inPoints) {
         double windowHalfWidth = 11; // Dot board uses fixed-size window half-width
-        if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
+        if (params.type() == UICalibrationData.BoardType.CHESSBOARD) {
             // Chessboard uses a dynamic sized window based on how far apart the corners are
             windowHalfWidth = Math.floor(getApproxMinSpacing(inPoints) * 0.50);
             windowHalfWidth = Math.max(1, windowHalfWidth);
@@ -244,8 +242,8 @@ public class FindBoardCornersPipe
         var objPts = new MatOfPoint3f();
         var outBoardCorners = new MatOfPoint2f();
 
-        var inFrame = in.getLeft();
-        var outFrame = in.getRight();
+        var inFrame = in.getFirst();
+        var outFrame = in.getSecond();
 
         // Convert the inFrame too grayscale to increase contrast
         Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
@@ -254,7 +252,7 @@ public class FindBoardCornersPipe
         // Get the size of the inFrame
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
-        if (params.type == UICalibrationData.BoardType.CHARUCOBOARD) {
+        if (params.type() == UICalibrationData.BoardType.CHARUCOBOARD) {
             Mat objPoints =
                     new Mat(); // 3 dimensional currentObjectPoints, the physical target ChArUco Board
             Mat imgPoints =
@@ -282,30 +280,51 @@ public class FindBoardCornersPipe
             }
             board.matchImagePoints(detectedCornersList, detectedIds, objPoints, imgPoints);
 
-            // draw the charuco board
+            // Draw the ChArUco board
             Objdetect.drawDetectedCornersCharuco(
                     outFrame, detectedCorners, detectedIds, new Scalar(0, 0, 255)); // Red Text
 
             imgPoints.copyTo(outBoardCorners);
             objPoints.copyTo(objPts);
 
-            // Since charuco can still detect without the whole board we need to send "fake" (all
+            // Mrcal wants our top-left corner at 0, 0. But charuco hands us the first corner at the first
+            // board intersection, which is inset a couple mm. Adjust such that the top-left corner is at
+            // 0,0
+            {
+                // don't trust any particular ordering
+                List<Point3> pointList = objPts.toList();
+                double minX = pointList.stream().mapToDouble(p -> p.x).min().orElse(0.0);
+                double minY = pointList.stream().mapToDouble(p -> p.y).min().orElse(0.0);
+
+                // Shift all object points so that the origin is at (0,0)
+                List<Point3> shiftedPoints =
+                        pointList.stream().map(p -> new Point3(p.x - minX, p.y - minY, p.z)).toList();
+
+                objPts.fromList(shiftedPoints);
+            }
+
+            // Since ChArUco can still detect without the whole board we need to send "fake" (all
             // values less than zero) points and then tell it to ignore that corner by setting the
             // corresponding level to -1. Calibrate3dPipe deals with piping this into the correct format
             // for each backend
             {
                 Point[] boardCorners =
-                        new Point[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+                        new Point[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
                 Point3[] objectPoints =
-                        new Point3[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
-                levels = new float[(this.params.boardHeight - 1) * (this.params.boardWidth - 1)];
+                        new Point3[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
+                levels = new float[(this.params.boardHeight() - 1) * (this.params.boardWidth() - 1)];
+
+                // cache
+                var outBoardCornersList = outBoardCorners.toList();
+                var outObjPtsList = objPts.toList();
 
                 for (int i = 0; i < detectedIds.total(); i++) {
                     int id = (int) detectedIds.get(i, 0)[0];
-                    boardCorners[id] = outBoardCorners.toList().get(i);
-                    objectPoints[id] = objPts.toList().get(i);
+                    boardCorners[id] = outBoardCornersList.get(i);
+                    objectPoints[id] = outObjPtsList.get(i);
                     levels[id] = 1.0f;
                 }
+
                 for (int i = 0; i < boardCorners.length; i++) {
                     if (boardCorners[i] == null) {
                         boardCorners[i] = new Point(-1, -1);
@@ -322,14 +341,13 @@ public class FindBoardCornersPipe
             objPoints.release();
             detectedCorners.release();
             detectedIds.release();
-
-        } else { // If not Charuco then do chessboard
+        } else { // If not ChArUco then do chessboard
             // Reduce the image size to be much more manageable
             // Note that opencv will copy the frame if no resize is requested; we can skip
             // this since we
             // don't need that copy. See:
             // https://github.com/opencv/opencv/blob/a8ec6586118c3f8e8f48549a85f2da7a5b78bcc9/modules/imgproc/src/resize.cpp#L4185
-            if (params.divisor != FrameDivisor.NONE) {
+            if (params.divisor() != FrameDivisor.NONE) {
                 Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
             } else {
                 smallerInFrame = inFrame;
@@ -371,65 +389,15 @@ public class FindBoardCornersPipe
         return new FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners, outLevels);
     }
 
-    public static class FindCornersPipeParams {
-        final int boardHeight;
-        final int boardWidth;
-        final UICalibrationData.BoardType type;
-        final double gridSize;
-        final double markerSize;
-        final FrameDivisor divisor;
-        final UICalibrationData.TagFamily tagFamily;
-        final boolean useOldPattern;
-
-        public FindCornersPipeParams(
-                int boardHeight,
-                int boardWidth,
-                UICalibrationData.BoardType type,
-                UICalibrationData.TagFamily tagFamily,
-                double gridSize,
-                double markerSize,
-                FrameDivisor divisor,
-                boolean useOldPattern) {
-            this.boardHeight = boardHeight;
-            this.boardWidth = boardWidth;
-            this.tagFamily = tagFamily;
-            this.type = type;
-            this.gridSize = gridSize; // meter
-            this.markerSize = markerSize; // meter
-            this.divisor = divisor;
-            this.useOldPattern = useOldPattern;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + boardHeight;
-            result = prime * result + boardWidth;
-            result = prime * result + ((type == null) ? 0 : type.hashCode());
-            long temp;
-            temp = Double.doubleToLongBits(gridSize);
-            result = prime * result + (int) (temp ^ (temp >>> 32));
-            result = prime * result + ((divisor == null) ? 0 : divisor.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-            FindCornersPipeParams other = (FindCornersPipeParams) obj;
-            if (boardHeight != other.boardHeight) return false;
-            if (boardWidth != other.boardWidth) return false;
-            if (tagFamily != other.tagFamily) return false;
-            if (useOldPattern != other.useOldPattern) return false;
-            if (type != other.type) return false;
-            if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
-                return false;
-            return divisor == other.divisor;
-        }
-    }
+    public static record FindCornersPipeParams(
+            int boardHeight,
+            int boardWidth,
+            UICalibrationData.BoardType type,
+            UICalibrationData.TagFamily tagFamily,
+            double gridSize, // meters
+            double markerSize, // meters
+            FrameDivisor divisor,
+            boolean useOldPattern) {}
 
     public static class FindBoardCornersPipeResult implements Releasable {
         public Size size;

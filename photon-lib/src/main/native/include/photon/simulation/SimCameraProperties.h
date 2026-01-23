@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <photon/estimation/OpenCVHelp.h>
-
 #include <algorithm>
 #include <random>
 #include <string>
@@ -37,13 +35,41 @@
 #include <frc/MathUtil.h>
 #include <frc/geometry/Rotation2d.h>
 #include <frc/geometry/Translation3d.h>
+#include <photon/estimation/OpenCVHelp.h>
 #include <units/frequency.h>
 #include <units/time.h>
 
 namespace photon {
+
+/**
+ * Calibration and performance values for this camera.
+ *
+ * The resolution will affect the accuracy of projected(3d to 2d) target
+ * corners and similarly the severity of image noise on estimation(2d to 3d).
+ *
+ * The camera intrinsics and distortion coefficients describe the results of
+ * calibration, and how to map between 3d field points and 2d image points.
+ *
+ * The performance values (framerate/exposure time, latency) determine how
+ * often results should be updated and with how much latency in simulation. High
+ * exposure time causes motion blur which can inhibit target detection while
+ * moving. Note that latency estimation does not account for network latency and
+ * the latency reported will always be perfect.
+ */
 class SimCameraProperties {
  public:
+  /** Default constructor which is the same as PERFECT_90DEG */
   SimCameraProperties() { SetCalibration(960, 720, frc::Rotation2d{90_deg}); }
+
+  /**
+   * Reads camera properties from a PhotonVision config.json file.
+   * This is only the resolution, camera intrinsics, distortion coefficients,
+   * and average/std. dev. pixel error. Other camera properties must be set.
+   *
+   * @param path Path to the config.json file
+   * @param width The width of the desired resolution in the JSON
+   * @param height The height of the desired resolution in the JSON
+   */
   SimCameraProperties(std::string path, int width, int height) {}
 
   void SetCalibration(int width, int height, frc::Rotation2d fovDiag);
@@ -56,27 +82,65 @@ class SimCameraProperties {
     errorStdDevPx = newErrorStdDevPx;
   }
 
+  /**
+   * Sets the simulated FPS for this camera.
+   *
+   * @param fps The average frames per second the camera should process at.
+   * **Exposure time limits FPS if set!**
+   */
   void SetFPS(units::hertz_t fps) {
     frameSpeed = units::math::max(1 / fps, exposureTime);
   }
 
-  void SetExposureTime(units::second_t newExposureTime) {
-    exposureTime = newExposureTime;
-    frameSpeed = units::math::max(frameSpeed, exposureTime);
+  /**
+   * Sets the simulated exposure time for this camera.
+   *
+   * @param exposureTime The amount of time the "shutter" is open for one frame.
+   * Affects motion blur. **Frame speed(from FPS) is limited to this!**
+   */
+  void SetExposureTime(units::second_t exposureTime) {
+    this->exposureTime = exposureTime;
+    frameSpeed = units::math::max(frameSpeed, this->exposureTime);
   }
 
-  void SetAvgLatency(units::second_t newAvgLatency) {
-    avgLatency = newAvgLatency;
+  /**
+   * Sets the simulated latency for this camera.
+   *
+   * @param avgLatency The average latency (from image capture to data
+   * published) a frame should have
+   */
+  void SetAvgLatency(units::second_t avgLatency) {
+    this->avgLatency = avgLatency;
   }
 
-  void SetLatencyStdDev(units::second_t newLatencyStdDev) {
-    latencyStdDev = newLatencyStdDev;
+  /**
+   * Sets the simulated latency variation for this camera.
+   *
+   * @param latencyStdDev The standard deviation of the latency
+   */
+  void SetLatencyStdDev(units::second_t latencyStdDev) {
+    this->latencyStdDev = latencyStdDev;
   }
 
+  /**
+   * Gets the width of the simulated camera image.
+   *
+   * @return The width in pixels
+   */
   int GetResWidth() const { return resWidth; }
 
+  /**
+   * Gets the height of the simulated camera image.
+   *
+   * @return The height in pixels
+   */
   int GetResHeight() const { return resHeight; }
 
+  /**
+   * Gets the area of the simulated camera image.
+   *
+   * @return The area in pixels
+   */
   int GetResArea() const { return resWidth * resHeight; }
 
   double GetAspectRatio() const {
@@ -85,23 +149,63 @@ class SimCameraProperties {
 
   Eigen::Matrix<double, 3, 3> GetIntrinsics() const { return camIntrinsics; }
 
+  /**
+   * Returns the camera calibration's distortion coefficients, in OPENCV8 form.
+   * Higher-order terms are set to 0
+   *
+   * @return The distortion coefficients in an 8x1 matrix
+   */
   Eigen::Matrix<double, 8, 1> GetDistCoeffs() const { return distCoeffs; }
 
+  /**
+   * Gets the FPS of the simulated camera.
+   *
+   * @return The FPS
+   */
   units::hertz_t GetFPS() const { return 1 / frameSpeed; }
 
+  /**
+   * Gets the time per frame of the simulated camera.
+   *
+   * @return The time per frame
+   */
   units::second_t GetFrameSpeed() const { return frameSpeed; }
 
+  /**
+   * Gets the exposure time of the simulated camera.
+   *
+   * @return The exposure time
+   */
   units::second_t GetExposureTime() const { return exposureTime; }
 
+  /**
+   * Gets the average latency of the simulated camera.
+   *
+   * @return The average latency
+   */
   units::second_t GetAverageLatency() const { return avgLatency; }
 
+  /**
+   * Gets the time per frame of the simulated camera.
+   *
+   * @return The time per frame
+   */
   units::second_t GetLatencyStdDev() const { return latencyStdDev; }
 
+  /**
+   * The percentage (0 - 100) of this camera's resolution the contour takes up
+   * in pixels of the image.
+   *
+   * @param points Points of the contour
+   * @return The percentage
+   */
   double GetContourAreaPercent(const std::vector<cv::Point2f>& points) {
     return cv::contourArea(photon::OpenCVHelp::GetConvexHull(points)) /
            GetResArea() * 100;
   }
 
+  /** The yaw from the principal point of this camera to the pixel x value.
+   * Positive values left. */
   frc::Rotation2d GetPixelYaw(double pixelX) const {
     double fx = camIntrinsics(0, 0);
     double cx = camIntrinsics(0, 2);
@@ -109,18 +213,56 @@ class SimCameraProperties {
     return frc::Rotation2d{fx, xOffset};
   }
 
+  /**
+   * The pitch from the principal point of this camera to the pixel y value.
+   * Pitch is positive down.
+   *
+   * Note that this angle is naively computed and may be incorrect. See
+   * #getCorrectedPixelRot(const cv::Point2d).
+   */
   frc::Rotation2d GetPixelPitch(double pixelY) const {
     double fy = camIntrinsics(1, 1);
     double cy = camIntrinsics(1, 2);
     double yOffset = cy - pixelY;
     return frc::Rotation2d{fy, -yOffset};
   }
-
+  /**
+   * Finds the yaw and pitch to the given image point. Yaw is positive left, and
+   * pitch is positive down.
+   *
+   * Note that pitch is naively computed and may be incorrect. See
+   * #getCorrectedPixelRot(const cv::Point2d).
+   */
   frc::Rotation3d GetPixelRot(const cv::Point2d& point) const {
     return frc::Rotation3d{0_rad, GetPixelPitch(point.y).Radians(),
                            GetPixelYaw(point.x).Radians()};
   }
 
+  /**
+   * Gives the yaw and pitch of the line intersecting the camera lens and the
+   * given pixel coordinates on the sensor. Yaw is positive left, and pitch
+   * positive down.
+   *
+   * The pitch traditionally calculated from pixel offsets do not correctly
+   * account for non-zero values of yaw because of perspective distortion (not
+   * to be confused with lens distortion)-- for example, the pitch angle is
+   * naively calculated as:
+   *
+   * <pre>pitch = arctan(pixel y offset / focal length y)<pre>
+   *
+   * However, using focal length as a side of the associated right triangle is
+   * not correct when the pixel x value is not 0, because the distance from this
+   * pixel (projected on the x-axis) to the camera lens increases. Projecting a
+   * line back out of the camera with these naive angles will not intersect the
+   * 3d point that was originally projected into this 2d pixel. Instead, this
+   * length should be:
+   *
+   * <pre>focal length y ⟶ (focal length y / cos(arctan(pixel x offset / focal
+   * length x)))</pre>
+   *
+   * @return Rotation3d with yaw and pitch of the line projected out of the
+   * camera from the given pixel (roll is zero).
+   */
   frc::Rotation3d GetCorrectedPixelRot(const cv::Point2d& point) const {
     double fx = camIntrinsics(0, 0);
     double cx = camIntrinsics(0, 2);
@@ -152,10 +294,40 @@ class SimCameraProperties {
         units::math::hypot(GetHorizFOV().Radians(), GetVertFOV().Radians())};
   }
 
+  /**
+   * Determines where the line segment defined by the two given translations
+   * intersects the camera's frustum/field-of-vision, if at all.
+   *
+   * <p>The line is parametrized so any of its points <code>p = t * (b - a) +
+   * a</code>. This method returns these values of t, minimum first, defining
+   * the region of the line segment which is visible in the frustum. If both
+   * ends of the line segment are visible, this simply returns {0, 1}. If, for
+   * example, point b is visible while a is not, and half of the line segment is
+   * inside the camera frustum, {0.5, 1} would be returned.
+   *
+   * @param camRt The change in basis from world coordinates to camera
+   * coordinates. See RotTrlTransform3d#makeRelativeTo(frc::Pose3d).
+   * @param a The initial translation of the line
+   * @param b The final translation of the line
+   * @return A Pair of Doubles. The values may be empty:
+   *       - {double, double} : Two parametrized values(t), minimum first,
+   * representing which segment of the line is visible in the camera frustum.
+   *       - {double, std::nullopt} : One value(t) representing a single
+   * intersection point. For example, the line only intersects the intersection
+   * of two adjacent viewplanes.
+   *       - {std::nullopt, std::nullopt} : No values. The line segment is not
+   * visible in the camera frustum.
+   */
   std::pair<std::optional<double>, std::optional<double>> GetVisibleLine(
       const RotTrlTransform3d& camRt, const frc::Translation3d& a,
       const frc::Translation3d& b) const;
 
+  /**
+   * Returns these points after applying this camera's estimated noise.
+   *
+   * @param points The points to add noise to
+   * @return The points with noise
+   */
   std::vector<cv::Point2f> EstPixelNoise(
       const std::vector<cv::Point2f>& points) {
     if (avgErrorPx == 0 && errorStdDevPx == 0) {
@@ -175,17 +347,46 @@ class SimCameraProperties {
     return noisyPts;
   }
 
+  /**
+   * Returns an estimation of a frame's processing latency with noise added.
+   *
+   * @return The latency estimate
+   */
   units::second_t EstLatency() {
     return units::math::max(avgLatency + gaussian(generator) * latencyStdDev,
                             0_s);
   }
 
+  /**
+   * Estimates how long until the next frame should be processed.
+   *
+   * @return The estimated time until the next frame
+   */
   units::second_t EstSecUntilNextFrame() {
     return frameSpeed + units::math::max(0_s, EstLatency() - frameSpeed);
   }
 
+  /**
+   * Creates a set of camera properties where the camera has a 960x720
+   * resolution, 90 degree FOV, and is a "perfect" lagless camera.
+   *
+   * @return The properties for this theoretical camera
+   */
   static SimCameraProperties PERFECT_90DEG() { return SimCameraProperties{}; }
 
+  /**
+   * Creates a set of camera properties matching those of Microsoft Lifecam
+   * running on a Raspberry Pi 4 at 320x240 resolution.
+   *
+   * Note that this set of properties represents *a camera setup*, not *your
+   * camera setup*. Do not use these camera properties for any non-sim vision
+   * calculations, especially the calibration data. Always use your camera's
+   * calibration data to do vision calculations in non-sim environments. These
+   * properties exist as a sample that may be used to get representative data in
+   * sim.
+   *
+   * @return The properties for this camera setup
+   */
   static SimCameraProperties PI4_LIFECAM_320_240() {
     SimCameraProperties prop{};
     prop.SetCalibration(
@@ -203,6 +404,19 @@ class SimCameraProperties {
     return prop;
   }
 
+  /**
+   * Creates a set of camera properties matching those of Microsoft Lifecam
+   * running on a Raspberry Pi 4 at 640x480 resolution.
+   *
+   * <p>Note that this set of properties represents *a camera setup*, not *your
+   * camera setup*. Do not use these camera properties for any non-sim vision
+   * calculations, especially the calibration data. Always use your camera's
+   * calibration data to do vision calculations in non-sim environments. These
+   * properties exist as a sample that may be used to get representative data in
+   * sim.
+   *
+   * @return The properties for this camera setup
+   */
   static SimCameraProperties PI4_LIFECAM_640_480() {
     SimCameraProperties prop{};
     prop.SetCalibration(
@@ -220,6 +434,19 @@ class SimCameraProperties {
     return prop;
   }
 
+  /**
+   * Creates a set of camera properties matching those of a Limelight 2 running
+   * at 640x480 resolution.
+   *
+   * <p>Note that this set of properties represents *a camera setup*, not *your
+   * camera setup*. Do not use these camera properties for any non-sim vision
+   * calculations, especially the calibration data. Always use your camera's
+   * calibration data to do vision calculations in non-sim environments. These
+   * properties exist as a sample that may be used to get representative data in
+   * sim.
+   *
+   * @return The properties for this camera setup
+   */
   static SimCameraProperties LL2_640_480() {
     SimCameraProperties prop{};
     prop.SetCalibration(
@@ -237,6 +464,19 @@ class SimCameraProperties {
     return prop;
   }
 
+  /**
+   * Creates a set of camera properties matching those of a Limelight 2 running
+   * at 960x720 resolution.
+   *
+   * <p>Note that this set of properties represents *a camera setup*, not *your
+   * camera setup*. Do not use these camera properties for any non-sim vision
+   * calculations, especially the calibration data. Always use your camera's
+   * calibration data to do vision calculations in non-sim environments. These
+   * properties exist as a sample that may be used to get representative data in
+   * sim.
+   *
+   * @return The properties for this camera setup
+   */
   static SimCameraProperties LL2_960_720() {
     SimCameraProperties prop{};
     prop.SetCalibration(
@@ -254,6 +494,19 @@ class SimCameraProperties {
     return prop;
   }
 
+  /**
+   * Creates a set of camera properties matching those of a Limelight 2 running
+   * at 1280x720 resolution.
+   *
+   * <p>Note that this set of properties represents *a camera setup*, not *your
+   * camera setup*. Do not use these camera properties for any non-sim vision
+   * calculations, especially the calibration data. Always use your camera's
+   * calibration data to do vision calculations in non-sim environments. These
+   * properties exist as a sample that may be used to get representative data in
+   * sim.
+   *
+   * @return The properties for this camera setup
+   */
   static SimCameraProperties LL2_1280_720() {
     SimCameraProperties prop{};
     prop.SetCalibration(

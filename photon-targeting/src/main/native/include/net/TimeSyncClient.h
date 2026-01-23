@@ -17,12 +17,6 @@
 
 #pragma once
 
-#include <wpinet/EventLoopRunner.h>
-#include <wpinet/UDPClient.h>
-#include <wpinet/uv/Buffer.h>
-#include <wpinet/uv/Timer.h>
-#include <wpinet/uv/Udp.h>
-
 #include <atomic>
 #include <chrono>
 #include <cstdlib>
@@ -40,6 +34,11 @@
 #include <wpi/print.h>
 #include <wpi/static_circular_buffer.h>
 #include <wpi/struct/Struct.h>
+#include <wpinet/EventLoopRunner.h>
+#include <wpinet/UDPClient.h>
+#include <wpinet/uv/Buffer.h>
+#include <wpinet/uv/Timer.h>
+#include <wpinet/uv/Udp.h>
 
 #include "TimeSyncStructs.h"
 #include "ntcore_cpp.h"
@@ -96,6 +95,10 @@ class TimeSyncClient {
   void Stop();
   int64_t GetOffset();
   Metadata GetMetadata();
+
+  // public for testability
+  void UpdateStatistics(uint64_t pong_local_time, wpi::tsp::TspPing ping,
+                        wpi::tsp::TspPong pong);
 };
 
 }  // namespace tsp

@@ -16,6 +16,11 @@ export interface NTConnectionStatus {
   clients?: number;
 }
 
+interface NetworkUsageEntry {
+  time: number;
+  usage: number;
+}
+
 interface StateStore {
   backendConnected: boolean;
   websocket?: AutoReconnectingWebsocket;
@@ -24,6 +29,7 @@ interface StateStore {
   sidebarFolded: boolean;
   logMessages: LogMessage[];
   currentCameraUniqueName: string;
+  networkUsageHistory: NetworkUsageEntry[];
 
   backendResults: Record<number, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
@@ -39,6 +45,8 @@ interface StateStore {
 
   snackbarData: {
     show: boolean;
+    progressBar: number;
+    progressBarColor: string;
     message: string;
     color: string;
     timeout: number;
@@ -62,6 +70,7 @@ export const useStateStore = defineStore("state", {
         localStorage.getItem("sidebarFolded") === null ? false : localStorage.getItem("sidebarFolded") === "true",
       logMessages: [],
       currentCameraUniqueName: Object.keys(cameraStore.cameras)[0],
+      networkUsageHistory: [],
 
       backendResults: {
         0: {
@@ -86,6 +95,8 @@ export const useStateStore = defineStore("state", {
 
       snackbarData: {
         show: false,
+        progressBar: -1,
+        progressBarColor: "info",
         message: "No Message",
         color: "info",
         timeout: 2000
@@ -158,11 +169,19 @@ export const useStateStore = defineStore("state", {
     updateDiscoveredCameras(data: VsmState) {
       this.vsmState = data;
     },
-    showSnackbarMessage(data: { message: string; color: string; timeout?: number }) {
+    showSnackbarMessage(data: {
+      message: string;
+      color: string;
+      timeout?: number;
+      progressBar?: number;
+      progressBarColor?: string;
+    }) {
       this.snackbarData = {
         show: true,
+        progressBar: data.progressBar || -1,
         message: data.message,
         color: data.color,
+        progressBarColor: data.progressBarColor || "",
         timeout: data.timeout || 2000
       };
     }

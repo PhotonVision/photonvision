@@ -21,6 +21,29 @@ project = "PhotonVision"
 copyright = "2024, PhotonVision"
 author = "Banks Troutman, Matt Morley"
 
+# -- Git configuration -----------------------------------------------------
+import subprocess
+
+try:
+    # Use closest tag
+    git_tag_ref = (
+        subprocess.check_output(
+            [
+                "git",
+                "describe",
+                "--tags",
+            ],
+            stderr=subprocess.DEVNULL,
+        )
+        .strip()
+        .decode()
+    )
+except subprocess.CalledProcessError:
+    # Couldn't find closest tag, fallback to main
+    git_tag_ref = "main"
+
+myst_substitutions = {"git_tag_ref": git_tag_ref}
+
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -30,7 +53,6 @@ extensions = [
     "sphinx_rtd_theme",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.todo",
-    "sphinx_tabs.tabs",
     "notfound.extension",
     "sphinxext.remoteliteralinclude",
     "sphinxext.opengraph",
@@ -46,9 +68,6 @@ extensions = [
 ogp_site_url = "https://docs.photonvision.org/en/latest/"
 ogp_site_name = "PhotonVision Documentation"
 ogp_image = "https://raw.githubusercontent.com/PhotonVision/photonvision-docs/main/source/assets/RectLogo.png"
-
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -70,6 +89,10 @@ html_title = "PhotonVision Docs"
 html_theme = "furo"
 html_favicon = "assets/RoundLogo.png"
 
+# Specify canonical root
+# This tells search engines that this domain is preferred
+html_baseurl = "https://docs.photonvision.org/en/latest/"
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -87,6 +110,9 @@ pygments_style = "sphinx"
 
 html_theme_options = {
     "sidebar_hide_name": True,
+    "top_of_page_buttons": ["view", "edit"],
+    "source_edit_link": "https://github.com/PhotonVision/photonvision/edit/main/docs/source/{filename}",
+    "source_view_link": "https://github.com/PhotonVision/photonvision/blob/main/docs/source/{filename}",
     "light_logo": "assets/PhotonVision-Header-onWhite.png",
     "dark_logo": "assets/PhotonVision-Header-noBG.png",
     "light_css_variables": {
@@ -144,11 +170,15 @@ sphinx_tabs_valid_builders = ["epub", "linkcheck"]
 
 # Excluded links for linkcheck
 # These should be periodically checked by hand to ensure that they are still functional
-linkcheck_ignore = [R"https://www.raspberrypi.com/software/", R"http://10\..+"]
+linkcheck_ignore = [
+    R"https://www.raspberrypi.com/software/",
+    R"http://10\..+",
+    R"https://www.gnu.org/",
+]
 
 token = os.environ.get("GITHUB_TOKEN", None)
 if token:
     linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
-myst_enable_extensions = ["colon_fence"]
+myst_enable_extensions = ["colon_fence", "substitution"]

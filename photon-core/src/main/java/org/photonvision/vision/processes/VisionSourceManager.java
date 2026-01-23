@@ -27,10 +27,13 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.photonvision.common.LoadJNI;
+import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.Platform;
@@ -39,7 +42,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.raspi.LibCameraJNILoader;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -300,7 +302,7 @@ public class VisionSourceManager {
                 .filter(c -> !(String.join("", c.otherPaths()).contains("csi-video")))
                 .filter(c -> !c.name().equals("unicam"))
                 .forEach(cameraInfos::add);
-        if (LibCameraJNILoader.isSupported()) {
+        if (LoadJNI.hasLoaded(JNITypes.LIBCAMERA)) {
             // find all CSI cameras (Raspberry Pi cameras)
             Stream.of(LibCameraJNI.getCameraNames())
                     .map(
@@ -311,14 +313,116 @@ public class VisionSourceManager {
                     .forEach(cameraInfos::add);
         }
 
-        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but i still want my
+        // FileVisionSources are a bit quirky. They aren't enumerated by the above, but I still want my
         // UI to look like it ought to work
         vmm.getModules().stream()
                 .map(it -> it.getCameraConfiguration().matchedCameraInfo)
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
+        checkMismatches(cameraInfos);
+
         return cameraInfos;
+    }
+
+    /**
+     * Check for mismatches between connected cameras and saved camera configurations.
+     *
+     * <p>Note that if the information for a camera spontaneously changes without it being
+     * disconnected/unplugged and reconnected/replugged, we may experience unexpected behavior.
+     *
+     * @param cameraInfos List of currently connected camera infos, checked against saved configs
+     */
+    protected void checkMismatches(List<PVCameraInfo> cameraInfos) {
+        // from the listed physical camera infos, match them to the camera configs and check for
+        // mismatches
+        for (VisionModule module : vmm.getModules()) {
+            PVCameraInfo matchedCameraInfo = module.getCameraConfiguration().matchedCameraInfo;
+            // We use unique paths to determine if the module has a camera in the port. If no unique path
+            // is found that matches the module, it's removed from the mismatched set as a disconnected
+            // camera cannot be mismatched.
+            if (!cameraInfos.stream()
+                    .map(PVCameraInfo::uniquePath)
+                    .toList()
+                    .contains(matchedCameraInfo.uniquePath())) {
+                module.mismatch = false;
+                continue;
+            }
+
+            for (PVCameraInfo info : cameraInfos) {
+                // if the unique path doesn't match, skip cause it's not in the same port
+                if (!matchedCameraInfo.uniquePath().equals(info.uniquePath())) {
+                    continue;
+                }
+
+                // If the camera info doesn't match, log an error
+                if (!matchedCameraInfo.equals(info) && !module.mismatch) {
+                    logger.error("Camera mismatch error!");
+                    logger.error("Camera config mismatch for " + matchedCameraInfo.name());
+                    logCameraInfoDiff(matchedCameraInfo, info);
+                    module.mismatch = true;
+                }
+            }
+        }
+
+        // Set the NetworkTables mismatch alert
+        if (vmm.getModules().stream().anyMatch(m -> m.mismatch)) {
+            NetworkTablesManager.getInstance()
+                    .setMismatchAlert(
+                            true,
+                            "Camera mismatch error! See logs for details. ("
+                                    + vmm.getModules().stream()
+                                            .filter(m -> m.mismatch)
+                                            .map(m -> m.getCameraConfiguration().nickname)
+                                            .toList()
+                                            .toString()
+                                            .replaceAll("[\\[\\]()]", "")
+                                    + " affected)");
+        } else {
+            NetworkTablesManager.getInstance().setMismatchAlert(false, "");
+        }
+    }
+
+    /** Log the differences between two PVCameraInfo objects. */
+    private static void logCameraInfoDiff(PVCameraInfo saved, PVCameraInfo current) {
+        String expected = "Expected: Name: " + saved.name();
+        String actual = "Actual: Name: " + current.name();
+        if (saved instanceof PVCameraInfo.PVCSICameraInfo savedCsi
+                && current instanceof PVCameraInfo.PVCSICameraInfo currentCsi) {
+            expected += " Base Name: " + savedCsi.baseName;
+            actual += " Base Name: " + currentCsi.baseName;
+        }
+
+        expected += " Type: " + saved.type().toString();
+        actual += " Type: " + current.type().toString();
+
+        if (saved instanceof PVCameraInfo.PVUsbCameraInfo savedUsb
+                && current instanceof PVCameraInfo.PVUsbCameraInfo currentUsb) {
+            expected +=
+                    " Device Number: "
+                            + savedUsb.dev
+                            + " Vendor ID: "
+                            + savedUsb.vendorId
+                            + " Product ID: "
+                            + savedUsb.productId;
+            actual +=
+                    " Device Number: "
+                            + currentUsb.dev
+                            + " Vendor ID: "
+                            + currentUsb.vendorId
+                            + " Product ID: "
+                            + currentUsb.productId;
+        }
+
+        expected += " Path: " + saved.path();
+        actual += " Path: " + current.path();
+        expected += " Unique Path: " + saved.uniquePath();
+        actual += " Unique Path: " + current.uniquePath();
+        expected += " Other Paths: " + Arrays.toString(saved.otherPaths());
+        actual += " Other Paths: " + Arrays.toString(current.otherPaths());
+
+        logger.error(expected);
+        logger.error(actual);
     }
 
     private static List<PVCameraInfo> filterAllowedDevices(List<PVCameraInfo> allDevices) {

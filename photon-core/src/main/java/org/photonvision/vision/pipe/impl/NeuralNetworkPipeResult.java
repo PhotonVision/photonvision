@@ -19,14 +19,4 @@ package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Rect2d;
 
-public class NeuralNetworkPipeResult {
-    public NeuralNetworkPipeResult(Rect2d boundingBox, int classIdx, double confidence) {
-        bbox = boundingBox;
-        this.classIdx = classIdx;
-        this.confidence = confidence;
-    }
-
-    public final int classIdx;
-    public final Rect2d bbox;
-    public final double confidence;
-}
+public record NeuralNetworkPipeResult(Rect2d bbox, int classIdx, double confidence) {}

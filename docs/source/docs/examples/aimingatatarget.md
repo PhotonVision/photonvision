@@ -6,21 +6,23 @@ The following example is from the PhotonLib example repository ([Java](https://g
 
 - A Robot
 - A camera mounted rigidly to the robot's frame, centered and pointed forward.
-- A coprocessor running PhotonVision with an AprilTag or Aruco 2D Pipeline.
-- [A printout of AprilTag 7](https://firstfrc.blob.core.windows.net/frc2025/FieldAssets/Apriltag_Images_and_User_Guide.pdf), mounted on a rigid and flat surface.
+- A coprocessor running PhotonVision with an AprilTag or ArUco 2D Pipeline.
+- [A printout of AprilTag 7](https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-apriltag-images-user-guide.pdf), mounted on a rigid and flat surface.
 
 ## Code
 
 Now that you have properly set up your vision system and have tuned a pipeline, you can now aim your robot at an AprilTag using the data from PhotonVision. The _yaw_ of the target is the critical piece of data that will be needed first.
 
-Yaw is reported to the roboRIO over Network Tables. PhotonLib, our vender dependency, is the easiest way to access this data. The documentation for the Network Tables API can be found {ref}`here <docs/additional-resources/nt-api:Getting Target Information>` and the documentation for PhotonLib {ref}`here <docs/programming/photonlib/adding-vendordep:What is PhotonLib?>`.
+Yaw is reported to the roboRIO over Network Tables. PhotonLib, our vendor dependency, is the easiest way to access this data. The documentation for the Network Tables API can be found {ref}`here <docs/additional-resources/nt-api:Getting Target Information>` and the documentation for PhotonLib {ref}`here <docs/programming/photonlib/adding-vendordep:What is PhotonLib?>`.
 
 In this example, while the operator holds a button down, the robot will turn towards the AprilTag using the P term of a PID loop. To learn more about how PID loops work, how WPILib implements them, and more, visit [Advanced Controls (PID)](https://docs.wpilib.org/en/stable/docs/software/advanced-control/introduction/index.html) and [PID Control in WPILib](https://docs.wpilib.org/en/stable/docs/software/advanced-controls/controllers/pidcontroller.html#pid-control-in-wpilib).
 
 ```{eval-rst}
 .. tab-set::
+    :sync-group: code
 
     .. tab-item:: Java
+       :sync: java
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-java-examples/aimattarget/src/main/java/frc/robot/Robot.java
          :language: java
@@ -29,6 +31,7 @@ In this example, while the operator holds a button down, the robot will turn tow
          :lineno-start: 77
 
     .. tab-item:: C++ (Header)
+       :sync: c++
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/aimattarget/src/main/include/Robot.h
          :language: c++
@@ -37,6 +40,7 @@ In this example, while the operator holds a button down, the robot will turn tow
          :lineno-start: 25
 
     .. tab-item:: C++ (Source)
+       :sync: c++
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-cpp-examples/aimattarget/src/main/cpp/Robot.cpp
          :language: c++
@@ -45,6 +49,7 @@ In this example, while the operator holds a button down, the robot will turn tow
          :lineno-start: 56
 
     .. tab-item:: Python
+       :sync: python
 
        .. rli:: https://raw.githubusercontent.com/PhotonVision/photonvision/abe95dfaa055bbe3609f72cfcaaba0f96ee7978c/photonlib-python-examples/aimattarget/robot.py
          :language: python

@@ -40,7 +40,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class BenchmarkTest {
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test

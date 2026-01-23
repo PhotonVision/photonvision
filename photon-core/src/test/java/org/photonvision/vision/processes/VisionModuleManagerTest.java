@@ -17,23 +17,22 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.wpi.first.cscore.VideoMode;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.jni.PhotonTargetingJniLoader;
+import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
@@ -48,13 +47,8 @@ public class VisionModuleManagerTest {
         String classpathStr = System.getProperty("java.class.path");
         System.out.print(classpathStr);
 
-        TestUtils.loadLibraries();
-        try {
-            if (!PhotonTargetingJniLoader.load()) fail();
-        } catch (UnsatisfiedLinkError | IOException e) {
-            e.printStackTrace();
-            fail(e);
-        }
+        LoadJNI.loadLibraries();
+        if (!LibraryLoader.loadTargeting()) fail();
     }
 
     private static class TestSource extends VisionSource {
@@ -189,8 +183,8 @@ public class VisionModuleManagerTest {
 
         sleep(1500);
 
-        Assertions.assertNotNull(module0DataConsumer.result);
-        printTestResults(module0DataConsumer.result);
+        assertNotNull(module0DataConsumer.result);
+        TestUtils.printTestResults(module0DataConsumer.result);
     }
 
     @Test
@@ -233,15 +227,12 @@ public class VisionModuleManagerTest {
         var modules =
                 List.of(testSource, testSource2, testSource3, usbSimulation, usbSimulation2).stream()
                         .map(vmm::addSource)
-                        .collect(Collectors.toList());
+                        .toList();
 
         System.out.println(
                 Arrays.toString(
                         modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toArray()));
-        var idxs =
-                modules.stream()
-                        .map(it -> it.getCameraConfiguration().streamIndex)
-                        .collect(Collectors.toList());
+        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
         assertTrue(usbSimulation.equals(usbSimulation));
         assertTrue(!usbSimulation.equals(usbSimulation2));
@@ -251,13 +242,6 @@ public class VisionModuleManagerTest {
         assertTrue(idxs.contains(2));
         assertTrue(idxs.contains(3));
         assertTrue(idxs.contains(4));
-    }
-
-    private static void printTestResults(CVPipelineResult pipelineResult) {
-        double fps = 1000 / pipelineResult.getLatencyMillis();
-        System.out.print(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " fps), ");
-        System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
     }
 
     private void sleep(int millis) {

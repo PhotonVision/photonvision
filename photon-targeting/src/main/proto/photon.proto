@@ -68,3 +68,20 @@ message ProtobufPhotonPipelineResult {
   int64 nt_publish_timestamp_micros = 6;
   int64 time_since_last_pong_micros = 7;
 }
+
+message ProtobufDeviceMetrics {
+  double cpu_temp = 1;
+  double cpu_util = 2;
+  string cpu_thr = 3;
+  double ram_mem = 4;
+  double ram_util = 5;
+  double gpu_mem = 6;
+  double gpu_mem_util = 7;
+  double disk_util_pct = 8;
+  repeated double npu_usage = 9;
+  string ip_address = 10;
+  double uptime = 11;
+  double sent_bit_rate = 12;
+  double recv_bit_rate = 13;
+  double disk_usable_space = 14;
+}

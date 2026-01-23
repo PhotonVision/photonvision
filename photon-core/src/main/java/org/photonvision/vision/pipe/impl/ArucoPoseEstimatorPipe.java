@@ -86,8 +86,8 @@ public class ArucoPoseEstimatorPipe
             Calib3d.solvePnPGeneric(
                     objectPoints,
                     imagePoints,
-                    params.calibration.getCameraIntrinsicsMat(),
-                    params.calibration.getDistCoeffsMat(),
+                    params.calibration().getCameraIntrinsicsMat(),
+                    params.calibration().getDistCoeffsMat(),
                     rvecs,
                     tvecs,
                     false,
@@ -120,8 +120,8 @@ public class ArucoPoseEstimatorPipe
     @Override
     public void setParams(ArucoPoseEstimatorPipe.ArucoPoseEstimatorPipeParams newParams) {
         // exact equality check OK here, the number shouldn't change
-        if (this.params == null || this.params.tagSize != newParams.tagSize) {
-            var tagSize = newParams.tagSize;
+        if (this.params == null || this.params.tagSize() != newParams.tagSize()) {
+            var tagSize = newParams.tagSize();
 
             // This order is relevant for SOLVEPNP_IPPE_SQUARE
             // The expected 2d correspondences with a tag facing the camera would be (BR, BL, TL, TR)
@@ -147,15 +147,7 @@ public class ArucoPoseEstimatorPipe
         reprojectionErrors.release();
     }
 
-    public static class ArucoPoseEstimatorPipeParams {
-        final CameraCalibrationCoefficients calibration;
-        final double tagSize;
-
-        // object vertices defined by tag size
-
-        public ArucoPoseEstimatorPipeParams(CameraCalibrationCoefficients cal, double tagSize) {
-            this.calibration = cal;
-            this.tagSize = tagSize;
-        }
-    }
+    // object vertices defined by tag size
+    public static record ArucoPoseEstimatorPipeParams(
+            CameraCalibrationCoefficients calibration, double tagSize) {}
 }

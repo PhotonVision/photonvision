@@ -47,13 +47,10 @@ class PhotonPipelineResult:
         timestamp, coproc timebase))
         """
         # TODO - we don't trust NT4 to correctly latency-compensate ntReceiveTimestampMicros
-        return (
-            self.ntReceiveTimestampMicros
-            - (
-                self.metadata.publishTimestampMicros
-                - self.metadata.captureTimestampMicros
-            )
-        ) / 1e6
+        latency = (
+            self.metadata.publishTimestampMicros - self.metadata.captureTimestampMicros
+        )
+        return (self.ntReceiveTimestampMicros - latency) / 1e6
 
     def getTargets(self) -> list[PhotonTrackedTarget]:
         return self.targets

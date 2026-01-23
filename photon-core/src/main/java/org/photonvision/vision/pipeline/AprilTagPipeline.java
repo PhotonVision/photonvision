@@ -38,7 +38,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
@@ -73,13 +73,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         settings.threads = Math.max(1, settings.threads);
 
         // for now, hard code tag width based on enum value
-        // 2023/other: best guess is 6in
-        double tagWidth = Units.inchesToMeters(6);
-        TargetModel tagModel = TargetModel.kAprilTag16h5;
-        if (settings.tagFamily == AprilTagFamily.kTag36h11) {
-            // 2024 tag, 6.5in
-            tagWidth = Units.inchesToMeters(6.5);
-            tagModel = TargetModel.kAprilTag36h11;
+        // From 2024 best guess is 6.5
+        double tagWidth = Units.inchesToMeters(6.5);
+        TargetModel tagModel = TargetModel.kAprilTag36h11;
+        if (settings.tagFamily == AprilTagFamily.kTag16h5) {
+            // 2023 tag, 6in
+            tagWidth = Units.inchesToMeters(6);
+            tagModel = TargetModel.kAprilTag16h5;
         }
 
         var config = new AprilTagDetector.Config();
@@ -134,8 +134,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
-        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
-        tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
+        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
+                aprilTagDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;

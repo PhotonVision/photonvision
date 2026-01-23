@@ -1,4 +1,4 @@
-apply plugin: 'edu.wpi.first.WpilibTools'
+apply plugin: 'org.photonvision.tools.WpilibTools'
 
 import java.nio.file.Path
 
@@ -8,55 +8,59 @@ apply from: "${rootDir}/shared/common.gradle"
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
 
 def nativeConfigName = 'wpilibNatives'
-def nativeConfig = configurations.create(nativeConfigName)
-
+configurations {
+    wpilibNatives
+}
 def nativeTasks = wpilibTools.createExtractionTasks {
     configurationName = nativeConfigName
 }
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
-
 dependencies {
-    // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
-    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
-    implementation "org.jogamp.jogl:jogl-all:$joglVersion"
-    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-aarch64"
-    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-aarch64"
+    wpilibNatives project(path: ':photon-targeting', configuration: 'wpilibNatives')
+    wpilibNatives wpilibTools.deps.wpilib("wpimath")
+    wpilibNatives wpilibTools.deps.wpilib("wpinet")
+    wpilibNatives wpilibTools.deps.wpilib("wpiutil")
+    wpilibNatives wpilibTools.deps.wpilib("ntcore")
+    wpilibNatives wpilibTools.deps.wpilib("cscore")
+    wpilibNatives wpilibTools.deps.wpilib("apriltag")
+    wpilibNatives wpilibTools.deps.wpilib("hal")
+    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
 
-    // Zip
+    // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'
-
     implementation "org.xerial:sqlite-jdbc:3.41.0.0"
-    implementation("org.photonvision:rknn_jni-jni:$rknnVersion:linuxarm64") {
-        transitive = false
+    implementation 'com.diozero:diozero-core:1.4.1'
+    implementation 'com.github.oshi:oshi-core:6.9.1'
+
+    // The JNI libraries use wpilibNatives, the java libraries use implementation
+    if (jniPlatform == "linuxarm64") {
+        wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$jniPlatform") {
+            transitive = false
+        }
+        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$jniPlatform") {
+            transitive = false
+        }
+        wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$jniPlatform") {
+            transitive = false
+        }
     }
+
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
-    implementation("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:linuxarm64") {
+
+    implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
         transitive = false
     }
+
     implementation "org.photonvision:photon-libcamera-gl-driver-java:$libcameraDriverVersion"
 
     implementation "org.photonvision:photon-mrcal-java:$mrcalVersion"
 
-    // Only include mrcal natives on platforms that we build for
-    if (!(jniPlatform in [
-                "osxx86-64",
-                "osxarm64"
-            ])) {
-        implementation("org.photonvision:photon-mrcal-jni:$mrcalVersion:$wpilibNativeName") {
-            transitive = false
-        }
+    wpilibNatives("org.photonvision:photon-mrcal-jni:$mrcalVersion:$jniPlatform") {
+        transitive = false
     }
 
     testImplementation group: 'org.junit-pioneer' , name: 'junit-pioneer', version: '2.2.0'

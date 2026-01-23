@@ -17,76 +17,98 @@
 
 package org.photonvision.hardware;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.diozero.internal.provider.builtin.DefaultDeviceFactory;
+import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
-import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.hardware.metrics.MetricsManager;
+import org.photonvision.common.LoadJNI;
+import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.VisionLED;
+import org.photonvision.common.util.TestUtils;
 
 public class HardwareTest {
-    @Test
-    public void testHardware() {
-        MetricsManager mm = new MetricsManager();
-
-        if (!Platform.isRaspberryPi()) return;
-
-        System.out.println("Testing on platform: " + Platform.getPlatformName());
-
-        System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + mm.getMemory() + "MB");
-        System.out.println("Temperature: " + mm.getTemp() + "C");
-        System.out.println("Utilization: : " + mm.getUtilization() + "%");
-
-        System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + mm.getGPUMemorySplit() + "MB");
-
-        System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + mm.getUsedRam() + "MB");
+    @BeforeAll
+    public static void init() {
+        LoadJNI.loadLibraries();
     }
 
     @Test
-    public void testGPIO() {
-        GPIOBase gpio;
-        if (Platform.isRaspberryPi()) {
-            gpio = new PigpioPin(18);
-        } else {
-            gpio = new CustomGPIO(18);
+    public void testNativeGPIO() {
+        try (NativeDeviceFactoryInterface deviceFactory = new DefaultDeviceFactory()) {
+            Assumptions.assumeTrue(deviceFactory.getBoardInfo().isRecognised());
+
+            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
+                // Verify states can be set
+                led.setState(true);
+                assertEquals(1, deviceFactory.getGpioValue(2));
+                assertEquals(1, deviceFactory.getGpioValue(13));
+                led.setState(false);
+                assertEquals(0, deviceFactory.getGpioValue(2));
+                assertEquals(0, deviceFactory.getGpioValue(13));
+            }
+        }
+    }
+
+    @Nested
+    class CustomGPIOTest {
+        HardwareConfig hardwareConfig = null;
+        NativeDeviceFactoryInterface deviceFactory = null;
+
+        @BeforeEach
+        void setup() throws IOException {
+            System.out.println("Loading Hardware configs...");
+            hardwareConfig =
+                    new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
+            deviceFactory = HardwareManager.configureCustomGPIO(hardwareConfig);
         }
 
-        gpio.setOn(); // HIGH
-        assertTrue(gpio.getState());
+        @Test
+        public void testCustomGPIO() throws IOException {
+            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
+                // Verify states can be set
+                led.setState(true);
+                assertEquals(1, deviceFactory.getGpioValue(2));
+                assertEquals(1, deviceFactory.getGpioValue(13));
+                led.setState(false);
+                assertEquals(0, deviceFactory.getGpioValue(2));
+                assertEquals(0, deviceFactory.getGpioValue(13));
+            }
+        }
 
-        gpio.setOff(); // LOW
-        assertFalse(gpio.getState());
+        @Test
+        public void testBlink() throws InterruptedException, IOException {
+            try (VisionLED led = new VisionLED(deviceFactory, List.of(2, 13), false, 0, 100, 0, null)) {
+                // Verify blinking toggles between states
+                HashSet<Integer> seenValues = new HashSet<>();
+                led.blink(125, 3);
+                var startms = System.currentTimeMillis();
+                while (System.currentTimeMillis() - startms < 1000) {
+                    seenValues.add(deviceFactory.getGpioValue(2));
+                }
+                assertEquals(2, seenValues.size());
+                assertTrue(seenValues.contains(0));
+                assertTrue(seenValues.contains(1));
 
-        gpio.togglePin(); // HIGH
-        assertTrue(gpio.getState());
+                seenValues.clear();
 
-        gpio.togglePin(); // LOW
-        assertFalse(gpio.getState());
-
-        gpio.setState(true); // HIGH
-        assertTrue(gpio.getState());
-
-        gpio.setState(false); // LOW
-        assertFalse(gpio.getState());
-
-        var success = gpio.shutdown();
-        assertTrue(success);
-    }
-
-    @Test
-    public void testBlink() {
-        if (!Platform.isRaspberryPi()) return;
-        GPIOBase pwm = new PigpioPin(18);
-        pwm.blink(125, 3);
-        var startms = System.currentTimeMillis();
-        while (true) {
-            if (System.currentTimeMillis() - startms > 4500) break;
+                // Verify that after blinking, toggling has stopped
+                startms = System.currentTimeMillis();
+                while (System.currentTimeMillis() - startms < 250) {
+                    seenValues.add(deviceFactory.getGpioValue(2));
+                }
+                assertEquals(1, seenValues.size());
+            }
         }
     }
 }

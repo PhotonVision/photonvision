@@ -59,4 +59,7 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
 
     /** Ask the camera to rotate frames it outputs */
     public abstract void requestHsvSettings(HSVPipe.HSVParams params);
+
+    /** Ask the camera to block for new frames (true) or use latest available (false) */
+    public abstract void requestBlockForFrames(boolean blockForFrames);
 }

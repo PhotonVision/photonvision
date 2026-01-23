@@ -15,13 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cstdio>
 #include <iostream>
 #include <vector>
 
+#include <gtest/gtest.h>
 #include <wpi/timestamp.h>
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
@@ -162,7 +161,7 @@ void print_cost(casadi_real robot_x, casadi_real robot_y,
   Eigen::Vector3d x_guess;
   x_guess << robot_x, robot_y, robot_theta;
 
-  for (int i = 0; i < 10; i++) {
+  for (int i = 0; i < 200; i++) {
     auto start = wpi::Now();
     auto x_out = constrained_solvepnp::do_optimization(
         true, TAG_COUNT,
@@ -170,13 +169,18 @@ void print_cost(casadi_real robot_x, casadi_real robot_y,
         x_guess, field2points, point_observations, 0, 0);
     auto end = wpi::Now();
 
-    std::cout << "iter "
-              << i
-              // << "\nGuess:\n" << x_guess << "\n Optimized ->\n"
-              //   << std::endl <<
-              //   x_out.value_or(constrained_solvepnp::RobotStateMat::Zero())
-              << "\nSucceeded? " << static_cast<bool>(x_out) << "\nIn "
-              << (end - start) << "uS" << std::endl;
+    std::cout << i << "," << static_cast<bool>(x_out) << "," << end - start
+              << std::endl;
+    std::cout << "Solution:"
+              << x_out.value_or(constrained_solvepnp::RobotStateMat::Identity())
+              << std::endl;
+    // std::cout << "iter "
+    //           << i
+    //           // << "\nGuess:\n" << x_guess << "\n Optimized ->\n"
+    //           //   << std::endl <<
+    //           // x_out.value_or(constrained_solvepnp::RobotStateMat::Zero())
+    //           << " - Succeeded? " << static_cast<bool>(x_out) << " - In "
+    //           << (end - start) << "uS" << std::endl;
   }
 }
 

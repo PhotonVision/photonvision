@@ -44,9 +44,9 @@ public class SolvePNPPipe
 
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
-        if (params.cameraCoefficients == null
-                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients.getDistCoeffsMat() == null) {
+        if (params.cameraCoefficients() == null
+                || params.cameraCoefficients().getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients().getDistCoeffsMat() == null) {
             if (!hasWarned) {
                 logger.warn(
                         "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
@@ -65,9 +65,9 @@ public class SolvePNPPipe
         var corners = target.getTargetCorners();
         if (corners == null
                 || corners.isEmpty()
-                || params.cameraCoefficients == null
-                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients.getDistCoeffsMat() == null) {
+                || params.cameraCoefficients() == null
+                || params.cameraCoefficients().getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients().getDistCoeffsMat() == null) {
             return;
         }
         this.imagePoints.fromList(corners);
@@ -76,10 +76,10 @@ public class SolvePNPPipe
         var tVec = new Mat();
         try {
             Calib3d.solvePnP(
-                    params.targetModel.getRealWorldTargetCoordinates(),
+                    params.targetModel().getRealWorldTargetCoordinates(),
                     imagePoints,
-                    params.cameraCoefficients.getCameraIntrinsicsMat(),
-                    params.cameraCoefficients.getDistCoeffsMat(),
+                    params.cameraCoefficients().getCameraIntrinsicsMat(),
+                    params.cameraCoefficients().getDistCoeffsMat(),
                     rVec,
                     tVec);
         } catch (Exception e) {
@@ -103,14 +103,6 @@ public class SolvePNPPipe
         target.setAltCameraToTarget3d(new Transform3d());
     }
 
-    public static class SolvePNPPipeParams {
-        private final CameraCalibrationCoefficients cameraCoefficients;
-        private final TargetModel targetModel;
-
-        public SolvePNPPipeParams(
-                CameraCalibrationCoefficients cameraCoefficients, TargetModel targetModel) {
-            this.cameraCoefficients = cameraCoefficients;
-            this.targetModel = targetModel;
-        }
-    }
+    public static record SolvePNPPipeParams(
+            CameraCalibrationCoefficients cameraCoefficients, TargetModel targetModel) {}
 }

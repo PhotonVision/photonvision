@@ -24,61 +24,53 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "doclint"})
 public enum Platform {
     // WPILib Supported (JNI)
-    WINDOWS_64("Windows x64", Platform::getUnknownModel, "winx64", false, OSType.WINDOWS, true),
-    LINUX_32("Linux x86", Platform::getUnknownModel, "linuxx64", false, OSType.LINUX, true),
-    LINUX_64("Linux x64", Platform::getUnknownModel, "linuxx64", false, OSType.LINUX, true),
+    WINDOWS_64("Windows x64", Platform::getUnknownModel, false, OSType.WINDOWS, true),
+    LINUX_32("Linux x86", Platform::getUnknownModel, false, OSType.LINUX, true),
+    LINUX_64("Linux x64", Platform::getUnknownModel, false, OSType.LINUX, true),
     LINUX_RASPBIAN32(
             "Linux Raspbian 32-bit",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm32",
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 32-bit image
     LINUX_RASPBIAN64(
             "Linux Raspbian 64-bit",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             true,
             OSType.LINUX,
             true), // Raspberry Pi 3/4 with a 64-bit image
     LINUX_RK3588_64(
             "Linux AARCH 64-bit with RK3588",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             false,
             OSType.LINUX,
             true),
+    LINUX_QCS6490(
+            "Linux AARCH 64-bit with QCS6490",
+            Platform::getLinuxDeviceTreeModel,
+            false,
+            OSType.LINUX,
+            true), // QCS6490 SBCs
     LINUX_AARCH64(
             "Linux AARCH64",
             Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
             false,
             OSType.LINUX,
             true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
     LINUX_ARM64(
-            "Linux ARM64",
-            Platform::getLinuxDeviceTreeModel,
-            "linuxarm64",
-            false,
-            OSType.LINUX,
-            true), // ODROID C2, N2
+            "Linux ARM64", Platform::getLinuxDeviceTreeModel, false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
-    WINDOWS_32("Windows x86", Platform::getUnknownModel, "windowsx64", false, OSType.WINDOWS, false),
-    MACOS("Mac OS", Platform::getUnknownModel, "osxuniversal", false, OSType.MACOS, false),
+    WINDOWS_32("Windows x86", Platform::getUnknownModel, false, OSType.WINDOWS, false),
+    MACOS("Mac OS", Platform::getUnknownModel, false, OSType.MACOS, false),
     LINUX_ARM32(
-            "Linux ARM32",
-            Platform::getUnknownModel,
-            "linuxarm32",
-            false,
-            OSType.LINUX,
-            false), // ODROID XU4, C1+
-    UNKNOWN("Unsupported Platform", Platform::getUnknownModel, "", false, OSType.UNKNOWN, false);
+            "Linux ARM32", Platform::getUnknownModel, false, OSType.LINUX, false), // ODROID XU4, C1+
+    UNKNOWN("Unsupported Platform", Platform::getUnknownModel, false, OSType.UNKNOWN, false);
 
     public enum OSType {
         WINDOWS,
@@ -89,18 +81,17 @@ public enum Platform {
 
     public final String description;
     public final String hardwareModel;
-    public final String nativeLibraryFolderName;
     public final boolean isPi;
     public final OSType osType;
     public final boolean isSupported;
 
     // Set once at init, shouldn't be needed after.
-    private static final Platform currentPlatform = getCurrentPlatform();
+    private static Platform currentPlatform = getCurrentPlatform();
+    private static boolean override = false;
 
     Platform(
             String description,
             Supplier<String> getHardwareModel,
-            String nativeLibFolderName,
             boolean isPi,
             OSType osType,
             boolean isSupported) {
@@ -109,7 +100,11 @@ public enum Platform {
         this.isPi = isPi;
         this.osType = osType;
         this.isSupported = isSupported;
-        this.nativeLibraryFolderName = nativeLibFolderName;
+    }
+
+    public static void overridePlatform(Platform platform) {
+        currentPlatform = platform;
+        override = true;
     }
 
     //////////////////////////////////////////////////////
@@ -121,7 +116,15 @@ public enum Platform {
     }
 
     public static boolean isRK3588() {
-        return Platform.isOrangePi() || Platform.isCoolPi4b() || Platform.isRock5C();
+        return currentPlatform == LINUX_RK3588_64
+                || Platform.isOrangePi()
+                || Platform.isCoolPi4b()
+                || Platform.isRock5C()
+                || fileHasText("/proc/device-tree/compatible", "rk3588");
+    }
+
+    public static boolean isQCS6490() {
+        return currentPlatform == LINUX_QCS6490 || Platform.isRubik();
     }
 
     public static boolean isRaspberryPi() {
@@ -140,10 +143,6 @@ public enum Platform {
         return currentPlatform.hardwareModel;
     }
 
-    public static String getNativeLibraryFolderName() {
-        return currentPlatform.nativeLibraryFolderName;
-    }
-
     public static boolean isSupported() {
         return currentPlatform.isSupported;
     }
@@ -151,6 +150,11 @@ public enum Platform {
     public static boolean isAthena() {
         File runRobotFile = new File("/usr/local/frc/bin/frcRunRobot.sh");
         return runRobotFile.exists();
+    }
+
+    public static boolean isWindows() {
+        var p = getCurrentPlatform();
+        return (p == WINDOWS_32 || p == WINDOWS_64);
     }
 
     //////////////////////////////////////////////////////
@@ -163,6 +167,10 @@ public enum Platform {
     private static final String UnknownDeviceModelString = "Unknown";
 
     public static Platform getCurrentPlatform() {
+        if (override) {
+            return currentPlatform;
+        }
+
         String OS_NAME;
         if (Platform.OS_NAME != null) {
             OS_NAME = Platform.OS_NAME;
@@ -219,6 +227,9 @@ public enum Platform {
                 // TODO - os detection needed?
                 if (isRK3588()) {
                     return LINUX_RK3588_64;
+                } else if (isQCS6490()) {
+                    return LINUX_QCS6490;
+
                 } else {
                     return LINUX_AARCH64;
                 }
@@ -254,6 +265,10 @@ public enum Platform {
     private static boolean isJetsonSBC() {
         // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
         return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
+    }
+
+    private static boolean isRubik() {
+        return fileHasText("/proc/device-tree/model", "RUBIK");
     }
 
     static String getLinuxDeviceTreeModel() {
@@ -297,10 +312,5 @@ public enum Platform {
         } catch (IOException ex) {
             return false;
         }
-    }
-
-    public static boolean isWindows() {
-        var p = getCurrentPlatform();
-        return (p == WINDOWS_32 || p == WINDOWS_64);
     }
 }

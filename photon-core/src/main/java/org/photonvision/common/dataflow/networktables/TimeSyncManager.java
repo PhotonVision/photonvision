@@ -25,7 +25,6 @@ import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.jni.PhotonTargetingJniLoader;
 import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.TimeSyncServer;
 
@@ -43,10 +42,6 @@ public class TimeSyncManager {
     IntegerPublisher m_lastPongTimePub;
 
     public TimeSyncManager(NetworkTable kRootTable) {
-        if (!PhotonTargetingJniLoader.isWorking) {
-            logger.error("PhotonTargetingJNI was not loaded! Cannot do time-sync");
-        }
-
         this.ntInstance = kRootTable.getInstance();
 
         // Need this subtable to be unique per coprocessor. TODO: consider using MAC address or
@@ -65,18 +60,10 @@ public class TimeSyncManager {
 
     // Since we're spinning off tasks in a new thread, be careful and start it seperately
     public void start() {
-        if (!PhotonTargetingJniLoader.isWorking) {
-            logger.error("PhotonTargetingJNI was not loaded! Cannot start");
-        }
-
         TimedTaskManager.getInstance().addTask("TimeSyncManager::tick", this::tick, 1000);
     }
 
     public synchronized long getOffset() {
-        if (!PhotonTargetingJniLoader.isWorking) {
-            return 0;
-        }
-
         // if we're a client, return the offset to server time
         if (m_client != null) return m_client.getOffset();
         // if we're a server, our time (nt::Now) is the same as network time
@@ -88,10 +75,6 @@ public class TimeSyncManager {
     }
 
     synchronized void setConfig(NetworkConfig config) {
-        if (!PhotonTargetingJniLoader.isWorking) {
-            return;
-        }
-
         if (m_client == null && m_server == null) {
             throw new RuntimeException("Neither client nor server are null?");
         }

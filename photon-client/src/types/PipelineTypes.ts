@@ -1,12 +1,16 @@
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
+/**
+ * The on-wire form of PipelineType.java (the enum is serialized with `ordinal()`)
+ */
 export enum PipelineType {
-  DriverMode = 1,
-  Reflective = 2,
-  ColoredShape = 3,
-  AprilTag = 4,
-  Aruco = 5,
-  ObjectDetection = 6
+  DriverMode = 2,
+  Reflective = 3,
+  ColoredShape = 4,
+  AprilTag = 5,
+  Aruco = 6,
+  ObjectDetection = 7
 }
 
 export enum AprilTagFamily {
@@ -80,6 +84,8 @@ export interface PipelineSettings {
 
   cameraAutoWhiteBalance: boolean;
   cameraWhiteBalanceTemp: number;
+
+  blockForFrames: boolean;
 }
 export type ConfigurablePipelineSettings = Partial<
   Omit<
@@ -144,7 +150,8 @@ export const DefaultPipelineSettings: Omit<
   cameraAutoWhiteBalance: false,
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
-  cameraMaxExposureRaw: 2
+  cameraMaxExposureRaw: 2,
+  blockForFrames: true
 };
 
 export interface ReflectivePipelineSettings extends PipelineSettings {
@@ -296,8 +303,9 @@ export interface ObjectDetectionPipelineSettings extends PipelineSettings {
   confidence: number;
   nms: number;
   box_thresh: number;
-  model: string;
+  model: ObjectDetectionModelProperties;
 }
+
 export type ConfigurableObjectDetectionPipelineSettings = Partial<
   Omit<ObjectDetectionPipelineSettings, "pipelineType">
 > &
@@ -313,7 +321,7 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   confidence: 0.9,
   nms: 0.45,
   box_thresh: 0.25,
-  model: ""
+  model: {} as ObjectDetectionModelProperties
 };
 
 export interface Calibration3dPipelineSettings extends PipelineSettings {

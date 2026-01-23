@@ -38,14 +38,14 @@ public class GroupContoursPipe
 
         m_targets.clear();
 
-        if (params.getGroup() == ContourGroupingMode.Single) {
+        if (params.group() == ContourGroupingMode.Single) {
             for (var contour : input) {
                 m_targets.add(new PotentialTarget(contour));
             }
         }
         // Check if we have at least 2 targets for 2 or more
         // This will only ever return 1 contour!
-        else if (params.getGroup() == ContourGroupingMode.TwoOrMore
+        else if (params.group() == ContourGroupingMode.TwoOrMore
                 && input.size() >= ContourGroupingMode.TwoOrMore.count) {
             // Just blob everything together
             Contour groupedContour = Contour.combineContourList(input);
@@ -53,7 +53,7 @@ public class GroupContoursPipe
                 m_targets.add(new PotentialTarget(groupedContour, input));
             }
         } else {
-            int groupingCount = params.getGroup().count;
+            int groupingCount = params.group().count;
 
             if (input.size() >= groupingCount) {
                 input.sort(Contour.SortByMomentsX);
@@ -73,7 +73,7 @@ public class GroupContoursPipe
                         // FYI: This method only takes 2 contours!
                         Contour groupedContour =
                                 Contour.groupContoursByIntersection(
-                                        groupingSet.get(0), groupingSet.get(1), params.getIntersection());
+                                        groupingSet.get(0), groupingSet.get(1), params.intersection());
 
                         if (groupedContour != null) {
                             m_targets.add(new PotentialTarget(groupedContour, groupingSet));
@@ -88,22 +88,6 @@ public class GroupContoursPipe
         return m_targets;
     }
 
-    public static class GroupContoursParams {
-        private final ContourGroupingMode m_group;
-        private final ContourIntersectionDirection m_intersection;
-
-        public GroupContoursParams(
-                ContourGroupingMode group, ContourIntersectionDirection intersectionDirection) {
-            m_group = group;
-            m_intersection = intersectionDirection;
-        }
-
-        public ContourGroupingMode getGroup() {
-            return m_group;
-        }
-
-        public ContourIntersectionDirection getIntersection() {
-            return m_intersection;
-        }
-    }
+    public static record GroupContoursParams(
+            ContourGroupingMode group, ContourIntersectionDirection intersection) {}
 }

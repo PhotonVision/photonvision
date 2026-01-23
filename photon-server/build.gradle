@@ -1,4 +1,3 @@
-apply plugin: "org.hidetake.ssh"
 apply plugin: "com.github.node-gradle.node"
 apply plugin: 'com.gradleup.shadow'
 apply plugin: "application"
@@ -15,8 +14,8 @@ dependencies {
     implementation "org.slf4j:slf4j-simple:2.0.7"
 }
 
-group 'org.photonvision'
-version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
+group = 'org.photonvision'
+version  = versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 application {
     mainClass = 'org.photonvision.Main'
@@ -27,6 +26,8 @@ jar {
 }
 
 shadowJar {
+    dependsOn 'buildAndCopyUI'
+
     archiveBaseName = "photonvision"
     archiveVersion = project.version as String
     archiveClassifier.set(wpilibTools.currentPlatform.platformName)
@@ -44,9 +45,20 @@ tasks.register('copyClientUIToResources', Copy) {
     into "${projectDir}/src/main/resources/web/"
 }
 
-tasks.register("buildAndCopyUI") {
-    dependsOn "npm_run_build"
+tasks.register('buildClient', PnpmTask) {
+    inputs.dir fileTree(dir: "${projectDir}/../photon-client", exclude: "dist/")
+    outputs.dir file("${projectDir}/../photon-client/dist")
+    args = ["build"]
+    dependsOn "pnpmInstall"
+}
+
+tasks.register('buildAndCopyUI') {
+    dependsOn "buildClient"
     finalizedBy "copyClientUIToResources"
+}
+
+processResources {
+    dependsOn copyClientUIToResources
 }
 
 run {
@@ -63,72 +75,71 @@ run {
     }
 }
 
-remotes {
-    pi {
-        host = 'photonvision.local'
-        user = 'pi'
-        password = 'raspberry'
-        knownHosts = allowAnyHosts
-    }
-}
-
-task findDeployTarget {
-    doLast {
-        if(project.hasProperty('tgtIP')){
-            //If user specified IP, default to using the PI profile
-            // but adjust hostname to match the provided IP address
-            findDeployTarget.ext.rmt = remotes.pi
-            findDeployTarget.ext.rmt.host=tgtIP
-        } else {
-            findDeployTarget.ext.rmt = null
-            for(testRmt in remotes){
-                println "Checking for " + testRmt.host
-                boolean canContact = false;
-                try {
-                    InetAddress testAddr = InetAddress.getByName(testRmt.host)
-                    canContact = testAddr.isReachable(2000)
-                } catch(UnknownHostException e) {
-                    canContact = false;
-                }
-                if(canContact){
-                    println "Found!"
-                    findDeployTarget.ext.rmt = testRmt
-                    break
-                } else {
-                    println "Not Found."
+import edu.wpi.first.deployutils.deploy.artifact.*
+import edu.wpi.first.deployutils.deploy.target.RemoteTarget
+import edu.wpi.first.deployutils.deploy.target.location.SshDeployLocation
+deploy {
+    targets {
+        pi(RemoteTarget) {
+            // Can't login as root, so deploy our file to /tmp, which is owned by pi
+            directory = '/tmp'
+            locations {
+                ssh(SshDeployLocation) {
+                    if (project.hasProperty('tgtIP')) {
+                        address = tgtIP
+                    } else {
+                        address = "photonvision.local"
+                    }
+                    if (project.hasProperty('tgtUser')) {
+                        user = tgtUser
+                    } else {
+                        user = "photon"
+                    }
+                    if (project.hasProperty('tgtPw')) {
+                        password = tgtPw
+                    } else {
+                        password = "vision"
+                    }
                 }
             }
-            if(findDeployTarget.ext.rmt == null ){
-                throw new GradleException("Could not find a supported target for deployment!")
-            }
-        }
-    }
-}
-
-task deploy {
-    dependsOn findDeployTarget
-    dependsOn 'shadowJar'
-
-    doLast {
-        println 'Starting deployment to ' + findDeployTarget.rmt.host
-        println 'targetArch = ' + wpilibTools.platformMapper.currentPlatform.platformName
-        ssh.run{
-            session(findDeployTarget.rmt) {
-                //Stop photonvision before manipulating its files
-                execute 'sudo systemctl stop photonvision.service'
-                // gerth2 - I was having issues with the .jar being in use still - waiting a tiny bit here seems to get rid of it on a pi4
-                execute 'sleep 3'
-                // Copy into a folder owned by PI. Mostly because, as far as I can tell, the put command doesn't support sudo.
-                put from: "${projectDir}/build/libs/photonvision-${project.version}-${wpilibTools.platformMapper.currentPlatform.platformName}.jar", into: "/tmp/photonvision.jar"
-                //belt-and-suspenders. Make sure the old jar is gone first.
-                execute 'sudo rm -f /opt/photonvision/photonvision.jar'
-                //Copy in the new .jar and make sure it's executable
-                execute 'sudo mv /tmp/photonvision.jar /opt/photonvision/photonvision.jar'
-                execute 'sudo chmod +x /opt/photonvision/photonvision.jar'
-                //Fire up photonvision again
-                execute 'sudo systemctl start photonvision.service'
-                //Cleanup
-                execute 'sudo rm -f /tmp/photonvision.jar'
+            artifacts {
+                stop(CommandArtifact) {
+                    predeploy << {
+                        println 'Starting deployment to ' + deploy.targets.pi.locations.ssh.address
+                        println 'targetArch = ' + wpilibTools.platformMapper.currentPlatform.platformName
+                    }
+                    //Stop photonvision before manipulating its files
+                    command = "sudo systemctl stop photonvision.service"
+                }
+                sleep(CommandArtifact) {
+                    // gerth2 - I was having issues with the .jar being in use still - waiting a tiny bit here seems to get rid of it on a pi4
+                    command = "sleep 3"
+                    dependsOn artifacts.stop.deployTask
+                }
+                photonvisionJar(JavaArtifact) {
+                    jarTask = shadowJar
+                    filename = "photonvision.jar"
+                    dependsOn artifacts.sleep.deployTask
+                }
+                moveJar(CommandArtifact) {
+                    //belt-and-suspenders. Make sure the old jar is gone first before moving in the new .jar
+                    command = "sudo rm -f /opt/photonvision/photonvision.jar && sudo mv /tmp/photonvision.jar /opt/photonvision/photonvision.jar"
+                    dependsOn artifacts.photonvisionJar.deployTask
+                }
+                chmodJar(CommandArtifact) {
+                    //Make sure it's executable
+                    command = "sudo chmod +x /opt/photonvision/photonvision.jar"
+                    dependsOn artifacts.moveJar.deployTask
+                }
+                start(CommandArtifact) {
+                    //Fire up photonvision again
+                    command = "sudo systemctl start photonvision.service"
+                    dependsOn artifacts.chmodJar.deployTask
+                }
+                cleanUp(CommandArtifact) {
+                    command = 'sudo rm -f /tmp/photonvision.jar'
+                    dependsOn artifacts.moveJar.deployTask
+                }
             }
         }
     }

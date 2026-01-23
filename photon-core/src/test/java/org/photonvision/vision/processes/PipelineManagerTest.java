@@ -17,20 +17,21 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 
 public class PipelineManagerTest {
     @BeforeAll
     public static void init() {
-        TestUtils.loadLibraries();
+        LoadJNI.loadLibraries();
     }
 
     @Test
@@ -62,7 +63,7 @@ public class PipelineManagerTest {
         for (int i = 2; i < 15; i++) {
             expected.add("Another (" + i + ")");
         }
-        Assertions.assertEquals(expected, nicks);
+        assertEquals(expected, nicks);
     }
 
     @Test

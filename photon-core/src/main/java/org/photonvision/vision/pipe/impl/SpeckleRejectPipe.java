@@ -40,7 +40,7 @@ public class SpeckleRejectPipe
             }
             averageArea /= in.size();
 
-            double minAllowedArea = params.getMinPercentOfAvg() / 100.0 * averageArea;
+            double minAllowedArea = params.minPercentOfAvg() / 100.0 * averageArea;
             for (Contour c : in) {
                 if (c.getArea() >= minAllowedArea) {
                     m_despeckledContours.add(c);
@@ -53,15 +53,5 @@ public class SpeckleRejectPipe
         return m_despeckledContours;
     }
 
-    public static class SpeckleRejectParams {
-        private final double m_minPercentOfAvg;
-
-        public SpeckleRejectParams(double minPercentOfAvg) {
-            m_minPercentOfAvg = minPercentOfAvg;
-        }
-
-        public double getMinPercentOfAvg() {
-            return m_minPercentOfAvg;
-        }
-    }
+    public static record SpeckleRejectParams(double minPercentOfAvg) {}
 }

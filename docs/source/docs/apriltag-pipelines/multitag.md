@@ -7,7 +7,7 @@ MultiTag requires an accurate field layout JSON to be uploaded! Differences betw
 :::
 
 :::{warning}
-For the 2025 Reefscape Season, there are two different field layouts. The first is the [welded field layout](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape-welded.json), which photonvision ships with. The second is the [Andymark field layout](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape-andymark.json). It is very important to ensure that you use the correct field layout, both in the [PhotonPoseEstimator](https://docs.photonvision.org/en/latest/docs/programming/photonlib/robot-pose-estimator.html#apriltags-and-photonposeestimator) and on the [coprocessor](https://docs.photonvision.org/en/latest/docs/apriltag-pipelines/multitag.html#updating-the-field-layout).
+For the 2026 Rebuilt Season, there are two different field layouts. The first is the [welded field layout](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json), which photonvision ships with. The second is the [Andymark field layout](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-andymark.json). It is very important to ensure that you use the correct field layout, both in the [PhotonPoseEstimator](https://docs.photonvision.org/en/latest/docs/programming/photonlib/robot-pose-estimator.html#apriltags-and-photonposeestimator) and on the [coprocessor](https://docs.photonvision.org/en/latest/docs/apriltag-pipelines/multitag.html#updating-the-field-layout).
 :::
 
 ## Enabling MultiTag
@@ -23,30 +23,41 @@ Ensure that your camera is calibrated and 3D mode is enabled. Navigate to the Ou
 By default, enabling multi-target will disable calculating camera-to-target transforms for each observed AprilTag target to increase performance; the X/Y/angle numbers shown in the target table of the UI are instead calculated using the tag's expected location (per the field layout JSON) and the field-to-camera transform calculated using MultiTag. If you additionally want the individual camera-to-target transform calculated using SolvePNP for each target, enable "Always Do Single-Target Estimation".
 :::
 
-This multi-target pose estimate can be accessed using PhotonLib. We suggest using {ref}`the PhotonPoseEstimator class <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>` with the `MULTI_TAG_PNP_ON_COPROCESSOR` strategy to simplify code, but the transform can be directly accessed using `getMultiTagResult`/`MultiTagResult()` (Java/C++).
+This multi-target pose estimate can be accessed using PhotonLib. We suggest using {ref}`the PhotonPoseEstimator class <docs/programming/photonlib/robot-pose-estimator:AprilTags and PhotonPoseEstimator>` with the `MULTI_TAG_PNP_ON_COPROCESSOR` strategy to simplify code, but the transform can be directly accessed using `getMultiTagResult`/`MultiTagResult()`/`multitagResult` (Java/C++/Python).
 
 ```{eval-rst}
 .. tab-set-code::
 
-    .. code-block:: Java
+    .. code-block:: java
 
-        var result = camera.getLatestResult();
-        if (result.getMultiTagResult().estimatedPose.isPresent) {
-          Transform3d fieldToCamera = result.getMultiTagResult().estimatedPose.best;
+        var results = camera.getAllUnreadResults();
+        for (var result : results) {
+          var multiTagResult = result.getMultiTagResult();
+          if (multiTagResult.isPresent()) {
+            var fieldToCamera = multiTagResult.get().estimatedPose.best;
+          }
         }
 
 
-    .. code-block:: C++
+    .. code-block:: c++
 
-        auto result = camera.GetLatestResult();
-        if (result.MultiTagResult().result.isPresent) {
-          frc::Transform3d fieldToCamera = result.MultiTagResult().result.best;
+      auto results = camera.GetAllUnreadResults();
+      for (auto &result : results)
+      {
+        auto multiTagResult = result.MultiTagResult();
+        if (multiTagResult.has_value()) {
+          frc::Transform3d fieldToCamera = multiTagResult->estimatedPose.best;
         }
+      }
 
-    .. code-block:: Python
 
-        # Coming Soon!
+    .. code-block:: python
 
+      results = camera.getAllUnreadResults()
+      for result in results:
+          multitagResult = result.multitagResult
+          if multitagResult is not None:
+            fieldToCamera = multitagResult.estimatedPose.best
 ```
 
 :::{note}
@@ -55,7 +66,7 @@ The returned field to camera transform is a transform from the fixed field origi
 
 ## Updating the Field Layout
 
-PhotonVision ships by default with the [2025 welded field layout JSON](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2025-reefscape-welded.json). The layout can be inspected by navigating to the settings tab and scrolling down to the "AprilTag Field Layout" card, as shown below.
+PhotonVision ships by default with the [2026 welded field layout JSON](https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2026-rebuilt-welded.json). The layout can be inspected by navigating to the settings tab and scrolling down to the "AprilTag Field Layout" card, as shown below.
 
 ```{image} images/field-layout.png
 :alt: The currently saved field layout in the Photon UI

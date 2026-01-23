@@ -60,7 +60,7 @@ public class ShellExec {
      * @return process exit code
      */
     public int executeBashCommand(String command, boolean wait) throws IOException {
-        return executeBashCommand(command, true, true);
+        return executeBashCommand(command, wait, true);
     }
 
     /**

@@ -18,8 +18,6 @@
 package org.photonvision.vision.processes;
 
 import java.util.*;
-import java.util.stream.Collectors;
-import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -68,9 +66,7 @@ public class VisionModuleManager {
         // Big list, which should contain every vision source (currently loaded plus the new ones being
         // added)
         List<Integer> bigList =
-                this.getModules().stream()
-                        .map(it -> it.getCameraConfiguration().streamIndex)
-                        .collect(Collectors.toList());
+                this.getModules().stream().map(it -> it.getCameraConfiguration().streamIndex).toList();
 
         int idx = 0;
         while (bigList.contains(idx)) {
@@ -82,25 +78,5 @@ public class VisionModuleManager {
         }
 
         return idx;
-    }
-
-    public static class UiVmmState {
-        public final List<UICameraConfiguration> visionModules;
-
-        UiVmmState(List<UICameraConfiguration> _v) {
-            this.visionModules = _v;
-        }
-    }
-
-    public synchronized UiVmmState getState() {
-        return new UiVmmState(
-                this.visionModules.stream()
-                        .map(VisionModule::toUICameraConfig)
-                        .map(
-                                it -> {
-                                    it.calibrations = null;
-                                    return it;
-                                })
-                        .collect(Collectors.toList()));
     }
 }

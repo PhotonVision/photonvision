@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSource;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.PlatformUtils;
 import org.photonvision.common.logging.LogGroup;
@@ -73,25 +74,32 @@ public class NetworkManager {
             return;
         }
 
+        if (!NetworkUtils.nmcliIsInstalled()) {
+            logger.error("Cannot manage network without nmcli!");
+            this.networkingIsDisabled = true;
+            return;
+        }
+
         // Start tasks to monitor the network interface(s)
         var ethernetDevices = NetworkUtils.getAllWiredInterfaces();
         for (NMDeviceInfo deviceInfo : ethernetDevices) {
             activeConnections.put(
-                    deviceInfo.devName, NetworkUtils.getActiveConnection(deviceInfo.devName));
-            monitorDevice(deviceInfo.devName, 5000);
+                    deviceInfo.devName(), NetworkUtils.getActiveConnection(deviceInfo.devName()));
+            monitorDevice(deviceInfo.devName(), 5000);
         }
 
         var physicalDevices = NetworkUtils.getAllActiveWiredInterfaces();
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        if (physicalDevices.stream().noneMatch(it -> (it.devName.equals(config.networkManagerIface)))) {
+        if (physicalDevices.stream()
+                .noneMatch(it -> (it.devName().equals(config.networkManagerIface)))) {
             try {
                 // if the configured interface isn't in the list of available ones, select one that is
                 var iFace = physicalDevices.stream().findFirst().orElseThrow();
                 logger.warn(
                         "The configured interface doesn't match any available interface. Applying configuration to "
-                                + iFace.devName);
+                                + iFace.devName());
                 // update NetworkConfig with found interface
-                config.networkManagerIface = iFace.devName;
+                config.networkManagerIface = iFace.devName();
                 ConfigManager.getInstance().requestSave();
             } catch (NoSuchElementException e) {
                 // if there are no available interfaces, go with the one from settings
@@ -114,7 +122,7 @@ public class NetworkManager {
 
         // always set hostname (unless it's blank)
         if (!config.hostname.isBlank()) {
-            setHostname(config.hostname);
+            setHostname(config);
         } else {
             logger.warn("Got empty hostname?");
         }
@@ -138,28 +146,32 @@ public class NetworkManager {
                                 true));
     }
 
-    private void setHostname(String hostname) {
+    private void setHostname(NetworkConfig config) {
         try {
             var shell = new ShellExec(true, false);
             shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
             var oldHostname = shell.getOutput().replace("\n", "");
             logger.debug("Old host name: \"" + oldHostname + "\"");
-            logger.debug("New host name: \"" + hostname + "\"");
+            logger.debug("New host name: \"" + config.hostname + "\"");
 
-            if (!oldHostname.equals(hostname)) {
+            if (!oldHostname.equals(config.hostname)) {
                 var setHostnameRetCode =
                         shell.executeBashCommand(
-                                "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", hostname));
-                setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname " + hostname);
+                                "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
+                setHostnameRetCode =
+                        shell.executeBashCommand("hostnamectl set-hostname " + config.hostname);
 
                 // Add to /etc/hosts
                 var addHostRetCode =
                         shell.executeBashCommand(
                                 String.format(
                                         "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
-                                        oldHostname, hostname));
+                                        oldHostname, config.hostname));
 
                 shell.executeBashCommand("systemctl restart avahi-daemon.service");
+
+                // This resets the NetworkTables config to use the new hostname as the client ID
+                NetworkTablesManager.getInstance().setConfig(config);
 
                 var success = setHostnameRetCode == 0 && addHostRetCode == 0;
                 if (!success) {
@@ -170,7 +182,7 @@ public class NetworkManager {
                                     + addHostRetCode
                                     + "!");
                 } else {
-                    logger.info("Set hostname to " + hostname);
+                    logger.info("Set hostname to " + config.hostname);
                 }
             }
         } catch (Exception e) {
