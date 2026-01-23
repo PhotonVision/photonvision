@@ -23,7 +23,6 @@ import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.nio.file.Path;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -32,13 +31,11 @@ import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
-import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
@@ -56,7 +53,6 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
-import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -100,8 +96,6 @@ public class VisionModule {
 
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
-
-    private FrameRecorder frameRecorder = null;
 
     boolean mismatch;
 
@@ -160,8 +154,8 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
-                        this::getRecording,
-                        this::setRecording,
+                        visionSource.getFrameProvider()::getRecording,
+                        visionSource.getFrameProvider()::setRecording,
                         this::getFPSLimit,
                         this::setFPSLimit);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
@@ -238,61 +232,6 @@ public class VisionModule {
                 (frame, tgts) -> {
                     if (frame != null) outputVideoStreamer.accept(frame.processedImage);
                 });
-    }
-
-    /**
-     * Start or stop recording.
-     *
-     * @param shouldRecord true to start recording, false to stop
-     */
-    void setRecording(boolean shouldRecord) {
-        if (shouldRecord) {
-            String camPath = visionSource.getSettables().getConfiguration().uniqueName;
-
-            String recordingPath = NetworkTablesManager.getInstance().getMatchData();
-            if (recordingPath == null || recordingPath.isEmpty()) {
-                // No match is currently active, use timestamp
-                recordingPath =
-                        DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
-                                .format(java.time.LocalDateTime.now());
-            }
-
-            Path outputPath =
-                    ConfigManager.getInstance()
-                            .getRecordingsDirectory()
-                            .toPath()
-                            .resolve(camPath)
-                            .resolve(recordingPath);
-
-            if (!outputPath.toFile().exists()) {
-                outputPath.toFile().mkdirs();
-            }
-
-            if (frameRecorder != null && frameRecorder.isRecording()) {
-                logger.warn("Frame recorder is already recording!");
-                return;
-            }
-
-            try {
-                frameRecorder = new FrameRecorder(outputPath);
-            } catch (Exception e) {
-                logger.error("Exception creating FrameRecorder", e);
-                return;
-            }
-            frameRecorder.startRecording();
-        } else {
-            if (frameRecorder == null || !frameRecorder.isRecording()) {
-                logger.warn("Frame recorder is not recording!");
-                return;
-            }
-
-            logger.info("Stopping frame recorder");
-            frameRecorder.stopRecording();
-        }
-    }
-
-    boolean getRecording() {
-        return frameRecorder != null && frameRecorder.isRecording();
     }
 
     private List<String> getRecordingsList() {
@@ -388,22 +327,14 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-                        if (getRecording()) {
-                            logger.debug("Took snapshot for recording");
-                            frameRecorder.recordFrame(m_frame.colorImage);
-                        }
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
                     }
                     try {
-                        // We don't release if we're passing the frame to the recorder, as the recorder takes
-                        // care of that itself
-                        if (!getRecording()) {
-                            m_frame.release();
-                        }
+                        m_frame.release();
                     } catch (Exception e) {
                         logger.error("Exception freeing frames", e);
                     }
@@ -443,10 +374,6 @@ public class VisionModule {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
-        if (frameRecorder != null) {
-            frameRecorder.release();
-        }
-
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
     }

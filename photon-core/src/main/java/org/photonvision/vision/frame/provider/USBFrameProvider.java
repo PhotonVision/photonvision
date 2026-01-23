@@ -22,11 +22,17 @@ import edu.wpi.first.cscore.CvSink;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.util.RawFrame;
+import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import org.opencv.core.Mat;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.PathManager;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.jni.CscoreExtras;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider extends CpuImageProcessor {
@@ -103,7 +109,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                     cameraMode.height,
                     // hard-coded 3 channel
                     cameraMode.width * 3,
-                    PixelFormat.kBGR);
+                    PixelFormat.kUnknown);
 
             // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called
@@ -122,9 +128,23 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat();
             } else {
                 // No error! yay
-                var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
 
-                ret = new CVMat(mat, frame);
+                CVMat jpegMat = new CVMat(new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj())), frame);
+
+                var flatMat = jpegMat.getMat().reshape(1, 1);
+
+                var bgrMat =
+                        org.opencv.imgcodecs.Imgcodecs.imdecode(
+                                flatMat, org.opencv.imgcodecs.Imgcodecs.IMREAD_COLOR);
+                flatMat.release();
+
+                if (getRecording()) {
+                    frameRecorder.recordFrame(jpegMat);
+                } else {
+                    jpegMat.release();
+                }
+                
+                ret = new CVMat(bgrMat);
             }
 
             return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
@@ -141,6 +161,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         CameraServer.removeServer(cvSink.getName());
         cvSink.close();
         cvSink = null;
+        frameRecorder.release();
+        frameRecorder = null;
     }
 
     @Override
@@ -157,5 +179,55 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     public void updateSettables(VisionSourceSettables settables) {
         this.settables = settables;
+    }
+
+    @Override
+    public void setRecording(boolean shouldRecord) {
+        if (shouldRecord) {
+            String camPath = settables.getConfiguration().uniqueName;
+
+            String recordingPath = NetworkTablesManager.getInstance().getMatchData();
+            if (recordingPath == null || recordingPath.isEmpty()) {
+                // No match is currently active, use timestamp
+                recordingPath =
+                        DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
+                                .format(java.time.LocalDateTime.now());
+            }
+
+            Path outputPath =
+                    ConfigManager.getInstance()
+                            .getRecordingsDirectory()
+                            .toPath()
+                            .resolve(camPath)
+                            .resolve(recordingPath);
+
+            if (!outputPath.toFile().exists()) {
+                outputPath.toFile().mkdirs();
+            }
+
+            if (getRecording()) {
+                logger.warn("Frame recorder is already recording!");
+                return;
+            }
+
+            try {
+                frameRecorder = new FrameRecorder(outputPath);
+                frameRecorder.startRecording();
+            } catch (Exception e) {
+                logger.error("Exception creating FrameRecorder", e);
+                return;
+            }
+        } else {
+            if (frameRecorder != null) {
+                frameRecorder.stopRecording();
+                frameRecorder.release();
+                frameRecorder = null;
+            }
+        }
+    }
+
+    @Override
+    public boolean getRecording() {
+        return frameRecorder != null && frameRecorder.isRecording();
     }
 }
