@@ -164,6 +164,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     decodeParams.detectorConfig.numThreads = 1;
                     decodeParams.detectorConfig.refineEdges = settings.refineEdges;
                     decodeParams.detectorConfig.quadDecimate = 1; // No decimation for ROI - maximize accuracy
+
+                    // ATR (Adaptive Tag Resizing) settings
+                    decodeParams.atrEnabled = settings.atrEnabled;
+                    decodeParams.atrTargetDimension = settings.atrTargetDimension;
+                    decodeParams.atrMinScaleFactor = settings.atrMinScaleFactor;
+                    decodeParams.atrCornerRefinementEnabled = settings.atrCornerRefinementEnabled;
+                    decodeParams.atrRefinementWindowSize = settings.atrRefinementWindowSize;
+
                     mlDecodePipe.setParams(decodeParams);
 
                     if (!mlWasAvailable) {
