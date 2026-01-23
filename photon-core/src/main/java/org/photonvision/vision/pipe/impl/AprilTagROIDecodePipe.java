@@ -23,9 +23,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Rect2d;
+import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -51,6 +57,27 @@ public class AprilTagROIDecodePipe
     private static final Logger logger = new Logger(AprilTagROIDecodePipe.class, LogGroup.VisionModule);
     private static final boolean DEBUG_COORDINATE_MAPPING = false;
 
+    /** Termination criteria for cornerSubPix refinement */
+    private final TermCriteria cornerSubPixCriteria =
+            new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 30, 0.001);
+
+    /**
+     * Context object containing ATR scaling information for a single ROI.
+     */
+    private static class ATRContext {
+        final double scaleFactor;
+        final boolean wasScaled;
+
+        ATRContext(double scaleFactor) {
+            this.scaleFactor = scaleFactor;
+            this.wasScaled = scaleFactor < 1.0;
+        }
+
+        static ATRContext noScaling() {
+            return new ATRContext(1.0);
+        }
+    }
+
     /** Input container for ROI decode pipe */
     public static class ROIDecodeInput {
         public final CVMat grayFrame;
@@ -70,6 +97,18 @@ public class AprilTagROIDecodePipe
         public AprilTagDetector.QuadThresholdParameters quadParams;
         public int maxHammingDistance = 0;
         public double minDecisionMargin = 35;
+
+        // Adaptive Tag Resizing (ATR) parameters
+        /** Enable ATR (adaptive tag resizing) */
+        public boolean atrEnabled = true;
+        /** Target dimension for ATR - tags wider than this will be downscaled */
+        public int atrTargetDimension = 160;
+        /** Minimum scale factor for ATR (prevents extreme downscaling) */
+        public double atrMinScaleFactor = 0.25;
+        /** Enable corner refinement (two-stage coarse-to-fine) */
+        public boolean atrCornerRefinementEnabled = false;
+        /** Window size for corner refinement */
+        public int atrRefinementWindowSize = 5;
 
         public ROIDecodeParams() {
             detectorConfig = new AprilTagDetector.Config();
@@ -141,16 +180,72 @@ public class AprilTagROIDecodePipe
                                 + roiRect.height);
             }
 
-            // Extract submat - coordinates in detection will be relative to (0,0) of this submat
+            // Extract full-resolution submat
             Mat roiMat = fullFrame.submat(roiRect);
-            AprilTagDetection[] roiDetections = detector.detect(roiMat);
+
+            // === STAGE 1: COARSE - Calculate scaling and resize ===
+            ATRContext atrContext;
+            Mat processingMat;
+
+            if (params.atrEnabled && roiRect.width > params.atrTargetDimension) {
+                // Calculate scale factor: S = min(1.0, T_dim / w)
+                double S = (double) params.atrTargetDimension / roiRect.width;
+                S = Math.max(S, params.atrMinScaleFactor); // Clamp to prevent extreme scaling
+
+                int scaledWidth = (int) Math.round(roiRect.width * S);
+                int scaledHeight = (int) Math.round(roiRect.height * S);
+
+                atrContext = new ATRContext(S);
+
+                // Downscale ROI to target dimension
+                processingMat = new Mat();
+                Imgproc.resize(
+                        roiMat,
+                        processingMat,
+                        new Size(scaledWidth, scaledHeight),
+                        0,
+                        0,
+                        Imgproc.INTER_AREA); // INTER_AREA best for downscaling
+
+                if (DEBUG_COORDINATE_MAPPING) {
+                    logger.debug(
+                            "ATR: ROI "
+                                    + roiRect.width
+                                    + "x"
+                                    + roiRect.height
+                                    + " -> "
+                                    + scaledWidth
+                                    + "x"
+                                    + scaledHeight
+                                    + " (S="
+                                    + S
+                                    + ")");
+                }
+            } else {
+                // No scaling needed (tag already small or ATR disabled)
+                atrContext = ATRContext.noScaling();
+                processingMat = roiMat;
+            }
+
+            // Run AprilTag detection on (possibly scaled) image
+            AprilTagDetection[] roiDetections = detector.detect(processingMat);
 
             for (AprilTagDetection det : roiDetections) {
                 if (det.getHamming() > params.maxHammingDistance) continue;
                 if (det.getDecisionMargin() < params.minDecisionMargin) continue;
 
-                // Map coordinates using the EXPANDED ROI offset
-                AprilTagDetection mappedDetection = mapToFullFrame(det, roiRect);
+                // === STAGE 2: PROJECTION - Map coordinates back to full-frame ===
+                AprilTagDetection mappedDetection;
+                if (atrContext.wasScaled) {
+                    mappedDetection = mapToFullFrameWithATR(det, roiRect, atrContext);
+                } else {
+                    mappedDetection = mapToFullFrame(det, roiRect);
+                }
+
+                // === STAGE 3: FINE REFINEMENT - Sub-pixel corner accuracy ===
+                if (params.atrCornerRefinementEnabled && atrContext.wasScaled) {
+                    mappedDetection = refineCorners(mappedDetection, fullFrame);
+                }
 
                 if (DEBUG_COORDINATE_MAPPING) {
                     logger.debug(
@@ -169,8 +264,15 @@ public class AprilTagROIDecodePipe
 
                 allDetections.add(mappedDetection);
             }
+
+            // Cleanup
+            roiMat.release();
+            if (atrContext.wasScaled) {
+                processingMat.release();
+            }
         }
 
+        // === STAGE 4: POSE ESTIMATION happens in AprilTagPoseEstimatorPipe ===
         return deduplicateByTagId(allDetections);
     }
 
@@ -199,6 +301,47 @@ public class AprilTagROIDecodePipe
         // Transform homography from ROI coordinates to full-frame coordinates
         double[] transformedHomography =
                 transformHomography(det.getHomography(), roiOffset.x, roiOffset.y);
+
+        return new AprilTagDetection(
+                det.getFamily(),
+                det.getId(),
+                det.getHamming(),
+                det.getDecisionMargin(),
+                transformedHomography,
+                centerX,
+                centerY,
+                mappedCorners);
+    }
+
+    /**
+     * Maps detection coordinates from scaled ROI space to full-frame space.
+     * Handles both translation AND scaling transformations.
+     *
+     * @param det The detection in scaled ROI coordinates
+     * @param roiOffset The ROI rectangle defining the offset from full frame origin
+     * @param atrContext The ATR scaling context
+     * @return A new AprilTagDetection with coordinates mapped to full frame
+     */
+    private AprilTagDetection mapToFullFrameWithATR(
+            AprilTagDetection det, Rect roiOffset, ATRContext atrContext) {
+        double invS = 1.0 / atrContext.scaleFactor;
+
+        // Map all 4 corners from scaled ROI coordinates to full-frame coordinates
+        // x_full = (x_scaled / S) + roi_x
+        double[] mappedCorners = new double[8];
+        for (int i = 0; i < 4; i++) {
+            mappedCorners[i * 2] = det.getCornerX(i) * invS + roiOffset.x;
+            mappedCorners[i * 2 + 1] = det.getCornerY(i) * invS + roiOffset.y;
+        }
+
+        // Map center coordinate
+        double centerX = det.getCenterX() * invS + roiOffset.x;
+        double centerY = det.getCenterY() * invS + roiOffset.y;
+
+        // Transform homography with scaling
+        double[] transformedHomography =
+                transformHomographyWithScale(
+                        det.getHomography(), roiOffset.x, roiOffset.y, atrContext.scaleFactor);
 
         return new AprilTagDetection(
                 det.getFamily(),
@@ -253,6 +396,159 @@ public class AprilTagROIDecodePipe
         result[6] = h[6];
         result[7] = h[7];
         result[8] = h[8];
+        return result;
+    }
+
+    /**
+     * Refines corner positions using cornerSubPix on the full-resolution image.
+     * This is the "fine" stage of coarse-to-fine detection.
+     *
+     * <p>CRITICAL: The homography MUST be recomputed from refined corners because
+     * the pose estimator uses BOTH corners and homography internally. If they
+     * become inconsistent (corners change but homography doesn't), pose will be wrong.
+     *
+     * @param detection The detection with corners mapped to full-frame coordinates
+     * @param fullFrame The full grayscale frame for sub-pixel refinement
+     * @return A new AprilTagDetection with refined corners and recomputed homography
+     */
+    private AprilTagDetection refineCorners(AprilTagDetection detection, Mat fullFrame) {
+        // Extract corners into MatOfPoint2f
+        Point[] corners = new Point[4];
+        for (int i = 0; i < 4; i++) {
+            corners[i] = new Point(detection.getCornerX(i), detection.getCornerY(i));
+        }
+        MatOfPoint2f cornerMat = new MatOfPoint2f(corners);
+
+        // Window size for cornerSubPix
+        Size winSize = new Size(params.atrRefinementWindowSize, params.atrRefinementWindowSize);
+        Size zeroZone = new Size(-1, -1); // No dead zone
+
+        try {
+            // Run cornerSubPix refinement on full-resolution image
+            Imgproc.cornerSubPix(fullFrame, cornerMat, winSize, zeroZone, cornerSubPixCriteria);
+
+            // Extract refined corners
+            Point[] refinedCorners = cornerMat.toArray();
+            double[] refinedCornersArr = new double[8];
+            for (int i = 0; i < 4; i++) {
+                refinedCornersArr[i * 2] = refinedCorners[i].x;
+                refinedCornersArr[i * 2 + 1] = refinedCorners[i].y;
+            }
+
+            // Compute refined center
+            double centerX =
+                    (refinedCorners[0].x
+                                    + refinedCorners[1].x
+                                    + refinedCorners[2].x
+                                    + refinedCorners[3].x)
+                            / 4.0;
+            double centerY =
+                    (refinedCorners[0].y
+                                    + refinedCorners[1].y
+                                    + refinedCorners[2].y
+                                    + refinedCorners[3].y)
+                            / 4.0;
+
+            // CRITICAL: Recompute homography from refined corners
+            double[] refinedHomography = computeHomographyFromCorners(refinedCorners);
+
+            return new AprilTagDetection(
+                    detection.getFamily(),
+                    detection.getId(),
+                    detection.getHamming(),
+                    detection.getDecisionMargin(),
+                    refinedHomography,
+                    centerX,
+                    centerY,
+                    refinedCornersArr);
+        } finally {
+            cornerMat.release();
+        }
+    }
+
+    /**
+     * Computes the homography matrix from 4 corner points.
+     *
+     * <p>The AprilTag library defines normalized tag coordinates as:
+     * <ul>
+     *   <li>Corner 0: (-1, -1) - bottom-left</li>
+     *   <li>Corner 1: ( 1, -1) - bottom-right</li>
+     *   <li>Corner 2: ( 1,  1) - top-right</li>
+     *   <li>Corner 3: (-1,  1) - top-left</li>
+     * </ul>
+     *
+     * <p>The homography H satisfies: [x_img, y_img, 1]^T ~ H * [X_tag, Y_tag, 1]^T
+     *
+     * @param corners The 4 corner points in image coordinates
+     * @return The homography matrix as a 9-element row-major array
+     */
+    private double[] computeHomographyFromCorners(Point[] corners) {
+        // Normalized tag corner coordinates (AprilTag convention)
+        MatOfPoint2f srcPoints =
+                new MatOfPoint2f(
+                        new Point(-1, -1), // corner 0
+                        new Point(1, -1), // corner 1
+                        new Point(1, 1), // corner 2
+                        new Point(-1, 1) // corner 3
+                        );
+
+        MatOfPoint2f dstPoints = new MatOfPoint2f(corners);
+
+        // Compute homography: srcPoints -> dstPoints
+        Mat H = Calib3d.findHomography(srcPoints, dstPoints);
+
+        // Extract to row-major double array (AprilTag format)
+        double[] homography = new double[9];
+        H.get(0, 0, homography);
+
+        // Cleanup
+        srcPoints.release();
+        dstPoints.release();
+        H.release();
+
+        return homography;
+    }
+
+    /**
+     * Transforms a homography matrix from scaled ROI coordinates to full-frame coordinates.
+     *
+     * <p>The transformation combines inverse scaling and translation:
+     * H_full = T * S_inv * H_scaled
+     *
+     * <p>Where:
+     * - S_inv = [[1/S, 0, 0], [0, 1/S, 0], [0, 0, 1]] (inverse scale)
+     * - T = [[1, 0, offsetX], [0, 1, offsetY], [0, 0, 1]] (translation)
+     *
+     * <p>Combined formula:
+     * Row 0: H[0..2] / S + offsetX * H[6..8]
+     * Row 1: H[3..5] / S + offsetY * H[6..8]
+     * Row 2: unchanged (H[6..8])
+     *
+     * @param h The original homography (9 elements, row-major 3x3)
+     * @param offsetX The x offset from ROI origin to full-frame origin
+     * @param offsetY The y offset from ROI origin to full-frame origin
+     * @param S The scale factor used for ROI resizing (< 1 means downscaled)
+     * @return The transformed homography in full-frame coordinates
+     */
+    private double[] transformHomographyWithScale(double[] h, int offsetX, int offsetY, double S) {
+        double invS = 1.0 / S;
+        double[] result = new double[9];
+
+        // Row 0: H[i]/S + offsetX * H[6+j]
+        result[0] = h[0] * invS + offsetX * h[6];
+        result[1] = h[1] * invS + offsetX * h[7];
+        result[2] = h[2] * invS + offsetX * h[8];
+
+        // Row 1: H[i]/S + offsetY * H[6+j]
+        result[3] = h[3] * invS + offsetY * h[6];
+        result[4] = h[4] * invS + offsetY * h[7];
+        result[5] = h[5] * invS + offsetY * h[8];
+
+        // Row 2: unchanged
+        result[6] = h[6];
+        result[7] = h[7];
+        result[8] = h[8];
+
         return result;
     }
 
