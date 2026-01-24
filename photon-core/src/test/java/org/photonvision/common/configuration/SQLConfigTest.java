@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.nio.file.Path;
 import java.util.List;
@@ -109,18 +108,22 @@ public class SQLConfigTest {
 
     @Test
     public void testLoadNewNNMM() throws JsonProcessingException {
-        var cfgLoader =
-                new SqlConfigProvider(
-                        Path.of(
-                                "/home/matth/photonvision/test-resources/old_configs/2025.3.1-old-nnmm"));
+        var folder = Path.of("/home/matth/photonvision/test-resources/old_configs/2025.3.1-old-nnmm");
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
 
-        assertDoesNotThrow(cfgLoader::load);
+        // Replace global configmanager
+        ConfigManager.INSTANCE = cfgManager;
 
-        System.out.println(cfgLoader.getConfig());
-        
+        assertDoesNotThrow(cfgManager::load);
+
+        System.out.println(cfgManager.getConfig());
+
+        ConfigManager.INSTANCE = null;
+
         // ObjectMapper objectMapper = new ObjectMapper();
         // String prettyPrinted =
-        //         objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(cfgLoader.getConfig());
+        //
+        // objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(cfgLoader.getConfig());
         // System.out.println(prettyPrinted);
     }
 }

@@ -621,7 +621,8 @@ public class SqlConfigProvider extends ConfigProvider {
                     // A horrifying hack to keep backward compat with otherpaths
                     // We -really- need to delete this -stupid- otherpaths column. I hate it.
                     var configStr = result.getString(Columns.CAM_CONFIG_JSON);
-                    CameraConfiguration config = JacksonUtils.deserialize(configStr, CameraConfiguration.class);
+                    CameraConfiguration config =
+                            JacksonUtils.deserialize(configStr, CameraConfiguration.class);
 
                     if (config.matchedCameraInfo == null) {
                         logger.info("Legacy CameraConfiguration detected - upgrading");
@@ -629,7 +630,8 @@ public class SqlConfigProvider extends ConfigProvider {
                         // manually create the matchedCameraInfo ourselves. Need to upgrade:
                         // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
                         config.matchedCameraInfo =
-                                JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class).matchedCameraInfo;
+                                JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class)
+                                        .matchedCameraInfo;
 
                         // Except that otherPaths used to be its own column. so hack that in here as well
                         var otherPaths =
@@ -653,7 +655,8 @@ public class SqlConfigProvider extends ConfigProvider {
                             try {
                                 loadedSettings.add(JacksonUtils.deserialize(str, CVPipelineSettings.class));
                             } catch (IOException e) {
-                                logger.error("Could not deserialize pipeline setting for camera " + config.nickname, e); 
+                                logger.error(
+                                        "Could not deserialize pipeline setting for camera " + config.nickname, e);
                             }
                         }
                     }
@@ -662,7 +665,8 @@ public class SqlConfigProvider extends ConfigProvider {
                     config.driveModeSettings = driverMode;
                     loadedConfigurations.put(uniqueName, config);
                 } catch (IOException e) {
-                    logger.error("Could not deserialize camera configuration " + uniqueName + " from database!", e);
+                    logger.error(
+                            "Could not deserialize camera configuration " + uniqueName + " from database!", e);
                 }
             }
         } catch (SQLException e) {

@@ -20,7 +20,6 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +27,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
@@ -51,7 +51,7 @@ public class NeuralNetworkPropertyManager {
             // Record constructor is automatically annotated with @JsonCreator
         }
 
-        ModelProperties (ModelProperties other) {
+        ModelProperties(ModelProperties other) {
             this(
                     other.modelPath,
                     other.nickname,
@@ -62,17 +62,26 @@ public class NeuralNetworkPropertyManager {
                     other.version);
         }
 
-        // Previously this was single string for the model path. but the first argument is now nickname
-        public ModelProperties(@JsonProperty("nickname") String filename) throws IllegalArgumentException, IOException {
+        // Previously this was single string for the model path. but the first argument
+        // is now nickname
+        public ModelProperties(@JsonProperty("nickname") String filename)
+                throws IllegalArgumentException, IOException {
             this(createFromNickname(filename));
         }
 
-        private static ModelProperties createFromNickname(String modelFileName) throws IllegalArgumentException, IOException {
-            // Used to point to default models directory
-            var model = ConfigManager.getInstance().getModelsDirectory().toPath().resolve(modelFileName).toFile();
-            // var labelFile = ConfigManager.getInstance().getModelsDirectory().toPath().resolve(nickname + ".rknn"),
+        // ============= Migration code from v2025.3.1 ===========
 
-            // ============= Migration code from v2025.3.1 ===========
+        private static Pattern modelPattern =
+                Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
+
+        private static Pattern labelsPattern =
+                Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
+
+        private static ModelProperties createFromNickname(String modelFileName)
+                throws IllegalArgumentException, IOException {
+            // Used to point to default models directory
+            var model =
+                    ConfigManager.getInstance().getModelsDirectory().toPath().resolve(modelFileName).toFile();
 
             // Get the model extension and check if it is supported
             String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
@@ -86,22 +95,72 @@ public class NeuralNetworkPropertyManager {
                             .findFirst();
 
             if (!backend.isPresent()) {
-                throw new IllegalArgumentException(
-                        "Model " + modelFileName + " cannot find backend");
+                throw new IllegalArgumentException("Model " + modelFileName + " cannot find backend");
             }
 
             String labelFile = model.getAbsolutePath().replace(backend.get().extension(), "-labels.txt");
             List<String> labels = Files.readAllLines(Paths.get(labelFile));
 
+            String[] parts = parseRKNNName(modelFileName);
+            var version = getModelVersion(parts[3]);
+            int width = Integer.parseInt(parts[1]);
+            int height = Integer.parseInt(parts[2]);
+
             return new ModelProperties(
-                    model.toPath(),       
+                    model.toPath(),
                     model.getName(),
                     labels,
                     // all files used to be 640x640
-                    640,
-                    640,
+                    width,
+                    height,
                     Family.RKNN,
-                    Version.YOLOV8);
+                    version);
+        }
+
+        /**
+         * Determines the model version based on the model's filename.
+         *
+         * <p>"yolov5" -> "YOLO_V5"
+         *
+         * <p>"yolov8" -> "YOLO_V8"
+         *
+         * <p>"yolov11" -> "YOLO_V11"
+         *
+         * @param modelName The model's filename
+         * @return The model version
+         */
+        private static Version getModelVersion(String modelName) throws IllegalArgumentException {
+            if (modelName.contains("yolov5")) {
+                return Version.YOLOV5;
+            } else if (modelName.contains("yolov8")) {
+                return Version.YOLOV8;
+            } else if (modelName.contains("yolov11")) {
+                return Version.YOLOV11;
+            } else {
+                throw new IllegalArgumentException("Unknown model version for model " + modelName);
+            }
+        }
+
+        /**
+         * Parse RKNN name and return the name, width, height, and model type.
+         *
+         * <p>This is static as it is not dependent on the state of the class.
+         *
+         * @param modelName the name of the model
+         * @throws IllegalArgumentException if the model name does not follow the naming convention
+         * @return an array containing the name, width, height, and model type
+         */
+        public static String[] parseRKNNName(String modelName) {
+            Matcher modelMatcher = modelPattern.matcher(modelName);
+
+            if (!modelMatcher.matches()) {
+                throw new IllegalArgumentException(
+                        "Model name must follow the naming convention of name-widthResolution-heightResolution-modelType.rknn");
+            }
+
+            return new String[] {
+                modelMatcher.group(1), modelMatcher.group(2), modelMatcher.group(3), modelMatcher.group(4)
+            };
         }
     }
 

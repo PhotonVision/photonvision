@@ -133,9 +133,14 @@ public class PhotonConfiguration {
     @Override
     public String toString() {
         StringBuilder cameraConfigurationsString = new StringBuilder();
-        cameraConfigurations.forEach((key, value) -> {
-            cameraConfigurationsString.append("\n    ").append(key).append(" -> ").append(value.toString());
-        });
+        cameraConfigurations.forEach(
+                (key, value) -> {
+                    cameraConfigurationsString
+                            .append("\n    ")
+                            .append(key)
+                            .append(" -> ")
+                            .append(value.toString());
+                });
 
         return "PhotonConfiguration [\n  hardwareConfig="
                 + hardwareConfig
