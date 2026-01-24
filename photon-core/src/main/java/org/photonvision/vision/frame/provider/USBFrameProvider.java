@@ -52,7 +52,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     public USBFrameProvider(
             UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
         this.camera = camera;
-        this.cvSink = CameraServer.getVideo(this.camera);
+        this.cvSink = CameraServer.getVideo(this.camera, PixelFormat.kUnknown);
         this.logger =
                 new Logger(
                         USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
@@ -85,19 +85,30 @@ public class USBFrameProvider extends CpuImageProcessor {
 
         if (m_blockForFrames) {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
-            var mat = new CVMat();
+            var jpegMat = new Mat();
             // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called
             // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
             // can.
-            long captureTimeNs = cvSink.grabFrame(mat.getMat(), CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
+            long captureTimeNs = cvSink.grabFrame(jpegMat, CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
+
+            logger.info("Mat type" + jpegMat.type());
+            logger.info("Mat size" + jpegMat.width() + "x" + jpegMat.height());
+            logger.info("Mat channels" + jpegMat.channels());
+
+            var flatMat = jpegMat.reshape(1, 1);
+
+            var bgrMat =
+                    org.opencv.imgcodecs.Imgcodecs.imdecode(
+                            flatMat, org.opencv.imgcodecs.Imgcodecs.IMREAD_COLOR);
 
             if (captureTimeNs == 0) {
                 var error = cvSink.getError();
                 logger.error("Error grabbing image: " + error);
             }
 
-            return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
+            return new CapturedFrame(
+                    new CVMat(bgrMat), settables.getFrameStaticProperties(), captureTimeNs);
         } else {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             // TODO - consider a frame pool
@@ -143,7 +154,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                 } else {
                     jpegMat.release();
                 }
-                
+
                 ret = new CVMat(bgrMat);
             }
 
