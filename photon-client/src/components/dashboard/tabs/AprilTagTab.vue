@@ -92,6 +92,15 @@ const mlDetectionAvailable = computed(() => useSettingsStore().general.supported
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
+    <pv-switch
+      v-model="currentPipelineSettings.atrCornerRefinementEnabled"
+      :switch-cols="interactiveCols"
+      label="ATR Corner Refinement"
+      tooltip="Enables adaptive tag resizing corner refinement for improved accuracy when tags are scaled"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ atrCornerRefinementEnabled: value }, false)
+      "
+    />
 
     <!-- ML-Assisted Detection Section -->
     <v-divider class="mt-3 mb-2" v-if="mlDetectionAvailable" />
