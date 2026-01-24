@@ -187,7 +187,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
                      imagePoints[b].y - imagePoints[t].y},
           units::radian_t{-angles[r]}.convert<units::degrees>().to<float>()};
       std::vector<cv::Point2f> points{};
-      rect.points(points);
+      rect.points(points.data());
 
       // Can't find an easier way to convert from Point2f to Point2d
       imagePoints.clear();
@@ -203,7 +203,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
         OpenCVHelp::GetMinAreaRect(noisyTargetCorners);
     std::vector<cv::Point2f> minAreaRectPts;
     minAreaRectPts.reserve(4);
-    minAreaRect.points(minAreaRectPts);
+    minAreaRect.points(minAreaRectPts.data());
     cv::Point2d centerPt = minAreaRect.center;
     frc::Rotation3d centerRot = prop.GetPixelRot(centerPt);
     double areaPercent = prop.GetContourAreaPercent(noisyTargetCorners);
