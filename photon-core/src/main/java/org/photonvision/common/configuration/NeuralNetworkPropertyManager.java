@@ -20,9 +20,15 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.List;
+
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
@@ -34,14 +40,68 @@ public class NeuralNetworkPropertyManager {
     public record ModelProperties(
             @JsonProperty("modelPath") Path modelPath,
             @JsonProperty("nickname") String nickname,
-            @JsonProperty("labels") LinkedList<String> labels,
+            @JsonProperty("labels") List<String> labels,
             @JsonProperty("resolutionWidth") int resolutionWidth,
             @JsonProperty("resolutionHeight") int resolutionHeight,
             @JsonProperty("family") Family family,
             @JsonProperty("version") Version version) {
         @JsonCreator
         public ModelProperties {
+            System.out.println("Hello");
             // Record constructor is automatically annotated with @JsonCreator
+        }
+
+        ModelProperties (ModelProperties other) {
+            this(
+                    other.modelPath,
+                    other.nickname,
+                    other.labels, // note this does not clone
+                    other.resolutionWidth,
+                    other.resolutionHeight,
+                    other.family,
+                    other.version);
+        }
+
+        // Previously this was single string for the model path. but the first argument is now nickname
+        public ModelProperties(@JsonProperty("nickname") String filename) throws IllegalArgumentException, IOException {
+            this(createFromNickname(filename));
+        }
+
+        private static ModelProperties createFromNickname(String modelFileName) throws IllegalArgumentException, IOException {
+            // Used to point to default models directory
+            var model = ConfigManager.getInstance().getModelsDirectory().toPath().resolve(modelFileName).toFile();
+            // var labelFile = ConfigManager.getInstance().getModelsDirectory().toPath().resolve(nickname + ".rknn"),
+
+            // ============= Migration code from v2025.3.1 ===========
+
+            // Get the model extension and check if it is supported
+            String modelExtension = model.getName().substring(model.getName().lastIndexOf('.'));
+            if (!modelExtension.equals(".rknn")) {
+                throw new IllegalArgumentException("Model " + modelFileName + " is not a supported format");
+            }
+
+            var backend =
+                    Arrays.stream(NeuralNetworkModelManager.Family.values())
+                            .filter(b -> b.extension().equals(modelExtension))
+                            .findFirst();
+
+            if (!backend.isPresent()) {
+                throw new IllegalArgumentException(
+                        "Model " + modelFileName + " cannot find backend");
+            }
+
+            String labelFile = model.getAbsolutePath().replace(backend.get().extension(), "-labels.txt");
+            List<String> labels = Files.readAllLines(Paths.get(labelFile));
+
+            return new ModelProperties(
+                    model.toPath(),       
+                    model.getName(),
+                    labels,
+                    // all files used to be 640x640
+                    640,
+                    640,
+                    Family.RKNN,
+                    Version.YOLOV8);
         }
     }
 

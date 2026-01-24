@@ -132,6 +132,11 @@ public class PhotonConfiguration {
 
     @Override
     public String toString() {
+        StringBuilder cameraConfigurationsString = new StringBuilder();
+        cameraConfigurations.forEach((key, value) -> {
+            cameraConfigurationsString.append("\n    ").append(key).append(" -> ").append(value.toString());
+        });
+
         return "PhotonConfiguration [\n  hardwareConfig="
                 + hardwareConfig
                 + "\n  hardwareSettings="
@@ -142,8 +147,8 @@ public class PhotonConfiguration {
                 + atfl
                 + "\n  neuralNetworkProperties="
                 + neuralNetworkProperties
-                + "\n  cameraConfigurations="
-                + cameraConfigurations
-                + "\n]";
+                + "\n  cameraConfigurations={"
+                + cameraConfigurationsString
+                + "}\n]";
     }
 }

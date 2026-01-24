@@ -18,9 +18,11 @@
 package org.photonvision.common.util.file;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ext.NioPathDeserializer;
@@ -80,6 +82,7 @@ public class JacksonUtils {
         pathModule.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
         return JsonMapper.builder()
+                .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
                 .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
                 .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
