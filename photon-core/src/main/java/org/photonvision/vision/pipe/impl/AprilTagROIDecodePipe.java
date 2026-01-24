@@ -469,12 +469,13 @@ public class AprilTagROIDecodePipe
     /**
      * Computes the homography matrix from 4 corner points.
      *
-     * <p>The AprilTag library defines normalized tag coordinates as:
+     * <p>The AprilTag library uses a Y-down coordinate system for its homography,
+     * matching image coordinates. The normalized tag coordinates are:
      * <ul>
-     *   <li>Corner 0: (-1, -1) - bottom-left</li>
-     *   <li>Corner 1: ( 1, -1) - bottom-right</li>
-     *   <li>Corner 2: ( 1,  1) - top-right</li>
-     *   <li>Corner 3: (-1,  1) - top-left</li>
+     *   <li>Corner 0: (-1,  1) - bottom-left (larger Y in image space)</li>
+     *   <li>Corner 1: ( 1,  1) - bottom-right</li>
+     *   <li>Corner 2: ( 1, -1) - top-right (smaller Y in image space)</li>
+     *   <li>Corner 3: (-1, -1) - top-left</li>
      * </ul>
      *
      * <p>The homography H satisfies: [x_img, y_img, 1]^T ~ H * [X_tag, Y_tag, 1]^T
@@ -483,13 +484,17 @@ public class AprilTagROIDecodePipe
      * @return The homography matrix as a 9-element row-major array
      */
     private double[] computeHomographyFromCorners(Point[] corners) {
-        // Normalized tag corner coordinates (AprilTag convention)
+        // Normalized tag corner coordinates (AprilTag convention with Y-down)
+        // Corner 0: bottom-left (larger Y in image space)
+        // Corner 1: bottom-right
+        // Corner 2: top-right (smaller Y in image space)
+        // Corner 3: top-left
         MatOfPoint2f srcPoints =
                 new MatOfPoint2f(
-                        new Point(-1, -1), // corner 0
-                        new Point(1, -1), // corner 1
-                        new Point(1, 1), // corner 2
-                        new Point(-1, 1) // corner 3
+                        new Point(-1, 1), // corner 0: bottom-left
+                        new Point(1, 1), // corner 1: bottom-right
+                        new Point(1, -1), // corner 2: top-right
+                        new Point(-1, -1) // corner 3: top-left
                         );
 
         MatOfPoint2f dstPoints = new MatOfPoint2f(corners);
