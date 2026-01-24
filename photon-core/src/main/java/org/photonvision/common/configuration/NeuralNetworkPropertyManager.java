@@ -45,24 +45,22 @@ public class NeuralNetworkPropertyManager {
             @JsonProperty("resolutionHeight") int resolutionHeight,
             @JsonProperty("family") Family family,
             @JsonProperty("version") Version version) {
+
         @JsonCreator
-        public ModelProperties {
-            System.out.println("Hello");
-            // Record constructor is automatically annotated with @JsonCreator
-        }
+        public ModelProperties {}
 
         ModelProperties(ModelProperties other) {
             this(
                     other.modelPath,
                     other.nickname,
-                    other.labels, // note this does not clone
+                    other.labels, // note this does not clone the underlying list
                     other.resolutionWidth,
                     other.resolutionHeight,
                     other.family,
                     other.version);
         }
 
-        // Previously this was single string for the model path. but the first argument
+        // In v2025.3.1, this was single string for the model path. but the first argument
         // is now nickname
         public ModelProperties(@JsonProperty("nickname") String filename)
                 throws IllegalArgumentException, IOException {
@@ -73,9 +71,6 @@ public class NeuralNetworkPropertyManager {
 
         private static Pattern modelPattern =
                 Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
-
-        private static Pattern labelsPattern =
-                Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)-labels\\.txt$");
 
         private static ModelProperties createFromNickname(String modelFileName)
                 throws IllegalArgumentException, IOException {

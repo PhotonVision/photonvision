@@ -34,6 +34,7 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
+import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
@@ -120,10 +121,17 @@ public class SQLConfigTest {
 
         ConfigManager.INSTANCE = null;
 
-        // ObjectMapper objectMapper = new ObjectMapper();
-        // String prettyPrinted =
-        //
-        // objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(cfgLoader.getConfig());
-        // System.out.println(prettyPrinted);
+        // Make sure we got 8 cameras
+        assertEquals(8, cfgManager.getConfig().getCameraConfigurations().size());
+
+        // Make sure exactly 2 have object detection pipelines
+        long count =
+                cfgManager.getConfig().getCameraConfigurations().values().stream()
+                        .filter(
+                                c ->
+                                        c.pipelineSettings.stream()
+                                                .anyMatch(s -> s instanceof ObjectDetectionPipelineSettings))
+                        .count();
+        assertEquals(2, count);
     }
 }
