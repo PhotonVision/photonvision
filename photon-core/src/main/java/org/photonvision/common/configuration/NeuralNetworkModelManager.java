@@ -56,7 +56,7 @@ public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
     private static NeuralNetworkModelManager INSTANCE;
 
-    private final List<Family> supportedBackends = new ArrayList<>();
+    final List<Family> supportedBackends = new ArrayList<>();
 
     /**
      * This function stores the properties of the shipped object detection models. It is stored as a
@@ -272,7 +272,7 @@ public class NeuralNetworkModelManager {
      *
      * <p>The first model in the list is the default model.
      */
-    private Map<Family, ArrayList<Model>> models;
+    Map<Family, ArrayList<Model>> models;
 
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported
@@ -324,9 +324,16 @@ public class NeuralNetworkModelManager {
             logger.error(
                     "Model properties are null. This could mean the config for model "
                             + path
-                            + " was unable to be found in the database.");
-            return;
+                            + " was unable to be found in the database. Trying legacy...");
+
+            try {
+                properties = ModelProperties.createFromFilename(path.getFileName().toString());
+            } catch (IllegalArgumentException | IOException e) {
+                logger.error("Failed to translate legacy model filename to properties: " + path, e);
+            }
         }
+
+        logger.debug(properties.toString());
 
         if (!supportedBackends.contains(properties.family())) {
             logger.warn(

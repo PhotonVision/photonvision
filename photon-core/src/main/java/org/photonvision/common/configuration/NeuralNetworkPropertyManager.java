@@ -64,7 +64,7 @@ public class NeuralNetworkPropertyManager {
         // is now nickname
         public ModelProperties(@JsonProperty("nickname") String filename)
                 throws IllegalArgumentException, IOException {
-            this(createFromNickname(filename));
+            this(createFromFilename(filename));
         }
 
         // ============= Migration code from v2025.3.1 ===========
@@ -72,7 +72,7 @@ public class NeuralNetworkPropertyManager {
         private static Pattern modelPattern =
                 Pattern.compile("^([a-zA-Z0-9._]+)-(\\d+)-(\\d+)-(yolov(?:5|8|11)[nsmlx]*)\\.rknn$");
 
-        private static ModelProperties createFromNickname(String modelFileName)
+        static ModelProperties createFromFilename(String modelFileName)
                 throws IllegalArgumentException, IOException {
             // Used to point to default models directory
             var model =

@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.common.LoadJNI;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
@@ -107,6 +108,21 @@ public class SQLConfigTest {
         }
     }
 
+    void common2025p3p1Assertions(PhotonConfiguration config) {
+        // Make sure we got 8 cameras
+        assertEquals(8, config.getCameraConfigurations().size());
+
+        // Make sure exactly 2 have object detection pipelines
+        long count =
+                config.getCameraConfigurations().values().stream()
+                        .filter(
+                                c ->
+                                        c.pipelineSettings.stream()
+                                                .anyMatch(s -> s instanceof ObjectDetectionPipelineSettings))
+                        .count();
+        assertEquals(2, count);
+    }
+
     @Test
     public void testLoadNewNNMM() throws JsonProcessingException {
         var folder = Path.of("/home/matth/photonvision/test-resources/old_configs/2025.3.1-old-nnmm");
@@ -118,20 +134,22 @@ public class SQLConfigTest {
         assertDoesNotThrow(cfgManager::load);
 
         System.out.println(cfgManager.getConfig());
+        common2025p3p1Assertions(cfgManager.getConfig());
+
+        // And we now see two models
+        NeuralNetworkModelManager.getInstance();
+        // force us to allow RKNN
+        NeuralNetworkModelManager.getInstance().supportedBackends.add(Family.RKNN);
+        NeuralNetworkModelManager.getInstance().discoverModels();
+        assertEquals(2, NeuralNetworkModelManager.getInstance().models.get(Family.RKNN).size());
+
+        ConfigManager.getInstance().saveToDisk();
+
+        // Now that we have the config saved, load it again
+        var reloadedProvider = new SqlConfigProvider(folder);
+        reloadedProvider.load();
+        common2025p3p1Assertions(reloadedProvider.getConfig());
 
         ConfigManager.INSTANCE = null;
-
-        // Make sure we got 8 cameras
-        assertEquals(8, cfgManager.getConfig().getCameraConfigurations().size());
-
-        // Make sure exactly 2 have object detection pipelines
-        long count =
-                cfgManager.getConfig().getCameraConfigurations().values().stream()
-                        .filter(
-                                c ->
-                                        c.pipelineSettings.stream()
-                                                .anyMatch(s -> s instanceof ObjectDetectionPipelineSettings))
-                        .count();
-        assertEquals(2, count);
     }
 }
