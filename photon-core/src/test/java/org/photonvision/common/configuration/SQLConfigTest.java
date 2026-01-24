@@ -125,7 +125,7 @@ public class SQLConfigTest {
 
     @Test
     public void testLoadNewNNMM() throws JsonProcessingException {
-        var folder = Path.of("/home/matth/photonvision/test-resources/old_configs/2025.3.1-old-nnmm");
+        var folder = Path.of("photonvision/test-resources/old_configs/2025.3.1-old-nnmm");
         var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
 
         // Replace global configmanager
