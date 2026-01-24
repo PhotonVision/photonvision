@@ -45,7 +45,6 @@ public class NeuralNetworkPropertyManager {
             @JsonProperty("resolutionHeight") int resolutionHeight,
             @JsonProperty("family") Family family,
             @JsonProperty("version") Version version) {
-
         @JsonCreator
         public ModelProperties {}
 
