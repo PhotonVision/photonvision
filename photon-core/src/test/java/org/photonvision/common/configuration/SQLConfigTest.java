@@ -141,7 +141,7 @@ public class SQLConfigTest {
         // force us to allow RKNN
         NeuralNetworkModelManager.getInstance().supportedBackends.add(Family.RKNN);
         NeuralNetworkModelManager.getInstance().discoverModels();
-        assertEquals(2, NeuralNetworkModelManager.getInstance().models.get(Family.RKNN).size());
+        assertEquals(5, NeuralNetworkModelManager.getInstance().models.get(Family.RKNN).size());
 
         ConfigManager.getInstance().saveToDisk();
 
