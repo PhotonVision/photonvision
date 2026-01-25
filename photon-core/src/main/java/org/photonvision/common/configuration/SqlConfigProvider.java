@@ -670,7 +670,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 }
             }
         } catch (SQLException e) {
-            logger.error("Err querrying database to load cameras: ", e);
+            logger.error("Err querying database to load cameras: ", e);
         } finally {
             try {
                 if (query != null) query.close();
