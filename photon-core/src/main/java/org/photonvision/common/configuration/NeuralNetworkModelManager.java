@@ -168,7 +168,7 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RKNN,
                         Version.YOLOV8));
-        
+
         nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.rknn"),
@@ -198,7 +198,7 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RUBIK,
                         Version.YOLOV8));
-        
+
         nnProps.addModelProperties(
                 new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.tflite"),
