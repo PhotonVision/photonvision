@@ -56,6 +56,10 @@ public abstract class VisionSourceSettables {
 
     public abstract void setSaturation(double saturation);
 
+    public abstract double getMinSaturation();
+
+    public abstract double getMaxSaturation();
+
     public abstract void setExposureRaw(double exposureRaw);
 
     public abstract double getMinExposureRaw();
