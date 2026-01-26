@@ -2,7 +2,7 @@
 
 What changed? Why? (the code + comments should speak for itself on the "how")
 
-Include fun testing screenshots or a cool video, to collect test evidence in a place where we can later reference it. Including proof this change was tested makes reviewing easier, helps us make sure we tested all our edge cases, and helps provide context for the future. 
+Include fun testing screenshots or a cool video, to collect test evidence in a place where we can later reference it. Including proof this change was tested makes reviewing easier, helps us make sure we tested all our edge cases, and helps provide context for the future.
 
 Any issues this pull request closes or pull requests this supersedes should be linked with `Closes #issuenumber`.
 
