@@ -328,7 +328,8 @@ public class NeuralNetworkModelManager {
             try {
                 properties = ModelProperties.createFromFilename(path.getFileName().toString());
 
-                // At this point this property is not serialized or known to our configuration. add to NeuralNetworkModelsSettings
+                // At this point this property is not serialized or known to our configuration. add to
+                // NeuralNetworkModelsSettings
                 ConfigManager.getInstance()
                         .getConfig()
                         .neuralNetworkPropertyManager()

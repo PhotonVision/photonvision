@@ -149,8 +149,9 @@ public class SQLConfigTest {
         var reloadedProvider = new SqlConfigProvider(folder);
         reloadedProvider.load();
         common2025p3p1Assertions(reloadedProvider.getConfig());
-        // And make sure NNPM is still good
-        assertEquals(2, reloadedProvider.getConfig().neuralNetworkPropertyManager().getModels().length);
+
+        // And make sure NNPM has all 5 models
+        assertEquals(5, reloadedProvider.getConfig().neuralNetworkPropertyManager().getModels().length);
 
         ConfigManager.INSTANCE = null;
     }
