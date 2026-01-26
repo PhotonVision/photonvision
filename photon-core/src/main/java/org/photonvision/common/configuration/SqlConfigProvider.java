@@ -313,8 +313,8 @@ public class SqlConfigProvider extends ConfigProvider {
                     loadConfigOrDefault(
                             conn,
                             GlobalKeys.NEURAL_NETWORK_PROPERTIES,
-                            NeuralNetworkPropertyManager.class,
-                            NeuralNetworkPropertyManager::new);
+                            NeuralNetworkModelSettings.class,
+                            NeuralNetworkModelSettings::new);
             var atfl =
                     loadConfigOrDefault(
                             conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, this::atflDefault);

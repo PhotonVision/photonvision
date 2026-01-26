@@ -21,7 +21,7 @@ import java.io.File;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelSettings.ModelProperties;
 
 public class RubikModel implements Model {
     public final File modelFile;

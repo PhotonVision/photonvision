@@ -25,13 +25,13 @@ import java.util.LinkedList;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelSettings.ModelProperties;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NeuralNetworkPropertyManagerTest {
     @Test
     void testSerialization() {
-        var nnpm = new NeuralNetworkPropertyManager();
+        var nnpm = new NeuralNetworkModelSettings();
         // Path is always serialized as absolute; for the test to pass, this must also be made absolute
         nnpm.addModelProperties(
                 new ModelProperties(
@@ -45,7 +45,7 @@ public class NeuralNetworkPropertyManagerTest {
         String result = assertDoesNotThrow(() -> JacksonUtils.serializeToString(nnpm));
         var deserializedNnpm =
                 assertDoesNotThrow(
-                        () -> JacksonUtils.deserialize(result, NeuralNetworkPropertyManager.class));
+                        () -> JacksonUtils.deserialize(result, NeuralNetworkModelSettings.class));
         assertEquals(nnpm.getModels()[0], deserializedNnpm.getModels()[0]);
     }
 }
