@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
 
-public class NeuralNetworkModelSettings {
+public class NeuralNetworkModelsSettings {
     /*
      * The properties of the model. This is used to determine which model to load.
      * The only families currently supported are RKNN and Rubik (custom .tflite)
@@ -169,7 +169,7 @@ public class NeuralNetworkModelSettings {
      *
      * <p>This object holds a LinkedList of {@link ModelProperties} objects
      */
-    public NeuralNetworkModelSettings() {}
+    public NeuralNetworkModelsSettings() {}
 
     /**
      * Constructor for the NeuralNetworkProperties class.
@@ -178,7 +178,7 @@ public class NeuralNetworkModelSettings {
      *
      * @param modelPropertiesList When the class is constructed, it will hold the provided list
      */
-    public NeuralNetworkModelSettings(HashMap<Path, ModelProperties> modelPropertiesList) {}
+    public NeuralNetworkModelsSettings(HashMap<Path, ModelProperties> modelPropertiesList) {}
 
     @Override
     public String toString() {
@@ -208,7 +208,7 @@ public class NeuralNetworkModelSettings {
      * @param nnProps
      * @return itself, so it can be chained and used fluently
      */
-    public NeuralNetworkModelSettings sum(NeuralNetworkModelSettings nnProps) {
+    public NeuralNetworkModelsSettings sum(NeuralNetworkModelsSettings nnProps) {
         modelPathToProperties.putAll(nnProps.modelPathToProperties);
 
         return this;

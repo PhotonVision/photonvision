@@ -18,14 +18,14 @@
 package org.photonvision.common.dataflow.websocket;
 
 import java.util.List;
-import org.photonvision.common.configuration.NeuralNetworkModelSettings;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 
 public class UIGeneralSettings {
     public UIGeneralSettings(
             String version,
             String gpuAcceleration,
             boolean mrCalWorking,
-            NeuralNetworkModelSettings.ModelProperties[] availableModels,
+            NeuralNetworkModelsSettings.ModelProperties[] availableModels,
             List<String> supportedBackends,
             String hardwareModel,
             String hardwarePlatform,
@@ -45,7 +45,7 @@ public class UIGeneralSettings {
     public String version;
     public String gpuAcceleration;
     public boolean mrCalWorking;
-    public NeuralNetworkModelSettings.ModelProperties[] availableModels;
+    public NeuralNetworkModelsSettings.ModelProperties[] availableModels;
     public List<String> supportedBackends;
     public String hardwareModel;
     public String hardwarePlatform;

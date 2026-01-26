@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
-import org.photonvision.common.configuration.NeuralNetworkModelSettings.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -50,7 +50,7 @@ import org.photonvision.vision.objects.RubikModel;
  * extracted to the filesystem, it will not be extracted again.
  *
  * <p>Each model must have a corresponding {@link ModelProperties} entry in {@link
- * NeuralNetworkModelSettings}.
+ * NeuralNetworkModelsSettings}.
  */
 public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
@@ -62,8 +62,8 @@ public class NeuralNetworkModelManager {
      * This function stores the properties of the shipped object detection models. It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
      */
-    private NeuralNetworkModelSettings getShippedProperties(File modelsDirectory) {
-        NeuralNetworkModelSettings nnProps = new NeuralNetworkModelSettings();
+    private NeuralNetworkModelsSettings getShippedProperties(File modelsDirectory) {
+        NeuralNetworkModelsSettings nnProps = new NeuralNetworkModelsSettings();
 
         LinkedList<String> cocoLabels =
                 new LinkedList<String>(
@@ -325,9 +325,10 @@ public class NeuralNetworkModelManager {
                     "Model properties are null. This could mean the config for model "
                             + path
                             + " was unable to be found in the database. Trying legacy...");
-
             try {
                 properties = ModelProperties.createFromFilename(path.getFileName().toString());
+
+                // At this point this property is not managed by 
             } catch (IllegalArgumentException | IOException e) {
                 logger.error("Failed to translate legacy model filename to properties: " + path, e);
             }
@@ -419,7 +420,7 @@ public class NeuralNetworkModelManager {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         // Filter shippedProprties by supportedBackends
-        NeuralNetworkModelSettings supportedProperties = new NeuralNetworkModelSettings();
+        NeuralNetworkModelsSettings supportedProperties = new NeuralNetworkModelsSettings();
         for (ModelProperties model : getShippedProperties(modelsDirectory).getModels()) {
             if (supportedBackends.contains(model.family())) {
                 supportedProperties.addModelProperties(model);

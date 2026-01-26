@@ -18,7 +18,7 @@
 package org.photonvision.vision.objects;
 
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.common.configuration.NeuralNetworkModelSettings.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 
 public interface Model {
     public ObjectDetector load();
