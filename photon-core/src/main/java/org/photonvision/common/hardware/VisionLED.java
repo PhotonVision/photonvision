@@ -121,7 +121,11 @@ public class VisionLED implements AutoCloseable {
             led.setOn(state);
         }
         for (PwmLed led : dimmableVisionLEDs) {
-            led.setValue(mappedBrightness);
+            if (state) {
+                led.setValue(mappedBrightness);
+            } else {
+                led.off();
+            }
         }
     }
 
