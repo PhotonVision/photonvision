@@ -26,7 +26,7 @@ const importWidth = ref<number | null>(null);
 const importVersion = ref<string | null>(null);
 
 // TODO gray out the button when model is uploading
-const handleImport = () => {
+const handleImport = async () => {
   if (importModelFile.value === null) return;
 
   const formData = new FormData();
@@ -43,25 +43,27 @@ const handleImport = () => {
     timeout: -1
   });
 
-  axiosPost("/objectdetection/import", "import an object detection model", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: ({ progress }) => {
-      const uploadPercentage = (progress || 0) * 100.0;
-      if (uploadPercentage < 99.5) {
-        useStateStore().showSnackbarMessage({
-          message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
-          color: "secondary",
-          timeout: -1
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "Processing uploaded Object Detection Model...",
-          color: "secondary",
-          timeout: -1
-        });
+  if (
+    await axiosPost("/objectdetection/import", "import an object detection model", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+            color: "secondary",
+            timeout: -1
+          });
+        }
       }
-    }
-  });
+    })
+  ) {
+    useStateStore().showSnackbarMessage({
+      message: "Processing uploaded Object Detection Model...",
+      color: "secondary",
+      timeout: -1
+    });
+  }
 
   showImportDialog.value = false;
 
@@ -121,33 +123,35 @@ const nukeModels = () => {
 
 const showBulkImportDialog = ref(false);
 const importFile = ref<File | null>(null);
-const handleBulkImport = () => {
+const handleBulkImport = async () => {
   if (importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: ({ progress }) => {
-      const uploadPercentage = (progress || 0) * 100.0;
-      if (uploadPercentage < 99.5) {
-        useStateStore().showSnackbarMessage({
-          message: "Object Detection Models Upload in Progress",
-          color: "secondary",
-          timeout: -1,
-          progressBar: uploadPercentage,
-          progressBarColor: "primary"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "Importing New Object Detection Models...",
-          color: "secondary",
-          timeout: -1
-        });
+  if (
+    await axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "Object Detection Models Upload in Progress",
+            color: "secondary",
+            timeout: -1,
+            progressBar: uploadPercentage,
+            progressBarColor: "primary"
+          });
+        }
       }
-    }
-  });
+    })
+  ) {
+    useStateStore().showSnackbarMessage({
+      message: "Importing New Object Detection Models...",
+      color: "secondary",
+      timeout: -1
+    });
+  }
   showImportDialog.value = false;
   importFile.value = null;
 };
