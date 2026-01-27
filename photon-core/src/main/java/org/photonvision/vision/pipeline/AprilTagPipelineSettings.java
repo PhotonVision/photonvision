@@ -35,6 +35,14 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
 
+    // ML-assisted detection settings
+    public boolean useMLDetection = false;
+    public double mlConfidenceThreshold = 0.5;
+    public double mlNmsThreshold = 0.45;
+    public double mlRoiExpansionFactor = 1.2;
+    public boolean mlFallbackToTraditional = true;
+    public String mlModelName = null;
+
     // 3d settings
 
     public AprilTagPipelineSettings() {
@@ -64,6 +72,16 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
+        // ML-assisted detection fields
+        result = prime * result + (useMLDetection ? 1231 : 1237);
+        temp = Double.doubleToLongBits(mlConfidenceThreshold);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(mlNmsThreshold);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(mlRoiExpansionFactor);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + (mlFallbackToTraditional ? 1231 : 1237);
+        result = prime * result + ((mlModelName == null) ? 0 : mlModelName.hashCode());
         return result;
     }
 
@@ -84,6 +102,18 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
+        // ML-assisted detection fields
+        if (useMLDetection != other.useMLDetection) return false;
+        if (Double.doubleToLongBits(mlConfidenceThreshold)
+                != Double.doubleToLongBits(other.mlConfidenceThreshold)) return false;
+        if (Double.doubleToLongBits(mlNmsThreshold) != Double.doubleToLongBits(other.mlNmsThreshold))
+            return false;
+        if (Double.doubleToLongBits(mlRoiExpansionFactor)
+                != Double.doubleToLongBits(other.mlRoiExpansionFactor)) return false;
+        if (mlFallbackToTraditional != other.mlFallbackToTraditional) return false;
+        if (mlModelName == null) {
+            if (other.mlModelName != null) return false;
+        } else if (!mlModelName.equals(other.mlModelName)) return false;
         return true;
     }
 }
