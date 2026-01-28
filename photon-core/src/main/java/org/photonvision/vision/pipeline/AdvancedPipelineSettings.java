@@ -42,6 +42,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
 
     public boolean outputShouldDraw = true;
     public boolean outputShowMultipleTargets = false;
+    public int outputMaximumTargets = 10;
 
     public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
     public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
@@ -98,6 +99,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
                 && outputShowMultipleTargets == that.outputShowMultipleTargets
+                && outputMaximumTargets == that.outputMaximumTargets
                 && contourSpecklePercentage == that.contourSpecklePercentage
                 && Double.compare(that.offsetDualPointAArea, offsetDualPointAArea) == 0
                 && Double.compare(that.offsetDualPointBArea, offsetDualPointBArea) == 0
@@ -137,6 +139,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 hueInverted,
                 outputShouldDraw,
                 outputShowMultipleTargets,
+                outputMaximumTargets,
                 contourArea,
                 contourRatio,
                 contourFullness,
