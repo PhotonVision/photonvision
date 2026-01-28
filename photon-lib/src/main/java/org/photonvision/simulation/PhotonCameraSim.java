@@ -442,6 +442,10 @@ public class PhotonCameraSim implements AutoCloseable {
         Mat.zeros(videoFrameSize, CvType.CV_8UC1).assignTo(videoSimFrameRaw);
 
         for (var tgt : targets) {
+            if (detectableTgts.size() >= 50) {
+                break;
+            }
+
             // pose isn't visible, skip to next
             if (!canSeeTargetPose(cameraPose, tgt)) continue;
 

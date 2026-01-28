@@ -108,7 +108,7 @@ When taking in a result from a `PhotonCamera`, PhotonPoseEstimator offers nine p
     flat on the floor. This computation takes place on the RoboRIO, and should not take more than 2ms.
     This also requires addHeadingData to be called every frame so heading data is up to date.
 
-Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to
+Calling one of the `estimate<strategy>Pose()` methods on your `PhotonPoseEstimator` will return an `Optional<EstimatedRobotPose>`, which will be empty if there are no detected tags, not enough detected tags (for multi-tag strategies), missing data (typically heading data), or if the internal solvers failed (this is a rare scenario). `EstimatedRobotPose` includes a `Pose3d` of the latest estimated pose (using the selected strategy) along with a `double` of the timestamp when the robot pose was estimated. The recommended way to use the estimatePose methods is to
 1. do estimation with one of MultiTag methods, check if the result is empty, then
 2. fallback to single tag estimation using a method like `estimateLowestAmbiguityPose`.
 

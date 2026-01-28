@@ -117,6 +117,29 @@ TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
 }
 
+TEST_F(VisionSystemSimTest, TestBunchaTargets) {
+  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::PhotonCamera camera{"camera"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
+
+  std::vector<photon::VisionTargetSim> targets;
+  for (int i = 0; i < 100; i++) {
+    targets.emplace_back(
+        frc::Pose3d{
+            frc::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
+            frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}},
+        photon::TargetModel{0.5_m, 0.5_m}, i);
+  }
+  visionSysSim.AddVisionTargets(targets);
+
+  frc::Pose2d robotPose{frc::Translation2d{5_m, 0_m}, frc::Rotation2d{5_deg}};
+  visionSysSim.Update(robotPose);
+
+  ASSERT_EQ(camera.GetLatestResult().targets.size(), 50u);
+}
+
 TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
   frc::Pose3d targetPose{
       frc::Translation3d{15.98_m, 0_m, 1_m},

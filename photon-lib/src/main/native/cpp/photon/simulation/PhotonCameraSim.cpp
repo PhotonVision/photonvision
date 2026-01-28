@@ -131,6 +131,10 @@ PhotonPipelineResult PhotonCameraSim::Process(
   blankFrame.assignTo(videoSimFrameRaw);
 
   for (const auto& tgt : targets) {
+    if (detectableTgts.size() >= 50) {
+      break;
+    }
+
     if (!CanSeeTargetPose(cameraPose, tgt)) {
       continue;
     }

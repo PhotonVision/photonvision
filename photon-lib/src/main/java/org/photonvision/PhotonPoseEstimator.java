@@ -686,7 +686,7 @@ public class PhotonPoseEstimator {
      *
      * @param cameraResult A pipeline result from the camera.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets or heading data.
      */
     public Optional<EstimatedRobotPose> estimatePnpDistanceTrigSolvePose(
             PhotonPipelineResult cameraResult) {
@@ -758,7 +758,8 @@ public class PhotonPoseEstimator {
      * @param headingScaleFactor If headingFree is false, this weights the cost of changing our robot
      *     heading estimate against the tag corner reprojection error cont.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets or heading data, or if the
+     *     solver fails to solve the problem.
      */
     public Optional<EstimatedRobotPose> estimateConstrainedSolvepnpPose(
             PhotonPipelineResult cameraResult,
@@ -769,6 +770,18 @@ public class PhotonPoseEstimator {
             double headingScaleFactor) {
         if (!shouldEstimate(cameraResult)) {
             return Optional.empty();
+        }
+        // Need heading if heading fixed
+        if (!headingFree) {
+            if (headingBuffer.getSample(cameraResult.getTimestampSeconds()).isEmpty()) {
+                return Optional.empty();
+            } else {
+                // If heading fixed, force rotation component
+                seedPose =
+                        new Pose3d(
+                                seedPose.getTranslation(),
+                                new Rotation3d(headingBuffer.getSample(cameraResult.getTimestampSeconds()).get()));
+            }
         }
         var pnpResult =
                 VisionEstimation.estimateRobotPoseConstrainedSolvepnp(
@@ -799,7 +812,8 @@ public class PhotonPoseEstimator {
      *
      * @param cameraResult A pipeline result from the camera.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets, no multi-tag results, or
+     *     multi-tag is disabled in the web UI.
      */
     public Optional<EstimatedRobotPose> estimateCoprocMultiTagPose(
             PhotonPipelineResult cameraResult) {
@@ -829,7 +843,8 @@ public class PhotonPoseEstimator {
      * @param cameraMatrix Camera intrinsics from camera calibration data
      * @param distCoeffs Distortion coefficients from camera calibration data.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's less than 2 targets visible or
+     *     SolvePnP fails.
      */
     public Optional<EstimatedRobotPose> estimateRioMultiTagPose(
             PhotonPipelineResult cameraResult, Matrix<N3, N3> cameraMatrix, Matrix<N8, N1> distCoeffs) {
@@ -861,7 +876,7 @@ public class PhotonPoseEstimator {
      *
      * @param cameraResult A pipeline result from the camera.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets.
      */
     public Optional<EstimatedRobotPose> estimateLowestAmbiguityPose(
             PhotonPipelineResult cameraResult) {
@@ -911,7 +926,7 @@ public class PhotonPoseEstimator {
      *
      * @param cameraResult A pipeline result from the camera.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets.
      */
     public Optional<EstimatedRobotPose> estimateClosestToCameraHeightPose(
             PhotonPipelineResult cameraResult) {
@@ -989,7 +1004,7 @@ public class PhotonPoseEstimator {
      * @param cameraResult A pipeline result from the camera.
      * @param referencePose reference pose to check vector magnitude difference against.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets.
      */
     public Optional<EstimatedRobotPose> estimateClosestToReferencePose(
             PhotonPipelineResult cameraResult, Pose3d referencePose) {
@@ -1062,7 +1077,7 @@ public class PhotonPoseEstimator {
      *
      * @param cameraResult A pipeline result from the camera.
      * @return An {@link EstimatedRobotPose} with an estimated pose, timestamp, and targets used to
-     *     create the estimate.
+     *     create the estimate, or an empty optional if there's no targets.
      */
     public Optional<EstimatedRobotPose> estimateAverageBestTargetsPose(
             PhotonPipelineResult cameraResult) {

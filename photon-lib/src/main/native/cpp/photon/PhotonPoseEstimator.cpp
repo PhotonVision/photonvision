@@ -634,13 +634,18 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
   if (!ShouldEstimate(cameraResult)) {
     return std::nullopt;
   }
+  // Need heading if heading fixed
   if (!headingFree) {
-    seedPose = frc::Pose3d{
-        seedPose.Translation(),
-        frc::Rotation3d{
-            headingBuffer.Sample(cameraResult.GetTimestamp()).value()}};
+    if (!headingBuffer.Sample(cameraResult.GetTimestamp())) {
+      return std::nullopt;
+    } else {
+      // If heading fixed, force rotation component
+      seedPose = frc::Pose3d{
+          seedPose.Translation(),
+          frc::Rotation3d{
+              headingBuffer.Sample(cameraResult.GetTimestamp()).value()}};
+    }
   }
-
   std::vector<photon::PhotonTrackedTarget> targets{
       cameraResult.GetTargets().begin(), cameraResult.GetTargets().end()};
 
