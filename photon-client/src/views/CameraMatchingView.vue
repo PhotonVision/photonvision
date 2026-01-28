@@ -24,32 +24,18 @@ const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
-
   axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
     cameraUniqueName: moduleUniqueName
-  })
-    .then(() => {
-      // Reload page to ensure UI shows correct camera controls
-      window.location.reload();
-    })
-    .finally(() => (activatingModule.value = false));
+  }).finally(() => (activatingModule.value = false));
 };
 
 const assigningCamera = ref(false);
 const assignCamera = (cameraInfo: PVCameraInfo) => {
   if (assigningCamera.value) return;
   assigningCamera.value = true;
-
-  const payload = {
+  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", {
     cameraInfo: cameraInfo
-  };
-
-  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload)
-    .then(() => {
-      // Reload page to ensure UI shows correct camera controls
-      window.location.reload();
-    })
-    .finally(() => (assigningCamera.value = false));
+  }).finally(() => (assigningCamera.value = false));
 };
 
 const deactivatingModule = ref(false);
