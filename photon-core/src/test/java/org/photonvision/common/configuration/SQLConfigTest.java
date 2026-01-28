@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -34,6 +35,8 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.ArucoPipelineSettings;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -152,6 +155,50 @@ public class SQLConfigTest {
 
         // And make sure NNPM has all 5 models
         assertEquals(5, reloadedProvider.getConfig().neuralNetworkPropertyManager().getModels().length);
+
+        ConfigManager.INSTANCE = null;
+    }
+
+    @Test
+    public void testMaxDetectionsMigration() {
+        var folder = TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm");
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        // Replace global configmanager
+        ConfigManager.INSTANCE = cfgManager;
+
+        assertDoesNotThrow(cfgManager::load);
+
+        Collection<CameraConfiguration> cameraConfigs =
+                cfgManager.getConfig().getCameraConfigurations().values();
+
+        for (CameraConfiguration cc : cameraConfigs) {
+            for (CVPipelineSettings ps : cc.pipelineSettings) {
+                if (ps instanceof ObjectDetectionPipelineSettings odps) {
+                    // Should be set to 20 from migration
+                    ObjectDetectionPipelineSettings finalPs = odps;
+                    assertEquals(20, finalPs.outputMaximumTargets);
+                } else if (ps instanceof ColoredShapePipelineSettings csps) {
+                    // Should be set to 20 from migration
+                    ColoredShapePipelineSettings finalPs = csps;
+                    assertEquals(20, finalPs.outputMaximumTargets);
+                } else if (ps instanceof ReflectivePipelineSettings rps) {
+                    // Should be set to 20 from migration
+                    ReflectivePipelineSettings finalPs = rps;
+                    assertEquals(20, finalPs.outputMaximumTargets);
+                } else if (ps instanceof AprilTagPipelineSettings atps) {
+                    // Should be set to 128 from migration
+                    AprilTagPipelineSettings finalPs = atps;
+                    assertEquals(128, finalPs.outputMaximumTargets);
+                } else if (ps instanceof ArucoPipelineSettings aps) {
+                    // Should be set to 128 from migration
+                    ArucoPipelineSettings finalPs = aps;
+                    assertEquals(128, finalPs.outputMaximumTargets);
+                } else {
+                    System.out.println("Skipping pipeline settings type: " + ps.getClass().getSimpleName());
+                }
+            }
+        }
 
         ConfigManager.INSTANCE = null;
     }
