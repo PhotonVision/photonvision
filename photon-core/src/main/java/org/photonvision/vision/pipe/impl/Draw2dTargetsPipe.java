@@ -242,8 +242,7 @@ public class Draw2dTargetsPipe
             return shape != null && shape.shape.equals(ContourShape.Circle);
         }
 
-        public Draw2dTargetsParams(
-                boolean shouldDraw, int outputMaximumTargets, FrameDivisor divisor) {
+        public Draw2dTargetsParams(boolean shouldDraw, int outputMaximumTargets, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.outputMaximumTargets = outputMaximumTargets;
             this.divisor = divisor;
