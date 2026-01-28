@@ -29,6 +29,10 @@ Unless otherwise noted in release notes or if updating from the prior years vers
 Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash the image onto the coprocessors microSD card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
 
 :::{warning}
+Avoid using Raspberry Pi Imager version 2.0.2 or later. Those versions fail to write the image to an SD card. Versions 2.0.0 and earlier write images successfully. [GitHub issue 1489](https://github.com/raspberrypi/rpi-imager/issues/1489) was created for this problem.
+:::
+
+:::{warning}
 Balena Etcher has been recommended in the past, but should no longer be used due to instability and lack of ongoing support from developers.
 :::
 
