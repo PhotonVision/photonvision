@@ -59,21 +59,11 @@ const interactiveCols = computed(() =>
 
 <template>
   <div>
-    <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
-      label="Show Multiple Targets"
-      tooltip="If enabled, a configurable number of targets will be displayed and sent via PhotonLib, instead of just one"
-      :disabled="isTagPipeline"
-      :switch-cols="interactiveCols"
-      @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
-      "
-    />
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
       label="Maximum Targets"
       tooltip="The maximum number of targets to display and send. Set to 0 for no limit."
-      :disabled="isTagPipeline || !currentPipelineSettings.outputShowMultipleTargets"
+      :disabled="isTagPipeline"
       :min="0"
       :max="200"
       :step="1"

@@ -41,7 +41,7 @@ public class ReflectivePipelineTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().outputMaximumTargets = 20;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
 
@@ -120,7 +120,7 @@ public class ReflectivePipelineTest {
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(190, 255);
         settings.outputShouldDraw = true;
-        settings.outputShowMultipleTargets = true;
+        settings.outputMaximumTargets = 20;
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 

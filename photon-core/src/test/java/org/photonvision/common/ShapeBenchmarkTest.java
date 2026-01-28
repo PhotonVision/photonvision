@@ -66,7 +66,7 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().outputMaximumTargets = 20;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().contourShape = ContourShape.Custom;
@@ -87,7 +87,7 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().outputMaximumTargets = 20;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().contourShape = ContourShape.Custom;
@@ -109,7 +109,7 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().outputMaximumTargets = 20;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().contourShape = ContourShape.Custom;
@@ -131,7 +131,7 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().outputMaximumTargets = 20;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().contourShape = ContourShape.Custom;
