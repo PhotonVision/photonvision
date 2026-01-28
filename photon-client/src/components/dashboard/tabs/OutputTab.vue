@@ -62,10 +62,10 @@ const interactiveCols = computed(() =>
     <pv-slider
       v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
       label="Maximum Targets"
-      tooltip="The maximum number of targets to display and send. Set to 0 for no limit."
+      tooltip="The maximum number of targets to display and send."
       :disabled="isTagPipeline"
-      :min="0"
-      :max="200"
+      :min="1"
+      :max="128"
       :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
