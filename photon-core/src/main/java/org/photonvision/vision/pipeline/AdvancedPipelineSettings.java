@@ -41,7 +41,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean hueInverted = false;
 
     public boolean outputShouldDraw = true;
-    public int outputMaximumTargets = 10;
+    public int outputMaximumTargets = 20;
 
     public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
     public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);

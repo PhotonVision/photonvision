@@ -238,7 +238,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   cameraGain: 75,
   targetModel: TargetModel.AprilTag6p5in_36h11,
   ledMode: false,
-  outputMaximumTargets: 20,
+  outputMaximumTargets: 128,
   cameraExposureRaw: 20,
   pipelineType: PipelineType.AprilTag,
   hammingDist: 0,
@@ -278,7 +278,7 @@ export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettin
 export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   ...DefaultPipelineSettings,
   cameraGain: 75,
-  outputMaximumTargets: 20,
+  outputMaximumTargets: 128,
   targetModel: TargetModel.AprilTag6p5in_36h11,
   cameraExposureRaw: -1,
   cameraAutoExposure: true,
