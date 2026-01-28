@@ -102,9 +102,7 @@ public class ColoredShapePipeline
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets
-                                ? settings.outputMaximumTargets
-                                : 1,
+                        settings.outputMaximumTargets,
                         frameStaticProperties));
 
         collect2dTargetsPipe.setParams(
@@ -131,7 +129,7 @@ public class ColoredShapePipeline
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor);
         draw2DTargetsParams.showShape = true;
         draw2DTargetsParams.showMaximumBox = false;
