@@ -151,16 +151,6 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
-                        Path.of(modelsDirectory.getAbsolutePath(), "algaeV1-640-640-yolov8n.rknn"),
-                        "Algae v8n",
-                        new LinkedList<String>(List.of("Algae")),
-                        640,
-                        480,
-                        Family.RKNN,
-                        Version.YOLOV8));
-
-        nnProps.addModelProperties(
-                new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.rknn"),
                         "COCO",
                         cocoLabels,
@@ -171,13 +161,13 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
-                        Path.of(modelsDirectory.getAbsolutePath(), "algae-coral-yolov8s.tflite"),
-                        "Algae Coral v8s",
-                        new LinkedList<String>(List.of("Algae", "Coral")),
+                        Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.rknn"),
+                        "Fuel v11n",
+                        new LinkedList<String>(List.of("Fuel")),
                         640,
                         640,
-                        Family.RUBIK,
-                        Version.YOLOV8));
+                        Family.RKNN,
+                        Version.YOLOV11));
 
         nnProps.addModelProperties(
                 new ModelProperties(
@@ -188,6 +178,16 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RUBIK,
                         Version.YOLOV8));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.tflite"),
+                        "Fuel v11n",
+                        new LinkedList<String>(List.of("Fuel")),
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV11));
 
         return nnProps;
     }
