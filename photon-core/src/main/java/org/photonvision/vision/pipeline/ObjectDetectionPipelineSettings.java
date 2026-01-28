@@ -18,13 +18,13 @@
 package org.photonvision.vision.pipeline;
 
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 import org.photonvision.vision.objects.Model;
 
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
-    public NeuralNetworkPropertyManager.ModelProperties model;
+    public NeuralNetworkModelsSettings.ModelProperties model;
 
     public ObjectDetectionPipelineSettings() {
         super();

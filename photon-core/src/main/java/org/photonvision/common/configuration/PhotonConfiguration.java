@@ -28,7 +28,7 @@ public class PhotonConfiguration {
     private final HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
     private AprilTagFieldLayout atfl;
-    private NeuralNetworkPropertyManager neuralNetworkProperties;
+    private NeuralNetworkModelsSettings neuralNetworkProperties;
     private HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
@@ -36,7 +36,7 @@ public class PhotonConfiguration {
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
-            NeuralNetworkPropertyManager neuralNetworkProperties) {
+            NeuralNetworkModelsSettings neuralNetworkProperties) {
         this(
                 hardwareConfig,
                 hardwareSettings,
@@ -51,7 +51,7 @@ public class PhotonConfiguration {
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
             AprilTagFieldLayout atfl,
-            NeuralNetworkPropertyManager neuralNetworkProperties,
+            NeuralNetworkModelsSettings neuralNetworkProperties,
             HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
@@ -67,7 +67,7 @@ public class PhotonConfiguration {
                 new HardwareSettings(),
                 new NetworkConfig(),
                 new AprilTagFieldLayout(List.of(), 0, 0),
-                new NeuralNetworkPropertyManager());
+                new NeuralNetworkModelsSettings());
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -86,7 +86,7 @@ public class PhotonConfiguration {
         return atfl;
     }
 
-    public NeuralNetworkPropertyManager neuralNetworkPropertyManager() {
+    public NeuralNetworkModelsSettings neuralNetworkPropertyManager() {
         return neuralNetworkProperties;
     }
 
@@ -98,7 +98,7 @@ public class PhotonConfiguration {
         this.networkConfig = networkConfig;
     }
 
-    public void setNeuralNetworkProperties(NeuralNetworkPropertyManager neuralNetworkProperties) {
+    public void setNeuralNetworkProperties(NeuralNetworkModelsSettings neuralNetworkProperties) {
         this.neuralNetworkProperties = neuralNetworkProperties;
     }
 
@@ -132,6 +132,16 @@ public class PhotonConfiguration {
 
     @Override
     public String toString() {
+        StringBuilder cameraConfigurationsString = new StringBuilder();
+        cameraConfigurations.forEach(
+                (key, value) -> {
+                    cameraConfigurationsString
+                            .append("\n    ")
+                            .append(key)
+                            .append(" -> ")
+                            .append(value.toString());
+                });
+
         return "PhotonConfiguration [\n  hardwareConfig="
                 + hardwareConfig
                 + "\n  hardwareSettings="
@@ -142,8 +152,8 @@ public class PhotonConfiguration {
                 + atfl
                 + "\n  neuralNetworkProperties="
                 + neuralNetworkProperties
-                + "\n  cameraConfigurations="
-                + cameraConfigurations
-                + "\n]";
+                + "\n  cameraConfigurations={"
+                + cameraConfigurationsString
+                + "}\n]";
     }
 }

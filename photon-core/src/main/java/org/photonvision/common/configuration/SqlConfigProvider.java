@@ -313,8 +313,8 @@ public class SqlConfigProvider extends ConfigProvider {
                     loadConfigOrDefault(
                             conn,
                             GlobalKeys.NEURAL_NETWORK_PROPERTIES,
-                            NeuralNetworkPropertyManager.class,
-                            NeuralNetworkPropertyManager::new);
+                            NeuralNetworkModelsSettings.class,
+                            NeuralNetworkModelsSettings::new);
             var atfl =
                     loadConfigOrDefault(
                             conn, GlobalKeys.ATFL_CONFIG_FILE, AprilTagFieldLayout.class, this::atflDefault);
@@ -612,52 +612,65 @@ public class SqlConfigProvider extends ConfigProvider {
 
             // Iterate over every row/"camera" in the table
             while (result.next()) {
-                List<String> dummyList = new ArrayList<>();
+                String uniqueName = "";
+                try {
+                    List<String> dummyList = new ArrayList<>();
 
-                var uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
+                    uniqueName = result.getString(Columns.CAM_UNIQUE_NAME);
 
-                // A horrifying hack to keep backward compat with otherpaths
-                // We -really- need to delete this -stupid- otherpaths column. I hate it.
-                var configStr = result.getString(Columns.CAM_CONFIG_JSON);
-                CameraConfiguration config = JacksonUtils.deserialize(configStr, CameraConfiguration.class);
+                    // A horrifying hack to keep backward compat with otherpaths
+                    // We -really- need to delete this -stupid- otherpaths column. I hate it.
+                    var configStr = result.getString(Columns.CAM_CONFIG_JSON);
+                    CameraConfiguration config =
+                            JacksonUtils.deserialize(configStr, CameraConfiguration.class);
 
-                if (config.matchedCameraInfo == null) {
-                    logger.info("Legacy CameraConfiguration detected - upgrading");
+                    if (config.matchedCameraInfo == null) {
+                        logger.info("Legacy CameraConfiguration detected - upgrading");
 
-                    // manually create the matchedCameraInfo ourselves. Need to upgrade:
-                    // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
-                    config.matchedCameraInfo =
-                            JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class).matchedCameraInfo;
+                        // manually create the matchedCameraInfo ourselves. Need to upgrade:
+                        // baseName, path, otherPaths, cameraType, usbvid/pid -> matchedCameraInfo
+                        config.matchedCameraInfo =
+                                JacksonUtils.deserialize(configStr, LegacyCameraConfigStruct.class)
+                                        .matchedCameraInfo;
 
-                    // Except that otherPaths used to be its own column. so hack that in here as well
-                    var otherPaths =
+                        // Except that otherPaths used to be its own column. so hack that in here as well
+                        var otherPaths =
+                                JacksonUtils.deserialize(
+                                        result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
+                        if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
+                            usbInfo.otherPaths = otherPaths;
+                        }
+                    }
+
+                    var driverMode =
                             JacksonUtils.deserialize(
-                                    result.getString(Columns.CAM_OTHERPATHS_JSON), String[].class);
-                    if (config.matchedCameraInfo instanceof UsbCameraInfo usbInfo) {
-                        usbInfo.otherPaths = otherPaths;
+                                    result.getString(Columns.CAM_DRIVERMODE_JSON), DriverModePipelineSettings.class);
+                    List<?> pipelineSettings =
+                            JacksonUtils.deserialize(
+                                    result.getString(Columns.CAM_PIPELINE_JSONS), dummyList.getClass());
+
+                    List<CVPipelineSettings> loadedSettings = new ArrayList<>();
+                    for (var setting : pipelineSettings) {
+                        if (setting instanceof String str) {
+                            try {
+                                loadedSettings.add(JacksonUtils.deserialize(str, CVPipelineSettings.class));
+                            } catch (IOException e) {
+                                logger.error(
+                                        "Could not deserialize pipeline setting for camera " + config.nickname, e);
+                            }
+                        }
                     }
+
+                    config.pipelineSettings = loadedSettings;
+                    config.driveModeSettings = driverMode;
+                    loadedConfigurations.put(uniqueName, config);
+                } catch (IOException e) {
+                    logger.error(
+                            "Could not deserialize camera configuration " + uniqueName + " from database!", e);
                 }
-
-                var driverMode =
-                        JacksonUtils.deserialize(
-                                result.getString(Columns.CAM_DRIVERMODE_JSON), DriverModePipelineSettings.class);
-                List<?> pipelineSettings =
-                        JacksonUtils.deserialize(
-                                result.getString(Columns.CAM_PIPELINE_JSONS), dummyList.getClass());
-
-                List<CVPipelineSettings> loadedSettings = new ArrayList<>();
-                for (var setting : pipelineSettings) {
-                    if (setting instanceof String str) {
-                        loadedSettings.add(JacksonUtils.deserialize(str, CVPipelineSettings.class));
-                    }
-                }
-
-                config.pipelineSettings = loadedSettings;
-                config.driveModeSettings = driverMode;
-                loadedConfigurations.put(uniqueName, config);
             }
-        } catch (SQLException | IOException e) {
-            logger.error("Err loading cameras: ", e);
+        } catch (SQLException e) {
+            logger.error("Err querying database to load cameras: ", e);
         } finally {
             try {
                 if (query != null) query.close();
