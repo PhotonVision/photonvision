@@ -142,8 +142,8 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetIntegerTopic("pipelineIndexRequest").Publish()),
       pipelineIndexSub(
           rootTable->GetIntegerTopic("pipelineIndexState").Subscribe(0)),
-      ledModePub(mainTable->GetIntegerTopic("ledMode").Publish()),
-      ledModeSub(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
+      ledModePub(mainTable->GetIntegerTopic("ledModeRequest").Publish()),
+      ledModeSub(mainTable->GetIntegerTopic("ledModeState").Subscribe(0)),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
       cameraIntrinsicsSubscriber(
           rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
