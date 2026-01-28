@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.util.Objects;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -89,6 +90,23 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean cornerDetectionExactSideCount = false;
     public int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
+
+    /**
+     * Handles backward compatibility for the deprecated showMultipleTargets property. When
+     * showMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
+     * appropriately. If showMultipleTargets is false, outputMaximumTargets is set to 1.
+     */
+    @JsonAnySetter
+    public void handleUnknownProperty(String name, Object value) {
+        // Handle the old showMultipleTargets property for backward compatibility
+        if ("showMultipleTargets".equals(name) && value instanceof Boolean) {
+            boolean showMultipleTargets = (Boolean) value;
+            if (!showMultipleTargets) {
+                // If showMultipleTargets is false, limit to 1 target
+                outputMaximumTargets = 1;
+            }
+        }
+    }
 
     @Override
     public boolean equals(Object o) {
