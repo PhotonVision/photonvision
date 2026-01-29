@@ -99,8 +99,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     @JsonAnySetter
     public void handleUnknownProperty(String name, Object value) {
         // Handle the old showMultipleTargets property for backward compatibility
-        if ("outputShowMultipleTargets".equals(name) && value instanceof Boolean) {
-            boolean showMultipleTargets = (Boolean) value;
+        if ("outputShowMultipleTargets".equals(name) && value instanceof Boolean showMultipleTargets) {
             if (!showMultipleTargets) {
                 // If showMultipleTargets is false, limit to 1 target
                 outputMaximumTargets = 1;
