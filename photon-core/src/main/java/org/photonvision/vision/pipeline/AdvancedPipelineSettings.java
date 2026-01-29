@@ -92,14 +92,14 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public double cornerDetectionAccuracyPercentage = 10;
 
     /**
-     * Handles backward compatibility for the deprecated showMultipleTargets property. When
-     * showMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
-     * appropriately. If showMultipleTargets is false, outputMaximumTargets is set to 1.
+     * Handles backward compatibility for the deprecated outputShowMultipleTargets property. When
+     * outputShowMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
+     * appropriately. If outputShowMultipleTargets is false, outputMaximumTargets is set to 1.
      */
     @JsonAnySetter
     public void handleUnknownProperty(String name, Object value) {
         // Handle the old showMultipleTargets property for backward compatibility
-        if ("showMultipleTargets".equals(name) && value instanceof Boolean) {
+        if ("outputShowMultipleTargets".equals(name) && value instanceof Boolean) {
             boolean showMultipleTargets = (Boolean) value;
             if (!showMultipleTargets) {
                 // If showMultipleTargets is false, limit to 1 target

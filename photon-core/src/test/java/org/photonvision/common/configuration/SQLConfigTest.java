@@ -34,11 +34,12 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
-import org.photonvision.vision.pipeline.ArucoPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
+import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
@@ -174,26 +175,16 @@ public class SQLConfigTest {
 
         for (CameraConfiguration cc : cameraConfigs) {
             for (CVPipelineSettings ps : cc.pipelineSettings) {
-                if (ps instanceof ObjectDetectionPipelineSettings odps) {
-                    // Should be set to 20 from migration
-                    ObjectDetectionPipelineSettings finalPs = odps;
-                    assertEquals(20, finalPs.outputMaximumTargets);
-                } else if (ps instanceof ColoredShapePipelineSettings csps) {
-                    // Should be set to 20 from migration
-                    ColoredShapePipelineSettings finalPs = csps;
-                    assertEquals(20, finalPs.outputMaximumTargets);
-                } else if (ps instanceof ReflectivePipelineSettings rps) {
-                    // Should be set to 20 from migration
-                    ReflectivePipelineSettings finalPs = rps;
-                    assertEquals(20, finalPs.outputMaximumTargets);
-                } else if (ps instanceof AprilTagPipelineSettings atps) {
-                    // Should be set to 128 from migration
-                    AprilTagPipelineSettings finalPs = atps;
-                    assertEquals(128, finalPs.outputMaximumTargets);
-                } else if (ps instanceof ArucoPipelineSettings aps) {
-                    // Should be set to 128 from migration
-                    ArucoPipelineSettings finalPs = aps;
-                    assertEquals(128, finalPs.outputMaximumTargets);
+                if (ps instanceof AdvancedPipelineSettings adps) {
+                    AdvancedPipelineSettings finalPs = adps;
+                    if (finalPs.pipelineType.equals(PipelineType.AprilTag)
+                            || finalPs.pipelineType.equals(PipelineType.Aruco)) {
+                        assertEquals(128, finalPs.outputMaximumTargets);
+                    } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
+                        assertEquals(1, finalPs.outputMaximumTargets);
+                    } else {
+                        assertEquals(20, finalPs.outputMaximumTargets);
+                    }
                 } else {
                     System.out.println("Skipping pipeline settings type: " + ps.getClass().getSimpleName());
                 }
