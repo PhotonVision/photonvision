@@ -3,6 +3,6 @@
   "supportURL" : "https://limelightvision.io",
   "ledPins" : [ 13, 18 ],
   "ledsCanDim" : true,
-  "ledPWMFrequency" : 30000,
+  "ledPWMFrequency" : 1000,
   "vendorFOV" : 75.76079874010732
 }
