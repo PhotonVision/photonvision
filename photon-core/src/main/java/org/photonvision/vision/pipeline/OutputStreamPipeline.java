@@ -58,19 +58,19 @@ public class OutputStreamPipeline {
         draw2dTargetsPipe.setParams(
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor));
 
         draw2dAprilTagsPipe.setParams(
                 new Draw2dAprilTagsPipe.Draw2dAprilTagsParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor));
 
         draw2dArucoPipe.setParams(
                 new Draw2dArucoPipe.Draw2dArucoParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor));
 
         draw2dCrosshairPipe.setParams(
