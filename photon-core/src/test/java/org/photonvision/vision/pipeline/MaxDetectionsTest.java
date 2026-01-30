@@ -38,11 +38,11 @@ public class MaxDetectionsTest {
         ColoredShapePipeline pipeline = new ColoredShapePipeline();
 
         pipeline.settings.contourShape = ContourShape.Circle;
-        pipeline.settings.hsvHue.set(10, 40);
-        pipeline.settings.hsvSaturation.set(100, 255);
-        pipeline.settings.hsvValue.set(100, 255);
-        pipeline.settings.maxCannyThresh = 50;
-        pipeline.settings.circleAccuracy = 15;
+        pipeline.settings.hsvHue.set(140, 160);
+        pipeline.settings.hsvSaturation.set(226, 246);
+        pipeline.settings.hsvValue.set(188, 208);
+        pipeline.settings.maxCannyThresh = 90;
+        pipeline.settings.circleAccuracy = 20;
         pipeline.settings.circleDetectThreshold = 5;
 
         Path path =
@@ -53,6 +53,7 @@ public class MaxDetectionsTest {
         frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        TestUtils.showImage(result.inputAndOutputFrame.processedImage.getMat(), "Max Detections Test");
 
         assertEquals(20, result.targets.size());
 
