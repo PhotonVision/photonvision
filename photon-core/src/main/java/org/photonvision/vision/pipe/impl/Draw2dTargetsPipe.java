@@ -229,7 +229,7 @@ public class Draw2dTargetsPipe
         public Color shapeOutlineColour = Color.MAGENTA;
         public Color textColor = Color.GREEN;
         public Color circleColor = Color.RED;
-        public int outputMaximumTargets = 10;
+        public int outputMaximumTargets;
         public final boolean shouldDraw;
 
         public final FrameDivisor divisor;
