@@ -73,7 +73,7 @@ If you were using custom LED commands from 2025 or earlier and still need custom
 
 ## Hardware Interaction Commands
 
-For Non-Linux hardware, users must provide the hardware-specific command for executing system restarts.
+For non-Linux hardware, users must provide the hardware-specific command for executing system restarts.
 
 Leaving this command blank will disable the restart functionality.
 
