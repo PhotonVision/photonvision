@@ -73,27 +73,21 @@ If you were using custom LED commands from 2025 or earlier and still need custom
 
 ## Hardware Interaction Commands
 
-For Non-Raspberry-Pi hardware, users must provide valid hardware-specific commands for some parts of the UI interaction (including performance metrics, and executing system restarts).
+For Non-Linux hardware, users must provide the hardware-specific command for executing system restarts.
 
-Leaving a command blank will disable the associated functionality.
+Leaving this command blank will disable the restart functionality.
 
 ```{eval-rst}
 .. tab-set-code::
    .. code-block::  json
 
       {
-        "cpuTempCommand" : "",
-        "cpuMemoryCommand" : "",
-        "cpuUtilCommand" : "",
-        "gpuMemoryCommand" : "",
-        "gpuTempCommand" : "",
-        "ramUtilCommand" : "",
         "restartHardwareCommand" : "",
       }
 ```
 
 :::{note}
-These settings have no effect if PhotonVision detects it is running on a Raspberry Pi. See [the MetricsBase class](https://github.com/PhotonVision/photonvision/blob/dbd631da61b7c86b70fa6574c2565ad57d80a91a/photon-core/src/main/java/org/photonvision/common/hardware/metrics/MetricsBase.java) for the commands utilized.
+This setting has no effect if PhotonVision detects it is running on Linux. On Linux, the restart is accomplished by executing `reboot now` in a shell.
 :::
 
 ## Known Camera FOV
@@ -151,12 +145,6 @@ Here is a complete example `hardwareConfig.json`:
         "setPWMCommand" : "setPWM {p} {v}",
         "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
         "releaseGPIOCommand" : "releseGPIO {p}",
-        "cpuTempCommand" : "",
-        "cpuMemoryCommand" : "",
-        "cpuUtilCommand" : "",
-        "gpuMemoryCommand" : "",
-        "gpuTempCommand" : "",
-        "ramUtilCommand" : "",
         "restartHardwareCommand" : "",
         "vendorFOV" : 72.5
       }
