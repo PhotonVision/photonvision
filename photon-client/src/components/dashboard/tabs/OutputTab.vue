@@ -65,7 +65,7 @@ const interactiveCols = computed(() =>
       tooltip="The maximum number of targets to display and send."
       :disabled="isTagPipeline"
       :min="1"
-      :max="128"
+      :max="127"
       :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
