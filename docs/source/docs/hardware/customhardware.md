@@ -144,7 +144,7 @@ Here is a complete example `hardwareConfig.json`:
         "setGPIOCommand" : "setGPIO {p} {s}",
         "setPWMCommand" : "setPWM {p} {v}",
         "setPWMFrequencyCommand" : "setPWMFrequency {p} {f}",
-        "releaseGPIOCommand" : "releseGPIO {p}",
+        "releaseGPIOCommand" : "releaseGPIO {p}",
         "restartHardwareCommand" : "",
         "vendorFOV" : 72.5
       }
