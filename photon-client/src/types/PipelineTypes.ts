@@ -10,7 +10,8 @@ export enum PipelineType {
   ColoredShape = 4,
   AprilTag = 5,
   Aruco = 6,
-  ObjectDetection = 7
+  ObjectDetection = 7,
+  Composite = 8
 }
 
 export enum AprilTagFamily {
@@ -324,6 +325,63 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   model: {} as ObjectDetectionModelProperties
 };
 
+export interface CompositePipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Composite;
+
+  enableAprilTag: boolean;
+  enableObjectDetection: boolean;
+
+  hammingDist: number;
+  numIterations: number;
+  decimate: number;
+  blur: number;
+  decisionMargin: number;
+  refineEdges: boolean;
+  debug: boolean;
+  threads: number;
+  tagFamily: AprilTagFamily;
+  doMultiTarget: boolean;
+  doSingleTargetAlways: boolean;
+
+  confidence: number;
+  nms: number;
+  box_thresh: number;
+  model: ObjectDetectionModelProperties;
+}
+
+export type ConfigurableCompositePipelineSettings = Partial<Omit<CompositePipelineSettings, "pipelineType">> &
+  ConfigurablePipelineSettings;
+
+export const DefaultCompositePipelineSettings: CompositePipelineSettings = {
+  ...DefaultPipelineSettings,
+  pipelineType: PipelineType.Composite,
+  cameraGain: 75,
+  targetModel: TargetModel.AprilTag6p5in_36h11,
+  ledMode: false,
+  outputShowMultipleTargets: true,
+  cameraExposureRaw: 20,
+
+  enableAprilTag: true,
+  enableObjectDetection: true,
+
+  hammingDist: 0,
+  numIterations: 40,
+  decimate: 1,
+  blur: 0,
+  decisionMargin: 35,
+  refineEdges: true,
+  debug: false,
+  threads: 4,
+  tagFamily: AprilTagFamily.Family36h11,
+  doMultiTarget: false,
+  doSingleTargetAlways: false,
+
+  confidence: 0.9,
+  nms: 0.45,
+  box_thresh: 0.25,
+  model: {} as ObjectDetectionModelProperties
+};
+
 export interface Calibration3dPipelineSettings extends PipelineSettings {
   drawAllSnapshots: boolean;
 }
@@ -346,6 +404,7 @@ export type ActivePipelineSettings =
   | AprilTagPipelineSettings
   | ArucoPipelineSettings
   | ObjectDetectionPipelineSettings
+  | CompositePipelineSettings
   | Calibration3dPipelineSettings;
 
 export type ActiveConfigurablePipelineSettings =
@@ -354,4 +413,5 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableAprilTagPipelineSettings
   | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
+  | ConfigurableCompositePipelineSettings
   | ConfigurableCalibration3dPipelineSettings;

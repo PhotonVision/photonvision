@@ -11,7 +11,14 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
-const isTagPipeline = computed(
+const isFiducialPipeline = computed(
+  () =>
+    useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
+    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco ||
+    useCameraSettingsStore().currentPipelineType === PipelineType.Composite
+);
+
+const isTagOnlyPipeline = computed(
   () =>
     useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
     useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
@@ -62,7 +69,7 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
       label="Show Multiple Targets"
       tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
-      :disabled="isTagPipeline"
+      :disabled="isTagOnlyPipeline"
       :switch-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
@@ -71,7 +78,8 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+          currentPipelineSettings.pipelineType === PipelineType.Composite) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -79,7 +87,10 @@ const interactiveCols = computed(() =>
       label="Do Multi-Target Estimation"
       tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
       :switch-cols="interactiveCols"
-      :disabled="!isTagPipeline"
+      :disabled="
+        !isFiducialPipeline ||
+        (currentPipelineSettings.pipelineType === PipelineType.Composite && !currentPipelineSettings.enableAprilTag)
+      "
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
       "
@@ -87,7 +98,8 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+          currentPipelineSettings.pipelineType === PipelineType.Composite) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -95,7 +107,11 @@ const interactiveCols = computed(() =>
       label="Always Do Single-Target Estimation"
       tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
       :switch-cols="interactiveCols"
-      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
+      :disabled="
+        !isFiducialPipeline ||
+        !currentPipelineSettings.doMultiTarget ||
+        (currentPipelineSettings.pipelineType === PipelineType.Composite && !currentPipelineSettings.enableAprilTag)
+      "
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
       "
@@ -111,7 +127,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-select
-      v-if="!isTagPipeline"
+      v-if="!isTagOnlyPipeline"
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
