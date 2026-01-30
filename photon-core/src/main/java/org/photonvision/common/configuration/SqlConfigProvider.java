@@ -269,7 +269,7 @@ public class SqlConfigProvider extends ConfigProvider {
         } else {
             logger.debug("No " + ref.getSimpleName() + " in database");
         }
-        // either the config entry is empty or Jackson threw and exception
+        // either the config entry is empty or Jackson threw an exception
         try {
             configObj = factory.get();
             logger.info("Loaded default " + ref.getSimpleName());
