@@ -241,12 +241,12 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
     @Override
     public double getMinSaturation() {
-      return minSaturation;
+        return minSaturation;
     }
 
     @Override
     public double getMaxSaturation() {
-      return maxSaturation;
+        return maxSaturation;
     }
 
     @Override

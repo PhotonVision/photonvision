@@ -262,12 +262,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public double getMinSaturation() {
-      return 0;
+        return 0;
     }
 
     @Override
     public double getMaxSaturation() {
-      return 0;
+        return 0;
     }
 
     @Override
