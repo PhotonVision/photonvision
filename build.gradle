@@ -41,7 +41,7 @@ ext {
     rknnVersion = "v2026.0.1"
     rubikVersion = "v2026.0.1"
     frcYear = "2026"
-    mrcalVersion = "v2026.0.0";
+    mrcalVersion = "dev-v2026.0.0-3-g4b79cff";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
@@ -115,6 +116,11 @@ public class Calibrate3dPipeTest {
             this.boardType = boardType;
             this.useOldPattern = useOldPattern;
         }
+    }
+
+    @Test
+    public void testFoo() {
+        calibrateTestMatrix(CalibrationDatasets.CHARUCO_LIFECAM_480, true);
     }
 
     /**
