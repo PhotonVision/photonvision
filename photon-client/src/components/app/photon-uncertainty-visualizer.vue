@@ -2,16 +2,11 @@
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
 const {
   AmbientLight,
-  AxesHelper,
-  BoxGeometry,
   BufferAttribute,
   BufferGeometry,
   Color,
-  ConeGeometry,
   Mesh,
-  MeshNormalMaterial,
   MeshPhongMaterial,
-  Object3D,
   PerspectiveCamera,
   Scene,
   WebGLRenderer
@@ -133,8 +128,10 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
   data.forEach((point) => {
     const normalizedZ = (point.z - zMin) / zRange;
     // Color gradient: blue (low) -> cyan -> green -> yellow -> red (high)
-    let r = 0, g = 0, b = 0;
-    
+    let r = 0,
+      g = 0,
+      b = 0;
+
     if (normalizedZ < 0.25) {
       // Blue to Cyan
       const t = normalizedZ / 0.25;
@@ -160,7 +157,7 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
       g = 1 - t;
       b = 0;
     }
-    
+
     colors.push(r, g, b);
   });
 
@@ -176,7 +173,7 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
   const mesh = new Mesh(geometry, material);
   mesh.name = "uncertaintyMesh";
   scene.add(mesh);
-}
+};
 
 const fetchUncertaintyData = async () => {
   isLoading.value = true;

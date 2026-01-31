@@ -107,9 +107,6 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 
-const uncertaintyImageUrl = () =>
-  useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
-
 const tab = ref("details");
 const viewingImg = ref(0);
 </script>
@@ -313,9 +310,7 @@ const viewingImg = ref(0);
               </template>
             </v-data-table>
           </v-tabs-window-item>
-          <v-tabs-window-item key="uncertainty" value="uncertainty">
-            haii
-          </v-tabs-window-item>
+          <v-tabs-window-item key="uncertainty" value="uncertainty"> haii </v-tabs-window-item>
         </v-tabs-window>
       </v-col>
       <v-col cols="8" class="pa-0 pl-6">

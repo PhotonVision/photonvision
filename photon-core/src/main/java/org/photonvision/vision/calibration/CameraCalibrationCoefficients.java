@@ -334,7 +334,8 @@ public class CameraCalibrationCoefficients implements Releasable {
         mrcalIntrinsics[2] = core.get(0, 2);
         mrcalIntrinsics[3] = core.get(1, 2);
         // distortion
-        System.arraycopy(this.getDistCoeffsArr(), 0, mrcalIntrinsics, 4, this.getDistCoeffsArr().length);
+        System.arraycopy(
+                this.getDistCoeffsArr(), 0, mrcalIntrinsics, 4, this.getDistCoeffsArr().length);
 
         var uncertainty = // x, y, uncertainty
                 MrCalJNI.compute_uncertainty(

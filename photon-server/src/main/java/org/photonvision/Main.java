@@ -17,6 +17,7 @@
 
 package org.photonvision;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.io.IOException;
@@ -56,10 +57,6 @@ import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
-
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
@@ -193,12 +190,13 @@ public class Main {
                             CameraLensModel.LENSMODEL_OPENCV));
 
             try {
-                camConf2026.calibrations.add(new ObjectMapper()
-                            .readValue(
-                                    Path.of(
-                                                    "/mnt/c/Users/matth/Downloads/photon_calibration_4c910967-fda0-4936-96af-ec4a9c969318_1280x720.json")
-                                            .toFile(),
-                                    CameraCalibrationCoefficients.class));
+                camConf2026.calibrations.add(
+                        new ObjectMapper()
+                                .readValue(
+                                        Path.of(
+                                                        "/mnt/c/Users/matth/Downloads/photon_calibration_4c910967-fda0-4936-96af-ec4a9c969318_1280x720.json")
+                                                .toFile(),
+                                        CameraCalibrationCoefficients.class));
             } catch (Exception e) {
                 e.printStackTrace();
             }
