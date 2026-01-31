@@ -163,9 +163,17 @@ const fetchUncertaintyData = async () => {
 };
 
 const onWindowResize = () => {
-  if (chart) {
-    chart.resize();
-  }
+  const container = document.getElementById("container");
+  if (!container || !chart) return;
+
+  // Update container height based on aspect ratio of camera resolution
+  const aspectRatio = props.resolution.width / props.resolution.height;
+  const containerWidth = container.clientWidth;
+  const containerHeight = containerWidth / aspectRatio;
+  container.style.height = `${containerHeight}px`;
+
+  // Resize the chart
+  chart.resize();
 };
 
 onMounted(async () => {
@@ -234,5 +242,6 @@ watch(
 <template>
   <div style="width: 100%">
     <div id="container" style="width: 100%; min-height: 400px" />
+    <template v-if="isLoading"> Loading.... </template>
   </div>
 </template>

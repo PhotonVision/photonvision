@@ -333,14 +333,15 @@ const viewingImg = ref(0);
             />
             <template #fallback>Loading...</template>
           </Suspense>
-          <Suspense v-else-if="tab === 'uncertainty'" style="display: flex; justify-content: center; width: 100%">
+          <!-- <Suspense v-else-if="tab === 'uncertainty'" style="display: flex; justify-content: center; width: 100%"> -->
             <PhotonUncertaintyVisualizer
+              v-else-if="tab === 'uncertainty'"
               :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
               :resolution="props.videoFormat.resolution"
               title="Camera reprojection uncertainty"
             />
-            <template #fallback>Loading...</template>
-          </Suspense>
+            <!-- <template #fallback>Loading...</template> -->
+          <!-- </Suspense> -->
           <div v-else style="display: flex; justify-content: center; width: 100%">
             <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
           </div>
