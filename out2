@@ -1,0 +1,490 @@
+Initialized native services in: /home/matth/.gradle/native
+Initialized jansi services in: /home/matth/.gradle/native
+Found daemon DaemonInfo{pid=871511, address=[470ef3b1-1ab4-4a45-a5a6-7a4d20416d21 port:43959, addresses:[/127.0.0.1]], state=Idle, lastBusy=1769787152473, context=DefaultDaemonContext[uid=f5c71f58-b906-4ad4-b91f-76f3ac161eb9,javaHome=/home/matth/.vscode-server/extensions/redhat.java-1.51.0-linux-x64/jre/21.0.9-linux-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/home/matth/.gradle/daemon,pid=871511,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-17-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[--add-exports, jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED, -Dfile.encoding=UTF-8, -Duser.country, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=f5c71f58-b906-4ad4-b91f-76f3ac161eb9,javaHome=/home/matth/.vscode-server/extensions/redhat.java-1.51.0-linux-x64/jre/21.0.9-linux-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/home/matth/.gradle/daemon,pid=871511,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=896371, address=[4704ca6d-ca99-4b2e-b876-868224404f01 port:39983, addresses:[/127.0.0.1]], state=Idle, lastBusy=1769847029282, context=DefaultDaemonContext[uid=031e04e9-6bef-489e-b45a-366571b00784,javaHome=/usr/lib/jvm/java-17-openjdk-amd64,javaVersion=17,javaVendor=Ubuntu,daemonRegistryDir=/home/matth/.gradle/daemon,pid=896371,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+At least one daemon option is different.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-17-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[--add-exports, jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED, -Dfile.encoding=UTF-8, -Duser.country, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=031e04e9-6bef-489e-b45a-366571b00784,javaHome=/usr/lib/jvm/java-17-openjdk-amd64,javaVersion=17,javaVendor=Ubuntu,daemonRegistryDir=/home/matth/.gradle/daemon,pid=896371,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=-XX:MaxMetaspaceSize=384m,-XX:+HeapDumpOnOutOfMemoryError,-Xms256m,-Xmx512m,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+Found daemon DaemonInfo{pid=949761, address=[ec93f600-3e47-447a-924c-e9e9319bd260 port:41999, addresses:[/127.0.0.1]], state=Idle, lastBusy=1769847045194, context=DefaultDaemonContext[uid=3d965240-2c1b-4aef-9c44-58035bd0978b,javaHome=/home/matth/.vscode-server/extensions/redhat.java-1.51.0-linux-x64/jre/21.0.9-linux-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/home/matth/.gradle/daemon,pid=949761,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=--add-exports,jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]} however its context does not match the desired criteria.
+JVM is incompatible.
+Wanted: DaemonRequestContext{jvmCriteria=/usr/lib/jvm/java-17-openjdk-amd64 (no JDK specified, using current Java home), daemonOpts=[--add-exports, jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED, --add-exports, jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED, -Dfile.encoding=UTF-8, -Duser.country, -Duser.language=en, -Duser.variant], applyInstrumentationAgent=true, nativeServicesMode=ENABLED, priority=NORMAL}
+Actual: DefaultDaemonContext[uid=3d965240-2c1b-4aef-9c44-58035bd0978b,javaHome=/home/matth/.vscode-server/extensions/redhat.java-1.51.0-linux-x64/jre/21.0.9-linux-x86_64,javaVersion=21,javaVendor=Eclipse Adoptium,daemonRegistryDir=/home/matth/.gradle/daemon,pid=949761,idleTimeout=10800000,priority=NORMAL,applyInstrumentationAgent=true,nativeServicesMode=ENABLED,daemonOpts=--add-exports,jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED,--add-exports,jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED,-Dfile.encoding=UTF-8,-Duser.country,-Duser.language=en,-Duser.variant]
+
+  Looking for a different daemon...
+The client will now receive all logging from the daemon (pid: 944413). The daemon log file: /home/matth/.gradle/daemon/8.14.3/daemon-944413.out.log
+Starting 31st build in daemon [uptime: 2 hrs 10 mins 35.434 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 7.7 GiB]
+Using 16 worker leases.
+Now considering [/home/matth/photonvision] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/home/matth/photonvision/settings.gradle'.
+Projects loaded. Root project using build file '/home/matth/photonvision/build.gradle'.
+Included projects: [root project 'photonvision', project ':photon-core', project ':photon-docs', project ':photon-lib', project ':photon-server', project ':photon-targeting']
+
+> Configure project :
+Evaluating root project 'photonvision' using build file '/home/matth/photonvision/build.gradle'.
+Resolved plugin [id: 'cpp']
+Resolved plugin [id: 'com.diffplug.spotless', version: '8.1.0']
+Resolved plugin [id: 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin', version: '2020.2']
+Resolved plugin [id: 'edu.wpi.first.GradleRIO', version: '2026.2.1']
+Resolved plugin [id: 'org.photonvision.tools.WpilibTools', version: '2.3.3-photon']
+Resolved plugin [id: 'com.google.protobuf', version: '0.9.3', apply: false]
+Resolved plugin [id: 'edu.wpi.first.GradleJni', version: '1.1.0']
+Resolved plugin [id: 'org.ysb33r.doxygen', version: '2.0.0', apply: false]
+Resolved plugin [id: 'com.gradleup.shadow', version: '8.3.4', apply: false]
+Resolved plugin [id: 'com.github.node-gradle.node', version: '7.0.1', apply: false]
+Starting process 'command 'git''. Working directory: /home/matth/photonvision Command: git describe --tags --match=v*
+Successfully started process 'command 'git''
+Picked up version: dev-v2026.1.1-1-g08bda540
+Starting process 'command 'git''. Working directory: /home/matth/photonvision/photon-core Command: git describe --tags --match=v*
+Successfully started process 'command 'git''
+Picked up version: dev-v2026.1.1-1-g08bda540
+Starting process 'command 'git''. Working directory: /home/matth/photonvision/photon-docs Command: git describe --tags --match=v*
+Successfully started process 'command 'git''
+Picked up version: dev-v2026.1.1-1-g08bda540
+Starting process 'command 'git''. Working directory: /home/matth/photonvision/photon-lib Command: git describe --tags --match=v*
+Successfully started process 'command 'git''
+Picked up version: dev-v2026.1.1-1-g08bda540
+Starting process 'command 'git''. Working directory: /home/matth/photonvision/photon-server Command: git describe --tags --match=v*
+Successfully started process 'command 'git''
+Picked up version: dev-v2026.1.1-1-g08bda540
+Starting process 'command 'git''. Working directory: /home/matth/photonvision/photon-targeting Command: git describe --tags --match=v*
+Successfully started process 'command 'git''
+Picked up version: dev-v2026.1.1-1-g08bda540
+Building for platform linuxx86-64 wpilib: linuxx64
+Using Wpilib: 2026.2.1
+Using OpenCV: 4.10.0-3
+Publishing Photonlib to https://maven.photonvision.org/snapshots
+
+> Configure project :photon-core
+Evaluating project ':photon-core' using build file '/home/matth/photonvision/photon-core/build.gradle'.
+
+> Configure project :photon-targeting
+Evaluating project ':photon-targeting' using build file '/home/matth/photonvision/photon-targeting/build.gradle'.
+The com.google.protobuf plugin was already applied to the project: :photon-targeting and will not be applied again after plugin: java-library
+------------------------------------------------------------------------
+Detecting the operating system and CPU architecture
+------------------------------------------------------------------------
+os.detected.name=linux
+os.detected.arch=x86_64
+os.detected.bitness=64
+os.detected.version=6.6
+os.detected.version.major=6
+os.detected.version.minor=6
+os.detected.release=ubuntu
+os.detected.release.version=24.04
+os.detected.release.like.ubuntu=true
+os.detected.release.like.debian=true
+os.detected.classifier=linux-x86_64
+
+> Configure project :photon-server
+Evaluating project ':photon-server' using build file '/home/matth/photonvision/photon-server/build.gradle'.
+
+> Configure project :photon-lib
+Evaluating project ':photon-lib' using build file '/home/matth/photonvision/photon-lib/build.gradle'.
+The com.google.protobuf plugin was already applied to the project: :photon-lib and will not be applied again after plugin: java-library
+Writing vendor JSON dev-v2026.1.1-1-g08bda540 to /home/matth/photonvision/photon-lib/build/generated/vendordeps/photonlib.json
+------------------------------------------------------------------------
+Detecting the operating system and CPU architecture
+------------------------------------------------------------------------
+os.detected.name=linux
+os.detected.arch=x86_64
+os.detected.bitness=64
+os.detected.version=6.6
+os.detected.version.major=6
+os.detected.version.minor=6
+os.detected.release=ubuntu
+os.detected.release.version=24.04
+os.detected.release.like.ubuntu=true
+os.detected.release.like.debian=true
+os.detected.classifier=linux-x86_64
+
+> Configure project :photon-docs
+Evaluating project ':photon-docs' using build file '/home/matth/photonvision/photon-docs/build.gradle'.
+All projects evaluated.
+Task path 'photon-targeting:jar' matched project ':photon-targeting'
+Descriptor Register: arm32
+Descriptor Register: arm64
+Descriptor Register: roboRio
+Starting process 'command 'which''. Working directory: /home/matth/photonvision/photon-targeting Command: which armv6-bookworm-linux-gnueabihf-gcc
+Successfully started process 'command 'which''
+Starting process 'command 'which''. Working directory: /home/matth/photonvision/photon-targeting Command: which aarch64-bookworm-linux-gnu-gcc
+Successfully started process 'command 'which''
+Starting process 'command 'which''. Working directory: /home/matth/photonvision/photon-targeting Command: which arm-frc2025-linux-gnueabi-gcc
+Successfully started process 'command 'which''
+Starting process 'command '/usr/bin/gcc''. Working directory: /usr/bin Command: /usr/bin/gcc -m64 -dM -E -v -
+Successfully started process 'command '/usr/bin/gcc''
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingTest/c', not found
+Task name matched 'jar'
+Task path 'photon-core:test' matched project ':photon-core'
+Task name matched 'test'
+Selected primary task 'jar' from project :photon-targeting
+Selected primary task 'test' from project :photon-core
+Starting process 'command '/usr/bin/g++''. Working directory: /usr/bin Command: /usr/bin/g++ -m64 -dM -E -v -
+Successfully started process 'command '/usr/bin/g++''
+Starting process 'command '/usr/bin/g++''. Working directory: /usr/bin Command: /usr/bin/g++ -m64 -x c++ -dM -E -v -
+Successfully started process 'command '/usr/bin/g++''
+Starting process 'command '/usr/bin/gcc''. Working directory: /usr/bin Command: /usr/bin/gcc -m64 -x c -dM -E -v -
+Successfully started process 'command '/usr/bin/gcc''
+Tasks to be executed: [task ':photon-targeting:extractIncludeProto', task ':photon-targeting:extractProto', task ':photon-targeting:generateProto', task ':photon-targeting:compileJava', task ':photon-targeting:processResources', task ':photon-targeting:classes', task ':photon-targeting:jar', task ':photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp', task ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC', task ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp', task ':photon-targeting:linkPhotontargetingLinuxx86-64ReleaseSharedLibrary', task ':photon-targeting:photontargetingLinuxx86-64ReleaseSharedLibrary', task ':photon-targeting:linkPhotontargetingJNILinuxx86-64ReleaseSharedLibrary', task ':photon-targeting:_GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64', task ':photon-core:extractNativeConfigurationMain', task ':photon-core:fixupNativeResourcesMain', task ':photon-core:hashNativeResourcesMain', task ':photon-core:assembleNativeResourcesMain', task ':photon-core:writeCurrentVersion', task ':photon-core:compileJava', task ':photon-core:processResources', task ':photon-core:classes', task ':photon-core:compileTestJava', task ':photon-core:processTestResources', task ':photon-core:testClasses', task ':photon-core:test', task ':photon-core:jacocoTestReport']
+Tasks that were excluded: []
+GradleUserDir:
+  - Valid?: false
+  - Found?: false
+  - Version Range:
+      - Low: 12.2.0
+      - High: 12.2.0
+      - Is Valid?: false
+  - Root: null
+  - Bin: null
+  - Lib: null
+  - Include: null
+  - Gcc: null
+  - Gdb: null
+Skipping builds for arm32 (toolchain is marked optional)
+GradleUserDir:
+  - Valid?: false
+  - Found?: false
+  - Version Range:
+      - Low: 12.2.0
+      - High: 12.2.0
+      - Is Valid?: false
+  - Root: null
+  - Bin: null
+  - Lib: null
+  - Include: null
+  - Gcc: null
+  - Gdb: null
+Skipping builds for arm64 (toolchain is marked optional)
+FRCHome:
+  - Valid?: false
+  - Found?: false
+  - Version Range:
+      - Low: 12.1.0
+      - High: 12.1.0
+      - Is Valid?: false
+  - Root: null
+  - Bin: null
+  - Lib: null
+  - Include: null
+  - Gcc: null
+  - Gdb: null
+GradleUserDir:
+  - Valid?: false
+  - Found?: false
+  - Version Range:
+      - Low: 12.1.0
+      - High: 12.1.0
+      - Is Valid?: false
+  - Root: null
+  - Bin: null
+  - Lib: null
+  - Include: null
+  - Gcc: null
+  - Gdb: null
+Skipping builds for roboRio (toolchain is marked optional)
+Running wrapper inspector on project :
+Found gradle-wrapper.properties on :
+Running wrapper inspector on project :
+Found gradle-wrapper.properties on :
+Running wrapper inspector on project :
+Found gradle-wrapper.properties on :
+Running wrapper inspector on project :
+Found gradle-wrapper.properties on :
+Running wrapper inspector on project :
+Found gradle-wrapper.properties on :
+Running wrapper inspector on project :
+Found gradle-wrapper.properties on :
+work action Parameters of UnzipTransform (Thread[Execution worker,5,main]) started.
+destroyer locations for task group 0 (Thread[Execution worker Thread 2,5,main]) started.
+Resolve mutations for :photon-targeting:extractIncludeProto (Thread[Execution worker Thread 3,5,main]) started.
+:photon-targeting:extractIncludeProto (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :photon-targeting:extractIncludeProto UP-TO-DATE
+Caching disabled for task ':photon-targeting:extractIncludeProto' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':photon-targeting:extractIncludeProto' as it is up-to-date.
+Resolve mutations for :photon-targeting:extractProto (Thread[Execution worker Thread 3,5,main]) started.
+:photon-targeting:extractProto (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :photon-targeting:extractProto UP-TO-DATE
+Caching disabled for task ':photon-targeting:extractProto' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':photon-targeting:extractProto' as it is up-to-date.
+Resolve mutations for :photon-targeting:generateProto (Thread[Execution worker Thread 3,5,main]) started.
+:photon-targeting:generateProto (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :photon-targeting:generateProto UP-TO-DATE
+Custom actions are attached to task ':photon-targeting:generateProto'.
+Caching disabled for task ':photon-targeting:generateProto' because:
+  Build cache is disabled
+Skipping task ':photon-targeting:generateProto' as it is up-to-date.
+Resolve mutations for :photon-targeting:compileJava (Thread[Execution worker Thread 3,5,main]) started.
+:photon-targeting:compileJava (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :photon-targeting:compileJava UP-TO-DATE
+Caching disabled for task ':photon-targeting:compileJava' because:
+  Build cache is disabled
+Skipping task ':photon-targeting:compileJava' as it is up-to-date.
+No compile result for :photon-targeting:compileJava
+work action resolve main (project :photon-targeting) (Thread[Execution worker Thread 3,5,main]) started.
+Resolve mutations for :photon-targeting:processResources (Thread[Execution worker Thread 3,5,main]) started.
+:photon-targeting:processResources (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :photon-targeting:processResources UP-TO-DATE
+Caching disabled for task ':photon-targeting:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':photon-targeting:processResources' as it is up-to-date.
+Resolve mutations for :photon-targeting:classes (Thread[Execution worker Thread 3,5,main]) started.
+:photon-targeting:classes (Thread[Execution worker Thread 3,5,main]) started.
+
+> Task :photon-targeting:classes UP-TO-DATE
+Skipping task ':photon-targeting:classes' as it has no actions.
+Resolve mutations for :photon-targeting:jar (Thread[Execution worker Thread 8,5,main]) started.
+:photon-targeting:jar (Thread[Execution worker Thread 8,5,main]) started.
+
+> Task :photon-targeting:jar UP-TO-DATE
+Caching disabled for task ':photon-targeting:jar' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':photon-targeting:jar' as it is up-to-date.
+work action resolve photon-targeting.jar (project :photon-targeting) (Thread[Execution worker Thread 8,5,main]) started.
+Resolve mutations for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp (Thread[Execution worker Thread 8,5,main]) started.
+:photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp (Thread[Execution worker Thread 8,5,main]) started.
+
+> Task :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp UP-TO-DATE
+After parsing the source files, Gradle cannot calculate the exact set of include files for ':photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp'. Every file in the include search path will be considered a header dependency.
+adding files in /home/matth/photonvision/photon-targeting/src/photontargetingJNI/headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargetingJNI/headers', not found
+adding files in /home/matth/photonvision/photon-targeting/src/photontargeting/headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargeting/headers', not found
+adding files in /home/matth/photonvision/photon-targeting/src/main/native/include to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/photonvision/photon-targeting/src/generated/main/native/include to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/photonvision/photon-targeting/build/generated/source/proto/main/cpp to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+file or directory '/home/matth/photonvision/photon-targeting/build/generated/source/proto/main/cpp', not found
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/d0629c47d03a5c2db37ffcdfe563506e/transformed/wpiutil-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/68bceaa87f4e96b4debe19b580f1104e/transformed/wpimath-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/f21c7eb38c5d26cc4a9302183a4aaccc/transformed/wpinet-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/c558246cea3c22d4bd66ff3b5ed69506/transformed/ntcore-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/34beadf666836065cb5774f0e3efa4d9/transformed/cscore-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/c509697d67e448575cb4a84db3526872/transformed/opencv-cpp-4.10.0-3-headers to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/lib/jvm/java-17-openjdk-amd64/include to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/lib/jvm/java-17-openjdk-amd64/include/linux to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /home/matth/photonvision/photon-targeting/build/generated/sources/headers/java/main to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/include/c++/13 to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/include/x86_64-linux-gnu/c++/13 to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/include/c++/13/backward to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/lib/gcc/x86_64-linux-gnu/13/include to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/local/include to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/include/x86_64-linux-gnu to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+adding files in /usr/include to header dependencies for :photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp
+Caching disabled for task ':photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp' because:
+  Build cache is disabled
+Skipping task ':photon-targeting:compilePhotontargetingJNILinuxx86-64ReleaseSharedLibraryPhotontargetingJNICpp' as it is up-to-date.
+Resolve mutations for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC (Thread[Execution worker Thread 8,5,main]) started.
+:photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC (Thread[Execution worker Thread 6,5,main]) started.
+
+> Task :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC UP-TO-DATE
+file or directory '/home/matth/photonvision/photon-targeting/build/generated/source/proto/main/cpp', not found
+file or directory '/home/matth/photonvision/photon-targeting/build/generated/native/cpp', not found
+Found all include files for ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC'
+Caching disabled for task ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC' because:
+  Build cache is disabled
+Skipping task ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingC' as it is up-to-date.
+Resolve mutations for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp (Thread[Execution worker Thread 6,5,main]) started.
+:photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp (Thread[Execution worker Thread 6,5,main]) started.
+
+> Task :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp UP-TO-DATE
+file or directory '/home/matth/photonvision/photon-targeting/build/generated/source/proto/main/cpp', not found
+After parsing the source files, Gradle cannot calculate the exact set of include files for ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp'. Every file in the include search path will be considered a header dependency.
+adding files in /home/matth/photonvision/photon-targeting/src/main/native/include to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/photonvision/photon-targeting/src/generated/main/native/include to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/photonvision/photon-targeting/build/generated/source/proto/main/cpp to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+file or directory '/home/matth/photonvision/photon-targeting/build/generated/source/proto/main/cpp', not found
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/d0629c47d03a5c2db37ffcdfe563506e/transformed/wpiutil-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/68bceaa87f4e96b4debe19b580f1104e/transformed/wpimath-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/f21c7eb38c5d26cc4a9302183a4aaccc/transformed/wpinet-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/c558246cea3c22d4bd66ff3b5ed69506/transformed/ntcore-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/d7ce03ee78e258b781c9c9c9a2a50160/transformed/apriltag-cpp-2026.2.1-headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/.gradle/caches/8.14.3/transforms/c509697d67e448575cb4a84db3526872/transformed/opencv-cpp-4.10.0-3-headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /home/matth/photonvision/photon-targeting/src/photontargeting/headers to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+file or directory '/home/matth/photonvision/photon-targeting/src/photontargeting/headers', not found
+adding files in /usr/include/c++/13 to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /usr/include/x86_64-linux-gnu/c++/13 to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /usr/include/c++/13/backward to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /usr/lib/gcc/x86_64-linux-gnu/13/include to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /usr/local/include to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /usr/include/x86_64-linux-gnu to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+adding files in /usr/include to header dependencies for :photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp
+Caching disabled for task ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp' because:
+  Build cache is disabled
+Skipping task ':photon-targeting:compilePhotontargetingLinuxx86-64ReleaseSharedLibraryPhotontargetingCpp' as it is up-to-date.
+Resolve mutations for :photon-targeting:linkPhotontargetingLinuxx86-64ReleaseSharedLibrary (Thread[Execution worker Thread 6,5,main]) started.
+:photon-targeting:linkPhotontargetingLinuxx86-64ReleaseSharedLibrary (Thread[Execution worker Thread 13,5,main]) started.
+
+> Task :photon-targeting:linkPhotontargetingLinuxx86-64ReleaseSharedLibrary UP-TO-DATE
+Caching disabled for task ':photon-targeting:linkPhotontargetingLinuxx86-64ReleaseSharedLibrary' because:
+  Build cache is disabled
+  Not made cacheable, yet
+Skipping task ':photon-targeting:linkPhotontargetingLinuxx86-64ReleaseSharedLibrary' as it is up-to-date.
+Resolve mutations for :photon-targeting:photontargetingLinuxx86-64ReleaseSharedLibrary (Thread[Execution worker Thread 13,5,main]) started.
+:photon-targeting:photontargetingLinuxx86-64ReleaseSharedLibrary (Thread[Execution worker Thread 13,5,main]) started.
+
+> Task :photon-targeting:photontargetingLinuxx86-64ReleaseSharedLibrary UP-TO-DATE
+Skipping task ':photon-targeting:photontargetingLinuxx86-64ReleaseSharedLibrary' as it has no actions.
+Resolve mutations for :photon-targeting:linkPhotontargetingJNILinuxx86-64ReleaseSharedLibrary (Thread[Execution worker Thread 13,5,main]) started.
+:photon-targeting:linkPhotontargetingJNILinuxx86-64ReleaseSharedLibrary (Thread[Execution worker Thread 13,5,main]) started.
+
+> Task :photon-targeting:linkPhotontargetingJNILinuxx86-64ReleaseSharedLibrary UP-TO-DATE
+Caching disabled for task ':photon-targeting:linkPhotontargetingJNILinuxx86-64ReleaseSharedLibrary' because:
+  Build cache is disabled
+  Not made cacheable, yet
+Skipping task ':photon-targeting:linkPhotontargetingJNILinuxx86-64ReleaseSharedLibrary' as it is up-to-date.
+Resolve mutations for :photon-targeting:_GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64 (Thread[Execution worker Thread 13,5,main]) started.
+:photon-targeting:_GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64 (Thread[Execution worker Thread 13,5,main]) started.
+
+> Task :photon-targeting:_GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64 UP-TO-DATE
+Caching disabled for task ':photon-targeting:_GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':photon-targeting:_GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64' as it is up-to-date.
+work action resolve _GROUP_org_photonvision_photontargeting_ID_photontargeting-cpp_CLS-linuxx86-64.zip (project :photon-targeting) (Thread[Execution worker Thread 13,5,main]) started.
+UnzipTransform (Thread[Execution worker Thread 13,5,main]) started.
+Resolve mutations for :photon-core:writeCurrentVersion (Thread[Execution worker Thread 8,5,main]) started.
+Resolve mutations for :photon-core:extractNativeConfigurationMain (Thread[Execution worker Thread 13,5,main]) started.
+:photon-core:extractNativeConfigurationMain (Thread[Execution worker Thread 13,5,main]) started.
+
+> Task :photon-core:extractNativeConfigurationMain UP-TO-DATE
+Caching disabled for task ':photon-core:extractNativeConfigurationMain' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':photon-core:extractNativeConfigurationMain' as it is up-to-date.
+Resolve mutations for :photon-core:fixupNativeResourcesMain (Thread[Execution worker Thread 13,5,main]) started.
+:photon-core:fixupNativeResourcesMain (Thread[Execution worker Thread 13,5,main]) started.
+
+> Task :photon-core:fixupNativeResourcesMain UP-TO-DATE
+Caching disabled for task ':photon-core:fixupNativeResourcesMain' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':photon-core:fixupNativeResourcesMain' as it is up-to-date.
+Resolve mutations for :photon-core:hashNativeResourcesMain (Thread[Execution worker Thread 14,5,main]) started.
+:photon-core:hashNativeResourcesMain (Thread[Execution worker Thread 14,5,main]) started.
+
+> Task :photon-core:hashNativeResourcesMain UP-TO-DATE
+Caching disabled for task ':photon-core:hashNativeResourcesMain' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':photon-core:hashNativeResourcesMain' as it is up-to-date.
+Resolve mutations for :photon-core:assembleNativeResourcesMain (Thread[Execution worker Thread 14,5,main]) started.
+:photon-core:assembleNativeResourcesMain (Thread[Execution worker Thread 14,5,main]) started.
+
+> Task :photon-core:assembleNativeResourcesMain UP-TO-DATE
+Caching disabled for task ':photon-core:assembleNativeResourcesMain' because:
+  Build cache is disabled
+  Caching has not been enabled for the task
+Skipping task ':photon-core:assembleNativeResourcesMain' as it is up-to-date.
+:photon-core:writeCurrentVersion (Thread[Execution worker Thread 14,5,main]) started.
+
+> Task :photon-core:writeCurrentVersion
+Caching disabled for task ':photon-core:writeCurrentVersion' because:
+  Build cache is disabled
+Task ':photon-core:writeCurrentVersion' is not up-to-date because:
+  Task has not declared any outputs despite executing actions.
+Writing dev-v2026.1.1-1-g08bda540 to /home/matth/photonvision/photon-core/build/generated/java/org/photonvision/PhotonVersion.java
+Resolve mutations for :photon-core:compileJava (Thread[Execution worker Thread 14,5,main]) started.
+:photon-core:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :photon-core:compileJava
+Caching disabled for task ':photon-core:compileJava' because:
+  Build cache is disabled
+Task ':photon-core:compileJava' is not up-to-date because:
+  Input property 'stableSources' file /home/matth/photonvision/photon-core/build/generated/java/org/photonvision/PhotonVersion.java has changed.
+Compilation mode: in-process compilation
+Created classpath snapshot for incremental compilation in 0.005 secs.
+Compiling with toolchain '/usr/lib/jvm/java-17-openjdk-amd64'.
+Compiling with JDK Java compiler API.
+Incremental compilation of 3 classes completed in 0.064 secs.
+Class dependency analysis for incremental compilation took 0.003 secs.
+Resolve mutations for :photon-core:processResources (Thread[Execution worker,5,main]) started.
+:photon-core:processResources (Thread[Execution worker Thread 4,5,main]) started.
+
+> Task :photon-core:processResources NO-SOURCE
+Skipping task ':photon-core:processResources' as it has no source files and no previous output files.
+Resolve mutations for :photon-core:classes (Thread[Execution worker Thread 4,5,main]) started.
+:photon-core:classes (Thread[Execution worker Thread 7,5,main]) started.
+
+> Task :photon-core:classes
+Skipping task ':photon-core:classes' as it has no actions.
+Resolve mutations for :photon-core:compileTestJava (Thread[Execution worker Thread 2,5,main]) started.
+:photon-core:compileTestJava (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :photon-core:compileTestJava
+Caching disabled for task ':photon-core:compileTestJava' because:
+  Build cache is disabled
+Task ':photon-core:compileTestJava' is not up-to-date because:
+  Input property 'classpath' file /home/matth/photonvision/photon-core/build/classes/java/main/org/photonvision/PhotonVersion.class has changed.
+Compilation mode: in-process compilation
+Created classpath snapshot for incremental compilation in 0.006 secs.
+Compiling with toolchain '/usr/lib/jvm/java-17-openjdk-amd64'.
+Compiling with JDK Java compiler API.
+Incremental compilation of 1 classes completed in 0.054 secs.
+Class dependency analysis for incremental compilation took 0.0 secs.
+Resolve mutations for :photon-core:processTestResources (Thread[Execution worker Thread 2,5,main]) started.
+:photon-core:processTestResources (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :photon-core:processTestResources NO-SOURCE
+Skipping task ':photon-core:processTestResources' as it has no source files and no previous output files.
+Resolve mutations for :photon-core:testClasses (Thread[Execution worker Thread 2,5,main]) started.
+:photon-core:testClasses (Thread[Execution worker Thread 2,5,main]) started.
+
+> Task :photon-core:testClasses
+Skipping task ':photon-core:testClasses' as it has no actions.
+Resolve mutations for :photon-core:test (Thread[Execution worker Thread 2,5,main]) started.
+:photon-core:test (Thread[Execution worker Thread 2,5,main]) started.
+Gradle Test Executor 21 started executing tests.
+
+> Task :photon-core:test
+Custom actions are attached to task ':photon-core:test'.
+Caching disabled for task ':photon-core:test' because:
+  Build cache is disabled
+  Gradle does not know how file 'build/test-results/test/binary/output.bin.idx' was created (output property 'binaryResultsDirectory'). Task output caching requires exclusive access to output paths to guarantee correctness (i.e. multiple tasks are not allowed to produce output in the same location).
+Task ':photon-core:test' is not up-to-date because:
+  Task has failed previously.
+Running tests for remote debugging.
+Starting process 'Gradle Test Executor 21'. Working directory: /home/matth/photonvision Command: /usr/lib/jvm/java-17-openjdk-amd64/bin/java -Djava.awt.headless=true -Dorg.gradle.internal.worker.tmpdir=/home/matth/photonvision/photon-core/build/tmp/test/work -javaagent:/home/matth/photonvision/photon-core/build/tmp/.cache/expanded/zip_b7e3e3efc9fa7b01ca2c5374419709e6/jacocoagent.jar=destfile=photon-core/build/jacoco/test.exec,append=true,inclnolocationclasses=false,dumponexit=true,output=file,jmx=false @/home/matth/.gradle/.tmp/gradle-worker-classpath5825311157165745848txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country -Duser.language=en -Duser.variant -ea -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 21'
+Successfully started process 'Gradle Test Executor 21'
+Listening for transport dt_socket at address: 5005

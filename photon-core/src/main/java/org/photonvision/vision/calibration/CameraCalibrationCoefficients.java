@@ -253,4 +253,23 @@ public class CameraCalibrationCoefficients implements Releasable {
                 calobjectSpacing,
                 lensmodel);
     }
+
+    public double[] framePosesToRtToref() {
+        double[] ret = new double[observations.size() * 6];
+
+        for (int i = 0; i < observations.size(); i++) {
+            var o = observations.get(i);
+            var pose = o.optimisedCameraToObject;
+            var r = pose.getRotation().toVector();
+            var t = pose.getTranslation().toVector();
+            ret[i * 6 + 0] = r.get(0);
+            ret[i * 6 + 1] = r.get(1);
+            ret[i * 6 + 2] = r.get(2);
+            ret[i * 6 + 3] = t.get(0);
+            ret[i * 6 + 4] = t.get(1);
+            ret[i * 6 + 5] = t.get(2);
+        }
+
+        return ret;
+    }
 }
