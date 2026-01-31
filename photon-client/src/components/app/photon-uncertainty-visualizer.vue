@@ -4,10 +4,14 @@ const {
   AmbientLight,
   AxesHelper,
   BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
   Color,
   ConeGeometry,
   Mesh,
   MeshNormalMaterial,
+  MeshPhongMaterial,
+  Object3D,
   PerspectiveCamera,
   Scene,
   WebGLRenderer
@@ -36,10 +40,142 @@ const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
 
 let baseAspect: number | undefined;
-const drawUncertainty = (data: CvPoint3[]) => {
-  // TODO
-  console.log('hailo')
-  console.log(data)
+const drawUncertainty = (data: CvPoint3[] | null) => {
+  if (!scene || !data || data.length === 0) return;
+
+  // Remove any existing uncertainty mesh
+  const existingMesh = scene.getObjectByName("uncertaintyMesh");
+  if (existingMesh) {
+    scene.remove(existingMesh);
+    if (existingMesh instanceof Mesh) {
+      existingMesh.geometry?.dispose();
+      if (existingMesh.material) {
+        if (Array.isArray(existingMesh.material)) {
+          existingMesh.material.forEach((m) => m.dispose());
+        } else {
+          existingMesh.material.dispose();
+        }
+      }
+    }
+  }
+
+  // Create a grid from the data points
+  // Group points by x coordinate to determine grid structure
+  const pointsByX = new Map<number, CvPoint3[]>();
+  data.forEach((point) => {
+    if (!pointsByX.has(point.x)) {
+      pointsByX.set(point.x, []);
+    }
+    pointsByX.get(point.x)!.push(point);
+  });
+
+  const xValues = Array.from(pointsByX.keys()).sort((a, b) => a - b);
+  const yValues = Array.from(new Set(data.map((p) => p.y))).sort((a, b) => a - b);
+
+  // Normalize coordinates to [-0.5, 0.5] range for visualization
+  const xMin = Math.min(...xValues);
+  const xMax = Math.max(...xValues);
+  const yMin = Math.min(...yValues);
+  const yMax = Math.max(...yValues);
+  const zMin = Math.min(...data.map((p) => p.z));
+  const zMax = Math.max(...data.map((p) => p.z));
+
+  const xRange = xMax - xMin || 1;
+  const yRange = yMax - yMin || 1;
+  const zRange = zMax - zMin || 1;
+
+  // Create a 3D surface geometry
+  const geometry = new BufferGeometry();
+  const vertices: number[] = [];
+  const indices: number[] = [];
+
+  // Create a map for quick point lookup
+  const pointMap = new Map<string, CvPoint3>();
+  data.forEach((point) => {
+    pointMap.set(`${point.x},${point.y}`, point);
+  });
+
+  // Build vertices
+  xValues.forEach((x) => {
+    yValues.forEach((y) => {
+      const point = pointMap.get(`${x},${y}`);
+      const normX = (x - xMin) / xRange - 0.5;
+      const normY = (y - yMin) / yRange - 0.5;
+      const normZ = (point ? (point.z - zMin) / zRange : 0) * 0.3; // Scale Z for visibility
+
+      vertices.push(normX, normY, normZ);
+    });
+  });
+
+  // Build indices to create triangles
+  const xCount = xValues.length;
+  const yCount = yValues.length;
+
+  for (let xi = 0; xi < xCount - 1; xi++) {
+    for (let yi = 0; yi < yCount - 1; yi++) {
+      const a = xi * yCount + yi;
+      const b = xi * yCount + (yi + 1);
+      const c = (xi + 1) * yCount + yi;
+      const d = (xi + 1) * yCount + (yi + 1);
+
+      // Two triangles per grid quad
+      indices.push(a, c, b);
+      indices.push(b, c, d);
+    }
+  }
+
+  geometry.setAttribute("position", new BufferAttribute(new Float32Array(vertices), 3));
+  geometry.setIndex(new BufferAttribute(new Uint32Array(indices), 1));
+  geometry.computeVertexNormals();
+
+  // Create vertex colors based on Z values
+  const colors: number[] = [];
+  data.forEach((point) => {
+    const normalizedZ = (point.z - zMin) / zRange;
+    // Color gradient: blue (low) -> cyan -> green -> yellow -> red (high)
+    let r = 0, g = 0, b = 0;
+    
+    if (normalizedZ < 0.25) {
+      // Blue to Cyan
+      const t = normalizedZ / 0.25;
+      r = 0;
+      g = t;
+      b = 1;
+    } else if (normalizedZ < 0.5) {
+      // Cyan to Green
+      const t = (normalizedZ - 0.25) / 0.25;
+      r = 0;
+      g = 1;
+      b = 1 - t;
+    } else if (normalizedZ < 0.75) {
+      // Green to Yellow
+      const t = (normalizedZ - 0.5) / 0.25;
+      r = t;
+      g = 1;
+      b = 0;
+    } else {
+      // Yellow to Red
+      const t = (normalizedZ - 0.75) / 0.25;
+      r = 1;
+      g = 1 - t;
+      b = 0;
+    }
+    
+    colors.push(r, g, b);
+  });
+
+  geometry.setAttribute("color", new BufferAttribute(new Float32Array(colors), 3));
+
+  // Create material with vertex colors
+  const material = new MeshPhongMaterial({
+    vertexColors: true,
+    shininess: 200,
+    wireframe: false
+  });
+
+  const mesh = new Mesh(geometry, material);
+  mesh.name = "uncertaintyMesh";
+  scene.add(mesh);
 }
 
 const fetchUncertaintyData = async () => {
@@ -89,36 +225,6 @@ const onWindowResize = () => {
   camera.updateProjectionMatrix();
 };
 
-const resetCamFirstPerson = () => {
-  if (!scene || !camera || !controls) {
-    return;
-  }
-
-  controls.reset();
-  camera.position.set(0, 0, 0.05);
-  camera.up.set(0, -1, 0);
-  controls.target.set(0.0, 0.0, 1.0);
-  controls.update();
-  // if (previousTargets.length > 0) {
-  //   scene.add(...previousTargets);
-  // }
-};
-
-const resetCamThirdPerson = () => {
-  if (!scene || !camera || !controls) {
-    return;
-  }
-
-  controls.reset();
-  camera.position.set(-0.3, -0.2, -0.3);
-  camera.up.set(0, -1, 0);
-  controls.target.set(0.0, 0.0, 0.4);
-  controls.update();
-  // if (previousTargets.length > 0) {
-  //   scene.add(...previousTargets);
-  // }
-};
-
 let animationFrameId: number | null = null;
 
 onMounted(async () => {
@@ -152,24 +258,6 @@ onMounted(async () => {
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
 
-  const referenceFrameCues: Object3D[] = [];
-
-  // Draw the reference frame
-  referenceFrameCues.push(new AxesHelper(0.3));
-
-  // Draw the Camera Body
-  const camSize = 0.04;
-  const camBodyGeometry = new BoxGeometry(camSize, camSize, camSize);
-  const camLensGeometry = new ConeGeometry(camSize * 0.4, camSize * 0.8, 30);
-  const camMaterial = new MeshNormalMaterial();
-  const camBody = new Mesh(camBodyGeometry, camMaterial);
-  const camLens = new Mesh(camLensGeometry, camMaterial);
-  camBody.position.set(0, 0, 0);
-  camLens.rotateX(-Math.PI / 2);
-  camLens.position.set(0, 0, camSize * 0.8);
-  referenceFrameCues.push(camBody);
-  referenceFrameCues.push(camLens);
-
   controls = new TrackballControls(camera, renderer.domElement);
   controls.rotateSpeed = 1.0;
   controls.zoomSpeed = 1.2;
@@ -179,8 +267,10 @@ onMounted(async () => {
   controls.staticMoving = true;
   controls.dynamicDampingFactor = 0.3;
 
-  scene.add(...referenceFrameCues);
-  resetCamThirdPerson();
+  // Set camera to a position where the entire surface is visible
+  camera.position.set(0.5, 0.5, 0.6);
+  camera.up.set(0, -1, 0);
+  controls.target.set(0.0, 0.0, 0.15);
 
   controls.update();
 
@@ -270,26 +360,6 @@ watch(
         <v-card-title class="pa-0">
           {{ props.title }}
         </v-card-title>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          @click="resetCamFirstPerson"
-        >
-          First Person
-        </v-btn>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-          @click="resetCamThirdPerson"
-        >
-          Third Person
-        </v-btn>
       </v-col>
     </div>
     <div id="container" style="flex: 1 1 auto">
