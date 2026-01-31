@@ -148,6 +148,7 @@ public class AprilTagTest {
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
         pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+        pipeline.getSettings().outputMaximumTargets = 3; // bogus
 
         // when we have a picture with 280 targets
         var frameProvider =
