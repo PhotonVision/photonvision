@@ -45,7 +45,7 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public ArucoPipelineSettings() {
         super();
         pipelineType = PipelineType.Aruco;
-        outputMaximumTargets = 128;
+        outputMaximumTargets = 127;
         targetModel = TargetModel.kAprilTag6p5in_36h11;
         cameraExposureRaw = 20;
         cameraAutoExposure = true;

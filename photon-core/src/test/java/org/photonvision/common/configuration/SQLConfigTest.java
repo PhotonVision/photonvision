@@ -179,7 +179,7 @@ public class SQLConfigTest {
                     AdvancedPipelineSettings finalPs = adps;
                     if (finalPs.pipelineType.equals(PipelineType.AprilTag)
                             || finalPs.pipelineType.equals(PipelineType.Aruco)) {
-                        assertEquals(128, finalPs.outputMaximumTargets);
+                        assertEquals(127, finalPs.outputMaximumTargets);
                     } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
                         assertEquals(1, finalPs.outputMaximumTargets);
                     } else {
