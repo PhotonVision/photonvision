@@ -51,8 +51,8 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
 
   // Get the range of values for normalization
   const zValues = data.map((p) => p.z);
-  const zMin = Math.min(...zValues);
-  const zMax = Math.max(...zValues);
+  const zMin = 0;
+  const zMax = Math.ceil(Math.max(...zValues));
 
   const option: echarts.EChartsOption = {
     title: {
@@ -120,10 +120,17 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
     visualMap: {
       min: zMin,
       max: zMax,
-      text: ["High", "Low"],
+      text: [`${zMax} px`, `${zMin} px`],
       realtime: true,
       textStyle: {
         color: textColor
+      },
+      formatter: (value: number) => {
+        console.log("hi");
+        if (typeof value === "number") {
+          return `${value.toFixed(2)} px`;
+        }
+        return "";
       },
       inRange: {
         color: ["blue", "cyan", "green", "yellow", "red"]
