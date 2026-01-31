@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.io.FileWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -249,7 +248,6 @@ public class Calibrate3dPipe
         int imageWidth = (int) in.get(0).size.width;
         int imageHeight = (int) in.get(0).size.height;
 
-        var t1 = System.currentTimeMillis();
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
                         corner_locations,
@@ -260,38 +258,6 @@ public class Calibrate3dPipe
                         imageWidth,
                         imageHeight,
                         (fxGuess + fyGuess) / 2.0);
-        var t2 = System.currentTimeMillis();
-
-        {
-            // hack in uncertainty here
-            var observationsRaw =
-                    MrCalJNI.makeObservations(
-                            corner_locations, levels, params.boardWidth, params.boardHeight);
-            var uncertainty = // x, y, uncertainty
-                    MrCalJNI.compute_uncertainty(
-                            observationsRaw,
-                            result.intrinsics,
-                            result.framePosesToRtToref(),
-                            params.boardWidth,
-                            params.boardHeight,
-                            params.squareSize,
-                            imageWidth,
-                            imageHeight,
-                            60,
-                            40,
-                            result.warp_x,
-                            result.warp_y);
-            var t3 = System.currentTimeMillis();
-            logger.info("Calibration took " + (t2 - t1) + " ms");
-            logger.info("Uncertainty took " + (t3 - t2) + " ms");
-            try (FileWriter f = new FileWriter("out")) {
-                for (int i = 0; i < uncertainty.length; i += 3) {
-                    f.write(uncertainty[i] + "," + uncertainty[i + 1] + "," + uncertainty[i + 2] + "\n");
-                }
-            } catch (Exception e) {
-                logger.error("unceratinty fail", e);
-            }
-        }
 
         levels.forEach(MatOfFloat::release);
         corner_locations.forEach(MatOfPoint2f::release);

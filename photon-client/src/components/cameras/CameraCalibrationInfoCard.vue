@@ -7,6 +7,7 @@ import { computed, inject, ref } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import PhotonUncertaintyVisualizer from "@/components/app/photon-uncertainty-visualizer.vue";
 
 const theme = useTheme();
 const props = defineProps<{
@@ -106,6 +107,9 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 
+const uncertaintyImageUrl = () =>
+  useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
+
 const tab = ref("details");
 const viewingImg = ref(0);
 </script>
@@ -161,6 +165,7 @@ const viewingImg = ref(0);
         <v-tabs v-model="tab" grow bg-color="surface" height="48" slider-color="buttonActive">
           <v-tab key="details" value="details">Details</v-tab>
           <v-tab key="observations" value="observations">Observations</v-tab>
+          <v-tab key="uncertainty" value="uncertainty">Uncertainty</v-tab>
         </v-tabs>
         <v-tabs-window v-model="tab" class="pt-3">
           <v-tabs-window-item key="details" value="details">
@@ -308,6 +313,9 @@ const viewingImg = ref(0);
               </template>
             </v-data-table>
           </v-tabs-window-item>
+          <v-tabs-window-item key="uncertainty" value="uncertainty">
+            haii
+          </v-tabs-window-item>
         </v-tabs-window>
       </v-col>
       <v-col cols="8" class="pa-0 pl-6">
@@ -328,7 +336,15 @@ const viewingImg = ref(0);
               :resolution="props.videoFormat.resolution"
               title="Camera to Board Transforms"
             />
-            <template #fallback> Loading... </template>
+            <template #fallback>Loading...</template>
+          </Suspense>
+          <Suspense v-else-if="tab === 'uncertainty'" style="display: flex; justify-content: center; width: 100%">
+            <PhotonUncertaintyVisualizer
+              :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"
+              :resolution="props.videoFormat.resolution"
+              title="Camera reprojection uncertainty"
+            />
+            <template #fallback>Loading...</template>
           </Suspense>
           <div v-else style="display: flex; justify-content: center; width: 100%">
             <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />

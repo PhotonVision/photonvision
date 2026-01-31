@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
-import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.CharucoBoard;
 import org.opencv.objdetect.CharucoDetector;
