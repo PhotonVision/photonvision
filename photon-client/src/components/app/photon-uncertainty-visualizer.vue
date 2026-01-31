@@ -1,17 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
-const {
-  AmbientLight,
-  BufferAttribute,
-  BufferGeometry,
-  Color,
-  Mesh,
-  MeshPhongMaterial,
-  PerspectiveCamera,
-  Scene,
-  WebGLRenderer
-} = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+import { onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
+import * as echarts from "echarts";
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -25,154 +14,131 @@ const props = defineProps<{
   title: string;
 }>();
 
-let scene: Scene | undefined;
-let camera: PerspectiveCamera | undefined;
-let renderer: WebGLRenderer | undefined;
-let controls: TrackballControls | undefined;
+let chart: echarts.ECharts | undefined;
 
 const uncertaintyData: Ref<CvPoint3[] | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
 
-let baseAspect: number | undefined;
 const drawUncertainty = (data: CvPoint3[] | null) => {
-  if (!scene || !data || data.length === 0) return;
+  if (!chart || !data || data.length === 0) return;
 
-  // Remove any existing uncertainty mesh
-  const existingMesh = scene.getObjectByName("uncertaintyMesh");
-  if (existingMesh) {
-    scene.remove(existingMesh);
-    if (existingMesh instanceof Mesh) {
-      existingMesh.geometry?.dispose();
-      if (existingMesh.material) {
-        if (Array.isArray(existingMesh.material)) {
-          existingMesh.material.forEach((m) => m.dispose());
-        } else {
-          existingMesh.material.dispose();
-        }
-      }
-    }
-  }
+  // Get theme colors
+  const themeName = theme.global.name.value;
+  const themeColors = theme.themes.value[themeName].colors;
+  const textColor = themeColors.onBackground;
 
-  // Create a grid from the data points
-  // Group points by x coordinate to determine grid structure
-  const pointsByX = new Map<number, CvPoint3[]>();
-  data.forEach((point) => {
-    if (!pointsByX.has(point.x)) {
-      pointsByX.set(point.x, []);
-    }
-    pointsByX.get(point.x)!.push(point);
-  });
-
-  const xValues = Array.from(pointsByX.keys()).sort((a, b) => a - b);
+  // Get unique X and Y values as category axes
+  const xValues = Array.from(new Set(data.map((p) => p.x))).sort((a, b) => a - b);
   const yValues = Array.from(new Set(data.map((p) => p.y))).sort((a, b) => a - b);
 
-  // Normalize coordinates to [-0.5, 0.5] range for visualization
-  const xMin = Math.min(...xValues);
-  const xMax = Math.max(...xValues);
-  const yMin = Math.min(...yValues);
-  const yMax = Math.max(...yValues);
-  const zMin = Math.min(...data.map((p) => p.z));
-  const zMax = Math.max(...data.map((p) => p.z));
-
-  const xRange = xMax - xMin || 1;
-  const yRange = yMax - yMin || 1;
-  const zRange = zMax - zMin || 1;
-
-  // Create a 3D surface geometry
-  const geometry = new BufferGeometry();
-  const vertices: number[] = [];
-  const indices: number[] = [];
-
   // Create a map for quick point lookup
-  const pointMap = new Map<string, CvPoint3>();
+  const pointMap = new Map<string, number>();
   data.forEach((point) => {
-    pointMap.set(`${point.x},${point.y}`, point);
+    pointMap.set(`${point.x},${point.y}`, point.z);
   });
 
-  // Build vertices
-  xValues.forEach((x) => {
-    yValues.forEach((y) => {
-      const point = pointMap.get(`${x},${y}`);
-      const normX = (x - xMin) / xRange - 0.5;
-      const normY = (y - yMin) / yRange - 0.5;
-      const normZ = (point ? (point.z - zMin) / zRange : 0) * 0.3; // Scale Z for visibility
-
-      vertices.push(normX, normY, normZ);
+  // Prepare heatmap data: convert to [xIndex, yIndex, value] format
+  const heatmapData: [number, number, number][] = [];
+  xValues.forEach((x, xi) => {
+    yValues.forEach((y, yi) => {
+      const value = pointMap.get(`${x},${y}`);
+      if (value !== undefined) {
+        heatmapData.push([xi, yi, value]);
+      }
     });
   });
 
-  // Build indices to create triangles
-  const xCount = xValues.length;
-  const yCount = yValues.length;
+  // Get the range of values for normalization
+  const zValues = data.map((p) => p.z);
+  const zMin = Math.min(...zValues);
+  const zMax = Math.max(...zValues);
 
-  for (let xi = 0; xi < xCount - 1; xi++) {
-    for (let yi = 0; yi < yCount - 1; yi++) {
-      const a = xi * yCount + yi;
-      const b = xi * yCount + (yi + 1);
-      const c = (xi + 1) * yCount + yi;
-      const d = (xi + 1) * yCount + (yi + 1);
+  const option: echarts.EChartsOption = {
+    title: {
+      text: props.title,
+      left: "center",
+      textStyle: {
+        color: textColor
+      }
+    },
+    tooltip: {
+      position: "top",
+      backgroundColor: themeColors.background,
+      textStyle: {
+        color: textColor
+      },
+      formatter: function (params) {
+        if (!Array.isArray(params) && params.value) {
+          const [xi, yi, value] = params.value as [number, number, number];
+          const x = xValues[xi];
+          const y = yValues[yi];
+          return `X: ${x}<br/>Y: ${y}<br/>Uncertainty: ${value.toFixed(4)}`;
+        }
+        return "";
+      }
+    },
+    grid: {
+      top: 40,
+      bottom: 60,
+      left: 60,
+      right: 120,
+      containLabel: true
+    },
+    xAxis: {
+      type: "category",
+      name: "X (pixels)",
+      nameTextStyle: {
+        color: textColor
+      },
+      axisLabel: {
+        color: textColor
+      },
+      axisLine: {
+        lineStyle: {
+          color: textColor
+        }
+      },
+      data: xValues.map((v) => v.toString())
+    },
+    yAxis: {
+      type: "category",
+      name: "Y (pixels)",
+      nameTextStyle: {
+        color: textColor
+      },
+      axisLabel: {
+        color: textColor
+      },
+      axisLine: {
+        lineStyle: {
+          color: textColor
+        }
+      },
+      data: yValues.map((v) => v.toString())
+    },
+    visualMap: {
+      min: zMin,
+      max: zMax,
+      text: ["High", "Low"],
+      realtime: true,
+      textStyle: {
+        color: textColor
+      },
+      inRange: {
+        color: ["blue", "cyan", "green", "yellow", "red"]
+      }
+    },
+    series: [
+      {
+        name: "Uncertainty",
+        type: "heatmap",
+        data: heatmapData
+      }
+    ]
+  };
 
-      // Two triangles per grid quad
-      indices.push(a, c, b);
-      indices.push(b, c, d);
-    }
-  }
-
-  geometry.setAttribute("position", new BufferAttribute(new Float32Array(vertices), 3));
-  geometry.setIndex(new BufferAttribute(new Uint32Array(indices), 1));
-  geometry.computeVertexNormals();
-
-  // Create vertex colors based on Z values
-  const colors: number[] = [];
-  data.forEach((point) => {
-    const normalizedZ = (point.z - zMin) / zRange;
-    // Color gradient: blue (low) -> cyan -> green -> yellow -> red (high)
-    let r = 0,
-      g = 0,
-      b = 0;
-
-    if (normalizedZ < 0.25) {
-      // Blue to Cyan
-      const t = normalizedZ / 0.25;
-      r = 0;
-      g = t;
-      b = 1;
-    } else if (normalizedZ < 0.5) {
-      // Cyan to Green
-      const t = (normalizedZ - 0.25) / 0.25;
-      r = 0;
-      g = 1;
-      b = 1 - t;
-    } else if (normalizedZ < 0.75) {
-      // Green to Yellow
-      const t = (normalizedZ - 0.5) / 0.25;
-      r = t;
-      g = 1;
-      b = 0;
-    } else {
-      // Yellow to Red
-      const t = (normalizedZ - 0.75) / 0.25;
-      r = 1;
-      g = 1 - t;
-      b = 0;
-    }
-
-    colors.push(r, g, b);
-  });
-
-  geometry.setAttribute("color", new BufferAttribute(new Float32Array(colors), 3));
-
-  // Create material with vertex colors
-  const material = new MeshPhongMaterial({
-    vertexColors: true,
-    shininess: 200,
-    wireframe: false
-  });
-
-  const mesh = new Mesh(geometry, material);
-  mesh.name = "uncertaintyMesh";
-  scene.add(mesh);
+  chart.setOption(option);
 };
 
 const fetchUncertaintyData = async () => {
@@ -197,130 +163,41 @@ const fetchUncertaintyData = async () => {
 };
 
 const onWindowResize = () => {
-  const container = document.getElementById("container");
-  const canvas = document.getElementById("view");
-
-  if (!container || !canvas || !camera || !renderer) {
-    return;
+  if (chart) {
+    chart.resize();
   }
-
-  // Compute a concrete width from the container and derive height from a
-  // stable base aspect ratio (calculated on mount) to avoid feedback loops
-  // where updating canvas size changes container size while resizing
-  const width = Math.max(1, Math.floor(container.clientWidth));
-  let height: number;
-  if (baseAspect && baseAspect > 0) {
-    height = Math.max(1, Math.floor(width / baseAspect));
-  } else {
-    height = Math.max(1, Math.floor(container.clientHeight));
-  }
-
-  // Use updateStyle=false so Three.js does not write to canvas style,
-  // which can affect layout and re-trigger resize events
-  renderer.setSize(width, height, false);
-  camera.aspect = width / height;
-  camera.updateProjectionMatrix();
 };
 
-let animationFrameId: number | null = null;
-
 onMounted(async () => {
-  // Grab data first off
+  // Fetch data
   fetchUncertaintyData();
 
-  scene = new Scene();
-  camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
+  const container = document.getElementById("container");
+  if (!container) return;
 
-  const canvas = document.getElementById("view");
-  if (!canvas) return;
-  renderer = new WebGLRenderer({ canvas: canvas });
+  // Set container height based on aspect ratio of camera resolution
+  const aspectRatio = props.resolution.width / props.resolution.height;
+  const containerWidth = container.clientWidth;
+  const containerHeight = containerWidth / aspectRatio;
+  container.style.height = `${containerHeight}px`;
 
-  // Add lights
-  const ambientLight = new AmbientLight(0xffffff, 0.6);
-  scene.add(ambientLight);
+  // Initialize ECharts instance
+  chart = echarts.init(container);
 
-  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
-  else scene.background = new Color(0x000000);
+  // Draw initial data
+  drawUncertainty(uncertaintyData.value);
 
-  // Initialize a stable aspect ratio so subsequent resize events derive
-  // height from width, avoiding layout feedback during continuous resizing
-  try {
-    const initWidth = Math.max(1, Math.floor(document.getElementById("container")?.clientWidth || 1));
-    const initHeight = Math.max(1, Math.floor(document.getElementById("container")?.clientHeight || 1));
-    baseAspect = initWidth / Math.max(1, initHeight);
-  } catch {
-    baseAspect = undefined;
-  }
-
-  onWindowResize();
+  // Handle window resize
   window.addEventListener("resize", onWindowResize);
-
-  controls = new TrackballControls(camera, renderer.domElement);
-  controls.rotateSpeed = 1.0;
-  controls.zoomSpeed = 1.2;
-  controls.panSpeed = 0.8;
-  controls.noZoom = false;
-  controls.noPan = false;
-  controls.staticMoving = true;
-  controls.dynamicDampingFactor = 0.3;
-
-  // Set camera to a position where the entire surface is visible
-  camera.position.set(0.5, 0.5, 0.6);
-  camera.up.set(0, -1, 0);
-  controls.target.set(0.0, 0.0, 0.15);
-
-  controls.update();
-
-  const animate = () => {
-    if (!scene || !camera || !renderer || !controls) {
-      return;
-    }
-
-    animationFrameId = requestAnimationFrame(animate);
-
-    controls.update();
-    renderer.render(scene, camera);
-  };
-
-  animate();
 });
 
 const cleanup = () => {
   window.removeEventListener("resize", onWindowResize);
 
-  if (animationFrameId) {
-    cancelAnimationFrame(animationFrameId);
+  if (chart) {
+    chart.dispose();
+    chart = undefined;
   }
-
-  if (controls) {
-    controls.dispose();
-  }
-
-  if (renderer) {
-    renderer.dispose();
-    renderer.forceContextLoss();
-  }
-
-  if (scene) {
-    scene.traverse((object) => {
-      if (object instanceof Mesh) {
-        object.geometry?.dispose();
-        if (object.material) {
-          if (Array.isArray(object.material)) {
-            object.material.forEach((material) => material.dispose());
-          } else {
-            object.material.dispose();
-          }
-        }
-      }
-    });
-  }
-
-  scene = undefined;
-  camera = undefined;
-  renderer = undefined;
-  controls = undefined;
-  // previousTargets = [];
 };
 
 onBeforeUnmount(cleanup);
@@ -332,9 +209,13 @@ if (import.meta.hot) {
   });
 }
 
-watchEffect(() => {
-  drawUncertainty(uncertaintyData.value);
-});
+// Update chart when data changes
+watch(
+  () => uncertaintyData.value,
+  () => {
+    drawUncertainty(uncertaintyData.value);
+  }
+);
 
 watch(
   () => [
@@ -351,16 +232,7 @@ watch(
 </script>
 
 <template>
-  <div style="width: 100%; height: 100%" class="d-flex flex-column">
-    <div class="d-flex flex-wrap pt-0 pb-2">
-      <v-col cols="12" md="6" class="pl-0">
-        <v-card-title class="pa-0">
-          {{ props.title }}
-        </v-card-title>
-      </v-col>
-    </div>
-    <div id="container" style="flex: 1 1 auto">
-      <canvas id="view" class="w-100 h-100" />
-    </div>
+  <div style="width: 100%">
+    <div id="container" style="width: 100%; min-height: 400px" />
   </div>
 </template>
