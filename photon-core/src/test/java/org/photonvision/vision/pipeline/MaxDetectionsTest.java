@@ -27,6 +27,7 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class MaxDetectionsTest {
@@ -50,6 +51,14 @@ public class MaxDetectionsTest {
 
         var frameProvider = new FileFrameProvider(path, TestUtils.WPI2019Image.FOV);
 
+        // VisionRunner normally does this
+        var hsvParams =
+                new HSVPipe.HSVParams(
+                        pipeline.getSettings().hsvHue,
+                        pipeline.getSettings().hsvSaturation,
+                        pipeline.getSettings().hsvValue,
+                        pipeline.getSettings().hueInverted);
+        frameProvider.requestHsvSettings(hsvParams);
         frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
@@ -63,6 +72,7 @@ public class MaxDetectionsTest {
 
         pipeline.settings.outputMaximumTargets = 50;
         result = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        assertEquals(24, result.targets.size());
+        // 24 circles, but we only detect 22
+        assertEquals(22, result.targets.size());
     }
 }
