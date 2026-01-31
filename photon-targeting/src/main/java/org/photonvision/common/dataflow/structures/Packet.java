@@ -31,6 +31,8 @@ public class Packet {
     // Read and write positions.
     int readPos, writePos;
 
+    public static final int MAX_ARRAY_LEN = Byte.MAX_VALUE;
+
     /**
      * Constructs an empty packet. This buffer will dynamically expand if we need more data space.
      *
