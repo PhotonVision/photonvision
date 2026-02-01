@@ -34,7 +34,7 @@ import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -50,20 +50,20 @@ import org.photonvision.vision.objects.RubikModel;
  * extracted to the filesystem, it will not be extracted again.
  *
  * <p>Each model must have a corresponding {@link ModelProperties} entry in {@link
- * NeuralNetworkPropertyManager}.
+ * NeuralNetworkModelsSettings}.
  */
 public class NeuralNetworkModelManager {
     /** Singleton instance of the NeuralNetworkModelManager */
     private static NeuralNetworkModelManager INSTANCE;
 
-    private final List<Family> supportedBackends = new ArrayList<>();
+    final List<Family> supportedBackends = new ArrayList<>();
 
     /**
      * This function stores the properties of the shipped object detection models. It is stored as a
      * function so that it can be dynamic, to adjust for the models directory.
      */
-    private NeuralNetworkPropertyManager getShippedProperties(File modelsDirectory) {
-        NeuralNetworkPropertyManager nnProps = new NeuralNetworkPropertyManager();
+    private NeuralNetworkModelsSettings getShippedProperties(File modelsDirectory) {
+        NeuralNetworkModelsSettings nnProps = new NeuralNetworkModelsSettings();
 
         LinkedList<String> cocoLabels =
                 new LinkedList<String>(
@@ -151,16 +151,6 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
-                        Path.of(modelsDirectory.getAbsolutePath(), "algaeV1-640-640-yolov8n.rknn"),
-                        "Algae v8n",
-                        new LinkedList<String>(List.of("Algae")),
-                        640,
-                        480,
-                        Family.RKNN,
-                        Version.YOLOV8));
-
-        nnProps.addModelProperties(
-                new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.rknn"),
                         "COCO",
                         cocoLabels,
@@ -171,13 +161,13 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
-                        Path.of(modelsDirectory.getAbsolutePath(), "algae-coral-yolov8s.tflite"),
-                        "Algae Coral v8s",
-                        new LinkedList<String>(List.of("Algae", "Coral")),
+                        Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.rknn"),
+                        "Fuel v11n",
+                        new LinkedList<String>(List.of("Fuel")),
                         640,
                         640,
-                        Family.RUBIK,
-                        Version.YOLOV8));
+                        Family.RKNN,
+                        Version.YOLOV11));
 
         nnProps.addModelProperties(
                 new ModelProperties(
@@ -188,6 +178,16 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RUBIK,
                         Version.YOLOV8));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.tflite"),
+                        "Fuel v11n",
+                        new LinkedList<String>(List.of("Fuel")),
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV11));
 
         return nnProps;
     }
@@ -272,7 +272,7 @@ public class NeuralNetworkModelManager {
      *
      * <p>The first model in the list is the default model.
      */
-    private Map<Family, ArrayList<Model>> models;
+    Map<Family, ArrayList<Model>> models;
 
     /**
      * Retrieves the model with the specified name, assuming it is available under a supported
@@ -324,9 +324,22 @@ public class NeuralNetworkModelManager {
             logger.error(
                     "Model properties are null. This could mean the config for model "
                             + path
-                            + " was unable to be found in the database.");
-            return;
+                            + " was unable to be found in the database. Trying legacy...");
+            try {
+                properties = ModelProperties.createFromFilename(path.getFileName().toString());
+
+                // At this point this property is not serialized or known to our configuration. add to
+                // NeuralNetworkModelsSettings
+                ConfigManager.getInstance()
+                        .getConfig()
+                        .neuralNetworkPropertyManager()
+                        .addModelProperties(properties);
+            } catch (IllegalArgumentException | IOException e) {
+                logger.error("Failed to translate legacy model filename to properties: " + path, e);
+            }
         }
+
+        logger.debug(properties.toString());
 
         if (!supportedBackends.contains(properties.family())) {
             logger.warn(
@@ -412,7 +425,7 @@ public class NeuralNetworkModelManager {
         File modelsDirectory = ConfigManager.getInstance().getModelsDirectory();
 
         // Filter shippedProprties by supportedBackends
-        NeuralNetworkPropertyManager supportedProperties = new NeuralNetworkPropertyManager();
+        NeuralNetworkModelsSettings supportedProperties = new NeuralNetworkModelsSettings();
         for (ModelProperties model : getShippedProperties(modelsDirectory).getModels()) {
             if (supportedBackends.contains(model.family())) {
                 supportedProperties.addModelProperties(model);

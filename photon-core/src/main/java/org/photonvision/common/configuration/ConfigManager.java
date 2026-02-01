@@ -39,7 +39,7 @@ import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
-    private static ConfigManager INSTANCE;
+    static ConfigManager INSTANCE;
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
     public static final String HW_SET_FNAME = "hardwareSettings.json";
