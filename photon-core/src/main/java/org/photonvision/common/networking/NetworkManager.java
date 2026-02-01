@@ -154,7 +154,7 @@ public class NetworkManager {
         try {
             var shell = new ShellExec(true, false);
             shell.executeBashCommand("systemctl restart avahi-daemon.service");
-            logger.debug("Restarted avahi.");
+            logger.debug("Restarted avahi");
         } catch (IOException e) {
             logger.error("Failed to restart avahi daemon");
         }
