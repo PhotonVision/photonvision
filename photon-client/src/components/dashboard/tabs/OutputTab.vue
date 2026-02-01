@@ -63,7 +63,7 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
       label="Maximum Targets"
       tooltip="The maximum number of targets to display and send."
-      :disabled="isTagPipeline"
+      :hidden="isTagPipeline"
       :min="1"
       :max="127"
       :step="1"
