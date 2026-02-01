@@ -42,6 +42,7 @@ import org.photonvision.common.util.TimedTaskManager;
 public class NetworkManager {
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
     private HashMap<String, String> activeConnections = new HashMap<String, String>();
+    private static boolean firstInitialization = true;
 
     private NetworkManager() {}
 
@@ -110,6 +111,20 @@ public class NetworkManager {
                     logger.error("No valid network interfaces to manage");
                     return;
                 }
+            }
+        }
+
+        // Safety check for setting the IP address to static.
+        if (firstInitialization) {
+            // only check this once after restarting PhotonVision
+            firstInitialization = false;
+            if (config.connectionType == NetworkMode.STATIC && !config.staticIpVerified) {
+                // revert to DHCP becuase system was rebooted after setting static IP but without
+                // acknowledging that the static IP was working correctly
+                logger.warn(
+                        "System was rebooted with staic IP set but not verified as working in the UI. Reverting to DHCP!");
+                config.connectionType = NetworkMode.DHCP;
+                ConfigManager.getInstance().requestSave();
             }
         }
 
