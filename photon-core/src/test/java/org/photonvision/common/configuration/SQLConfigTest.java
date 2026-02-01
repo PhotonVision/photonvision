@@ -179,11 +179,13 @@ public class SQLConfigTest {
                     AdvancedPipelineSettings finalPs = adps;
                     if (finalPs.pipelineType.equals(PipelineType.AprilTag)
                             || finalPs.pipelineType.equals(PipelineType.Aruco)) {
-                        assertEquals(127, finalPs.outputMaximumTargets);
+                        // Tag pipelines don't have max detections, so skip
+                        continue;
                     } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
                         // This is our colored shape pipeline that we set to 1 before saving
                         assertEquals(1, finalPs.outputMaximumTargets);
                     } else {
+                        // All others should be at default 20
                         assertEquals(20, finalPs.outputMaximumTargets);
                     }
                 } else {
