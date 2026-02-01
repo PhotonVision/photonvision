@@ -103,7 +103,7 @@ const saveGeneralSettings = async () => {
     shouldManage: tempSettingsStruct.value.shouldManage,
     shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
     staticIp: tempSettingsStruct.value.staticIp,
-    staticIpVerified: tempSettingsStruct.value.staticIpVerified,
+    staticIpVerified: tempSettingsStruct.value.staticIpVerified
   };
 
   try {

@@ -17,7 +17,6 @@
 
 package org.photonvision.common.networking;
 
-import java.io.IOException;
 import java.net.NetworkInterface;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -148,9 +147,6 @@ public class NetworkManager {
         } else if (config.connectionType == NetworkMode.STATIC) {
             setConnectionStatic(config);
         }
-
-        // Publish updated mDNS values after any networking changes
-        restartAvahi();
     }
 
     public void reinitialize() {
@@ -163,16 +159,6 @@ public class NetworkManager {
                                 DataChangeDestination.DCD_WEBSERVER,
                                 "restartServer",
                                 true));
-    }
-
-    private void restartAvahi() {
-        try {
-            var shell = new ShellExec(true, false);
-            shell.executeBashCommand("systemctl restart avahi-daemon.service");
-            logger.debug("Restarted avahi");
-        } catch (IOException e) {
-            logger.error("Failed to restart avahi daemon");
-        }
     }
 
     private void setHostname(NetworkConfig config) {
@@ -198,6 +184,8 @@ public class NetworkManager {
                                 String.format(
                                         "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
                                         oldHostname, config.hostname));
+
+                shell.executeBashCommand("systemctl restart avahi-daemon.service");
 
                 // This resets the NetworkTables config to use the new hostname as the client ID
                 NetworkTablesManager.getInstance().setConfig(config);
