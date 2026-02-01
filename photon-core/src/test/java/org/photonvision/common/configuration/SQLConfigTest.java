@@ -181,6 +181,7 @@ public class SQLConfigTest {
                             || finalPs.pipelineType.equals(PipelineType.Aruco)) {
                         assertEquals(127, finalPs.outputMaximumTargets);
                     } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
+                        // This is our colored shape pipeline that we set to 1 before saving
                         assertEquals(1, finalPs.outputMaximumTargets);
                     } else {
                         assertEquals(20, finalPs.outputMaximumTargets);
