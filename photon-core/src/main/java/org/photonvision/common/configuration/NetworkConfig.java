@@ -57,7 +57,7 @@ public class NetworkConfig {
                     String ntServerAddress,
             @JsonProperty("connectionType") NetworkMode connectionType,
             @JsonProperty("staticIp") String staticIp,
-            @JsonProperty("staticIpVerified") boolean staticIpVerified,
+            @JsonProperty("staticIpVerified") Boolean staticIpVerified,
             @JsonProperty("hostname") String hostname,
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
@@ -68,7 +68,11 @@ public class NetworkConfig {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
-        this.staticIpVerified = staticIpVerified;
+        // When offline updating an older verison of PhotonVisison, the staticIpVerified field will be
+        // missing and deserialization will return a null. If the value is null, and the connection was
+        // set to STATIC, assume that it was "verified" and set staticIpVerified to true.
+        this.staticIpVerified =
+                (staticIpVerified == null) ? connectionType == NetworkMode.STATIC : staticIpVerified;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
         this.shouldPublishProto = shouldPublishProto;
