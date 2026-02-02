@@ -23,13 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,20 +45,11 @@ import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
-    @TempDir private static Path tmpDir;
+    @TempDir private Path tmpDir;
 
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
-    }
-
-    @BeforeEach
-    public void setup() throws IOException {
-        // Ensure temp dir is empty
-        Files.walk(tmpDir)
-                .filter(path -> !path.equals(tmpDir))
-                .map(Path::toFile)
-                .forEach(file -> file.delete());
     }
 
     @Test
