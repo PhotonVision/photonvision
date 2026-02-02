@@ -244,7 +244,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3 rounded-12" color="surface" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <v-card-text v-if="!isCalibrating" class="pb-0">
-        <div class="pb-2">
+        <div class="pb-3">
           <tooltipped-label
             label="Curent Calibrations"
             icon="mdi-information"
@@ -290,7 +290,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       </v-card-text>
       <v-card-text class="pt-0">
         <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
-          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-3 opacity-100"
+          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100"
             >Configure New Calibration</v-card-subtitle
           >
           <v-form ref="form" v-model="settingsValid">
