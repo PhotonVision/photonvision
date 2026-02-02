@@ -90,7 +90,7 @@ const saveGeneralSettings = async () => {
   if (changingStaticIP) {
     tempSettingsStruct.value.staticIpVerified = false;
   }
-  
+
   // replace undefined members with empty strings for backend
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
