@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
@@ -33,9 +34,12 @@ import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.PVCameraInfo;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ObjectDetectionPipelineSettings;
+import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
@@ -152,6 +156,43 @@ public class SQLConfigTest {
 
         // And make sure NNPM has all 5 models
         assertEquals(5, reloadedProvider.getConfig().neuralNetworkPropertyManager().getModels().length);
+
+        ConfigManager.INSTANCE = null;
+    }
+
+    @Test
+    public void testMaxDetectionsMigration() {
+        var folder = TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm");
+        var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
+
+        // Replace global configmanager
+        ConfigManager.INSTANCE = cfgManager;
+
+        assertDoesNotThrow(cfgManager::load);
+
+        Collection<CameraConfiguration> cameraConfigs =
+                cfgManager.getConfig().getCameraConfigurations().values();
+
+        for (CameraConfiguration cc : cameraConfigs) {
+            for (CVPipelineSettings ps : cc.pipelineSettings) {
+                if (ps instanceof AdvancedPipelineSettings adps) {
+                    AdvancedPipelineSettings finalPs = adps;
+                    if (finalPs.pipelineType.equals(PipelineType.AprilTag)
+                            || finalPs.pipelineType.equals(PipelineType.Aruco)) {
+                        // Tag pipelines don't have max detections, so skip
+                        continue;
+                    } else if (finalPs.pipelineNickname.equals("TEST MIGRATION")) {
+                        // This is our colored shape pipeline that we set to 1 before saving
+                        assertEquals(1, finalPs.outputMaximumTargets);
+                    } else {
+                        // All others should be at default 20
+                        assertEquals(20, finalPs.outputMaximumTargets);
+                    }
+                } else {
+                    System.out.println("Skipping pipeline settings type: " + ps.getClass().getSimpleName());
+                }
+            }
+        }
 
         ConfigManager.INSTANCE = null;
     }

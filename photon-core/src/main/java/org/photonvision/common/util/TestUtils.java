@@ -228,7 +228,8 @@ public class TestUtils {
         kRobots,
         kTag1_640_480,
         kTag1_16h5_1280,
-        kTag_corner_1280;
+        kTag_corner_1280,
+        k36h11_stress_test;
 
         public final Path path;
 
@@ -237,6 +238,7 @@ public class TestUtils {
             var filename = this.toString().substring(1).toLowerCase();
             var extension = ".jpg";
             if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            if (filename.equals("36h11_stress_test")) extension = ".png";
             return Path.of("apriltag", filename + extension);
         }
 
