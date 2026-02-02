@@ -334,7 +334,7 @@ public class NeuralNetworkModelManager {
                         .getConfig()
                         .neuralNetworkPropertyManager()
                         .addModelProperties(properties);
-            } catch (Exception e) {
+            } catch (IllegalArgumentException | IOException e) {
                 logger.error("Failed to translate legacy model filename to properties: " + path, e);
                 return;
             }
