@@ -22,9 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.cscore.UsbCameraInfo;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -43,7 +45,7 @@ import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 
 public class SQLConfigTest {
-    @TempDir private static Path tmpDir;
+    @TempDir private Path tmpDir;
 
     @BeforeAll
     public static void init() {
@@ -91,11 +93,15 @@ public class SQLConfigTest {
     }
 
     @Test
-    public void testLoad2024_3_1() {
-        var cfgLoader =
-                new SqlConfigProvider(
-                        TestUtils.getConfigDirectoriesPath(false)
-                                .resolve("photonvision_config_from_v2024.3.1"));
+    public void testLoad2024_3_1() throws IOException {
+        // Copy the 2024.3.1 config to a temp dir
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false)
+                        .resolve("photonvision_config_from_v2024.3.1")
+                        .toFile(),
+                tmpDir.resolve("photonvision_config_from_v2024.3.1").toFile());
+
+        var cfgLoader = new SqlConfigProvider(tmpDir.resolve("photonvision_config_from_v2024.3.1"));
 
         assertDoesNotThrow(cfgLoader::load);
 
@@ -128,8 +134,12 @@ public class SQLConfigTest {
     }
 
     @Test
-    public void testLoadNewNNMM() throws JsonProcessingException {
-        var folder = TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm");
+    public void testLoadNewNNMM() throws JsonProcessingException, IOException {
+        var folder = tmpDir.resolve("2025.3.1-old-nnmm");
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
+                folder.toFile());
+
         var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
 
         // Replace global configmanager
@@ -161,8 +171,12 @@ public class SQLConfigTest {
     }
 
     @Test
-    public void testMaxDetectionsMigration() {
-        var folder = TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm");
+    public void testMaxDetectionsMigration() throws IOException {
+        var folder = tmpDir.resolve("2025.3.1-old-nnmm");
+        FileUtils.copyDirectory(
+                TestUtils.getConfigDirectoriesPath(false).resolve("2025.3.1-old-nnmm").toFile(),
+                folder.toFile());
+
         var cfgManager = new ConfigManager(folder, new SqlConfigProvider(folder));
 
         // Replace global configmanager
