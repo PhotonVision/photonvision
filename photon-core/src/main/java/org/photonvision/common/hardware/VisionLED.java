@@ -43,6 +43,7 @@ public class VisionLED implements AutoCloseable {
 
     private VisionLEDMode currentLedMode = VisionLEDMode.kDefault;
     private BooleanSupplier pipelineModeSupplier;
+    private boolean currentOutputState = false;
 
     private float mappedBrightness = 0.0f;
 
@@ -85,7 +86,11 @@ public class VisionLED implements AutoCloseable {
     public void setBrightness(int percentage) {
         mappedBrightness =
                 (float) (MathUtils.map(percentage, 0.0, 100.0, brightnessMin, brightnessMax) / 100.0);
-        setInternal(currentLedMode, false);
+        if (currentOutputState) {
+            for (PwmLed led : dimmableVisionLEDs) {
+                led.setValue(mappedBrightness);
+            }
+        }
     }
 
     public void blink(int pulseLengthMillis, int blinkCount) {
@@ -102,6 +107,7 @@ public class VisionLED implements AutoCloseable {
                 .addTask(
                         blinkTaskID,
                         () -> {
+                            currentOutputState = !currentOutputState;
                             for (LED led : visionLEDs) {
                                 led.toggle();
                             }
@@ -117,6 +123,7 @@ public class VisionLED implements AutoCloseable {
 
     private void setStateImpl(boolean state) {
         TimedTaskManager.getInstance().cancelTask(blinkTaskID);
+        currentOutputState = state;
         for (LED led : visionLEDs) {
             led.setOn(state);
         }
@@ -165,7 +172,7 @@ public class VisionLED implements AutoCloseable {
 
         var lastLedMode = currentLedMode;
 
-        if (fromNT || currentLedMode == VisionLEDMode.kDefault || currentLedMode == newLedMode) {
+        if (fromNT || currentLedMode == VisionLEDMode.kDefault) {
             switch (newLedMode) {
                 case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
                 case kOff -> setStateImpl(false);
