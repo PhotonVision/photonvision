@@ -15,22 +15,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware;
+package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import java.util.List;
+import org.photonvision.common.hardware.PhotonStatus;
 import org.photonvision.common.util.TimedTaskManager;
 
-public class StatusLED implements AutoCloseable {
-    public final LED redLED;
+/** A pair of green and yellow LEDs, as used on the Limelight cameras */
+public class GYStatusLED implements StatusLED {
     public final LED greenLED;
-    public final LED blueLED;
+    public final LED yellowLED;
     protected int blinkCounter;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
-    public StatusLED(
+    public GYStatusLED(
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
@@ -40,52 +41,51 @@ public class StatusLED implements AutoCloseable {
         }
 
         // Outputs are active-low for a common-anode RGB LED
-        redLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
-        greenLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
-        blueLED = new LED(deviceFactory, statusLedPins.get(2), activeHigh, false);
+        greenLED = new LED(deviceFactory, statusLedPins.get(0), activeHigh, false);
+        yellowLED = new LED(deviceFactory, statusLedPins.get(1), activeHigh, false);
 
-        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 150);
+        TimedTaskManager.getInstance().addTask("StatusLEDUpdate", this::updateLED, 75);
     }
 
-    protected void setRGB(boolean r, boolean g, boolean b) {
-        redLED.setOn(r);
-        greenLED.setOn(g);
-        blueLED.setOn(b);
+    protected void setLEDs(boolean green, boolean yellow) {
+        greenLED.setOn(green);
+        yellowLED.setOn(yellow);
     }
 
+    @Override
     public void setStatus(PhotonStatus status) {
         this.status = status;
     }
 
     protected void updateLED() {
-        boolean blink = blinkCounter > 0;
+        boolean slowBlink = blinkCounter > 1;
+        boolean fastBlink = (blinkCounter % 2) > 0;
 
         switch (status) {
             case NT_CONNECTED_TARGETS_VISIBLE ->
-                    // Blue
-                    setRGB(false, false, true);
+                    // Green fast, yellow on
+                    setLEDs(fastBlink, true);
             case NT_CONNECTED_TARGETS_MISSING ->
-                    // Blinking Green
-                    setRGB(false, blink, false);
+                    // Green slow, yellow on
+                    setLEDs(slowBlink, true);
             case NT_DISCONNECTED_TARGETS_VISIBLE ->
-                    // Blinking Blue
-                    setRGB(false, false, blink);
+                    // Green fast, yellow slow
+                    setLEDs(fastBlink, slowBlink);
             case NT_DISCONNECTED_TARGETS_MISSING ->
-                    // Blinking Yellow
-                    setRGB(blink, blink, false);
+                    // Green slow, yellow slow
+                    setLEDs(slowBlink, slowBlink);
             case GENERIC_ERROR ->
-                    // Blinking Red
-                    setRGB(blink, false, false);
+                    // No lights
+                    setLEDs(false, false);
         }
 
         blinkCounter++;
-        blinkCounter %= 3;
+        blinkCounter %= 6;
     }
 
     @Override
-    public void close() {
-        redLED.close();
+    public void close() throws Exception {
         greenLED.close();
-        blueLED.close();
+        yellowLED.close();
     }
 }
