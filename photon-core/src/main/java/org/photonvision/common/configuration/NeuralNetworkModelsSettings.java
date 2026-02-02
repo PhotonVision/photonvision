@@ -20,12 +20,10 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -94,12 +92,8 @@ public class NeuralNetworkModelsSettings {
                 throw new IllegalArgumentException("Model " + modelFileName + " cannot find backend");
             }
 
-            String labelFilename = model.getAbsolutePath().replace(backend.get().extension(), "-labels.txt");
-            var labelPath = Path.of(labelFilename);
-            if (!labelPath.toFile().exists()) {
-                throw new FileNotFoundException("Label file " + labelFilename + " does not exist");
-            }
-            List<String> labels = Files.readAllLines(labelPath);
+            String labelFile = model.getAbsolutePath().replace(backend.get().extension(), "-labels.txt");
+            List<String> labels = Files.readAllLines(Paths.get(labelFile));
 
             String[] parts = parseRKNNName(modelFileName);
             var version = getModelVersion(parts[3]);
