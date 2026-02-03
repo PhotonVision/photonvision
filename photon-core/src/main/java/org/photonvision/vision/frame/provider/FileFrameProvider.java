@@ -27,13 +27,12 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.opencv.Releasable;
 
 /**
  * A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path
  * path}.
  */
-public class FileFrameProvider extends CpuImageProcessor implements Releasable {
+public class FileFrameProvider extends CpuImageProcessor {
     public static final int MAX_FPS = 10;
     private static int count = 0;
 
@@ -140,5 +139,15 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
     @Override
     public boolean hasConnected() {
         return true;
+    }
+
+    @Override
+    public void setRecording(boolean shouldRecord) {
+        throw new UnsupportedOperationException("FileFrameProvider does not support recording");
+    }
+
+    @Override
+    public boolean getRecording() {
+        return false;
     }
 }

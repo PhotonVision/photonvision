@@ -19,8 +19,10 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -152,6 +154,8 @@ public class VisionModule {
                         this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
+                        visionSource.getFrameProvider()::getRecording,
+                        visionSource.getFrameProvider()::setRecording,
                         this::getFPSLimit,
                         this::setFPSLimit);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
@@ -230,6 +234,46 @@ public class VisionModule {
                 });
     }
 
+    private List<String> getRecordingsList() {
+        List<String> recordings = new ArrayList<>();
+        Path cameraRecordingDir =
+                ConfigManager.getInstance()
+                        .getRecordingsDirectory()
+                        .toPath()
+                        .resolve(visionSource.getSettables().getConfiguration().uniqueName);
+
+        if (cameraRecordingDir.toFile().exists() && cameraRecordingDir.toFile().isDirectory()) {
+            try {
+                java.nio.file.Files.list(cameraRecordingDir)
+                        .filter(java.nio.file.Files::isDirectory)
+                        .map(Path::getFileName)
+                        .map(Path::toString)
+                        .forEach(recordings::add);
+            } catch (Exception e) {
+                logger.error("Exception listing recordings", e);
+            }
+        }
+        return recordings;
+    }
+
+    /**
+     * Calculate the disk space needed for a 5-minute recording based on current settings
+     *
+     * @return space needed in megabytes
+     */
+    public int recordingSpaceNeeded() {
+        VideoMode videoMode = visionSource.getSettables().getCurrentVideoMode();
+
+        int frames = videoMode.fps * 60 * 5;
+
+        // Assume 1 byte per pixel for color image
+        int colorImageSize = videoMode.width * videoMode.height;
+
+        int totalBytes = frames * (colorImageSize);
+
+        return totalBytes / (1024 * 1024);
+    }
+
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
@@ -283,9 +327,8 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        outputStreamPipeline.process(m_frame, settings, targets);
                         consumeResults(m_frame, targets);
-
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
@@ -331,7 +374,6 @@ public class VisionModule {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
-
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
     }
@@ -619,6 +661,8 @@ public class VisionModule {
 
         ret.isConnected = visionSource.getFrameProvider().isConnected();
         ret.hasConnected = visionSource.getFrameProvider().hasConnected();
+
+        ret.recordings = getRecordingsList();
 
         return ret;
     }

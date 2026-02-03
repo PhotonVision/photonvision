@@ -27,6 +27,7 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
+import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 
@@ -62,7 +63,9 @@ public class UIPhotonConfiguration {
                                         : c.getHardwareConfig().deviceName,
                                 Platform.getPlatformName(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
-                                NetworkTablesManager.getInstance().conflictingCameras),
+                                NetworkTablesManager.getInstance().conflictingCameras,
+                                c.getHardwareConfig().recordingStrategy.name(),
+                                FrameRecorder.getSupportedStrategies().stream().map(Enum::name).toList()),
                         c.getApriltagFieldLayout()),
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .map(VisionModule::toUICameraConfig)
