@@ -114,7 +114,7 @@ public class VisionLED implements AutoCloseable {
                             for (PwmLed led : dimmableVisionLEDs) {
                                 led.setValue(mappedBrightness - led.getValue());
                             }
-                            if (blinks.incrementAndGet() >= blinkCount * 2) {
+                            if (blinkCount >= 0 && blinks.incrementAndGet() >= blinkCount * 2) {
                                 TimedTaskManager.getInstance().cancelTask(blinkTaskID);
                             }
                         },
