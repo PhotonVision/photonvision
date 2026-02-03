@@ -1052,6 +1052,35 @@ public class RequestHandler {
         ctx.status(200);
     }
 
+    public static void onUncertaintyJsonRequest(Context ctx) {
+        String cameraUniqueName = ctx.queryParam("cameraUniqueName");
+        var width = Integer.parseInt(ctx.queryParam("width"));
+        var height = Integer.parseInt(ctx.queryParam("height"));
+
+        var module = VisionSourceManager.getInstance().vmm.getModule(cameraUniqueName);
+        if (module == null) {
+            ctx.status(404);
+            return;
+        }
+
+        CameraCalibrationCoefficients calList =
+                module.getStateAsCameraConfig().calibrations.stream()
+                        .filter(
+                                it ->
+                                        Math.abs(it.unrotatedImageSize.width - width) < 1e-4
+                                                && Math.abs(it.unrotatedImageSize.height - height) < 1e-4)
+                        .findFirst()
+                        .orElse(null);
+
+        if (calList == null) {
+            ctx.status(404);
+            return;
+        }
+
+        ctx.json(calList.estimateUncertainty());
+        ctx.status(200);
+    }
+
     private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
 
     public static void onCalibrationRemoveRequest(Context ctx) {

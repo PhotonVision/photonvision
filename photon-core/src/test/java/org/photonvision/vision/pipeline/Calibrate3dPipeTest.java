@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
@@ -115,6 +116,17 @@ public class Calibrate3dPipeTest {
             this.boardType = boardType;
             this.useOldPattern = useOldPattern;
         }
+    }
+
+    @Test
+    public void testFoo() {
+        calibrateCommon(
+                new Size(1280, 720),
+                Path.of("/mnt/c/Users/matth/Documents/camera-cal-images/lifecam_squares_1280x720").toFile(),
+                new Size(11, 11),
+                BoardType.CHESSBOARD,
+                true,
+                false);
     }
 
     /**
@@ -229,7 +241,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
 
         for (var file : directoryListing) {
-            if (file.isFile()) {
+            if (file.isFile() && file.getName().endsWith("png")) {
                 calibration3dPipeline.takeSnapshot();
                 var frame =
                         new Frame(
