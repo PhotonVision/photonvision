@@ -94,6 +94,7 @@ public class VisionLED implements AutoCloseable {
     }
 
     public void blink(int pulseLengthMillis, int blinkCount) {
+        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         blinkImpl(pulseLengthMillis, blinkCount);
         int blinkDuration = pulseLengthMillis * blinkCount * 2;
         TimedTaskManager.getInstance()
@@ -101,19 +102,12 @@ public class VisionLED implements AutoCloseable {
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         AtomicInteger blinks = new AtomicInteger();
         TimedTaskManager.getInstance()
                 .addTask(
                         blinkTaskID,
                         () -> {
-                            currentOutputState = !currentOutputState;
-                            for (LED led : visionLEDs) {
-                                led.toggle();
-                            }
-                            for (PwmLed led : dimmableVisionLEDs) {
-                                led.setValue(mappedBrightness - led.getValue());
-                            }
+                            setStateImpl(!currentOutputState);
                             if (blinkCount >= 0 && blinks.incrementAndGet() >= blinkCount * 2) {
                                 TimedTaskManager.getInstance().cancelTask(blinkTaskID);
                             }
@@ -122,7 +116,6 @@ public class VisionLED implements AutoCloseable {
     }
 
     private void setStateImpl(boolean state) {
-        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         currentOutputState = state;
         for (LED led : visionLEDs) {
             led.setOn(state);
@@ -173,6 +166,7 @@ public class VisionLED implements AutoCloseable {
         var lastLedMode = currentLedMode;
 
         if (fromNT || currentLedMode == VisionLEDMode.kDefault) {
+            TimedTaskManager.getInstance().cancelTask(blinkTaskID);
             switch (newLedMode) {
                 case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
                 case kOff -> setStateImpl(false);
