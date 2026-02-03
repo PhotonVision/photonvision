@@ -14,6 +14,7 @@ import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
@@ -243,7 +244,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3 rounded-12" color="surface" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <v-card-text v-if="!isCalibrating" class="pb-0">
-        <v-card-subtitle class="pa-0 pb-3 text-white">Current Calibrations</v-card-subtitle>
+        <div class="pb-3">
+          <tooltipped-label
+            label="Curent Calibrations"
+            icon="mdi-information"
+            location="top"
+            tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
+          />
+        </div>
         <v-table fixed-header height="100%" density="compact">
           <thead>
             <tr>
@@ -282,22 +290,10 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       </v-card-text>
       <v-card-text class="pt-0">
         <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
-          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
+          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100"
             >Configure New Calibration</v-card-subtitle
           >
           <v-form ref="form" v-model="settingsValid">
-            <v-alert
-              closable
-              density="compact"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
-              :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
-              :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
-              :text="
-                useSettingsStore().general.mrCalWorking
-                  ? 'Mrcal was successfully loaded and will be used!'
-                  : 'MrCal failed to load, check journalctl logs for details.'
-              "
-            />
             <pv-select
               v-model="uniqueVideoResolutionString"
               label="Resolution"
@@ -470,7 +466,20 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             "
           />
         </div>
-        <div v-if="isCalibrating" class="d-flex justify-center align-center pt-10px pb-5">
+        <v-alert
+          closable
+          density="compact"
+          class="mb-5"
+          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
+          :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
+          :text="
+            useSettingsStore().general.mrCalWorking
+              ? 'Mrcal was successfully loaded and will be used!'
+              : 'MrCal failed to load, check journalctl logs for details.'
+          "
+        />
+        <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
           <v-chip
             :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
             label
