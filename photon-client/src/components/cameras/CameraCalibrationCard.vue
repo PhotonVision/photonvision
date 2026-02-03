@@ -249,7 +249,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             label="Curent Calibrations"
             icon="mdi-information"
             location="top"
-            tooltip="Click on a resolution to view detailed calibration information."
+            tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
           />
         </div>
         <v-table fixed-header height="100%" density="compact">
