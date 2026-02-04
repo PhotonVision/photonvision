@@ -169,8 +169,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     decodeParams.atrEnabled = settings.atrEnabled;
                     decodeParams.atrTargetDimension = settings.atrTargetDimension;
                     decodeParams.atrMinScaleFactor = settings.atrMinScaleFactor;
-                    decodeParams.atrCornerRefinementEnabled = settings.atrCornerRefinementEnabled;
-                    decodeParams.atrRefinementWindowSize = settings.atrRefinementWindowSize;
 
                     mlDecodePipe.setParams(decodeParams);
 
