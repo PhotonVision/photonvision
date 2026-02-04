@@ -3,6 +3,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -11,17 +12,14 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
-const isFiducialPipeline = computed(
-  () =>
-    useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
-    useCameraSettingsStore().currentPipelineType === PipelineType.Aruco ||
-    useCameraSettingsStore().currentPipelineType === PipelineType.Composite
-);
-
-const isTagOnlyPipeline = computed(
+const isTagPipeline = computed(
   () =>
     useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
     useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
+);
+
+const isFiducialPipeline = computed(
+  () => isTagPipeline.value || useCameraSettingsStore().currentPipelineType === PipelineType.Composite
 );
 
 interface MetricItem {
@@ -65,14 +63,17 @@ const interactiveCols = computed(() =>
 
 <template>
   <div>
-    <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
-      label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
-      :disabled="isTagOnlyPipeline"
+    <pv-slider
+      v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
+      label="Maximum Targets"
+      tooltip="The maximum number of targets to display and send."
+      :hidden="isTagPipeline"
+      :min="1"
+      :max="127"
+      :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
       "
     />
     <pv-switch
@@ -127,7 +128,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-select
-      v-if="!isTagOnlyPipeline"
+      v-if="!isTagPipeline"
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"

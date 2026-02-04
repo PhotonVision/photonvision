@@ -44,7 +44,7 @@ let renderer: WebGLRenderer | undefined;
 let controls: TrackballControls | undefined;
 
 let previousTargets: Object3D[] = [];
-const drawTargets = (targets: PhotonTarget[]) => {
+const drawTargets = async (targets: PhotonTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
   if (!scene || !camera || !renderer || !controls) {
     return;
@@ -89,7 +89,11 @@ const drawTargets = (targets: PhotonTarget[]) => {
 
   if (calibrationCoeffs) {
     // And show camera frustum
-    const calibCamera = createPerspectiveCamera(calibrationCoeffs.resolution, calibrationCoeffs.cameraIntrinsics, 10);
+    const calibCamera = await createPerspectiveCamera(
+      calibrationCoeffs.resolution,
+      calibrationCoeffs.cameraIntrinsics,
+      10
+    );
     const helper = new CameraHelper(calibCamera);
     const helperGroup = new Group();
     helperGroup.add(helper);

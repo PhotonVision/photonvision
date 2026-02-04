@@ -65,7 +65,7 @@ const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): 
 
 let previousTargets: Object3D[] = [];
 let baseAspect: number | undefined;
-const drawCalibration = (cal: CameraCalibrationResult | null) => {
+const drawCalibration = async (cal: CameraCalibrationResult | null) => {
   // Check here, since if we check in watchEffect this never gets called
   if (!cal || !scene || !camera || !renderer || !controls) {
     return;
@@ -95,7 +95,7 @@ const drawCalibration = (cal: CameraCalibrationResult | null) => {
   });
 
   // And show camera frustum
-  const calibCamera = createPerspectiveCamera(props.resolution, cal.cameraIntrinsics);
+  const calibCamera = await createPerspectiveCamera(props.resolution, cal.cameraIntrinsics);
   const helper = new CameraHelper(calibCamera);
 
   // Flip to +Z forward
