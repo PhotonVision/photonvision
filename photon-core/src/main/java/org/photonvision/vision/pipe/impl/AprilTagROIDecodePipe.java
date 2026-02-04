@@ -23,14 +23,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Rect2d;
 import org.opencv.core.Size;
-import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -56,10 +52,6 @@ public class AprilTagROIDecodePipe
 
     private static final Logger logger = new Logger(AprilTagROIDecodePipe.class, LogGroup.VisionModule);
     private static final boolean DEBUG_COORDINATE_MAPPING = false;
-
-    /** Termination criteria for cornerSubPix refinement */
-    private final TermCriteria cornerSubPixCriteria =
-            new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER, 30, 0.001);
 
     /**
      * Context object containing ATR scaling information for a single ROI.
@@ -105,10 +97,6 @@ public class AprilTagROIDecodePipe
         public int atrTargetDimension = 160;
         /** Minimum scale factor for ATR (prevents extreme downscaling) */
         public double atrMinScaleFactor = 0.25;
-        /** Enable corner refinement (two-stage coarse-to-fine) */
-        public boolean atrCornerRefinementEnabled = false;
-        /** Window size for corner refinement */
-        public int atrRefinementWindowSize = 5;
 
         public ROIDecodeParams() {
             detectorConfig = new AprilTagDetector.Config();
@@ -240,11 +228,6 @@ public class AprilTagROIDecodePipe
                     mappedDetection = mapToFullFrameWithATR(det, roiRect, atrContext);
                 } else {
                     mappedDetection = mapToFullFrame(det, roiRect);
-                }
-
-                // === STAGE 3: FINE REFINEMENT - Sub-pixel corner accuracy ===
-                if (params.atrCornerRefinementEnabled && atrContext.wasScaled) {
-                    mappedDetection = refineCorners(mappedDetection, fullFrame);
                 }
 
                 if (DEBUG_COORDINATE_MAPPING) {
@@ -397,121 +380,6 @@ public class AprilTagROIDecodePipe
         result[7] = h[7];
         result[8] = h[8];
         return result;
-    }
-
-    /**
-     * Refines corner positions using cornerSubPix on the full-resolution image.
-     * This is the "fine" stage of coarse-to-fine detection.
-     *
-     * <p>CRITICAL: The homography MUST be recomputed from refined corners because
-     * the pose estimator uses BOTH corners and homography internally. If they
-     * become inconsistent (corners change but homography doesn't), pose will be wrong.
-     *
-     * @param detection The detection with corners mapped to full-frame coordinates
-     * @param fullFrame The full grayscale frame for sub-pixel refinement
-     * @return A new AprilTagDetection with refined corners and recomputed homography
-     */
-    private AprilTagDetection refineCorners(AprilTagDetection detection, Mat fullFrame) {
-        // Extract corners into MatOfPoint2f
-        Point[] corners = new Point[4];
-        for (int i = 0; i < 4; i++) {
-            corners[i] = new Point(detection.getCornerX(i), detection.getCornerY(i));
-        }
-        MatOfPoint2f cornerMat = new MatOfPoint2f(corners);
-
-        // Window size for cornerSubPix
-        Size winSize = new Size(params.atrRefinementWindowSize, params.atrRefinementWindowSize);
-        Size zeroZone = new Size(-1, -1); // No dead zone
-
-        try {
-            // Run cornerSubPix refinement on full-resolution image
-            Imgproc.cornerSubPix(fullFrame, cornerMat, winSize, zeroZone, cornerSubPixCriteria);
-
-            // Extract refined corners
-            Point[] refinedCorners = cornerMat.toArray();
-            double[] refinedCornersArr = new double[8];
-            for (int i = 0; i < 4; i++) {
-                refinedCornersArr[i * 2] = refinedCorners[i].x;
-                refinedCornersArr[i * 2 + 1] = refinedCorners[i].y;
-            }
-
-            // Compute refined center
-            double centerX =
-                    (refinedCorners[0].x
-                                    + refinedCorners[1].x
-                                    + refinedCorners[2].x
-                                    + refinedCorners[3].x)
-                            / 4.0;
-            double centerY =
-                    (refinedCorners[0].y
-                                    + refinedCorners[1].y
-                                    + refinedCorners[2].y
-                                    + refinedCorners[3].y)
-                            / 4.0;
-
-            // CRITICAL: Recompute homography from refined corners
-            double[] refinedHomography = computeHomographyFromCorners(refinedCorners);
-
-            return new AprilTagDetection(
-                    detection.getFamily(),
-                    detection.getId(),
-                    detection.getHamming(),
-                    detection.getDecisionMargin(),
-                    refinedHomography,
-                    centerX,
-                    centerY,
-                    refinedCornersArr);
-        } finally {
-            cornerMat.release();
-        }
-    }
-
-    /**
-     * Computes the homography matrix from 4 corner points.
-     *
-     * <p>The AprilTag library uses a Y-down coordinate system for its homography,
-     * matching image coordinates. The normalized tag coordinates are:
-     * <ul>
-     *   <li>Corner 0: (-1,  1) - bottom-left (larger Y in image space)</li>
-     *   <li>Corner 1: ( 1,  1) - bottom-right</li>
-     *   <li>Corner 2: ( 1, -1) - top-right (smaller Y in image space)</li>
-     *   <li>Corner 3: (-1, -1) - top-left</li>
-     * </ul>
-     *
-     * <p>The homography H satisfies: [x_img, y_img, 1]^T ~ H * [X_tag, Y_tag, 1]^T
-     *
-     * @param corners The 4 corner points in image coordinates
-     * @return The homography matrix as a 9-element row-major array
-     */
-    private double[] computeHomographyFromCorners(Point[] corners) {
-        // Normalized tag corner coordinates (AprilTag convention with Y-down)
-        // Corner 0: bottom-left (larger Y in image space)
-        // Corner 1: bottom-right
-        // Corner 2: top-right (smaller Y in image space)
-        // Corner 3: top-left
-        MatOfPoint2f srcPoints =
-                new MatOfPoint2f(
-                        new Point(-1, 1), // corner 0: bottom-left
-                        new Point(1, 1), // corner 1: bottom-right
-                        new Point(1, -1), // corner 2: top-right
-                        new Point(-1, -1) // corner 3: top-left
-                        );
-
-        MatOfPoint2f dstPoints = new MatOfPoint2f(corners);
-
-        // Compute homography: srcPoints -> dstPoints
-        Mat H = Calib3d.findHomography(srcPoints, dstPoints);
-
-        // Extract to row-major double array (AprilTag format)
-        double[] homography = new double[9];
-        H.get(0, 0, homography);
-
-        // Cleanup
-        srcPoints.release();
-        dstPoints.release();
-        H.release();
-
-        return homography;
     }
 
     /**

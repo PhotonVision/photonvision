@@ -188,16 +188,6 @@ public class NeuralNetworkModelManager {
                         640,
                         Family.RUBIK,
                         Version.YOLOV11));
-        // AprilTag detection model for ML-assisted AprilTag pipeline
-        nnProps.addModelProperties(
-                new ModelProperties(
-                        Path.of(modelsDirectory.getAbsolutePath(), "apriltag-640-640-yolov8n.tflite"),
-                        "AprilTag v8n",
-                        new LinkedList<String>(List.of("AprilTag")),
-                        640,
-                        640,
-                        Family.RUBIK,
-                        Version.YOLOV8));
 
         return nnProps;
     }

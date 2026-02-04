@@ -50,10 +50,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int atrTargetDimension = 160;
     /** Minimum scale factor - prevents extreme downscaling. Default: 0.25 (4x max downscale) */
     public double atrMinScaleFactor = 0.25;
-    /** Enable two-stage coarse-to-fine corner refinement (more accurate but slower) */
-    public boolean atrCornerRefinementEnabled = false;
-    /** Window size for cornerSubPix refinement (pixels around each corner) */
-    public int atrRefinementWindowSize = 5;
 
     // 3d settings
 
@@ -98,8 +94,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + atrTargetDimension;
         temp = Double.doubleToLongBits(atrMinScaleFactor);
         result = prime * result + (int) (temp ^ (temp >>> 32));
-        result = prime * result + (atrCornerRefinementEnabled ? 1231 : 1237);
-        result = prime * result + atrRefinementWindowSize;
         return result;
     }
 
@@ -137,8 +131,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (atrTargetDimension != other.atrTargetDimension) return false;
         if (Double.doubleToLongBits(atrMinScaleFactor)
                 != Double.doubleToLongBits(other.atrMinScaleFactor)) return false;
-        if (atrCornerRefinementEnabled != other.atrCornerRefinementEnabled) return false;
-        if (atrRefinementWindowSize != other.atrRefinementWindowSize) return false;
         return true;
     }
 }
