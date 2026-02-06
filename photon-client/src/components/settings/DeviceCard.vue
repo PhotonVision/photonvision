@@ -30,11 +30,50 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = async () => {
+
+const offlineUpdateRegex = "photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar";
+
+const offlineUpdateDialog = ref({show: false, version: ""});
+
+const versionCompHelper= (version: string, versionOther: string) => {
+
+};
+
+const handleOfflineUpdateRequest = async () => {
   const files = offlineUpdate.value.files;
   if (files.length === 0) return;
+
+  const match = files[0].name.match(new RegExp(offlineUpdateRegex));
+  if (!match) {
+    useStateStore().showSnackbarMessage({
+      message: "Selected file does not match expected naming convention.",
+      color: "error"
+    });
+    return;
+  }
+
+  const version = match[1];
+  const arch = match[2];
+
+  const currentVersion = useSettingsStore().general.version;
+  const currentArch = useSettingsStore().general.wpilibArch;
+
+  if (arch !== currentArch) {
+    useStateStore().showSnackbarMessage({
+      message: `Selected file architecture (${arch}) does not match device architecture (${currentArch}).`,
+      color: "error"
+    });
+    return;
+  } else if (version === currentVersion) {
+    handleOfflineUpdate(files[0]);
+  } else {
+    offlineUpdateDialog.value = {show: true, version: version};
+  }
+};
+
+const handleOfflineUpdate = async (file: File) => {
   const formData = new FormData();
-  formData.append("jarData", files[0]);
+  formData.append("jarData", file);
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
@@ -333,7 +372,7 @@ watch(metricsHistorySnapshot, () => {
                 type="file"
                 accept=".jar"
                 style="display: none"
-                @change="handleOfflineUpdate"
+                @change="handleOfflineUpdateRequest"
               />
             </v-col>
           </v-row>
@@ -479,6 +518,33 @@ watch(metricsHistorySnapshot, () => {
             <span class="open-label">Import Settings</span>
           </v-btn>
         </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="offlineUpdateDialog.show" :width="700" dark>
+    <v-card color="surface" flat>
+      <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
+      <v-card-text class="pt-0 pb-10px">
+        <span> You are attempting to update to a version that may cause issues. Are you sure you want to proceed? </span>
+      </v-card-text>
+      <v-card-text class="pt-0 pb-10px">
+        <span> {{ useSettingsStore().general.version }} --> {{ offlineUpdateDialog.version }} </span>
+      </v-card-text>
+      <v-card-text class="pt-10px">
+        <v-row class="align-center text-white">
+          <v-col cols="12">
+            <v-btn
+              color="buttonActive"
+              width="100%"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="offlineUpdateDialog.show = false"
+            >
+              <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
+              <span class="open-label"> Offline Update </span>
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-dialog>

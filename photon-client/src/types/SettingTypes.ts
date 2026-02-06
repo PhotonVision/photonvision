@@ -8,6 +8,7 @@ export interface GeneralSettings {
   gpuAcceleration?: string;
   hardwareModel?: string;
   hardwarePlatform?: string;
+  wpilibArch?: string;
   mrCalWorking: boolean;
   availableModels: ObjectDetectionModelProperties[];
   supportedBackends: string[];

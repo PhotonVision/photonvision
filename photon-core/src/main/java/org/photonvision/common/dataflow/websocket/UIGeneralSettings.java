@@ -29,6 +29,7 @@ public class UIGeneralSettings {
             List<String> supportedBackends,
             String hardwareModel,
             String hardwarePlatform,
+            String wpilibArch,
             boolean conflictingHostname,
             String conflictingCameras) {
         this.version = version;
@@ -38,6 +39,7 @@ public class UIGeneralSettings {
         this.supportedBackends = supportedBackends;
         this.hardwareModel = hardwareModel;
         this.hardwarePlatform = hardwarePlatform;
+        this.wpilibArch = wpilibArch;
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras;
     }
@@ -49,6 +51,7 @@ public class UIGeneralSettings {
     public List<String> supportedBackends;
     public String hardwareModel;
     public String hardwarePlatform;
+    public String wpilibArch;
     public boolean conflictingHostname;
     public String conflictingCameras;
 }

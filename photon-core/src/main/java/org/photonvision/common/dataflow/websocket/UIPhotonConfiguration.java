@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
@@ -61,6 +62,7 @@ public class UIPhotonConfiguration {
                                         ? Platform.getHardwareModel()
                                         : c.getHardwareConfig().deviceName,
                                 Platform.getPlatformName(),
+                                CombinedRuntimeLoader.getPlatformPath().replace("/", ""),
                                 NetworkTablesManager.getInstance().conflictingHostname,
                                 NetworkTablesManager.getInstance().conflictingCameras),
                         c.getApriltagFieldLayout()),
