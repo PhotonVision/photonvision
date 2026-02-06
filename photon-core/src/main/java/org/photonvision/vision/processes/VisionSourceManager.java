@@ -166,6 +166,9 @@ public class VisionSourceManager {
             logger.error(
                     "Camera unique-path already in use by active VisionModule! Cannot reactivate "
                             + deactivatedConfig.get().nickname);
+            // Restore the disabled config and bail out so we don't double-bind the same device.
+            this.disabledCameraConfigs.put(uniqueName, deactivatedConfig.get());
+            return false;
         }
 
         // transform the camera info all the way to a VisionModule and then start it
