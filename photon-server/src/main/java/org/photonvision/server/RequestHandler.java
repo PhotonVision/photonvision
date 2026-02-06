@@ -347,10 +347,28 @@ public class RequestHandler {
             return;
         }
 
-        Path targetPath =
-                Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
-        try (InputStream fileSteam = file.content()) {
-            Files.copy(fileSteam, targetPath, StandardCopyOption.REPLACE_EXISTING);
+        try (InputStream fileStream = file.content()) {
+            Path tempJar = File.createTempFile("offlineUpdate", "jar").toPath();
+            Files.copy(fileStream, tempJar);
+
+            // Check the architecture the uploaded jar was built for. If it's not the same as the current
+            // architecture, reject the update
+            ShellExec shellExec = new ShellExec();
+
+            if (shellExec.executeBashCommand("java -jar " + tempJar.toAbsolutePath() + " --smoketest")
+                    != 0) {
+                ctx.status(400);
+                ctx.result(
+                        "The uploaded jar file failed the smoketest. This likely means that the uploaded jar file is not compatible with the current system architecture.");
+                logger.error(
+                        "The uploaded jar file failed the smoketest. This likely means that the uploaded jar file is not compatible with the current system architecture.");
+                return;
+            }
+
+            Path targetPath =
+                    Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+
+            Files.copy(tempJar, targetPath, StandardCopyOption.REPLACE_EXISTING);
 
             ctx.status(200);
             ctx.result(
