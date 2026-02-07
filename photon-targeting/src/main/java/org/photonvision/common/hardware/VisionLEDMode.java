@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware;
 
+@SuppressWarnings("doclint")
 public enum VisionLEDMode {
     kDefault(-1),
     kOff(0),

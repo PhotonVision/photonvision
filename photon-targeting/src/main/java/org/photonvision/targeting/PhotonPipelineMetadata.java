@@ -48,17 +48,29 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
         this(-1, -1, -1, Long.MAX_VALUE);
     }
 
-    /** Returns the time between image capture and publish to NT */
+    /**
+     * Returns the time between image capture and publish to NT
+     *
+     * @return The time in milliseconds
+     */
     public double getLatencyMillis() {
         return (publishTimestampMicros - captureTimestampMicros) / 1e3;
     }
 
-    /** The time that this image was captured, in the coprocessor's time base. */
+    /**
+     * The time that this image was captured, in the coprocessor's time base.
+     *
+     * @return The time in microseconds
+     */
     public long getCaptureTimestampMicros() {
         return captureTimestampMicros;
     }
 
-    /** The time that this result was published to NT, in the coprocessor's time base. */
+    /**
+     * The time that this result was published to NT, in the coprocessor's time base.
+     *
+     * @return The time in microseconds
+     */
     public long getPublishTimestampMicros() {
         return publishTimestampMicros;
     }
@@ -66,6 +78,8 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
     /**
      * The number of non-empty frames processed by this camera since boot. Useful to checking if a
      * camera is alive.
+     *
+     * @return The number of non-empty frames
      */
     public long getSequenceID() {
         return sequenceID;

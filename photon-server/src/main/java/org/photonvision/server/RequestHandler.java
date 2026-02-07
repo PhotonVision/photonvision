@@ -39,7 +39,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -75,6 +75,11 @@ public class RequestHandler {
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
     private static boolean testMode = false;
+
+    public static void onStatusRequest(Context ctx) {
+        ctx.status(200);
+        ctx.result("not dead yet");
+    }
 
     public static void setTestMode(boolean isTestMode) {
         testMode = isTestMode;
@@ -577,7 +582,7 @@ public class RequestHandler {
                         case "YOLOv5" -> NeuralNetworkModelManager.Version.YOLOV5;
                         case "YOLOv8" -> NeuralNetworkModelManager.Version.YOLOV8;
                         case "YOLO11" -> NeuralNetworkModelManager.Version.YOLOV11;
-                            // Add more versions as necessary for new models
+                        // Add more versions as necessary for new models
                         default -> {
                             ctx.status(400);
                             ctx.result("The provided version was not valid");
@@ -852,6 +857,12 @@ public class RequestHandler {
             ctx.result("There was an error while saving the uploaded object detection models");
             logger.error("There was an error while saving the uploaded object detection models");
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     private record DeleteObjectDetectionModelRequest(Path modelPath) {}
@@ -898,17 +909,17 @@ public class RequestHandler {
 
             ctx.status(200).result("Successfully deleted object detection model");
 
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
+
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error deleting object detection model: " + e.getMessage());
             logger.error("Error deleting object detection model", e);
         }
-
-        DataChangeService.getInstance()
-                .publishEvent(
-                        new OutgoingUIEvent<>(
-                                "fullsettings",
-                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     private record RenameObjectDetectionModelRequest(Path modelPath, String newName) {}
@@ -951,6 +962,12 @@ public class RequestHandler {
 
             NeuralNetworkModelManager.getInstance().discoverModels();
             ctx.status(200).result("Successfully renamed object detection model");
+
+            DataChangeService.getInstance()
+                    .publishEvent(
+                            new OutgoingUIEvent<>(
+                                    "fullsettings",
+                                    UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
         } catch (Exception e) {
             ctx.status(500);
             ctx.result("Error renaming object detection model: " + e.getMessage());
@@ -970,6 +987,12 @@ public class RequestHandler {
             ctx.result("Error clearing object detection models: " + e.getMessage());
             logger.error("Error clearing object detection models", e);
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings",
+                                UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
     }
 
     public static void onDeviceRestartRequest(Context ctx) {
@@ -997,11 +1020,6 @@ public class RequestHandler {
             ctx.status(500).result("Failed to change camera nickname");
             logger.error("Unexpected error while changing camera nickname", e);
         }
-    }
-
-    public static void onMetricsPublishRequest(Context ctx) {
-        HardwareManager.getInstance().publishMetrics();
-        ctx.status(204);
     }
 
     /**

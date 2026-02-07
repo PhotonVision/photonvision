@@ -18,6 +18,7 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import java.awt.HeadlessException;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -97,6 +99,26 @@ public class TestUtils {
 
         WPI2020Image(double distanceMeters) {
             this.distanceMeters = distanceMeters;
+            this.path = getPath();
+        }
+    }
+
+    public enum WPI2026Images {
+        // 4000 x 1868 px
+        // Galaxy S23, 6.3mm focal length
+        kBlueOutpostFuelSpread;
+
+        public static final Size resolution = new Size(4000, 1868);
+
+        public static final Rotation2d FOV = Rotation2d.fromDegrees(85.0);
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2026", filename + ".jpg");
+        }
+
+        WPI2026Images() {
             this.path = getPath();
         }
     }
@@ -206,7 +228,8 @@ public class TestUtils {
         kRobots,
         kTag1_640_480,
         kTag1_16h5_1280,
-        kTag_corner_1280;
+        kTag_corner_1280,
+        k36h11_stress_test;
 
         public final Path path;
 
@@ -215,6 +238,7 @@ public class TestUtils {
             var filename = this.toString().substring(1).toLowerCase();
             var extension = ".jpg";
             if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            if (filename.equals("36h11_stress_test")) extension = ".png";
             return Path.of("apriltag", filename + extension);
         }
 

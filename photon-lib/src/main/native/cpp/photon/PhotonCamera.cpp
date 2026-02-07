@@ -29,7 +29,6 @@
 #include <string_view>
 #include <vector>
 
-#include <WPILibVersion.h>
 #include <frc/Errors.h>
 #include <frc/RobotController.h>
 #include <frc/Timer.h>
@@ -47,48 +46,6 @@ static constexpr units::second_t WARN_DEBOUNCE_SEC = 5_s;
 static constexpr units::second_t HEARTBEAT_DEBOUNCE_SEC = 500_ms;
 
 inline void verifyDependencies() {
-  if (!(std::string_view{GetWPILibVersion()} ==
-        std::string_view{photon::PhotonVersion::wpilibTargetVersion})) {
-    std::string bfw =
-        "\n\n\n\n\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>                                          \n"
-        ">>> You are running an incompatible version  \n"
-        ">>> of PhotonVision !                        \n"
-        ">>>                                          \n"
-        ">>> PhotonLib ";
-    bfw += photon::PhotonVersion::versionString;
-    bfw += " is built for WPILib ";
-    bfw += photon::PhotonVersion::wpilibTargetVersion;
-    bfw +=
-        "\n"
-        ">>> but you are using WPILib ";
-    bfw += GetWPILibVersion();
-    bfw +=
-        "\n>>>                                          \n"
-        ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update WPILib, PhotonLib, or both.\n"
-        ">>> Check `./gradlew dependencies` and ensure\n"
-        ">>> all mentions of WPILib match the version \n"
-        ">>> that PhotonLib was built for. If you find a"
-        ">>> a mismatched version in a dependency, you\n"
-        ">>> must take steps to update the version of \n"
-        ">>> WPILib used in that dependency. If you do\n"
-        ">>> not control that dependency and an updated\n"
-        ">>> version is not available, contact the    \n"
-        ">>> developers of that dependency.           \n"
-        ">>>                                          \n"
-        ">>> Your code will now crash.                \n"
-        ">>> We hope your day gets better.            \n"
-        ">>>                                          \n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-
-    FRC_ReportWarning(bfw);
-    FRC_ReportError(frc::err::Error, bfw);
-    throw new std::runtime_error(std::string{bfw});
-  }
   if (!(std::string_view{cv::getVersionString()} ==
         std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
     std::string bfw =
@@ -185,8 +142,8 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetIntegerTopic("pipelineIndexRequest").Publish()),
       pipelineIndexSub(
           rootTable->GetIntegerTopic("pipelineIndexState").Subscribe(0)),
-      ledModePub(mainTable->GetIntegerTopic("ledMode").Publish()),
-      ledModeSub(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
+      ledModePub(mainTable->GetIntegerTopic("ledModeRequest").Publish()),
+      ledModeSub(mainTable->GetIntegerTopic("ledModeState").Subscribe(0)),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
       cameraIntrinsicsSubscriber(
           rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
@@ -196,6 +153,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
+      fpsLimitSubscriber(rootTable->GetIntegerTopic("fpsLimit").Subscribe(-1)),
+      fpsLimitPublisher(
+          rootTable->GetIntegerTopic("fpsLimitRequest").Publish()),
       heartbeatSubscriber(
           rootTable->GetIntegerTopic("heartbeat").Subscribe(-1)),
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
@@ -322,6 +282,14 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
   driverModePublisher.Set(driverMode);
 }
 
+bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
+
+int PhotonCamera::GetFPSLimit() const { return fpsLimitSubscriber.Get(); }
+
+void PhotonCamera::SetFPSLimit(int fpsLimit) {
+  fpsLimitPublisher.Set(fpsLimit);
+}
+
 void PhotonCamera::TakeInputSnapshot() {
   inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
 }
@@ -329,8 +297,6 @@ void PhotonCamera::TakeInputSnapshot() {
 void PhotonCamera::TakeOutputSnapshot() {
   outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1);
 }
-
-bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) { pipelineIndexPub.Set(index); }
 

@@ -25,28 +25,63 @@ import org.photonvision.struct.PhotonTrackedTargetSerde;
 import org.photonvision.targeting.proto.PhotonTrackedTargetProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
 
+/** Information about a detected target. */
 public class PhotonTrackedTarget
         implements ProtobufSerializable, PhotonStructSerializable<PhotonTrackedTarget> {
     private static final int MAX_CORNERS = 8;
 
+    /** The yaw of the target in degrees, with left being the positive direction. */
     public double yaw;
+
+    /** The pitch of the target in degrees, with up being the positive direction. */
     public double pitch;
+
+    /** The area (how much of the camera feed the bounding box takes up) as a percentage (0-100). */
     public double area;
+
+    /** The skew of the target in degrees, with counterclockwise being the positive direction. */
     public double skew;
+
+    /** The fiducial ID, or -1 if it doesn't exist for this target. */
     public int fiducialId;
+
+    /** The object detection class ID, or -1 if it doesn't exist for this target. */
     public int objDetectId;
+
+    /** The object detection confidence, or -1 if it doesn't exist for this target. */
     public float objDetectConf;
+
+    /** The transform with the lowest reprojection error */
     public Transform3d bestCameraToTarget;
+
+    /** The transform with the highest reprojection error */
     public Transform3d altCameraToTarget;
+
+    /** The ratio (best:alt) of reprojection errors */
     public double poseAmbiguity;
 
-    // Corners from the min-area rectangle bounding the target
+    /** Corners from the min-area rectangle bounding the target */
     public List<TargetCorner> minAreaRectCorners;
 
-    // Corners from whatever corner detection method was used
+    /** Corners from the corner detection method used */
     public List<TargetCorner> detectedCorners;
 
-    /** Construct a tracked target, given exactly 4 corners */
+    /**
+     * Construct a tracked target, given exactly 4 corners
+     *
+     * @param yaw The yaw of the target
+     * @param pitch The pitch of the target
+     * @param area The area of the target as a percentage of the camera image
+     * @param skew The skew of the target
+     * @param fiducialId The fiduical tag ID
+     * @param classId The object detection class ID
+     * @param objDetectConf The object detection confidence
+     * @param pose The best camera to target transform
+     * @param altPose The alternate camera to target transform
+     * @param ambiguity The ambiguity (best:alternate ratio of reprojection errors) of the target
+     * @param minAreaRectCorners The corners of minimum area bounding box of the target
+     * @param detectedCorners The detected corners of the target
+     */
     public PhotonTrackedTarget(
             double yaw,
             double pitch,
@@ -80,9 +115,8 @@ public class PhotonTrackedTarget
         this.poseAmbiguity = ambiguity;
     }
 
-    public PhotonTrackedTarget() {
-        // TODO Auto-generated constructor stub
-    }
+    /** Used for serialization. */
+    public PhotonTrackedTarget() {}
 
     public double getYaw() {
         return yaw;
@@ -92,6 +126,11 @@ public class PhotonTrackedTarget
         return pitch;
     }
 
+    /**
+     * The area (how much of the camera feed the bounding box takes up) as a percentage (0-100).
+     *
+     * @return The area as a percentage
+     */
     public double getArea() {
         return area;
     }
@@ -100,19 +139,29 @@ public class PhotonTrackedTarget
         return skew;
     }
 
-    /** Get the fiducial ID, or -1 if not set. */
+    /**
+     * Get the fiducial ID, or -1 if it doesn't exist for this target.
+     *
+     * @return The fiducial ID
+     */
     public int getFiducialId() {
         return fiducialId;
     }
 
-    /** Get the object detection class ID number, or -1 if not set. */
+    /**
+     * Get the object detection class ID number, or -1 if it doesn't exist for this target.
+     *
+     * @return The object detection class ID
+     */
     public int getDetectedObjectClassID() {
         return objDetectId;
     }
 
     /**
-     * Get the object detection confidence, or -1 if not set. This will be between 0 and 1, with 1
-     * indicating most confidence, and 0 least.
+     * Get the object detection confidence, or -1 if it doesn't exist for this target. This will be
+     * between 0 and 1, with 1 indicating most confidence, and 0 least.
+     *
+     * @return The object detection confidence
      */
     public float getDetectedObjectConfidence() {
         return objDetectConf;
@@ -122,6 +171,8 @@ public class PhotonTrackedTarget
      * Get the ratio of best:alternate pose reprojection errors, called ambiguity. This is between 0
      * and 1 (0 being no ambiguity, and 1 meaning both have the same reprojection error). Numbers
      * above 0.2 are likely to be ambiguous. -1 if invalid.
+     *
+     * @return The pose ambiguity
      */
     public double getPoseAmbiguity() {
         return poseAmbiguity;
@@ -130,6 +181,8 @@ public class PhotonTrackedTarget
     /**
      * Return a list of the 4 corners in image space (origin top left, x right, y down), in no
      * particular order, of the minimum area bounding rectangle of this target
+     *
+     * @return The list of corners
      */
     public List<TargetCorner> getMinAreaRectCorners() {
         return minAreaRectCorners;
@@ -147,6 +200,8 @@ public class PhotonTrackedTarget
      * V      |       |
      * +Y     0 ----- 1
      * </pre>
+     *
+     * @return The list of detected corners for this target
      */
     public List<TargetCorner> getDetectedCorners() {
         return detectedCorners;
@@ -155,6 +210,8 @@ public class PhotonTrackedTarget
     /**
      * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
      * space (X forward, Y left, Z up) with the lowest reprojection error
+     *
+     * @return The transform with the lowest reprojection error (the best)
      */
     public Transform3d getBestCameraToTarget() {
         return bestCameraToTarget;
@@ -163,6 +220,8 @@ public class PhotonTrackedTarget
     /**
      * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
      * space (X forward, Y left, Z up) with the highest reprojection error
+     *
+     * @return The transform with the highest reprojection error (the alternate)
      */
     public Transform3d getAlternateCameraToTarget() {
         return altCameraToTarget;
@@ -253,7 +312,10 @@ public class PhotonTrackedTarget
                 + "]";
     }
 
+    /** PhotonTrackedTarget protobuf for serialization. */
     public static final PhotonTrackedTargetProto proto = new PhotonTrackedTargetProto();
+
+    /** PhotonTrackedTarget PhotonStruct for serialization. */
     public static final PhotonTrackedTargetSerde photonStruct = new PhotonTrackedTargetSerde();
 
     @Override

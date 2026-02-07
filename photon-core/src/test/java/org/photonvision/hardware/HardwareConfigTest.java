@@ -41,8 +41,6 @@ public class HardwareConfigTest {
             assertEquals(config.deviceLogoPath, "photonvision.png");
             assertEquals(config.supportURL, "https://support.photonvision.com");
             // Ensure defaults are not null
-            assertEquals(config.cpuThrottleReasonCmd, "");
-            assertEquals(config.diskUsageCommand, "");
             assertArrayEquals(config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
             NativeDeviceFactoryInterface deviceFactory = HardwareManager.configureCustomGPIO(config);
             assertTrue(deviceFactory instanceof CustomDeviceFactory);

@@ -3,6 +3,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
+import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -58,14 +59,17 @@ const interactiveCols = computed(() =>
 
 <template>
   <div>
-    <pv-switch
-      v-model="useCameraSettingsStore().currentPipelineSettings.outputShowMultipleTargets"
-      label="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent via PhotonLib, instead of just one"
-      :disabled="isTagPipeline"
+    <pv-slider
+      v-model="useCameraSettingsStore().currentPipelineSettings.outputMaximumTargets"
+      label="Maximum Targets"
+      tooltip="The maximum number of targets to display and send."
+      :hidden="isTagPipeline"
+      :min="1"
+      :max="127"
+      :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputShowMultipleTargets: value }, false)
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
       "
     />
     <pv-switch

@@ -17,7 +17,6 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.cscore.OpenCvLoader;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -50,29 +49,39 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
 
+/**
+ * A set of various utility functions for getting non-OpenCV data into an OpenCV-compatible format,
+ * along with other calculation functions.
+ */
 public final class OpenCVHelp {
     private static final Rotation3d NWU_TO_EDN;
     private static final Rotation3d EDN_TO_NWU;
-
-    /**
-     * @deprecated Replaced by {@link OpenCvLoader#forceStaticLoad()}
-     */
-    @Deprecated(since = "2025", forRemoval = true)
-    public static void forceLoadOpenCV() {
-        OpenCvLoader.forceStaticLoad();
-    }
 
     static {
         NWU_TO_EDN = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, -1, 0, 0, 0, -1, 1, 0, 0));
         EDN_TO_NWU = new Rotation3d(MatBuilder.fill(Nat.N3(), Nat.N3(), 0, 0, 1, -1, 0, 0, 0, -1, 0));
     }
 
+    private OpenCVHelp() {}
+
+    /**
+     * Converts an EJML {@link SimpleMatrix} to OpenCV's {@link Mat} by copying the data.
+     *
+     * @param matrix The matrix of data.
+     * @return The {@link Mat}. Data is encoded as 64-bit floats.
+     */
     public static Mat matrixToMat(SimpleMatrix matrix) {
         var mat = new Mat(matrix.getNumRows(), matrix.getNumCols(), CvType.CV_64F);
         mat.put(0, 0, matrix.getDDRM().getData());
         return mat;
     }
 
+    /**
+     * Converts an OpenCV {@link Mat} to WPILib's {@link Matrix} by copying the data.
+     *
+     * @param mat The {@link Mat} of data. Data is assumed to be encoded as 64-bit floats.
+     * @return The {@link Matrix}.
+     */
     public static Matrix<Num, Num> matToMatrix(Mat mat) {
         double[] data = new double[(int) mat.total() * mat.channels()];
         var doubleMat = new Mat(mat.rows(), mat.cols(), CvType.CV_64F);
@@ -82,10 +91,12 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Creates a new {@link MatOfPoint3f} with these 3d translations. The opencv tvec is a vector with
+     * Creates a new {@link MatOfPoint3f} with these 3d translations. The OpenCV tvec is a vector with
      * three elements representing {x, y, z} in the EDN coordinate system.
      *
-     * @param translations The translations to convert into a MatOfPoint3f
+     * @param translations The translations in the NWU coordinate system to convert into a
+     *     MatOfPoint3f
+     * @return The OpenCV tvec.
      */
     public static MatOfPoint3f translationToTvec(Translation3d... translations) {
         Point3[] points = new Point3[translations.length];
@@ -97,10 +108,11 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Returns a new 3d translation from this {@link Mat}. The opencv tvec is a vector with three
+     * Returns a new 3d translation from this {@link Mat}. The OpenCV tvec is a vector with three
      * elements representing {x, y, z} in the EDN coordinate system.
      *
      * @param tvecInput The tvec to create a Translation3d from
+     * @return The 3d translation in the NWU coordinate system.
      */
     public static Translation3d tvecToTranslation(Mat tvecInput) {
         float[] data = new float[3];
@@ -112,11 +124,12 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Creates a new {@link MatOfPoint3f} with this 3d rotation. The opencv rvec Mat is a vector with
+     * Creates a new {@link MatOfPoint3f} with this 3d rotation. The OpenCV rvec Mat is a vector with
      * three elements representing the axis scaled by the angle in the EDN coordinate system. (angle =
      * norm, and axis = rvec / norm)
      *
      * @param rotation The rotation to convert into a MatOfPoint3f
+     * @return The OpenCV rvec
      */
     public static MatOfPoint3f rotationToRvec(Rotation3d rotation) {
         rotation = rotationNWUtoEDN(rotation);
@@ -124,11 +137,12 @@ public final class OpenCVHelp {
     }
 
     /**
-     * Returns a 3d rotation from this {@link Mat}. The opencv rvec Mat is a vector with three
+     * Returns a 3d rotation from this {@link Mat}. The OpenCV rvec Mat is a vector with three
      * elements representing the axis scaled by the angle in the EDN coordinate system. (angle = norm,
      * and axis = rvec / norm)
      *
      * @param rvecInput The rvec to create a Rotation3d from
+     * @return The 3d rotation
      */
     public static Rotation3d rvecToRotation(Mat rvecInput) {
         // Get the 'rodriguez' (axis-angle, where the norm is the angle about the normalized direction
@@ -142,6 +156,12 @@ public final class OpenCVHelp {
         return rotationEDNtoNWU(new Rotation3d(VecBuilder.fill(data[0], data[1], data[2])));
     }
 
+    /**
+     * Calculates the average point from an array of points.
+     *
+     * @param points The array of points
+     * @return The average of all the points
+     */
     public static Point avgPoint(Point[] points) {
         if (points == null || points.length == 0) return null;
         var pointMat = new MatOfPoint2f(points);
@@ -151,6 +171,12 @@ public final class OpenCVHelp {
         return avgPt;
     }
 
+    /**
+     * Converts a {@link TargetCorner} list to a {@link Point} array.
+     *
+     * @param corners The {@link TargetCorner} list
+     * @return The {@link Point} array
+     */
     public static Point[] cornersToPoints(List<TargetCorner> corners) {
         var points = new Point[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
@@ -160,6 +186,12 @@ public final class OpenCVHelp {
         return points;
     }
 
+    /**
+     * Converts a {@link TargetCorner} array to a {@link Point} array.
+     *
+     * @param corners The {@link TargetCorner} array
+     * @return The {@link Point} array
+     */
     public static Point[] cornersToPoints(TargetCorner... corners) {
         var points = new Point[corners.length];
         for (int i = 0; i < corners.length; i++) {
@@ -168,6 +200,12 @@ public final class OpenCVHelp {
         return points;
     }
 
+    /**
+     * Converts a {@link Point} array to a {@link TargetCorner} list.
+     *
+     * @param points The {@link Point} array
+     * @return The {@link TargetCorner} list
+     */
     public static List<TargetCorner> pointsToCorners(Point... points) {
         var corners = new ArrayList<TargetCorner>(points.length);
         for (Point point : points) {
@@ -176,6 +214,12 @@ public final class OpenCVHelp {
         return corners;
     }
 
+    /**
+     * Converts an OpenCV {@link MatOfPoint2f} to a {@link TargetCorner} list.
+     *
+     * @param matInput The Mat
+     * @return The {@link TargetCorner} list
+     */
     public static List<TargetCorner> pointsToCorners(MatOfPoint2f matInput) {
         var corners = new ArrayList<TargetCorner>();
         float[] data = new float[(int) matInput.total() * matInput.channels()];
@@ -220,6 +264,8 @@ public final class OpenCVHelp {
     /**
      * Convert a rotation delta from EDN to NWU. For example, if you have a rotation X,Y,Z {1, 0, 0}
      * in EDN, this would be {0, -1, 0} in NWU.
+     *
+     * @return The converted rotation in the NWU coordinate system
      */
     private static Rotation3d rotationEDNtoNWU(Rotation3d rot) {
         return EDN_TO_NWU.unaryMinus().plus(rot.plus(EDN_TO_NWU));
@@ -228,6 +274,8 @@ public final class OpenCVHelp {
     /**
      * Convert a rotation delta from NWU to EDN. For example, if you have a rotation X,Y,Z {1, 0, 0}
      * in NWU, this would be {0, 0, 1} in EDN.
+     *
+     * @return The converted rotation in the EDN coordinate system
      */
     private static Rotation3d rotationNWUtoEDN(Rotation3d rot) {
         return NWU_TO_EDN.unaryMinus().plus(rot.plus(NWU_TO_EDN));
@@ -236,6 +284,8 @@ public final class OpenCVHelp {
     /**
      * Convert a translation from EDN to NWU. For example, if you have a translation X,Y,Z {1, 0, 0}
      * in EDN, this would be {0, -1, 0} in NWU.
+     *
+     * @return The converted translation in the NWU coordinate system
      */
     private static Translation3d translationEDNtoNWU(Translation3d trl) {
         return trl.rotateBy(EDN_TO_NWU);
@@ -244,6 +294,8 @@ public final class OpenCVHelp {
     /**
      * Convert a translation from NWU to EDN. For example, if you have a translation X,Y,Z {1, 0, 0}
      * in NWU, this would be {0, 0, 1} in EDN.
+     *
+     * @return The converted translation in the EDN coordinate system
      */
     private static Translation3d translationNWUtoEDN(Translation3d trl) {
         return trl.rotateBy(NWU_TO_EDN);
@@ -256,6 +308,7 @@ public final class OpenCVHelp {
      * @param pointsList the undistorted points
      * @param cameraMatrix standard OpenCV camera mat
      * @param distCoeffs standard OpenCV distortion coefficients. Must OPENCV5 or OPENCV8
+     * @return the list of distorted points
      */
     public static List<Point> distortPoints(
             List<Point> pointsList, Mat cameraMatrix, Mat distCoeffs) {
@@ -312,8 +365,8 @@ public final class OpenCVHelp {
      * Project object points from the 3d world into the 2d camera image. The camera
      * properties(intrinsics, distortion) determine the results of this projection.
      *
-     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
-     * @param distCoeffs the camera distortion matrix in standard opencv form
+     * @param cameraMatrix the camera intrinsics matrix in standard OpenCV form
+     * @param distCoeffs the camera distortion matrix in standard OpenCV form
      * @param camRt The change in basis from world coordinates to camera coordinates. See {@link
      *     RotTrlTransform3d#makeRelativeTo(Pose3d)}.
      * @param objectTranslations The 3d points to be projected
@@ -324,9 +377,9 @@ public final class OpenCVHelp {
             Matrix<N8, N1> distCoeffs,
             RotTrlTransform3d camRt,
             List<Translation3d> objectTranslations) {
-        // translate to opencv classes
+        // translate to OpenCV classes
         var objectPoints = translationToTvec(objectTranslations.toArray(new Translation3d[0]));
-        // opencv rvec/tvec describe a change in basis from world to camera
+        // OpenCV rvec/tvec describe a change in basis from world to camera
         var rvec = rotationToRvec(camRt.getRotation());
         var tvec = translationToTvec(camRt.getTranslation());
         var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
@@ -354,8 +407,8 @@ public final class OpenCVHelp {
      * projectPoints()} will naturally be distorted, so this operation is important if the image
      * points need to be directly used (e.g. 2d yaw/pitch).
      *
-     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
-     * @param distCoeffs The camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard OpenCV form
+     * @param distCoeffs The camera distortion matrix in standard OpenCV form
      * @param points The distorted image points
      * @return The undistorted image points
      */
@@ -444,8 +497,8 @@ public final class OpenCVHelp {
      * <p>This method is intended for use with individual AprilTags, and will not work unless 4 points
      * are provided.
      *
-     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
-     * @param distCoeffs The camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard OpenCV form
+     * @param distCoeffs The camera distortion matrix in standard OpenCV form
      * @param modelTrls The translations of the object corners. These should have the object pose as
      *     their origin. These must come in a specific, pose-relative order (in NWU):
      *     <ul>
@@ -479,7 +532,7 @@ public final class OpenCVHelp {
             // IPPE_SQUARE expects our corners in a specific order
             modelTrls = reorderCircular(modelTrls, true, -1);
             imagePoints = reorderCircular(Arrays.asList(imagePoints), true, -1).toArray(Point[]::new);
-            // translate to opencv classes
+            // translate to OpenCV classes
             translationToTvec(modelTrls.toArray(new Translation3d[0])).assignTo(objectMat);
             imageMat.fromArray(imagePoints);
             matrixToMat(cameraMatrix.getStorage()).assignTo(cameraMatrixMat);
@@ -559,8 +612,8 @@ public final class OpenCVHelp {
      * solution-- if you are intending to use solvePNP on a single AprilTag, see {@link
      * #solvePNP_SQUARE} instead.
      *
-     * @param cameraMatrix The camera intrinsics matrix in standard opencv form
-     * @param distCoeffs The camera distortion matrix in standard opencv form
+     * @param cameraMatrix The camera intrinsics matrix in standard OpenCV form
+     * @param distCoeffs The camera distortion matrix in standard OpenCV form
      * @param objectTrls The translations of the object corners, relative to the field.
      * @param imagePoints The projection of these 3d object points into the 2d camera image. The order
      *     should match the given object point translations.
@@ -574,7 +627,7 @@ public final class OpenCVHelp {
             List<Translation3d> objectTrls,
             Point[] imagePoints) {
         try {
-            // translate to opencv classes
+            // translate to OpenCV classes
             MatOfPoint3f objectMat = translationToTvec(objectTrls.toArray(new Translation3d[0]));
             MatOfPoint2f imageMat = new MatOfPoint2f(imagePoints);
             Mat cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());

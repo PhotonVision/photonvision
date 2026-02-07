@@ -24,11 +24,14 @@ import java.util.Optional;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 /** A packet that holds byte-packed data to be sent over NetworkTables. */
+@SuppressWarnings("doclint")
 public class Packet {
     // Data stored in the packet.
     byte[] packetData;
     // Read and write positions.
     int readPos, writePos;
+
+    public static final int MAX_ARRAY_LEN = Byte.MAX_VALUE;
 
     /**
      * Constructs an empty packet. This buffer will dynamically expand if we need more data space.

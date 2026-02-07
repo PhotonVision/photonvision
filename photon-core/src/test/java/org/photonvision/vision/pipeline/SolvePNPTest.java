@@ -89,7 +89,6 @@ public class SolvePNPTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
@@ -225,7 +224,6 @@ public class SolvePNPTest {
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(190, 255);
         settings.outputShouldDraw = true;
-        settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 

@@ -24,12 +24,12 @@
 
 package frc.robot;
 
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
@@ -37,14 +37,14 @@ import org.photonvision.timesync.TimeSyncSingleton;
 
 public class JniLoadTest {
     @Test
-    public void smoketestTimeSync() {
+    void smoketestTimeSync() {
         if (!TimeSyncSingleton.load()) {
             fail("Could not load TimeSync JNI????????");
         }
     }
 
     @Test
-    public void smoketestPhotonCameraSim() {
+    void smoketestPhotonCameraSim() {
         // This will trigger a force load of OpenCV internally - good to smoketest
         var camera = new PhotonCamera("Hellowo");
         var cameraProp = new SimCameraProperties();

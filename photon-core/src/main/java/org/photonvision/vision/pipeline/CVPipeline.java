@@ -26,8 +26,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings>
         implements Releasable {
-    static final int MAX_MULTI_TARGET_RESULTS = 10;
-
     protected S settings;
     protected FrameStaticProperties frameStaticProperties;
     protected QuirkyCamera cameraQuirks;

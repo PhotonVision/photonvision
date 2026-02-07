@@ -49,6 +49,7 @@ public class VisionRunner {
     private final VisionModuleChangeSubscriber changeSubscriber;
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
+    private final Supplier<Integer> fpsLimitSupplier;
 
     private long loopCount;
 
@@ -65,12 +66,14 @@ public class VisionRunner {
             Supplier<CVPipeline> pipelineSupplier,
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
-            VisionModuleChangeSubscriber changeSubscriber) {
+            VisionModuleChangeSubscriber changeSubscriber,
+            Supplier<Integer> fpsLimitSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
         this.changeSubscriber = changeSubscriber;
+        this.fpsLimitSupplier = fpsLimitSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -146,6 +149,7 @@ public class VisionRunner {
                                 UIPhotonConfiguration.programStateToUi(ConfigManager.getInstance().getConfig())));
 
         while (!Thread.interrupted()) {
+            long start = System.currentTimeMillis();
             changeSubscriber.processSettingChanges();
             synchronized (runnableList) {
                 for (var runnable : runnableList) {
@@ -177,6 +181,7 @@ public class VisionRunner {
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
             frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
+            frameSupplier.requestBlockForFrames(settings.blockForFrames);
 
             // Grab the new camera frame
             var frame = frameSupplier.get();
@@ -187,25 +192,33 @@ public class VisionRunner {
                 // Still feed with blank frames just dont run any pipelines
 
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-                continue;
-            }
 
-            // If the pipeline has changed while we are getting our frame we should scrap
-            // that frame it
-            // may result in incorrect frame settings like hsv values
-            if (pipeline == pipelineSupplier.get()) {
+            } else if (pipeline == pipelineSupplier.get()) {
+                // If the pipeline has changed while we are getting our frame we should scrap
+                // that frame it may result in incorrect frame settings like hsv values
+
                 // There's no guarantee the processing type change will occur this tick, so
-                // pipelines should
-                // check themselves
+                // pipelines should check themselves
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
                     pipelineResultConsumer.accept(pipelineResult);
                 } catch (Exception ex) {
                     logger.error("Exception on loop " + loopCount, ex);
                 }
+                loopCount++;
             }
+            int fpsLimit = fpsLimitSupplier.get();
+            if (fpsLimit > 0) {
+                long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
 
-            loopCount++;
+                if (sleepTime > 0) {
+                    try {
+                        Thread.sleep(sleepTime);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            }
         }
     }
 }

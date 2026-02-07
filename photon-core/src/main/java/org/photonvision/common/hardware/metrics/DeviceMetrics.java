@@ -28,8 +28,11 @@ public record DeviceMetrics(
         double gpuMem,
         double gpuMemUtil,
         double diskUtilPct,
+        double diskUsableSpace,
         double[] npuUsage,
         String ipAddress,
-        double uptime) {
+        double uptime,
+        double sentBitRate,
+        double recvBitRate) {
     public static final DeviceMetricsProto proto = new DeviceMetricsProto();
 }
