@@ -13,13 +13,15 @@ import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
 
 const theme = useTheme();
 
-const restartProgram = () => {
-  axiosPost("/utils/restartProgram", "restart PhotonVision");
-  forceReloadPage();
+const restartProgram = async () => {
+  if (await axiosPost("/utils/restartProgram", "restart PhotonVision")) {
+    forceReloadPage();
+  }
 };
-const restartDevice = () => {
-  axiosPost("/utils/restartDevice", "restart the device");
-  forceReloadPage();
+const restartDevice = async () => {
+  if (await axiosPost("/utils/restartDevice", "restart the device")) {
+    forceReloadPage();
+  }
 };
 
 const address = inject<string>("backendHost");
@@ -38,28 +40,30 @@ const handleOfflineUpdate = async () => {
     color: "secondary",
     timeout: -1
   });
-  await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: ({ progress }) => {
-      const uploadPercentage = (progress || 0) * 100.0;
-      if (uploadPercentage < 99.5) {
-        useStateStore().showSnackbarMessage({
-          message: "New Software Upload in Progress",
-          color: "secondary",
-          timeout: -1,
-          progressBar: uploadPercentage,
-          progressBarColor: "primary"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "Installing uploaded software...",
-          color: "secondary",
-          timeout: -1
-        });
+  if (
+    await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "New Software Upload in Progress",
+            color: "secondary",
+            timeout: -1,
+            progressBar: uploadPercentage,
+            progressBarColor: "primary"
+          });
+        }
       }
-    }
-  });
-  forceReloadPage();
+    })
+  ) {
+    useStateStore().showSnackbarMessage({
+      message: "Installing uploaded software...",
+      color: "secondary",
+      timeout: -1
+    });
+    forceReloadPage();
+  }
 };
 
 const exportLogFile = ref();
@@ -116,9 +120,10 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(false);
-const nukePhotonConfigDirectory = () => {
-  axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
-  forceReloadPage();
+const nukePhotonConfigDirectory = async () => {
+  if (await axiosPost("/utils/nukeConfigDirectory", "delete the config directory")) {
+    forceReloadPage();
+  }
 };
 
 interface MetricItem {
@@ -371,21 +376,33 @@ watch(metricsHistorySnapshot, () => {
             <span>CPU Usage</span>
             <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
             <span>{{ cpuTempData.at(-1)?.value == -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
-          <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
@@ -399,7 +416,11 @@ watch(metricsHistorySnapshot, () => {
               >{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span
             >
           </div>
-          <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
       </v-card>
     </v-col>

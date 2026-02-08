@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import * as echarts from "echarts";
 import { onMounted, ref, onBeforeUnmount, watch } from "vue";
 import { useTheme } from "vuetify";
 
@@ -198,7 +197,8 @@ const props = defineProps<{
   color?: string;
 }>();
 
-onMounted(() => {
+onMounted(async () => {
+  const echarts = await import("echarts");
   chart = echarts.init(chartRef.value);
   chart.setOption(getOptions(props.data));
 

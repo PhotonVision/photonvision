@@ -43,6 +43,7 @@ public class VisionLED implements AutoCloseable {
 
     private VisionLEDMode currentLedMode = VisionLEDMode.kDefault;
     private BooleanSupplier pipelineModeSupplier;
+    private boolean currentOutputState = false;
 
     private float mappedBrightness = 0.0f;
 
@@ -85,10 +86,15 @@ public class VisionLED implements AutoCloseable {
     public void setBrightness(int percentage) {
         mappedBrightness =
                 (float) (MathUtils.map(percentage, 0.0, 100.0, brightnessMin, brightnessMax) / 100.0);
-        setInternal(currentLedMode, false);
+        if (currentOutputState) {
+            for (PwmLed led : dimmableVisionLEDs) {
+                led.setValue(mappedBrightness);
+            }
+        }
     }
 
     public void blink(int pulseLengthMillis, int blinkCount) {
+        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         blinkImpl(pulseLengthMillis, blinkCount);
         int blinkDuration = pulseLengthMillis * blinkCount * 2;
         TimedTaskManager.getInstance()
@@ -96,19 +102,13 @@ public class VisionLED implements AutoCloseable {
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
         AtomicInteger blinks = new AtomicInteger();
         TimedTaskManager.getInstance()
                 .addTask(
                         blinkTaskID,
                         () -> {
-                            for (LED led : visionLEDs) {
-                                led.toggle();
-                            }
-                            for (PwmLed led : dimmableVisionLEDs) {
-                                led.setValue(mappedBrightness - led.getValue());
-                            }
-                            if (blinks.incrementAndGet() >= blinkCount * 2) {
+                            setStateImpl(!currentOutputState);
+                            if (blinkCount >= 0 && blinks.incrementAndGet() >= blinkCount * 2) {
                                 TimedTaskManager.getInstance().cancelTask(blinkTaskID);
                             }
                         },
@@ -116,12 +116,16 @@ public class VisionLED implements AutoCloseable {
     }
 
     private void setStateImpl(boolean state) {
-        TimedTaskManager.getInstance().cancelTask(blinkTaskID);
+        currentOutputState = state;
         for (LED led : visionLEDs) {
             led.setOn(state);
         }
         for (PwmLed led : dimmableVisionLEDs) {
-            led.setValue(mappedBrightness);
+            if (state) {
+                led.setValue(mappedBrightness);
+            } else {
+                led.off();
+            }
         }
     }
 
@@ -162,6 +166,7 @@ public class VisionLED implements AutoCloseable {
         var lastLedMode = currentLedMode;
 
         if (fromNT || currentLedMode == VisionLEDMode.kDefault) {
+            TimedTaskManager.getInstance().cancelTask(blinkTaskID);
             switch (newLedMode) {
                 case kDefault -> setStateImpl(pipelineModeSupplier.getAsBoolean());
                 case kOff -> setStateImpl(false);
