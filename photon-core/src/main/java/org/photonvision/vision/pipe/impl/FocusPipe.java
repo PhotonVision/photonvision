@@ -25,7 +25,9 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.FocusParams> {
-    private double maxVariance = 0.0;
+    // cache these
+    MatOfDouble mean = new MatOfDouble();
+    MatOfDouble stddev = new MatOfDouble();
 
     @Override
     protected FocusResult process(Mat in) {
@@ -33,8 +35,6 @@ public class FocusPipe extends CVPipe<Mat, FocusPipe.FocusResult, FocusPipe.Focu
 
         Imgproc.Laplacian(in, outputMat, CvType.CV_64F, 3);
 
-        var mean = new MatOfDouble();
-        var stddev = new MatOfDouble();
         Core.meanStdDev(outputMat, mean, stddev);
         var sd = stddev.get(0, 0)[0];
         var variance = sd * sd;
