@@ -33,7 +33,8 @@ public class CVMat implements Releasable {
     private static final AtomicInteger matIdCounter = new AtomicInteger(0);
 
     // All mats that have not yet been released(). these may still need to be GCed
-    private static final Set<MatTracker> allMats = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static final Set<MatTracker> allMats =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
     private static final ReferenceQueue<CVMat> refQueue = new ReferenceQueue<>();
 
     private static boolean shouldPrint;
@@ -44,9 +45,7 @@ public class CVMat implements Releasable {
     private final MatTracker tracker;
     private volatile boolean released = false;
 
-    /**
-     * Track a single CVMat instance using a PhantomReference
-     */
+    /** Track a single CVMat instance using a PhantomReference */
     private static class MatTracker extends PhantomReference<CVMat> {
         final int id;
         final long nativePtr;
@@ -88,12 +87,7 @@ public class CVMat implements Releasable {
         allMats.add(tracker);
 
         if (shouldPrint) {
-            logger.trace(
-                    "CVMat"
-                            + matId
-                            + " allocated - count: "
-                            + allMats.size()
-                            + tracker.allocTrace);
+            logger.trace("CVMat" + matId + " allocated - count: " + allMats.size() + tracker.allocTrace);
         }
     }
 
@@ -184,32 +178,38 @@ public class CVMat implements Releasable {
 
     // todo move to somewhere else
     static {
-        Thread cleanupThread = new Thread(() -> {
-            while (true) {
-                try {
-                    MatTracker ref = (MatTracker) refQueue.remove();
+        Thread cleanupThread =
+                new Thread(
+                        () -> {
+                            while (true) {
+                                try {
+                                    MatTracker ref = (MatTracker) refQueue.remove();
 
-                    // Check if it was released before GC
-                    if (!ref.explicitlyReleased) {
-                        // This is a leak - remove from tracking and warn
-                        allMats.remove(ref);
+                                    // Check if it was released before GC
+                                    if (!ref.explicitlyReleased) {
+                                        // This is a leak - remove from tracking and warn
+                                        allMats.remove(ref);
 
-                        logger.warn("CVMat" + ref.id + " was GC'd without release()! " +
-                                "Native memory leaked. Ptr: 0x" +
-                                Long.toHexString(ref.nativePtr));
-                        if (ref.allocTrace != null) {
-                            logger.warn("Allocated at:" + ref.allocTrace);
-                        }
-                    }
-                    // If explicitlyReleased == true, it was already removed from allMats
-                    // in release(), so nothing to do here
+                                        logger.warn(
+                                                "CVMat"
+                                                        + ref.id
+                                                        + " was GC'd without release()! "
+                                                        + "Native memory may have leaked."
+                                                        + "\nAllocated by "
+                                                        + ref.allocTrace);
+                                        if (ref.allocTrace != null) {
+                                            logger.warn("Allocated at:" + ref.allocTrace);
+                                        }
+                                    }
 
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    break;
-                }
-            }
-        }, "CVMat-Cleanup");
+                                    // Because we use PhantomReferences, we can't try to be nice
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                    break;
+                                }
+                            }
+                        },
+                        "CVMat-Cleanup");
         cleanupThread.setDaemon(true);
         cleanupThread.start();
     }
@@ -220,7 +220,11 @@ public class CVMat implements Releasable {
     protected void finalize() throws Throwable {
         try {
             if (!released) {
-                logger.error("CVMat" + matId + " finalized without release()! Leaking native memory. Allocated by " + tracker.allocTrace);
+                logger.error(
+                        "CVMat"
+                                + matId
+                                + " finalized without release()! Leaking native memory. Allocated by "
+                                + tracker.allocTrace);
                 // Don't call release() here - finalization order is unpredictable
                 // and backingFrame might already be finalized
             }
