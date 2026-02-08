@@ -18,21 +18,58 @@
 package org.photonvision.vision.opencv;
 
 import edu.wpi.first.util.RawFrame;
-import java.util.HashMap;
+import java.lang.ref.PhantomReference;
+import java.lang.ref.ReferenceQueue;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class CVMat implements Releasable {
     private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
+    private static final AtomicInteger matIdCounter = new AtomicInteger(0);
 
-    private static int allMatCounter = 0;
-    private static final HashMap<Mat, Integer> allMats = new HashMap<>();
+    // All mats that have not yet been released(). these may still need to be GCed
+    private static final Set<MatTracker> allMats = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private static final ReferenceQueue<CVMat> refQueue = new ReferenceQueue<>();
 
     private static boolean shouldPrint;
 
-    private final Mat mat;
-    private final RawFrame backingFrame;
+    private Mat mat;
+    private RawFrame backingFrame;
+    public final int matId;
+    private final MatTracker tracker;
+    private volatile boolean released = false;
+
+    /**
+     * Track a single CVMat instance using a PhantomReference
+     */
+    private static class MatTracker extends PhantomReference<CVMat> {
+        final int id;
+        final long nativePtr;
+        final String allocTrace;
+        volatile boolean explicitlyReleased = false;
+
+        MatTracker(CVMat cvmat, int id, ReferenceQueue<CVMat> queue) {
+            super(cvmat, queue);
+            this.id = id;
+            this.nativePtr = cvmat.mat.nativeObj;
+            this.allocTrace = shouldPrint ? getStackTrace() : null;
+        }
+
+        private static String getStackTrace() {
+            var trace = Thread.currentThread().getStackTrace();
+            final int SKIP = 4; // Skip getStackTrace, <init>, CVMat.<init>, caller
+            var sb = new StringBuilder();
+            for (int i = SKIP; i < Math.min(trace.length, SKIP + 10); i++) {
+                sb.append("\n\t").append(trace[i]);
+            }
+            return sb.toString();
+        }
+    }
 
     public CVMat() {
         this(new Mat());
@@ -40,6 +77,24 @@ public class CVMat implements Releasable {
 
     public CVMat(Mat mat) {
         this(mat, null);
+    }
+
+    public CVMat(Mat mat, RawFrame frame) {
+        this.mat = mat;
+        this.backingFrame = frame;
+        this.matId = matIdCounter.incrementAndGet();
+        this.tracker = new MatTracker(this, matId, refQueue);
+
+        allMats.add(tracker);
+
+        if (shouldPrint) {
+            logger.debug(
+                    "CVMat"
+                            + matId
+                            + " allocated - count: "
+                            + allMats.size()
+                            + (tracker.allocTrace != null ? tracker.allocTrace : ""));
+        }
     }
 
     public void copyFrom(CVMat srcMat) {
@@ -50,56 +105,73 @@ public class CVMat implements Releasable {
         srcMat.copyTo(mat);
     }
 
-    private StringBuilder getStackTraceBuilder() {
-        var trace = Thread.currentThread().getStackTrace();
-
-        final int STACK_FRAMES_TO_SKIP = 3;
-        final var traceStr = new StringBuilder();
-        for (int idx = STACK_FRAMES_TO_SKIP; idx < trace.length; idx++) {
-            traceStr.append("\t\n").append(trace[idx]);
-        }
-        traceStr.append("\n");
-        return traceStr;
-    }
-
-    public CVMat(Mat mat, RawFrame frame) {
-        this.mat = mat;
-        this.backingFrame = frame;
-
-        allMatCounter++;
-        allMats.put(mat, allMatCounter);
-
-        if (shouldPrint) {
-            logger.trace(() -> "CVMat" + allMatCounter + " alloc - new count: " + allMats.size());
-            logger.trace(getStackTraceBuilder()::toString);
-        }
-    }
-
     @Override
     public void release() {
-        if (this.backingFrame != null) this.backingFrame.close();
+        synchronized (this) {
+            if (released) {
+                if (shouldPrint) {
+                    logger.error("CVMat" + matId + " already released (ignored)");
+                }
+                return;
+            }
+            released = true;
+        }
 
-        // If this mat is empty, all we can do is return
-        if (mat.empty()) return;
+        tracker.explicitlyReleased = true;
 
-        // If the mat isn't in the hashmap, we can't remove it
-        Integer matNo = allMats.get(mat);
-        if (matNo != null) allMats.remove(mat);
-        mat.release();
+        // Free RawFrames exactly ONCE
+        if (backingFrame != null) {
+            try {
+                backingFrame.close();
+                backingFrame = null;
+            } catch (Exception e) {
+                logger.error("Error closing RawFrame for CVMat" + matId, e);
+            }
+        }
+
+        try {
+            if (mat != null) {
+                mat.release();
+                mat = null;
+            } else {
+                logger.error("Mat was already null, this is a no-op");
+            }
+        } catch (Exception e) {
+            logger.error("Error releasing Mat for CVMat" + matId, e);
+        }
+
+        // write down it's freed
+        allMats.remove(tracker);
 
         if (shouldPrint) {
-            logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
-            logger.trace(getStackTraceBuilder()::toString);
+            logger.debug("CVMat" + matId + " released - count: " + allMats.size());
         }
     }
 
     public Mat getMat() {
+        if (released) {
+            throw new IllegalStateException("CVMat" + matId + " has been released!");
+        }
         return mat;
+    }
+
+    public boolean isReleased() {
+        return released;
     }
 
     @Override
     public String toString() {
-        return "CVMat{" + mat.toString() + '}';
+        return "CVMat [mat="
+                + mat
+                + ", backingFrame="
+                + backingFrame
+                + ", matId="
+                + matId
+                + ", tracker="
+                + tracker
+                + ", released="
+                + released
+                + "]";
     }
 
     public static int getMatCount() {
@@ -108,5 +180,52 @@ public class CVMat implements Releasable {
 
     public static void enablePrint(boolean enabled) {
         shouldPrint = enabled;
+    }
+
+    // todo move to somewhere else
+    static {
+        Thread cleanupThread = new Thread(() -> {
+            while (true) {
+                try {
+                    MatTracker ref = (MatTracker) refQueue.remove();
+
+                    // Check if it was released before GC
+                    if (!ref.explicitlyReleased) {
+                        // This is a leak - remove from tracking and warn
+                        allMats.remove(ref);
+
+                        logger.warn("CVMat" + ref.id + " was GC'd without release()! " +
+                                "Native memory leaked. Ptr: 0x" +
+                                Long.toHexString(ref.nativePtr));
+                        if (ref.allocTrace != null) {
+                            logger.warn("Allocated at:" + ref.allocTrace);
+                        }
+                    }
+                    // If explicitlyReleased == true, it was already removed from allMats
+                    // in release(), so nothing to do here
+
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }, "CVMat-Cleanup");
+        cleanupThread.setDaemon(true);
+        cleanupThread.start();
+    }
+
+    // Paranoia
+    @Override
+    @SuppressWarnings("deprecation")
+    protected void finalize() throws Throwable {
+        try {
+            if (!released) {
+                logger.error("CVMat" + matId + " finalized without release()! Leaking native memory.");
+                // Don't call release() here - finalization order is unpredictable
+                // and backingFrame might already be finalized
+            }
+        } finally {
+            super.finalize();
+        }
     }
 }
