@@ -57,7 +57,7 @@ public class CVMat implements Releasable {
             super(cvmat, queue);
             this.id = id;
             this.nativePtr = cvmat.mat.nativeObj;
-            this.allocTrace = shouldPrint ? getStackTrace() : null;
+            this.allocTrace = shouldPrint ? getStackTrace() : "";
         }
 
         private static String getStackTrace() {
@@ -88,12 +88,12 @@ public class CVMat implements Releasable {
         allMats.add(tracker);
 
         if (shouldPrint) {
-            logger.debug(
+            logger.trace(
                     "CVMat"
                             + matId
                             + " allocated - count: "
                             + allMats.size()
-                            + (tracker.allocTrace != null ? tracker.allocTrace : ""));
+                            + tracker.allocTrace);
         }
     }
 
@@ -144,7 +144,7 @@ public class CVMat implements Releasable {
         allMats.remove(tracker);
 
         if (shouldPrint) {
-            logger.debug("CVMat" + matId + " released - count: " + allMats.size());
+            logger.trace("CVMat" + matId + " released - count: " + allMats.size());
         }
     }
 
@@ -220,7 +220,7 @@ public class CVMat implements Releasable {
     protected void finalize() throws Throwable {
         try {
             if (!released) {
-                logger.error("CVMat" + matId + " finalized without release()! Leaking native memory.");
+                logger.error("CVMat" + matId + " finalized without release()! Leaking native memory. Allocated by " + tracker.allocTrace);
                 // Don't call release() here - finalization order is unpredictable
                 // and backingFrame might already be finalized
             }
