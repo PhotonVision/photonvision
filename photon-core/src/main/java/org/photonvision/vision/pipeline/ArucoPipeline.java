@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.objdetect.Objdetect;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
@@ -66,52 +65,21 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     @Override
     protected void setPipeParamsImpl() {
-        var params = new ArucoDetectionPipeParams();
+        arucoDetectionPipe.setParams(new ArucoDetectionPipe.ArucoDetectionPipeParams());
         // sanitize and record settings
-
-        // for now, hard code tag width based on enum value
-        // 2023/other: best guess is 6in
-        double tagWidth = Units.inchesToMeters(6);
-        TargetModel tagModel = TargetModel.kAprilTag16h5;
-
-        params.tagFamily =
-                switch (settings.tagFamily) {
-                    case kTag36h11 -> {
-                        // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6.5);
-                        tagModel = TargetModel.kAprilTag36h11;
-                        yield Objdetect.DICT_APRILTAG_36h11;
-                    }
-                    case kTag16h5 -> {
-                        // 2024 tag, 6.5in
-                        tagWidth = Units.inchesToMeters(6);
-                        tagModel = TargetModel.kAprilTag16h5;
-                        yield Objdetect.DICT_APRILTAG_16h5;
-                    }
-                };
-
         int threshMinSize = Math.max(3, settings.threshWinSizes.getFirst());
         settings.threshWinSizes.setFirst(threshMinSize);
-        params.threshMinSize = threshMinSize;
         int threshStepSize = Math.max(2, settings.threshStepSize);
         settings.threshStepSize = threshStepSize;
-        params.threshStepSize = threshStepSize;
         int threshMaxSize = Math.max(threshMinSize, settings.threshWinSizes.getSecond());
         settings.threshWinSizes.setSecond(threshMaxSize);
-        params.threshMaxSize = threshMaxSize;
-        params.threshConstant = settings.threshConstant;
-
-        params.useCornerRefinement = settings.useCornerRefinement;
-        params.refinementMaxIterations = settings.refineNumIterations;
-        params.refinementMinErrorPx = settings.refineMinErrorPx;
-        params.useAruco3 = settings.useAruco3;
-        params.aruco3MinMarkerSideRatio = settings.aruco3MinMarkerSideRatio;
-        params.aruco3MinCanonicalImgSide = settings.aruco3MinCanonicalImgSide;
-        arucoDetectionPipe.setParams(params);
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
             if (cameraMatrix != null && cameraMatrix.rows() > 0) {
+                // for now, hard code tag width based on enum value
+                double tagWidth = Units.inchesToMeters(6.5);
+                TargetModel tagModel = TargetModel.kAprilTag36h11;
                 var estimatorParams =
                         new ArucoPoseEstimatorPipeParams(frameStaticProperties.cameraCalibration, tagWidth);
                 singleTagPoseEstimatorPipe.setParams(estimatorParams);
