@@ -32,6 +32,9 @@ const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
     case PipelineType.ObjectDetection:
       pipelineType.value = WebsocketPipelineType.ObjectDetection;
       break;
+    case PipelineType.Composite:
+      pipelineType.value = WebsocketPipelineType.Composite;
+      break;
   }
 };
 
@@ -138,6 +141,7 @@ const validNewPipelineTypes = computed(() => {
   ];
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
+    pipelineTypes.push({ name: "Composite", value: WebsocketPipelineType.Composite });
   }
   return pipelineTypes;
 });
@@ -176,6 +180,7 @@ const pipelineTypesWrapper = computed<{ name: string; value: number }[]>(() => {
   ];
   if (useSettingsStore().general.supportedBackends.length > 0) {
     pipelineTypes.push({ name: "Object Detection", value: WebsocketPipelineType.ObjectDetection });
+    pipelineTypes.push({ name: "Composite", value: WebsocketPipelineType.Composite });
   }
 
   if (useCameraSettingsStore().isDriverMode) {
@@ -237,6 +242,9 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
     case PipelineType.ObjectDetection:
       pipelineType.value = WebsocketPipelineType.ObjectDetection;
+      break;
+    case PipelineType.Composite:
+      pipelineType.value = WebsocketPipelineType.Composite;
       break;
   }
 });

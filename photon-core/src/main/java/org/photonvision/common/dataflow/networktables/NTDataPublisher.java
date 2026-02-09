@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -32,7 +33,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CompositePipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -42,6 +45,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
     private final NTTopicSet ts = new NTTopicSet();
+    private final NTTopicSet tagsTs = new NTTopicSet();
+    private final NTTopicSet objectsTs = new NTTopicSet();
 
     NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
@@ -128,6 +133,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
         ts.removeEntries();
+        tagsTs.removeEntries();
+        objectsTs.removeEntries();
     }
 
     private void updateEntries() {
@@ -136,6 +143,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (fpsLimitListener != null) fpsLimitListener.remove();
 
         ts.updateEntries();
+        tagsTs.updateEntries();
+        objectsTs.updateEntries();
 
         pipelineIndexListener =
                 new NTDataChangeListener(
@@ -153,17 +162,17 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void updateCameraNickname(String newCameraNickname) {
         removeEntries();
         ts.subTable = rootTable.getSubTable(newCameraNickname);
+        tagsTs.subTable = rootTable.getSubTable(newCameraNickname + "-tags");
+        objectsTs.subTable = rootTable.getSubTable(newCameraNickname + "-objects");
         updateEntries();
     }
 
     @Override
     public void accept(CVPipelineResult result) {
         CVPipelineResult acceptedResult;
-        if (result
-                instanceof
-                CalibrationPipelineResult) // If the data is from a calibration pipeline, override the list
-            // of targets to be null to prevent the data from being sent and
-            // continue to post blank/zero data to the network tables
+        if (result instanceof CalibrationPipelineResult) {
+            // If the data is from a calibration pipeline, override the list of targets to be null to
+            // prevent the data from being sent and continue to post blank/zero data to the network tables
             acceptedResult =
                     new CVPipelineResult(
                             result.sequenceID,
@@ -171,75 +180,129 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             result.fps,
                             List.of(),
                             result.inputAndOutputFrame);
-        else acceptedResult = result;
+        } else {
+            acceptedResult = result;
+        }
         var now = NetworkTablesJNI.now();
         var captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
 
         var offset = NetworkTablesManager.getInstance().getOffset();
 
-        // Transform the metadata timestamps from the local nt::Now timebase to the Time Sync Server's
-        // timebase
-        var simplified =
-                new PhotonPipelineResult(
-                        acceptedResult.sequenceID,
-                        captureMicros + offset,
-                        now + offset,
-                        NetworkTablesManager.getInstance().getTimeSinceLastPong(),
-                        TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
-                        acceptedResult.multiTagResult);
+        publishToTopicSet(
+                ts,
+                acceptedResult,
+                acceptedResult.targets,
+                acceptedResult.multiTagResult,
+                captureMicros,
+                now,
+                offset);
 
-        // random guess at size of the array
-        ts.resultPublisher.set(simplified, 1024);
-        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
-            ts.protoResultPublisher.set(simplified);
-        }
-
-        ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
-        ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
-        ts.fpsLimitPublisher.set(fpsLimitSupplier.get());
-        ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
-        ts.fpsEntry.set(acceptedResult.fps);
-        ts.hasTargetEntry.set(acceptedResult.hasTargets());
-
-        if (acceptedResult.hasTargets()) {
-            var bestTarget = acceptedResult.targets.get(0);
-
-            ts.targetPitchEntry.set(bestTarget.getPitch());
-            ts.targetYawEntry.set(bestTarget.getYaw());
-            ts.targetAreaEntry.set(bestTarget.getArea());
-            ts.targetSkewEntry.set(bestTarget.getSkew());
-
-            var pose = bestTarget.getBestCameraToTarget3d();
-            ts.targetPoseEntry.set(pose);
-
-            var targetOffsetPoint = bestTarget.getTargetOffsetPoint();
-            ts.bestTargetPosX.set(targetOffsetPoint.x);
-            ts.bestTargetPosY.set(targetOffsetPoint.y);
+        if (result instanceof CompositePipelineResult compositeResult) {
+            publishToTopicSet(
+                    tagsTs,
+                    acceptedResult,
+                    compositeResult.aprilTagTargets,
+                    acceptedResult.multiTagResult,
+                    captureMicros,
+                    now,
+                    offset);
+            publishToTopicSet(
+                    objectsTs,
+                    acceptedResult,
+                    compositeResult.objectDetectionTargets,
+                    Optional.<MultiTargetPNPResult>empty(),
+                    captureMicros,
+                    now,
+                    offset);
         } else {
-            ts.targetPitchEntry.set(0);
-            ts.targetYawEntry.set(0);
-            ts.targetAreaEntry.set(0);
-            ts.targetSkewEntry.set(0);
-            ts.targetPoseEntry.set(new Transform3d());
-            ts.bestTargetPosX.set(0);
-            ts.bestTargetPosY.set(0);
+            publishToTopicSet(
+                    tagsTs,
+                    acceptedResult,
+                    List.<TrackedTarget>of(),
+                    Optional.<MultiTargetPNPResult>empty(),
+                    captureMicros,
+                    now,
+                    offset);
+            publishToTopicSet(
+                    objectsTs,
+                    acceptedResult,
+                    List.<TrackedTarget>of(),
+                    Optional.<MultiTargetPNPResult>empty(),
+                    captureMicros,
+                    now,
+                    offset);
         }
-
-        // Something in the result can sometimes be null -- so check probably too many things
-        if (acceptedResult.inputAndOutputFrame != null
-                && acceptedResult.inputAndOutputFrame.frameStaticProperties != null
-                && acceptedResult.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
-            var fsp = acceptedResult.inputAndOutputFrame.frameStaticProperties;
-            ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
-            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
-        } else {
-            ts.cameraIntrinsicsPublisher.accept(new double[0]);
-            ts.cameraDistortionPublisher.accept(new double[0]);
-        }
-
-        ts.heartbeatPublisher.set(acceptedResult.sequenceID);
 
         // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
+    }
+
+    private void publishToTopicSet(
+            NTTopicSet topics,
+            CVPipelineResult result,
+            List<TrackedTarget> targets,
+            Optional<MultiTargetPNPResult> multiTagResult,
+            long captureMicros,
+            long now,
+            long offset) {
+        var safeTargets = targets != null ? targets : List.<TrackedTarget>of();
+
+        var simplified =
+                new PhotonPipelineResult(
+                        result.sequenceID,
+                        captureMicros + offset,
+                        now + offset,
+                        NetworkTablesManager.getInstance().getTimeSinceLastPong(),
+                        TrackedTarget.simpleFromTrackedTargets(safeTargets),
+                        multiTagResult);
+
+        topics.resultPublisher.set(simplified, 1024);
+        if (ConfigManager.getInstance().getConfig().getNetworkConfig().shouldPublishProto) {
+            topics.protoResultPublisher.set(simplified);
+        }
+
+        topics.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
+        topics.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        topics.fpsLimitPublisher.set(fpsLimitSupplier.get());
+        topics.latencyMillisEntry.set(result.getLatencyMillis());
+        topics.fpsEntry.set(result.fps);
+        topics.hasTargetEntry.set(!safeTargets.isEmpty());
+
+        if (!safeTargets.isEmpty()) {
+            var bestTarget = safeTargets.get(0);
+
+            topics.targetPitchEntry.set(bestTarget.getPitch());
+            topics.targetYawEntry.set(bestTarget.getYaw());
+            topics.targetAreaEntry.set(bestTarget.getArea());
+            topics.targetSkewEntry.set(bestTarget.getSkew());
+
+            var pose = bestTarget.getBestCameraToTarget3d();
+            topics.targetPoseEntry.set(pose);
+
+            var targetOffsetPoint = bestTarget.getTargetOffsetPoint();
+            topics.bestTargetPosX.set(targetOffsetPoint.x);
+            topics.bestTargetPosY.set(targetOffsetPoint.y);
+        } else {
+            topics.targetPitchEntry.set(0);
+            topics.targetYawEntry.set(0);
+            topics.targetAreaEntry.set(0);
+            topics.targetSkewEntry.set(0);
+            topics.targetPoseEntry.set(new Transform3d());
+            topics.bestTargetPosX.set(0);
+            topics.bestTargetPosY.set(0);
+        }
+
+        if (result.inputAndOutputFrame != null
+                && result.inputAndOutputFrame.frameStaticProperties != null
+                && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
+            var fsp = result.inputAndOutputFrame.frameStaticProperties;
+            topics.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
+            topics.cameraDistortionPublisher.accept(fsp.cameraCalibration.getDistCoeffsArr());
+        } else {
+            topics.cameraIntrinsicsPublisher.accept(new double[0]);
+            topics.cameraDistortionPublisher.accept(new double[0]);
+        }
+
+        topics.heartbeatPublisher.set(result.sequenceID);
     }
 }
