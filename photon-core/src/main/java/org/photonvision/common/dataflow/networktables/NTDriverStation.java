@@ -75,7 +75,12 @@ public class NTDriverStation {
                         var word = NTDriverStation.getControlWord(event.valueData.value.getInteger());
 
                         printTransition(this.lastControlWord, word);
-                        printMatchData();
+
+                        String matchData = printMatchData();
+                        if (!matchData.isBlank()) {
+                            logger.info(matchData);
+                        }
+
                         this.lastControlWord = word;
                     }
                 });
@@ -84,7 +89,12 @@ public class NTDriverStation {
         NtControlWord word = NTDriverStation.getControlWord(this.ntControlWord.get());
 
         printTransition(this.lastControlWord, word);
-        printMatchData();
+
+        String matchData = printMatchData();
+        if (!matchData.isBlank()) {
+            logger.info(matchData);
+        }
+
         this.lastControlWord = word;
     }
 
@@ -92,12 +102,12 @@ public class NTDriverStation {
         logger.info("ROBOT TRANSITIONED MODES! From " + old.toString() + " to " + newWord.toString());
     }
 
-    private void printMatchData() {
+    public String printMatchData() {
         // this information seems to be published at the same time
         String event = eventName.get();
         if (event.isBlank()) {
             // nothing to log
-            return;
+            return "";
         }
         String type =
                 switch ((int) matchType.get()) {
@@ -121,7 +131,66 @@ public class NTDriverStation {
                         + replay
                         + ", Station: "
                         + station;
-        logger.info(message);
+        return message;
+    }
+
+    /**
+     * Compares two match data strings and returns a negative, 0, or a postive if the first is less
+     * than, equal to, or greater than the second.
+     *
+     * @param first
+     * @param second
+     * @return a negative, 0, or a positive if the first is less than, equal to, or greater than the
+     *     second
+     */
+    public static int compareMatchData(String first, String second) {
+        String[] firstParts = first.split(", ");
+        String[] secondParts = second.split(", ");
+
+        String firstMatchInfo = firstParts[1].split(" ")[1];
+        String secondMatchInfo = secondParts[1].split(" ")[1];
+
+        String firstType = firstMatchInfo.substring(0, 1);
+        String secondType = secondMatchInfo.substring(0, 1);
+
+        int firstCmp;
+        int secondCmp;
+        switch (firstType) {
+            case "P" -> firstCmp = 1;
+            case "Q" -> firstCmp = 2;
+            case "E" -> firstCmp = 3;
+            default -> firstCmp = 0;
+        }
+        switch (secondType) {
+            case "P" -> secondCmp = 1;
+            case "Q" -> secondCmp = 2;
+            case "E" -> secondCmp = 3;
+            default -> secondCmp = 0;
+        }
+
+        if (Integer.compare(firstCmp, secondCmp) != 0) {
+            return Integer.compare(firstCmp, secondCmp);
+        }
+
+        int comp;
+
+        try {
+            // same type, compare match numbers
+            int firstMatchNumber = Integer.parseInt(firstMatchInfo.substring(1));
+            int secondMatchNumber = Integer.parseInt(secondMatchInfo.substring(1));
+            if (Integer.compare(firstMatchNumber, secondMatchNumber) != 0) {
+                return Integer.compare(firstMatchNumber, secondMatchNumber);
+            }
+            // same match number, compare replay numbers
+            int firstReplay = Integer.parseInt(firstParts[2].split(" ")[1]);
+            int secondReplay = Integer.parseInt(secondParts[2].split(" ")[1]);
+            comp = Integer.compare(firstReplay, secondReplay);
+        } catch (NumberFormatException e) {
+            // if we can't parse numbers, just say they're equal
+            return 0;
+        }
+
+        return comp;
     }
 
     // Copied from
