@@ -32,6 +32,7 @@ gradle.allprojects {
     }
 
     ext.writePhotonVersionFile = {File versionFileIn, Path path, String version ->
+        systemArch = ext.getCurrentArch()
         println("Writing " + version + " to " + path.toAbsolutePath().toString())
         String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
         File versionFileOut = new File(path.toAbsolutePath().toString())
