@@ -211,10 +211,6 @@ The following configuration disables both streams while still allowing tag detec
 
 .. code-block:: java
  
-      // code to add sim camera (Default)
-     var cameraProperties = new SimCameraProperties();
-     cameraSim = new PhotonCameraSim(camera, cameraProperties, aprilTagLayout);
-
      // lightweight config version 
      // var cameraProperties = new SimCameraProperties();
      // cameraSim = new PhotonCameraSim(camera, cameraProperties, aprilTagLayout);
