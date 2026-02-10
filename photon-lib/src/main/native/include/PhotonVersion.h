@@ -28,7 +28,7 @@ namespace photon {
 namespace PhotonVersion {
 extern const char* versionString;
 extern const char* buildDate;
-extern const char* buildPlatform;
+extern const char* targetPlatform;
 extern const bool isRelease;
 extern const char* wpilibTargetVersion;
 extern const char* opencvTargetVersion;

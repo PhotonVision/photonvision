@@ -36,7 +36,7 @@ gradle.allprojects {
         versionFileOut.delete()
         def read = versionFileIn.text.replace('${version}', version)
                 .replace('${date}', date)
-                .replace('${platform}', platform)
+                .replace('${targetPlatform}', targetPlatform)
                 .replace('${wpilibVersion}', wpilibVersion)
                 // Note that OpenCV is usually {VERSION}-{some suffix}, we just want the first bit
                 .replace('${opencvVersion}', openCVversion.split("-").first())
