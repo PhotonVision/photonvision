@@ -1,5 +1,3 @@
-apply plugin: 'org.photonvision.tools.WpilibTools'
-
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
