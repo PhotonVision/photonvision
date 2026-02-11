@@ -47,8 +47,13 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     protected VideoProperty autoExposureProp = null;
     protected VideoProperty wbTempProp = null;
 
+    protected VideoProperty saturationProp = null;
+
     protected double minExposure = 1;
     protected double maxExposure = 80000;
+
+    protected double minSaturation = 1;
+    protected double maxSaturation = 80000; // TODO is this sane?
 
     protected double minWhiteBalanceTemp = 1;
     protected double maxWhiteBalanceTemp = 4000;
@@ -104,6 +109,19 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
         if (autoExpProp.isPresent()) {
             autoExposureProp = autoExpProp.get();
+        }
+    }
+
+    protected void setUpSaturationProperty() {
+        var satProp = findProperty("V4L2_CID_SATURATION", "saturation");
+
+        if (satProp.isEmpty()) {
+            logger.warn("Could not find saturation property");
+            return;
+        } else {
+            saturationProp = satProp.get();
+            this.minSaturation = saturationProp.getMin();
+            this.maxSaturation = saturationProp.getMax();
         }
     }
 
@@ -220,6 +238,38 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
     @Override
     public double getMaxExposureRaw() {
         return maxExposure;
+    }
+
+    @Override
+    public double getMinSaturation() {
+        return minSaturation;
+    }
+
+    @Override
+    public double getMaxSaturation() {
+        return maxSaturation;
+    }
+
+    @Override
+    public void setSaturation(double saturation) {
+        if (saturation >= 0.0) {
+            try {
+                int propVal = (int) MathUtil.clamp(saturation, minSaturation, maxSaturation);
+
+                logger.debug(
+                        "Setting property "
+                                + saturationProp.getName()
+                                + " to "
+                                + propVal
+                                + " (user requested "
+                                + saturation
+                                + ")");
+
+                saturationProp.set(propVal);
+            } catch (VideoException e) {
+                logger.error("Failed to set camera saturation!", e);
+            }
+        }
     }
 
     @Override
@@ -407,6 +457,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         // modes
         setUpExposureProperties();
         setUpWhiteBalanceProperties();
+        setUpSaturationProperty();
         cacheVideoModes();
 
         setAllCamDefaults();
