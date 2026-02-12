@@ -31,19 +31,16 @@ const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
 
-const offlineUpdateRegex = "photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar";
+const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
+const majorVersionRegex = new RegExp("/(?:dev-)?(\d+)\.\d+\.\d+/");
 
-const offlineUpdateDialog = ref({show: false, version: ""});
-
-const versionCompHelper= (version: string, versionOther: string) => {
-
-};
+const offlineUpdateDialog = ref({ show: false, version: "", confirmString: "" });
 
 const handleOfflineUpdateRequest = async () => {
   const files = offlineUpdate.value.files;
   if (files.length === 0) return;
 
-  const match = files[0].name.match(new RegExp(offlineUpdateRegex));
+  const match = files[0].name.match(offlineUpdateRegex);
   if (!match) {
     useStateStore().showSnackbarMessage({
       message: "Selected file does not match expected naming convention.",
@@ -55,19 +52,37 @@ const handleOfflineUpdateRequest = async () => {
   const version = match[1];
   const arch = match[2];
 
-  const currentVersion = useSettingsStore().general.version;
+  const currentVersion = useSettingsStore().general.imageVersion;
   const currentArch = useSettingsStore().general.wpilibArch;
 
-  if (arch !== currentArch) {
+  console.log(version + ":" + currentVersion);
+  console.log(arch + ":" + currentArch);
+
+  const versionMatch = currentVersion
+    ? version.match(majorVersionRegex)?.[1] === currentVersion.match(majorVersionRegex)?.[1]
+    : false;
+  const dev = version.includes("dev");
+
+  const confirmStrings = [
+    "You are attempting to update to a version that does not match your image. Are you sure you want to proceed?",
+    "You are attempting to update to a dev version. Are you sure you want to proceed?",
+    "You are attempting to update to a dev version, and a version that does not match your image. Are you sure you want to proceed?"
+  ];
+
+  if (currentArch && !arch.equals(currentArch)) {
     useStateStore().showSnackbarMessage({
       message: `Selected file architecture (${arch}) does not match device architecture (${currentArch}).`,
       color: "error"
     });
     return;
-  } else if (version === currentVersion) {
+  } else if (versionMatch && !dev) {
     handleOfflineUpdate(files[0]);
-  } else {
-    offlineUpdateDialog.value = {show: true, version: version};
+  } else if (!versionMatch && !dev) {
+    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[0] };
+  } else if (!versionMatch && dev) {
+    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[1] };
+  } else if (versionMatch && dev) {
+    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[2] };
   }
 };
 
@@ -173,6 +188,7 @@ interface MetricItem {
 const generalMetrics = computed<MetricItem[]>(() => {
   const stats = [
     { header: "Version", value: useSettingsStore().general.version || "Unknown" },
+    { header: "Image Version", value: useSettingsStore().general.imageVersion || "Unknown" },
     { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
     { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
     { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "None detected" }
@@ -526,7 +542,7 @@ watch(metricsHistorySnapshot, () => {
     <v-card color="surface" flat>
       <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
       <v-card-text class="pt-0 pb-10px">
-        <span> You are attempting to update to a version that may cause issues. Are you sure you want to proceed? </span>
+        <span> {{ offlineUpdateDialog.confirmString }} </span>
       </v-card-text>
       <v-card-text class="pt-0 pb-10px">
         <span> {{ useSettingsStore().general.version }} --> {{ offlineUpdateDialog.version }} </span>

@@ -17,7 +17,6 @@
 
 package org.photonvision.common.dataflow.websocket;
 
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.util.List;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
@@ -25,6 +24,7 @@ import org.photonvision.common.LoadJNI.JNITypes;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
@@ -53,6 +53,9 @@ public class UIPhotonConfiguration {
                                 !c.getHardwareConfig().ledPins.isEmpty()),
                         new UIGeneralSettings(
                                 PhotonVersion.versionString,
+                                OsImageData.IMAGE_METADATA.isPresent()
+                                        ? OsImageData.IMAGE_METADATA.get().commitTag()
+                                        : "",
                                 // TODO add support for other types of GPU accel
                                 LoadJNI.hasLoaded(JNITypes.LIBCAMERA) ? "Zerocopy Libcamera Working" : "",
                                 LoadJNI.hasLoaded(JNITypes.MRCAL),
@@ -62,7 +65,7 @@ public class UIPhotonConfiguration {
                                         ? Platform.getHardwareModel()
                                         : c.getHardwareConfig().deviceName,
                                 Platform.getPlatformName(),
-                                CombinedRuntimeLoader.getPlatformPath().replace("/", ""),
+                                Platform.getNativePlatform(),
                                 NetworkTablesManager.getInstance().conflictingHostname,
                                 NetworkTablesManager.getInstance().conflictingCameras),
                         c.getApriltagFieldLayout()),

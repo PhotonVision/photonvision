@@ -23,6 +23,7 @@ import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 public class UIGeneralSettings {
     public UIGeneralSettings(
             String version,
+            String imageVersion,
             String gpuAcceleration,
             boolean mrCalWorking,
             NeuralNetworkModelsSettings.ModelProperties[] availableModels,
@@ -33,6 +34,7 @@ public class UIGeneralSettings {
             boolean conflictingHostname,
             String conflictingCameras) {
         this.version = version;
+        this.imageVersion = imageVersion;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
         this.availableModels = availableModels;
@@ -45,6 +47,7 @@ public class UIGeneralSettings {
     }
 
     public String version;
+    public String imageVersion;
     public String gpuAcceleration;
     public boolean mrCalWorking;
     public NeuralNetworkModelsSettings.ModelProperties[] availableModels;

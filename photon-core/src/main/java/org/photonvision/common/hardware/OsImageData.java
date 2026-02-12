@@ -38,8 +38,11 @@ public class OsImageData {
     private static Path imageVersionFile = Path.of("/opt/photonvision/image-version");
     private static Path imageMetadataFile = Path.of("/opt/photonvision/image-version.json");
 
-    /** The OS image version string, if available. This is legacy, use {@link ImageMetadata}. */
-    public static final Optional<String> IMAGE_VERSION = getImageVersion();
+    /**
+     * The OS image version string, if available. This is legacy, use {@link ImageMetadata}.
+     * Deprecated for removal in 2027.
+     */
+    @Deprecated public static final Optional<String> IMAGE_VERSION = getImageVersion();
 
     private static Optional<String> getImageVersion() {
         if (!imageVersionFile.toFile().exists()) {
