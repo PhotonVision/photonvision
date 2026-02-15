@@ -32,7 +32,7 @@ const openOfflineUpdatePrompt = () => {
 };
 
 const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
-const majorVersionRegex = new RegExp("/(?:dev-)?(\d+)\.\d+\.\d+/");
+const majorVersionRegex = new RegExp("(?:dev-)?(\\d+)\\.\\d+\\.\\d+");
 
 const offlineUpdateDialog = ref({ show: false, version: "", confirmString: "" });
 
@@ -55,9 +55,10 @@ const handleOfflineUpdateRequest = async () => {
   const currentVersion = useSettingsStore().general.imageVersion;
   const currentArch = useSettingsStore().general.wpilibArch;
 
-  const versionMatch = currentVersion
-    ? version.match(majorVersionRegex)?.[1] === currentVersion.match(majorVersionRegex)?.[1]
-    : false;
+  const versionMajor = version.match(majorVersionRegex)?.[1];
+  const currentVersionMajor = currentVersion?.match(majorVersionRegex)?.[1];
+
+  const versionMatch = currentVersion ? versionMajor === currentVersionMajor : false;
   const dev = version.includes("dev");
 
   const confirmStrings = [
