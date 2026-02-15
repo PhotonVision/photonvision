@@ -219,7 +219,7 @@ The following configuration disables both streams while still allowing tag detec
 
 **Use Case**
 
-This configuration is ideal for Chromebooks or low-spec machines where rendering the simulated camera images causes lag, but you still need vision data for testing.
+This configuration is ideal for Chromebooks or low-spec machines where rendering the simulated camera images causes lag, but vision data is still desired for testing.
 
 **What Still Works**
 
