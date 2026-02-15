@@ -134,6 +134,7 @@ interface MetricItem {
 const generalMetrics = computed<MetricItem[]>(() => {
   const stats = [
     { header: "Version", value: useSettingsStore().general.version || "Unknown" },
+    { header: "Image Version", value: useSettingsStore().general.imageVersion || "Unknown" },
     { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
     { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
     { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "None detected" }

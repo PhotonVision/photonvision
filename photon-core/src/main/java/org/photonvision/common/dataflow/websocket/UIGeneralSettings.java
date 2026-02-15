@@ -23,32 +23,38 @@ import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 public class UIGeneralSettings {
     public UIGeneralSettings(
             String version,
+            String imageVersion,
             String gpuAcceleration,
             boolean mrCalWorking,
             NeuralNetworkModelsSettings.ModelProperties[] availableModels,
             List<String> supportedBackends,
             String hardwareModel,
             String hardwarePlatform,
+            String wpilibArch,
             boolean conflictingHostname,
             String conflictingCameras) {
         this.version = version;
+        this.imageVersion = imageVersion;
         this.gpuAcceleration = gpuAcceleration;
         this.mrCalWorking = mrCalWorking;
         this.availableModels = availableModels;
         this.supportedBackends = supportedBackends;
         this.hardwareModel = hardwareModel;
         this.hardwarePlatform = hardwarePlatform;
+        this.wpilibArch = wpilibArch;
         this.conflictingHostname = conflictingHostname;
         this.conflictingCameras = conflictingCameras;
     }
 
     public String version;
+    public String imageVersion;
     public String gpuAcceleration;
     public boolean mrCalWorking;
     public NeuralNetworkModelsSettings.ModelProperties[] availableModels;
     public List<String> supportedBackends;
     public String hardwareModel;
     public String hardwarePlatform;
+    public String wpilibArch;
     public boolean conflictingHostname;
     public String conflictingCameras;
 }

@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware;
 
+import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -136,6 +137,20 @@ public enum Platform {
             return UnknownPlatformString;
         } else {
             return currentPlatform.description;
+        }
+    }
+
+    public static String getNativePlatform() {
+        String platPath = CombinedRuntimeLoader.getPlatformPath();
+
+        if (platPath == "/linux/x86-64/") {
+            return "linuxx64";
+        } else if (platPath == "/windows/x86-64/") {
+            return "winx64";
+        } else if (platPath == "/linux/arm64/") {
+            return "linuxarm64";
+        } else {
+            return "";
         }
     }
 

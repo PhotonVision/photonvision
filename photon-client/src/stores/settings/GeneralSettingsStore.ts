@@ -68,9 +68,11 @@ export const useSettingsStore = defineStore("settings", {
   state: (): GeneralSettingsStore => ({
     general: {
       version: undefined,
+      imageVersion: undefined,
       gpuAcceleration: undefined,
       hardwareModel: undefined,
       hardwarePlatform: undefined,
+      wpilibArch: undefined,
       mrCalWorking: true,
       availableModels: [],
       supportedBackends: [],
@@ -155,8 +157,10 @@ export const useSettingsStore = defineStore("settings", {
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
       this.general = {
         version: data.general.version || undefined,
+        imageVersion: data.general.imageVersion || undefined,
         hardwareModel: data.general.hardwareModel || undefined,
         hardwarePlatform: data.general.hardwarePlatform || undefined,
+        wpilibArch: data.general.wpilibArch || undefined,
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
         availableModels: data.general.availableModels || undefined,
