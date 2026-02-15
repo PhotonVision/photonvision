@@ -30,11 +30,62 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = async () => {
+
+const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
+const majorVersionRegex = new RegExp("/(?:dev-)?(\d+)\.\d+\.\d+/");
+
+const offlineUpdateDialog = ref({ show: false, version: "", confirmString: "" });
+
+const handleOfflineUpdateRequest = async () => {
   const files = offlineUpdate.value.files;
   if (files.length === 0) return;
+
+  const match = files[0].name.match(offlineUpdateRegex);
+  if (!match) {
+    useStateStore().showSnackbarMessage({
+      message: "Selected file does not match expected naming convention.",
+      color: "error"
+    });
+    return;
+  }
+
+  const version = match[1] as string;
+  const arch = match[2] as string;
+
+  const currentVersion = useSettingsStore().general.imageVersion;
+  const currentArch = useSettingsStore().general.wpilibArch;
+
+  const versionMatch = currentVersion
+    ? version.match(majorVersionRegex)?.[1] === currentVersion.match(majorVersionRegex)?.[1]
+    : false;
+  const dev = version.includes("dev");
+
+  const confirmStrings = [
+    "You are attempting to update to a version that does not match your image. Are you sure you want to proceed?",
+    "You are attempting to update to a dev version. Are you sure you want to proceed?",
+    "You are attempting to update to a dev version, and a version that does not match your image. Are you sure you want to proceed?"
+  ];
+
+  if (currentArch && arch !== currentArch) {
+    useStateStore().showSnackbarMessage({
+      message: `Selected file architecture (${arch}) does not match device architecture (${currentArch}).`,
+      color: "error"
+    });
+    return;
+  } else if (versionMatch && !dev) {
+    handleOfflineUpdate(files[0]);
+  } else if (!versionMatch && !dev) {
+    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[0] };
+  } else if (versionMatch && dev) {
+    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[1] };
+  } else if (!versionMatch && dev) {
+    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[2] };
+  }
+};
+
+const handleOfflineUpdate = async (file: File) => {
   const formData = new FormData();
-  formData.append("jarData", files[0]);
+  formData.append("jarData", file);
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
@@ -334,7 +385,7 @@ watch(metricsHistorySnapshot, () => {
                 type="file"
                 accept=".jar"
                 style="display: none"
-                @change="handleOfflineUpdate"
+                @change="handleOfflineUpdateRequest"
               />
             </v-col>
           </v-row>
@@ -480,6 +531,36 @@ watch(metricsHistorySnapshot, () => {
             <span class="open-label">Import Settings</span>
           </v-btn>
         </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="offlineUpdateDialog.show" :width="700" dark>
+    <v-card color="surface" flat>
+      <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
+      <v-card-text class="pt-0 pb-10px">
+        <span> {{ offlineUpdateDialog.confirmString }} </span>
+      </v-card-text>
+      <v-card-text class="pt-0 pb-10px">
+        <span> {{ useSettingsStore().general.version }} --> {{ offlineUpdateDialog.version }} </span>
+      </v-card-text>
+      <v-card-text class="pt-10px">
+        <v-row class="align-center text-white">
+          <v-col cols="12">
+            <v-btn
+              color="buttonActive"
+              width="100%"
+              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              @click="
+                offlineUpdateDialog.show = false;
+                handleOfflineUpdate(offlineUpdate.value.files[0]);
+              "
+            >
+              <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
+              <span class="open-label"> Confirm Update </span>
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-dialog>
