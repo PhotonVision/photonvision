@@ -5,15 +5,16 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import type { ActivePipelineSettings } from "@/types/PipelineTypes";
+import type { AprilTagPipelineSettings } from "@/types/PipelineTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 import { useDisplay } from "vuetify";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = computed<ActivePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings
+const currentPipelineSettings = computed<AprilTagPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
 const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
@@ -22,6 +23,32 @@ const interactiveCols = computed(() =>
 
 // Check if ML detection is available on this platform
 const mlDetectionAvailable = computed(() => useSettingsStore().general.supportedBackends.length > 0);
+
+// Filter models to only those supported by available backends
+const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  const isSupported = (model: ObjectDetectionModelProperties) => {
+    return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
+  };
+  return availableModels.filter(isSupported);
+});
+
+const selectedModel = computed({
+  get: () => {
+    const currentModelName = currentPipelineSettings.value.mlModelName;
+    if (!currentModelName) return undefined;
+
+    const index = supportedModels.value.findIndex((model) => model.nickname === currentModelName);
+    return index === -1 ? undefined : index;
+  },
+
+  set: (v) => {
+    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
+      const newModel = supportedModels.value[v];
+      useCameraSettingsStore().changeCurrentPipelineSetting({ mlModelName: newModel.nickname }, true);
+    }
+  }
+});
 </script>
 
 <template>
@@ -107,6 +134,13 @@ const mlDetectionAvailable = computed(() => useSettingsStore().general.supported
         "
       />
       <div v-if="currentPipelineSettings.useMLDetection">
+        <pv-select
+          v-model="selectedModel"
+          label="Model"
+          tooltip="The model used for AI-assisted AprilTag detection"
+          :select-cols="interactiveCols"
+          :items="supportedModels.map((model) => model.nickname)"
+        />
         <pv-slider
           v-model="currentPipelineSettings.mlConfidenceThreshold"
           :slider-cols="interactiveCols"
