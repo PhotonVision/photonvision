@@ -61,12 +61,6 @@ const handleOfflineUpdateRequest = async () => {
   const versionMatch = currentVersion ? versionMajor === currentVersionMajor : false;
   const dev = version.includes("dev");
 
-  const confirmStrings = [
-    "You are attempting to update to a version that does not match your image. Are you sure you want to proceed?",
-    "You are attempting to update to a dev version. Are you sure you want to proceed?",
-    "You are attempting to update to a dev version, and a version that does not match your image. Are you sure you want to proceed?"
-  ];
-
   if (currentArch && arch !== currentArch) {
     useStateStore().showSnackbarMessage({
       message: `Selected file architecture (${arch}) does not match device architecture (${currentArch}).`,
@@ -76,11 +70,25 @@ const handleOfflineUpdateRequest = async () => {
   } else if (versionMatch && !dev) {
     handleOfflineUpdate(files[0]);
   } else if (!versionMatch && !dev) {
-    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[0] };
+    offlineUpdateDialog.value = {
+      show: true,
+      version: version,
+      confirmString:
+        "You are attempting to update to a version that does not match your image. Are you sure you want to proceed?"
+    };
   } else if (versionMatch && dev) {
-    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[1] };
+    offlineUpdateDialog.value = {
+      show: true,
+      version: version,
+      confirmString: "You are attempting to update to a dev version. Are you sure you want to proceed?"
+    };
   } else if (!versionMatch && dev) {
-    offlineUpdateDialog.value = { show: true, version: version, confirmString: confirmStrings[2] };
+    offlineUpdateDialog.value = {
+      show: true,
+      version: version,
+      confirmString:
+        "You are attempting to update to a dev version, and a version that does not match your image. Are you sure you want to proceed?"
+    };
   }
 };
 

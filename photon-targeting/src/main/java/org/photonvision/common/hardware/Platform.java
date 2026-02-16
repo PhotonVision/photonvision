@@ -140,6 +140,13 @@ public enum Platform {
         }
     }
 
+    /**
+     * This function serves to map between formats used in the CombinedRuntimeLoader and the platform
+     * names used in the wpilib-tools-plugin. This is typically used for native libraries.
+     *
+     * @return String representing the platform in the format used by wpilib-tools-plugin, or an empty
+     *     string if the platform is not recognized.
+     */
     public static String getNativePlatform() {
         String platPath = CombinedRuntimeLoader.getPlatformPath();
 
