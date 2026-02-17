@@ -73,21 +73,20 @@ const handleOfflineUpdateRequest = async () => {
     offlineUpdateDialog.value = {
       show: true,
       version: version,
-      confirmString:
-        "You are attempting to update to a version that does not match your image. Are you sure you want to proceed?"
+      confirmString: `You are attempting to update to a PhotonVision version that does not match your current image's year (${currentVersionMajor}). It is recommended to update your image to the current year. Are you sure you want to proceed?`
     };
   } else if (versionMatch && dev) {
     offlineUpdateDialog.value = {
       show: true,
       version: version,
-      confirmString: "You are attempting to update to a dev version. Are you sure you want to proceed?"
+      confirmString:
+        "You are attempting to update to a dev version. This could result in instability. Are you sure you want to proceed?"
     };
   } else if (!versionMatch && dev) {
     offlineUpdateDialog.value = {
       show: true,
       version: version,
-      confirmString:
-        "You are attempting to update to a dev version, and a version that does not match your image. Are you sure you want to proceed?"
+      confirmString: `You are attempting to update to a dev version, and a PhotonVision version that does not match your current image's year (${currentVersionMajor}). It is recommended to update your image to the current year. Additionally, note that using a dev version can lead to instability. Are you sure you want to proceed?`
     };
   }
 };
@@ -550,7 +549,7 @@ watch(metricsHistorySnapshot, () => {
       <v-card-text class="pt-0 pb-10px">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
       </v-card-text>
-      <v-card-text class="pt-0 pb-10px">
+      <v-card-text class="pt-0 pb-10px" style="display: flex; justify-content: center">
         <span> {{ useSettingsStore().general.version }} --> {{ offlineUpdateDialog.version }} </span>
       </v-card-text>
       <v-card-text class="pt-10px">
