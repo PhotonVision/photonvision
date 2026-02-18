@@ -33,7 +33,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,6 +42,7 @@ import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.jni.CombinedRuntimeLoader;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
 

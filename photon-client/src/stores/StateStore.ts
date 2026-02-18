@@ -182,7 +182,7 @@ export const useStateStore = defineStore("state", {
         message: data.message,
         color: data.color,
         progressBarColor: data.progressBarColor || "",
-        timeout: data.timeout || 2000
+        timeout: data.timeout || 5000
       };
     }
   }
