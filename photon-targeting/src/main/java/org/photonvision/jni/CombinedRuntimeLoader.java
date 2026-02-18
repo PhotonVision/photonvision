@@ -18,7 +18,6 @@
 
 package org.photonvision.jni;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +27,6 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
@@ -128,6 +126,15 @@ public final class CombinedRuntimeLoader {
         return msg.toString();
     }
 
+    /** Represents the architecture-specific information containing file hashes. */
+    public record ArchInfo(Map<String, String> fileHashes) {}
+
+    /** Represents platform-specific information containing architectures. */
+    public record PlatformInfo(Map<String, ArchInfo> architectures) {}
+
+    /** Represents the complete resource information structure. */
+    public record ResourceInformation(String hash, Map<String, PlatformInfo> platforms) {}
+
     /**
      * Extract a list of native libraries.
      *
@@ -137,32 +144,38 @@ public final class CombinedRuntimeLoader {
      * @return List of all libraries that were extracted
      * @throws IOException Thrown if resource not found or file could not be extracted
      */
-    @SuppressWarnings("unchecked")
     public static <T> List<String> extractLibraries(Class<T> clazz, String resourceName)
             throws IOException {
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map;
+        ResourceInformation resourceInfo;
         try (var stream = clazz.getResourceAsStream(resourceName)) {
-            map = mapper.readValue(stream, typeRef);
+            resourceInfo = mapper.readValue(stream, ResourceInformation.class);
         }
 
         var platformPath = Paths.get(getPlatformPath());
         var platform = platformPath.getName(0).toString();
         var arch = platformPath.getName(1).toString();
 
-        var platformMap = (Map<String, Map<String, String>>) map.get(platform);
+        var platformInfo = resourceInfo.platforms().get(platform);
+        if (platformInfo == null) {
+            throw new IOException("Platform " + platform + " not found in resource information");
+        }
+
+        var archInfo = platformInfo.architectures().get(arch);
+        if (archInfo == null) {
+            throw new IOException("Architecture " + arch + " not found for platform " + platform);
+        }
 
         // This is a list of all the native files, along with their corresponding MD5 hashes
-        Map<String, String> fileHashMap = platformMap.get(arch);
+        Map<String, String> fileHashMap = archInfo.fileHashes();
 
         var extractionPathString = getExtractionDirectory();
 
         if (extractionPathString == null) {
-            String hash = (String) map.get("hash");
+            String combinedHash = resourceInfo.hash();
 
             var defaultExtractionRoot = getDefaultExtractionRoot();
-            var extractionPath = Paths.get(defaultExtractionRoot, platform, arch, hash);
+            var extractionPath = Paths.get(defaultExtractionRoot, platform, arch, combinedHash);
             extractionPathString = extractionPath.toString();
 
             setExtractionDirectory(extractionPathString);
@@ -178,11 +191,11 @@ public final class CombinedRuntimeLoader {
 
                 var outputFile = Paths.get(extractionPathString, new File(file).getName());
 
-                String hash = fileHashMap.get(file);
+                String fileHash = fileHashMap.get(file);
 
                 extractedFiles.add(outputFile.toString());
                 if (outputFile.toFile().exists()) {
-                    if (hashEm(outputFile.toFile()).equals(hash)) {
+                    if (hashEm(outputFile.toFile()).equals(fileHash)) {
                         continue;
                     } else {
                         // Hashes don't match, delete and re-extract
@@ -202,7 +215,7 @@ public final class CombinedRuntimeLoader {
                     }
                 }
 
-                if (!hashEm(outputFile.toFile()).equals(hash)) {
+                if (!hashEm(outputFile.toFile()).equals(fileHash)) {
                     throw new IOException("Hash of extracted file does not match expected hash");
                 }
             }

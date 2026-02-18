@@ -17,13 +17,13 @@
 
 package org.photonvision.common.hardware;
 
-import org.photonvision.jni.CombinedRuntimeLoader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.function.Supplier;
+import org.photonvision.jni.CombinedRuntimeLoader;
 
 @SuppressWarnings({"unused", "doclint"})
 public enum Platform {
