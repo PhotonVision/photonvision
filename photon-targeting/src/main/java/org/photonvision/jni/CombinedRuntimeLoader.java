@@ -16,7 +16,7 @@
  * this software without specific prior written permission.
  */
 
-package org.photonvision.common;
+package org.photonvision.jni;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

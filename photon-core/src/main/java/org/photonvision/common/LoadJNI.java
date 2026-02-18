@@ -19,6 +19,7 @@ package org.photonvision.common;
 
 import java.io.IOException;
 import java.util.HashMap;
+import org.photonvision.jni.CombinedRuntimeLoader;
 import org.photonvision.jni.LibraryLoader;
 
 public class LoadJNI {
