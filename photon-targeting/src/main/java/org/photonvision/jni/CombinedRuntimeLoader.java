@@ -183,10 +183,10 @@ public final class CombinedRuntimeLoader {
                 extractedFiles.add(outputFile.toString());
                 if (outputFile.toFile().exists()) {
                     if (hashEm(outputFile.toFile()).equals(hash)) {
+                        continue;
+                    } else {
                         // Hashes don't match, delete and re-extract
                         outputFile.toFile().delete();
-                    } else {
-                        continue;
                     }
                 }
                 var parent = outputFile.getParent();
