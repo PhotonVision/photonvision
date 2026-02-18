@@ -21,11 +21,15 @@ package org.photonvision.common;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -147,9 +151,10 @@ public final class CombinedRuntimeLoader {
         var platform = platformPath.getName(0).toString();
         var arch = platformPath.getName(1).toString();
 
-        var platformMap = (Map<String, List<String>>) map.get(platform);
+        var platformMap = (Map<String, Map<String, String>>) map.get(platform);
 
-        var fileList = platformMap.get(arch);
+        // This is a list of all the native files, along with their corresponding MD5 hashes
+        Map<String, String> fileHashMap = platformMap.get(arch);
 
         var extractionPathString = getExtractionDirectory();
 
@@ -167,14 +172,22 @@ public final class CombinedRuntimeLoader {
 
         byte[] buffer = new byte[0x10000]; // 64K copy buffer
 
-        for (var file : fileList) {
+        for (String file : fileHashMap.keySet()) {
             try (var stream = clazz.getResourceAsStream(file)) {
                 Objects.requireNonNull(stream);
 
                 var outputFile = Paths.get(extractionPathString, new File(file).getName());
+
+                String hash = fileHashMap.get(file);
+
                 extractedFiles.add(outputFile.toString());
                 if (outputFile.toFile().exists()) {
-                    continue;
+                    if (hashEm(outputFile.toFile()).equals(hash)) {
+                        // Hashes don't match, delete and re-extract
+                        outputFile.toFile().delete();
+                    } else {
+                        continue;
+                    }
                 }
                 var parent = outputFile.getParent();
                 if (parent == null) {
@@ -188,10 +201,29 @@ public final class CombinedRuntimeLoader {
                         os.write(buffer, 0, readBytes);
                     }
                 }
+
+                if (!hashEm(outputFile.toFile()).equals(hash)) {
+                    throw new IOException("Hash of extracted file does not match expected hash");
+                }
             }
         }
 
         return extractedFiles;
+    }
+
+    private static String hashEm(File f) throws IOException {
+        int readBytes = 0;
+        byte[] buffer = new byte[0x10000]; // 64K copy buffer
+
+        try (FileInputStream is = new FileInputStream(f)) {
+            MessageDigest fileHash = MessageDigest.getInstance("MD5");
+            while ((readBytes = is.read(buffer)) != -1) {
+                fileHash.update(buffer, 0, readBytes);
+            }
+            return HexFormat.of().formatHex(fileHash.digest());
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("Unable to verify extracted native files", e);
+        }
     }
 
     /**
