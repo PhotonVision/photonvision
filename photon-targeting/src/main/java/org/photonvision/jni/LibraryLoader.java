@@ -24,10 +24,10 @@ import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.jni.WPIMathJNI;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import org.opencv.core.Core;
+import org.photonvision.common.CombinedRuntimeLoader;
 
 public class LibraryLoader {
     private static boolean hasWpiLoaded = false;

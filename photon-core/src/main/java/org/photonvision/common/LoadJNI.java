@@ -17,7 +17,6 @@
 
 package org.photonvision.common;
 
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.util.HashMap;
 import org.photonvision.jni.LibraryLoader;

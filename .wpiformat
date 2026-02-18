@@ -7,3 +7,7 @@ modifiableFileExclude {
   photon-targeting/src/generated/
   photon-targeting/src/main/native/cpp/photon/constrained_solvepnp/generate/
 }
+
+licenseUpdateExclude {
+  CombinedRuntimeLoader.java
+}
