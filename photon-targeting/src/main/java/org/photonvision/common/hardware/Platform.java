@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware;
 
-import edu.wpi.first.util.CombinedRuntimeLoader;
+import org.photonvision.jni.CombinedRuntimeLoader;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
