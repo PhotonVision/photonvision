@@ -34,7 +34,7 @@ const openOfflineUpdatePrompt = () => {
 const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
 const majorVersionRegex = new RegExp("(?:dev-)?(\\d+)\\.\\d+\\.\\d+");
 
-const offlineUpdateDialog = ref({ show: false, version: "", confirmString: "" });
+const offlineUpdateDialog = ref({ show: false, confirmString: "" });
 
 const handleOfflineUpdateRequest = async () => {
   const files = offlineUpdate.value.files;
@@ -72,21 +72,18 @@ const handleOfflineUpdateRequest = async () => {
   } else if (!versionMatch && !dev) {
     offlineUpdateDialog.value = {
       show: true,
-      version: version,
-      confirmString: `You are attempting to update to a PhotonVision version that does not match your current image's year (${currentVersionMajor}). It is recommended to update your image to the current year. Are you sure you want to proceed?`
+      confirmString: `You are attempting to update from PhotonVision ${currentVersion} on image ${useSettingsStore().general.imageVersion} to ${version} from a different FRC year. These versions may be incompatible. Are you sure you want to proceed?`
     };
   } else if (versionMatch && dev) {
     offlineUpdateDialog.value = {
       show: true,
-      version: version,
       confirmString:
         "You are attempting to update to a dev version. This could result in instability. Are you sure you want to proceed?"
     };
   } else if (!versionMatch && dev) {
     offlineUpdateDialog.value = {
       show: true,
-      version: version,
-      confirmString: `You are attempting to update to a dev version, and a PhotonVision version that does not match your current image's year (${currentVersionMajor}). It is recommended to update your image to the current year. Additionally, note that using a dev version can lead to instability. Are you sure you want to proceed?`
+      confirmString: `You are attempting to update to a dev version, from PhotonVision ${currentVersion} on image ${useSettingsStore().general.imageVersion} to ${version} from a different FRC year. These versions may be incompatible, and you may experience instability. Are you sure you want to proceed?`
     };
   }
 };
@@ -548,9 +545,6 @@ watch(metricsHistorySnapshot, () => {
       <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
       <v-card-text class="pt-0 pb-10px">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
-      </v-card-text>
-      <v-card-text class="pt-0 pb-10px" style="display: flex; justify-content: center">
-        <span> {{ useSettingsStore().general.version }} --> {{ offlineUpdateDialog.version }} </span>
       </v-card-text>
       <v-card-text class="pt-10px">
         <v-row class="align-center text-white">
