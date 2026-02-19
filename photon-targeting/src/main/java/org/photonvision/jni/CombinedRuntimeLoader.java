@@ -44,7 +44,7 @@ public final class CombinedRuntimeLoader {
 
     private static final Object extractCompleteLock = new Object();
     private static boolean extractAndVerifyComplete = false;
-    private static List<String> extractedFiles = new CopyOnWriteArrayList<>();
+    private static List<String> filesAlreadyExtracted = new CopyOnWriteArrayList<>();
 
     /**
      * Returns library extraction directory.
@@ -219,7 +219,8 @@ public final class CombinedRuntimeLoader {
                     } else {
                         // Hashes don't match, delete and re-extract
                         System.err.println(
-                                outputFile.toAbsolutePath().toString() + " failed validation - deleting");
+                                outputFile.toAbsolutePath().toString()
+                                        + " failed validation - deleting and re-extracting");
                         outputFile.toFile().delete();
                     }
                 }
@@ -294,12 +295,12 @@ public final class CombinedRuntimeLoader {
         synchronized (extractCompleteLock) {
             if (extractAndVerifyComplete == false) {
                 // Extract everything
-                extractedFiles = extractLibraries(clazz, "/ResourceInformation.json");
+                filesAlreadyExtracted = extractLibraries(clazz, "/ResourceInformation.json");
                 extractAndVerifyComplete = true;
             }
 
             for (var library : librariesToLoad) {
-                loadLibrary(library, extractedFiles);
+                loadLibrary(library, filesAlreadyExtracted);
             }
         }
     }
