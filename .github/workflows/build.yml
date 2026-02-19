@@ -446,6 +446,13 @@ jobs:
       # The jar is run twice to exercise different code paths.
       - run: |
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+          if [ -d ~/.wpilib ]; then
+            RANDOM_FILE=$(find ~/.wpilib -type f -name "*.so" | shuf -n 1)
+            if [ ! -z "$RANDOM_FILE" ]; then
+              echo "Corrupting file: $RANDOM_FILE"
+              echo "corrupted data" > "$RANDOM_FILE"
+            fi
+          fi
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
       - run: |
