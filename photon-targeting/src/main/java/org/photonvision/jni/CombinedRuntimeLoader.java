@@ -169,7 +169,6 @@ public final class CombinedRuntimeLoader {
             throw new IOException("Architecture " + arch + " not found for platform " + platform);
         }
 
-        // This is a list of all the native files, along with their corresponding MD5 hashes
         Map<String, String> fileHashMap = archInfo.fileHashes();
 
         var extractionPathString = getExtractionDirectory();
@@ -227,7 +226,7 @@ public final class CombinedRuntimeLoader {
             MessageDigest fileHash = MessageDigest.getInstance("MD5");
             try (var dis =
                     new DigestInputStream(new BufferedInputStream(new FileInputStream(f)), fileHash)) {
-                dis.readAllBytes(); // Read all bytes to compute digest
+                dis.readAllBytes(); 
             }
             return HexFormat.of().formatHex(fileHash.digest());
         } catch (NoSuchAlgorithmException e) {
