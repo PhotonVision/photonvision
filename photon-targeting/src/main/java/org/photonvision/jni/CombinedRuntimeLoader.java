@@ -218,9 +218,9 @@ public final class CombinedRuntimeLoader {
                         continue;
                     } else {
                         // Hashes don't match, delete and re-extract
-                        System.err.println("Deleting file????????");
+                        System.err.println(
+                                outputFile.toAbsolutePath().toString() + " failed validation - deleting");
                         outputFile.toFile().delete();
-                        System.exit(-1);
                     }
                 }
                 var parent = outputFile.getParent();
@@ -239,12 +239,10 @@ public final class CombinedRuntimeLoader {
             }
         }
 
-        System.out.println("extracted: " + extractedFiles);
         return extractedFiles;
     }
 
     private static String hashEm(File f) throws IOException {
-        var start = System.currentTimeMillis();
         try {
             MessageDigest fileHash = MessageDigest.getInstance("MD5");
             try (var dis =
@@ -252,9 +250,6 @@ public final class CombinedRuntimeLoader {
                 dis.readAllBytes();
             }
             var ret = HexFormat.of().formatHex(fileHash.digest());
-            var end = System.currentTimeMillis();
-            System.out.println(
-                    "Verify " + f.toPath().toAbsolutePath().toString() + " took " + (end - start));
             return ret;
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("Unable to verify extracted native files", e);
