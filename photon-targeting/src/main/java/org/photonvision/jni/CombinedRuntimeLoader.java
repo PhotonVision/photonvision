@@ -129,14 +129,26 @@ public final class CombinedRuntimeLoader {
         return msg.toString();
     }
 
-    /** Represents the architecture-specific information containing file hashes. */
+    /**
+     * Architecture-specific information containing file hashes for a specific CPU architecture (e.g.,
+     * x86-64, arm64).
+     */
     public record ArchInfo(Map<String, String> fileHashes) {}
 
-    /** Represents platform-specific information containing architectures. */
+    /**
+     * Platform-specific information containing architectures for a specific OS platform (e.g., linux,
+     * windows).
+     */
     public record PlatformInfo(Map<String, ArchInfo> architectures) {}
 
-    /** Represents the complete resource information structure. */
-    public record ResourceInformation(String hash, Map<String, PlatformInfo> platforms) {}
+    /** Overall resource information to be serialized */
+    public record ResourceInformation(
+            // Combined MD5 hash of all native resource files
+            String hash,
+            // Platform-specific native libraries organized by platform then architecture
+            Map<String, PlatformInfo> platforms,
+            // List of supported versions for these native resources
+            List<String> versions) {}
 
     /**
      * Extract a list of native libraries.
@@ -169,11 +181,13 @@ public final class CombinedRuntimeLoader {
             throw new IOException("Architecture " + arch + " not found for platform " + platform);
         }
 
-        Map<String, String> fileHashMap = archInfo.fileHashes();
+        // Map of <file to extract> to <hash we loaded from the JSON>
+        Map<String, String> filenameToHash = archInfo.fileHashes();
 
         var extractionPathString = getExtractionDirectory();
 
         if (extractionPathString == null) {
+            // Folder to extract to derived from overall hash
             String combinedHash = resourceInfo.hash();
 
             var defaultExtractionRoot = getDefaultExtractionRoot();
@@ -185,13 +199,13 @@ public final class CombinedRuntimeLoader {
 
         List<String> extractedFiles = new ArrayList<>();
 
-        for (String file : fileHashMap.keySet()) {
+        for (String file : filenameToHash.keySet()) {
             try (var stream = clazz.getResourceAsStream(file)) {
                 Objects.requireNonNull(stream);
 
                 var outputFile = Paths.get(extractionPathString, new File(file).getName());
 
-                String fileHash = fileHashMap.get(file);
+                String fileHash = filenameToHash.get(file);
 
                 extractedFiles.add(outputFile.toString());
                 if (outputFile.toFile().exists()) {
