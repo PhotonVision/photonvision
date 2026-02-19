@@ -18,23 +18,33 @@
 
 package org.photonvision.jni;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /** Loads dynamic libraries for all platforms. */
 public final class CombinedRuntimeLoader {
     private CombinedRuntimeLoader() {}
 
     private static String extractionDirectory;
+
+    private static final Object extractCompleteLock = new Object();
+    private static boolean extractAndVerifyComplete = false;
+    private static List<String> filesAlreadyExtracted = new CopyOnWriteArrayList<>();
 
     /**
      * Returns library extraction directory.
@@ -125,6 +135,27 @@ public final class CombinedRuntimeLoader {
     }
 
     /**
+     * Architecture-specific information containing file hashes for a specific CPU architecture (e.g.,
+     * x86-64, arm64).
+     */
+    public record ArchInfo(Map<String, String> fileHashes) {}
+
+    /**
+     * Platform-specific information containing architectures for a specific OS platform (e.g., linux,
+     * windows).
+     */
+    public record PlatformInfo(Map<String, ArchInfo> architectures) {}
+
+    /** Overall resource information to be serialized */
+    public record ResourceInformation(
+            // Combined MD5 hash of all native resource files
+            String hash,
+            // Platform-specific native libraries organized by platform then architecture
+            Map<String, PlatformInfo> platforms,
+            // List of supported versions for these native resources
+            List<String> versions) {}
+
+    /**
      * Extract a list of native libraries.
      *
      * @param <T> The class where the resources would be located
@@ -133,31 +164,39 @@ public final class CombinedRuntimeLoader {
      * @return List of all libraries that were extracted
      * @throws IOException Thrown if resource not found or file could not be extracted
      */
-    @SuppressWarnings("unchecked")
     public static <T> List<String> extractLibraries(Class<T> clazz, String resourceName)
             throws IOException {
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<>() {};
         ObjectMapper mapper = new ObjectMapper();
-        Map<String, Object> map;
+        ResourceInformation resourceInfo;
         try (var stream = clazz.getResourceAsStream(resourceName)) {
-            map = mapper.readValue(stream, typeRef);
+            resourceInfo = mapper.readValue(stream, ResourceInformation.class);
         }
 
         var platformPath = Paths.get(getPlatformPath());
         var platform = platformPath.getName(0).toString();
         var arch = platformPath.getName(1).toString();
 
-        var platformMap = (Map<String, List<String>>) map.get(platform);
+        var platformInfo = resourceInfo.platforms().get(platform);
+        if (platformInfo == null) {
+            throw new IOException("Platform " + platform + " not found in resource information");
+        }
 
-        var fileList = platformMap.get(arch);
+        var archInfo = platformInfo.architectures().get(arch);
+        if (archInfo == null) {
+            throw new IOException("Architecture " + arch + " not found for platform " + platform);
+        }
+
+        // Map of <file to extract> to <hash we loaded from the JSON>
+        Map<String, String> filenameToHash = archInfo.fileHashes();
 
         var extractionPathString = getExtractionDirectory();
 
         if (extractionPathString == null) {
-            String hash = (String) map.get("hash");
+            // Folder to extract to derived from overall hash
+            String combinedHash = resourceInfo.hash();
 
             var defaultExtractionRoot = getDefaultExtractionRoot();
-            var extractionPath = Paths.get(defaultExtractionRoot, platform, arch, hash);
+            var extractionPath = Paths.get(defaultExtractionRoot, platform, arch, combinedHash);
             extractionPathString = extractionPath.toString();
 
             setExtractionDirectory(extractionPathString);
@@ -165,16 +204,25 @@ public final class CombinedRuntimeLoader {
 
         List<String> extractedFiles = new ArrayList<>();
 
-        byte[] buffer = new byte[0x10000]; // 64K copy buffer
-
-        for (var file : fileList) {
+        for (String file : filenameToHash.keySet()) {
             try (var stream = clazz.getResourceAsStream(file)) {
                 Objects.requireNonNull(stream);
 
                 var outputFile = Paths.get(extractionPathString, new File(file).getName());
+
+                String fileHash = filenameToHash.get(file);
+
                 extractedFiles.add(outputFile.toString());
                 if (outputFile.toFile().exists()) {
-                    continue;
+                    if (hashEm(outputFile.toFile()).equals(fileHash)) {
+                        continue;
+                    } else {
+                        // Hashes don't match, delete and re-extract
+                        System.err.println(
+                                outputFile.toAbsolutePath().toString()
+                                        + " failed validation - deleting and re-extracting");
+                        outputFile.toFile().delete();
+                    }
                 }
                 var parent = outputFile.getParent();
                 if (parent == null) {
@@ -183,15 +231,30 @@ public final class CombinedRuntimeLoader {
                 parent.toFile().mkdirs();
 
                 try (var os = Files.newOutputStream(outputFile)) {
-                    int readBytes;
-                    while ((readBytes = stream.read(buffer)) != -1) { // NOPMD
-                        os.write(buffer, 0, readBytes);
-                    }
+                    Files.copy(stream, outputFile, StandardCopyOption.REPLACE_EXISTING);
+                }
+
+                if (!hashEm(outputFile.toFile()).equals(fileHash)) {
+                    throw new IOException("Hash of extracted file does not match expected hash");
                 }
             }
         }
 
         return extractedFiles;
+    }
+
+    private static String hashEm(File f) throws IOException {
+        try {
+            MessageDigest fileHash = MessageDigest.getInstance("MD5");
+            try (var dis =
+                    new DigestInputStream(new BufferedInputStream(new FileInputStream(f)), fileHash)) {
+                dis.readAllBytes();
+            }
+            var ret = HexFormat.of().formatHex(fileHash.digest());
+            return ret;
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("Unable to verify extracted native files", e);
+        }
     }
 
     /**
@@ -229,12 +292,16 @@ public final class CombinedRuntimeLoader {
      */
     public static <T> void loadLibraries(Class<T> clazz, String... librariesToLoad)
             throws IOException {
-        // Extract everything
+        synchronized (extractCompleteLock) {
+            if (extractAndVerifyComplete == false) {
+                // Extract everything
+                filesAlreadyExtracted = extractLibraries(clazz, "/ResourceInformation.json");
+                extractAndVerifyComplete = true;
+            }
 
-        var extractedFiles = extractLibraries(clazz, "/ResourceInformation.json");
-
-        for (var library : librariesToLoad) {
-            loadLibrary(library, extractedFiles);
+            for (var library : librariesToLoad) {
+                loadLibrary(library, filesAlreadyExtracted);
+            }
         }
     }
 }
