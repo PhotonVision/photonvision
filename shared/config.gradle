@@ -19,6 +19,8 @@ nativeUtils.wpi.addWarningsAsErrors()
 
 nativeUtils.setSinglePrintPerPlatform()
 
+def externalLicensesFolder = file("$rootDir/ExternalLicenses")
+
 // Enable builds for all platforms.
 model {
     components {
@@ -118,6 +120,10 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
             duplicatesStrategy = 'exclude'
 
             from(licenseFile) {
+                into '/'
+            }
+
+            from(externalLicensesFolder) {
                 into '/'
             }
 
