@@ -240,7 +240,7 @@ public final class CombinedRuntimeLoader {
             MessageDigest fileHash = MessageDigest.getInstance("MD5");
             try (var dis =
                     new DigestInputStream(new BufferedInputStream(new FileInputStream(f)), fileHash)) {
-                dis.readAllBytes(); 
+                dis.readAllBytes();
             }
             return HexFormat.of().formatHex(fileHash.digest());
         } catch (NoSuchAlgorithmException e) {
