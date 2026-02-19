@@ -276,7 +276,8 @@ public class Main {
 
             logger.info(
                     "WPILib and photon-targeting JNI libraries loaded in "
-                            + (System.currentTimeMillis() - loadStart) / 1000.0);
+                            + ((System.currentTimeMillis() - loadStart) / 1000.0)
+                            + "seconds!");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
