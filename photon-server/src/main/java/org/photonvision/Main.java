@@ -265,17 +265,22 @@ public class Main {
         }
 
         try {
+            var loadStart = System.currentTimeMillis();
+            logger.debug("Starting LoadJNI::loadLibraries");
             boolean success = LoadJNI.loadLibraries();
 
             if (!success) {
                 logger.error("Failed to load native libraries! Giving up :(");
                 System.exit(1);
             }
+
+            logger.info(
+                    "WPILib and photon-targeting JNI libraries loaded in "
+                            + (System.currentTimeMillis() - loadStart) / 1000.0);
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
             System.exit(1);
         }
-        logger.info("WPILib and photon-targeting JNI libraries loaded.");
 
         if (!HAL.initialize(500, 0)) {
             logger.error("Failed to initialize the HAL! Giving up :(");
