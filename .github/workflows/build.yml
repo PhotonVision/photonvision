@@ -443,9 +443,14 @@ jobs:
       - uses: actions/download-artifact@v7
         with:
           name: ${{ matrix.artifact-name }}
-      - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+      # The jar is run twice to exercise different code paths.
+      - run: |
+          java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+          java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
-      - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
+      - run: |
+          ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
+          ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
         if: ${{ (matrix.os) == 'windows-latest' }}
 
   build-image:
