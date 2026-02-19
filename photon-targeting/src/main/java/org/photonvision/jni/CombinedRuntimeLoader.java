@@ -19,11 +19,14 @@
 package org.photonvision.jni;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -183,8 +186,6 @@ public final class CombinedRuntimeLoader {
 
         List<String> extractedFiles = new ArrayList<>();
 
-        byte[] buffer = new byte[0x10000]; // 64K copy buffer
-
         for (String file : fileHashMap.keySet()) {
             try (var stream = clazz.getResourceAsStream(file)) {
                 Objects.requireNonNull(stream);
@@ -209,10 +210,7 @@ public final class CombinedRuntimeLoader {
                 parent.toFile().mkdirs();
 
                 try (var os = Files.newOutputStream(outputFile)) {
-                    int readBytes;
-                    while ((readBytes = stream.read(buffer)) != -1) { // NOPMD
-                        os.write(buffer, 0, readBytes);
-                    }
+                    Files.copy(stream, outputFile, StandardCopyOption.REPLACE_EXISTING);
                 }
 
                 if (!hashEm(outputFile.toFile()).equals(fileHash)) {
@@ -225,13 +223,11 @@ public final class CombinedRuntimeLoader {
     }
 
     private static String hashEm(File f) throws IOException {
-        int readBytes = 0;
-        byte[] buffer = new byte[0x10000]; // 64K copy buffer
-
-        try (FileInputStream is = new FileInputStream(f)) {
+        try {
             MessageDigest fileHash = MessageDigest.getInstance("MD5");
-            while ((readBytes = is.read(buffer)) != -1) {
-                fileHash.update(buffer, 0, readBytes);
+            try (var dis =
+                    new DigestInputStream(new BufferedInputStream(new FileInputStream(f)), fileHash)) {
+                dis.readAllBytes(); // Read all bytes to compute digest
             }
             return HexFormat.of().formatHex(fileHash.digest());
         } catch (NoSuchAlgorithmException e) {
