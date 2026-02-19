@@ -447,7 +447,7 @@ jobs:
       - run: |
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
           if [ -d ~/.wpilib ]; then
-            RANDOM_FILE=$(find ~/.wpilib -type f -name "*.so" | shuf -n 1)
+            RANDOM_FILE=$(find ~/.wpilib -type f -name "*.so" | sort -R | head -n 1)
             if [ ! -z "$RANDOM_FILE" ]; then
               echo "Corrupting file: $RANDOM_FILE"
               echo "corrupted data" > "$RANDOM_FILE"
