@@ -158,6 +158,16 @@ const interactiveCols = computed(() =>
         (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraWhiteBalanceTemp: args }, false)
       "
     />
+    <pv-slider
+      v-model="useCameraSettingsStore().currentPipelineSettings.cameraSaturation"
+      label="Saturation Temperature"
+      :min="useCameraSettingsStore().minSaturation"
+      :max="useCameraSettingsStore().maxSaturation"
+      :slider-cols="interactiveCols"
+      @update:modelValue="
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraSaturation: args }, false)
+      "
+    />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.blockForFrames"
       :disabled="!useCameraSettingsStore().currentCameraSettings.matchedCameraInfo.PVUsbCameraInfo"
