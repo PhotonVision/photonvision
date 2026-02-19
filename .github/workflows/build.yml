@@ -445,14 +445,25 @@ jobs:
           name: ${{ matrix.artifact-name }}
       # The jar is run twice to exercise different code paths.
       - run: |
+          echo "=== First run ==="
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+          echo "=== Checking for files to corrupt ==="
+          find ~ -type f \( -name "*.so" -o -name "*.dylib" \) | head -20
           if [ -d ~/.wpilib ]; then
-            RANDOM_FILE=$(find ~/.wpilib -type f -name "*.so" | sort -R | head -n 1)
+            echo "~/.wpilib directory exists"
+            echo "Contents of ~/.wpilib:"
+            find ~/.wpilib -type f \( -name "*.so" -o -name "*.dylib" \) | head -10
+            RANDOM_FILE=$(find ~/.wpilib -type f \( -name "*.so" -o -name "*.dylib" \) | sort -R | head -n 1)
             if [ ! -z "$RANDOM_FILE" ]; then
               echo "Corrupting file: $RANDOM_FILE"
               echo "corrupted data" > "$RANDOM_FILE"
+            else
+              echo "No .so or .dylib files found in ~/.wpilib"
             fi
+          else
+            echo "~/.wpilib directory does not exist"
           fi
+          echo "=== Second run ==="
           java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
       - run: |
