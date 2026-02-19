@@ -34,12 +34,17 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /** Loads dynamic libraries for all platforms. */
 public final class CombinedRuntimeLoader {
     private CombinedRuntimeLoader() {}
 
     private static String extractionDirectory;
+
+    private static final Object extractCompleteLock = new Object();
+    private static boolean extractAndVerifyComplete = false;
+    private static List<String> extractedFiles = new CopyOnWriteArrayList<>();
 
     /**
      * Returns library extraction directory.
@@ -213,7 +218,9 @@ public final class CombinedRuntimeLoader {
                         continue;
                     } else {
                         // Hashes don't match, delete and re-extract
+                        System.err.println("Deleting file????????");
                         outputFile.toFile().delete();
+                        System.exit(-1);
                     }
                 }
                 var parent = outputFile.getParent();
@@ -232,17 +239,23 @@ public final class CombinedRuntimeLoader {
             }
         }
 
+        System.out.println("extracted: " + extractedFiles);
         return extractedFiles;
     }
 
     private static String hashEm(File f) throws IOException {
+        var start = System.currentTimeMillis();
         try {
             MessageDigest fileHash = MessageDigest.getInstance("MD5");
             try (var dis =
                     new DigestInputStream(new BufferedInputStream(new FileInputStream(f)), fileHash)) {
                 dis.readAllBytes();
             }
-            return HexFormat.of().formatHex(fileHash.digest());
+            var ret = HexFormat.of().formatHex(fileHash.digest());
+            var end = System.currentTimeMillis();
+            System.out.println(
+                    "Verify " + f.toPath().toAbsolutePath().toString() + " took " + (end - start));
+            return ret;
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("Unable to verify extracted native files", e);
         }
@@ -283,12 +296,16 @@ public final class CombinedRuntimeLoader {
      */
     public static <T> void loadLibraries(Class<T> clazz, String... librariesToLoad)
             throws IOException {
-        // Extract everything
+        synchronized (extractCompleteLock) {
+            if (extractAndVerifyComplete == false) {
+                // Extract everything
+                extractedFiles = extractLibraries(clazz, "/ResourceInformation.json");
+                extractAndVerifyComplete = true;
+            }
 
-        var extractedFiles = extractLibraries(clazz, "/ResourceInformation.json");
-
-        for (var library : librariesToLoad) {
-            loadLibrary(library, extractedFiles);
+            for (var library : librariesToLoad) {
+                loadLibrary(library, extractedFiles);
+            }
         }
     }
 }
