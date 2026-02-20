@@ -113,6 +113,7 @@ public class FileVisionSource extends VisionSource {
                             frameStaticProperties.imageHeight,
                             30);
             videoModes.put(0, videoMode);
+            videoModes.put(1, new VideoMode(PixelFormat.kMJPEG, 1280, 720, 30));
         }
 
         @Override
