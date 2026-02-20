@@ -84,7 +84,6 @@ public class AprilTagROIDecodePipe
     /** Parameters for ROI decode pipe */
     public static class ROIDecodeParams {
         public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
-        public double roiExpansionFactor = 1.2;
         public AprilTagDetector.Config detectorConfig;
         public AprilTagDetector.QuadThresholdParameters quadParams;
         public int maxHammingDistance = 0;
@@ -133,9 +132,8 @@ public class AprilTagROIDecodePipe
         int frameHeight = fullFrame.rows();
 
         for (Rect2d roi : input.rois) {
-            // Expand the ROI and track the EXPANDED coordinates for mapping
-            Rect2d expandedROI = expandBbox(roi, params.roiExpansionFactor, frameWidth, frameHeight);
-            Rect roiRect = toIntRect(expandedROI);
+            // ROIs are already expanded by the caller (AprilTagPipeline.processMLHybrid)
+            Rect roiRect = toIntRect(roi);
 
             if (roiRect.width <= 0 || roiRect.height <= 0) {
                 continue;
@@ -434,7 +432,7 @@ public class AprilTagROIDecodePipe
      * @param imageHeight Image height for clamping
      * @return Expanded and clamped bounding box
      */
-    private Rect2d expandBbox(Rect2d bbox, double scale, int imageWidth, int imageHeight) {
+    public static Rect2d expandBbox(Rect2d bbox, double scale, int imageWidth, int imageHeight) {
         double newWidth = bbox.width * scale;
         double newHeight = bbox.height * scale;
         double newX = bbox.x - (newWidth - bbox.width) / 2.0;
