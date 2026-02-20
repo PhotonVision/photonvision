@@ -42,6 +42,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public double mlRoiExpansionFactor = 1.2;
     public boolean mlFallbackToTraditional = true;
     public String mlModelName = null;
+    public boolean showDetectionBoxes = true;
 
     // Adaptive Tag Resizing (ATR) settings
     /** Enable adaptive tag resizing for ML-assisted detection */
@@ -89,6 +90,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + (mlFallbackToTraditional ? 1231 : 1237);
         result = prime * result + ((mlModelName == null) ? 0 : mlModelName.hashCode());
+        result = prime * result + (showDetectionBoxes ? 1231 : 1237);
         // ATR fields
         result = prime * result + (atrEnabled ? 1231 : 1237);
         result = prime * result + atrTargetDimension;
@@ -126,6 +128,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (mlModelName == null) {
             if (other.mlModelName != null) return false;
         } else if (!mlModelName.equals(other.mlModelName)) return false;
+        if (showDetectionBoxes != other.showDetectionBoxes) return false;
         // ATR fields
         if (atrEnabled != other.atrEnabled) return false;
         if (atrTargetDimension != other.atrTargetDimension) return false;

@@ -158,7 +158,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     AprilTagROIDecodePipe.ROIDecodeParams decodeParams =
                             new AprilTagROIDecodePipe.ROIDecodeParams();
                     decodeParams.tagFamily = settings.tagFamily;
-                    decodeParams.roiExpansionFactor = settings.mlRoiExpansionFactor;
                     decodeParams.maxHammingDistance = settings.hammingDist;
                     decodeParams.minDecisionMargin = settings.decisionMargin;
                     decodeParams.detectorConfig.numThreads = 1;
@@ -210,6 +209,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             var mlDetectionResult = processMLHybrid(frame);
             detections = mlDetectionResult.detections;
             detectionNanos = mlDetectionResult.nanosElapsed;
+
+            // Preserve ROIs for visualization in the output stream
+            frame.mlDetectionRois = mlDetectionResult.rois;
 
             // Fallback to traditional detection if ML found nothing
             if (detections.isEmpty() && settings.mlFallbackToTraditional) {
@@ -336,10 +338,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     /** Result container for ML hybrid detection */
     private static class MLDetectionResult {
         final List<AprilTagDetection> detections;
+        final List<Rect2d> rois;
         final long nanosElapsed;
 
-        MLDetectionResult(List<AprilTagDetection> detections, long nanosElapsed) {
+        MLDetectionResult(
+                List<AprilTagDetection> detections, List<Rect2d> rois, long nanosElapsed) {
             this.detections = detections;
+            this.rois = rois;
             this.nanosElapsed = nanosElapsed;
         }
     }
@@ -354,20 +359,30 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // Stage 1: ML detection to find ROIs
         CVPipeResult<List<Rect2d>> mlResult = mlDetectionPipe.run(frame.colorImage);
         totalNanos += mlResult.nanosElapsed;
-        List<Rect2d> rois = mlResult.output;
+        List<Rect2d> rawRois = mlResult.output;
 
-        if (rois.isEmpty()) {
-            return new MLDetectionResult(new ArrayList<>(), totalNanos);
+        if (rawRois.isEmpty()) {
+            return new MLDetectionResult(new ArrayList<>(), List.of(), totalNanos);
         }
 
-        // Stage 2: Decode tags within ROIs using traditional detector
+        // Expand ROIs before passing to decode pipe and visualization
+        int frameWidth = frame.colorImage.getMat().cols();
+        int frameHeight = frame.colorImage.getMat().rows();
+        List<Rect2d> expandedRois = new ArrayList<>(rawRois.size());
+        for (Rect2d roi : rawRois) {
+            expandedRois.add(
+                    AprilTagROIDecodePipe.expandBbox(
+                            roi, settings.mlRoiExpansionFactor, frameWidth, frameHeight));
+        }
+
+        // Stage 2: Decode tags within expanded ROIs using traditional detector
         AprilTagROIDecodePipe.ROIDecodeInput decodeInput =
-                new AprilTagROIDecodePipe.ROIDecodeInput(frame.processedImage, rois);
+                new AprilTagROIDecodePipe.ROIDecodeInput(frame.processedImage, expandedRois);
 
         CVPipeResult<List<AprilTagDetection>> decodeResult = mlDecodePipe.run(decodeInput);
         totalNanos += decodeResult.nanosElapsed;
 
-        return new MLDetectionResult(decodeResult.output, totalNanos);
+        return new MLDetectionResult(decodeResult.output, expandedRois, totalNanos);
     }
 
     /**

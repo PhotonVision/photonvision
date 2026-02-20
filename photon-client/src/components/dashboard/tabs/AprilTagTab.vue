@@ -186,6 +186,15 @@ const selectedModel = computed({
             (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlFallbackToTraditional: value }, false)
           "
         />
+        <pv-switch
+          v-model="currentPipelineSettings.showDetectionBoxes"
+          :switch-cols="interactiveCols"
+          label="Show ROI Boxes"
+          tooltip="Draw the ML model's detected bounding boxes on the processed image for tuning visualization"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ showDetectionBoxes: value }, false)
+          "
+        />
       </div>
     </div>
   </div>
