@@ -41,6 +41,7 @@ import org.photonvision.common.util.TimedTaskManager;
 public class NetworkManager {
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
     private HashMap<String, String> activeConnections = new HashMap<String, String>();
+    private static boolean firstInitialization = true;
 
     private NetworkManager() {}
 
@@ -112,6 +113,20 @@ public class NetworkManager {
             }
         }
 
+        // Safety check for setting the IP address to static.
+        if (firstInitialization) {
+            // only check this once after restarting PhotonVision
+            firstInitialization = false;
+            if (config.connectionType == NetworkMode.STATIC && !config.staticIpVerified) {
+                // revert to DHCP becuase system was rebooted after setting static IP but without
+                // acknowledging that the static IP was working correctly
+                logger.warn(
+                        "System was rebooted with staic IP set but not verified as working in the UI. Reverting to DHCP!");
+                config.connectionType = NetworkMode.DHCP;
+                ConfigManager.getInstance().requestSave();
+            }
+        }
+
         logger.info(
                 "Setting "
                         + config.connectionType
@@ -151,10 +166,12 @@ public class NetworkManager {
             var shell = new ShellExec(true, false);
             shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
             var oldHostname = shell.getOutput().replace("\n", "");
-            logger.debug("Old host name: \"" + oldHostname + "\"");
-            logger.debug("New host name: \"" + config.hostname + "\"");
 
-            if (!oldHostname.equals(config.hostname)) {
+            if (oldHostname.equals(config.hostname)) {
+                logger.debug("Hostname is already set to \"" + oldHostname + "\"");
+            } else {
+                logger.debug(
+                        "Changing host name from \"" + oldHostname + "\" to \"" + config.hostname + "\"");
                 var setHostnameRetCode =
                         shell.executeBashCommand(
                                 "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));

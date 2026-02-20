@@ -29,6 +29,7 @@ public class NetworkConfig {
     public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
+    public boolean staticIpVerified = false;
     public String hostname = "photonvision";
     public boolean runNTServer = false;
     public boolean shouldManage;
@@ -56,6 +57,7 @@ public class NetworkConfig {
                     String ntServerAddress,
             @JsonProperty("connectionType") NetworkMode connectionType,
             @JsonProperty("staticIp") String staticIp,
+            @JsonProperty("staticIpVerified") Boolean staticIpVerified,
             @JsonProperty("hostname") String hostname,
             @JsonProperty("runNTServer") boolean runNTServer,
             @JsonProperty("shouldManage") boolean shouldManage,
@@ -66,6 +68,11 @@ public class NetworkConfig {
         this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
+        // When offline updating an older verison of PhotonVisison, the staticIpVerified field will be
+        // missing and deserialization will return a null. If the value is null, and the connection was
+        // set to STATIC, assume that it was "verified" and set staticIpVerified to true.
+        this.staticIpVerified =
+                (staticIpVerified == null) ? connectionType == NetworkMode.STATIC : staticIpVerified;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
         this.shouldPublishProto = shouldPublishProto;
@@ -80,6 +87,7 @@ public class NetworkConfig {
                 config.ntServerAddress,
                 config.connectionType,
                 config.staticIp,
+                config.staticIpVerified,
                 config.hostname,
                 config.runNTServer,
                 config.shouldManage,
@@ -116,6 +124,8 @@ public class NetworkConfig {
                 + connectionType
                 + ", staticIp="
                 + staticIp
+                + ", staticIpVerified="
+                + staticIpVerified
                 + ", hostname="
                 + hostname
                 + ", runNTServer="

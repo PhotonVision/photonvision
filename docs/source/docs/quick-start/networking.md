@@ -54,8 +54,17 @@ Only use a static IP when connected to the **robot radio**, and never when testi
 5. Change your IP to Static.
 6. Set your coprocessor's IP address to “10.TE.AM.11”. More information on IP format can be found [here](https://docs.wpilib.org/en/stable/docs/networking/networking-introduction/ip-configurations.html#on-the-field-static-configuration).
 7. Click the “Save” button.
+8. Wait for the backend to reconnect.
+9. Once it does, you will be able to toggle the "Static IP Verified Working" switch below the "Static IP" field. This switch must be set on to persist the static IP setting between restarts.
+10. Click the "Save" button again to confirm that the staic IP setting is working.
 
-Power-cycle your robot and then you will now be access the PhotonVision dashboard at `10.TE.AM.11:5800`.
+:::{warning}
+The "Static IP Verified Working" toggle safeguards against a mis-configured static IP address causing the coprocessor to become unreachable.
+
+The swich is enabled after the static IP configuration has been saved and applied. Once the backend reconnects, you will be able to turn it on and press the "Save" button.
+
+If you don't turn the switch on and press "Save", PhotonVision will revert to DHCP the next time it restarts and the Static IP configuration will not be used.
+:::
 
 ```{image} images/static.png
 :alt: Correctly set static IP

@@ -71,6 +71,7 @@ const settingsHaveChanged = (): boolean => {
     a.ntServerAddress !== b.ntServerAddress ||
     a.connectionType !== b.connectionType ||
     a.staticIp !== b.staticIp ||
+    a.staticIpVerified !== b.staticIpVerified ||
     a.hostname !== b.hostname ||
     a.runNTServer !== b.runNTServer ||
     a.shouldManage !== b.shouldManage ||
@@ -82,6 +83,14 @@ const settingsHaveChanged = (): boolean => {
 };
 
 const saveGeneralSettings = async () => {
+  const changingStaticIP =
+    useSettingsStore().network.connectionType === NetworkConnectionType.Static &&
+    tempSettingsStruct.value.staticIp !== useSettingsStore().network.staticIp;
+
+  if (changingStaticIP) {
+    tempSettingsStruct.value.staticIpVerified = false;
+  }
+
   // replace undefined members with empty strings for backend
   const payload = {
     connectionType: tempSettingsStruct.value.connectionType,
@@ -93,12 +102,9 @@ const saveGeneralSettings = async () => {
     setStaticCommand: tempSettingsStruct.value.setStaticCommand || "",
     shouldManage: tempSettingsStruct.value.shouldManage,
     shouldPublishProto: tempSettingsStruct.value.shouldPublishProto,
-    staticIp: tempSettingsStruct.value.staticIp
+    staticIp: tempSettingsStruct.value.staticIp,
+    staticIpVerified: tempSettingsStruct.value.staticIpVerified
   };
-
-  const changingStaticIP =
-    useSettingsStore().network.connectionType === NetworkConnectionType.Static &&
-    tempSettingsStruct.value.staticIp !== useSettingsStore().network.staticIp;
 
   try {
     const response = await useSettingsStore().updateGeneralSettings(payload);
@@ -231,6 +237,20 @@ watchEffect(() => {
             !tempSettingsStruct.shouldManage ||
             !useSettingsStore().network.canManage ||
             useSettingsStore().network.networkingDisabled
+          "
+        />
+        <pv-switch
+          v-show="!useSettingsStore().network.networkingDisabled"
+          v-if="tempSettingsStruct.connectionType === NetworkConnectionType.Static"
+          v-model="tempSettingsStruct.staticIpVerified"
+          :input-cols="12 - 4"
+          label="Static IP Verfied Working"
+          :disabled="
+            !tempSettingsStruct.shouldManage ||
+            !useSettingsStore().network.canManage ||
+            useSettingsStore().network.networkingDisabled ||
+            useSettingsStore().network.connectionType !== tempSettingsStruct.connectionType ||
+            useSettingsStore().network.staticIp !== tempSettingsStruct.staticIp
           "
         />
         <pv-input
