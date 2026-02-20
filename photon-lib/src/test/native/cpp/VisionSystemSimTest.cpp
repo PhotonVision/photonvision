@@ -55,17 +55,19 @@ class VisionSystemSimTestDistanceParamsTest
           std::tuple<units::foot_t, units::degree_t, units::foot_t>> {};
 
 TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
+  photon::TargetModel targetModel{1.0_m, 1.0_m};
   frc::Pose3d targetPose{
       frc::Translation3d{15.98_m, 0_m, 2_m},
       frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
   cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{1.0_m, 1.0_m}, 3}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 3}});
 
   // To the right, to the right
   frc::Pose2d robotPose{frc::Translation2d{5_m, 0_m}, frc::Rotation2d{-70_deg}};
@@ -141,17 +143,19 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
 }
 
 TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
+  photon::TargetModel targetModel{3.0_m, 3.0_m};
   frc::Pose3d targetPose{
       frc::Translation3d{15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
   cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{3.0_m, 3.0_m}, 3}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 3}});
 
   frc::Pose2d robotPose{frc::Translation2d{5_m, 0_m}, frc::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
@@ -167,6 +171,7 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
 }
 
 TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
+  photon::TargetModel targetModel{0.5_m, 0.5_m};
   frc::Pose3d targetPose{
       frc::Translation3d{15.98_m, 0_m, 2_m},
       frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
@@ -175,13 +180,14 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
       frc::Translation3d{0_m, 0_m, 1_m},
       frc::Rotation3d{0_rad, units::radian_t{-std::numbers::pi / 4}, 0_rad}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, robotToCamera);
   cameraSim.prop.SetCalibration(1234, 1234, frc::Rotation2d{80_deg});
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{0.5_m, 0.5_m}, 1736}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 1736}});
 
   frc::Pose2d robotPose{frc::Translation2d{13.98_m, 0_m},
                         frc::Rotation2d{5_deg}};
@@ -194,18 +200,20 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
 }
 
 TEST_F(VisionSystemSimTest, TestNotVisibleTargetSize) {
+  photon::TargetModel targetModel{0.1_m, 0.1_m};
   frc::Pose3d targetPose{
       frc::Translation3d{15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
   cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
   cameraSim.SetMinTargetAreaPixels(20.0);
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{0.1_m, 0.1_m}, 24}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 24}});
 
   frc::Pose2d robotPose{frc::Translation2d{12_m, 0_m}, frc::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
@@ -217,11 +225,13 @@ TEST_F(VisionSystemSimTest, TestNotVisibleTargetSize) {
 }
 
 TEST_F(VisionSystemSimTest, TestNotVisibleTooFarLeds) {
+  photon::TargetModel targetModel{1_m, 1_m};
   frc::Pose3d targetPose{
       frc::Translation3d{15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
@@ -229,7 +239,7 @@ TEST_F(VisionSystemSimTest, TestNotVisibleTooFarLeds) {
   cameraSim.SetMinTargetAreaPixels(1.0);
   cameraSim.SetMaxSightRange(10_m);
   visionSysSim.AddVisionTargets(
-      {photon::VisionTargetSim{targetPose, photon::TargetModel{1_m, 1_m}, 25}});
+      {photon::VisionTargetSim{targetPose, targetModel, 25}});
 
   frc::Pose2d robotPose{frc::Translation2d{10_m, 0_m}, frc::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
@@ -241,17 +251,19 @@ TEST_F(VisionSystemSimTest, TestNotVisibleTooFarLeds) {
 }
 
 TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
+  photon::TargetModel targetModel{0.5_m, 0.5_m};
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg, units::radian_t{3 * std::numbers::pi / 4}}};
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
   cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
   cameraSim.SetMinTargetAreaPixels(0.0);
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 3}});
 
   // If the robot is rotated x deg (CCW+), the target yaw should be x deg (CW+)
   frc::Pose2d robotPose{frc::Translation2d{10_m, 0_m},
@@ -264,18 +276,20 @@ TEST_P(VisionSystemSimTestWithParamsTest, YawAngles) {
 }
 
 TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
+  photon::TargetModel targetModel{0.5_m, 0.5_m};
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg, units::radian_t{3 * std::numbers::pi / 4}}};
   frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{GetParam() * -1.0}};
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
   cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{120_deg});
   cameraSim.SetMinTargetAreaPixels(0.0);
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{0.5_m, 0.5_m}, 3}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 3}});
 
   robotPose = frc::Pose2d{frc::Translation2d{10_m, 0_m},
                           frc::Rotation2d{-1 * GetParam()}};
@@ -301,6 +315,7 @@ TEST_P(VisionSystemSimTestDistanceParamsTest, DistanceCalc) {
   units::foot_t heightParam;
   std::tie(distParam, pitchParam, heightParam) = GetParam();
 
+  photon::TargetModel targetModel{0.5_m, 0.5_m};
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 1_m},
       frc::Rotation3d{0_deg, 0_deg, units::radian_t{std::numbers::pi * 0.98}}};
@@ -309,15 +324,16 @@ TEST_P(VisionSystemSimTestDistanceParamsTest, DistanceCalc) {
                                  frc::Rotation3d{0_deg, pitchParam, 0_deg}};
   photon::VisionSystemSim visionSysSim{
       "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysoho"
-      "wsyourdaygoingihopegoodhaveagreatrestofyourlife"};
+      "wsyourdaygoingihopegoodhaveagreatrestofyourlife",
+      frc::AprilTagFieldLayout(), targetModel};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
   cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{160_deg});
   cameraSim.SetMinTargetAreaPixels(0.0);
   visionSysSim.AdjustCamera(&cameraSim, robotToCamera);
-  visionSysSim.AddVisionTargets({photon::VisionTargetSim{
-      targetPose, photon::TargetModel{0.5_m, 0.5_m}, 0}});
+  visionSysSim.AddVisionTargets(
+      {photon::VisionTargetSim{targetPose, targetModel, 0}});
   visionSysSim.Update(robotPose);
 
   photon::PhotonPipelineResult res = camera.GetLatestResult();
@@ -364,7 +380,8 @@ TEST_F(VisionSystemSimTest, TestMultipleTargets) {
       frc::Translation3d{15.98_m, -2_m, 0_m},
       frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout(),
+                                       photon::kAprilTag16h5};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
@@ -425,13 +442,6 @@ TEST_F(VisionSystemSimTest, TestMultipleTargets) {
 }
 
 TEST_F(VisionSystemSimTest, TestPoseEstimation) {
-  photon::VisionSystemSim visionSysSim{"Test"};
-  photon::PhotonCamera camera{"camera"};
-  photon::PhotonCameraSim cameraSim{&camera};
-  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
-  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{90_deg});
-  cameraSim.SetMinTargetAreaPixels(20.0);
-
   std::vector<frc::AprilTag> tagList;
   tagList.emplace_back(frc::AprilTag{
       0, frc::Pose3d{12_m, 3_m, 1_m,
@@ -448,6 +458,13 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   units::meter_t fieldLength{54};
   units::meter_t fieldWidth{27};
   frc::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
+  photon::VisionSystemSim visionSysSim{"Test", layout, photon::kAprilTag16h5};
+  photon::PhotonCamera camera{"camera"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{90_deg});
+  cameraSim.SetMinTargetAreaPixels(20.0);
+
   frc::Pose2d robotPose{frc::Translation2d{5_m, 1_m}, frc::Rotation2d{5_deg}};
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag16h5, 0}});
@@ -499,13 +516,6 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   frc::Transform3d robotToCamera{frc::Translation3d{6_in, 6_in, 6_in},
                                  frc::Rotation3d{0_deg, -30_deg, 25.5_deg}};
 
-  photon::VisionSystemSim visionSysSim{"Test"};
-  photon::PhotonCamera camera{"cameraRotated"};
-  photon::PhotonCameraSim cameraSim{&camera};
-  visionSysSim.AddCamera(&cameraSim, robotToCamera);
-  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{90_deg});
-  cameraSim.SetMinTargetAreaPixels(20.0);
-
   std::vector<frc::AprilTag> tagList;
   tagList.emplace_back(frc::AprilTag{
       0, frc::Pose3d{12_m, 3_m, 1_m,
@@ -522,6 +532,14 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   units::meter_t fieldLength{54};
   units::meter_t fieldWidth{27};
   frc::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
+
+  photon::VisionSystemSim visionSysSim{"Test", layout};
+  photon::PhotonCamera camera{"cameraRotated"};
+  photon::PhotonCameraSim cameraSim{&camera};
+  visionSysSim.AddCamera(&cameraSim, robotToCamera);
+  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{90_deg});
+  cameraSim.SetMinTargetAreaPixels(20.0);
+
   frc::Pose2d robotPose{frc::Translation2d{5_m, 1_m}, frc::Rotation2d{-5_deg}};
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{tagList[0].pose, photon::kAprilTag36h11, 0}});
@@ -576,7 +594,7 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
 }
 
 TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
-  photon::VisionSystemSim visionSysSim{"Test"};
+  photon::VisionSystemSim visionSysSim{"Test", frc::AprilTagFieldLayout()};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
   visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});

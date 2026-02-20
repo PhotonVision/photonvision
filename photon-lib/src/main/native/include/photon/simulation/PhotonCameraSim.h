@@ -72,13 +72,8 @@ class PhotonCameraSim {
    *
    * @param camera The camera to be simulated
    * @param prop Properties of this camera such as FOV and FPS
-   * @param tagLayout The AprilTagFieldLayout used to solve for tag
-   * positions.
    */
-  PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
-                  const frc::AprilTagFieldLayout& tagLayout =
-                      frc::AprilTagFieldLayout::LoadField(
-                          frc::AprilTagField::kDefaultField));
+  PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props);
 
   /**
    * Constructs a handle for simulating PhotonCamera values. Processing
@@ -235,7 +230,8 @@ class PhotonCameraSim {
   }
   PhotonPipelineResult Process(units::second_t latency,
                                const frc::Pose3d& cameraPose,
-                               std::vector<VisionTargetSim> targets);
+                               std::vector<VisionTargetSim> targets,
+                               const frc::AprilTagFieldLayout& tagLayout);
 
   void SubmitProcessedFrame(const PhotonPipelineResult& result);
   void SubmitProcessedFrame(const PhotonPipelineResult& result,
@@ -254,8 +250,6 @@ class PhotonCameraSim {
   units::meter_t maxSightRange{std::numeric_limits<double>::max()};
   static constexpr double kDefaultMinAreaPx{100};
   double minTargetAreaPercent;
-
-  frc::AprilTagFieldLayout tagLayout;
 
   cs::CvSource videoSimRaw;
   cv::Mat videoSimFrameRaw{};

@@ -5,7 +5,7 @@ import cscore as cs
 import cv2 as cv
 import numpy as np
 import wpilib
-from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
+from robotpy_apriltag import AprilTagFieldLayout
 from wpimath.geometry import Pose3d, Transform3d
 from wpimath.units import meters, seconds
 
@@ -36,9 +36,6 @@ class PhotonCameraSim:
         self,
         camera: PhotonCamera,
         props: SimCameraProperties = SimCameraProperties.PERFECT_90DEG(),
-        tagLayout: AprilTagFieldLayout = AprilTagFieldLayout.loadField(
-            AprilTagField.kDefaultField
-        ),
         minTargetAreaPercent: float | None = None,
         maxSightRange: meters | None = None,
     ):
@@ -67,7 +64,6 @@ class PhotonCameraSim:
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
         self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
-        self.tagLayout = tagLayout
 
         self.cam = camera
         self.prop = props
@@ -254,7 +250,11 @@ class PhotonCameraSim:
         raise Exception("Processed stream not implemented")
 
     def process(
-        self, latency: seconds, cameraPose: Pose3d, targets: list[VisionTargetSim]
+        self,
+        latency: seconds,
+        cameraPose: Pose3d,
+        targets: list[VisionTargetSim],
+        tagLayout: AprilTagFieldLayout | None,
     ) -> PhotonPipelineResult:
         # Sort targets by distance to camera - furthest to closest
         def distance(target: VisionTargetSim):
@@ -403,23 +403,24 @@ class PhotonCameraSim:
 
         multiTagResults: MultiTargetPNPResult | None = None
 
-        visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(
-            detectableTgts, self.tagLayout
-        )
-
-        if len(visibleLayoutTags) > 1:
-            usedIds = [tag.ID for tag in visibleLayoutTags]
-            # sort target order sorts in ascending order by default
-            usedIds.sort()
-            pnpResult = VisionEstimation.estimateCamPosePNP(
-                self.prop.getIntrinsics(),
-                self.prop.getDistCoeffs(),
-                detectableTgts,
-                self.tagLayout,
-                TargetModel.AprilTag36h11(),
+        if tagLayout is not None:
+            visibleLayoutTags = VisionEstimation.getVisibleLayoutTags(
+                detectableTgts, tagLayout
             )
-            if pnpResult is not None:
-                multiTagResults = MultiTargetPNPResult(pnpResult, usedIds)
+
+            if len(visibleLayoutTags) > 1:
+                usedIds = [tag.ID for tag in visibleLayoutTags]
+                # sort target order sorts in ascending order by default
+                usedIds.sort()
+                pnpResult = VisionEstimation.estimateCamPosePNP(
+                    self.prop.getIntrinsics(),
+                    self.prop.getDistCoeffs(),
+                    detectableTgts,
+                    tagLayout,
+                    TargetModel.AprilTag36h11(),
+                )
+                if pnpResult is not None:
+                    multiTagResults = MultiTargetPNPResult(pnpResult, usedIds)
 
         # put this simulated data to NT
         self.heartbeatCounter += 1

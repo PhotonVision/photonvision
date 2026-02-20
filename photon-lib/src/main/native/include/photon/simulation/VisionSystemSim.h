@@ -57,10 +57,19 @@ class VisionSystemSim {
    *
    * @param visionSystemName The specific identifier for this vision system in
    * NetworkTables.
+   * @param tagLayout The field layout to use for AprilTag detection
+   * @param targetModel The model to use for vision targets
    */
-  explicit VisionSystemSim(std::string visionSystemName) {
+  explicit VisionSystemSim(
+      std::string visionSystemName,
+      const frc::AprilTagFieldLayout tagLayout =
+          frc::AprilTagFieldLayout::LoadField(
+              frc::AprilTagField::kDefaultField),
+      const photon::TargetModel targetModel = photon::kAprilTag36h11)
+      : tagLayout(tagLayout), targetModel(targetModel) {
     std::string tableName = "VisionSystemSim-" + visionSystemName;
     frc::SmartDashboard::PutData(tableName + "/Sim Field", &dbgField);
+    AddAprilTags(tagLayout);
   }
 
   /** Get one of the simulated cameras. */
@@ -316,7 +325,7 @@ class VisionSystemSim {
     std::vector<VisionTargetSim> targets;
     for (const frc::AprilTag& tag : layout.GetTags()) {
       targets.emplace_back(VisionTargetSim{layout.GetTagPose(tag.ID).value(),
-                                           photon::kAprilTag36h11, tag.ID});
+                                           targetModel, tag.ID});
     }
     AddVisionTargets("apriltag", targets);
   }
@@ -451,7 +460,8 @@ class VisionSystemSim {
           lateRobotPose + GetRobotToCamera(camSim, timestampCapture).value();
       cameraPoses2d.push_back(lateCameraPose.ToPose2d());
 
-      auto camResult = camSim->Process(latency, lateCameraPose, allTargets);
+      auto camResult =
+          camSim->Process(latency, lateCameraPose, allTargets, tagLayout);
       camSim->SubmitProcessedFrame(camResult, timestampNt);
       for (const auto& target : camResult.GetTargets()) {
         auto trf = target.GetBestCameraToTarget();
@@ -479,5 +489,7 @@ class VisionSystemSim {
   std::unordered_map<std::string, std::vector<VisionTargetSim>> targetSets{};
   frc::Field2d dbgField{};
   const frc::Transform3d kEmptyTrf{};
+  const frc::AprilTagFieldLayout tagLayout;
+  const photon::TargetModel targetModel;
 };
 }  // namespace photon
