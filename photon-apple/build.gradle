@@ -1,0 +1,126 @@
+plugins {
+    id 'java-library'
+}
+
+def isMacOS = System.getProperty("os.name").toLowerCase().contains("mac")
+def forceStubs = project.hasProperty('photonAppleForceStubs')
+
+// Configure Java version based on build mode
+if (isMacOS && !forceStubs) {
+    // macOS real impl: Declare as Java 24 compatible for dependency resolution
+    // (even though SwiftKit deps require Java 25 at runtime)
+    java {
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
+    }
+
+    // Override dependency resolution attributes to declare Java 24 compatibility
+    // This allows photon-server (Java 24) to depend on photon-apple, even though
+    // SwiftKit dependencies require Java 25 at runtime
+    configurations.configureEach {
+        attributes {
+            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 24)
+        }
+        resolutionStrategy {
+            // Disable strict Java version checking for dependency resolution
+            capabilitiesResolution.all { it.selectHighestVersion() }
+        }
+    }
+} else {
+    // PhotonLib stubs: Use Java 17 for FRC compatibility
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+
+if (isMacOS && !forceStubs) {
+    // macOS with real implementation: Build Swift library and use real implementations
+    sourceSets {
+        main {
+            java {
+                srcDirs = [
+                    'src/main/java',
+                    '.build/plugins/outputs/photon-apple/PhotonAppleLibrary/destination/JExtractSwiftPlugin/src/generated/java'
+                ]
+            }
+        }
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+
+        // SwiftKit dependencies (only on macOS)
+        // Note: These require Java 25 at runtime but we allow them during Java 24 dependency resolution
+        api 'org.swift.swiftkit:swiftkit-core:1.0-SNAPSHOT'
+        api 'org.swift.swiftkit:swiftkit-ffm:1.0-SNAPSHOT'
+    }
+
+    // Task to build Swift library and generate Java bindings
+    task buildSwift(type: Exec) {
+        commandLine 'swift', 'build', '-c', 'release'
+        workingDir projectDir
+    }
+
+    // Package Swift dylibs into JAR resources for portable deployment
+    processResources {
+        dependsOn buildSwift
+
+        // Package all Swift dylibs from local build
+        def buildDir = "${projectDir}/.build/release"
+        from(buildDir) {
+            include 'libPhotonAppleLibrary.dylib'
+            include 'libSwiftJava.dylib'
+            include 'libSwiftRuntimeFunctions.dylib'
+            // Package at root of JAR for SwiftLibraries.loadResourceLibrary() to find
+        }
+    }
+
+    // Ensure Swift library is built before compiling Java
+    tasks.compileJava.dependsOn(buildSwift)
+
+    // Use Java 25 for compilation (SwiftKit requires Java 25)
+    tasks.withType(JavaCompile).configureEach {
+        javaCompiler = javaToolchains.compilerFor {
+            languageVersion = JavaLanguageVersion.of(25)
+        }
+    }
+
+    test {
+        useJUnitPlatform()
+        // Skip tests by default (requires macOS and CoreML model)
+        enabled = project.hasProperty('runAppleTests')
+    }
+} else {
+    // Linux/Windows: Use stub implementations, skip Swift build
+    sourceSets {
+        main {
+            java {
+                srcDirs = [
+                    'src/stub/java']  // Use stubs instead
+            }
+        }
+        // Don't compile tests on non-macOS (they require Java 25 APIs on macOS)
+        test {
+            java {
+                srcDirs = []
+            }
+        }
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
+        // No SwiftKit dependencies on non-macOS
+    }
+
+    test {
+        useJUnitPlatform()
+        enabled = false  // Can't run tests without real implementation
+    }
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
