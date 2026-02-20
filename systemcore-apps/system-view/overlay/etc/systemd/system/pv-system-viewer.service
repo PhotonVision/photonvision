@@ -1,0 +1,23 @@
+[Unit]
+Description=PhotonVision System Viewer - A simple interface to check all connected PhotonVision Coprocessor statuses
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/local/bin/pv-system-viewer/pv-system-viewer.py
+Restart=always
+RestartSec=5
+TimeoutStartSec=3
+TimeoutStopSec=3
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/log
+
+[Install]
+WantedBy=multi-user.target
