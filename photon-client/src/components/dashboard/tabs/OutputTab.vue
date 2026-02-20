@@ -18,6 +18,10 @@ const isTagPipeline = computed(
     useCameraSettingsStore().currentPipelineType === PipelineType.Aruco
 );
 
+const isFiducialPipeline = computed(
+  () => isTagPipeline.value || useCameraSettingsStore().currentPipelineType === PipelineType.Composite
+);
+
 interface MetricItem {
   header: string;
   value?: string;
@@ -75,7 +79,8 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+          currentPipelineSettings.pipelineType === PipelineType.Composite) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -83,7 +88,10 @@ const interactiveCols = computed(() =>
       label="Do Multi-Target Estimation"
       tooltip="If enabled, all visible fiducial targets will be used to provide a single pose estimate from their combined model."
       :switch-cols="interactiveCols"
-      :disabled="!isTagPipeline"
+      :disabled="
+        !isFiducialPipeline ||
+        (currentPipelineSettings.pipelineType === PipelineType.Composite && !currentPipelineSettings.enableAprilTag)
+      "
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
       "
@@ -91,7 +99,8 @@ const interactiveCols = computed(() =>
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+          currentPipelineSettings.pipelineType === PipelineType.Composite) &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
@@ -99,7 +108,11 @@ const interactiveCols = computed(() =>
       label="Always Do Single-Target Estimation"
       tooltip="If disabled, visible fiducial targets used for multi-target estimation will not also be used for single-target estimation."
       :switch-cols="interactiveCols"
-      :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
+      :disabled="
+        !isFiducialPipeline ||
+        !currentPipelineSettings.doMultiTarget ||
+        (currentPipelineSettings.pipelineType === PipelineType.Composite && !currentPipelineSettings.enableAprilTag)
+      "
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
       "

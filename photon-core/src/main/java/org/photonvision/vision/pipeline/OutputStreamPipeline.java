@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.Pair;
+import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -149,7 +150,8 @@ public class OutputStreamPipeline {
 
             if (!(settings instanceof AprilTagPipelineSettings)
                     && !(settings instanceof ArucoPipelineSettings)
-                    && !(settings instanceof Calibration3dPipelineSettings)) {
+                    && !(settings instanceof Calibration3dPipelineSettings)
+                    && !(settings instanceof CompositePipelineSettings)) {
                 // If we're processing anything other than Apriltags..
                 var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
@@ -201,6 +203,31 @@ public class OutputStreamPipeline {
                     pipeProfileNanos[7] = 0;
                     pipeProfileNanos[8] = 0;
                 }
+            } else if (settings instanceof CompositePipelineSettings compositeSettings) {
+                var draw2dCrosshairResultOnOutput =
+                        draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
+
+                var fiducialTargets = new ArrayList<TrackedTarget>();
+                var objectTargets = new ArrayList<TrackedTarget>();
+                for (var target : targetsToDraw) {
+                    if (target.getFiducialId() >= 0) {
+                        fiducialTargets.add(target);
+                    } else {
+                        objectTargets.add(target);
+                    }
+                }
+
+                if (compositeSettings.solvePNPEnabled) {
+                    var drawOnOutputResult = draw3dAprilTagsPipe.run(Pair.of(outMat, fiducialTargets));
+                    sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnOutputResult.nanosElapsed;
+                } else {
+                    var draw2dTags = draw2dAprilTagsPipe.run(Pair.of(outMat, fiducialTargets));
+                    sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTags.nanosElapsed;
+                }
+
+                var draw2dObjects = draw2dTargetsPipe.run(Pair.of(outMat, objectTargets));
+                sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dObjects.nanosElapsed;
             } else if (settings instanceof ArucoPipelineSettings) {
                 if (settings.solvePNPEnabled) {
                     // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
