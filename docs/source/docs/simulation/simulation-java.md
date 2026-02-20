@@ -196,6 +196,43 @@ If the camera is mounted on a mobile mechanism (like a turret) this transform ca
       visionSim.adjustCamera(cameraSim, robotToCamera);
 ```
 
+## Low-Resource Vision Simulation with Photonvision
+
+By default, PhotonCameraSim renders two simulated camera streams using OpenCV:
+
+- Raw stream - The unprocessed camera view
+- Processed stream - The camera view with vision processing overlays
+
+These streams are nice if you want to actually view the simulated images, but they can be computationally expensive on low-power laptops like Chromebooks, causing lag and reduced simulation performance.
+
+Lightweight Configuration
+
+The following configuration disables both streams while still allowing tag detection and pose simulation to work. It's not perfect, but it's much better performance-wise than the default configuration.
+
+.. code-block:: java
+
+     // lightweight config version
+     // var cameraProperties = new SimCameraProperties();
+     // cameraSim = new PhotonCameraSim(camera, cameraProperties, aprilTagLayout);
+     // cameraSim.enableRawStream(false);        // disables raw image stream
+     // cameraSim.enableProcessedStream(false);  // disables processed image stream
+
+**Use Case**
+
+This configuration is ideal for Chromebooks or low-spec machines where rendering the simulated camera images causes lag, but vision data is still desired for testing.
+
+**What Still Works**
+
+- AprilTag detection
+- Pose estimation
+- NetworkTables data publishing
+- Robot positioning and targeting
+
+**What's Disabled**
+
+- Visual camera stream rendering
+- Real-time visual debugging of camera output
+
 ## Updating The Simulation World
 
 To update the `VisionSystemSim`, we simply have to pass in the simulated robot pose periodically (in `simulationPeriodic()`).
