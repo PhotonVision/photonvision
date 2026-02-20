@@ -61,6 +61,7 @@ import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
+import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -1409,6 +1410,179 @@ public class RequestHandler {
             logger.error("Failed to process unassign camera request", e);
             ctx.result("Failed to process unassign camera request");
             return;
+        }
+    }
+
+    public static void onExportIndividualRecordingRequest(Context ctx) {
+        logger.info("Exporting Individual Recording");
+
+        try {
+            String recordingName = ctx.queryParam("recording");
+            String cameraUniqueName = ctx.queryParam("camera");
+
+            if (recordingName == null || recordingName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided recording path was malformed");
+                logger.error("The provided recording path was malformed");
+                return;
+            }
+
+            if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided camera unique name was malformed");
+                logger.error("The provided camera unique name was malformed");
+                return;
+            }
+
+            Path recordingDir =
+                    ConfigManager.getInstance()
+                            .getRecordingsDirectory()
+                            .toPath()
+                            .resolve(cameraUniqueName)
+                            .resolve(recordingName);
+
+            if (!recordingDir.toFile().exists()) {
+                ctx.status(400);
+                ctx.result("The provided recording path does not exist");
+                logger.error("The provided recording path does not exist");
+                return;
+            }
+
+            File recordingZip = FrameRecorder.export(recordingDir);
+
+            try (FileInputStream stream = new FileInputStream(recordingZip)) {
+                logger.info("Uploading individual recording with size " + stream.available());
+
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
+
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (recordingZip.exists()) {
+                    recordingZip.delete();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to export individual recording archive", e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the individual recording archive");
+        }
+    }
+
+    public static void onExportCameraRecordingsRequest(Context ctx) {
+        logger.info("Exporting camera recordings to a ZIP file");
+
+        try {
+            String cameraUniqueName = ctx.queryParam("camera");
+
+            if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided camera unique name was malformed");
+                logger.error("The provided camera unique name was malformed");
+                return;
+            }
+
+            File cameraRecordingZip =
+                    FrameRecorder.exportCamera(
+                            ConfigManager.getInstance()
+                                    .getRecordingsDirectory()
+                                    .toPath()
+                                    .resolve(cameraUniqueName));
+
+            try (FileInputStream stream = new FileInputStream(cameraRecordingZip)) {
+                logger.info("Uploading camera recordings with size " + stream.available());
+
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
+
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (cameraRecordingZip.exists()) {
+                    cameraRecordingZip.delete();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to export camera recordings archive", e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the camera recordings archive");
+        }
+    }
+
+    public static void onExportAllRecordingsRequest(Context ctx) {
+        logger.info("Exporting all recordings to a ZIP file");
+
+        try {
+            File allRecordingsZip = FrameRecorder.exportAll();
+
+            try (FileInputStream stream = new FileInputStream(allRecordingsZip)) {
+                logger.info("Uploading all recordings with size " + stream.available());
+
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + "photonvision-recordings-export.zip\"");
+
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (allRecordingsZip.exists()) {
+                    allRecordingsZip.delete();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to export archive of all recordings", e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the archive of all recordings");
+        }
+    }
+
+    private record DeleteRecordingRequest(String[] recordings, String cameraUniqueName) {}
+
+    public static void onDeleteRecordingRequest(Context ctx) {
+        try {
+            DeleteRecordingRequest request =
+                    kObjectMapper.readValue(ctx.body(), DeleteRecordingRequest.class);
+
+            for (String recording : request.recordings) {
+                File rec =
+                        ConfigManager.getInstance()
+                                .getRecordingsDirectory()
+                                .toPath()
+                                .resolve(request.cameraUniqueName)
+                                .resolve(recording)
+                                .toFile();
+
+                FileUtils.deleteDirectory(rec);
+            }
+
+            ctx.status(200);
+            ctx.result("Successfully deleted recording(s): " + request.recordings.toString());
+            logger.info("Successfully deleted recording(s): " + request.recordings.toString());
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+            logger.error("Failed to delete recording(s)", e);
+        } catch (Exception e) {
+            ctx.status(500).result("Failed to delete recording(s)");
+            logger.error("Unexpected error while attempting to delete recording(s)", e);
+        }
+    }
+
+    public static void onNukeRecordingsRequest(Context ctx) {
+        try {
+            FileUtils.deleteDirectory(ConfigManager.getInstance().getRecordingsDirectory());
+
+            ctx.status(200);
+            ctx.result("Successfully deleted all recordings");
+            logger.info("Successfully deleted all recordings");
+        } catch (Exception e) {
+            ctx.status(500).result("Failed to delete all recordings");
+            logger.error("Unexpected error while attempting to delete all recordings", e);
         }
     }
 }

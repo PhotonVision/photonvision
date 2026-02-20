@@ -54,6 +54,9 @@ public class NTTopicSet {
     public BooleanPublisher driverModePublisher;
     public BooleanSubscriber driverModeSubscriber;
 
+    public BooleanTopic recordingEntry;
+    public BooleanPublisher recordingPublisher;
+    public BooleanSubscriber recordingSubscriber;
     public IntegerPublisher fpsLimitPublisher;
     public IntegerSubscriber fpsLimitSubscriber;
 
@@ -104,6 +107,10 @@ public class NTTopicSet {
         // Fun little hack to make the request show up
         driverModeSubscriber.getTopic().publish().setDefault(false);
 
+        recordingPublisher = subTable.getBooleanTopic("recording").publish();
+        recordingSubscriber = subTable.getBooleanTopic("recordingRequest").subscribe(false);
+
+        recordingSubscriber.getTopic().publish().setDefault(false);
         fpsLimitPublisher = subTable.getIntegerTopic("fpsLimit").publish();
         fpsLimitSubscriber = subTable.getIntegerTopic("fpsLimitRequest").subscribe(-1);
 
@@ -138,6 +145,8 @@ public class NTTopicSet {
         if (driverModePublisher != null) driverModePublisher.close();
         if (driverModeSubscriber != null) driverModeSubscriber.close();
 
+        if (recordingPublisher != null) recordingPublisher.close();
+        if (recordingSubscriber != null) recordingSubscriber.close();
         if (fpsLimitPublisher != null) fpsLimitPublisher.close();
         if (fpsLimitSubscriber != null) fpsLimitSubscriber.close();
 

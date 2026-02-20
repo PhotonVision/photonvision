@@ -153,6 +153,10 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
+      recordingSubscriber(
+          rootTable->GetBooleanTopic("recording").Subscribe(false)),
+      recordingPublisher(
+          rootTable->GetBooleanTopic("recordingRequest").Publish()),
       fpsLimitSubscriber(rootTable->GetIntegerTopic("fpsLimit").Subscribe(-1)),
       fpsLimitPublisher(
           rootTable->GetIntegerTopic("fpsLimitRequest").Publish()),
@@ -283,6 +287,12 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
 }
 
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
+
+void PhotonCamera::SetRecording(bool recording) {
+  recordingPublisher.Set(recording);
+}
+
+bool PhotonCamera::GetRecording() const { return recordingSubscriber.Get(); }
 
 int PhotonCamera::GetFPSLimit() const { return fpsLimitSubscriber.Get(); }
 
