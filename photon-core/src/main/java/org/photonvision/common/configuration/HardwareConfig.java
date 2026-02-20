@@ -19,6 +19,7 @@ package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
+import org.photonvision.common.hardware.gpio.PinIdentifier;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HardwareConfig {
@@ -27,11 +28,11 @@ public class HardwareConfig {
     public final String supportURL;
 
     // LED control
-    public final ArrayList<Integer> ledPins;
+    public final ArrayList<PinIdentifier> ledPins;
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledBrightnessRange;
     public final int ledPWMFrequency;
-    public final ArrayList<Integer> statusRGBPins;
+    public final ArrayList<PinIdentifier> statusRGBPins;
     public final boolean statusRGBActiveHigh;
 
     // Custom GPIO
@@ -49,11 +50,11 @@ public class HardwareConfig {
             String deviceName,
             String deviceLogoPath,
             String supportURL,
-            ArrayList<Integer> ledPins,
+            ArrayList<PinIdentifier> ledPins,
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
             int ledPwmFrequency,
-            ArrayList<Integer> statusRGBPins,
+            ArrayList<PinIdentifier> statusRGBPins,
             boolean statusRGBActiveHigh,
             String getGPIOCommand,
             String setGPIOCommand,

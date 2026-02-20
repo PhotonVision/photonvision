@@ -17,16 +17,18 @@
 
 package org.photonvision.common.hardware;
 
+import com.diozero.api.NoSuchDeviceException;
+import com.diozero.api.PinInfo;
 import com.diozero.devices.LED;
 import com.diozero.devices.PwmLed;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
-import com.diozero.sbc.BoardPinInfo;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import org.photonvision.common.hardware.gpio.PinIdentifier;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
@@ -51,7 +53,7 @@ public class VisionLED implements AutoCloseable {
 
     public VisionLED(
             NativeDeviceFactoryInterface deviceFactory,
-            List<Integer> ledPins,
+            List<PinIdentifier> ledPins,
             boolean ledsCanDim,
             int brightnessMin,
             int brightnessMax,
@@ -63,17 +65,23 @@ public class VisionLED implements AutoCloseable {
         if (pwmFrequency > 0) {
             deviceFactory.setBoardPwmFrequency(pwmFrequency);
         }
-        BoardPinInfo boardPinInfo = deviceFactory.getBoardPinInfo();
         ledPins.forEach(
                 pin -> {
-                    if (ledsCanDim && boardPinInfo.getByPwmOrGpioNumberOrThrow(pin).isPwmOutputSupported()) {
-                        PwmLed led = new PwmLed(deviceFactory, pin);
-                        if (pwmFrequency > 0) {
-                            led.setPwmFrequency(pwmFrequency);
+                    PinInfo pinInfo = pin.info(deviceFactory);
+                    if (ledsCanDim && pinInfo.isPwmOutputSupported()) {
+                        try {
+                            PwmLed led = new PwmLed(deviceFactory, pinInfo.getPwmNum());
+                            if (pwmFrequency > 0) {
+                                led.setPwmFrequency(pwmFrequency);
+                            }
+                            dimmableVisionLEDs.add(led);
+                        } catch (NoSuchDeviceException e) {
                         }
-                        dimmableVisionLEDs.add(led);
                     } else {
-                        visionLEDs.add(new LED(deviceFactory, pin));
+                        try {
+                            visionLEDs.add(new LED(deviceFactory, pinInfo.getDeviceNumber(), true, false));
+                        } catch (NoSuchDeviceException e) {
+                        }
                     }
                 });
         pipelineModeSupplier = () -> false;
