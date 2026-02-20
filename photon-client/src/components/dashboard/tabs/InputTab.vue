@@ -171,7 +171,7 @@ const interactiveCols = computed(() =>
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.inputImageRotationMode"
       label="Orientation"
-      tooltip="Rotates the camera stream. Rotation not available when camera has been calibrated."
+      tooltip="Rotates the camera stream"
       :items="cameraRotations"
       :select-cols="interactiveCols"
       @update:modelValue="
