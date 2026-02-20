@@ -3,6 +3,7 @@ apply plugin: 'org.photonvision.tools.WpilibTools'
 import java.nio.file.Path
 
 ext.licenseFile = file("$rootDir/LICENSE")
+ext.externalLicensesFolder = file("$rootDir/ExternalLicenses")
 apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
