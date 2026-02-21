@@ -166,15 +166,15 @@ const selectedModel = computed({
           "
         />
         <pv-slider
-          v-model="currentPipelineSettings.mlRoiExpansionFactor"
+          v-model="currentPipelineSettings.mlRoiPaddingPixels"
           :slider-cols="interactiveCols"
-          label="ROI Expansion"
-          tooltip="Factor to expand detected regions for traditional decoding (1.0-2.0). Larger values help with edge cases"
-          :min="1.0"
-          :max="2.0"
-          :step="0.1"
+          label="ROI Padding (px)"
+          tooltip="Pixels of padding added around each detected region. Naturally adapts: small/far tags get more relative expansion, large/close tags get less"
+          :min="10"
+          :max="150"
+          :step="5"
           @update:modelValue="
-            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlRoiExpansionFactor: value }, false)
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlRoiPaddingPixels: value }, false)
           "
         />
         <pv-switch
