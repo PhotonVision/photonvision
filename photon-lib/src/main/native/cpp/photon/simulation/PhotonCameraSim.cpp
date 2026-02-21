@@ -220,6 +220,17 @@ PhotonPipelineResult PhotonCameraSim::Process(
           tgt.GetModel().GetVertices(), noisyTargetCorners);
     }
 
+    // Compute object detection confidence if this is an obj det target
+    int classId = tgt.objDetClassId;
+    float conf = tgt.objDetConf;
+    if (classId >= 0 && conf < 0) {
+      // Simulate confidence using sqrt-scaled area for a more realistic
+      // curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
+      // gives reasonable values even for small-but-visible objects.
+      conf = static_cast<float>(
+          std::clamp(std::sqrt(areaPercent / 100.0) * 2.0, 0.0, 1.0));
+    }
+
     std::vector<std::pair<float, float>> tempCorners =
         OpenCVHelp::PointsToCorners(minAreaRectPts);
     std::vector<TargetCorner> smallVec;
@@ -237,7 +248,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
         centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-        tgt.objDetClassId, tgt.objDetConf,
+        classId, conf,
         pnpSim ? pnpSim->best : frc::Transform3d{},
         pnpSim ? pnpSim->alt : frc::Transform3d{},
         pnpSim ? pnpSim->ambiguity : -1, smallVec, cornersDouble);

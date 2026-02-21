@@ -36,6 +36,12 @@ public class VisionTargetSim {
 
     public final int fiducialID;
 
+    /** The object detection class ID, or -1 if not applicable. */
+    public int objDetClassId = -1;
+
+    /** The object detection confidence, or -1 if not applicable. */
+    public float objDetConf = -1;
+
     /**
      * Describes a vision target located somewhere on the field that your vision system can detect.
      *
