@@ -372,7 +372,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         for (Rect2d roi : rawRois) {
             expandedRois.add(
                     AprilTagROIDecodePipe.expandBbox(
-                            roi, settings.mlRoiExpansionFactor, frameWidth, frameHeight));
+                            roi, settings.mlRoiPaddingPixels, frameWidth, frameHeight));
         }
 
         // Stage 2: Decode tags within expanded ROIs using traditional detector
