@@ -248,8 +248,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
         centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-        classId, conf,
-        pnpSim ? pnpSim->best : frc::Transform3d{},
+        classId, conf, pnpSim ? pnpSim->best : frc::Transform3d{},
         pnpSim ? pnpSim->alt : frc::Transform3d{},
         pnpSim ? pnpSim->ambiguity : -1, smallVec, cornersDouble);
   }
