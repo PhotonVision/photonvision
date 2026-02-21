@@ -39,7 +39,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean useMLDetection = false;
     public double mlConfidenceThreshold = 0.5;
     public double mlNmsThreshold = 0.45;
-    public double mlRoiExpansionFactor = 1.2;
+    public int mlRoiPaddingPixels = 40;
     public boolean mlFallbackToTraditional = true;
     public String mlModelName = null;
     public boolean showDetectionBoxes = true;
@@ -86,8 +86,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(mlNmsThreshold);
         result = prime * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(mlRoiExpansionFactor);
-        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + mlRoiPaddingPixels;
         result = prime * result + (mlFallbackToTraditional ? 1231 : 1237);
         result = prime * result + ((mlModelName == null) ? 0 : mlModelName.hashCode());
         result = prime * result + (showDetectionBoxes ? 1231 : 1237);
@@ -122,8 +121,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
                 != Double.doubleToLongBits(other.mlConfidenceThreshold)) return false;
         if (Double.doubleToLongBits(mlNmsThreshold) != Double.doubleToLongBits(other.mlNmsThreshold))
             return false;
-        if (Double.doubleToLongBits(mlRoiExpansionFactor)
-                != Double.doubleToLongBits(other.mlRoiExpansionFactor)) return false;
+        if (mlRoiPaddingPixels != other.mlRoiPaddingPixels) return false;
         if (mlFallbackToTraditional != other.mlFallbackToTraditional) return false;
         if (mlModelName == null) {
             if (other.mlModelName != null) return false;

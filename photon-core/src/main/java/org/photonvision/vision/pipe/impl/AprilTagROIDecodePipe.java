@@ -424,19 +424,21 @@ public class AprilTagROIDecodePipe
     }
 
     /**
-     * Expands a bounding box by a scale factor while clamping to image bounds.
+     * Expands a bounding box by adding fixed pixel padding on each side, then clamping to image
+     * bounds. Additive padding naturally provides more relative expansion for small/far tags and
+     * less for large/close tags.
      *
      * @param bbox Original bounding box
-     * @param scale Expansion scale factor (1.0 = no change, 1.2 = 20% larger)
+     * @param paddingPixels Number of pixels to add on each side of the bounding box
      * @param imageWidth Image width for clamping
      * @param imageHeight Image height for clamping
      * @return Expanded and clamped bounding box
      */
-    public static Rect2d expandBbox(Rect2d bbox, double scale, int imageWidth, int imageHeight) {
-        double newWidth = bbox.width * scale;
-        double newHeight = bbox.height * scale;
-        double newX = bbox.x - (newWidth - bbox.width) / 2.0;
-        double newY = bbox.y - (newHeight - bbox.height) / 2.0;
+    public static Rect2d expandBbox(Rect2d bbox, int paddingPixels, int imageWidth, int imageHeight) {
+        double newWidth = bbox.width + 2.0 * paddingPixels;
+        double newHeight = bbox.height + 2.0 * paddingPixels;
+        double newX = bbox.x - paddingPixels;
+        double newY = bbox.y - paddingPixels;
 
         // Clamp to image bounds
         newX = Math.max(0, newX);

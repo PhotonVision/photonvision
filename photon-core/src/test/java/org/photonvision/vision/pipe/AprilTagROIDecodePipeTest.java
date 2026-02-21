@@ -111,7 +111,6 @@ public class AprilTagROIDecodePipeTest {
 
         ROIDecodeParams params = new ROIDecodeParams();
         params.tagFamily = AprilTagFamily.kTag36h11;
-        params.roiExpansionFactor = 1.2;
         params.maxHammingDistance = 0;
         params.minDecisionMargin = 35;
         decodePipe.setParams(params);
@@ -162,7 +161,6 @@ public class AprilTagROIDecodePipeTest {
 
         ROIDecodeParams params = new ROIDecodeParams();
         params.tagFamily = AprilTagFamily.kTag36h11;
-        params.roiExpansionFactor = 1.5; // 50% expansion
         decodePipe.setParams(params);
 
         // Create a test image
@@ -204,7 +202,6 @@ public class AprilTagROIDecodePipeTest {
 
         ROIDecodeParams params = new ROIDecodeParams();
         params.tagFamily = AprilTagFamily.kTag36h11;
-        params.roiExpansionFactor = 1.2;
         params.maxHammingDistance = 0;
         params.minDecisionMargin = 0; // Accept all
         decodePipe.setParams(params);
@@ -635,7 +632,6 @@ public class AprilTagROIDecodePipeTest {
 
         ROIDecodeParams params = new ROIDecodeParams();
         params.tagFamily = AprilTagFamily.kTag36h11;
-        params.roiExpansionFactor = 1.2;
         params.maxHammingDistance = 0;
         params.minDecisionMargin = 35;
         decodePipe.setParams(params);
@@ -911,7 +907,6 @@ public class AprilTagROIDecodePipeTest {
         AprilTagROIDecodePipe pipeWithATR = new AprilTagROIDecodePipe();
         ROIDecodeParams paramsWithATR = new ROIDecodeParams();
         paramsWithATR.tagFamily = AprilTagFamily.kTag36h11;
-        paramsWithATR.roiExpansionFactor = 1.2;
         paramsWithATR.atrEnabled = true;
         paramsWithATR.atrTargetDimension = 160; // Tag in test image is ~100px, so no scaling
         pipeWithATR.setParams(paramsWithATR);
@@ -920,7 +915,6 @@ public class AprilTagROIDecodePipeTest {
         AprilTagROIDecodePipe pipeWithoutATR = new AprilTagROIDecodePipe();
         ROIDecodeParams paramsWithoutATR = new ROIDecodeParams();
         paramsWithoutATR.tagFamily = AprilTagFamily.kTag36h11;
-        paramsWithoutATR.roiExpansionFactor = 1.2;
         paramsWithoutATR.atrEnabled = false;
         pipeWithoutATR.setParams(paramsWithoutATR);
 
