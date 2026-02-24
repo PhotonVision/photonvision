@@ -203,7 +203,7 @@ The program will wait for the VSCode debugger to attach before proceeding.
 
 ### Running Headless Tests
 
-PhotonVision unit tests are mostly ran "headless" (i.e have no UI component during the test).
+Most unit tests [run as "headless" tests](https://docs.gradle.org/current/userguide/java_testing.html#test_filtering) (i.e have no UI component during the test).
 To run a headless test, pass the test name(s):
 
 ```{eval-rst}
