@@ -153,7 +153,7 @@ class SimCameraProperties:
         :param newAvgLatency: The average latency (from image capture to data published) in milliseconds
                              a frame should have
         """
-        self.vgLatency = newAvgLatency
+        self.avgLatency = newAvgLatency
 
     def setLatencyStdDev(self, newLatencyStdDev: milliseconds):
         """
