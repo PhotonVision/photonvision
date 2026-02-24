@@ -6,7 +6,7 @@ import cv2 as cv
 import numpy as np
 import numpy.typing as npt
 from wpimath.geometry import Rotation2d, Rotation3d, Translation3d
-from wpimath.units import hertz, seconds
+from wpimath.units import hertz, seconds, milliseconds
 
 from ..estimation import RotTrlTransform3d
 
@@ -36,10 +36,10 @@ class SimCameraProperties:
         self.distCoeffs: npt.NDArray[np.floating] = np.zeros((8, 1))  # [8,1]
         self.avgErrorPx: float = 0.0
         self.errorStdDevPx: float = 0.0
-        self.frameSpeed: seconds = 0.0
-        self.exposureTime: seconds = 0.0
-        self.avgLatency: seconds = 0.0
-        self.latencyStdDev: seconds = 0.0
+        self.frameSpeed: milliseconds = 0.0
+        self.exposureTime: milliseconds = 0.0
+        self.avgLatency: milliseconds = 0.0
+        self.latencyStdDev: milliseconds = 0.0
         self.viewplanes: list[np.ndarray] = []  # [3,1]
 
         self.setCalibrationFromFOV(960, 720, fovDiag=Rotation2d(math.radians(90.0)))
@@ -139,7 +139,7 @@ class SimCameraProperties:
 
         self.frameSpeed = max(1.0 / fps, self.exposureTime)
 
-    def setExposureTime(self, newExposureTime: seconds):
+    def setExposureTime(self, newExposureTime: milliseconds):
         """
         :param newExposureTime: The amount of time the "shutter" is open for one frame. Affects motion
                                blur. **Frame speed(from FPS) is limited to this!**
@@ -148,14 +148,14 @@ class SimCameraProperties:
         self.exposureTime = newExposureTime
         self.frameSpeed = max(self.frameSpeed, self.exposureTime)
 
-    def setAvgLatency(self, newAvgLatency: seconds):
+    def setAvgLatency(self, newAvgLatency: milliseconds):
         """
         :param newAvgLatency: The average latency (from image capture to data published) in milliseconds
                              a frame should have
         """
         self.vgLatency = newAvgLatency
 
-    def setLatencyStdDev(self, newLatencyStdDev: seconds):
+    def setLatencyStdDev(self, newLatencyStdDev: milliseconds):
         """
         :param latencyStdDevMs: The standard deviation in milliseconds of the latency
         """
@@ -182,16 +182,16 @@ class SimCameraProperties:
     def getFPS(self) -> hertz:
         return 1.0 / self.frameSpeed
 
-    def getFrameSpeed(self) -> seconds:
+    def getFrameSpeed(self) -> milliseconds:
         return self.frameSpeed
 
-    def getExposureTime(self) -> seconds:
+    def getExposureTime(self) -> milliseconds:
         return self.exposureTime
 
-    def getAverageLatency(self) -> seconds:
+    def getAverageLatency(self) -> milliseconds:
         return self.avgLatency
 
-    def getLatencyStdDev(self) -> seconds:
+    def getLatencyStdDev(self) -> milliseconds:
         return self.latencyStdDev
 
     def getContourAreaPercent(self, points: np.ndarray) -> float:
@@ -454,7 +454,7 @@ class SimCameraProperties:
         assert points.shape == retval.shape, retval
         return retval
 
-    def estLatency(self) -> seconds:
+    def estLatency(self) -> milliseconds:
         """
         :returns: Noisy estimation of a frame's processing latency
         """
