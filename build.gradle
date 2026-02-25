@@ -38,10 +38,10 @@ ext {
     openCVversion = "4.10.0-3"
     javalinVersion = "6.7.0"
     libcameraDriverVersion = "v2026.0.0"
-    rknnVersion = "v2026.0.1"
-    rubikVersion = "dev-v2026.0.1-3-g977bb2e"
+    rknnVersion = "dev-v2026.0.1-1-g89b2888"
+    rubikVersion = "dev-v2026.0.1-4-g13d6279"
     frcYear = "2026"
-    mrcalVersion = "v2026.0.0";
+    mrcalVersion = "dev-v2026.0.0-1-g239d80e";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
