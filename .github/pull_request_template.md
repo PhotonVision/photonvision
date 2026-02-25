@@ -16,3 +16,4 @@ Merge checklist:
 - [ ] If this PR touches configuration, this is backwards compatible with all settings going back to the previous seasons's last release (seasons end after champs ends)
 - [ ] If this PR touches pipeline settings or anything related to data exchange, the frontend typing is updated
 - [ ] If this PR addresses a bug, a regression test for it is added
+- [ ] If this PR adds a dependency, the license has been checked for compatibility and steps taken to follow it
