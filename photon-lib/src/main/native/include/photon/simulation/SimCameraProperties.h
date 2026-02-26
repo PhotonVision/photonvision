@@ -107,7 +107,7 @@ class SimCameraProperties {
    * Sets the simulated latency for this camera.
    *
    * @param avgLatency The average latency (from image capture to data
-   * published) in milliseconds a frame should have
+   * published) a frame should have
    */
   void SetAvgLatency(units::second_t avgLatency) {
     this->avgLatency = avgLatency;
