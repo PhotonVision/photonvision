@@ -132,3 +132,7 @@ journalctl --output cat -u photonvision -f
 ```
 
 `--output cat` is used to prevent journalctl from printing its own timestamps, because we log our own timestamps.
+
+### usbtop
+
+[usbtop](https://github.com/aguinet/usbtop) is a program that can be used to monitor traffic on your device's USB buses. To use it, run `sudo modprobe usbmon` then `sudo usbtop`.
