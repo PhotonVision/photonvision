@@ -291,7 +291,7 @@ public class Packet {
      * @return A decoded byte from the packet.
      */
     public byte decodeByte() {
-        if ( readPos >= packetData.length) {
+        if (readPos >= packetData.length) {
             return '\0';
         }
         return packetData[readPos++];
