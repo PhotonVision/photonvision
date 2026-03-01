@@ -49,9 +49,7 @@ public class VisionTargetSim {
      * @param model TargetModel which describes the geometry of the target
      */
     public VisionTargetSim(Pose3d pose, TargetModel model) {
-        this.pose = pose;
-        this.model = model;
-        this.fiducialID = -1;
+        this(pose, model, -1, -1, -1);
     }
 
     /**
@@ -62,9 +60,27 @@ public class VisionTargetSim {
      * @param id The ID of this fiducial tag
      */
     public VisionTargetSim(Pose3d pose, TargetModel model, int id) {
+        this(pose, model, id, -1, -1);
+    }
+
+    /**
+     * Describes a vision target located somewhere on the field that your vision system can detect.
+     *
+     * @param pose Pose3d of the target in field-relative coordinates
+     * @param model TargetModel which describes the geometry of the target
+     * @param id The ID of this fiducial tag, or -1 if not applicable
+     * @param objDetClassId The object detection class ID, if -1 it will not be detected by object
+     *     detection
+     * @param objDetConf The object detection confidence, or -1 in which case the simulation will
+     *     compute a confidence based on the area of the target in the camera's field of view
+     */
+    public VisionTargetSim(
+            Pose3d pose, TargetModel model, int id, int objDetClassId, float objDetConf) {
         this.pose = pose;
         this.model = model;
         this.fiducialID = id;
+        this.objDetClassId = objDetClassId;
+        this.objDetConf = objDetConf;
     }
 
     /**

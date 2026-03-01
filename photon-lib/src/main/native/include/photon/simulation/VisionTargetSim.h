@@ -34,9 +34,26 @@ namespace photon {
 class VisionTargetSim {
  public:
   VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model)
-      : fiducialId(-1), pose(pose), model(model) {}
+      : fiducialId(-1),
+        objDetClassId(-1),
+        objDetConf(-1),
+        pose(pose),
+        model(model) {}
   VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id)
-      : fiducialId(id), pose(pose), model(model) {}
+      : fiducialId(id),
+        objDetClassId(-1),
+        objDetConf(-1),
+        pose(pose),
+        model(model) {}
+
+  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id,
+                  int objDetClassId, float objDetConf)
+      : fiducialId(id),
+        objDetClassId(objDetClassId),
+        objDetConf(objDetConf),
+        pose(pose),
+        model(model) {}
+
   void SetPose(const frc::Pose3d& newPose) { pose = newPose; }
   void SetModel(const TargetModel& newModel) { model = newModel; }
   frc::Pose3d GetPose() const { return pose; }
@@ -45,9 +62,8 @@ class VisionTargetSim {
     return model.GetFieldVertices(pose);
   }
   int fiducialId;
-
-  int objDetClassId = -1;
-  float objDetConf = -1;
+  int objDetClassId;
+  float objDetConf;
 
   bool operator<(const VisionTargetSim& right) const {
     return pose.Translation().Norm() < right.pose.Translation().Norm();
