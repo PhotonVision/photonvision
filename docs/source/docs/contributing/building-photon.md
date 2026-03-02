@@ -201,7 +201,7 @@ The program will wait for the VSCode debugger to attach before proceeding.
 
 ## Running Tests
 
-### Running Tests
+### Running Default Tests
 
 Most unit tests [run as "headless" tests](https://docs.gradle.org/current/userguide/java_testing.html#test_filtering) (i.e have no UI component during the test) by default.
 To run a test, pass the test name(s):
