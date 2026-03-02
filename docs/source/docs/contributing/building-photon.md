@@ -190,7 +190,7 @@ Set up a VSCode configuration in {code}`launch.json`
 }
 ```
 
-Stop any existing instance of PhotonVision.
+Stop any existing instance of PhotonVision by running {code}`systemctl stop photonvision`.
 
 Launch the program with the following additional argument to the JVM: {code}`java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5801 photonvision.jar`
 
@@ -201,10 +201,10 @@ The program will wait for the VSCode debugger to attach before proceeding.
 
 ## Running Tests
 
-### Running Headless Tests
+### Running Tests
 
-Most unit tests [run as "headless" tests](https://docs.gradle.org/current/userguide/java_testing.html#test_filtering) (i.e have no UI component during the test).
-To run a headless test, pass the test name(s):
+Most unit tests [run as "headless" tests](https://docs.gradle.org/current/userguide/java_testing.html#test_filtering) (i.e have no UI component during the test) by default.
+To run a test, pass the test name(s):
 
 ```{eval-rst}
 .. tab-set::
