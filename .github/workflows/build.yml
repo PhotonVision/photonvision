@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.1.2
+  IMAGE_VERSION: v2026.1.3
 
 jobs:
 
