@@ -151,10 +151,7 @@ public class Main {
             camConf2026 =
                     new CameraConfiguration(
                             PVCameraInfo.fromFileInfo(
-                                    TestUtils.getResourcesFolderPath(true)
-                                            .resolve("testimages")
-                                            .resolve(TestUtils.WPI2026Images.kBlueOutpostFuelSpread.path)
-                                            .toString(),
+                                    "/home/matt/Downloads/left-cam_input_2025-07-02T065100975_None-0-.jpg",
                                     "WPI2026"));
 
             camConf2026.FOV = TestUtils.WPI2026Images.FOV.getDegrees();
@@ -174,12 +171,16 @@ public class Main {
             double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
 
             JsonMatOfDouble testCameraMatrix =
-                    new JsonMatOfDouble(3, 3, new double[] {fx, 0, cx, 0, fy, cy, 0, 0, 1});
-            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {0, 0, 0, 0, 0});
+                    new JsonMatOfDouble(3, 3, new double[] {
+                        688.234790138785,0.0,395.1728260784305,0.0,686.4605570601299,297.7361999415826,0.0,0.0,1.0
+                    });
+            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {
+                0.04023968310726899,-0.05030754420510333,8.854257800009915E-4,-0.001444393564939454,-0.009338390056925919,-0.0015440280073886197,0.0020340236612642077,3.7384608974673787E-4
+            });
 
             camConf2026.calibrations.add(
                     new CameraCalibrationCoefficients(
-                            new Size(4000, 1868),
+                            new Size(800, 600),
                             testCameraMatrix,
                             testDistortion,
                             new double[0],
@@ -281,6 +282,8 @@ public class Main {
             logger.error("Failed to initialize the HAL! Giving up :(");
             System.exit(1);
         }
+
+        tryLoadJNI(JNITypes.FFMPEG);
 
         if (Platform.isRaspberryPi()) {
             tryLoadJNI(JNITypes.LIBCAMERA);

@@ -77,4 +77,16 @@ public class LibraryLoader {
         }
         return hasTargetingLoaded;
     }
+
+    public static boolean loadFfmpeg() {
+        if (hasTargetingLoaded) return true;
+        try {
+            CombinedRuntimeLoader.loadLibraries(LibraryLoader.class, "photontargetingJNI");
+            hasTargetingLoaded = true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            hasTargetingLoaded = false;
+        }
+        return hasTargetingLoaded;
+    }
 }

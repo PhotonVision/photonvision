@@ -47,6 +47,15 @@ dependencies {
         }
     }
 
+    if (jniPlatform == "linuxarm64" || jniPlatform == "linuxx86-64") {
+        wpilibNatives("org.photonvision:RtspServerJni-jni:$ffmpegJniVersion:$jniPlatform") {
+            transitive = false
+        }
+    }
+    implementation("org.photonvision:RtspServerJni-java:$ffmpegJniVersion") {
+        transitive = false
+    }
+
     implementation("org.photonvision:rknn_jni-java:$rknnVersion") {
         transitive = false
     }
