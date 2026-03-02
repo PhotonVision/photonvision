@@ -42,6 +42,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.ffmpeg.FfmpegRtspHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
@@ -214,19 +215,18 @@ public class VisionModule {
     private void recreateStreamResultConsumers() {
         streamResultConsumers.add(
                 (frame, tgts) -> {
-                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
-                });
-        streamResultConsumers.add(
-                (frame, tgts) -> {
-                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
-                });
-        streamResultConsumers.add(
-                (frame, tgts) -> {
-                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
-                });
-        streamResultConsumers.add(
-                (frame, tgts) -> {
-                    if (frame != null) outputVideoStreamer.accept(frame.processedImage);
+                    if (frame != null) {
+                        inputFrameSaver.accept(frame.colorImage);
+                        outputFrameSaver.accept(frame.processedImage);
+                        inputVideoStreamer.accept(frame.colorImage);
+                        outputVideoStreamer.accept(frame.processedImage);
+
+                        var inputName = visionSource.getSettables().getConfiguration().nickname + "-input";
+                        var outputName = visionSource.getSettables().getConfiguration().nickname + "-input";
+                        FfmpegRtspHandler.putFrame(inputName, frame.colorImage.getMat().getNativeObjAddr());
+                        FfmpegRtspHandler.putFrame(
+                                outputName, frame.processedImage.getMat().getNativeObjAddr());
+                    }
                 });
     }
 

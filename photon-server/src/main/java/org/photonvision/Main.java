@@ -43,6 +43,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.ffmpeg.FfmpegRtspHandler;
 import org.photonvision.server.Server;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -171,12 +172,34 @@ public class Main {
             double fy = cy / Math.tan(fovHeight.getRadians() / 2.0);
 
             JsonMatOfDouble testCameraMatrix =
-                    new JsonMatOfDouble(3, 3, new double[] {
-                        688.234790138785,0.0,395.1728260784305,0.0,686.4605570601299,297.7361999415826,0.0,0.0,1.0
-                    });
-            JsonMatOfDouble testDistortion = new JsonMatOfDouble(1, 5, new double[] {
-                0.04023968310726899,-0.05030754420510333,8.854257800009915E-4,-0.001444393564939454,-0.009338390056925919,-0.0015440280073886197,0.0020340236612642077,3.7384608974673787E-4
-            });
+                    new JsonMatOfDouble(
+                            3,
+                            3,
+                            new double[] {
+                                688.234790138785,
+                                0.0,
+                                395.1728260784305,
+                                0.0,
+                                686.4605570601299,
+                                297.7361999415826,
+                                0.0,
+                                0.0,
+                                1.0
+                            });
+            JsonMatOfDouble testDistortion =
+                    new JsonMatOfDouble(
+                            1,
+                            5,
+                            new double[] {
+                                0.04023968310726899,
+                                -0.05030754420510333,
+                                8.854257800009915E-4,
+                                -0.001444393564939454,
+                                -0.009338390056925919,
+                                -0.0015440280073886197,
+                                0.0020340236612642077,
+                                3.7384608974673787E-4
+                            });
 
             camConf2026.calibrations.add(
                     new CameraCalibrationCoefficients(
@@ -284,6 +307,7 @@ public class Main {
         }
 
         tryLoadJNI(JNITypes.FFMPEG);
+        FfmpegRtspHandler.initialize();
 
         if (Platform.isRaspberryPi()) {
             tryLoadJNI(JNITypes.LIBCAMERA);
