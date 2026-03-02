@@ -169,7 +169,7 @@ repositories {
 
 ### Debugging PhotonVision Running on a CoProcessor
 
-Set up a VSCode configuration in {code}`launch.json`
+We can use Java's remote debug capabilities to run the PhotonVision JAR file on a Coprocessor, and attach a debugger running on a desktop/laptop to the process remotely. Set up a VSCode configuration in {code}`launch.json`
 
 ```json
 {
@@ -192,7 +192,7 @@ Set up a VSCode configuration in {code}`launch.json`
 
 Stop any existing instance of PhotonVision by running {code}`systemctl stop photonvision`.
 
-Launch the program with the following additional argument to the JVM: {code}`java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5801 photonvision.jar`
+Launch the program with the following additional argument to the JVM: {code}`java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5801 photonvision.jar` -- the JVM will wait for a debugger to connect before running `main`.
 
 Once the program says it is listening on port 5801, launch the debug configuration in VSCode.
 
