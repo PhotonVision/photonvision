@@ -552,6 +552,12 @@ jobs:
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
             artifact-name: LinuxArm64
+            image_suffix: orangepi6plus
+            plat_override: LINUX_AARCH64
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi6plus.img.xz
+            minimum_free_mb: 1024
+          - os: ubuntu-24.04-arm
+            artifact-name: LinuxArm64
             image_suffix: rubikpi3
             plat_override: LINUX_QCS6490
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
