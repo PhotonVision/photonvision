@@ -167,15 +167,79 @@ repositories {
 }
 ```
 
-### VSCode Test Runner Extension
+### Debugging PhotonVision Running on a CoProcessor
 
-With the VSCode [Extension Pack for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack), you can get the Test Runner for Java and Gradle for Java extensions. This lets you easily run specific tests through the IDE:
+We can use Java's remote debug capabilities to run the PhotonVision JAR file on a Coprocessor, and attach a debugger running on a desktop/laptop to the process remotely. Set up a VSCode configuration in {code}`launch.json`
 
-```{image} assets/vscode-runner-tests.png
-:alt: An image showing how unit tests can be ran in VSCode through the Test Runner for Java extension.
+```json
+{
+   // Use IntelliSense to learn about possible attributes.
+   // Hover to view descriptions of existing attributes.
+   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+   "version": "0.2.0",
+   "configurations": [
+     {
+         "type": "java",
+         "name": "Attach to CoProcessor",
+         "request": "attach",
+         "hostName": "photonvision.local",
+         "port": "5801",
+         "projectName": "photon-core"
+     },
+   ]
+}
 ```
 
-To correctly run PhotonVision tests this way, you must [delegate the tests to Gradle](https://code.visualstudio.com/docs/java/java-build#_delegate-tests-to-gradle). Debugging tests like this will [**not** currently](https://github.com/microsoft/build-server-for-gradle/issues/119) collect outputs.
+Stop any existing instance of PhotonVision by running {code}`systemctl stop photonvision`.
+
+Launch the program with the following additional argument to the JVM: {code}`java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5801 photonvision.jar` -- the JVM will wait for a debugger to connect before running `main`.
+
+Once the program says it is listening on port 5801, launch the debug configuration in VSCode.
+
+The program will wait for the VSCode debugger to attach before proceeding.
+
+
+## Running Tests
+
+### Running Default Tests
+
+Most unit tests [run as "headless" tests](https://docs.gradle.org/current/userguide/java_testing.html#test_filtering) (i.e have no UI component during the test) by default.
+To run a test, pass the test name(s):
+
+```{eval-rst}
+.. tab-set::
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      ``./gradlew test --tests <Test Name>``
+
+   .. tab-item:: macOS
+      :sync: macos
+
+      ``./gradlew test --tests <Test Name>``
+
+   .. tab-item:: Windows (cmd)
+      :sync: windows
+
+      ``gradlew test --tests <Test Name>``
+```
+
+### Debugging PhotonVision Tests Locally
+
+Unit tests can also be debugged through the ``test`` Gradle task for a specific subproject in VSCode, found in the Gradle tab:
+
+```{image} assets/vscode-gradle-tests.png
+:alt: An image showing how unit tests can be debugged in VSCode through the Gradle for Java extension.
+```
+
+However, this will run all tests in a subproject.
+
+Similarly, a local instance of PhotonVision can be debugged in the same way using the Gradle ``run`` task. In both cases, additional arguments can be specified:
+
+```{image} assets/vscode-gradle-args.png
+:alt: An image showing how VSCode gradle tasks can specify additional arguments.
+```
 
 ### Running Tests With UI
 
@@ -200,58 +264,21 @@ By default, tests are run with UI disabled so they are not obtrusive during a bu
       ``gradlew test -PenableTestUi``
 ```
 
-### Debugging PhotonVision Running Locally
+### VSCode Test Runner Extension
 
-Unit tests can instead be debugged through the ``test`` Gradle task for a specific subproject in VSCode, found in the Gradle tab:
+With the VSCode [Extension Pack for Java](https://marketplace.visualstudio.com/items?itemName=vscjava.vscode-java-pack), you can get the Test Runner for Java and Gradle for Java extensions. This lets you easily run specific tests through the IDE:
 
-```{image} assets/vscode-gradle-tests.png
-:alt: An image showing how unit tests can be debugged in VSCode through the Gradle for Java extension.
+```{image} assets/vscode-runner-tests.png
+:alt: An image showing how unit tests can be ran in VSCode through the Test Runner for Java extension.
 ```
 
-However, this will run all tests in a subproject.
+To correctly run PhotonVision tests this way, you must [delegate the tests to Gradle](https://code.visualstudio.com/docs/java/java-build#_delegate-tests-to-gradle). Debugging tests like this will [**not** currently](https://github.com/microsoft/build-server-for-gradle/issues/119) collect outputs.
 
-Similarly, a local instance of PhotonVision can be debugged in the same way using the Gradle ``run`` task. In both cases, additional arguments can be specified:
-
-```{image} assets/vscode-gradle-args.png
-:alt: An image showing how VSCode gradle tasks can specify additional arguments.
-```
-
-### Debugging PhotonVision Running on a CoProcessor
-
-Set up a VSCode configuration in {code}`launch.json`
-
-```json
-{
-   // Use IntelliSense to learn about possible attributes.
-   // Hover to view descriptions of existing attributes.
-   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-   "version": "0.2.0",
-   "configurations": [
-     {
-         "type": "java",
-         "name": "Attach to CoProcessor",
-         "request": "attach",
-         "hostName": "photonvision.local",
-         "port": "5801",
-         "projectName": "photon-core"
-     },
-   ]
-}
-```
-
-Stop any existing instance of PhotonVision.
-
-Launch the program with the following additional argument to the JVM: {code}`java -jar -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5801 photonvision.jar`
-
-Once the program says it is listening on port 5801, launch the debug configuration in VSCode.
-
-The program will wait for the VSCode debugger to attach before proceeding.
-
-### Running examples
+## Running examples
 
 You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the photonlib-*-examples subdirectories for each language.
 
-#### Running C++/Java
+### Running C++/Java
 
 PhotonLib must first be published to your local maven repository. This will also copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though not yet supported.
 
@@ -265,7 +292,7 @@ PhotonLib must first be published to your local maven repository. This will also
 ~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
 
-#### Running Python
+### Running Python
 
 PhotonLibPy must first be built into a wheel.
 
@@ -289,7 +316,7 @@ Then, run the examples:
 > run.bat <example name>
 ```
 
-#### Downloading Pipeline Artifacts
+### Downloading Pipeline Artifacts
 
 Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from pipelines by run ID and name:
 
@@ -297,13 +324,13 @@ Using the [GitHub CLI](https://cli.github.com/), we can download artifacts from 
 ~/photonvision$ gh run download 11759699679 -n jar-Linux
 ```
 
-#### MacOS Builds
+### MacOS Builds
 
 MacOS builds are not published to releases as MacOS is not an officially
 supported platform. However, MacOS builds are still available from the MacOS
 build action, which can be found [here](https://github.com/PhotonVision/photonvision/actions/workflows/build.yml).
 
-#### Forcing Object Detection in the UI
+### Forcing Object Detection in the UI
 
 In order to force the Object Detection interface to be visible, it's necessary to hardcode the platform that `Platform.java` returns. This can be done by changing the function that detects the RK3588S/QCS6490 platform to always return true, and changing the `getCurrentPlatform()` function to always return the RK3588S/QCS6490 architecture.
 Alternatively, it's possible to modify the frontend code by changing all instances of `useSettingsStore().general.supportedBackends.length > 0` to `true`, which will force the card to render.
