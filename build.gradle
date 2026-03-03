@@ -40,7 +40,7 @@ ext {
     libcameraDriverVersion = "v2026.0.0"
     rknnVersion = "v2026.0.1"
     rubikVersion = "dev-v2026.0.1-3-g977bb2e"
-    ffmpegJniVersion = "dev-v2026.0.0-9-g602973b"
+    ffmpegJniVersion = "dev-v2026.0.0-14-gf6541df"
     frcYear = "2026"
     mrcalVersion = "v2026.0.0";
 

@@ -221,11 +221,12 @@ public class VisionModule {
                         inputVideoStreamer.accept(frame.colorImage);
                         outputVideoStreamer.accept(frame.processedImage);
 
-                        var inputName = visionSource.getSettables().getConfiguration().nickname + "-input";
-                        var outputName = visionSource.getSettables().getConfiguration().nickname + "-input";
-                        FfmpegRtspHandler.putFrame(inputName, frame.colorImage.getMat().getNativeObjAddr());
+                        var inputName = visionSource.getSettables().getConfiguration().nickname + "input";
+                        var outputName = visionSource.getSettables().getConfiguration().nickname + "output";
+                        // System.out.println(inputName);
+                        FfmpegRtspHandler.putFrame(inputName.toLowerCase(), frame.colorImage.getMat().getNativeObjAddr());
                         FfmpegRtspHandler.putFrame(
-                                outputName, frame.processedImage.getMat().getNativeObjAddr());
+                                outputName.toLowerCase(), frame.processedImage.getMat().getNativeObjAddr());
                     }
                 });
     }
