@@ -13,10 +13,10 @@ You may see a warning similar to `The authenticity of host 'xxx' can't be establ
 Example:
 
 ```
-ssh pi@hostname
+ssh photon@hostname
 ```
 
-For PhotonVision, the username will be `pi` and the password will be `raspberry`.
+For PhotonVision images, the username will be `photon` and the password will be `vision`.
 
 ### ip
 
