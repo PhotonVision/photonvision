@@ -203,8 +203,7 @@ By default, PhotonCameraSim renders two simulated camera streams using OpenCV:
 - Raw stream - The unprocessed camera view
 - Processed stream - The camera view with vision processing overlays
 
-These streams are nice if you want to actually view the simulated images, but they can be computationally expensive on low-power laptops like Chromebooks, causing lag and reduced simulation performance.
-
+These streams are nice if you want to actually view the simulated images, but they can be computationally expensive. This may cause lag and reduced simulation performance on lower-powered computers.
 Lightweight Configuration
 
 The following configuration disables both streams while still allowing tag detection and pose simulation to work. It's not perfect, but it's much better performance-wise than the default configuration.
