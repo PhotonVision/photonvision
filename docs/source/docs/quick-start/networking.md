@@ -55,7 +55,7 @@ Only use a static IP when connected to the **robot radio**, and never when testi
 6. Set your coprocessor's IP address to “10.TE.AM.xx”. "xx" should be a unique number not currently used by another device on the robot, e.g. 11, 12. More information on IP format can be found [here](https://docs.wpilib.org/en/stable/docs/networking/networking-introduction/ip-configurations.html#on-the-field-static-configuration).
 7. Click the “Save” button.
 
-Power-cycle your robot and then you will now be access the PhotonVision dashboard at `10.TE.AM.11:5800`.
+Power-cycle your robot and then you will now be access the PhotonVision dashboard at `10.TE.AM.xx:5800`.
 
 ```{image} images/static.png
 :alt: Correctly set static IP
