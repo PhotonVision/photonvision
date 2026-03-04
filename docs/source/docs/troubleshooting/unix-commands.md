@@ -132,3 +132,41 @@ journalctl --output cat -u photonvision -f
 ```
 
 `--output cat` is used to prevent journalctl from printing its own timestamps, because we log our own timestamps.
+
+### lsusb
+
+[lsusb](https://linux.die.net/man/8/lsusb) is a command that can be used to find all the USB buses on a device. When run with the `--tree` flag, it will give you more information on the available ports and connected devices. See the example below.
+
+```
+photon@photonvision:~$ lsusb -t
+/:  Bus 001.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/4p, 480M
+    |__ Port 001: Dev 002, If 0, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 001: Dev 002, If 1, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 001: Dev 002, If 2, Class=Audio, Driver=snd-usb-audio, 480M
+    |__ Port 001: Dev 002, If 3, Class=Audio, Driver=snd-usb-audio, 480M
+    |__ Port 002: Dev 003, If 0, Class=Video, Driver=uvcvideo, 480M
+    |__ Port 002: Dev 003, If 1, Class=Video, Driver=uvcvideo, 480M
+/:  Bus 002.Port 001: Dev 001, Class=root_hub, Driver=xhci_hcd/4p, 5000M
+    |__ Port 003: Dev 002, If 0, Class=Vendor Specific Class, Driver=ax_usb_nic, 5000M
+/:  Bus 003.Port 001: Dev 001, Class=root_hub, Driver=xhci-hcd/1p, 480M
+```
+
+The most important information from this list is the bandwitdth. This is the last number we see, followed by an M (megabytes).
+
+### usbtop
+
+[usbtop](https://github.com/aguinet/usbtop) is a program that can be used to monitor traffic on your device's USB buses. To use it, run `sudo modprobe usbmon` then `sudo usbtop`. An example output can be found below.
+
+```
+Bus ID 1 (Raw USB traffic, bus number 1)	To device	From device
+  Device ID 1 :			                    0.00 kb/s	0.00 kb/s
+  Device ID 2 :			                    141.71 kb/s	23595.81 kb/s
+  Device ID 3 :			                    0.13 kb/s	0.13 kb/s
+Bus ID 2 (Raw USB traffic, bus number 2)	To device	From device
+  Device ID 1 :			                    0.00 kb/s	0.00 kb/s
+  Device ID 2 :			                    450.42 kb/s	17.45 kb/s
+Bus ID 3 (Raw USB traffic, bus number 3)	To device	From device
+  Device ID 1 :			                    0.00 kb/s	0.00 kb/s
+```
+
+The above output can be used to debug USB bandwidth issues, by comparing the size of data being sent with the bandwidth limits (bandwidth limits can be found using lsusb).
