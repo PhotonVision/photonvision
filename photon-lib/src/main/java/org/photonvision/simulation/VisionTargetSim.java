@@ -119,7 +119,11 @@ public class VisionTargetSim {
         return model;
     }
 
-    /** This target's vertices offset from its field pose. */
+    /**
+     * This target's vertices offset from its field pose.
+     *
+     * @return A vector of Translation3d representing the vertices of the target
+     */
     public List<Translation3d> getFieldVertices() {
         return model.getFieldVertices(pose);
     }

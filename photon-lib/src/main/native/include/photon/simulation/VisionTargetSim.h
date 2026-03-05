@@ -31,21 +31,50 @@
 #include "photon/estimation/TargetModel.h"
 
 namespace photon {
+/** Describes a vision target located somewhere on the field that your vision
+ * system can detect. */
 class VisionTargetSim {
  public:
+  /**
+   * Describes a vision target located somewhere on the field that your vision
+   * system can detect.
+   *
+   * @param pose Pose3d of the tag in field-relative coordinates
+   * @param model TargetModel which describes the geometry of the target
+   */
   VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model)
       : fiducialId(-1),
         objDetClassId(-1),
         objDetConf(-1),
         pose(pose),
         model(model) {}
+  /**
+   * Describes a fiducial tag located somewhere on the field that your vision
+   * system can detect.
+   *
+   * @param pose Pose3d of the tag in field-relative coordinates
+   * @param model TargetModel which describes the geometry of the target(tag)
+   * @param id The ID of this fiducial tag
+   */
   VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id)
       : fiducialId(id),
         objDetClassId(-1),
         objDetConf(-1),
         pose(pose),
         model(model) {}
-
+  /**
+   * Describes a vision target located somewhere on the field that your vision
+   * system can detect.
+   *
+   * @param pose Pose3d of the target in field-relative coordinates
+   * @param model TargetModel which describes the geometry of the target
+   * @param id The ID of this fiducial tag, or -1 if not applicable
+   * @param objDetClassId The object detection class ID, if -1 it will not be
+   * detected by object detection
+   * @param objDetConf The object detection confidence, or -1 in which case the
+   * simulation will compute a confidence based on the area of the target in the
+   * camera's field of view
+   */
   VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id,
                   int objDetClassId, float objDetConf)
       : fiducialId(id),
@@ -54,13 +83,42 @@ class VisionTargetSim {
         pose(pose),
         model(model) {}
 
+  /**
+   * Sets the pose of this target on the field.
+   *
+   * @param newPose The pose in field-relative coordinates
+   */
   void SetPose(const frc::Pose3d& newPose) { pose = newPose; }
+
+  /**
+   * Sets the model describing this target's geometry.
+   *
+   * @param newModel The model of the target
+   */
   void SetModel(const TargetModel& newModel) { model = newModel; }
+
+  /**
+   * Returns the pose of this target on the field.
+   *
+   * @return The pose in field-relative coordinates
+   */
   frc::Pose3d GetPose() const { return pose; }
+
+  /**
+   * Returns the model describing this target's geometry.
+   *
+   * @return The model of the target
+   */
   TargetModel GetModel() const { return model; }
+
+  /**
+   * This target's vertices offset from its field pose.
+   * @return A vector of Translation3d representing the vertices of the target
+   */
   std::vector<frc::Translation3d> GetFieldVertices() const {
     return model.GetFieldVertices(pose);
   }
+
   int fiducialId;
   int objDetClassId;
   float objDetConf;
