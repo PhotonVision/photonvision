@@ -1,7 +1,5 @@
 {
   "deviceName": "PhotonVision",
-  "deviceLogoPath": "photonvision.png",
-  "supportURL": "https://support.photonvision.com",
   "ledPins" : [2, 13],
   "statusRGBPins" : [-1, -1, -1],
   "ledsCanDim" : true,

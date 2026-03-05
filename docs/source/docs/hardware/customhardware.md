@@ -103,9 +103,9 @@ If your hardware contains a camera with a known field of vision, it can be enter
       }
 ```
 
-## Cosmetic & Branding
+## Device Name Branding
 
-To help differentiate your hardware from other solutions, some customization is allowed.
+To help differentiate your hardware from other solutions, a device name may be set.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -113,8 +113,6 @@ To help differentiate your hardware from other solutions, some customization is 
 
       {
         "deviceName" : "Super Cool Custom Hardware",
-        "deviceLogoPath" : "",
-        "supportURL" : "https://cat-bounce.com/",
       }
 ```
 
@@ -132,8 +130,6 @@ Here is a complete example `hardwareConfig.json`:
 
       {
         "deviceName" : "Blinky McBlinkface",
-        "deviceLogoPath" : "",
-        "supportURL" : "https://www.youtube.com/watch?v=b-CvLWbfZhU",
         "ledPins" : [2, 13],
         "ledsCanDim" : true,
         "ledBrightnessRange" : [ 0, 100 ],
