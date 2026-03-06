@@ -89,18 +89,19 @@ const tabGroups = computed<ConfigOption[][]>(() => {
   const isAruco = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Aruco;
   const isObjectDetection =
     useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.ObjectDetection;
+  const isComposite = useCameraSettingsStore().currentWebsocketPipelineType === WebsocketPipelineType.Composite;
 
   return getTabGroups()
     .map((tabGroup) =>
       tabGroup.filter(
         (tabConfig) =>
           !(!allow3d && tabConfig.tabName === "3D") && //Filter out 3D tab any time 3D isn't calibrated
-          !((!allow3d || isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
-          !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
-          !((isAprilTag || isAruco || isObjectDetection) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
-          !(!isAprilTag && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
+          !((!allow3d || isAprilTag || isAruco || isObjectDetection || isComposite) && tabConfig.tabName === "PnP") && //Filter out the PnP config tab if 3D isn't available, or we're doing AprilTags
+          !((isAprilTag || isAruco || isObjectDetection || isComposite) && tabConfig.tabName === "Threshold") && //Filter out threshold tab if we're doing AprilTags
+          !((isAprilTag || isAruco || isObjectDetection || isComposite) && tabConfig.tabName === "Contours") && //Filter out contours if we're doing AprilTags
+          !(!(isAprilTag || isComposite) && tabConfig.tabName === "AprilTag") && //Filter out apriltag unless we actually are doing AprilTags
           !(!isAruco && tabConfig.tabName === "ArUco") &&
-          !(!isObjectDetection && tabConfig.tabName === "Object Detection") //Filter out ArUco unless we actually are doing ArUco
+          !(!(isObjectDetection || isComposite) && tabConfig.tabName === "Object Detection") //Filter out ArUco unless we actually are doing ArUco
       )
     )
     .filter((it) => it.length); // Remove empty tab groups
