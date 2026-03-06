@@ -23,6 +23,23 @@ allprojects {
     }
     wpilibRepositories.addAllReleaseRepositories(it)
     wpilibRepositories.addAllDevelopmentRepositories(it)
+
+    // Allow Java 25 dependencies (SwiftKit) to be consumed by Java 24 projects
+    // This is needed because photon-apple requires SwiftKit which needs Java 25,
+    // but photon-server runs on Java 24
+    dependencies {
+        components {
+            all { ComponentMetadataDetails details ->
+                if (details.id.group == 'org.swift.swiftkit') {
+                    details.allVariants { VariantMetadata variant ->
+                        variant.attributes {
+                            attribute(TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE, 24)
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 ext.localMavenURL = file("$project.buildDir/outputs/maven")
@@ -62,7 +79,8 @@ spotless {
     java {
         target fileTree('.') {
             include '**/*.java'
-            exclude '**/build/**', '**/build-*/**', '**/src/generated/**'
+            exclude '**/build/**', '**/build-*/**', '**/src/generated/**',
+                    '**/.build/**', '**/photon-apple/swift-java/**'
         }
         toggleOffOn()
         googleJavaFormat()
@@ -75,7 +93,8 @@ spotless {
     groovyGradle {
         target fileTree('.') {
             include '**/*.gradle'
-            exclude '**/build/**', '**/build-*/**'
+            exclude '**/build/**', '**/build-*/**',
+                    '**/.build/**', '**/photon-apple/swift-java/**'
         }
         greclipse()
         leadingTabsToSpaces(4)
@@ -85,7 +104,8 @@ spotless {
     format 'misc', {
         target fileTree('.') {
             include '**/*.md', '**/.gitignore'
-            exclude '**/build/**', '**/build-*/**', '**/node_modules/**'
+            exclude '**/build/**', '**/build-*/**', '**/node_modules/**',
+                    '**/.build/**', '**/photon-apple/swift-java/**'
         }
         trimTrailingWhitespace()
         leadingTabsToSpaces(2)

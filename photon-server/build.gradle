@@ -6,6 +6,7 @@ apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
     implementation project(':photon-core')
+    implementation project(':photon-apple')
 
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
@@ -63,6 +64,7 @@ processResources {
 
 run {
     environment "PATH_PREFIX", "../"
+
 
     if (project.hasProperty("profile")) {
         jvmArgs=[
