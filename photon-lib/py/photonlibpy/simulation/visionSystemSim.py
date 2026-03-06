@@ -1,7 +1,7 @@
 import typing
 
 import wpilib
-from robotpy_apriltag import AprilTagFieldLayout
+from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 from wpilib import Field2d
 from wpimath.geometry import Pose2d, Pose3d, Transform3d
 
@@ -22,7 +22,14 @@ class VisionSystemSim:
     camera target info.
     """
 
-    def __init__(self, visionSystemName: str):
+    def __init__(
+        self,
+        visionSystemName: str,
+        tagLayout: AprilTagFieldLayout | None = AprilTagFieldLayout.loadField(
+            AprilTagField.kDefaultField
+        ),
+        targetModel: TargetModel = TargetModel.AprilTag36h11(),
+    ):
         """A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
         running PhotonVision, detecting targets placed on the field. :class:`.VisionTargetSim`s added to
         this class will be detected by the :class:`.PhotonCameraSim`s added to this class. This class
@@ -30,6 +37,8 @@ class VisionSystemSim:
         camera target info.
 
         :param visionSystemName: The specific identifier for this vision system in NetworkTables.
+        :param tagLayout: The field layout to use for AprilTag detection. If not provided, the default field layout will be used.
+        :param targetModel: The model to use for vision targets.
         """
         self.dbgField: Field2d = Field2d()
         self.bufferLength: seconds = 1.5
@@ -45,6 +54,11 @@ class VisionSystemSim:
 
         self.tableName: str = "VisionSystemSim-" + visionSystemName
         wpilib.SmartDashboard.putData(self.tableName + "/Sim Field", self.dbgField)
+        self.tagLayout = tagLayout
+        self.targetModel = targetModel
+
+        if tagLayout is not None:
+            self.addAprilTags(tagLayout)
 
     def getCameraSim(self, name: str) -> PhotonCameraSim | None:
         """Get one of the simulated cameras."""
@@ -215,9 +229,7 @@ class VisionSystemSim:
             tag_pose = layout.getTagPose(tag.ID)
             # TODO this was done to make the python gods happy. Confirm that this is desired or if types dont matter
             assert tag_pose is not None
-            targets.append(
-                VisionTargetSim(tag_pose, TargetModel.AprilTag36h11(), tag.ID)
-            )
+            targets.append(VisionTargetSim(tag_pose, self.targetModel, tag.ID))
         self.addVisionTargets(targets, "apriltag")
 
     def clearVisionTargets(self) -> None:
@@ -316,7 +328,9 @@ class VisionSystemSim:
             cameraPoses2d.append(lateCameraPose.toPose2d())
 
             # process a PhotonPipelineResult with visible targets
-            camResult = camSim.process(latency, lateCameraPose, allTargets)
+            camResult = camSim.process(
+                latency, lateCameraPose, allTargets, self.tagLayout
+            )
             # publish this info to NT at estimated timestamp of receive
             # needs a timestamp in microseconds
             camSim.submitProcessedFrame(camResult, timestampNt * 1.0e6)
