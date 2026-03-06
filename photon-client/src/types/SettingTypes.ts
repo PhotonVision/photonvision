@@ -58,6 +58,7 @@ export interface NetworkSettings {
   ntServerAddress: string;
   connectionType: NetworkConnectionType;
   staticIp: string;
+  staticIpVerified: boolean;
   hostname: string;
   runNTServer: boolean;
   shouldManage: boolean;
