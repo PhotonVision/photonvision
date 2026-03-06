@@ -165,4 +165,14 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     public boolean isConnected() {
         return checkCameraConnected();
     }
+
+    @Override
+    public void setRecording(boolean shouldRecord) {
+        throw new UnsupportedOperationException("LibcameraGpuFrameProvider does not support recording");
+    }
+
+    @Override
+    public boolean getRecording() {
+        return false;
+    }
 }
