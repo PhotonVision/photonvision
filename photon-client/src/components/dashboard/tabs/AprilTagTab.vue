@@ -53,7 +53,9 @@ const interactiveCols = computed(() =>
       v-model="currentPipelineSettings.rejectTagIds"
       label="Reject Tag IDs"
       tooltip="Tag IDs to reject for multitag estimation"
-      :label-cols="4"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ rejectTagIds: [value] }, true)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.threads"
