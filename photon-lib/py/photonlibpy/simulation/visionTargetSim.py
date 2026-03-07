@@ -8,19 +8,31 @@ from ..estimation.targetModel import TargetModel
 class VisionTargetSim:
     """Describes a vision target located somewhere on the field that your vision system can detect."""
 
-    def __init__(self, pose: Pose3d, model: TargetModel, id: int = -1):
-        """Describes a fiducial tag located somewhere on the field that your vision system can detect.
+    def __init__(
+        self,
+        pose: Pose3d,
+        model: TargetModel,
+        id: int = -1,
+        objDetClassId: int = -1,
+        objDetConf: float = -1.0,
+    ):
+        """Describes a vision target located somewhere on the field that your vision system can detect.
 
-        :param pose:  Pose3d of the tag in field-relative coordinates
-        :param model: TargetModel which describes the shape of the target(tag)
-        :param id:    The ID of this fiducial tag
+        :param pose:          Pose3d of the target in field-relative coordinates
+        :param model:         TargetModel which describes the shape of the target
+        :param id:            The ID of this fiducial tag
+        :param objDetClassId: The object detection class ID of this target, if left as -1, this target
+                              will not be detected by object detection
+        :param objDetConf:    The object detection confidence of this target, if left as -1.0, the
+                              simulation will compute a confidence based on the area of the target
+                              in the camera's field of view
         """
 
         self.pose: Pose3d = pose
         self.model: TargetModel = model
         self.fiducialId: int = id
-        self.objDetClassId: int = -1
-        self.objDetConf: float = -1.0
+        self.objDetClassId: int = objDetClassId
+        self.objDetConf: float = objDetConf
 
     def __lt__(self, right) -> bool:
         return self.pose.translation().norm() < right.pose.translation().norm()

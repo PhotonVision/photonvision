@@ -525,6 +525,16 @@ public class PhotonCameraSim implements AutoCloseable {
                                 .get();
             }
 
+            // Compute object detection confidence if this is an obj det target
+            int classId = tgt.objDetClassId;
+            float conf = tgt.objDetConf;
+            if (classId >= 0 && conf < 0) {
+                // Simulate confidence using sqrt-scaled area for a more realistic
+                // curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
+                // gives reasonable values even for small-but-visible objects.
+                conf = (float) Math.max(0.0, Math.min(1.0, Math.sqrt(areaPercent / 100.0) * 2.0));
+            }
+
             detectableTgts.add(
                     new PhotonTrackedTarget(
                             -Math.toDegrees(centerRot.getZ()),
@@ -532,8 +542,8 @@ public class PhotonCameraSim implements AutoCloseable {
                             areaPercent,
                             Math.toDegrees(centerRot.getX()),
                             tgt.fiducialID,
-                            -1,
-                            -1,
+                            classId,
+                            conf,
                             pnpSim.best,
                             pnpSim.alt,
                             pnpSim.ambiguity,

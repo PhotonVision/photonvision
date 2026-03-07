@@ -73,6 +73,8 @@ Vision targets require a `TargetModel`, which describes the shape of the target.
       TargetModel targetModel = new TargetModel(0.5, 0.25);
 ```
 
+To use simulated object detection, one will also need to attribute an `objDetClassId` value, -1 meaning the object will NOT be detected and a confidence value to `objDetConf`. Assigning -1 to `objDetConf` will instruct the simulator to compute a confidence detection level based on the area of the target in the camera's field of view.
+
 These `TargetModel` are paired with a target pose to create a `VisionTargetSim`. A `VisionTargetSim` is added to the `VisionSystemSim` to become visible to all of its cameras.
 
 ```{eval-rst}
