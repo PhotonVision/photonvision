@@ -148,6 +148,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         List<TrackedTarget> rejectedTags = new ArrayList<>();
         List<TrackedTarget> targetList = new ArrayList<>();
 
+        System.out.println(settings.rejectTagIds);
+
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
             if (settings.rejectTagIds.contains(detection.getId())) {

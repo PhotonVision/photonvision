@@ -35,7 +35,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int decisionMargin = 35;
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
-    public List<Integer> rejectedTagIds = List.of();
+    public List<Integer> rejectTagIds = List.of();
 
     public AprilTagPipelineSettings() {
         super();
