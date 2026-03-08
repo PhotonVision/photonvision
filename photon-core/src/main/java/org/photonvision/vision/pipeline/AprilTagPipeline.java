@@ -27,6 +27,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.RotatedRect;
@@ -253,10 +254,29 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             targetList.add(target);
         }
 
-        // Do multi-tag pose estimation
+        // Pre-compute single-tag poses for ambiguity filtering if multi-tag is enabled
+        HashMap<Integer, AprilTagPoseEstimate> cachedPoseEstimates = new HashMap<>();
         Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
+
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
-            var multiTagOutput = multiTagPNPPipe.run(targetList);
+            List<TrackedTarget> multiTagTargetList = targetList;
+
+            // If ambiguity filtering is enabled (threshold < 1.0), pre-compute single-tag poses
+            if (settings.multiTagAmbiguityThreshold < 1.0) {
+                multiTagTargetList = new ArrayList<>();
+                for (int i = 0; i < usedDetections.size(); i++) {
+                    AprilTagDetection detection = usedDetections.get(i);
+                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
+                    sumPipeNanosElapsed += poseResult.nanosElapsed;
+                    cachedPoseEstimates.put(detection.getId(), poseResult.output);
+
+                    if (poseResult.output.getAmbiguity() <= settings.multiTagAmbiguityThreshold) {
+                        multiTagTargetList.add(targetList.get(i));
+                    }
+                }
+            }
+
+            var multiTagOutput = multiTagPNPPipe.run(multiTagTargetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
             multiTagResult = multiTagOutput.output;
         }
@@ -274,9 +294,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 if (settings.doSingleTargetAlways
                         || !(multiTagResult.isPresent()
                                 && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
-                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
-                    sumPipeNanosElapsed += poseResult.nanosElapsed;
-                    tagPoseEstimate = poseResult.output;
+                    // Reuse cached pose estimate if available
+                    if (cachedPoseEstimates.containsKey(detection.getId())) {
+                        tagPoseEstimate = cachedPoseEstimates.get(detection.getId());
+                    } else {
+                        var poseResult = singleTagPoseEstimatorPipe.run(detection);
+                        sumPipeNanosElapsed += poseResult.nanosElapsed;
+                        tagPoseEstimate = poseResult.output;
+                    }
                 }
 
                 // If single-tag estimation was not done, this is a multi-target tag from the layout
