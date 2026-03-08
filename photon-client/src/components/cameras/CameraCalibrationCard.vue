@@ -181,24 +181,25 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   const currentRes = useCameraSettingsStore().currentVideoFormat.resolution;
-  if (currentRes.width > 640 || currentRes.height > 480) {
+  const calMode = useCameraSettingsStore().isCalibrationMode;
+  if ((calMode && currentRes.width > 640) || (calMode && currentRes.height > 480)) {
     useStateStore().showSnackbarMessage({
       color: "error",
       message:
-        "The selected resolution is too low to gather any useful data. Update your resolution settings and try again."
+        "The selected resolution is too low to gather any useful data for 3D calibration. Update your resolution settings and try again."
     });
     return;
+  } else {
+    useCameraSettingsStore().startPnPCalibration({
+      squareSizeIn: squareSizeIn.value,
+      markerSizeIn: markerSizeIn.value,
+      patternHeight: patternHeight.value,
+      patternWidth: patternWidth.value,
+      boardType: boardType.value,
+      useOldPattern: useOldPattern.value,
+      tagFamily: tagFamily.value
+    });
   }
-
-  useCameraSettingsStore().startPnPCalibration({
-    squareSizeIn: squareSizeIn.value,
-    markerSizeIn: markerSizeIn.value,
-    patternHeight: patternHeight.value,
-    patternWidth: patternWidth.value,
-    boardType: boardType.value,
-    useOldPattern: useOldPattern.value,
-    tagFamily: tagFamily.value
-  });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
   // isCalibrating.value = true;
