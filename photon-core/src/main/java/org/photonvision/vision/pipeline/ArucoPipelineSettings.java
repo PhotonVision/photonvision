@@ -41,6 +41,7 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
 
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
+    public double multiTagAmbiguityThreshold = 0.2;
 
     public ArucoPipelineSettings() {
         super();

@@ -34,6 +34,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int decisionMargin = 35;
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
+    public double multiTagAmbiguityThreshold = 0.2;
 
     // ML-assisted detection settings
     public boolean useMLDetection = false;
@@ -80,6 +81,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
+        temp = Double.doubleToLongBits(multiTagAmbiguityThreshold);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
         // ML-assisted detection fields
         result = prime * result + (useMLDetection ? 1231 : 1237);
         temp = Double.doubleToLongBits(mlConfidenceThreshold);
@@ -115,6 +118,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
+        if (Double.doubleToLongBits(multiTagAmbiguityThreshold)
+                != Double.doubleToLongBits(other.multiTagAmbiguityThreshold)) return false;
         // ML-assisted detection fields
         if (useMLDetection != other.useMLDetection) return false;
         if (Double.doubleToLongBits(mlConfidenceThreshold)
