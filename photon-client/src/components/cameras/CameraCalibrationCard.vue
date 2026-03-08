@@ -180,10 +180,12 @@ const isCalibrating = computed(
 );
 
 const startCalibration = () => {
-  if (useCameraSettingsStore.currentCameraSettings.Resolution.width > 640 || useCameraSettingsStore.currentCameraSettings.Resolution.height > 480) {
-    useCameraSettingsStore().showSnackbarMessage({
+  const currentRes = useCameraSettingsStore().currentVideoFormat.resolution;
+  if (currentRes.width > 640 || currentRes.height > 480) {
+    useStateStore().showSnackbarMessage({
       color: "error",
-      message: "The selected resolution is too low to gather any useful data. Update your resolution settings and try again."
+      message:
+        "The selected resolution is too low to gather any useful data. Update your resolution settings and try again."
     });
     return;
   }
