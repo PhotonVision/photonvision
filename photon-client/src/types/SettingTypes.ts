@@ -15,6 +15,8 @@ export interface GeneralSettings {
   supportedBackends: string[];
   conflictingHostname: boolean;
   conflictingCameras: string;
+  recordingStrategy: string;
+  supportedRecordingStrategies: string[];
 }
 
 export interface ObjectDetectionModelProperties {
@@ -281,6 +283,8 @@ export interface UiCameraConfiguration {
   isConnected: boolean;
   hasConnected: boolean;
   mismatch: boolean;
+
+  recordings: string[];
 }
 
 export interface CameraSettingsChangeRequest {
@@ -449,7 +453,8 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
   fpsLimit: -1,
   isConnected: true,
   hasConnected: true,
-  mismatch: false
+  mismatch: false,
+  recordings: []
 });
 
 export enum CalibrationBoardTypes {

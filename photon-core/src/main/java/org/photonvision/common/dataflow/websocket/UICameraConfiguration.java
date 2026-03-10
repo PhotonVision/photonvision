@@ -59,4 +59,7 @@ public class UICameraConfiguration {
     // Status for if the underlying device is present and such
     public boolean isConnected;
     public boolean hasConnected;
+
+    // List of all the recordings for this camera
+    public List<String> recordings;
 }

@@ -25,6 +25,8 @@
 package org.photonvision;
 
 import edu.wpi.first.math.geometry.*;
+import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 
 public final class PhotonUtils {
     private PhotonUtils() {
@@ -205,5 +207,17 @@ public final class PhotonUtils {
      */
     public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
         return robotPose.getTranslation().getDistance(targetPose.getTranslation());
+    }
+
+    /**
+     * Reserves space for all cameras that have indicated they will be recording this session. To
+     * indicate that a camera will be recording, call {@link PhotonCamera#willRecord()}. This method
+     * should be called once, prior to a recording session starting. Note that it may take some time,
+     * so it is recommend that the method is called on robotInit().
+     */
+    public static void reserveSpace() {
+        IntegerEntry entry =
+                NetworkTableInstance.getDefault().getIntegerTopic("reserveRecordingSpace").getEntry(0);
+        entry.set(1);
     }
 }
