@@ -4,12 +4,9 @@ import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import {
   PlaceholderCameraSettings,
-  PVCameraInfo,
-  type PVCSICameraInfo,
-  type PVFileCameraInfo,
-  type PVUsbCameraInfo
+  PVCameraInfo
 } from "@/types/SettingTypes";
-import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
+import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
@@ -64,7 +61,8 @@ const deleteThisCamera = (cameraUniqueName: string) => {
   });
 };
 
-const cameraConnected = (uniquePath: string): boolean => {
+const cameraConnected = (uniquePath: string | undefined): boolean => {
+  if (!uniquePath) return false;
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
   );
@@ -103,23 +101,6 @@ const viewingCamera = ref<[PVCameraInfo | null, boolean | null]>([null, null]);
 const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null) => {
   viewingDetails.value = camera !== null && isConnected !== null;
   viewingCamera.value = [camera, isConnected];
-};
-
-/**
- * Get the connection-type-specific camera info from the given PVCameraInfo object.
- */
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
-  if (!camera) return null;
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
 };
 
 /**
