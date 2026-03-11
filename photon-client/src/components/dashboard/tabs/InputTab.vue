@@ -175,7 +175,7 @@ const interactiveCols = computed(() =>
       :items="cameraRotations"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: Number(args) }, false)
       "
     />
     <pv-select
@@ -184,7 +184,7 @@ const interactiveCols = computed(() =>
       tooltip="Resolution and FPS the camera should directly capture at"
       :items="cameraResolutions"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => handleResolutionChange(args)"
+      @update:modelValue="(args) => handleResolutionChange(Number(args))"
     />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
@@ -192,7 +192,7 @@ const interactiveCols = computed(() =>
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => handleStreamResolutionChange(args)"
+      @update:modelValue="(args) => handleStreamResolutionChange(Number(args))"
     />
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"

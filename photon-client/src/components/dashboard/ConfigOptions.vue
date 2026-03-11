@@ -129,7 +129,7 @@ const onBeforeTabUpdate = () => {
       <v-col
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
-        :cols="tabGroupIndex === 1 && useCameraSettingsStore().currentPipelineSettings.doMultiTarget ? 7 : ''"
+        :cols="tabGroupIndex === 1 && (useCameraSettingsStore().currentPipelineSettings as any).doMultiTarget ? 7 : ''"
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
         @vue:before-update="onBeforeTabUpdate"
       >
