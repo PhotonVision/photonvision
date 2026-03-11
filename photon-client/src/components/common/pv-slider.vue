@@ -18,9 +18,9 @@ const props = withDefaults(
 const emit = defineEmits<{ (e: "update:modelValue", value: number): void }>();
 
 // Debounce function
-function debounce(func: (...args: any[]) => void, wait: number) {
+function debounce(func: (...args: number[]) => void, wait: number) {
   let timeout: ReturnType<typeof setTimeout>;
-  return function (...args: any[]) {
+  return function (...args: number[]) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func(...args), wait);
   };
