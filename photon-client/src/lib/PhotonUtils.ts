@@ -1,5 +1,5 @@
 import { useStateStore } from "@/stores/StateStore";
-import type { Resolution } from "@/types/SettingTypes";
+import type { PVCameraInfo, Resolution } from "@/types/SettingTypes";
 import axios from "axios";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
@@ -51,6 +51,7 @@ export const forceReloadPage = async () => {
 
 export const getResolutionString = (resolution: Resolution): string => `${resolution.width}x${resolution.height}`;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const parseJsonFile = async <T extends Record<string, any>>(file: File): Promise<T> => {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
@@ -73,7 +74,8 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
  * @param config Optional axios request configuration
  * @returns A promise that resolves to true if the POST request is successful, or false if an error occurs.
  */
-export const axiosPost = async (url: string, description: string, data?: any, config?: any): Promise<boolean> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const axiosPost = async (url: string, description: string, data?: any, config?: object): Promise<boolean> => {
   try {
     await axios.post(url, data, config);
     useStateStore().showSnackbarMessage({
@@ -81,6 +83,7 @@ export const axiosPost = async (url: string, description: string, data?: any, co
       color: "success"
     });
     return true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.response) {
       useStateStore().showSnackbarMessage({
@@ -100,4 +103,25 @@ export const axiosPost = async (url: string, description: string, data?: any, co
     }
     return false;
   }
+};
+
+
+type CameraInfoDetails = Partial<
+  NonNullable<PVCameraInfo["PVUsbCameraInfo"]> &
+    NonNullable<PVCameraInfo["PVCSICameraInfo"]> &
+    NonNullable<PVCameraInfo["PVFileCameraInfo"]>
+>;
+
+export const cameraInfoFor = (camera: PVCameraInfo | null): CameraInfoDetails => {
+  if (!camera) return {};
+  if (camera.PVUsbCameraInfo) {
+    return camera.PVUsbCameraInfo;
+  }
+  if (camera.PVCSICameraInfo) {
+    return camera.PVCSICameraInfo;
+  }
+  if (camera.PVFileCameraInfo) {
+    return camera.PVFileCameraInfo;
+  }
+  return {};
 };
