@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject } from "vue";
+import { ref, computed, inject, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { type ObjectDetectionModelProperties } from "@/types/SettingTypes";
@@ -106,14 +106,14 @@ const supportedModels = computed(() => {
   return availableModels.filter(isSupported);
 });
 
-const exportModels = ref();
+const exportModels = useTemplateRef("exportModels");
 const openExportPrompt = () => {
-  exportModels.value.click();
+  exportModels.value?.click();
 };
 
-const exportIndividualModel = ref();
+const exportIndividualModel = useTemplateRef("exportIndividualModel");
 const openExportIndividualModelPrompt = () => {
-  exportIndividualModel.value.click();
+  exportIndividualModel.value?.click();
 };
 
 const showNukeDialog = ref(false);

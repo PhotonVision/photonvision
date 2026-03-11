@@ -1,6 +1,6 @@
 @ -0,0 +1,565 @@
 <script setup lang="ts">
-import { inject, computed, ref, watch } from "vue";
+import { inject, computed, ref, watch, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
@@ -26,9 +26,9 @@ const restartDevice = async () => {
 
 const address = inject<string>("backendHost");
 
-const offlineUpdate = ref();
+const offlineUpdate = useTemplateRef("offlineUpdate");
 const openOfflineUpdatePrompt = () => {
-  offlineUpdate.value.click();
+  offlineUpdate.value?.click();
 };
 
 const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
@@ -37,7 +37,8 @@ const majorVersionRegex = new RegExp("(?:dev-)?(\\d+)\\.\\d+\\.\\d+");
 const offlineUpdateDialog = ref({ show: false, confirmString: "" });
 
 const handleOfflineUpdateRequest = async () => {
-  const files = offlineUpdate.value.files;
+  const files = offlineUpdate.value?.files;
+  if (!files) return;
   if (files.length === 0) return;
 
   const match = files[0].name.match(offlineUpdateRegex);
@@ -122,14 +123,14 @@ const handleOfflineUpdate = async (file: File) => {
   }
 };
 
-const exportLogFile = ref();
+const exportLogFile = useTemplateRef("exportLogFile");
 const openExportLogsPrompt = () => {
-  exportLogFile.value.click();
+  exportLogFile.value?.click();
 };
 
-const exportSettings = ref();
+const exportSettings = useTemplateRef("exportSettings");
 const openExportSettingsPrompt = () => {
-  exportSettings.value.click();
+  exportSettings.value?.click();
 };
 
 enum ImportType {
@@ -555,7 +556,9 @@ watch(metricsHistorySnapshot, () => {
               :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
               @click="
                 offlineUpdateDialog.show = false;
-                handleOfflineUpdate(offlineUpdate.files[0]);
+                if(offlineUpdate !== null && offlineUpdate.files !== null && offlineUpdate.files.length > 0) {
+                  handleOfflineUpdate(offlineUpdate.files[0]);
+                }
               "
             >
               <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
