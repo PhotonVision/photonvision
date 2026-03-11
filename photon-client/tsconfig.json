@@ -3,7 +3,7 @@
   "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
   "compilerOptions": {
     "moduleResolution": "node",
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "strict": true,
     "removeComments": true,
     "sourceMap": true,
