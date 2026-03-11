@@ -106,6 +106,7 @@ const saveGeneralSettings = async () => {
 
     // Update the local settings cause the backend checked their validity. Assign is to deref value
     useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     resetTempSettingsStruct();
     if (error.response) {

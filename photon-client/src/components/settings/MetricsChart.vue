@@ -29,6 +29,10 @@ const theme = useTheme();
 const chartRef = useTemplateRef("chartRef");
 let chart: echarts.ECharts | null = null;
 
+interface TooltipSeriesParam {
+  value: [number, number];
+}
+
 const getOptions = (data: ChartData[] = []) => {
   const now = Date.now();
   return {
@@ -37,7 +41,7 @@ const getOptions = (data: ChartData[] = []) => {
     },
     tooltip: {
       trigger: "axis",
-      formatter: (params: any) => {
+      formatter: (params: TooltipSeriesParam[]) => {
         const p = params[0];
         const append = typeLabels[props.type as keyof typeof typeLabels];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";

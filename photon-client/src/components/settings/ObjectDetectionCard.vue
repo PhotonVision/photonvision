@@ -97,7 +97,7 @@ const renameModel = (model: ObjectDetectionModelProperties, newName: string) => 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  const isSupported = (model: any) => {
+  const isSupported = (model: ObjectDetectionModelProperties) => {
     // Check if model's family is in the list of supported backends
     return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
   };

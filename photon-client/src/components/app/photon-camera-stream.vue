@@ -73,20 +73,20 @@ const handleFullscreenRequest = () => {
   stream.requestFullscreen();
 };
 
-const mjpgStream: any = ref(null);
+const mjpgStream = ref<HTMLImageElement | null>(null);
 
 const handleStreamError = () => {
   if (streamSrc.value && streamSrc.value !== emptyStreamSrc) {
     console.error("Error loading stream:", streamSrc.value, " Trying again.");
     setTimeout(() => {
-      mjpgStream.value.src = streamSrc.value;
+      mjpgStream.value!.src = streamSrc.value;
     }, 100);
   }
 };
 
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
-  mjpgStream.value["src"] = emptyStreamSrc;
+  mjpgStream.value.src = emptyStreamSrc;
 });
 </script>
 
