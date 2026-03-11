@@ -31,7 +31,9 @@ export default defineConfigWithVueTs(
       "no-case-declarations": "off",
       "vue/require-default-prop": "off",
       "vue/v-on-event-hyphenation": "off",
-      "@typescript-eslint/no-explicit-any": "off",
+      "vue/require-typed-ref": "error",     
+      "@typescript-eslint/no-empty-object-type": "error",
+      "@typescript-eslint/no-explicit-any": "error",
       "vue/valid-v-slot": ["error", { allowModifiers: true }]
     }
   }
