@@ -111,7 +111,8 @@ const interactiveCols = computed(() =>
       :items="['Center', 'Top', 'Bottom', 'Left', 'Right']"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: Number(value) }, false)
       "
     />
     <pv-select
@@ -122,7 +123,8 @@ const interactiveCols = computed(() =>
       :items="['Portrait', 'Landscape']"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: Number(value) }, false)
       "
     />
     <pv-select
@@ -132,7 +134,11 @@ const interactiveCols = computed(() =>
       :items="['None', 'Single Point', 'Dual Point']"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting(
+            { offsetRobotOffsetMode: value as RobotOffsetPointMode },
+            false
+          )
       "
     />
     <table

@@ -25,7 +25,7 @@ const emit = defineEmits<{
   (e: "onEscape"): void;
 }>();
 
-const handleKeydown = ({ key }) => {
+const handleKeydown = ({ key }: KeyboardEvent) => {
   switch (key) {
     case "Enter":
       // Explicitly check that all rule props return true

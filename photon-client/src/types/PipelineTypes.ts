@@ -5,6 +5,7 @@ import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
  * The on-wire form of PipelineType.java (the enum is serialized with `ordinal()`)
  */
 export enum PipelineType {
+  Calibration3d = 1,
   DriverMode = 2,
   Reflective = 3,
   ColoredShape = 4,
@@ -85,6 +86,8 @@ export interface PipelineSettings {
   cameraAutoWhiteBalance: boolean;
   cameraWhiteBalanceTemp: number;
 
+  crosshair: boolean;
+
   blockForFrames: boolean;
 }
 export type ConfigurablePipelineSettings = Partial<
@@ -152,6 +155,7 @@ export const DefaultPipelineSettings: Omit<
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
   cameraMaxExposureRaw: 2,
+  crosshair: true,
   blockForFrames: true
 };
 
@@ -324,13 +328,14 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
 };
 
 export interface Calibration3dPipelineSettings extends PipelineSettings {
+  pipelineType: PipelineType.Calibration3d;
   drawAllSnapshots: boolean;
 }
 export type ConfigurableCalibration3dPipelineSettings = Partial<Omit<Calibration3dPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
 export const DefaultCalibration3dPipelineSettings: Calibration3dPipelineSettings = {
   ...DefaultPipelineSettings,
-  pipelineType: PipelineType.ObjectDetection,
+  pipelineType: PipelineType.Calibration3d,
   cameraGain: 20,
   targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
   ledMode: true,

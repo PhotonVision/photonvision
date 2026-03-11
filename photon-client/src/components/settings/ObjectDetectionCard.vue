@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, inject } from "vue";
+import { ref, computed, inject, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { type ObjectDetectionModelProperties } from "@/types/SettingTypes";
@@ -46,7 +46,7 @@ const handleImport = async () => {
   if (
     await axiosPost("/objectdetection/import", "import an object detection model", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
+      onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
         if (uploadPercentage < 99.5) {
           useStateStore().showSnackbarMessage({
@@ -97,7 +97,7 @@ const renameModel = (model: ObjectDetectionModelProperties, newName: string) => 
 // Filters out models that are not supported by the current backend, and returns a flattened list.
 const supportedModels = computed(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
-  const isSupported = (model: any) => {
+  const isSupported = (model: ObjectDetectionModelProperties) => {
     // Check if model's family is in the list of supported backends
     return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
   };
@@ -106,14 +106,14 @@ const supportedModels = computed(() => {
   return availableModels.filter(isSupported);
 });
 
-const exportModels = ref();
+const exportModels = useTemplateRef("exportModels");
 const openExportPrompt = () => {
-  exportModels.value.click();
+  exportModels.value?.click();
 };
 
-const exportIndividualModel = ref();
+const exportIndividualModel = useTemplateRef("exportIndividualModel");
 const openExportIndividualModelPrompt = () => {
-  exportIndividualModel.value.click();
+  exportIndividualModel.value?.click();
 };
 
 const showNukeDialog = ref(false);
@@ -132,7 +132,7 @@ const handleBulkImport = async () => {
   if (
     await axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
+      onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
         if (uploadPercentage < 99.5) {
           useStateStore().showSnackbarMessage({

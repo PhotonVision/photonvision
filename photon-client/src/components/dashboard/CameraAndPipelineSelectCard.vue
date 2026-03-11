@@ -13,7 +13,8 @@ import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 
 const theme = useTheme();
 
-const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
+const changeCurrentCameraUniqueName = (cameraUniqueName: string | number | undefined) => {
+  if (typeof cameraUniqueName !== "string") return;
   useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
 
   switch (useCameraSettingsStore().cameras[cameraUniqueName].pipelineSettings.pipelineType) {
@@ -303,7 +304,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
             !useCameraSettingsStore().hasConnected
           "
           :items="pipelineNamesWrapper"
-          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
+          @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(Number(args), true)"
         />
         <pv-input
           v-else

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount, watch } from "vue";
+import { onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
 import { useTheme } from "vuetify";
 
 // Color  -  original        (adjusted)
@@ -26,8 +26,12 @@ const typeLabels = {
 };
 
 const theme = useTheme();
-const chartRef = ref(null);
+const chartRef = useTemplateRef("chartRef");
 let chart: echarts.ECharts | null = null;
+
+interface TooltipSeriesParam {
+  value: [number, number];
+}
 
 const getOptions = (data: ChartData[] = []) => {
   const now = Date.now();
@@ -37,9 +41,9 @@ const getOptions = (data: ChartData[] = []) => {
     },
     tooltip: {
       trigger: "axis",
-      formatter: (params: any) => {
+      formatter: (params: TooltipSeriesParam[]) => {
         const p = params[0];
-        const append = typeLabels[props.type];
+        const append = typeLabels[props.type as keyof typeof typeLabels];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
         // prettier-ignore
@@ -102,12 +106,12 @@ const getOptions = (data: ChartData[] = []) => {
       position: "right",
       min:
         props.min ??
-        function (value) {
+        function (value: { min: number; max: number }) {
           return Math.max(0, (value.min - 10) | 0);
         },
       max:
         props.max ??
-        function (value) {
+        function (value: { min: number; max: number }) {
           return (value.max + 10) | 0;
         },
       splitNumber: 2,
@@ -127,7 +131,7 @@ const getOptions = (data: ChartData[] = []) => {
 };
 
 const getSeries = (data: ChartData[] = []) => {
-  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}`];
+  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}` as keyof typeof colors];
   return [
     {
       type: "line",

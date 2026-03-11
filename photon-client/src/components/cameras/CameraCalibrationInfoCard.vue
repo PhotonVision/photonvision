@@ -3,7 +3,7 @@ import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-vis
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
@@ -23,18 +23,18 @@ const removeCalibration = (vf: VideoFormat) => {
   });
 };
 
-const exportCalibration = ref();
+const exportCalibration = useTemplateRef("exportCalibration");
 const openExportCalibrationPrompt = () => {
-  exportCalibration.value.click();
+  exportCalibration.value?.click();
 };
 
-const importCalibrationFromPhotonJson = ref();
+const importCalibrationFromPhotonJson = useTemplateRef("importCalibrationFromPhotonJson");
 const openUploadPhotonCalibJsonPrompt = () => {
-  importCalibrationFromPhotonJson.value.click();
+  importCalibrationFromPhotonJson.value?.click();
 };
 const importCalibration = async () => {
-  const files = importCalibrationFromPhotonJson.value.files;
-  if (files.length === 0) return;
+  const files = importCalibrationFromPhotonJson.value?.files;
+  if (files === null || files === undefined || files.length === 0) return;
   const uploadedJson = files[0];
 
   const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);
