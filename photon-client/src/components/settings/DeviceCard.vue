@@ -559,7 +559,7 @@ watch(metricsHistorySnapshot, () => {
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="
                 offlineUpdateDialog.show = false;
-                if(offlineUpdate !== null && offlineUpdate.files !== null && offlineUpdate.files.length > 0) {
+                if (offlineUpdate !== null && offlineUpdate.files !== null && offlineUpdate.files.length > 0) {
                   handleOfflineUpdate(offlineUpdate.files[0]);
                 }
               "

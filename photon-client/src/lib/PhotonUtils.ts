@@ -83,7 +83,7 @@ export const axiosPost = async (url: string, description: string, data?: any, co
       color: "success"
     });
     return true;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     if (error.response) {
       useStateStore().showSnackbarMessage({
@@ -104,7 +104,6 @@ export const axiosPost = async (url: string, description: string, data?: any, co
     return false;
   }
 };
-
 
 type CameraInfoDetails = Partial<
   NonNullable<PVCameraInfo["PVUsbCameraInfo"]> &

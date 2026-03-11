@@ -45,7 +45,7 @@ export default defineConfigWithVueTs(
       "vue/require-default-prop": "off",
       "vue/v-for-delimiter-style": "error",
       "vue/v-on-event-hyphenation": "off",
-      "vue/require-typed-ref": "error",     
+      "vue/require-typed-ref": "error",
       "@typescript-eslint/no-empty-object-type": "error",
       "@typescript-eslint/no-explicit-any": "error",
       "vue/valid-v-slot": ["error", { allowModifiers: true }]
