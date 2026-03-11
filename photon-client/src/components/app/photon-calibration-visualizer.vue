@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
+import type {
+  Scene as SceneType,
+  PerspectiveCamera as PerspectiveCameraType,
+  WebGLRenderer as WebGLRendererType,
+  Group as GroupType,
+  Object3D
+} from "three";
+import type { TrackballControls as TrackballControlsType } from "three/examples/jsm/controls/TrackballControls.js";
 const {
   AmbientLight,
   AxesHelper,
@@ -31,12 +39,12 @@ const props = defineProps<{
   title: string;
 }>();
 
-let scene: Scene | undefined;
-let camera: PerspectiveCamera | undefined;
-let renderer: WebGLRenderer | undefined;
-let controls: TrackballControls | undefined;
+let scene: SceneType | undefined;
+let camera: PerspectiveCameraType | undefined;
+let renderer: WebGLRendererType | undefined;
+let controls: TrackballControlsType | undefined;
 
-const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): Group => {
+const createChessboard = (obs: BoardObservation, cal: CameraCalibrationResult): GroupType => {
   const group = new Group();
 
   if (obs.locationInImageSpace.length === 0) return group;

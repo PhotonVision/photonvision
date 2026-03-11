@@ -332,7 +332,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :items="calibrationDivisors"
               :select-cols="8"
               @update:modelValue="
-                (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: +v }, false)
+                (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: +v! }, false)
               "
             />
             <pv-select

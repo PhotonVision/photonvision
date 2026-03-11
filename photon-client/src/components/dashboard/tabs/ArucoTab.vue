@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType, type ActivePipelineSettings } from "@/types/PipelineTypes";
+import { PipelineType, type ArucoPipelineSettings, type AprilTagFamily } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
@@ -11,8 +11,8 @@ import { useDisplay } from "vuetify";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = computed<ActivePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings
+const currentPipelineSettings = computed<ArucoPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as ArucoPipelineSettings
 );
 const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
@@ -27,7 +27,9 @@ const interactiveCols = computed(() =>
       label="Target family"
       :items="['AprilTag Family 36h11', 'AprilTag Family 16h5']"
       :select-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value as AprilTagFamily }, false)
+      "
     />
     <pv-range-slider
       v-model="currentPipelineSettings.threshWinSizes"
