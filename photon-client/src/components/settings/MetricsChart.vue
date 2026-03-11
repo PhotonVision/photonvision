@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount, watch } from "vue";
+import { onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
 import { useTheme } from "vuetify";
 
 // Color  -  original        (adjusted)
@@ -26,7 +26,7 @@ const typeLabels = {
 };
 
 const theme = useTheme();
-const chartRef = ref(null);
+const chartRef = useTemplateRef("chartRef");
 let chart: echarts.ECharts | null = null;
 
 const getOptions = (data: ChartData[] = []) => {

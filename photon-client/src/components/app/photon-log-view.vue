@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, watch } from "vue";
+import { computed, inject, ref, useTemplateRef, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
@@ -10,9 +10,9 @@ const backendHost = inject<string>("backendHost");
 const searchQuery = ref("");
 const timeInput = ref<string>();
 const autoScroll = ref(true);
-const logList = ref();
+const logList = useTemplateRef<InstanceType<typeof VirtualList>>("logList"); // this needs to be typed in the definition since vue has trouble inferring it
 const logKeeps = ref(40);
-const exportLogFile = ref();
+const exportLogFile = useTemplateRef("exportLogFile");
 const selectedLogLevels = ref<Record<number, boolean>>({
   [LogLevel.ERROR]: true,
   [LogLevel.WARN]: true,
@@ -48,7 +48,7 @@ watch(logs, () => {
   );
   autoScroll.value = bottomOffset < 50;
 
-  if (autoScroll.value) logList.value.scrollToBottom();
+  if (autoScroll.value) logList.value?.scrollToBottom();
 });
 
 const getLogLevelFromIndex = (index: number): string => {
@@ -56,7 +56,7 @@ const getLogLevelFromIndex = (index: number): string => {
 };
 
 const handleLogExport = () => {
-  exportLogFile.value.click();
+  exportLogFile.value?.click();
 };
 
 const handleLogClear = () => {
