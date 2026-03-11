@@ -39,7 +39,7 @@ const getOptions = (data: ChartData[] = []) => {
       trigger: "axis",
       formatter: (params: any) => {
         const p = params[0];
-        const append = typeLabels[props.type];
+        const append = typeLabels[props.type as keyof typeof typeLabels];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
 
         // prettier-ignore
@@ -102,12 +102,12 @@ const getOptions = (data: ChartData[] = []) => {
       position: "right",
       min:
         props.min ??
-        function (value) {
+        function (value: { min: number; max: number }) {
           return Math.max(0, (value.min - 10) | 0);
         },
       max:
         props.max ??
-        function (value) {
+        function (value: { min: number; max: number }) {
           return (value.max + 10) | 0;
         },
       splitNumber: 2,
@@ -127,7 +127,7 @@ const getOptions = (data: ChartData[] = []) => {
 };
 
 const getSeries = (data: ChartData[] = []) => {
-  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}`];
+  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}` as keyof typeof colors];
   return [
     {
       type: "line",

@@ -65,7 +65,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentCameraSettings.pipelineNicknames;
     },
     currentPipelineName(): string {
-      return this.pipelineNames[useStateStore().currentCameraUniqueName];
+      return this.pipelineNames[this.currentCameraSettings.currentPipelineIndex];
     },
     isDriverMode(): boolean {
       return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
@@ -227,7 +227,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       cameraUniqueName: string = useStateStore().currentCameraUniqueName
     ) {
       Object.entries(settings).forEach(([k, v]) => {
-        this.cameras[cameraUniqueName].pipelineSettings[k] = v;
+        (this.cameras[cameraUniqueName].pipelineSettings as unknown as Record<string, unknown>)[k] = v;
       });
     },
     /**

@@ -13,7 +13,7 @@ const autoScroll = ref(true);
 const logList = ref();
 const logKeeps = ref(40);
 const exportLogFile = ref();
-const selectedLogLevels = ref({
+const selectedLogLevels = ref<Record<number, boolean>>({
   [LogLevel.ERROR]: true,
   [LogLevel.WARN]: true,
   [LogLevel.INFO]: true,

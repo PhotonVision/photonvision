@@ -66,7 +66,7 @@ const settingsHaveChanged = (): boolean => {
   const b = useCameraSettingsStore().currentCameraSettings;
 
   for (const q in ValidQuirks) {
-    if (a.quirksToChange[q] !== b.cameraQuirks.quirks[q]) return true;
+    if (a.quirksToChange[q as ValidQuirks] !== b.cameraQuirks.quirks[q as ValidQuirks]) return true;
   }
 
   return a.fov !== b.fov.value;

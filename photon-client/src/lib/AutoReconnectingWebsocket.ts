@@ -44,13 +44,13 @@ export class AutoReconnectingWebsocket {
    * @see isConnected
    *
    */
-  send(data, encodeData = true) {
+  send(data: unknown, encodeData = true) {
     // Only send data if the websocket is open
     if (this.isConnected()) {
       if (encodeData) {
         this.websocket?.send(encode(data));
       } else {
-        this.websocket?.send(data);
+        this.websocket?.send(data as string | ArrayBufferLike | Blob | ArrayBufferView);
       }
     }
   }

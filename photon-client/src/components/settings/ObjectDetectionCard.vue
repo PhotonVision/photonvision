@@ -46,7 +46,7 @@ const handleImport = async () => {
   if (
     await axiosPost("/objectdetection/import", "import an object detection model", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
+      onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
         if (uploadPercentage < 99.5) {
           useStateStore().showSnackbarMessage({
@@ -132,7 +132,7 @@ const handleBulkImport = async () => {
   if (
     await axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
       headers: { "Content-Type": "multipart/form-data" },
-      onUploadProgress: ({ progress }) => {
+      onUploadProgress: ({ progress }: { progress?: number }) => {
         const uploadPercentage = (progress || 0) * 100.0;
         if (uploadPercentage < 99.5) {
           useStateStore().showSnackbarMessage({

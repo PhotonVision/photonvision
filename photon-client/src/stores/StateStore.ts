@@ -31,7 +31,7 @@ interface StateStore {
   currentCameraUniqueName: string;
   networkUsageHistory: NetworkUsageEntry[];
 
-  backendResults: Record<number, PipelineResult>;
+  backendResults: Record<string, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
