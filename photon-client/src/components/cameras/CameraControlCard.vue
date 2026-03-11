@@ -53,7 +53,7 @@ const fetchSnapshots = () => {
     .get("/utils/getImageSnapshots")
     .then((response) => {
       imgData.value = response.data.map(
-        (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }, index) => {
+        (snapshotData: { snapshotName: string; cameraUniqueName: string; snapshotData: string }, index: number) => {
           const metadata = getSnapshotMetadataFromName(snapshotData.snapshotName);
 
           return {

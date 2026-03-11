@@ -10,6 +10,7 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 import { ref } from "vue";
 
 interface GeneralSettingsStore {
@@ -17,7 +18,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout;
+  currentFieldLayout: AprilTagFieldLayout;
 }
 
 interface MetricsEntry {
