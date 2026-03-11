@@ -2,10 +2,7 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import {
-  PlaceholderCameraSettings,
-  PVCameraInfo
-} from "@/types/SettingTypes";
+import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
