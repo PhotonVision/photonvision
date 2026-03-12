@@ -75,6 +75,17 @@ onBeforeMount(() => {
     <photon-log-view />
     <photon-error-snackbar />
   </v-app>
+
+
+<!-- Quarky overlay -->
+<div class="quarky-overlay">
+    <div class="quarky-container" id="quarkyContainer" style="left:calc(100vw - 550px);top:calc(100vh - 550px);">
+        <img id="quarkyImage" src="" alt="Quarky">
+        <div id="quarkySpeechBubble" style="display:none; position:absolute; left:50%; top:0; transform:translateX(-50%); min-width:120px; max-width:320px; padding:16px 24px; background:#fff; color:#222; border-radius:16px; box-shadow:0 4px 16px rgba(0,0,0,0.15); font-size:1.2em; font-family:sans-serif; opacity:0; transition:opacity 0.7s; pointer-events:none; z-index:10;">
+        </div>
+    </div>
+</div>
+
 </template>
 
 <style lang="scss">
@@ -117,4 +128,33 @@ onBeforeMount(() => {
 div.v-layout {
   overflow: unset !important;
 }
+
+/* Overlay container for Quarky */
+.quarky-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* Quarky animation container */
+.quarky-container {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background-color: transparent;
+    transition: left 1s cubic-bezier(.42,0,.58,1), top 1s cubic-bezier(.42,0,.58,1);
+}
+
+.quarky-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
 </style>
+

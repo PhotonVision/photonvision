@@ -6,6 +6,8 @@ import router from "@/router";
 import vuetify from "@/plugins/vuetify";
 import axios from "axios";
 
+import setup from "@/lib/quarky.js";
+
 type PhotonClientRuntimeMode = "production" | "development" | "local-network-development";
 const runtimeMode: PhotonClientRuntimeMode = process.env.NODE_ENV as PhotonClientRuntimeMode;
 
@@ -45,3 +47,4 @@ app.use(pinia);
 app.use(vuetify);
 app.use(router);
 app.mount("#app");
+setup();
