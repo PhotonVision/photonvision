@@ -47,7 +47,7 @@ const quarkyPhrases = [
     "Reverse phase oscillation detected!",
     "Initializing hyperflux capacitor...",
     "Reticulating splines in progress.",
-    "Quantum entanglement buffer overflow.",
+    "Quantum entanglement buffer overflowzomg",
     "Did you remember the turbo-encabulator?",
     "Engaging magnetic flux inverter.",
     "Calibrating photon resonance field.",
@@ -66,6 +66,7 @@ const quarkyPhrases = [
     "Greetings",
     "You look like you need some help!",
     "Set this slider to 25",
+    "Set this slider to 67. HAHA 67!!!!",
     "That's a horrible choice!",
     "Fun is a core value! Is that a fun choice?",
     "If your grandma saw that choice, would she be proud?",
@@ -113,7 +114,7 @@ function playAnimation(animation) {
         quarkySpeechText = quarkyPhrases[Math.floor(Math.random() * quarkyPhrases.length)];
         speechBubble.textContent = quarkySpeechText;
         speechBubble.style.display = 'block';
-        setTimeout(() => { speechBubble.style.opacity = 1; }, 10);
+        setTimeout(() => { speechBubble.style.opacity = 1; }, 1250);
     }
 }
 
