@@ -449,7 +449,7 @@ public class SystemMonitor {
     /**
      * Returns the total GPU memory in MiB.
      *
-     * @return The total GPU memory in MiB, or -1.0 if not avaialable on this platform.
+     * @return The total GPU memory in MiB, or -1.0 if not available on this platform.
      */
     public double getGpuMem() {
         return -1.0;
