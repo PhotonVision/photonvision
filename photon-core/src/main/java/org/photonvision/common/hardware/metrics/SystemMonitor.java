@@ -148,9 +148,9 @@ public class SystemMonitor {
     /**
      * Returns a comma-separated list of additional thermal zone types that should be checked to get
      * the CPU temperature on Unix systems. The temperature will be reported for the first temperature
-     * zone with a type that matches an item of this list. If the CPU temperature isn't being
-     * reported correctly for a coprocessor, override this method to return a string with type
-     * associated with the thermal zone for that coprocessor.
+     * zone with a type that matches an item of this list. If the CPU temperature isn't being reported
+     * correctly for a coprocessor, override this method to return a string with type associated with
+     * the thermal zone for that coprocessor.
      *
      * @return String containing a comma-separated list of thermal zone types for reading CPU
      *     temperature.
