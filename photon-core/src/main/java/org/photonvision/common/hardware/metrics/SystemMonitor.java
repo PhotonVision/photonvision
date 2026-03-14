@@ -20,6 +20,8 @@ package org.photonvision.common.hardware.metrics;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -61,6 +63,9 @@ public class SystemMonitor {
                     .getSubTable("/metrics")
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
+
+    private final Alert thermalThrottlingAlert =
+            new Alert("PhotonAlerts", "Thermal throttling detected!", AlertType.kWarning);
 
     private SystemInfo si;
     private CentralProcessor cpu;
@@ -140,7 +145,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Returns a comma-separated list of addtional thermal zone types that should be checked to get
+     * Returns a comma-separated list of additional thermal zone types that should be checked to get
      * the CPU temperature on Unix systems. The temperature will be reported for the first temperature
      * zone with a type that matches an item of this list. If the CPU temperature isn't being
      * reported correctly for a coprocessor, override this method to return a string with type
@@ -209,6 +214,8 @@ public class SystemMonitor {
                         nt.recvBitRate);
 
         metricPublisher.set(metrics);
+
+        thermalThrottlingAlert.set(this.isThermallyThrottling());
 
         if (writeMetricsToLog) {
             logMetrics(metrics);
@@ -444,6 +451,16 @@ public class SystemMonitor {
      */
     public String getCpuThrottleReason() {
         return "";
+    }
+
+    /**
+     * Returns true if the device is currently experiencing thermal throttling. Platforms that support
+     * thermal throttling detection will override this method.
+     *
+     * @return true if thermally throttling, false otherwise.
+     */
+    public boolean isThermallyThrottling() {
+        return false;
     }
 
     /**
