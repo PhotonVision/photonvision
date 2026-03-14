@@ -22,6 +22,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -216,6 +217,7 @@ public class SystemMonitor {
         metricPublisher.set(metrics);
 
         thermalThrottlingAlert.set(this.isThermallyThrottling());
+        SmartDashboard.updateValues();
 
         if (writeMetricsToLog) {
             logMetrics(metrics);
