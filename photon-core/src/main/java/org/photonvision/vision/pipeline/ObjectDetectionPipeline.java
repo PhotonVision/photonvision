@@ -146,11 +146,7 @@ public class ObjectDetectionPipeline
                             // 4 OBB corners to the 4 equatorial model points yields the same pose.
                             // Just hand the corners through as-is.
                             target.setTargetCorners(
-                                    Arrays.asList(
-                                            rectPoints[0],
-                                            rectPoints[1],
-                                            rectPoints[2],
-                                            rectPoints[3]));
+                                    Arrays.asList(rectPoints[0], rectPoints[1], rectPoints[2], rectPoints[3]));
                         } else {
                             // For non-symmetric targets the OBB side ratio indicates which face of
                             // the 3D object is visible.  RotatedRect.points() returns corners in
@@ -161,11 +157,7 @@ public class ObjectDetectionPipeline
                             // objects, select the appropriate face's 3D corners based on the ratio
                             // of the OBB's width to its height before calling solvePNP.
                             target.setTargetCorners(
-                                    Arrays.asList(
-                                            rectPoints[0],
-                                            rectPoints[3],
-                                            rectPoints[2],
-                                            rectPoints[1]));
+                                    Arrays.asList(rectPoints[0], rectPoints[3], rectPoints[2], rectPoints[1]));
                         }
                     });
 
