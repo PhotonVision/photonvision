@@ -217,6 +217,13 @@ public enum TargetModel implements Releasable {
         return visualizationBoxTop;
     }
 
+        public boolean isSpherical() {
+                return switch (this) {
+                        case kCircularPowerCell7in, k2022CircularCargoBall, k2025Algae -> true;
+                        default -> false;
+                };
+        }
+
     //    public static TargetModel getCircleTarget(double Units.inchesToMeters(7)) {
     //        var corners =
     //            List.of(
