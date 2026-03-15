@@ -17,8 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.opencv.core.Point;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -40,6 +42,9 @@ public class ObjectDetectionPipeline
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
+    private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
+
+    private final Point[] rectPoints = new Point[4];
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -99,11 +104,15 @@ public class ObjectDetectionPipeline
                         settings.contourTargetOffsetPointEdge,
                         settings.contourTargetOrientation,
                         frameStaticProperties));
+
+        solvePNPPipe.setParams(
+                new SolvePNPPipe.SolvePNPPipeParams(
+                        frameStaticProperties.cameraCalibration, settings.targetModel));
     }
 
     @Override
     protected CVPipelineResult process(Frame frame, ObjectDetectionPipelineSettings settings) {
-        long sumPipeNanosElapsed = 0;
+        long sumPipeNanosElapsed = 0L;
 
         CVPipeResult<List<NeuralNetworkPipeResult>> neuralNetworkResult =
                 objectDetectorPipe.run(frame.colorImage);
@@ -125,11 +134,29 @@ public class ObjectDetectionPipeline
                 collect2dTargetsPipe.run(sortContoursResult.output);
         sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
+        List<TrackedTarget> targetList;
+
+        // 3d stuff
+        if (settings.solvePNPEnabled) {
+            collect2dTargetsResult.output.forEach(
+                    target -> {
+                        target.getMinAreaRect().points(rectPoints);
+                        target.setTargetCorners(Arrays.asList(rectPoints));
+                    });
+
+            var solvePNPResult = solvePNPPipe.run(collect2dTargetsResult.output);
+            sumPipeNanosElapsed += solvePNPResult.nanosElapsed;
+
+            targetList = solvePNPResult.output;
+        } else {
+            targetList = collect2dTargetsResult.output;
+        }
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
+                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame, names);
     }
 
     @Override
