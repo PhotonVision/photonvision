@@ -17,10 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 import org.photonvision.vision.objects.Model;
+import org.photonvision.vision.target.TargetModel;
 
+@JsonTypeName("ObjectDetectionPipelineSettings")
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
@@ -35,6 +38,7 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         ledMode = false;
         confidence = .9;
         nms = .45;
+        targetModel = TargetModel.k2025Algae;
         model =
                 NeuralNetworkModelManager.getInstance()
                         .getDefaultModel()
