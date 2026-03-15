@@ -214,9 +214,28 @@ public class ConfigManager {
     }
 
     public File getSettingsFolderAsZip() {
+        return getSettingsFolderAsZip(false);
+    }
+
+    public File getSettingsFolderAsZip(boolean excludeImages) {
         File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
         try {
-            ZipUtil.pack(configDirectoryFile, out);
+            if (excludeImages) {
+                ZipUtil.pack(
+                        configDirectoryFile,
+                        out,
+                        name -> {
+                            // Exclude calibration images and saved snapshots
+                            if (name.startsWith("calibImgs/")
+                                    || name.startsWith("calibration/")
+                                    || name.startsWith("imgSaves/")) {
+                                return null;
+                            }
+                            return name;
+                        });
+            } else {
+                ZipUtil.pack(configDirectoryFile, out);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
