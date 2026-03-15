@@ -217,33 +217,6 @@ public enum TargetModel implements Releasable {
         return visualizationBoxTop;
     }
 
-    /**
-     * Returns true if this model represents a spherical/symmetric target (such as a ball or cargo
-     * game piece). Spherical models have equal absolute x and y extents (a square cross-section) and
-     * boxHeight == 0. Because a sphere looks identical from any viewing angle, pose estimation can
-     * use the 4 bounding-box corners directly without any face-selection logic.
-     *
-     * <p>For non-spherical models (planar reflective targets, etc.) the OBB side-ratio can be used
-     * to determine which face of the 3D object is visible before running solvePNP.
-     *
-     * @return true if all four model points share the same absolute x and y distances from the
-     *     origin, and boxHeight is 0.
-     */
-    @JsonIgnore
-    public boolean isSpherical() {
-        if (realWorldCoordinatesArray == null || realWorldCoordinatesArray.size() != 4) return false;
-        if (boxHeight != 0) return false;
-        double absX = Math.abs(realWorldCoordinatesArray.get(0).x);
-        double absY = Math.abs(realWorldCoordinatesArray.get(0).y);
-        if (Math.abs(absX - absY) > 1e-9) return false;
-        for (Point3 p : realWorldCoordinatesArray) {
-            if (Math.abs(Math.abs(p.x) - absX) > 1e-9 || Math.abs(Math.abs(p.y) - absY) > 1e-9) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     //    public static TargetModel getCircleTarget(double Units.inchesToMeters(7)) {
     //        var corners =
     //            List.of(

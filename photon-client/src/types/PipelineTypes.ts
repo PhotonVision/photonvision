@@ -354,4 +354,3 @@ export type ActiveConfigurablePipelineSettings =
   | ConfigurableArucoPipelineSettings
   | ConfigurableObjectDetectionPipelineSettings
   | ConfigurableCalibration3dPipelineSettings;
-  
