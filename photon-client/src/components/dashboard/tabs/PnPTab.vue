@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { TargetModel } from "@/types/PipelineTypes";
+import { PipelineType, TargetModel } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -10,6 +10,10 @@ const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8
+);
+
+const isObjectDetection = computed(
+  () => useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ObjectDetection
 );
 </script>
 
@@ -34,6 +38,7 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-slider
+      v-if="!isObjectDetection"
       v-model="useCameraSettingsStore().currentPipelineSettings.cornerDetectionAccuracyPercentage"
       class="pt-2"
       :slider-cols="interactiveCols"
