@@ -36,9 +36,11 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
+        // Use a spherical ball model by default: YOLO primarily detects game pieces like
+        // balls/cargo, which are symmetric from all sides and work well with solvePNP.
+        targetModel = TargetModel.k2025Algae;
         confidence = .9;
         nms = .45;
-        targetModel = TargetModel.k2025Algae;
         model =
                 NeuralNetworkModelManager.getInstance()
                         .getDefaultModel()
