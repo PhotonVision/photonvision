@@ -20,6 +20,9 @@ package org.photonvision.common.hardware.metrics;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.ProtobufPublisher;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -61,6 +64,9 @@ public class SystemMonitor {
                     .getSubTable("/metrics")
                     .getProtobufTopic(CameraServerJNI.getHostname(), DeviceMetrics.proto)
                     .publish();
+
+    private final Alert thermalThrottlingAlert =
+            new Alert("PhotonAlerts", "Thermal throttling detected!", AlertType.kWarning);
 
     private SystemInfo si;
     private CentralProcessor cpu;
@@ -140,11 +146,11 @@ public class SystemMonitor {
     }
 
     /**
-     * Returns a comma-separated list of addtional thermal zone types that should be checked to get
+     * Returns a comma-separated list of additional thermal zone types that should be checked to get
      * the CPU temperature on Unix systems. The temperature will be reported for the first temperature
-     * zone with a type that mateches an item of this list. If the CPU temperature isn't being
-     * reported correctly for a coprocessor, override this method to return a string with type
-     * associated with the thermal zone for that comprocessor.
+     * zone with a type that matches an item of this list. If the CPU temperature isn't being reported
+     * correctly for a coprocessor, override this method to return a string with type associated with
+     * the thermal zone for that coprocessor.
      *
      * @return String containing a comma-separated list of thermal zone types for reading CPU
      *     temperature.
@@ -159,7 +165,7 @@ public class SystemMonitor {
 
     /**
      * Starts the periodic system monitor that publishes performance metrics. The metrics are
-     * published every millisUpdateInerval seconds after a millisStartDelay startup delay. Calling
+     * published every millisUpdateInterval seconds after a millisStartDelay startup delay. Calling
      * this method when the monitor is running will stop it and restart it with the new delay and
      * update interval.
      *
@@ -210,6 +216,9 @@ public class SystemMonitor {
 
         metricPublisher.set(metrics);
 
+        thermalThrottlingAlert.set(this.isThermallyThrottling());
+        SmartDashboard.updateValues();
+
         if (writeMetricsToLog) {
             logMetrics(metrics);
         }
@@ -233,7 +242,7 @@ public class SystemMonitor {
                 String.format("CPU Throttle: %s, ", metrics.cpuThr().isBlank() ? "N/A" : metrics.cpuThr()));
         sb.append(
                 String.format(
-                        "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                        "Data sent: %.0f Kbps, Data received: %.0f Kbps",
                         metrics.sentBitRate() / 1000, metrics.recvBitRate() / 1000));
         logger.debug(sb.toString());
     }
@@ -447,6 +456,16 @@ public class SystemMonitor {
     }
 
     /**
+     * Returns true if the device is currently experiencing thermal throttling. Platforms that support
+     * thermal throttling detection will override this method.
+     *
+     * @return true if thermally throttling, false otherwise.
+     */
+    public boolean isThermallyThrottling() {
+        return false;
+    }
+
+    /**
      * Returns the total GPU memory in MiB.
      *
      * @return The total GPU memory in MiB, or -1.0 if not available on this platform.
@@ -475,7 +494,7 @@ public class SystemMonitor {
     }
 
     /**
-     * Returns a NetworkTraffic instance containing the average sent and recieved network traffic
+     * Returns a NetworkTraffic instance containing the average sent and received network traffic
      * since the last time this was called.
      *
      * @return NetworkTraffic instance with data in bits/second. The traffic values will be -1 if the
@@ -537,7 +556,7 @@ public class SystemMonitor {
                         () -> {
                             var nt = getNetworkTraffic();
                             return String.format(
-                                    "Data sent: %.0f Kbps, Data recieved: %.0f Kbps",
+                                    "Data sent: %.0f Kbps, Data received: %.0f Kbps",
                                     nt.sentBitRate() / 1000, nt.recvBitRate() / 1000);
                         });
 
