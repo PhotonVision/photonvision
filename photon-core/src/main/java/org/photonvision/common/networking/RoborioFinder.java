@@ -57,7 +57,7 @@ public class RoborioFinder {
     volatile HashMap<Long, ServiceData> possibleRioList = new HashMap<>();
 
     private final MulticastServiceResolver resolver = new MulticastServiceResolver("_ni._tcp");
-    // private final MulticastServiceAnnouncer announcer = new MulticastServiceAnnouncer("photonvision",  "_photon", 19231);
+    private final MulticastServiceAnnouncer announcer = new MulticastServiceAnnouncer("photonvision",  "_photon", 19231);
 
     public Collection<ServiceData> findAll() {
         if (!resolver.hasImplementation()) return possibleRioList.values();
@@ -89,10 +89,9 @@ public class RoborioFinder {
     }
 
     public void start() {
-        // if (resolver.hasImplementation() && announcer.hasImplementation()) {
-        if (resolver.hasImplementation()) {
+        if (resolver.hasImplementation() && announcer.hasImplementation()) {
             resolver.start();
-            // announcer.start();
+            announcer.start();
         } else {
             logger.error("No implementation");
         }
@@ -100,6 +99,6 @@ public class RoborioFinder {
 
     public void stop() {
         resolver.stop();
-        // announcer.stop();
+        announcer.stop();
     }
 }

@@ -24,6 +24,7 @@
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 #include "photon/estimation/OpenCVHelp.h"
 #include "photon/targeting/MultiTargetPNPResult.h"
+#include "sleipnir/optimization/solver/exit_status.hpp"
 
 namespace photon {
 namespace VisionEstimation {
@@ -192,7 +193,7 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
       guess2.Rotation().Radians().value()};
 
   wpi::expected<constrained_solvepnp::RobotStateMat,
-                sleipnir::SolverExitCondition>
+                slp::ExitStatus>
       result = constrained_solvepnp::do_optimization(
           headingFree, knownTags.size(), cameraCal, robotToCamera, guessMat,
           field2points, pointObservations, gyroTheta.Radians().value(),
@@ -205,10 +206,12 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
 
     res.best = frc::Transform3d{frc::Transform2d{
         units::meter_t{result.value()[0]}, units::meter_t{result.value()[1]},
-        frc::Rotation2d{units::radian_t{result.value()[2]}}}};
+        frc::Rotation2d(units::radian_t{result.value()[2]})}};
 
     return res;
   }
+
+  return {}; // todo wtf
 }
 
 }  // namespace VisionEstimation
