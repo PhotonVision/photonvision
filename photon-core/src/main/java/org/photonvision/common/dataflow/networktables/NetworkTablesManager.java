@@ -85,7 +85,7 @@ public class NetworkTablesManager {
 
     private NetworkTablesManager() {
         ntInstance.addLogger(
-                LogMessage.kDebug4, LogMessage.kCritical, this::logNtMessage); // to hide error messages
+                LogMessage.kInfo, LogMessage.kCritical, this::logNtMessage); // to hide error messages
         ntInstance.addConnectionListener(true, this::checkNtConnectState); // to hide error messages
 
         ntInstance.addListener(
