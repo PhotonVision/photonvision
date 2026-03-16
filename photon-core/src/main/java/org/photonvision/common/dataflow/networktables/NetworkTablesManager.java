@@ -104,7 +104,6 @@ public class NetworkTablesManager {
 
     public void registerTimedTasks() {
         m_timeSync.start();
-        TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
         TimedTaskManager.getInstance()
                 .addTask("CheckHostnameAndCameraNames", this::checkHostnameAndCameraNames, 10000);
     }
@@ -378,23 +377,6 @@ public class NetworkTablesManager {
         ntInstance.stopClient();
         ntInstance.startServer();
         broadcastVersion();
-    }
-
-    // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
-    // it'll never connect. This hack works around it by restarting the client/server while the nt
-    // instance isn't connected, same as clicking the save button in the settings menu (or restarting
-    // the service)
-    private void ntTick() {
-        if (!ntInstance.isConnected()
-                && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
-            setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
-        }
-
-        if (!ntInstance.isConnected() && !m_isRetryingConnection) {
-            m_isRetryingConnection = true;
-            logger.error(
-                    "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
-        }
     }
 
     public long getTimeSinceLastPong() {
