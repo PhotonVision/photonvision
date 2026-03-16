@@ -37,6 +37,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.logging.PvCSCoreLogger;
 import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.networking.RoborioFinder;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.RknnDetectorJNI;
@@ -321,6 +322,9 @@ public class Main {
                 addTestModeSources();
             }
         }
+
+        // Start the multicast resolver to look for roboRIOs
+        RoborioFinder.getInstance().start();
 
         VisionSourceManager.getInstance().registerTimedTasks();
 
