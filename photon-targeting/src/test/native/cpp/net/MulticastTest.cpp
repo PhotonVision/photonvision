@@ -30,5 +30,8 @@ TEST(MulticastServiceAnnouncerTest, EmptyText) {
 
     resolver.Stop();
     announcer.Stop();
+  } else {
+    printf("Bjork\n");
+    ASSERT_TRUE(false);
   }
 }
