@@ -32,9 +32,13 @@ import edu.wpi.first.net.ServiceData;
 import edu.wpi.first.util.WPIUtilJNI;
 
 /**
- * Goal here is two-fold 1. Provide a way for us to discover roborios and show to users. this one is
+ * Goal here is two-fold 
+ * 
+ * 1. Provide a way for us to discover roborios and show to users. this one is
  * of questionable importance, and requires we resolve _ni._tcp. I don't know how this will work
- * with SystemCore 2. Respond to any multicast service requests emitted by the roborio/systemcore.
+ * with SystemCore 
+ * 
+ * 2. Respond to any multicast service requests emitted by the roborio/systemcore.
  * Our vendordep would be the thing sending those pokes out
  * 
  * Looks like systemcore advertises _ni._tcp as well as _SystemCore._tcp
@@ -53,7 +57,7 @@ public class RoborioFinder {
     volatile HashMap<Long, ServiceData> possibleRioList = new HashMap<>();
 
     private final MulticastServiceResolver resolver = new MulticastServiceResolver("_ni._tcp");
-    private final MulticastServiceAnnouncer announcer = new MulticastServiceAnnouncer("photonvision",  "_photon", 0);
+    // private final MulticastServiceAnnouncer announcer = new MulticastServiceAnnouncer("photonvision",  "_photon", 19231);
 
     public Collection<ServiceData> findAll() {
         if (!resolver.hasImplementation()) return possibleRioList.values();
@@ -68,21 +72,27 @@ public class RoborioFinder {
         }
 
         var allData = resolver.getData();
-        if (allData == null) return possibleRioList.values();
+        if (allData == null) {
+            System.out.println("Data was null? " + possibleRioList.size());
+            return possibleRioList.values();
+        }
 
         for (var data : allData) {
             possibleRioList.put(data.getIpv4Address(), data);
         }
 
+        System.out.println("Data len: " + allData.length);
+        System.out.println("Num addresses: " + possibleRioList.size());
         possibleRioList.values().forEach(it -> System.out.println(it.getHostName()));
 
         return possibleRioList.values();
     }
 
     public void start() {
-        if (resolver.hasImplementation() && announcer.hasImplementation()) {
+        // if (resolver.hasImplementation() && announcer.hasImplementation()) {
+        if (resolver.hasImplementation()) {
             resolver.start();
-            announcer.start();
+            // announcer.start();
         } else {
             logger.error("No implementation");
         }
@@ -90,6 +100,6 @@ public class RoborioFinder {
 
     public void stop() {
         resolver.stop();
-        announcer.stop();
+        // announcer.stop();
     }
 }
