@@ -46,6 +46,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -603,5 +604,35 @@ class VisionSystemSimTest {
         visionSysSim.update(robotPose);
         ambiguity = waitForSequenceNumber(camera, 2).getBestTarget().getPoseAmbiguity();
         assertTrue(0 < ambiguity && ambiguity < 0.2, "Tag ambiguity expected to be low");
+    }
+
+    @Test
+    public void testObjectDetection() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera(inst, "camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMinTargetAreaPixels(20.0);
+
+        final var targetPose = new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
+        final int classId = 3;
+        final float conf = 0.67f;
+        final TargetModel ballModel = new TargetModel(Units.inchesToMeters(6));
+        final var ballTarget = new VisionTargetSim(targetPose, ballModel, classId, conf);
+
+        visionSysSim.addVisionTargets(ballTarget);
+
+        var robotPose = Pose2d.kZero;
+        visionSysSim.update(robotPose);
+        var target1 = waitForSequenceNumber(camera, 1).getBestTarget();
+        assertEquals(classId, target1.objDetectId);
+        assertEquals(conf, target1.objDetectConf);
+        assertEquals(-1, target1.fiducialId);
+
+        // robotPose = new Pose2d(-2, -2, Rotation2d.fromDegrees(30));
+        // visionSysSim.update(robotPose);
+        // ambiguity = waitForSequenceNumber(camera, 2).getBestTarget().getPoseAmbiguity();
+        // assertTrue(0 < ambiguity && ambiguity < 0.2, "Tag ambiguity expected to be low");
     }
 }
