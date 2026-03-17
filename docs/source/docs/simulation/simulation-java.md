@@ -73,8 +73,6 @@ Vision targets require a `TargetModel`, which describes the shape of the target.
       TargetModel targetModel = new TargetModel(0.5, 0.25);
 ```
 
-To use simulated object detection, you must provide an objDetClassId (zero-indexed class ID) and confidence value. When you set objDetConf to -1, the simulation computes confidence based on the area of the target in the camera's field of view.
-
 These `TargetModel` are paired with a target pose to create a `VisionTargetSim`. A `VisionTargetSim` is added to the `VisionSystemSim` to become visible to all of its cameras.
 
 ```{eval-rst}
@@ -96,6 +94,27 @@ These `TargetModel` are paired with a target pose to create a `VisionTargetSim`.
 :::{note}
 The pose of a `VisionTargetSim` object can be updated to simulate moving targets. Note, however, that this will break latency simulation for that target.
 :::
+
+To use simulated object detection, you must provide an objDetClassId (zero-indexed class ID) and confidence value. When you set objDetConf to -1, the simulation computes confidence based on the area of the target in the camera's field of view. To simulate a object detection model with one class (fuel, index 0) and specify confidence, you'd write:
+
+```{eval-rst}
+.. tab-set-code::
+
+   .. code-block:: java
+
+      // arbitrary position on field
+      final var targetPose = new Pose3d(new Translation3d(2, 0, 0), new Rotation3d());
+      // Class id, zero-indexed
+      final int classId = 0;
+      // Confidence, between 0 and 1.
+      final float conf = 0.67f;
+      // 6 inch diameter ball
+      final TargetModel ballModel = new TargetModel(Units.inchesToMeters(6));
+      final var ballTargetSim = new VisionTargetSim(targetPose, ballModel, classId, conf);
+
+      // Add this vision target to the vision system simulation to make it visible
+      visionSim.addVisionTargets(visionTarget);
+```
 
 For convenience, an `AprilTagFieldLayout` can also be added to automatically create a target for each of its AprilTags.
 
