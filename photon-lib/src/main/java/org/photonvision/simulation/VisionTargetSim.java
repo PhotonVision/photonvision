@@ -73,8 +73,7 @@ public class VisionTargetSim {
      * @param objDetConf The object detection confidence, or -1 in which case the simulation will
      *     compute a confidence based on the area of the target in the camera's field of view
      */
-    public VisionTargetSim(
-            Pose3d pose, TargetModel model, int objDetClassId, float objDetConf) {
+    public VisionTargetSim(Pose3d pose, TargetModel model, int objDetClassId, float objDetConf) {
         this(pose, model, -1, objDetClassId, objDetConf);
     }
 

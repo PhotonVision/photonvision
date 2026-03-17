@@ -46,7 +46,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
-import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -602,8 +601,13 @@ class VisionSystemSimTest {
 
         robotPose = new Pose2d(-2, -2, Rotation2d.fromDegrees(30));
         visionSysSim.update(robotPose);
-        ambiguity = waitForSequenceNumber(camera, 2).getBestTarget().getPoseAmbiguity();
+        var target2 = waitForSequenceNumber(camera, 2).getBestTarget();
+        ambiguity = target2.getPoseAmbiguity();
         assertTrue(0 < ambiguity && ambiguity < 0.2, "Tag ambiguity expected to be low");
+
+        // and prove that object detection class id/conf are -1 when we look at a tag
+        assertEquals(-1, target2.objDetectId);
+        assertEquals(-1, target2.objDetectConf);
     }
 
     @Test
@@ -630,9 +634,16 @@ class VisionSystemSimTest {
         assertEquals(conf, target1.objDetectConf);
         assertEquals(-1, target1.fiducialId);
 
-        // robotPose = new Pose2d(-2, -2, Rotation2d.fromDegrees(30));
-        // visionSysSim.update(robotPose);
-        // ambiguity = waitForSequenceNumber(camera, 2).getBestTarget().getPoseAmbiguity();
-        // assertTrue(0 < ambiguity && ambiguity < 0.2, "Tag ambiguity expected to be low");
+        // much around with the target to force PhotonCameraSim::process calculate conf
+        visionSysSim.removeVisionTargets(ballTarget);
+        final float conf2 = -1;
+        final var ballTarget2 = new VisionTargetSim(targetPose, ballModel, classId, conf2);
+        visionSysSim.addVisionTargets(ballTarget2);
+        visionSysSim.update(robotPose);
+        var target2 = waitForSequenceNumber(camera, 2).getBestTarget();
+        assertEquals(classId, target2.objDetectId);
+        // 2 * sqrt(area pixels) at this particular pose
+        assertEquals(0.131, target2.objDetectConf, 0.01);
+        assertEquals(-1, target2.fiducialId);
     }
 }
