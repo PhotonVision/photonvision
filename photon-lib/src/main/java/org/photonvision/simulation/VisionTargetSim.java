@@ -43,7 +43,8 @@ public class VisionTargetSim {
     public final float objDetConf;
 
     /**
-     * Describes a vision target located somewhere on the field that your vision system can detect.
+     * Describes a retro-reflective/colored shape vision target located somewhere on the field that
+     * your vision system can detect.
      *
      * @param pose Pose3d of the tag in field-relative coordinates
      * @param model TargetModel which describes the geometry of the target
@@ -64,7 +65,10 @@ public class VisionTargetSim {
     }
 
     /**
-     * Describes a vision target located somewhere on the field that your vision system can detect.
+     * Describes an object-detection vision target located somewhere on the field that your vision
+     * system can detect. Class ID is the (zero-indexed) index of the object's class ID in the list of
+     * all classes. Confidence can be specified, or pass -1 to estimate confidence based on 2 *
+     * sqrt(target area / total image area)
      *
      * @param pose Pose3d of the target in field-relative coordinates
      * @param model TargetModel which describes the geometry of the target
@@ -77,17 +81,6 @@ public class VisionTargetSim {
         this(pose, model, -1, objDetClassId, objDetConf);
     }
 
-    /**
-     * Describes a vision target located somewhere on the field that your vision system can detect.
-     *
-     * @param pose Pose3d of the target in field-relative coordinates
-     * @param model TargetModel which describes the geometry of the target
-     * @param id The ID of this fiducial tag, or -1 if not applicable
-     * @param objDetClassId The object detection class ID, if -1 it will not be detected by object
-     *     detection
-     * @param objDetConf The object detection confidence, or -1 in which case the simulation will
-     *     compute a confidence based on the area of the target in the camera's field of view
-     */
     private VisionTargetSim(
             Pose3d pose, TargetModel model, int id, int objDetClassId, float objDetConf) {
         this.pose = pose;
