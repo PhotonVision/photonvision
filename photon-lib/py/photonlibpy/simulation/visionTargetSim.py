@@ -1,4 +1,5 @@
 import math
+from typing import overload
 
 from wpimath.geometry import Pose3d, Translation3d
 
@@ -8,6 +9,15 @@ from ..estimation.targetModel import TargetModel
 class VisionTargetSim:
     """Describes a vision target located somewhere on the field that your vision system can detect."""
 
+    @overload
+    def __init__(self, pose: Pose3d, model: TargetModel) -> None: ...
+    @overload
+    def __init__(self, pose: Pose3d, model: TargetModel, id: int) -> None: ...
+    @overload
+    def __init__(
+        self, pose: Pose3d, model: TargetModel, objDetClassId: int, objDetConf: float
+    ) -> None: ...
+
     def __init__(
         self,
         pose: Pose3d,
@@ -16,18 +26,15 @@ class VisionTargetSim:
         objDetClassId: int = -1,
         objDetConf: float = -1.0,
     ):
-        """Describes a vision target located somewhere on the field that your vision system can detect.
-
+        """
         :param pose:          Pose3d of the target in field-relative coordinates
         :param model:         TargetModel which describes the shape of the target
-        :param id:            The ID of this fiducial tag
-        :param objDetClassId: The object detection class ID of this target, if left as -1, this target
-                              will not be detected by object detection
-        :param objDetConf:    The object detection confidence of this target, if left as -1.0, the
-                              simulation will compute a confidence based on the area of the target
-                              in the camera's field of view
+        :param id:            The ID of this fiducial tag, or -1 if not a fiducial
+        :param objDetClassId: The object detection class ID of this target, or -1 to
+                              exclude from object detection
+        :param objDetConf:    The object detection confidence, or -1.0 to compute from
+                              target area in the camera's field of view
         """
-
         self.pose: Pose3d = pose
         self.model: TargetModel = model
         self.fiducialId: int = id

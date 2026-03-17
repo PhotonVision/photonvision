@@ -36,8 +36,8 @@ namespace photon {
 class VisionTargetSim {
  public:
   /**
-   * Describes a vision target located somewhere on the field that your vision
-   * system can detect.
+   * Describes a retro-reflective/colored shape vision target located somewhere
+   * on the field that your vision system can detect.
    *
    * @param pose Pose3d of the tag in field-relative coordinates
    * @param model TargetModel which describes the geometry of the target
@@ -48,6 +48,7 @@ class VisionTargetSim {
         objDetConf(-1),
         pose(pose),
         model(model) {}
+
   /**
    * Describes a fiducial tag located somewhere on the field that your vision
    * system can detect.
@@ -62,22 +63,25 @@ class VisionTargetSim {
         objDetConf(-1),
         pose(pose),
         model(model) {}
+
   /**
-   * Describes a vision target located somewhere on the field that your vision
-   * system can detect.
+   * Describes an object-detection vision target located somewhere on the field
+   * that your vision system can detect. Class ID is the (zero-indexed) index of
+   * the object's class ID in the list of all classes. Confidence can be
+   * specified, or pass -1 to estimate confidence based on 2 * sqrt(target area
+   * / total image area)
    *
    * @param pose Pose3d of the target in field-relative coordinates
    * @param model TargetModel which describes the geometry of the target
-   * @param id The ID of this fiducial tag, or -1 if not applicable
    * @param objDetClassId The object detection class ID, if -1 it will not be
    * detected by object detection
    * @param objDetConf The object detection confidence, or -1 in which case the
    * simulation will compute a confidence based on the area of the target in the
    * camera's field of view
    */
-  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model, int id,
+  VisionTargetSim(const frc::Pose3d& pose, const TargetModel& model,
                   int objDetClassId, float objDetConf)
-      : fiducialId(id),
+      : fiducialId(-1),
         objDetClassId(objDetClassId),
         objDetConf(objDetConf),
         pose(pose),
@@ -119,10 +123,6 @@ class VisionTargetSim {
     return model.GetFieldVertices(pose);
   }
 
-  int fiducialId;
-  int objDetClassId;
-  float objDetConf;
-
   bool operator<(const VisionTargetSim& right) const {
     return pose.Translation().Norm() < right.pose.Translation().Norm();
   }
@@ -142,6 +142,10 @@ class VisionTargetSim {
                             other.GetPose().Rotation().Z()) < 1_deg &&
            model.GetIsPlanar() == other.GetModel().GetIsPlanar();
   }
+
+  const int fiducialId;
+  const int objDetClassId;
+  const float objDetConf;
 
  private:
   frc::Pose3d pose;
