@@ -116,6 +116,29 @@ class VisionTargetSim {
   TargetModel GetModel() const { return model; }
 
   /**
+   * Returns the fiducial ID of this target, or -1 if not a fiducial target.
+   *
+   * @return The fiducial ID
+   */
+  int GetFiducialId() const { return fiducialId; }
+
+  /**
+   * Returns the object detection class ID of this target, or -1 if not an
+   * object detection target.
+   *
+   * @return The object detection class ID
+   */
+  int GetObjDetClassId() const { return objDetClassId; }
+
+  /**
+   * Returns the object detection confidence of this target, or -1 if
+   * confidence is estimated from target area or is not an object.
+   *
+   * @return The object detection confidence
+   */
+  float GetObjDetConf() const { return objDetConf; }
+
+  /**
    * This target's vertices offset from its field pose.
    * @return A vector of Translation3d representing the vertices of the target
    */
