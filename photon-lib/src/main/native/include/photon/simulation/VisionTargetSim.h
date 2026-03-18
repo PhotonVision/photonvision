@@ -143,6 +143,7 @@ class VisionTargetSim {
            model.GetIsPlanar() == other.GetModel().GetIsPlanar();
   }
 
+ private:
   int fiducialId;
   int objDetClassId;
   float objDetConf;
