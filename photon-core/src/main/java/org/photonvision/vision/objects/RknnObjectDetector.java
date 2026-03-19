@@ -19,13 +19,17 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.common.util.NativeObjectReleaser;
 import org.photonvision.rknn.RknnJNI;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
@@ -36,8 +40,7 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Cleaner instance to release the detector when it goes out of scope */
     private final Cleaner cleaner = Cleaner.create();
 
-    /** Atomic boolean to ensure that the native object can only be released once. */
-    private AtomicBoolean released = new AtomicBoolean(false);
+    private final NativeObjectReleaser releaser;
 
     /** Pointer to the native object */
     private final long objPointer;
@@ -77,10 +80,12 @@ public class RknnObjectDetector implements ObjectDetector {
             throw new UnsupportedOperationException("Model must be quantized.");
         }
 
+        releaser = new NativeObjectReleaser(objPointer, (ptr) -> RknnJNI.destroy(ptr), "(RknnObjectDetectorJNI *) " + model.modelFile.getName());
+
         logger.debug("Created detector for model " + model.modelFile.getName());
 
         // Register the cleaner to release the detector when it goes out of scope
-        cleaner.register(this, this::release);
+        cleaner.register(this, releaser);
     }
 
     /**
@@ -137,17 +142,6 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Thread-safe method to release the detector. */
     @Override
     public void release() {
-        // Checks if the atomic is 'false', and if so, sets it to 'true'
-        if (released.compareAndSet(false, true)) {
-            if (objPointer <= 0) {
-                logger.error(
-                        "Detector is not initialized, and so it can't be released! Model: "
-                                + model.modelFile.getName());
-                return;
-            }
-
-            RknnJNI.destroy(objPointer);
-            logger.debug("Released detector for model " + model.modelFile.getName());
-        }
+        releaser.run();
     }
 }
