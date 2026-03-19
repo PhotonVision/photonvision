@@ -214,15 +214,15 @@ PhotonPipelineResult PhotonCameraSim::Process(
     }
 
     std::optional<photon::PnpResult> pnpSim = std::nullopt;
-    if (tgt.fiducialId >= 0 && tgt.GetFieldVertices().size() == 4) {
+    if (tgt.GetFiducialId() >= 0 && tgt.GetFieldVertices().size() == 4) {
       pnpSim = OpenCVHelp::SolvePNP_Square(
           prop.GetIntrinsics(), prop.GetDistCoeffs(),
           tgt.GetModel().GetVertices(), noisyTargetCorners);
     }
 
     // Compute object detection confidence if this is an obj det target
-    int classId = tgt.objDetClassId;
-    float conf = tgt.objDetConf;
+    int classId = tgt.GetObjDetClassId();
+    float conf = tgt.GetObjDetConf();
     if (classId >= 0 && conf < 0) {
       // Simulate confidence using sqrt-scaled area for a more realistic
       // curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
@@ -247,8 +247,9 @@ PhotonPipelineResult PhotonCameraSim::Process(
     detectableTgts.emplace_back(
         -centerRot.Z().convert<units::degrees>().to<double>(),
         -centerRot.Y().convert<units::degrees>().to<double>(), areaPercent,
-        centerRot.X().convert<units::degrees>().to<double>(), tgt.fiducialId,
-        classId, conf, pnpSim ? pnpSim->best : frc::Transform3d{},
+        centerRot.X().convert<units::degrees>().to<double>(),
+        tgt.GetFiducialId(), classId, conf,
+        pnpSim ? pnpSim->best : frc::Transform3d{},
         pnpSim ? pnpSim->alt : frc::Transform3d{},
         pnpSim ? pnpSim->ambiguity : -1, smallVec, cornersDouble);
   }
@@ -264,8 +265,8 @@ PhotonPipelineResult PhotonCameraSim::Process(
       VisionTargetSim tgt = pair.first;
       std::vector<cv::Point2f> corners = pair.second;
 
-      if (tgt.fiducialId > 0) {
-        VideoSimUtil::Warp165h5TagImage(tgt.fiducialId, corners, true,
+      if (tgt.GetFiducialId() > 0) {
+        VideoSimUtil::Warp165h5TagImage(tgt.GetFiducialId(), corners, true,
                                         videoSimFrameRaw);
       } else if (!tgt.GetModel().GetIsSpherical()) {
         std::vector<cv::Point2f> contour = corners;
