@@ -17,13 +17,10 @@
 
 #include "photon/estimation/VisionEstimation.h"
 
-#include <iostream>
-#include <utility>
 #include <vector>
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 #include "photon/estimation/OpenCVHelp.h"
-#include "photon/targeting/MultiTargetPNPResult.h"
 
 namespace photon {
 namespace VisionEstimation {

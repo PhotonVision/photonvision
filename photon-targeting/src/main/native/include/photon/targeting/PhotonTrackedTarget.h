@@ -17,13 +17,10 @@
 
 #pragma once
 
-#include <cstddef>
-#include <string>
 #include <utility>
 #include <vector>
 
 #include <frc/geometry/Transform3d.h>
-#include <wpi/SmallVector.h>
 
 #include "photon/struct/PhotonTrackedTargetStruct.h"
 

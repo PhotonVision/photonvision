@@ -29,7 +29,7 @@
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <frc/interpolation/TimeInterpolatableBuffer.h>
-#include <opencv2/core/mat.hpp>
+#include <wpi/SmallVector.h>
 
 #include "photon/PhotonCamera.h"
 #include "photon/targeting/PhotonPipelineResult.h"

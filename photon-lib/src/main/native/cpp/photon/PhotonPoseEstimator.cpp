@@ -26,7 +26,6 @@
 
 #include <limits>
 #include <optional>
-#include <span>
 #include <utility>
 #include <vector>
 

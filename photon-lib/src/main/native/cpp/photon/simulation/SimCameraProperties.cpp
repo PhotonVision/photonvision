@@ -28,6 +28,8 @@
 #include <utility>
 #include <vector>
 
+#include <frc/Errors.h>
+
 using namespace photon;
 
 void SimCameraProperties::SetCalibration(int width, int height,

@@ -19,6 +19,7 @@
 #include <hal/HAL.h>
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
+#include <wpi/print.h>
 
 TEST(TimeSyncProtocolTest, Smoketest) {
   using namespace wpi::tsp;

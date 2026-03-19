@@ -22,12 +22,11 @@
  * SOFTWARE.
  */
 
-#include <iostream>
-
 #include <gtest/gtest.h>
+#include <wpi/print.h>
 
 #include "PhotonVersion.h"
 
 TEST(VersionTest, PrintVersion) {
-  std::cout << photon::PhotonVersion::versionString << std::endl;
+  wpi::println("{}", photon::PhotonVersion::versionString);
 }

@@ -38,8 +38,7 @@
 #include <opencv2/objdetect.hpp>
 #include <units/length.h>
 
-#include "SimCameraProperties.h"
-#include "photon/estimation/RotTrlTransform3d.h"
+#include "photon/simulation/SimCameraProperties.h"
 
 namespace mathutil {
 template <typename T>

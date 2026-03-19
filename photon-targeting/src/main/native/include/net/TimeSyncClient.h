@@ -17,31 +17,21 @@
 
 #pragma once
 
-#include <atomic>
 #include <chrono>
 #include <cstdlib>
-#include <cstring>
-#include <ctime>
 #include <functional>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <string>
-#include <thread>
 
 #include <frc/filter/MedianFilter.h>
 #include <wpi/Logger.h>
-#include <wpi/print.h>
-#include <wpi/static_circular_buffer.h>
-#include <wpi/struct/Struct.h>
 #include <wpinet/EventLoopRunner.h>
-#include <wpinet/UDPClient.h>
 #include <wpinet/uv/Buffer.h>
 #include <wpinet/uv/Timer.h>
 #include <wpinet/uv/Udp.h>
 
 #include "TimeSyncStructs.h"
-#include "ntcore_cpp.h"
 
 namespace wpi {
 namespace tsp {

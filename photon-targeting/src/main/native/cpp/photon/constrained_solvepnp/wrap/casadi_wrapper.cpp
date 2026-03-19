@@ -17,11 +17,8 @@
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
 
-#include <chrono>
 #include <cstdio>
-#include <iostream>
 #include <optional>
-#include <vector>
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
@@ -192,10 +189,10 @@ constrained_solvepnp::do_optimization(
     fmt::println("{} tags", nTags);
     // fmt::println("nstate {}", nState);
 
-    std::cout << "robot2camera:\n" << robot2camera << std::endl;
-    std::cout << "x guess:\n" << x_guess << std::endl;
-    std::cout << "field2pt:\n" << field2points << std::endl;
-    std::cout << "observations:\n" << point_observations << std::endl;
+    fmt::println("robot2camera:\n{}", robot2camera);
+    fmt::println("x guess:\n{}", x_guess);
+    fmt::println("field2pt:\n{}", field2points);
+    fmt::println("observations:\n{}", point_observations);
     fmt::println("---------^^^^^^^^---------");
   }
 
@@ -252,7 +249,7 @@ constrained_solvepnp::do_optimization(
 
     auto H_ldlt = H.ldlt();
     if (H_ldlt.info() != Eigen::Success) {
-      std::cerr << "LDLT decomp failed! H=" << std::endl << H << std::endl;
+      fmt::println(stderr, "LDLT decomp failed! H=\n{}", H);
       return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
     }
 
@@ -276,7 +273,7 @@ constrained_solvepnp::do_optimization(
         H_ldlt = H_reg.ldlt();
 
         if (H_ldlt.info() != Eigen::Success) {
-          std::cerr << "LDLT decomp failed! H=" << std::endl << H << std::endl;
+          fmt::println(stderr, "LDLT decomp failed! H=\n{}", H);
           return wpi::unexpected{slp::ExitStatus::LOCALLY_INFEASIBLE};
         }
 

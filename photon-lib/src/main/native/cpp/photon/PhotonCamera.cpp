@@ -35,11 +35,10 @@
 #include <hal/FRCUsageReporting.h>
 #include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
-#include <opencv2/core/mat.hpp>
+#include <opencv2/core/utility.hpp>
 #include <wpi/json.h>
 
 #include "PhotonVersion.h"
-#include "opencv2/core/utility.hpp"
 #include "photon/dataflow/structures/Packet.h"
 
 static constexpr units::second_t WARN_DEBOUNCE_SEC = 5_s;

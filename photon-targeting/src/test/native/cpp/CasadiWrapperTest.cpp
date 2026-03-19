@@ -15,12 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <chrono>
-#include <cstdio>
-#include <iostream>
-#include <vector>
-
+#include <frc/fmt/Eigen.h>
 #include <gtest/gtest.h>
+#include <wpi/print.h>
 #include <wpi/timestamp.h>
 
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
@@ -169,11 +166,10 @@ void print_cost(casadi_real robot_x, casadi_real robot_y,
         x_guess, field2points, point_observations, 0, 0);
     auto end = wpi::Now();
 
-    std::cout << i << "," << static_cast<bool>(x_out) << "," << end - start
-              << std::endl;
-    std::cout << "Solution:"
-              << x_out.value_or(constrained_solvepnp::RobotStateMat::Identity())
-              << std::endl;
+    wpi::println("{},{},{}", i, static_cast<bool>(x_out), end - start);
+    wpi::println(
+        "Solution: {}",
+        x_out.value_or(constrained_solvepnp::RobotStateMat::Identity()));
     // std::cout << "iter "
     //           << i
     //           // << "\nGuess:\n" << x_guess << "\n Optimized ->\n"

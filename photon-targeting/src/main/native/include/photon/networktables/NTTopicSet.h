@@ -102,7 +102,5 @@ class NTTopicSet {
     cameraDistortionPublisher =
         subTable->GetDoubleArrayTopic("cameraDistortion").Publish();
   }
-
- private:
 };
 }  // namespace photon

@@ -32,6 +32,11 @@
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/apriltag/AprilTagFields.h>
 
+#include "photon/estimation/CameraTargetRelation.h"
+#include "photon/estimation/RotTrlTransform3d.h"
+#include "photon/estimation/VisionEstimation.h"
+#include "photon/simulation/VideoSimUtil.h"
+
 namespace photon {
 PhotonCameraSim::PhotonCameraSim(PhotonCamera* camera)
     : PhotonCameraSim(camera, photon::SimCameraProperties::PERFECT_90DEG(),
