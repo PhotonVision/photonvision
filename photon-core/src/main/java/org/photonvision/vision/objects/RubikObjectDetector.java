@@ -84,7 +84,11 @@ public class RubikObjectDetector implements ObjectDetector {
             throw new UnsupportedOperationException("Model must be quantized.");
         }
 
-        releaser = new NativeObjectReleaser(ptr, (ptr) -> RubikJNI.destroy(ptr), "(RubikObjecDetectorJNI *) " + model.modelFile.getName());
+        releaser =
+                new NativeObjectReleaser(
+                        ptr,
+                        (ptr) -> RubikJNI.destroy(ptr),
+                        "(RubikObjecDetectorJNI *) " + model.modelFile.getName());
 
         logger.debug("Created detector for model " + model.modelFile.getName());
 

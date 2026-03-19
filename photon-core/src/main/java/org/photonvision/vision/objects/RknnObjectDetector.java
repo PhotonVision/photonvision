@@ -19,11 +19,7 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
@@ -80,7 +76,11 @@ public class RknnObjectDetector implements ObjectDetector {
             throw new UnsupportedOperationException("Model must be quantized.");
         }
 
-        releaser = new NativeObjectReleaser(objPointer, (ptr) -> RknnJNI.destroy(ptr), "(RknnObjectDetectorJNI *) " + model.modelFile.getName());
+        releaser =
+                new NativeObjectReleaser(
+                        objPointer,
+                        (ptr) -> RknnJNI.destroy(ptr),
+                        "(RknnObjectDetectorJNI *) " + model.modelFile.getName());
 
         logger.debug("Created detector for model " + model.modelFile.getName());
 

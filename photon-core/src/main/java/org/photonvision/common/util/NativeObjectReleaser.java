@@ -23,7 +23,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class NativeObjectReleaser implements Runnable {
-
     private static final Logger logger = new Logger(NativeObjectReleaser.class, LogGroup.General);
 
     private static String formatPtr(long ptr) {
@@ -60,4 +59,3 @@ public class NativeObjectReleaser implements Runnable {
         }
     }
 }
-
