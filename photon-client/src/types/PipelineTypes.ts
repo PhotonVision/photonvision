@@ -30,9 +30,9 @@ export enum TargetModel {
   InfiniteRechargeHighGoalOuter = 2,
   CircularPowerCell7in = 3,
   RapidReactCircularCargoBall = 4,
-  AprilTag6in_16h5 = 5,
-  AprilTag6p5in_36h11 = 6,
-  ReefscapeAlgae = 7
+  ReefscapeAlgae = 5,
+  AprilTag6in_16h5 = 6,
+  AprilTag6p5in_36h11 = 7
 }
 
 export interface PipelineSettings {
@@ -313,8 +313,8 @@ export const DefaultObjectDetectionPipelineSettings: ObjectDetectionPipelineSett
   ...DefaultPipelineSettings,
   pipelineType: PipelineType.ObjectDetection,
   cameraGain: 20,
-  targetModel: TargetModel.InfiniteRechargeHighGoalOuter,
-  ledMode: true,
+  targetModel: TargetModel.ReefscapeAlgae,
+  ledMode: false,
   outputMaximumTargets: 20,
   cameraExposureRaw: 6,
   confidence: 0.9,

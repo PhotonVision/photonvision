@@ -17,10 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.common.configuration.NeuralNetworkModelsSettings;
 import org.photonvision.vision.objects.Model;
+import org.photonvision.vision.target.TargetModel;
 
+@JsonTypeName("ObjectDetectionPipelineSettings")
 public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
     public double confidence;
     public double nms; // non maximal suppression
@@ -33,6 +36,9 @@ public class ObjectDetectionPipelineSettings extends AdvancedPipelineSettings {
         cameraExposureRaw = 20;
         cameraAutoExposure = false;
         ledMode = false;
+        // Use a spherical ball model by default: YOLO primarily detects game pieces like
+        // balls/cargo, which are symmetric from all sides and work well with solvePNP.
+        targetModel = TargetModel.k2025Algae;
         confidence = .9;
         nms = .45;
         model =

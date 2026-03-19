@@ -17,8 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import org.opencv.core.Point;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -40,6 +42,7 @@ public class ObjectDetectionPipeline
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final FilterObjectDetectionsPipe filterContoursPipe = new FilterObjectDetectionsPipe();
+    private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
@@ -99,6 +102,10 @@ public class ObjectDetectionPipeline
                         settings.contourTargetOffsetPointEdge,
                         settings.contourTargetOrientation,
                         frameStaticProperties));
+
+        solvePNPPipe.setParams(
+                new SolvePNPPipe.SolvePNPPipeParams(
+                        frameStaticProperties.cameraCalibration, settings.targetModel));
     }
 
     @Override
@@ -125,11 +132,48 @@ public class ObjectDetectionPipeline
                 collect2dTargetsPipe.run(sortContoursResult.output);
         sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
+        List<TrackedTarget> targetList;
+
+        // 3d stuff
+        if (settings.solvePNPEnabled) {
+            var rectPoints = new Point[4];
+            collect2dTargetsResult.output.forEach(
+                    target -> {
+                        target.getMinAreaRect().points(rectPoints);
+                        if (settings.targetModel.isSpherical()) {
+                            // For symmetric (spherical) targets such as balls: the model presents
+                            // the same circular silhouette from every angle, so any mapping of the
+                            // 4 OBB corners to the 4 equatorial model points yields the same pose.
+                            // Just hand the corners through as-is.
+                            target.setTargetCorners(
+                                    Arrays.asList(rectPoints[0], rectPoints[1], rectPoints[2], rectPoints[3]));
+                        } else {
+                            // For non-symmetric targets the OBB side ratio indicates which face of
+                            // the 3D object is visible.  RotatedRect.points() returns corners in
+                            // order (bottom-left, top-left, top-right, bottom-right); reorder to
+                            // (bottom-left, bottom-right, top-right, top-left) to match the
+                            // solvePNP model convention expected by CornerDetectionPipe.
+                            // TODO: when TargetModel gains multi-face support for 3D non-symmetric
+                            // objects, select the appropriate face's 3D corners based on the ratio
+                            // of the OBB's width to its height before calling solvePNP.
+                            target.setTargetCorners(
+                                    Arrays.asList(rectPoints[0], rectPoints[3], rectPoints[2], rectPoints[1]));
+                        }
+                    });
+
+            var solvePNPResult = solvePNPPipe.run(collect2dTargetsResult.output);
+            sumPipeNanosElapsed += solvePNPResult.nanosElapsed;
+
+            targetList = solvePNPResult.output;
+        } else {
+            targetList = collect2dTargetsResult.output;
+        }
+
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
+                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame, names);
     }
 
     @Override

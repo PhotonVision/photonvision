@@ -19,6 +19,7 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
@@ -33,8 +34,11 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 public class RknnObjectDetector implements ObjectDetector {
     private static final Logger logger = new Logger(RknnObjectDetector.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it goes out of scope */
-    private final Cleaner cleaner = Cleaner.create();
+    /**
+     * Shared Cleaner instance for all RknnObjectDetector instances. Using a single static Cleaner
+     * avoids spawning a new daemon thread per detector object.
+     */
+    private static final Cleaner cleaner = Cleaner.create();
 
     /** Atomic boolean to ensure that the native object can only be released once. */
     private AtomicBoolean released = new AtomicBoolean(false);
@@ -128,10 +132,11 @@ public class RknnObjectDetector implements ObjectDetector {
             return List.of();
         }
 
-        return scale.resizeDetections(
-                List.of(results).stream()
-                        .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
-                        .toList());
+        var pipeResults = new ArrayList<NeuralNetworkPipeResult>(results.length);
+        for (var it : results) {
+            pipeResults.add(new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf));
+        }
+        return scale.resizeDetections(pipeResults);
     }
 
     /** Thread-safe method to release the detector. */

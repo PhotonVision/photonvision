@@ -52,7 +52,7 @@ public class ObjectDetectionPipe
             return List.of();
         }
 
-        return detector.detect(in.getMat(), params.nms(), params.confidence());
+        return detector.detect(frame, params.nms(), params.confidence());
     }
 
     public static record ObjectDetectionPipeParams(double confidence, double nms, Model model) {}

@@ -19,6 +19,7 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
@@ -33,8 +34,11 @@ import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 public class RubikObjectDetector implements ObjectDetector {
     private static final Logger logger = new Logger(RubikObjectDetector.class, LogGroup.General);
 
-    /** Cleaner instance to release the detector when it goes out of scope */
-    private final Cleaner cleaner = Cleaner.create();
+    /**
+     * Shared Cleaner instance for all RubikObjectDetector instances. Using a single static Cleaner
+     * avoids spawning a new daemon thread per detector object.
+     */
+    private static final Cleaner cleaner = Cleaner.create();
 
     /** Atomic boolean to ensure that the native object can only be released once. */
     private AtomicBoolean released = new AtomicBoolean(false);
@@ -113,10 +117,8 @@ public class RubikObjectDetector implements ObjectDetector {
     @Override
     public List<NeuralNetworkPipeResult> detect(Mat in, double nmsThresh, double boxThresh) {
         if (!isValid()) {
-            logger.error(
-                    "Detector is not initialized, and so it can't be released! Model: "
-                            + model.modelFile.getName());
-            return null;
+            logger.error("Detector is not initialized! Model: " + model.modelFile.getName());
+            return List.of();
         }
 
         // Resize the frame to the input size of the model
@@ -137,10 +139,11 @@ public class RubikObjectDetector implements ObjectDetector {
             return List.of();
         }
 
-        return scale.resizeDetections(
-                List.of(results).stream()
-                        .map(it -> new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf))
-                        .toList());
+        var pipeResults = new ArrayList<NeuralNetworkPipeResult>(results.length);
+        for (var it : results) {
+            pipeResults.add(new NeuralNetworkPipeResult(it.rect, it.class_id, it.conf));
+        }
+        return scale.resizeDetections(pipeResults);
     }
 
     /** Thread-safe method to release the detector. */
