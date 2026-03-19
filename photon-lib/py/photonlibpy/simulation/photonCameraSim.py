@@ -368,6 +368,15 @@ class PhotonCameraSim:
                     noisyTargetCorners,
                 )
 
+            # Compute object detection confidence if this is an obj det target
+            classId = tgt.objDetClassId
+            conf = tgt.objDetConf
+            if classId >= 0 and conf < 0:
+                # Simulate confidence using sqrt-scaled area for a more realistic
+                # curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
+                # gives reasonable values even for small-but-visible objects.
+                conf = max(0.0, min(1.0, math.sqrt(areaPercent / 100.0) * 2.0))
+
             smallVec: list[TargetCorner] = []
             for corner in minAreaRectPts:
                 smallVec.append(TargetCorner(corner[0], corner[1]))
@@ -381,6 +390,8 @@ class PhotonCameraSim:
                     area=areaPercent,
                     skew=math.degrees(centerRot.X()),
                     fiducialId=tgt.fiducialId,
+                    objDetectId=classId,
+                    objDetectConf=conf,
                     detectedCorners=cornersFloat,
                     minAreaRectCorners=smallVec,
                     bestCameraToTarget=pnpSim.best if pnpSim else Transform3d(),
