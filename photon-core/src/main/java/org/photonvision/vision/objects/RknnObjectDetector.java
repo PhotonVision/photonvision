@@ -19,13 +19,13 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
+import java.lang.ref.Cleaner.Cleanable;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.common.util.NativeObjectReleaser;
 import org.photonvision.rknn.RknnJNI;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
@@ -36,7 +36,11 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Cleaner instance to release the detector when it goes out of scope */
     private final Cleaner cleaner = Cleaner.create();
 
-    private final NativeObjectReleaser releaser;
+    private final Cleanable cleanable;
+
+    private static Runnable cleanupAction(long ptr) {
+        return () -> RknnJNI.destroy(ptr);
+    }
 
     /** Pointer to the native object */
     private final long objPointer;
@@ -76,16 +80,10 @@ public class RknnObjectDetector implements ObjectDetector {
             throw new UnsupportedOperationException("Model must be quantized.");
         }
 
-        releaser =
-                new NativeObjectReleaser(
-                        objPointer,
-                        (ptr) -> RknnJNI.destroy(ptr),
-                        "(RknnObjectDetectorJNI *) " + model.modelFile.getName());
-
         logger.debug("Created detector for model " + model.modelFile.getName());
 
         // Register the cleaner to release the detector when it goes out of scope
-        cleaner.register(this, releaser);
+        cleanable = cleaner.register(this, cleanupAction(objPointer));
     }
 
     /**
@@ -142,6 +140,6 @@ public class RknnObjectDetector implements ObjectDetector {
     /** Thread-safe method to release the detector. */
     @Override
     public void release() {
-        releaser.run();
+        cleanable.clean();
     }
 }
