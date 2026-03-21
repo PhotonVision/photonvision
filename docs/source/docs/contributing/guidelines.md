@@ -57,7 +57,7 @@ We're thankful that we've rarely experienced major issues in our community. In a
 
 ## Yearly Development Cycle
 
-PhotonVision's Development Cycle follows the same general flow as the FRC Build Season. Larger experiments get done over the summer, fall focuses on testing and "production-readiness", build season focuses on keeping all teams running smoothly. 
+PhotonVision's Development Cycle follows the same general flow as the FRC Build Season. Larger experiments get done over the summer, fall focuses on testing and "production-readiness", build season focuses on keeping all teams running smoothly.
 
 The actual priorities also shift as developers have more or time to commit, or express interest in specific direction.
 
@@ -65,4 +65,4 @@ PR's are absolutely always welcome. Just note depending on the scope and size, t
 
 ## Project Governance
 
-This project is jointly lead by Matt and Banks, who may be contacted on Discord. They serve as a "Benevolent leader for life" role, coordinating and approving architecture as needed, and curating the team of developers who have Pull Request review and merge responsibilities. 
+This project is jointly lead by Matt and Banks, who may be contacted on Discord. They serve as a "Benevolent leader for life" role, coordinating and approving architecture as needed, and curating the team of developers who have Pull Request review and merge responsibilities.
