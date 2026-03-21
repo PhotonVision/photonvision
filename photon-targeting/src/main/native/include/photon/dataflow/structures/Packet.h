@@ -17,17 +17,13 @@
 
 #pragma once
 
-#include <algorithm>
-#include <bit>
-#include <cstring>
-#include <iostream>
+#include <concepts>
+#include <cstdint>
 #include <optional>
 #include <span>
-#include <string>
+#include <string_view>
 #include <vector>
 
-#include <wpi/Demangle.h>
-#include <wpi/ct_string.h>
 #include <wpi/struct/Struct.h>
 
 namespace photon {

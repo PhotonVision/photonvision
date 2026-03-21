@@ -346,11 +346,14 @@ class VisionSystemSim {
       const std::vector<VisionTargetSim>& targets) {
     std::vector<VisionTargetSim> removedList;
     for (auto& entry : targetSets) {
-      for (auto target : entry.second) {
-        auto it = std::find(targets.begin(), targets.end(), target);
-        if (it != targets.end()) {
-          removedList.emplace_back(target);
-          entry.second.erase(it);
+      auto& vec = entry.second;
+      auto it = vec.begin();
+      while (it != vec.end()) {
+        if (std::find(targets.begin(), targets.end(), *it) != targets.end()) {
+          removedList.emplace_back(*it);
+          it = vec.erase(it);
+        } else {
+          ++it;
         }
       }
     }

@@ -601,7 +601,49 @@ class VisionSystemSimTest {
 
         robotPose = new Pose2d(-2, -2, Rotation2d.fromDegrees(30));
         visionSysSim.update(robotPose);
-        ambiguity = waitForSequenceNumber(camera, 2).getBestTarget().getPoseAmbiguity();
+        var target2 = waitForSequenceNumber(camera, 2).getBestTarget();
+        ambiguity = target2.getPoseAmbiguity();
         assertTrue(0 < ambiguity && ambiguity < 0.2, "Tag ambiguity expected to be low");
+
+        // and prove that object detection class id/conf are -1 when we look at a tag
+        assertEquals(-1, target2.objDetectId);
+        assertEquals(-1, target2.objDetectConf);
+    }
+
+    @Test
+    public void testObjectDetection() {
+        var visionSysSim = new VisionSystemSim("Test");
+        var camera = new PhotonCamera(inst, "camera");
+        var cameraSim = new PhotonCameraSim(camera);
+        visionSysSim.addCamera(cameraSim, new Transform3d());
+        cameraSim.prop.setCalibration(640, 480, Rotation2d.fromDegrees(80));
+        cameraSim.setMinTargetAreaPixels(20.0);
+
+        final var targetPose = new Pose3d(new Translation3d(2, 0, 0), new Rotation3d(0, 0, Math.PI));
+        final int classId = 3;
+        final float conf = 0.67f;
+        final TargetModel ballModel = new TargetModel(Units.inchesToMeters(6));
+        final var ballTarget = new VisionTargetSim(targetPose, ballModel, classId, conf);
+
+        visionSysSim.addVisionTargets(ballTarget);
+
+        var robotPose = Pose2d.kZero;
+        visionSysSim.update(robotPose);
+        var target1 = waitForSequenceNumber(camera, 1).getBestTarget();
+        assertEquals(classId, target1.objDetectId);
+        assertEquals(conf, target1.objDetectConf);
+        assertEquals(-1, target1.fiducialId);
+
+        // much around with the target to force PhotonCameraSim::process calculate conf
+        visionSysSim.removeVisionTargets(ballTarget);
+        final float conf2 = -1;
+        final var ballTarget2 = new VisionTargetSim(targetPose, ballModel, classId, conf2);
+        visionSysSim.addVisionTargets(ballTarget2);
+        visionSysSim.update(robotPose);
+        var target2 = waitForSequenceNumber(camera, 2).getBestTarget();
+        assertEquals(classId, target2.objDetectId);
+        // 2 * sqrt(area pixels) at this particular pose
+        assertEquals(0.131, target2.objDetectConf, 0.01);
+        assertEquals(-1, target2.fiducialId);
     }
 }
