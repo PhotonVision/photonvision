@@ -24,8 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Rect2d;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
@@ -73,9 +74,9 @@ public class AprilTagROIDecodePipe
     /** Input container for ROI decode pipe */
     public static class ROIDecodeInput {
         public final CVMat grayFrame;
-        public final List<Rect2d> rois;
+        public final List<RotatedRect> rois;
 
-        public ROIDecodeInput(CVMat grayFrame, List<Rect2d> rois) {
+        public ROIDecodeInput(CVMat grayFrame, List<RotatedRect> rois) {
             this.grayFrame = grayFrame;
             this.rois = rois;
         }
@@ -131,7 +132,7 @@ public class AprilTagROIDecodePipe
         int frameWidth = fullFrame.cols();
         int frameHeight = fullFrame.rows();
 
-        for (Rect2d roi : input.rois) {
+        for (RotatedRect roi : input.rois) {
             // ROIs are already expanded by the caller (AprilTagPipeline.processMLHybrid)
             Rect roiRect = toIntRect(roi);
 
@@ -147,14 +148,16 @@ public class AprilTagROIDecodePipe
 
             if (DEBUG_COORDINATE_MAPPING) {
                 logger.debug(
-                        "Original ROI: x="
-                                + roi.x
-                                + ", y="
-                                + roi.y
-                                + ", w="
-                                + roi.width
-                                + ", h="
-                                + roi.height);
+                        "Original ROI: center=("
+                                + roi.center.x
+                                + ", "
+                                + roi.center.y
+                                + "), size="
+                                + roi.size.width
+                                + "x"
+                                + roi.size.height
+                                + ", angle="
+                                + roi.angle);
                 logger.debug(
                         "Expanded ROI (used for mapping): x="
                                 + roiRect.x
@@ -434,31 +437,25 @@ public class AprilTagROIDecodePipe
      * @param imageHeight Image height for clamping
      * @return Expanded and clamped bounding box
      */
-    public static Rect2d expandBbox(Rect2d bbox, int paddingPixels, int imageWidth, int imageHeight) {
-        double newWidth = bbox.width + 2.0 * paddingPixels;
-        double newHeight = bbox.height + 2.0 * paddingPixels;
-        double newX = bbox.x - paddingPixels;
-        double newY = bbox.y - paddingPixels;
+    public static RotatedRect expandBbox(
+            RotatedRect bbox, int paddingPixels, int imageWidth, int imageHeight) {
+        double newWidth = bbox.size.width + 2.0 * paddingPixels;
+        double newHeight = bbox.size.height + 2.0 * paddingPixels;
 
-        // Clamp to image bounds
-        newX = Math.max(0, newX);
-        newY = Math.max(0, newY);
-        newWidth = Math.min(newWidth, imageWidth - newX);
-        newHeight = Math.min(newHeight, imageHeight - newY);
+        // Clamp center so the (axis-aligned) half-extents stay within frame
+        double halfW = newWidth / 2.0;
+        double halfH = newHeight / 2.0;
+        double cx = Math.max(halfW, Math.min(bbox.center.x, imageWidth - halfW));
+        double cy = Math.max(halfH, Math.min(bbox.center.y, imageHeight - halfH));
 
-        return new Rect2d(newX, newY, newWidth, newHeight);
+        return new RotatedRect(new Point(cx, cy), new Size(newWidth, newHeight), bbox.angle);
     }
 
     /**
-     * Converts a Rect2d to integer Rect using floor for position and ceil for size to ensure we
-     * don't clip the tag area.
+     * Converts a RotatedRect to integer Rect (axis-aligned bounding rectangle).
      */
-    private Rect toIntRect(Rect2d r) {
-        return new Rect(
-                (int) Math.floor(r.x),
-                (int) Math.floor(r.y),
-                (int) Math.ceil(r.width),
-                (int) Math.ceil(r.height));
+    private Rect toIntRect(RotatedRect r) {
+        return r.boundingRect();
     }
 
     /** Clamps a rectangle to frame bounds. */

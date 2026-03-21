@@ -29,12 +29,12 @@ import org.photonvision.vision.pipe.MutatingPipe;
  * detected potential targets before traditional decoding.
  */
 public class DrawMLROIPipe
-        extends MutatingPipe<Pair<Mat, List<Rect2d>>, DrawMLROIPipe.DrawMLROIParams> {
+        extends MutatingPipe<Pair<Mat, List<RotatedRect>>, DrawMLROIPipe.DrawMLROIParams> {
 
     private static final Scalar ROI_COLOR = new Scalar(255, 255, 0); // Cyan in BGR
 
     @Override
-    protected Void process(Pair<Mat, List<Rect2d>> in) {
+    protected Void process(Pair<Mat, List<RotatedRect>> in) {
         if (!params.shouldDraw || !params.showDetectionBoxes) return null;
 
         var mat = in.getFirst();
@@ -44,14 +44,16 @@ public class DrawMLROIPipe
         var imageSize = Math.sqrt((double) mat.rows() * mat.cols());
         var thickness = (int) Math.ceil(imageSize * 0.007);
 
-        for (Rect2d roi : rois) {
-            double x = roi.x / params.divisor.value;
-            double y = roi.y / params.divisor.value;
-            double w = roi.width / params.divisor.value;
-            double h = roi.height / params.divisor.value;
-
-            Imgproc.rectangle(
-                    mat, new Point(x, y), new Point(x + w, y + h), ROI_COLOR, thickness);
+        Point[] corners = new Point[4];
+        for (RotatedRect roi : rois) {
+            roi.points(corners);
+            double d = params.divisor.value;
+            MatOfPoint scaled = new MatOfPoint(
+                    new Point(corners[0].x / d, corners[0].y / d),
+                    new Point(corners[1].x / d, corners[1].y / d),
+                    new Point(corners[2].x / d, corners[2].y / d),
+                    new Point(corners[3].x / d, corners[3].y / d));
+            Imgproc.polylines(mat, List.of(scaled), true, ROI_COLOR, thickness);
         }
 
         return null;

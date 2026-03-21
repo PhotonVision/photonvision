@@ -18,7 +18,7 @@
 package org.photonvision.vision.frame;
 
 import java.util.List;
-import org.opencv.core.Rect2d;
+import org.opencv.core.RotatedRect;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -39,7 +39,7 @@ public class Frame implements Releasable {
     public final FrameStaticProperties frameStaticProperties;
 
     /** Optional ML detection ROI bounding boxes for visualization. Set by ML-assisted pipelines. */
-    public List<Rect2d> mlDetectionRois = List.of();
+    public List<RotatedRect> mlDetectionRois = List.of();
 
     public Frame(
             long sequenceID,

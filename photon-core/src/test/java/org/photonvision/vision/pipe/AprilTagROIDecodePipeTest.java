@@ -32,8 +32,9 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.opencv.core.Mat;
-import org.opencv.core.Rect;
-import org.opencv.core.Rect2d;
+import org.opencv.core.Point;
+import org.opencv.core.RotatedRect;
+import org.opencv.core.Size;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
@@ -54,6 +55,11 @@ public class AprilTagROIDecodePipeTest {
     public static void init() {
         LoadJNI.loadLibraries();
         ConfigManager.getInstance().load();
+    }
+
+    /** Convenience helper: build an axis-aligned RotatedRect (angle=0) from x/y/w/h. */
+    private static RotatedRect roiFromXYWH(double x, double y, double w, double h) {
+        return new RotatedRect(new Point(x + w / 2.0, y + h / 2.0), new Size(w, h), 0);
     }
 
     /**
@@ -103,8 +109,8 @@ public class AprilTagROIDecodePipeTest {
 
         // Add some padding around the tag (simulating ML detection bbox)
         double padding = 20;
-        Rect2d simulatedMLBbox =
-                new Rect2d(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+        RotatedRect simulatedMLBbox =
+                roiFromXYWH(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
 
         // Run the ROI decode pipe
         AprilTagROIDecodePipe decodePipe = new AprilTagROIDecodePipe();
@@ -115,7 +121,7 @@ public class AprilTagROIDecodePipeTest {
         params.minDecisionMargin = 35;
         decodePipe.setParams(params);
 
-        List<Rect2d> rois = new ArrayList<>();
+        List<RotatedRect> rois = new ArrayList<>();
         rois.add(simulatedMLBbox);
 
         ROIDecodeInput input = new ROIDecodeInput(frame.processedImage, rois);
@@ -170,9 +176,9 @@ public class AprilTagROIDecodePipeTest {
         CVMat cvMat = new CVMat(testMat);
 
         // ROI at edge that would expand outside bounds
-        Rect2d edgeRoi = new Rect2d(600, 440, 30, 30); // Near bottom-right corner
+        RotatedRect edgeRoi = roiFromXYWH(600, 440, 30, 30); // Near bottom-right corner
 
-        List<Rect2d> rois = new ArrayList<>();
+        List<RotatedRect> rois = new ArrayList<>();
         rois.add(edgeRoi);
 
         ROIDecodeInput input = new ROIDecodeInput(cvMat, rois);
@@ -208,10 +214,10 @@ public class AprilTagROIDecodePipeTest {
 
         // Create two overlapping ROIs that both contain the same tag
         // This simulates overlapping ML detections
-        Rect2d roi1 = new Rect2d(200, 150, 200, 150);
-        Rect2d roi2 = new Rect2d(220, 170, 200, 150); // Overlapping
+        RotatedRect roi1 = roiFromXYWH(200, 150, 200, 150);
+        RotatedRect roi2 = roiFromXYWH(220, 170, 200, 150); // Overlapping
 
-        List<Rect2d> rois = new ArrayList<>();
+        List<RotatedRect> rois = new ArrayList<>();
         rois.add(roi1);
         rois.add(roi2);
 
@@ -237,7 +243,7 @@ public class AprilTagROIDecodePipeTest {
         params.tagFamily = AprilTagFamily.kTag36h11;
         decodePipe.setParams(params);
 
-        List<Rect2d> emptyRois = new ArrayList<>();
+        List<RotatedRect> emptyRois = new ArrayList<>();
         ROIDecodeInput input = new ROIDecodeInput(cvMat, emptyRois);
 
         var result = decodePipe.run(input);
@@ -261,10 +267,10 @@ public class AprilTagROIDecodePipeTest {
         params.tagFamily = AprilTagFamily.kTag36h11;
         decodePipe.setParams(params);
 
-        List<Rect2d> rois = new ArrayList<>();
-        rois.add(new Rect2d(100, 100, 0, 50)); // Zero width
-        rois.add(new Rect2d(100, 100, 50, -10)); // Negative height
-        rois.add(new Rect2d(-50, 100, 50, 50)); // Negative x (will be clamped)
+        List<RotatedRect> rois = new ArrayList<>();
+        rois.add(roiFromXYWH(100, 100, 0, 50)); // Zero width
+        rois.add(roiFromXYWH(100, 100, 50, -10)); // Negative height
+        rois.add(roiFromXYWH(-50, 100, 50, 50)); // Negative x (will be clamped)
 
         ROIDecodeInput input = new ROIDecodeInput(cvMat, rois);
 
@@ -282,15 +288,13 @@ public class AprilTagROIDecodePipeTest {
      */
     @Test
     public void testToIntRectPreservesArea() {
-        // Test with floating point values
-        Rect2d input = new Rect2d(10.3, 20.7, 100.2, 100.8);
+        // Test with floating point values (documents expected floor/ceil behavior)
+        double inX = 10.3, inY = 20.7, inW = 100.2, inH = 100.8;
 
         // Expected: x=10 (floor), y=20 (floor), w=101 (ceil), h=101 (ceil)
-        // This ensures we don't clip any part of the tag
-
-        // We can't directly test the private method, but we can verify the behavior
-        // through the overall coordinate mapping test
-        // This test documents the expected behavior for future reference
+        // This ensures we don't clip any part of the tag.
+        // toIntRect now delegates to RotatedRect.boundingRect() which provides the
+        // same guarantee for axis-aligned (angle=0) rects.
 
         int expectedX = 10;
         int expectedY = 20;
@@ -298,10 +302,10 @@ public class AprilTagROIDecodePipeTest {
         int expectedH = 101;
 
         // Verify that floor/ceil logic matches expectations
-        assertEquals(expectedX, (int) Math.floor(input.x));
-        assertEquals(expectedY, (int) Math.floor(input.y));
-        assertEquals(expectedW, (int) Math.ceil(input.width));
-        assertEquals(expectedH, (int) Math.ceil(input.height));
+        assertEquals(expectedX, (int) Math.floor(inX));
+        assertEquals(expectedY, (int) Math.floor(inY));
+        assertEquals(expectedW, (int) Math.ceil(inW));
+        assertEquals(expectedH, (int) Math.ceil(inH));
     }
 
     // ==================== Homography Transformation Tests ====================
@@ -624,8 +628,8 @@ public class AprilTagROIDecodePipeTest {
         }
 
         double padding = 20;
-        Rect2d simulatedMLBbox =
-                new Rect2d(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+        RotatedRect simulatedMLBbox =
+                roiFromXYWH(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
 
         // Run the ROI decode pipe
         AprilTagROIDecodePipe decodePipe = new AprilTagROIDecodePipe();
@@ -636,7 +640,7 @@ public class AprilTagROIDecodePipeTest {
         params.minDecisionMargin = 35;
         decodePipe.setParams(params);
 
-        List<Rect2d> rois = new ArrayList<>();
+        List<RotatedRect> rois = new ArrayList<>();
         rois.add(simulatedMLBbox);
 
         ROIDecodeInput input = new ROIDecodeInput(frame.processedImage, rois);
@@ -900,8 +904,8 @@ public class AprilTagROIDecodePipeTest {
         }
 
         double padding = 20;
-        Rect2d simulatedMLBbox =
-                new Rect2d(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+        RotatedRect simulatedMLBbox =
+                roiFromXYWH(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
 
         // Run with ATR enabled (should not scale since tag is small)
         AprilTagROIDecodePipe pipeWithATR = new AprilTagROIDecodePipe();
@@ -918,7 +922,7 @@ public class AprilTagROIDecodePipeTest {
         paramsWithoutATR.atrEnabled = false;
         pipeWithoutATR.setParams(paramsWithoutATR);
 
-        List<Rect2d> rois = new ArrayList<>();
+        List<RotatedRect> rois = new ArrayList<>();
         rois.add(simulatedMLBbox);
 
         ROIDecodeInput input = new ROIDecodeInput(frame.processedImage, rois);
