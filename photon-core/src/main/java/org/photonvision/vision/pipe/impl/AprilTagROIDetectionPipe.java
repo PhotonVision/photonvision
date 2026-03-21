@@ -19,7 +19,7 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.Rect2d;
+import org.opencv.core.RotatedRect;
 import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.objects.NullModel;
 import org.photonvision.vision.objects.ObjectDetector;
@@ -32,7 +32,7 @@ import org.photonvision.vision.pipe.CVPipe;
  * Stage 1 of the ML-assisted AprilTag detection pipeline.
  */
 public class AprilTagROIDetectionPipe
-        extends CVPipe<CVMat, List<Rect2d>, AprilTagROIDetectionPipe.AprilTagROIDetectionParams>
+        extends CVPipe<CVMat, List<RotatedRect>, AprilTagROIDetectionPipe.AprilTagROIDetectionParams>
         implements Releasable {
 
     private ObjectDetector detector;
@@ -55,8 +55,8 @@ public class AprilTagROIDetectionPipe
     }
 
     @Override
-    protected List<Rect2d> process(CVMat in) {
-        List<Rect2d> rois = new ArrayList<>();
+    protected List<RotatedRect> process(CVMat in) {
+        List<RotatedRect> rois = new ArrayList<>();
 
         if (detector == null || detector instanceof NullModel) {
             return rois; // Empty list - fallback to traditional detection
