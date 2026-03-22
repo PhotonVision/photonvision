@@ -66,8 +66,8 @@ public class SystemMonitor {
                     .publish();
 
     private final Alert thermalThrottlingAlert =
-            new Alert("PhotonAlerts", "Thermal throttling detected!", AlertType.kWarning);
-
+            new Alert(ALERT_GROUP, "Thermal throttling detected!", AlertType.kWarning);
+    
     private SystemInfo si;
     private CentralProcessor cpu;
     private OperatingSystem os;
