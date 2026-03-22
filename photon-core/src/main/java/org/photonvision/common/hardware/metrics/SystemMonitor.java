@@ -34,8 +34,8 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import org.photonvision.common.hardware.alerts.AlertGroups;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.alerts.AlertGroups;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
@@ -68,7 +68,7 @@ public class SystemMonitor {
 
     private final Alert thermalThrottlingAlert =
             new Alert(AlertGroups.PHOTON_ALERTS, "Thermal throttling detected!", AlertType.kWarning);
-    
+
     private SystemInfo si;
     private CentralProcessor cpu;
     private OperatingSystem os;

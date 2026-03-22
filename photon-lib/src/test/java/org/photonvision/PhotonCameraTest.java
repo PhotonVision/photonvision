@@ -357,11 +357,11 @@ class PhotonCameraTest {
 
                 // THEN the camera isn't disconnected
                 assertTrue(
-                    Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
+                        Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
                                 .noneMatch(it -> it.equals(disconnectedCameraString)));
                 // AND the alert string looks like a timesync warning
                 assertTrue(
-                    Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
+                        Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
                                         .filter(it -> it.contains("is not connected to the TimeSyncServer"))
                                         .count()
                                 == 1);
