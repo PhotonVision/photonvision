@@ -24,8 +24,6 @@
 
 #include "photon/simulation/VisionSystemSim.h"
 
-#include <chrono>
-#include <thread>
 #include <tuple>
 #include <vector>
 
@@ -33,6 +31,7 @@
 #include <wpi/deprecated.h>
 
 #include "photon/PhotonUtils.h"
+#include "photon/estimation/VisionEstimation.h"
 
 // Ignore GetLatestResult warnings
 WPI_IGNORE_DEPRECATED

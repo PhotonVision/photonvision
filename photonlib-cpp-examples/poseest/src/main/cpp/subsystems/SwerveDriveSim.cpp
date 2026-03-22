@@ -24,8 +24,6 @@
 
 #include "subsystems/SwerveDriveSim.h"
 
-#include <iostream>
-
 #include <frc/RobotController.h>
 #include <frc/system/Discretization.h>
 
