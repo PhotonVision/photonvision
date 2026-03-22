@@ -310,6 +310,7 @@ class PhotonCameraTest {
         // GIVEN a fresh NT instance
 
         var cameraName = "foobar";
+        var warningAlertKey = AlertGroups.PHOTON_ALERTS + "/warnings";
 
         // AND a photoncamera that is disconnected
         var camera = new PhotonCamera(inst, cameraName);
@@ -327,7 +328,7 @@ class PhotonCameraTest {
 
             // The alert state will be set (hard-coded here)
             assertTrue(
-                    Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
+                    Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
                             .anyMatch(it -> it.equals(disconnectedCameraString)));
 
             Thread.sleep(20);
@@ -356,11 +357,11 @@ class PhotonCameraTest {
 
                 // THEN the camera isn't disconnected
                 assertTrue(
-                        Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
+                    Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
                                 .noneMatch(it -> it.equals(disconnectedCameraString)));
                 // AND the alert string looks like a timesync warning
                 assertTrue(
-                        Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
+                    Arrays.stream(SmartDashboard.getStringArray(warningAlertKey, new String[0]))
                                         .filter(it -> it.contains("is not connected to the TimeSyncServer"))
                                         .count()
                                 == 1);

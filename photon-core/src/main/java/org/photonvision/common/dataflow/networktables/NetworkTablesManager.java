@@ -41,6 +41,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.alerts.AlertGroups;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -66,9 +67,11 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert conflictAlert =
+            new Alert(AlertGroups.PHOTON_ALERTS, "", AlertType.kWarning);
 
-    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert mismatchAlert =
+            new Alert(AlertGroups.PHOTON_ALERTS, "", AlertType.kWarning);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
