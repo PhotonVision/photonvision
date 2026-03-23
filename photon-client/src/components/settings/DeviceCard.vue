@@ -453,7 +453,7 @@ watch(metricsHistorySnapshot, () => {
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ cpuTempData.at(-1)?.value == -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
+            <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
           <Suspense>
             <!-- Allows us to import echarts when it's actually needed  -->
@@ -470,7 +470,10 @@ watch(metricsHistorySnapshot, () => {
               tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
             />
             <span
-              >{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span
+              >{{
+                networkUsageData.at(-1)?.value === -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3)
+              }}
+              Mb/s</span
             >
           </div>
           <Suspense>

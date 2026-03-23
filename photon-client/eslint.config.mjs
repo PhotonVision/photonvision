@@ -4,7 +4,7 @@ import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescri
 import skipFormattingConfig from "@vue/eslint-config-prettier/skip-formatting";
 
 export default defineConfigWithVueTs(
-  pluginVue.configs["flat/recommended"],
+  pluginVue.configs["flat/recommended-error"],
   vueTsConfigs.recommended,
   skipFormattingConfig,
   {
@@ -26,10 +26,24 @@ export default defineConfigWithVueTs(
 
       semi: ["error", "always"],
       "eol-last": "error",
+      eqeqeq: "error",
+      "no-useless-concat": "error",
       "object-curly-spacing": ["error", "always"],
       "quote-props": ["error", "as-needed"],
       "no-case-declarations": "off",
+      "vue/eqeqeq": "error",
+      "vue/no-useless-concat": "error",
+      "vue/no-constant-condition": "error",
+      "vue/no-empty-pattern": "error",
+      "vue/no-undef-directives": "error",
+      "vue/no-undef-properties": "error",
+      "vue/no-unused-properties": "error",
+      "vue/no-unused-refs": "error",
+      "vue/no-use-v-else-with-v-for": "error",
+      "vue/no-useless-mustaches": "error",
+      "vue/no-useless-v-bind": "error",
       "vue/require-default-prop": "off",
+      "vue/v-for-delimiter-style": "error",
       "vue/v-on-event-hyphenation": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "vue/valid-v-slot": ["error", { allowModifiers: true }]

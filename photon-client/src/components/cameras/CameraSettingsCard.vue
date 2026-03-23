@@ -66,10 +66,10 @@ const settingsHaveChanged = (): boolean => {
   const b = useCameraSettingsStore().currentCameraSettings;
 
   for (const q in ValidQuirks) {
-    if (a.quirksToChange[q] != b.cameraQuirks.quirks[q]) return true;
+    if (a.quirksToChange[q] !== b.cameraQuirks.quirks[q]) return true;
   }
 
-  return a.fov != b.fov.value;
+  return a.fov !== b.fov.value;
 };
 
 const resetTempSettingsStruct = () => {

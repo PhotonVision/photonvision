@@ -185,7 +185,7 @@ watchEffect(() => {
     </v-card-title>
     <div class="pa-5 pt-0">
       <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
-      <v-form ref="form" v-model="settingsValid">
+      <v-form v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
           label="Team Number/NetworkTables Server Address"

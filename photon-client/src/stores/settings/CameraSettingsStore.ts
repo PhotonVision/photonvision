@@ -71,10 +71,10 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
       return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.DriverMode;
     },
     isCalibrationMode(): boolean {
-      return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.Calib3d;
+      return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d;
     },
     isFocusMode(): boolean {
-      return this.currentCameraSettings.currentPipelineIndex == WebsocketPipelineType.FocusCamera;
+      return this.currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.FocusCamera;
     },
     isCSICamera(): boolean {
       return this.currentCameraSettings.isCSICamera;

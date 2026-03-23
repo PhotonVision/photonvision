@@ -38,7 +38,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
       <v-list-item link to="/settings" prepend-icon="mdi-cog">
         <v-list-item-title>Settings</v-list-item-title>
       </v-list-item>
-      <v-list-item ref="camerasTabOpener" link to="/cameras" prepend-icon="mdi-camera">
+      <v-list-item link to="/cameras" prepend-icon="mdi-camera">
         <v-list-item-title>Camera</v-list-item-title>
       </v-list-item>
       <v-list-item

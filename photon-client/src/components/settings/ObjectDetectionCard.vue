@@ -446,8 +446,8 @@ const handleBulkImport = async () => {
       :on-backup="openExportPrompt"
       :on-confirm="nukeModels"
       title="Delete and Reset All Object Detection Models"
-      :description="'This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone.'"
-      :expected-confirmation-text="'Delete Models'"
+      description="This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone."
+      expected-confirmation-text="Delete Models"
       delete-text="Delete all models"
     />
   </v-card>
