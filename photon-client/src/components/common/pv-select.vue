@@ -1,13 +1,18 @@
-<script setup lang="ts">
+<script lang="ts">
+export interface SelectItem<TValue extends string | number = string | number> {
+  name: string | number;
+  value: TValue;
+  disabled?: boolean;
+}
+</script>
+
+<script setup lang="ts" generic="T extends string | number = string | number">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
-export interface SelectItem {
-  name: string | number;
-  value: string | number;
-  disabled?: boolean;
-}
-const value = defineModel<string | number | undefined>({ required: true });
+type PrimitiveItem = string | number;
+type SelectItems = ReadonlyArray<SelectItem> | ReadonlyArray<PrimitiveItem>;
+const value = defineModel<T | number | undefined>({ required: true });
 
 const props = withDefaults(
   defineProps<{
@@ -15,13 +20,18 @@ const props = withDefaults(
     tooltip?: string;
     selectCols?: number;
     disabled?: boolean;
-    items: string[] | number[] | SelectItem[];
+    items: SelectItems;
   }>(),
   {
     selectCols: 9,
     disabled: false
   }
 );
+
+const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem> => {
+  const firstItem = items[0];
+  return typeof firstItem === "object" && firstItem !== null;
+};
 
 // Computed in case items changes
 const items = computed<SelectItem[]>(() => {
@@ -30,11 +40,11 @@ const items = computed<SelectItem[]>(() => {
     return [];
   }
 
-  // Check if the prop exists on the object to infer object type
-  if ((props.items[0] as SelectItem).name) {
-    return props.items as SelectItem[];
+  if (areSelectItems(props.items)) {
+    return [...props.items];
   }
-  return props.items.map((v, i) => ({ name: v as string | number, value: i }));
+
+  return props.items.map((item, i) => ({ name: item, value: i }));
 });
 </script>
 
