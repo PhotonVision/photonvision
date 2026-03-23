@@ -28,7 +28,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
-    const contains = index != -1;
+    const contains = index !== -1;
     let skip = false;
     if (contains && format.fps > uniqueResolutions[index].fps) {
       uniqueResolutions.splice(index, 1);
@@ -132,7 +132,7 @@ const downloadCalibBoard = async () => {
           const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
           // Only draw the odd squares to create the chessboard pattern
-          if (squareY % 2 != squareX % 2) {
+          if (squareY % 2 !== squareX % 2) {
             doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
           }
         }
@@ -293,7 +293,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100"
             >Configure New Calibration</v-card-subtitle
           >
-          <v-form ref="form" v-model="settingsValid">
+          <v-form v-model="settingsValid">
             <pv-select
               v-model="uniqueVideoResolutionString"
               label="Resolution"

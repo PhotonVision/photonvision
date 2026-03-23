@@ -40,8 +40,8 @@ const importCalibration = async () => {
   const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);
 
   if (
-    data.resolution.height != props.videoFormat.resolution.height ||
-    data.resolution.width != props.videoFormat.resolution.width
+    data.resolution.height !== props.videoFormat.resolution.height ||
+    data.resolution.width !== props.videoFormat.resolution.width
   ) {
     useStateStore().showSnackbarMessage({
       color: "error",
@@ -341,7 +341,7 @@ const viewingImg = ref(0);
   <pv-delete-modal
     v-model="confirmRemoveDialog.show"
     :width="500"
-    :title="'Delete Calibration'"
+    title="Delete Calibration"
     :description="`Are you sure you want to delete the calibration for '${confirmRemoveDialog.vf.resolution.width}x${confirmRemoveDialog.vf.resolution.height}'? This action cannot be undone.`"
     :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />
