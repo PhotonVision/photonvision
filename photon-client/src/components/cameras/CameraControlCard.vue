@@ -99,7 +99,7 @@ const expanded = ref([]);
     <v-card-text class="pt-0">
       <v-btn
         color="buttonPassive"
-        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+        :variant="theme.global.current.value.dark ? 'outlined' : 'tonal'"
         @click="fetchSnapshots"
       >
         <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
@@ -115,7 +115,7 @@ const expanded = ref([]);
             density="compact"
             text="There are currently no saved snapshots."
             icon="mdi-information-outline"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
           />
         </v-card-text>
         <v-card-text v-else class="pt-0">
@@ -125,7 +125,7 @@ const expanded = ref([]);
             density="compact"
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
             icon="mdi-information-outline"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
           />
           <v-data-table
             v-model:expanded="expanded"
