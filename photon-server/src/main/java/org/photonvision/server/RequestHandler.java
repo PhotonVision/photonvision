@@ -134,10 +134,11 @@ public class RequestHandler {
     }
 
     public static void onSettingsExportRequest(Context ctx) {
-        logger.info("Exporting Settings to ZIP Archive");
+        boolean excludeImages = Boolean.parseBoolean(ctx.queryParam("excludeImages"));
+        logger.info("Exporting Settings to ZIP Archive (excludeImages=" + excludeImages + ")");
 
         try {
-            var zip = ConfigManager.getInstance().getSettingsFolderAsZip();
+            var zip = ConfigManager.getInstance().getSettingsFolderAsZip(excludeImages);
             var stream = new FileInputStream(zip);
             logger.info("Uploading settings with size " + stream.available());
 

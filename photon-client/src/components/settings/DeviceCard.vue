@@ -4,6 +4,7 @@ import { inject, computed, ref, watch } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import MetricsChart from "./MetricsChart.vue";
 import { useTheme } from "vuetify";
@@ -128,7 +129,13 @@ const openExportLogsPrompt = () => {
 };
 
 const exportSettings = ref();
+const showExportDialog = ref(false);
+const excludeImages = ref(false);
 const openExportSettingsPrompt = () => {
+  exportSettings.value.click();
+};
+const doExportSettings = () => {
+  showExportDialog.value = false;
   exportSettings.value.click();
 };
 
@@ -356,7 +363,7 @@ watch(metricsHistorySnapshot, () => {
               <v-btn
                 color="buttonPassive"
                 :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
-                @click="openExportSettingsPrompt"
+                @click="() => (showExportDialog = true)"
               >
                 <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
                 <span class="open-label">Export Settings</span>
@@ -543,6 +550,40 @@ watch(metricsHistorySnapshot, () => {
     </v-card>
   </v-dialog>
 
+  <!-- Export settings modal -->
+  <v-dialog
+    v-model="showExportDialog"
+    width="600"
+    @update:modelValue="
+      () => {
+        excludeImages = false;
+      }
+    "
+  >
+    <v-card color="surface" dark>
+      <v-card-title class="pb-0">Export Settings</v-card-title>
+      <v-card-text>
+        Download a ZIP archive of all PhotonVision settings from this device
+        <div class="pa-5 pb-0">
+          <pv-switch
+            v-model="excludeImages"
+            label="Exclude calibration images"
+            tooltip="Exclude saved calibration images and snapshots from the export to reduce file size"
+          />
+          <v-btn
+            color="primary"
+            class="mt-4"
+            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            @click="doExportSettings"
+          >
+            <v-icon start class="open-icon"> mdi-export </v-icon>
+            <span class="open-label">Export Settings</span>
+          </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
   <v-dialog v-model="offlineUpdateDialog.show" :width="700" dark>
     <v-card color="surface" flat>
       <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
@@ -573,7 +614,7 @@ watch(metricsHistorySnapshot, () => {
   <a
     ref="exportSettings"
     style="color: black; text-decoration: none; display: none"
-    :href="`http://${address}/api/settings/photonvision_config.zip`"
+    :href="`http://${address}/api/settings/photonvision_config.zip${excludeImages ? '?excludeImages=true' : ''}`"
     download="photonvision-settings.zip"
     target="_blank"
   />
