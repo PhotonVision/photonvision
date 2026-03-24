@@ -73,7 +73,7 @@ const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
         </v-list-item>
         <v-list-item
           link
-          :prepend-icon="theme.global.name.value === 'LightTheme' ? 'mdi-white-balance-sunny' : 'mdi-weather-night'"
+          :prepend-icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
           @click="() => toggleTheme(theme)"
         >
           <v-list-item-title>Theme</v-list-item-title>

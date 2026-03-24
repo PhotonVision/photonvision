@@ -122,7 +122,7 @@ const onBeforeTabUpdate = () => {
         density="compact"
         text="Camera is not connected. Please check your connection and try again."
         icon="mdi-alert-circle-outline"
-        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
       />
     </template>
     <template v-else>

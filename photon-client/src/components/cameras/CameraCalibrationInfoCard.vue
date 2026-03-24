@@ -121,7 +121,7 @@ const viewingImg = ref(0);
           <v-btn
             color="buttonPassive"
             style="width: 100%"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openUploadPhotonCalibJsonPrompt"
           >
             <v-icon start size="large"> mdi-import</v-icon>
@@ -140,7 +140,7 @@ const viewingImg = ref(0);
             color="buttonPassive"
             :disabled="!currentCalibrationCoeffs"
             style="width: 100%"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openExportCalibrationPrompt"
           >
             <v-icon start size="large">mdi-export</v-icon>
@@ -318,7 +318,7 @@ const viewingImg = ref(0);
               color="primary"
               text="The selected video format has not been calibrated."
               icon="mdi-alert-circle-outline"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+              :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             />
           </div>
           <Suspense v-else-if="tab === 'details'">

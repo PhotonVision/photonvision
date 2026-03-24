@@ -208,8 +208,8 @@ onMounted(async () => {
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
-  else scene.background = new Color(0x000000);
+  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
+  else scene.background = new Color(0xa9a9a9);
 
   // Initialize a stable aspect ratio so subsequent resize events derive
   // height from width, avoiding layout feedback during continuous resizing
@@ -347,7 +347,7 @@ watch(
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCamFirstPerson"
         >
           First Person
@@ -357,7 +357,7 @@ watch(
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCamThirdPerson"
         >
           Third Person

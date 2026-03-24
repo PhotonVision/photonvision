@@ -407,14 +407,14 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-actions class="pr-5 pt-10px pb-5">
           <v-btn
             color="buttonPassive"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="cancelPipelineCreation"
           >
             Cancel
           </v-btn>
           <v-btn
             color="buttonActive"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             :disabled="checkPipelineName(newPipelineName) !== true"
             @click="createNewPipeline"
           >
@@ -441,7 +441,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         <v-card-actions class="pa-5 pt-0">
           <v-btn
             color="buttonPassive"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             class="text-black"
             @click="cancelChangePipelineType"
           >
@@ -449,7 +449,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           </v-btn>
           <v-btn
             color="buttonActive"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="confirmChangePipelineType"
           >
             Confirm
