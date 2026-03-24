@@ -179,7 +179,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           size="small"
           color="buttonActive"
           :disabled="!settingsHaveChanged()"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="saveCameraSettings"
         >
           <v-icon start size="large"> mdi-content-save </v-icon>
@@ -191,7 +191,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           block
           size="small"
           color="error"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="() => (showDeleteCamera = true)"
         >
           <v-icon start size="large"> mdi-trash-can-outline </v-icon>
