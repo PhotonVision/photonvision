@@ -156,3 +156,5 @@ photon-client/playwright-report/
 photon-client/blob-report/
 photon-client/playwright/.cache/
 photon-client/playwright/.auth/
+
+.build/
