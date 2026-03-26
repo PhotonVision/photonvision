@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.vision.apriltag.AprilTagFamily;
