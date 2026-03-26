@@ -26,6 +26,11 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.IntegerArrayPublisher;
+import edu.wpi.first.networktables.IntegerArraySubscriber;
+import edu.wpi.first.networktables.IntegerPublisher;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +67,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
+
+    IntegerArrayPublisher rejectTagIdPublisher;
+    IntegerArraySubscriber rejectTagIdSubscriber;
+    BooleanSubscriber overrideCoprocRejectTag;
 
     public AprilTagPipeline() {
         super(PROCESSING_TYPE);
@@ -153,7 +162,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
-            if (settings.rejectTagIds.contains(detection.getId())) {
+            if (settings.rejectTagIds.contains(Integer.valueOf(detection.getId()))) {
                 TrackedTarget target =
                         new TrackedTarget(
                                 detection,
@@ -275,6 +284,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     public void release() {
         aprilTagDetectionPipe.release();
         singleTagPoseEstimatorPipe.release();
+        rejectTagIdPublisher.close();
+        rejectTagIdSubscriber.close();
+        overrideCoprocRejectTag.close();
         super.release();
     }
 }
