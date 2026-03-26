@@ -25,9 +25,7 @@ const props = withDefaults(
   }
 );
 
-const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem<T>> => {
-  return typeof items[0] === "object";
-};
+const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem<T>> => typeof items[0] === "object";
 
 // Computed in case items changes
 const items = computed<SelectItem[]>(() => {
