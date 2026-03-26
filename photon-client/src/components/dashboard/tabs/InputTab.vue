@@ -50,10 +50,8 @@ const streamResolutions = computed(() => {
   const streamDivisors = getFilteredStreamDivisors();
   const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
   return streamDivisors.map((x, i) => ({
-    name: `${getResolutionString({
-      width: Math.floor(currentResolution.width / x),
-      height: Math.floor(currentResolution.height / x)
-    })}`,
+    name: `${Math.floor(currentResolution.width / x)}x
+      ${Math.floor(currentResolution.height / x)}`,
     value: i
   }));
 });
