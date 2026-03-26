@@ -91,7 +91,7 @@ TEST(LegacyPhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
@@ -152,7 +152,7 @@ TEST(LegacyPhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(17_s);
 
   photon::PhotonPoseEstimator estimator(
@@ -201,7 +201,7 @@ TEST(LegacyPhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags,
@@ -252,7 +252,7 @@ TEST(LegacyPhotonPoseEstimatorTest, ClosestToLastPose) {
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::CLOSEST_TO_LAST_POSE,
@@ -292,7 +292,7 @@ TEST(LegacyPhotonPoseEstimatorTest, ClosestToLastPose) {
           0.4, corners, detectedCorners}};
 
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targetsThree,
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targetsThree, std::vector<photon::PhotonTrackedTarget>{},
       std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(21));
 
@@ -417,7 +417,7 @@ TEST(LegacyPhotonPoseEstimatorTest, AverageBestPoses) {
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::AVERAGE_BEST_TARGETS,
@@ -472,7 +472,7 @@ TEST(LegacyPhotonPoseEstimatorTest, PoseCache) {
   // empty input, expect empty out
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000},
-      std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
+      std::vector<photon::PhotonTrackedTarget>{}, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(1));
 
   std::optional<photon::EstimatedRobotPose> estimatedPose;
@@ -484,7 +484,7 @@ TEST(LegacyPhotonPoseEstimatorTest, PoseCache) {
 
   // Set result, and update -- expect present and timestamp to be 15
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 3000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 3000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(15));
 
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
@@ -553,7 +553,7 @@ TEST(LegacyPhotonPoseEstimatorTest, MultiTagOnRioFallback) {
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(units::second_t(11));
 
   photon::PhotonPoseEstimator estimator(aprilTags, photon::LOWEST_AMBIGUITY,
@@ -578,7 +578,7 @@ TEST(LegacyPhotonPoseEstimatorTest, CopyResult) {
   std::vector<photon::PhotonTrackedTarget> targets{};
 
   auto testResult = photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt};
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt};
   testResult.SetReceiveTimestamp(units::second_t(11));
 
   auto test2 = testResult;
@@ -627,7 +627,7 @@ TEST(LegacyPhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       std::vector<int16_t>{8});
 
   photon::PhotonPipelineResult result{
-      photon::PhotonPipelineMetadata{1, 10000, 2000, 100}, targets,
+      photon::PhotonPipelineMetadata{1, 10000, 2000, 100}, targets, std::vector<photon::PhotonTrackedTarget>{},
       multiTagResult};
 
   cameraOne.test = true;
