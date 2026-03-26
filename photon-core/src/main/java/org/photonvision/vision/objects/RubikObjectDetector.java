@@ -19,8 +19,8 @@ package org.photonvision.vision.objects;
 
 import java.awt.Color;
 import java.lang.ref.Cleaner;
+import java.lang.ref.Cleaner.Cleanable;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
@@ -36,8 +36,11 @@ public class RubikObjectDetector implements ObjectDetector {
     /** Cleaner instance to release the detector when it goes out of scope */
     private final Cleaner cleaner = Cleaner.create();
 
-    /** Atomic boolean to ensure that the native object can only be released once. */
-    private AtomicBoolean released = new AtomicBoolean(false);
+    private final Cleanable cleanable;
+
+    private static Runnable cleanupAction(long ptr) {
+        return () -> RubikJNI.destroy(ptr);
+    }
 
     /** Pointer to the native object */
     private final long ptr;
@@ -88,7 +91,7 @@ public class RubikObjectDetector implements ObjectDetector {
         logger.debug("Created detector for model " + model.modelFile.getName());
 
         // Register the cleaner to release the detector when it goes out of scope
-        cleaner.register(this, this::release);
+        cleanable = cleaner.register(this, cleanupAction(ptr));
     }
 
     /**
@@ -146,17 +149,7 @@ public class RubikObjectDetector implements ObjectDetector {
     /** Thread-safe method to release the detector. */
     @Override
     public void release() {
-        // Checks if the atomic is 'false', and if so, sets it to 'true'
-        if (released.compareAndSet(false, true)) {
-            if (!isValid()) {
-                logger.error(
-                        "Detector is not initialized, and so it can't be released! Model: "
-                                + model.modelFile.getName());
-                return;
-            }
-            RubikJNI.destroy(ptr);
-            logger.debug("Released detector for model " + model.modelFile.getName());
-        }
+        cleanable.clean();
     }
 
     private boolean isValid() {
