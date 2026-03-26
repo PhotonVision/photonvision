@@ -359,8 +359,9 @@ PhotonPipelineResult PhotonCameraSim::Process(
       PhotonPipelineMetadata{heartbeatCounter, 0,
                              units::microsecond_t{latency}.to<int64_t>(),
                              1000000},
-          // TODO implement rejections in sim...
-      detectableTgts, std::vector<photon::PhotonTrackedTarget>{}, multiTagResults};
+      // TODO implement rejections in sim...
+      detectableTgts, std::vector<photon::PhotonTrackedTarget>{},
+      multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
   SubmitProcessedFrame(result, wpi::Now());
