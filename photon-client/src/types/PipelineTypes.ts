@@ -229,7 +229,6 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
   rejectTagIds: number[];
-
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">
