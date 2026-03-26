@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ActivePipelineSettings, type ColoredShapePipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import {
+  type ActivePipelineSettings,
+  PipelineType,
+  ContourSortMode,
+  ContourTargetOrientation,
+  ContourGroupingMode,
+  ContourIntersection,
+  ContourShape
+} from "@/types/PipelineTypes";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
@@ -30,28 +38,22 @@ const contourFullness = computed<[number, number]>({
 const contourPerimeter = computed<[number, number]>({
   get: () =>
     currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape
-      ? (Object.values((currentPipelineSettings.value as ColoredShapePipelineSettings).contourPerimeter) as [
-          number,
-          number
-        ])
+      ? (Object.values(currentPipelineSettings.value.contourPerimeter) as [number, number])
       : ([0, 0] as [number, number]),
   set: (v) => {
     if (currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape) {
-      (currentPipelineSettings.value as ColoredShapePipelineSettings).contourPerimeter = v;
+      currentPipelineSettings.value.contourPerimeter = v;
     }
   }
 });
 const contourRadius = computed<[number, number]>({
   get: () =>
     currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape
-      ? (Object.values((currentPipelineSettings.value as ColoredShapePipelineSettings).contourRadius) as [
-          number,
-          number
-        ])
+      ? (Object.values(currentPipelineSettings.value.contourRadius) as [number, number])
       : ([0, 0] as [number, number]),
   set: (v) => {
     if (currentPipelineSettings.value.pipelineType === PipelineType.ColoredShape) {
-      (currentPipelineSettings.value as ColoredShapePipelineSettings).contourRadius = v;
+      currentPipelineSettings.value.contourRadius = v;
     }
   }
 });
@@ -67,11 +69,13 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
-      :items="['Portrait', 'Landscape']"
+      :items="[
+        { value: ContourTargetOrientation.Portrait, name: 'Portrait' },
+        { value: ContourTargetOrientation.Landscape, name: 'Landscape' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: Number(value) }, false)
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -79,9 +83,17 @@ const interactiveCols = computed(() =>
       label="Target Sort"
       tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
       :select-cols="interactiveCols"
-      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      :items="[
+        { value: ContourSortMode.Largest, name: 'Largest' },
+        { value: ContourSortMode.Smallest, name: 'Smallest' },
+        { value: ContourSortMode.Highest, name: 'Highest' },
+        { value: ContourSortMode.Lowest, name: 'Lowest' },
+        { value: ContourSortMode.Rightmost, name: 'Rightmost' },
+        { value: ContourSortMode.Leftmost, name: 'Leftmost' },
+        { value: ContourSortMode.Centermost, name: 'Centermost' }
+      ]"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: Number(value) }, false)
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
       "
     />
     <pv-range-slider
@@ -173,10 +185,13 @@ const interactiveCols = computed(() =>
         label="Target Grouping"
         tooltip="Whether or not every two targets are paired with each other (good for e.g. 2019 targets)"
         :select-cols="interactiveCols"
-        :items="['Single', 'Dual', 'Two or More']"
+        :items="[
+          { value: ContourGroupingMode.Single, name: 'Single' },
+          { value: ContourGroupingMode.Dual, name: 'Dual' },
+          { value: ContourGroupingMode.TwoOrMore, name: 'Two or More' }
+        ]"
         @update:modelValue="
-          (value) =>
-            useCameraSettingsStore().changeCurrentPipelineSetting({ contourGroupingMode: Number(value) }, false)
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourGroupingMode: value }, false)
         "
       />
       <pv-select
@@ -184,11 +199,16 @@ const interactiveCols = computed(() =>
         label="Target Intersection"
         tooltip="If target grouping is in dual mode it will use this dropdown to decide how targets are grouped with adjacent targets"
         :select-cols="interactiveCols"
-        :items="['None', 'Up', 'Down', 'Left', 'Right']"
+        :items="[
+          { value: ContourIntersection.None, name: 'None' },
+          { value: ContourIntersection.Up, name: 'Up' },
+          { value: ContourIntersection.Down, name: 'Down' },
+          { value: ContourIntersection.Left, name: 'Left' },
+          { value: ContourIntersection.Right, name: 'Right' }
+        ]"
         :disabled="useCameraSettingsStore().currentPipelineSettings.contourGroupingMode === 0"
         @update:modelValue="
-          (value) =>
-            useCameraSettingsStore().changeCurrentPipelineSetting({ contourIntersection: Number(value) }, false)
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourIntersection: value }, false)
         "
       />
     </template>
@@ -198,9 +218,14 @@ const interactiveCols = computed(() =>
         label="Target Shape"
         tooltip="The shape of targets to look for"
         :select-cols="interactiveCols"
-        :items="['Circle', 'Polygon', 'Triangle', 'Quadrilateral']"
+        :items="[
+          { value: ContourShape.Circle, name: 'Circle' },
+          { value: ContourShape.Polygon, name: 'Polygon' },
+          { value: ContourShape.Triangle, name: 'Triangle' },
+          { value: ContourShape.Quadrilateral, name: 'Quadrilateral' }
+        ]"
         @update:modelValue="
-          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: Number(value) }, false)
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourShape: value }, false)
         "
       />
       <pv-slider

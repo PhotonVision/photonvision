@@ -11,9 +11,10 @@ import { useTheme } from "vuetify";
 import { restoreThemeConfig } from "@/lib/ThemeManager";
 
 const is_demo = import.meta.env.MODE === "demo";
+const backendHost = inject<string>("backendHost");
 if (!is_demo) {
   const websocket = new AutoReconnectingWebsocket(
-    `ws://${inject("backendHost")}/websocket_data`,
+    `ws://${backendHost}/websocket_data`,
     () => {
       useStateStore().$patch({ backendConnected: true });
     },

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { PipelineType, type ArucoPipelineSettings, type AprilTagFamily } from "@/types/PipelineTypes";
+import { PipelineType, type ArucoPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
@@ -25,11 +25,12 @@ const interactiveCols = computed(() =>
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
       label="Target family"
-      :items="['AprilTag Family 36h11', 'AprilTag Family 16h5']"
+      :items="[
+        { value: AprilTagFamily.Family36h11, name: 'AprilTag 36h11 (6.5in)' },
+        { value: AprilTagFamily.Family16h5, name: 'AprilTag 16h5 (6in)' }
+      ]"
       :select-cols="interactiveCols"
-      @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value as AprilTagFamily }, false)
-      "
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
     />
     <pv-range-slider
       v-model="currentPipelineSettings.threshWinSizes"

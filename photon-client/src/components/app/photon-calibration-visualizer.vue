@@ -24,7 +24,7 @@ const {
   SphereGeometry,
   WebGLRenderer
 } = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
 import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -203,7 +203,7 @@ let animationFrameId: number | null = null;
 
 onMounted(async () => {
   // Grab data first off
-  fetchCalibrationData();
+  await fetchCalibrationData();
 
   scene = new Scene();
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
@@ -326,7 +326,7 @@ if (import.meta.hot) {
 }
 
 watchEffect(() => {
-  drawCalibration(calibrationData.value);
+  void drawCalibration(calibrationData.value);
 });
 
 watch(
@@ -336,9 +336,9 @@ watch(
     props.resolution.height,
     useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
   ],
-  () => {
+  async () => {
     console.log("Camera or resolution changed, refetching calibration");
-    fetchCalibrationData();
+    await fetchCalibrationData();
   }
 );
 </script>

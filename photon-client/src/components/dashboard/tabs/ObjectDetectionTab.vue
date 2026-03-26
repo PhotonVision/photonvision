@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ObjectDetectionPipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import {
+  type ObjectDetectionPipelineSettings,
+  PipelineType,
+  ContourSortMode,
+  ContourTargetOrientation
+} from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
@@ -47,14 +52,12 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
 const selectedModel = computed({
   get: () => {
     const currentModel = currentPipelineSettings.value.model;
-    if (!currentModel) return undefined;
-
-    const index = supportedModels.value.findIndex((model) => model.modelPath === currentModel.modelPath);
-    return index === -1 ? undefined : index;
+    if (!currentModel) return "";
+    return currentModel.nickname;
   },
 
-  set: (v) => {
-    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
+  set: (v: number) => {
+    if (v >= 0 && v < supportedModels.value.length) {
       const newModel = supportedModels.value[v];
       useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
     }
@@ -123,14 +126,13 @@ const selectedModel = computed({
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
-      :items="['Portrait', 'Landscape']"
+      :items="[
+        { value: ContourTargetOrientation.Portrait, name: 'Portrait' },
+        { value: ContourTargetOrientation.Landscape, name: 'Landscape' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting(
-            { contourTargetOrientation: typeof value === 'string' ? Number(value) : value },
-            false
-          )
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -138,13 +140,17 @@ const selectedModel = computed({
       label="Target Sort"
       tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
       :select-cols="interactiveCols"
-      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      :items="[
+        { value: ContourSortMode.Largest, name: 'Largest' },
+        { value: ContourSortMode.Smallest, name: 'Smallest' },
+        { value: ContourSortMode.Highest, name: 'Highest' },
+        { value: ContourSortMode.Lowest, name: 'Lowest' },
+        { value: ContourSortMode.Rightmost, name: 'Rightmost' },
+        { value: ContourSortMode.Leftmost, name: 'Leftmost' },
+        { value: ContourSortMode.Centermost, name: 'Centermost' }
+      ]"
       @update:modelValue="
-        (value) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting(
-            { contourSortMode: typeof value === 'string' ? Number(value) : value },
-            false
-          )
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
       "
     />
   </div>

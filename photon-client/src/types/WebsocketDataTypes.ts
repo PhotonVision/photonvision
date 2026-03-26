@@ -50,7 +50,7 @@ export type WebsocketVideoFormat = Record<
 export interface WebsocketCameraSettingsUpdate {
   cameraPath: string;
   calibrations: CameraCalibrationResult[];
-  currentPipelineIndex: number;
+  currentPipelineIndex: WebsocketPipelineType;
   currentPipelineSettings: ActivePipelineSettings;
   fov: number;
   inputStreamPort: number;

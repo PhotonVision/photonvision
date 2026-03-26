@@ -1,18 +1,15 @@
-<script lang="ts">
+<script setup lang="ts" generic="T extends string | number = string | number">
+import { computed } from "vue";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+
 export interface SelectItem<TValue extends string | number = string | number> {
   name: string | number;
   value: TValue;
   disabled?: boolean;
 }
-</script>
 
-<script setup lang="ts" generic="T extends string | number = string | number">
-import { computed } from "vue";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-
-type PrimitiveItem = string | number;
-type SelectItems = ReadonlyArray<SelectItem> | ReadonlyArray<PrimitiveItem>;
-const value = defineModel<T | number | undefined>({ required: true });
+type SelectItems = ReadonlyArray<SelectItem<T>> | ReadonlyArray<T>;
+const value = defineModel<T>({ required: true });
 
 const props = withDefaults(
   defineProps<{
@@ -28,9 +25,8 @@ const props = withDefaults(
   }
 );
 
-const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem> => {
-  const firstItem = items[0];
-  return typeof firstItem === "object" && firstItem !== null;
+const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem<T>> => {
+  return typeof items[0] === "object";
 };
 
 // Computed in case items changes
@@ -59,7 +55,6 @@ const items = computed<SelectItem[]>(() => {
         :items="items"
         item-title="name"
         item-value="value"
-        item-props.disabled="disabled"
         :disabled="disabled"
         hide-details="auto"
         variant="underlined"

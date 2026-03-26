@@ -13,10 +13,10 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat as VideoFormat });
+const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
-const removeCalibration = (vf: VideoFormat) => {
-  axiosPost("/calibration/remove", "delete a camera calibration", {
+const removeCalibration = async (vf: VideoFormat) => {
+  await axiosPost("/calibration/remove", "delete a camera calibration", {
     cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
     width: vf.resolution.width,
     height: vf.resolution.height
@@ -34,7 +34,7 @@ const openUploadPhotonCalibJsonPrompt = () => {
 };
 const importCalibration = async () => {
   const files = importCalibrationFromPhotonJson.value?.files;
-  if (files === null || files === undefined || files.length === 0) return;
+  if (!files?.length) return;
   const uploadedJson = files[0];
 
   const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);

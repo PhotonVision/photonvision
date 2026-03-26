@@ -30,7 +30,7 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value as TargetModel }, false)
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ targetModel: value }, false)
       "
     />
     <pv-slider

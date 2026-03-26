@@ -30,11 +30,11 @@ const getFilteredStreamDivisors = (): number[] => {
 };
 const getNumberOfSkippedDivisors = () => streamDivisors.length - getFilteredStreamDivisors().length;
 
-const cameraResolutions = computed(() =>
-  useCameraSettingsStore().currentCameraSettings.validVideoFormats.map(
-    (f) => `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}`
-  )
-);
+const cameraResolutions = (): { name: string; value: number }[] =>
+  useCameraSettingsStore().currentCameraSettings.validVideoFormats.map<{ name: string; value: number }>((f) => ({
+    name: `${getResolutionString(f.resolution)} at ${f.fps} FPS, ${f.pixelFormat}`,
+    value: f.index || 0 // Index won't ever be undefined
+  }));
 const handleResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting({ cameraVideoModeIndex: value }, false);
 
@@ -49,13 +49,13 @@ const handleResolutionChange = (value: number) => {
 const streamResolutions = computed(() => {
   const streamDivisors = getFilteredStreamDivisors();
   const currentResolution = useCameraSettingsStore().currentVideoFormat.resolution;
-  return streamDivisors.map(
-    (x) =>
-      `${getResolutionString({
-        width: Math.floor(currentResolution.width / x),
-        height: Math.floor(currentResolution.height / x)
-      })}`
-  );
+  return streamDivisors.map((x, i) => ({
+    name: `${getResolutionString({
+      width: Math.floor(currentResolution.width / x),
+      height: Math.floor(currentResolution.height / x)
+    })}`,
+    value: i
+  }));
 });
 const handleStreamResolutionChange = (value: number) => {
   useCameraSettingsStore().changeCurrentPipelineSetting(
@@ -175,16 +175,16 @@ const interactiveCols = computed(() =>
       :items="cameraRotations"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: Number(args) }, false)
+        (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ inputImageRotationMode: args }, false)
       "
     />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex"
       label="Resolution"
       tooltip="Resolution and FPS the camera should directly capture at"
-      :items="cameraResolutions"
+      :items="cameraResolutions()"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => handleResolutionChange(Number(args))"
+      @update:modelValue="(args) => handleResolutionChange(args)"
     />
     <pv-select
       v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
@@ -192,7 +192,7 @@ const interactiveCols = computed(() =>
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => handleStreamResolutionChange(Number(args))"
+      @update:modelValue="(args) => handleStreamResolutionChange(args)"
     />
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"

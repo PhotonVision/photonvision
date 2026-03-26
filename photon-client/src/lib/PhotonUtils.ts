@@ -1,6 +1,6 @@
 import { useStateStore } from "@/stores/StateStore";
 import type { PVCameraInfo, Resolution } from "@/types/SettingTypes";
-import axios from "axios";
+import axios, { type AxiosRequestConfig } from "axios";
 
 export const resolutionsAreEqual = (a: Resolution, b: Resolution) => {
   return a.height === b.height && a.width === b.width;
@@ -57,10 +57,10 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
     const fileReader = new FileReader();
     fileReader.onload = (event) => {
       const target: FileReader | null = event.target;
-      if (target === null) reject();
+      if (target === null) reject(new Error("FileReader event target is null"));
       else resolve(JSON.parse(target.result as string) as T);
     };
-    fileReader.onerror = (error) => reject(error);
+    fileReader.onerror = () => reject(new Error("Error reading file"));
     fileReader.readAsText(file);
   });
 };
@@ -74,8 +74,13 @@ export const parseJsonFile = async <T extends Record<string, any>>(file: File): 
  * @param config Optional axios request configuration
  * @returns A promise that resolves to true if the POST request is successful, or false if an error occurs.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const axiosPost = async (url: string, description: string, data?: any, config?: object): Promise<boolean> => {
+export const axiosPost = async (
+  url: string,
+  description: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  data?: any,
+  config?: AxiosRequestConfig
+): Promise<boolean> => {
   try {
     await axios.post(url, data, config);
     useStateStore().showSnackbarMessage({

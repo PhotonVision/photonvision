@@ -12,20 +12,22 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
-const formatUrl = (port: number) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+const backendHostname = inject<string>("backendHostname");
+const formatUrl = (port: number) => `http://${backendHostname}:${port}/stream.mjpg`;
 
 const activatingModule = ref(false);
-const activateModule = (moduleUniqueName: string) => {
+const activateModule = async (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
 
-  axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
+  await axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
     cameraUniqueName: moduleUniqueName
-  }).finally(() => (activatingModule.value = false));
+  });
+  activatingModule.value = false;
 };
 
 const assigningCamera = ref(false);
-const assignCamera = (cameraInfo: PVCameraInfo) => {
+const assignCamera = async (cameraInfo: PVCameraInfo) => {
   if (assigningCamera.value) return;
   assigningCamera.value = true;
 
@@ -33,29 +35,26 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
     cameraInfo: cameraInfo
   };
 
-  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload).finally(
-    () => (assigningCamera.value = false)
-  );
+  await axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload);
+  assigningCamera.value = false;
 };
 
 const deactivatingModule = ref(false);
-const deactivateModule = (cameraUniqueName: string) => {
+const deactivateModule = async (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName }).finally(
-    () => (deactivatingModule.value = false)
-  );
+  await axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName });
+  deactivatingModule.value = false;
 };
 
 const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "" });
 const deletingCamera = ref<string | null>(null);
 
-const deleteThisCamera = (cameraUniqueName: string) => {
+const deleteThisCamera = async (cameraUniqueName: string) => {
   if (deletingCamera.value) return;
   deletingCamera.value = cameraUniqueName;
-  axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName }).finally(() => {
-    deletingCamera.value = null;
-  });
+  await axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName });
+  deletingCamera.value = null;
 };
 
 const cameraConnected = (uniquePath: string | undefined): boolean => {

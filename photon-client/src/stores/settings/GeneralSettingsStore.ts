@@ -185,7 +185,7 @@ export const useSettingsStore = defineStore("settings", {
       const payload = {
         enabledLEDPercentage: brightness
       };
-      useStateStore().websocket?.send(payload, true);
+      useStateStore().websocket?.send(payload);
     }
   }
 });

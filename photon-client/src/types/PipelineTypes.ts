@@ -36,18 +36,62 @@ export enum TargetModel {
   ReefscapeAlgae = 7
 }
 
+export enum ContourSortMode {
+  Largest = 0,
+  Smallest = 1,
+  Highest = 2,
+  Lowest = 3,
+  Rightmost = 4,
+  Leftmost = 5,
+  Centermost = 6
+}
+
+export enum ContourTargetOrientation {
+  Portrait = 0,
+  Landscape = 1
+}
+
+export enum ContourGroupingMode {
+  Single = 0,
+  Dual = 1,
+  TwoOrMore = 2
+}
+
+export enum ContourIntersection {
+  None = 0,
+  Up = 1,
+  Down = 2,
+  Left = 3,
+  Right = 4
+}
+
+export enum ContourShape {
+  Circle = 0,
+  Polygon = 1,
+  Triangle = 2,
+  Quadrilateral = 3
+}
+
+export enum ContourTargetOffsetPointEdge {
+  Center = 0,
+  Top = 1,
+  Bottom = 2,
+  Left = 3,
+  Right = 4
+}
+
 export interface PipelineSettings {
   offsetRobotOffsetMode: RobotOffsetPointMode;
   streamingFrameDivisor: number;
   offsetDualPointBArea: number;
-  contourGroupingMode: number;
+  contourGroupingMode: ContourGroupingMode;
   hsvValue: WebsocketNumberPair | [number, number];
   cameraGain: number;
   cameraBlueGain: number;
   cameraRedGain: number;
   cornerDetectionSideCount: number;
   contourRatio: WebsocketNumberPair | [number, number];
-  contourTargetOffsetPointEdge: number;
+  contourTargetOffsetPointEdge: ContourTargetOffsetPointEdge;
   pipelineNickname: string;
   inputImageRotationMode: number;
   contourArea: WebsocketNumberPair | [number, number];
@@ -57,7 +101,7 @@ export interface PipelineSettings {
   inputShouldShow: boolean;
   cameraAutoExposure: boolean;
   contourSpecklePercentage: number;
-  contourTargetOrientation: number;
+  contourTargetOrientation: ContourTargetOrientation;
   targetModel: TargetModel;
   cornerDetectionUseConvexHulls: boolean;
   outputShouldShow: boolean;
@@ -68,7 +112,7 @@ export interface PipelineSettings {
   ledMode: boolean;
   hueInverted: boolean;
   outputMaximumTargets: number;
-  contourSortMode: number;
+  contourSortMode: ContourSortMode;
   cameraExposureRaw: number;
   cameraMinExposureRaw: number;
   cameraMaxExposureRaw: number;
@@ -81,7 +125,7 @@ export interface PipelineSettings {
   cornerDetectionAccuracyPercentage: number;
   hsvSaturation: WebsocketNumberPair | [number, number];
   pipelineType: PipelineType;
-  contourIntersection: number;
+  contourIntersection: ContourIntersection;
 
   cameraAutoWhiteBalance: boolean;
   cameraWhiteBalanceTemp: number;
@@ -116,13 +160,13 @@ export const DefaultPipelineSettings: Omit<
   offsetRobotOffsetMode: RobotOffsetPointMode.None,
   streamingFrameDivisor: 0,
   offsetDualPointBArea: 0,
-  contourGroupingMode: 0,
+  contourGroupingMode: ContourGroupingMode.Single,
   hsvValue: { first: 50, second: 255 },
   cameraBlueGain: 20,
   cameraRedGain: 11,
   cornerDetectionSideCount: 4,
   contourRatio: { first: 0, second: 20 },
-  contourTargetOffsetPointEdge: 0,
+  contourTargetOffsetPointEdge: ContourTargetOffsetPointEdge.Center,
   pipelineNickname: "Placeholder Pipeline",
   inputImageRotationMode: 0,
   contourArea: { first: 0, second: 100 },
@@ -132,7 +176,7 @@ export const DefaultPipelineSettings: Omit<
   inputShouldShow: false,
   cameraAutoExposure: false,
   contourSpecklePercentage: 5,
-  contourTargetOrientation: 1,
+  contourTargetOrientation: ContourTargetOrientation.Landscape,
   cornerDetectionUseConvexHulls: true,
   outputShouldShow: true,
   outputShouldDraw: true,
@@ -141,7 +185,7 @@ export const DefaultPipelineSettings: Omit<
   hsvHue: { first: 50, second: 180 },
   hueInverted: false,
   outputMaximumTargets: 20,
-  contourSortMode: 0,
+  contourSortMode: ContourSortMode.Largest,
   offsetSinglePoint: { x: 0, y: 0 },
   cameraBrightness: 50,
   offsetDualPointAArea: 0,
@@ -150,7 +194,7 @@ export const DefaultPipelineSettings: Omit<
   cornerDetectionStrategy: 0,
   cornerDetectionAccuracyPercentage: 10,
   hsvSaturation: { first: 50, second: 255 },
-  contourIntersection: 1,
+  contourIntersection: ContourIntersection.Up,
   cameraAutoWhiteBalance: false,
   cameraWhiteBalanceTemp: 4000,
   cameraMinExposureRaw: 1,
@@ -188,7 +232,7 @@ export interface ColoredShapePipelineSettings extends PipelineSettings {
   contourRadius: WebsocketNumberPair | [number, number];
   circleDetectThreshold: number;
   accuracyPercentage: number;
-  contourShape: number;
+  contourShape: ContourShape;
   contourPerimeter: WebsocketNumberPair | [number, number];
   minDist: number;
   maxCannyThresh: number;
@@ -213,7 +257,7 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
   contourRadius: { first: 0, second: 100 },
   circleDetectThreshold: 5,
   accuracyPercentage: 10,
-  contourShape: 2,
+  contourShape: ContourShape.Polygon,
   contourPerimeter: { first: 0, second: 1.7976931348623157e308 },
   minDist: 20,
   maxCannyThresh: 90

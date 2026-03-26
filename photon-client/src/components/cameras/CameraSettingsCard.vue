@@ -9,6 +9,7 @@ import { computed, ref, watchEffect } from "vue";
 import { type CameraSettingsChangeRequest, ValidQuirks } from "@/types/SettingTypes";
 import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const theme = useTheme();
 
@@ -20,7 +21,7 @@ const focusMode = computed<boolean>({
   get: () => useCameraSettingsStore().isFocusMode,
   set: (v) =>
     useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -3 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      v ? WebsocketPipelineType.FocusCamera : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
       true
     )
 });
@@ -120,8 +121,8 @@ watchEffect(() => {
 });
 
 const showDeleteCamera = ref(false);
-const deleteThisCamera = () => {
-  axiosPost("/utils/nukeOneCamera", "delete this camera", {
+const deleteThisCamera = async () => {
+  await axiosPost("/utils/nukeOneCamera", "delete this camera", {
     cameraUniqueName: useStateStore().currentCameraUniqueName
   });
 };
@@ -159,7 +160,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
         v-model="arducamSelectWrapper"
         label="Arducam Model"
         :items="[
-          { name: 'None', value: 0, disabled: true },
+          { name: 'None', value: 0 },
           { name: 'OV9281', value: 1 },
           { name: 'OV2311', value: 2 },
           { name: 'OV9782', value: 3 }

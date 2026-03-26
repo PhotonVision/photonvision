@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PipelineType, type AprilTagPipelineSettings, type AprilTagFamily } from "@/types/PipelineTypes";
+import { PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
@@ -24,11 +24,12 @@ const interactiveCols = computed(() =>
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
       label="Target family"
-      :items="['AprilTag 36h11 (6.5in)', 'AprilTag 16h5 (6in)']"
+      :items="[
+        { value: AprilTagFamily.Family36h11, name: 'AprilTag 36h11 (6.5in)' },
+        { value: AprilTagFamily.Family16h5, name: 'AprilTag 16h5 (6in)' }
+      ]"
       :select-cols="interactiveCols"
-      @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value as AprilTagFamily }, false)
-      "
+      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
     />
     <pv-slider
       v-model="currentPipelineSettings.decimate"

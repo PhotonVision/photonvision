@@ -99,7 +99,7 @@ const expanded = ref([]);
     <v-card-text class="pt-0">
       <v-btn
         color="buttonPassive"
-        :variant="theme.global.current.value.dark ? 'outlined' : 'tonal'"
+        :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
         @click="fetchSnapshots"
       >
         <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
