@@ -33,6 +33,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResult;
@@ -148,7 +149,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         List<TrackedTarget> rejectedTags = new ArrayList<>();
         List<TrackedTarget> targetList = new ArrayList<>();
 
-        System.out.println(settings.rejectTagIds);
+        logger.log(settings.rejectTagIds.toString(), LogLevel.DEBUG);
 
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
