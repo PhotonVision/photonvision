@@ -4,7 +4,7 @@ First and foremost, welcome to PhotonVision Development! We're pumped that you'r
 
 Like most things in FIRST, PhotonVision is reliant on the hard work of dedicated volunteers. It doesn't exist without you. You're joining in with a strong tradition of open-source software development.
 
-This page talks a bit about how we develop PhotonVision, as a community.
+This page talks a bit about how we develop PhotonVision, as a community. It applies to all repos and community aspects for PhotonVision.
 
 ## Getting Started
 
