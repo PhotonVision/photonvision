@@ -158,7 +158,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
         class="pr-0"
       >
         <v-card color="surface" class="rounded-12">
-          <v-card-title>{{ cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
+        <v-card-title>{{ module.nickname || cameraInfoFor(module.matchedCameraInfo).name }}</v-card-title>
+        <v-card-subtitle>
+          Device: {{ cameraInfoFor(module.matchedCameraInfo).name }}
+        </v-card-subtitle>
           <v-card-subtitle v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
             >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
           >
@@ -470,7 +473,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     <pv-delete-modal
       v-model="confirmDeleteDialog.show"
       title="Delete Camera"
-      :description="`Are you sure you want to delete the camera '${useCameraSettingsStore().currentCameraSettings.nickname}'? This action cannot be undone.`"
+      :description="`Are you sure you want to delete the camera '${confirmDeleteDialog.nickname}'? This action cannot be undone.`"
       :expected-confirmation-text="confirmDeleteDialog.nickname"
       :on-confirm="() => deleteThisCamera(confirmDeleteDialog.cameraUniqueName)"
     />
