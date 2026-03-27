@@ -13,6 +13,11 @@ nativeUtils.wpi.configureDependencies {
     niLibVersion = "2026.1.0"
 }
 
+// Force cross compiles to fail without the toolchain
+if (wpilibTools.platformMapper.wpilibClassifier.contains('linux') && !wpilibTools.platformMapper.wpilibClassifier.contains('linux86-64')) {
+    nativeUtils.crossCompilers.getByName(wpilibTools.platformMapper.wpilibClassifier).optional = false
+}
+
 // Configure warnings and errors
 nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
