@@ -85,6 +85,12 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
     maxExposureRaw(): number {
       return this.currentCameraSettings.maxExposureRaw;
     },
+    minSaturation(): number {
+      return this.currentCameraSettings.minSaturation;
+    },
+    maxSaturation(): number {
+      return this.currentCameraSettings.maxSaturation;
+    },
     minWhiteBalanceTemp(): number {
       return this.currentCameraSettings.minWhiteBalanceTemp;
     },
@@ -137,6 +143,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           isCSICamera: d.isCSICamera,
           minExposureRaw: d.minExposureRaw,
           maxExposureRaw: d.maxExposureRaw,
+          minSaturation: d.minSaturation,
+          maxSaturation: d.maxSaturation,
           pipelineNicknames: d.pipelineNicknames,
           currentPipelineIndex: d.currentPipelineIndex,
           pipelineSettings: d.currentPipelineSettings,
