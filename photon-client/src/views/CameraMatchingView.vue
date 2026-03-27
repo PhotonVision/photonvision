@@ -232,7 +232,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 <v-btn
                   color="buttonPassive"
                   style="width: 100%"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -248,7 +248,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   class="text-black"
                   color="buttonActive"
                   style="width: 100%"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   :loading="deactivatingModule"
                   @click="deactivateModule(module.uniqueName)"
                 >
@@ -261,7 +261,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="error"
                   style="width: 100%"
                   :loading="module.uniqueName === deletingCamera"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="
                     () =>
                       (confirmDeleteDialog = {
@@ -326,7 +326,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 <v-btn
                   color="buttonPassive"
                   style="width: 100%"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -342,7 +342,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   class="text-black"
                   color="buttonActive"
                   style="width: 100%"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   :loading="activatingModule"
                   @click="activateModule(module.uniqueName)"
                 >
@@ -355,7 +355,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="error"
                   style="width: 100%"
                   :loading="module.uniqueName === deletingCamera"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="
                     () =>
                       (confirmDeleteDialog = {
@@ -393,7 +393,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 <v-btn
                   color="buttonPassive"
                   style="width: 100%"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="setCameraView(camera, false)"
                 >
                   <span>Details</span>
@@ -405,7 +405,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   color="buttonActive"
                   style="width: 100%"
                   :loading="assigningCamera"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="assignCamera(camera)"
                 >
                   Activate
@@ -457,7 +457,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             density="compact"
             text="A different camera may have been connected to this device! Compare the following information carefully."
             icon="mdi-information-outline"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
           />
           <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>

@@ -2,7 +2,7 @@ import { type ThemeInstance } from "vuetify";
 import { LightTheme, DarkTheme } from "@/plugins/vuetify";
 
 export const resetTheme = (theme: ThemeInstance) => {
-  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
+  const themeType = theme.global.current.value.dark ? "dark" : "light";
   localStorage.removeItem(`${themeType}-background`);
   localStorage.removeItem(`${themeType}-primary`);
   localStorage.removeItem(`${themeType}-secondary`);
@@ -12,13 +12,13 @@ export const resetTheme = (theme: ThemeInstance) => {
 };
 
 export const getThemeColor = (theme: ThemeInstance, color: string): string => {
-  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
-  const defaultTheme = theme.global.name.value === "LightTheme" ? LightTheme : DarkTheme;
+  const themeType = theme.global.current.value.dark ? "dark" : "light";
+  const defaultTheme = theme.global.current.value.dark ? DarkTheme : LightTheme;
   return localStorage.getItem(`${themeType}-${color}`) ?? defaultTheme.colors![color]!;
 };
 
 export const setThemeColor = (theme: ThemeInstance, color: string, value: string | null) => {
-  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
+  const themeType = theme.global.current.value.dark ? "dark" : "light";
   if (value) localStorage.setItem(`${themeType}-${color}`, value);
   else localStorage.removeItem(`${themeType}-${color}`);
 
@@ -38,7 +38,7 @@ export const restoreThemeConfig = (theme: ThemeInstance) => {
   if (storedTheme) theme.global.name.value = storedTheme;
 
   // Restore custom theme colors
-  const themeType = theme.global.name.value === "LightTheme" ? "light" : "dark";
+  const themeType = theme.global.current.value.dark ? "dark" : "light";
   const defaultTheme = theme.global.name.value === "LightTheme" ? LightTheme : DarkTheme;
 
   const customBackground = localStorage.getItem(`${themeType}-background`);
@@ -47,7 +47,7 @@ export const restoreThemeConfig = (theme: ThemeInstance) => {
   const customSurface = localStorage.getItem(`${themeType}-surface`);
 
   theme.themes.value[theme.global.name.value].colors.background = customBackground ?? defaultTheme.colors!.background!;
-  theme.themes.value[theme.global.name.value].colors.sidebar = theme.themes.value[theme.global.name.value].dark
+  theme.themes.value[theme.global.name.value].colors.sidebar = theme.global.current.value.dark
     ? (customBackground ?? defaultTheme.colors!.sidebar!)
     : (customSurface ?? defaultTheme.colors!.sidebar!);
 

@@ -312,7 +312,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="useStateStore().showLogModal = true"
               >
                 <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
@@ -322,7 +322,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="openExportLogsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
@@ -345,7 +345,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="() => (showImportDialog = true)"
               >
                 <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
@@ -355,7 +355,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="openExportSettingsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
@@ -369,7 +369,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6"
               ><v-btn
                 color="buttonActive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="restartProgram"
               >
                 <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
@@ -379,7 +379,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6">
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="openOfflineUpdatePrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
@@ -400,7 +400,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6">
               <v-btn
                 color="buttonActive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="restartDevice"
               >
                 <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
@@ -410,7 +410,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6">
               <v-btn
                 color="error"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="() => (showFactoryReset = true)"
               >
                 <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
@@ -453,7 +453,7 @@ watch(metricsHistorySnapshot, () => {
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ cpuTempData.at(-1)?.value == -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
+            <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
           <Suspense>
             <!-- Allows us to import echarts when it's actually needed  -->
@@ -470,7 +470,10 @@ watch(metricsHistorySnapshot, () => {
               tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
             />
             <span
-              >{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span
+              >{{
+                networkUsageData.at(-1)?.value === -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3)
+              }}
+              Mb/s</span
             >
           </div>
           <Suspense>
@@ -529,7 +532,7 @@ watch(metricsHistorySnapshot, () => {
           <v-btn
             color="primary"
             :disabled="importFile === null"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="handleSettingsImport"
           >
             <v-icon start class="open-icon"> mdi-import </v-icon>
@@ -552,7 +555,7 @@ watch(metricsHistorySnapshot, () => {
             <v-btn
               color="buttonActive"
               width="100%"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="
                 offlineUpdateDialog.show = false;
                 handleOfflineUpdate(offlineUpdate.files[0]);
