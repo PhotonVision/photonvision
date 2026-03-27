@@ -45,13 +45,19 @@ const resetCurrentBuffer = () => {
               <th
                 v-if="
                   currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
+                  currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+                  currentPipelineSettings.pipelineType === PipelineType.Composite
                 "
                 class="text-center text-white"
               >
                 Fiducial ID
               </th>
-              <template v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection">
+              <template
+                v-if="
+                  currentPipelineSettings.pipelineType === PipelineType.ObjectDetection ||
+                  currentPipelineSettings.pipelineType === PipelineType.Composite
+                "
+              >
                 <th class="text-center text-white">Class</th>
                 <th class="text-center text-white">Confidence</th>
               </template>
@@ -86,23 +92,34 @@ const resetCurrentBuffer = () => {
               <td
                 v-if="
                   currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                  currentPipelineSettings.pipelineType === PipelineType.Aruco
+                  currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+                  currentPipelineSettings.pipelineType === PipelineType.Composite
                 "
                 class="text-center"
               >
-                {{ target.fiducialId }}
+                {{ target.fiducialId >= 0 ? target.fiducialId : "-" }}
               </td>
               <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                v-if="
+                  currentPipelineSettings.pipelineType === PipelineType.ObjectDetection ||
+                  currentPipelineSettings.pipelineType === PipelineType.Composite
+                "
                 class="text-center text-white"
               >
-                {{ useStateStore().currentPipelineResults?.classNames[target.classId] }}
+                {{
+                  target.classId >= 0
+                    ? useStateStore().currentPipelineResults?.classNames[target.classId]
+                    : "-"
+                }}
               </td>
               <td
-                v-if="currentPipelineSettings.pipelineType === PipelineType.ObjectDetection"
+                v-if="
+                  currentPipelineSettings.pipelineType === PipelineType.ObjectDetection ||
+                  currentPipelineSettings.pipelineType === PipelineType.Composite
+                "
                 class="text-center text-white"
               >
-                {{ target.confidence.toFixed(2) }}
+                {{ target.confidence >= 0 ? target.confidence.toFixed(2) : "-" }}
               </td>
               <template v-if="!useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled">
                 <td class="text-center">{{ target.pitch.toFixed(2) }}&deg;</td>
@@ -118,12 +135,19 @@ const resetCurrentBuffer = () => {
               <template
                 v-if="
                   (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-                    currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+                    currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+                    currentPipelineSettings.pipelineType === PipelineType.Composite) &&
                   useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
                 "
               >
                 <td class="text-center">
-                  {{ target.ambiguity >= 0 ? target.ambiguity.toFixed(2) : "(In Multi-Target)" }}
+                  {{
+                    target.fiducialId >= 0
+                      ? target.ambiguity >= 0
+                        ? target.ambiguity.toFixed(2)
+                        : "(In Multi-Target)"
+                      : "-"
+                  }}
                 </td>
               </template>
             </tr>
@@ -134,7 +158,8 @@ const resetCurrentBuffer = () => {
     <v-container
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
-          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+          currentPipelineSettings.pipelineType === PipelineType.Aruco ||
+          currentPipelineSettings.pipelineType === PipelineType.Composite) &&
         currentPipelineSettings.doMultiTarget &&
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
