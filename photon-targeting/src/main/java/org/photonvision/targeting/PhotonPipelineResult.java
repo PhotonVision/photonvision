@@ -40,9 +40,12 @@ public class PhotonPipelineResult
     /** The multitag result, if using an AprilTag pipeline with Multi-Target Estimation enabled. */
     public Optional<MultiTargetPNPResult> multitagResult;
 
+    // Rejected tags
+    public List<PhotonTrackedTarget> rejectedTags = new ArrayList<>();
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {
-        this(new PhotonPipelineMetadata(), List.of(), Optional.empty());
+        this(new PhotonPipelineMetadata(), List.of(), List.of(), Optional.empty());
     }
 
     /**
@@ -55,17 +58,20 @@ public class PhotonPipelineResult
      *     coprocessor published targeting info
      * @param timeSinceLastPong The time since the last Time Sync Pong in uS.
      * @param targets The list of targets identified by the pipeline.
+     * @param rejectedTargets The list of targets rejected by the pipeline.
      */
     public PhotonPipelineResult(
             long sequenceID,
             long captureTimestampMicros,
             long publishTimestampMicros,
             long timeSinceLastPong,
-            List<PhotonTrackedTarget> targets) {
+            List<PhotonTrackedTarget> targets,
+            List<PhotonTrackedTarget> rejectedTargets) {
         this(
                 new PhotonPipelineMetadata(
                         captureTimestampMicros, publishTimestampMicros, sequenceID, timeSinceLastPong),
                 targets,
+                rejectedTargets,
                 Optional.empty());
     }
 
@@ -79,6 +85,7 @@ public class PhotonPipelineResult
      *     published targeting info
      * @param timeSinceLastPong The time since the last Time Sync Pong in uS.
      * @param targets The list of targets identified by the pipeline.
+     * @param rejectedTargets The list of targets rejected by the pipeline.
      * @param result Result from multi-target PNP.
      */
     public PhotonPipelineResult(
@@ -87,20 +94,24 @@ public class PhotonPipelineResult
             long publishTimestamp,
             long timeSinceLastPong,
             List<PhotonTrackedTarget> targets,
+            List<PhotonTrackedTarget> rejectedTargets,
             Optional<MultiTargetPNPResult> result) {
         this(
                 new PhotonPipelineMetadata(
                         captureTimestamp, publishTimestamp, sequenceID, timeSinceLastPong),
                 targets,
+                rejectedTargets,
                 result);
     }
 
     public PhotonPipelineResult(
             PhotonPipelineMetadata metadata,
             List<PhotonTrackedTarget> targets,
+            List<PhotonTrackedTarget> rejectedTargets,
             Optional<MultiTargetPNPResult> result) {
         this.metadata = metadata;
         this.targets.addAll(targets);
+        this.rejectedTags.addAll(rejectedTargets);
         this.multitagResult = result;
     }
 
