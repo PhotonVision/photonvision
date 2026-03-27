@@ -7,7 +7,7 @@ import {
   ContourTargetOrientation
 } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -49,17 +49,19 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   return availableModels.filter(isSupported);
 });
 
-const selectedModel = computed({
-  get: () => {
-    const currentModel = currentPipelineSettings.value.model;
-    if (!currentModel) return "";
-    return currentModel.nickname;
-  },
+const modelWrapper = computed<SelectItem<string>[]>(() =>
+  supportedModels.value.map((model) => ({
+    name: model.nickname,
+    value: model.modelPath
+  }))
+);
 
-  set: (v: number) => {
-    if (v >= 0 && v < supportedModels.value.length) {
-      const newModel = supportedModels.value[v];
-      useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
+const selectedModel = computed<string>({
+  get: () => currentPipelineSettings.value.model?.modelPath ?? "",
+  set: (value) => {
+    const model = supportedModels.value.find((supportedModel) => supportedModel.modelPath === value);
+    if (model) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model }, true);
     }
   }
 });
@@ -72,7 +74,7 @@ const selectedModel = computed({
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
-      :items="supportedModels.map((model) => model.nickname)"
+      :items="modelWrapper"
     />
 
     <pv-slider
