@@ -235,6 +235,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
           :items="wrappedCameras"
+          @update:modelValue="pipelineType = useCameraSettingsStore().currentWebsocketPipelineType"
         />
         <pv-input
           v-else
