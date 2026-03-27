@@ -88,7 +88,11 @@ const uniqueVideoResolutionIndex = ref(getUniqueVideoResolutionStrings()?.[0]?.v
 watchEffect(() => {
   const currentIndex =
     getUniqueVideoResolutionStrings().find((f) => f.value === useCameraSettingsStore().currentVideoFormat.index)
-      ?.value ?? getUniqueVideoResolutionStrings()?.[0]?.value;
+      ?.value ??
+    getUniqueVideoResolutionStrings()?.[0]?.value ??
+    -1;
+  // If we get a value of -1, it means there are no video formats available, so we should not set the index at all
+  if (currentIndex === -1) return;
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
   uniqueVideoResolutionIndex.value = currentIndex;
 });
