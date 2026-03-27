@@ -156,7 +156,7 @@ const currentNetworkInterfaceIndex = computed<number | string>({
     const index = useSettingsStore().networkInterfaceNames.indexOf(
       useSettingsStore().network.networkManagerIface || ""
     );
-    return index === -1 ? "NO INTERFACE FOUND" : index;
+    return index === -1 ? "" : index;
   },
   set: (v) =>
     typeof v === "number" &&

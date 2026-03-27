@@ -257,7 +257,7 @@ export const DefaultColoredShapePipelineSettings: ColoredShapePipelineSettings =
   contourRadius: { first: 0, second: 100 },
   circleDetectThreshold: 5,
   accuracyPercentage: 10,
-  contourShape: ContourShape.Polygon,
+  contourShape: ContourShape.Triangle,
   contourPerimeter: { first: 0, second: 1.7976931348623157e308 },
   minDist: 20,
   maxCannyThresh: 90
