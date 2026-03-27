@@ -1,8 +1,8 @@
-<script setup lang="ts" generic="T extends string | number = string | number">
+<script setup lang="ts" generic="T extends string | number">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
-export interface SelectItem<TValue extends string | number = string | number> {
+export interface SelectItem<TValue extends string | number> {
   name: string | number;
   value: TValue;
   disabled?: boolean;
@@ -28,7 +28,7 @@ const props = withDefaults(
 const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem<T>> => typeof items[0] === "object";
 
 // Computed in case items changes
-const items = computed<SelectItem[]>(() => {
+const items = computed<SelectItem<T>[]>(() => {
   // Trivial case for empty list; we have no data
   if (!props.items.length) {
     return [];
@@ -38,7 +38,7 @@ const items = computed<SelectItem[]>(() => {
     return [...props.items];
   }
 
-  return props.items.map((item, i) => ({ name: item, value: i }));
+  return props.items.map((item) => ({ name: item, value: item }));
 });
 </script>
 
