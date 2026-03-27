@@ -1,9 +1,9 @@
 {
   "extends": "@vue/tsconfig/tsconfig.dom.json",
-  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "include": ["env.d.ts", "vite.config.ts", "playwright.config.ts", "src/**/*", "src/**/*.vue", "tests/**/*"],
   "compilerOptions": {
-    "moduleResolution": "node",
-    "noImplicitAny": false,
+    "moduleResolution": "bundler",
+    "noImplicitAny": true,
     "strict": true,
     "removeComments": true,
     "sourceMap": true,
@@ -14,9 +14,4 @@
       "@/*": ["./src/*"]
     }
   },
-  "references": [
-    {
-      "path": "./tsconfig.config.json"
-    }
-  ]
 }

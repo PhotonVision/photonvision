@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, ref, onBeforeUnmount } from "vue";
+import { computed, inject, onBeforeUnmount, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type { StyleValue } from "vue";
@@ -13,6 +13,7 @@ const props = defineProps<{
   cameraSettings: UiCameraConfiguration;
 }>();
 
+const backendHostname = inject<string>("backendHostname");
 const emptyStreamSrc = "//:0";
 const streamSrc = computed<string>(() => {
   const port = props.cameraSettings.stream[props.streamType === "Raw" ? "inputPort" : "outputPort"];
@@ -21,7 +22,7 @@ const streamSrc = computed<string>(() => {
     return emptyStreamSrc;
   }
 
-  return `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+  return `http://${backendHostname}:${port}/stream.mjpg`;
 });
 const streamDesc = computed<string>(() => `${props.streamType} Stream View`);
 const streamStyle = computed<StyleValue>(() => {
@@ -67,26 +68,26 @@ const handleCaptureClick = () => {
 const handlePopoutClick = () => {
   window.open(streamSrc.value);
 };
-const handleFullscreenRequest = () => {
+const handleFullscreenRequest = async () => {
   const stream = document.getElementById(props.id);
   if (!stream) return;
-  stream.requestFullscreen();
+  await stream.requestFullscreen();
 };
 
-const mjpgStream: any = ref(null);
+const mjpgStream = useTemplateRef("mjpgStream");
 
 const handleStreamError = () => {
   if (streamSrc.value && streamSrc.value !== emptyStreamSrc) {
     console.error("Error loading stream:", streamSrc.value, " Trying again.");
     setTimeout(() => {
-      mjpgStream.value.src = streamSrc.value;
+      mjpgStream.value!.src = streamSrc.value;
     }, 100);
   }
 };
 
 onBeforeUnmount(() => {
   if (!mjpgStream.value) return;
-  mjpgStream.value["src"] = emptyStreamSrc;
+  mjpgStream.value.src = emptyStreamSrc;
 });
 </script>
 

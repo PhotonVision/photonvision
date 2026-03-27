@@ -13,28 +13,6 @@ import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 
 const theme = useTheme();
 
-const changeCurrentCameraUniqueName = (cameraUniqueName: string) => {
-  useCameraSettingsStore().setCurrentCameraUniqueName(cameraUniqueName, true);
-
-  switch (useCameraSettingsStore().cameras[cameraUniqueName].pipelineSettings.pipelineType) {
-    case PipelineType.Reflective:
-      pipelineType.value = WebsocketPipelineType.Reflective;
-      break;
-    case PipelineType.ColoredShape:
-      pipelineType.value = WebsocketPipelineType.ColoredShape;
-      break;
-    case PipelineType.AprilTag:
-      pipelineType.value = WebsocketPipelineType.AprilTag;
-      break;
-    case PipelineType.Aruco:
-      pipelineType.value = WebsocketPipelineType.Aruco;
-      break;
-    case PipelineType.ObjectDetection:
-      pipelineType.value = WebsocketPipelineType.ObjectDetection;
-      break;
-  }
-};
-
 // Common RegEx used for naming both pipelines and cameras
 const nameChangeRegex = /^[A-Za-z0-9_ \-)(]*[A-Za-z0-9][A-Za-z0-9_ \-)(.]*$/;
 
@@ -87,17 +65,17 @@ const cancelCameraNameEdit = () => {
 };
 
 // Pipeline Name Edit
-const pipelineNamesWrapper = computed<SelectItem[]>(() => {
+const pipelineNamesWrapper = computed(() => {
   const pipelineNames = useCameraSettingsStore().pipelineNames.map((name, index) => ({ name: name, value: index }));
 
   if (useCameraSettingsStore().isDriverMode) {
-    pipelineNames.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode });
+    pipelineNames.push({ name: "Driver Mode", value: WebsocketPipelineType.DriverMode.valueOf() });
   }
   if (useCameraSettingsStore().isFocusMode) {
-    pipelineNames.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera });
+    pipelineNames.push({ name: "Focus Mode", value: WebsocketPipelineType.FocusCamera.valueOf() });
   }
   if (useCameraSettingsStore().isCalibrationMode) {
-    pipelineNames.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d });
+    pipelineNames.push({ name: "3D Calibration Mode", value: WebsocketPipelineType.Calib3d.valueOf() });
   }
 
   return pipelineNames;
@@ -240,7 +218,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
   }
 });
-const wrappedCameras = computed<SelectItem[]>(() =>
+const wrappedCameras = computed<SelectItem<string>[]>(() =>
   Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
     name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
     value: cameraUniqueName
@@ -257,7 +235,7 @@ const wrappedCameras = computed<SelectItem[]>(() =>
           v-model="useStateStore().currentCameraUniqueName"
           label="Camera"
           :items="wrappedCameras"
-          @update:modelValue="changeCurrentCameraUniqueName"
+          @update:modelValue="pipelineType = useCameraSettingsStore().currentWebsocketPipelineType"
         />
         <pv-input
           v-else

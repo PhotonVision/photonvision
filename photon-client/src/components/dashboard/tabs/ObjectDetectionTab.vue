@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ObjectDetectionPipelineSettings, PipelineType } from "@/types/PipelineTypes";
+import {
+  type ObjectDetectionPipelineSettings,
+  PipelineType,
+  ContourSortMode,
+  ContourTargetOrientation
+} from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
@@ -44,19 +49,19 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   return availableModels.filter(isSupported);
 });
 
-const selectedModel = computed({
-  get: () => {
-    const currentModel = currentPipelineSettings.value.model;
-    if (!currentModel) return undefined;
+const modelWrapper = computed<SelectItem<string>[]>(() =>
+  supportedModels.value.map((model) => ({
+    name: model.nickname,
+    value: model.modelPath
+  }))
+);
 
-    const index = supportedModels.value.findIndex((model) => model.modelPath === currentModel.modelPath);
-    return index === -1 ? undefined : index;
-  },
-
-  set: (v) => {
-    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
-      const newModel = supportedModels.value[v];
-      useCameraSettingsStore().changeCurrentPipelineSetting({ model: newModel }, true);
+const selectedModel = computed<string>({
+  get: () => currentPipelineSettings.value.model?.modelPath ?? "",
+  set: (value) => {
+    const model = supportedModels.value.find((supportedModel) => supportedModel.modelPath === value);
+    if (model) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model }, true);
     }
   }
 });
@@ -69,7 +74,7 @@ const selectedModel = computed({
       label="Model"
       tooltip="The model used to detect objects in the camera feed"
       :select-cols="interactiveCols"
-      :items="supportedModels.map((model) => model.nickname)"
+      :items="modelWrapper"
     />
 
     <pv-slider
@@ -123,14 +128,13 @@ const selectedModel = computed({
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
-      :items="['Portrait', 'Landscape']"
+      :items="[
+        { value: ContourTargetOrientation.Portrait, name: 'Portrait' },
+        { value: ContourTargetOrientation.Landscape, name: 'Landscape' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting(
-            { contourTargetOrientation: typeof value === 'string' ? Number(value) : value },
-            false
-          )
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -138,13 +142,17 @@ const selectedModel = computed({
       label="Target Sort"
       tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
       :select-cols="interactiveCols"
-      :items="['Largest', 'Smallest', 'Highest', 'Lowest', 'Rightmost', 'Leftmost', 'Centermost']"
+      :items="[
+        { value: ContourSortMode.Largest, name: 'Largest' },
+        { value: ContourSortMode.Smallest, name: 'Smallest' },
+        { value: ContourSortMode.Highest, name: 'Highest' },
+        { value: ContourSortMode.Lowest, name: 'Lowest' },
+        { value: ContourSortMode.Rightmost, name: 'Rightmost' },
+        { value: ContourSortMode.Leftmost, name: 'Leftmost' },
+        { value: ContourSortMode.Centermost, name: 'Centermost' }
+      ]"
       @update:modelValue="
-        (value) =>
-          useCameraSettingsStore().changeCurrentPipelineSetting(
-            { contourSortMode: typeof value === 'string' ? Number(value) : value },
-            false
-          )
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourSortMode: value }, false)
       "
     />
   </div>

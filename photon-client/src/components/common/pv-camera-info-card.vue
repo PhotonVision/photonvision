@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { PVCameraInfo } from "@/types/SettingTypes";
+import { cameraInfoFor } from "@/lib/PhotonUtils";
 
 const { camera } = defineProps({
   camera: {
@@ -7,19 +8,6 @@ const { camera } = defineProps({
     required: true
   }
 });
-
-const cameraInfoFor: any = (camera: PVCameraInfo) => {
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
-};
 </script>
 
 <template>
