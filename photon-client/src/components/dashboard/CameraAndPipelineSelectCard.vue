@@ -218,7 +218,7 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
       break;
   }
 });
-const wrappedCameras = computed<SelectItem[]>(() =>
+const wrappedCameras = computed<SelectItem<string>[]>(() =>
   Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
     name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
     value: cameraUniqueName

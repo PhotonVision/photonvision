@@ -126,7 +126,7 @@ const deleteThisCamera = async () => {
     cameraUniqueName: useStateStore().currentCameraUniqueName
   });
 };
-const wrappedCameras = computed<SelectItem[]>(() =>
+const wrappedCameras = computed<SelectItem<string>[]>(() =>
   Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
     name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
     value: cameraUniqueName
