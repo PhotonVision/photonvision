@@ -8,7 +8,7 @@ export interface SelectItem<TValue extends string | number> {
   disabled?: boolean;
 }
 
-type SelectItems = ReadonlyArray<SelectItem<T>> | ReadonlyArray<T>;
+type SelectItems = SelectItem<T>[] | ReadonlyArray<T>;
 const value = defineModel<T>({ required: true });
 
 const props = withDefaults(
@@ -25,7 +25,7 @@ const props = withDefaults(
   }
 );
 
-const areSelectItems = (items: SelectItems): items is ReadonlyArray<SelectItem<T>> => typeof items[0] === "object";
+const areSelectItems = (items: SelectItems): items is SelectItem<T>[] => typeof items[0] === "object";
 
 // Computed in case items changes
 const items = computed<SelectItem<T>[]>(() => {
@@ -35,7 +35,7 @@ const items = computed<SelectItem<T>[]>(() => {
   }
 
   if (areSelectItems(props.items)) {
-    return [...props.items];
+    return props.items;
   }
 
   return props.items.map((item) => ({ name: item, value: item }));
