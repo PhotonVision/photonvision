@@ -174,8 +174,8 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
                         || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311Controls))
                 && !cameraAutoExposure) {
             // OV9281, OV9782, and OV2311 on Linux seems to sometimes ignore our exposure requests on
-            // first boot if
-            // we're in manual mode. Poking the camera into and out of auto exposure seems to fix it.
+            // first boot if we're in manual mode. Poking the camera into and out of auto exposure seems
+            // to fix it.
             try {
                 setAutoExposureImpl(false);
                 Thread.sleep(2000);
