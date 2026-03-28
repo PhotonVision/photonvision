@@ -17,9 +17,6 @@
 
 package org.photonvision.common.configuration;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.cscore.UsbCameraInfo;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -40,6 +37,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.apriltag.AprilTagFields;
+import org.wpilib.vision.camera.UsbCameraInfo;
 
 /**
  * Saves settings in a SQLite database file (called photon.sqlite).

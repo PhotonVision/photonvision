@@ -17,16 +17,17 @@
 
 package org.photonvision.jni;
 
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.jni.WPIMathJNI;
-import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import org.opencv.core.Core;
+import org.wpilib.datalog.DataLogJNI;
+import org.wpilib.hardware.hal.JNIWrapper;
+import org.wpilib.math.jni.WPIMathJNI;
+import org.wpilib.net.WPINetJNI;
+import org.wpilib.networktables.NetworkTablesJNI;
+import org.wpilib.util.WPIUtilJNI;
+import org.wpilib.vision.apriltag.jni.AprilTagJNI;
+import org.wpilib.vision.camera.CameraServerJNI;
+import org.wpilib.vision.camera.OpenCvLoader;
 
 public class LibraryLoader {
     private static boolean hasWpiLoaded = false;
@@ -37,6 +38,7 @@ public class LibraryLoader {
 
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        DataLogJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
         OpenCvLoader.Helper.setExtractOnStaticLoad(false);
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
@@ -54,6 +56,7 @@ public class LibraryLoader {
                     "wpinetjni",
                     "wpiHaljni",
                     "cscorejni",
+                    "datalogjni",
                     "apriltagjni");
 
             CombinedRuntimeLoader.loadLibraries(LibraryLoader.class, Core.NATIVE_LIBRARY_NAME);

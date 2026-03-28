@@ -24,12 +24,12 @@
 #include <mutex>
 #include <string>
 
-#include <frc/filter/MedianFilter.h>
-#include <wpi/Logger.h>
-#include <wpinet/EventLoopRunner.h>
-#include <wpinet/uv/Buffer.h>
-#include <wpinet/uv/Timer.h>
-#include <wpinet/uv/Udp.h>
+#include <wpi/math/filter/MedianFilter.hpp>
+#include <wpi/net/EventLoopRunner.hpp>
+#include <wpi/net/uv/Buffer.hpp>
+#include <wpi/net/uv/Timer.hpp>
+#include <wpi/net/uv/Udp.hpp>
+#include <wpi/util/Logger.hpp>
 
 #include "TimeSyncStructs.h"
 
@@ -47,12 +47,12 @@ class TimeSyncClient {
   };
 
  private:
-  using SharedUdpPtr = std::shared_ptr<uv::Udp>;
-  using SharedTimerPtr = std::shared_ptr<uv::Timer>;
+  using SharedUdpPtr = std::shared_ptr<wpi::net::uv::Udp>;
+  using SharedTimerPtr = std::shared_ptr<wpi::net::uv::Timer>;
 
-  EventLoopRunner m_loopRunner{};
+  wpi::net::EventLoopRunner m_loopRunner{};
 
-  wpi::Logger m_logger;
+  wpi::util::Logger m_logger;
   std::function<uint64_t()> m_timeProvider;
 
   SharedUdpPtr m_udp;
@@ -70,12 +70,12 @@ class TimeSyncClient {
   TspPing m_lastPing{};
 
   // 30s is a reasonable guess
-  frc::MedianFilter<int64_t> m_lastOffsets{30};
+  wpi::math::MedianFilter<int64_t> m_lastOffsets{30};
 
   void Tick();
 
-  void UdpCallback(uv::Buffer& buf, size_t nbytes, const sockaddr& sender,
-                   unsigned flags);
+  void UdpCallback(wpi::net::uv::Buffer& buf, size_t nbytes,
+                   const sockaddr& sender, unsigned flags);
 
  public:
   TimeSyncClient(std::string_view server, int remote_port,

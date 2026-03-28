@@ -17,7 +17,6 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +24,7 @@ import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.PhotonPipelineResultSerde;
 import org.photonvision.targeting.proto.PhotonPipelineResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /** Represents a pipeline result from a PhotonCamera. */
 public class PhotonPipelineResult
@@ -168,9 +168,9 @@ public class PhotonPipelineResult
     }
 
     /**
-     * Returns the estimated time the frame was taken, in the Time Sync Server's time base (nt::Now).
-     * This is calculated using the estimated offset between Time Sync Server time and local time. The
-     * robot shall run a server, so the offset shall be 0.
+     * Returns the estimated time the frame was taken, in the Time Sync Server's time base
+     * (wpi::nt::Now). This is calculated using the estimated offset between Time Sync Server time and
+     * local time. The robot shall run a server, so the offset shall be 0.
      *
      * @return The timestamp in seconds
      */

@@ -18,10 +18,6 @@
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import java.util.Arrays;
 import org.junit.jupiter.api.AfterAll;
@@ -29,6 +25,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.jni.ConstrainedSolvepnpJni;
 import org.photonvision.jni.LibraryLoader;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.util.Nat;
+import org.wpilib.util.runtime.RuntimeLoader;
 
 public class ConstrainedSolvepnpTest {
     @BeforeAll

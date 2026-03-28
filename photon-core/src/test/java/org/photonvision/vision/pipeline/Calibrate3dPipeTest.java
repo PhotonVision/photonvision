@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.math.util.Units;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -47,6 +46,7 @@ import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
+import org.wpilib.math.util.Units;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
