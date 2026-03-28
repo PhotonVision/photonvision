@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="20" fill="dimgrey"/>
+  <g>
+    <set id="on" attributeName="color" to="param(onColor) white" begin="0s; off.end" dur="param(onTime) 0.3s"/>
+    <set id="off" attributeName="color" to="param(offColor) transparent" begin="on.end" dur="param(offTime) 0.15s"/>
+    <circle cx="50" cy="50" r="20" stroke="black" stroke-width="5" fill="currentColor"/>
+    <line x1="5" y1="50" x2="20" y2="50" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <line x1="27.5" y1="11.03" x2="35" y2="24.02" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <line x1="72.5" y1="11.03" x2="65" y2="24.02" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <line x1="80" y1="50" x2="95" y2="50" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <line x1="72.5" y1="88.97" x2="65" y2="75.98" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+    <line x1="27.5" y1="88.97" x2="35" y2="75.98" stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <script type="text/ecmascript" href="https://www.w3.org/TR/SVGParamPrimer/param.js"></script>
+</svg>
