@@ -30,6 +30,8 @@ There are currently two types of status LEDs supported:
 * `RGB` (default): A singular LED mixing separate red, green, and blue inputs
 * `GY`/`Green-Yellow`: A pair of independent green and yellow LEDs
 
+For an explanation of the colors used for status LEDs, see {ref}`Status LEDs<docs/troubleshooting/status-leds:Status LEDs>`
+
 ### GPIO Pinout
 
 ::::{tab-set}
