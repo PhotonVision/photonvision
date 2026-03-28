@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100" style="color-scheme: dark light">
   <circle cx="50" cy="50" r="20" fill="dimgrey"/>
   <g>
     <set id="on" attributeName="color" to="param(onColor) white" begin="0s; off.end" dur="param(onTime) 0.3s"/>
