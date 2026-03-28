@@ -105,7 +105,7 @@ public class HardwareManager {
         statusLED =
                 StatusLED.ofType(
                         hardwareConfig.statusLEDType,
-                        lazyDeviceFactory.get(),
+                        lazyDeviceFactory,
                         hardwareConfig.statusLEDPins,
                         hardwareConfig.statusLEDActiveHigh);
 
