@@ -11,11 +11,11 @@ myst:
         <param name="onColor" value="limegreen"/>
       </object>
       ```
-    led_blue_solid: |
+    led_solid_blue: |
       ```{raw} html
       <object data="../../_images/led.svg">
         <param name="onColor" value="blue"/>
-        <param name="offColor" value="blue"/>
+        <param name="onTime" value="indefinite"/>
       </object>
       ```
     led_yellow: |
@@ -40,6 +40,7 @@ myst:
       ```{raw} html
       <object data="../../_images/led.svg">
         <param name="onColor" value="transparent"/>
+        <param name="onTime" value="indefinite"/>
       </object>
       ```
     led_fast_green: |
@@ -50,12 +51,11 @@ myst:
         <param name="offTime" value="75ms"/>
       </object>
       ```
-    led_fast_yellow: |
+    led_solid_yellow: |
       ```{raw} html
       <object data="../../_images/led.svg">
         <param name="onColor" value="yellow"/>
-        <param name="onTime" value="75ms"/>
-        <param name="offTime" value="75ms"/>
+        <param name="onTime" value="indefinite"/>
       </object>
       ```
 ---
@@ -69,7 +69,7 @@ PhotonVision has support for multiple kinds of status LEDs. Make sure you refere
  Color  | Flashing | Preview              | Status
 --------|----------|:--------------------:|-----------------------------------------------
  Green  | Yes      | {{ led_green }}      | Running normally, no targets visible
- Blue   | No       | {{ led_blue_solid }} | Running normally, targets visible
+ Blue   | No       | {{ led_solid_blue }} | Running normally, targets visible
  Yellow | Yes      | {{ led_yellow }}     | NT Disconnected, no targets visible
  Blue   | Yes      | {{ led_blue }}       | NT Disconnected, targets visible
  Red    | Yes      | {{ led_red }}        | Initializing or faulted, not running
@@ -81,12 +81,12 @@ Used on Limelight 1, 2, 2+, 3, 3G, and 3A
 
 Green and Yellow LED patterns may be active at the same time
 
- Color  | Pattern        | Preview                             | Status
---------|----------------|:-----------------------------------:|-------------------------------------------------
- Green  | Slow Flashing  | {{ led_green }} {{ led_off }}       | No targets visible
- Green  | Quick Flashing | {{ led_fast_green }} {{ led_off }}  | Targets visible
- Yellow | Slow Flashing  | {{ led_off }} {{ led_yellow }}      | NT Disconnected
- Yellow | Solid          | {{ led_off }} {{ led_fast_yellow }} | NT Connected
- Both   | Off            | {{ led_off }} {{ led_off }}         | No power, initializing, or faulted, not running
+ Color  | Pattern        | Preview                              | Status
+--------|----------------|:------------------------------------:|-------------------------------------------------
+ Green  | Slow Flashing  | {{ led_green }} {{ led_off }}        | No targets visible
+ Green  | Quick Flashing | {{ led_fast_green }} {{ led_off }}   | Targets visible
+ Yellow | Flashing       | {{ led_off }} {{ led_yellow }}       | NT Disconnected
+ Yellow | Solid          | {{ led_off }} {{ led_solid_yellow }} | NT Connected
+ Both   | Off            | {{ led_off }} {{ led_off }}          | No power, initializing, or faulted, not running
 
 {{ led_loader }}
