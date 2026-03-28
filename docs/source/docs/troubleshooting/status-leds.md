@@ -77,7 +77,7 @@ PhotonVision has support for multiple kinds of status LEDs. Make sure you refere
 
 ## Green and Yellow LEDs
 
-Present on Limelight 1, 2, 2+, 3, 3G, and 3A
+Used on Limelight 1, 2, 2+, 3, 3G, and 3A
 
 Green and Yellow LED patterns may be active at the same time
 
