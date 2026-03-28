@@ -425,12 +425,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            artifact-name: jar-Linux
+            artifact-name: photonvision-*-linuxx64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
-            artifact-name: jar-Win64
+            artifact-name: photonvision-*-winx64.jar
           - os: macos-latest
-            artifact-name: jar-macOS
+            artifact-name: photonvision-*-macarm64.jar
+
 
     runs-on: ${{ matrix.os }}
 
@@ -442,7 +443,7 @@ jobs:
           distribution: temurin
       - uses: actions/download-artifact@v8
         with:
-          name: ${{ matrix.artifact-name }}
+          pattern: ${{ matrix.artifact-name }}
       # The jar is run twice to exercise different code paths.
       - run: |
           echo "=== First run ==="
@@ -561,7 +562,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/download-artifact@v8
         with:
-          name: photonvision-*-linuxarm64.jar
+          pattern: photonvision-*-linuxarm64.jar
       - uses: photonvision/photon-image-runner@HEAD
         name: Generate image
         id: generate_image
