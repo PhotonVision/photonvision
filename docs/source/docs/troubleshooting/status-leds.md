@@ -67,7 +67,7 @@ PhotonVision has support for multiple kinds of status LEDs. Make sure you refere
 ## RGB LED
 
  Color  | Flashing | Preview              | Status
---------|----------|----------------------|-----------------------------------------------
+--------|----------|:--------------------:|-----------------------------------------------
  Green  | Yes      | {{ led_green }}      | Running normally, no targets visible
  Blue   | No       | {{ led_blue_solid }} | Running normally, targets visible
  Yellow | Yes      | {{ led_yellow }}     | NT Disconnected, no targets visible
@@ -82,7 +82,7 @@ Present on Limelight 1, 2, 2+, 3, 3G, and 3A
 Green and Yellow LED patterns may be active at the same time
 
  Color  | Pattern        | Preview                             | Status
---------|----------------|-------------------------------------|-------------------------------------------------
+--------|----------------|:-----------------------------------:|-------------------------------------------------
  Green  | Slow Flashing  | {{ led_green }} {{ led_off }}       | No targets visible
  Green  | Quick Flashing | {{ led_fast_green }} {{ led_off }}  | Targets visible
  Yellow | Slow Flashing  | {{ led_off }} {{ led_yellow }}      | NT Disconnected
