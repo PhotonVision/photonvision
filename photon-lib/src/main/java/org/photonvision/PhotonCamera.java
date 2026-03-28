@@ -65,6 +65,8 @@ public class PhotonCamera implements AutoCloseable {
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
+    BooleanPublisher recordingPublisher;
+    BooleanSubscriber recordingSubscriber;
     IntegerPublisher fpsLimitPublisher;
     IntegerSubscriber fpsLimitSubscriber;
     StringSubscriber versionEntry;
@@ -82,11 +84,10 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
-        fpsLimitPublisher.close();
+        recordingPublisher.close();
+        recordingSubscriber.close();
         fpsLimitSubscriber.close();
         versionEntry.close();
-        inputSaveImgEntry.close();
-        outputSaveImgEntry.close();
         pipelineIndexRequest.close();
         pipelineIndexState.close();
         ledModeRequest.close();
@@ -155,6 +156,8 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
+        recordingPublisher = cameraTable.getBooleanTopic("recordingRequest").publish();
+        recordingSubscriber = cameraTable.getBooleanTopic("recording").subscribe(false);
         fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
         fpsLimitSubscriber = cameraTable.getIntegerTopic("fpsLimit").subscribe(-1);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
@@ -344,6 +347,24 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setDriverMode(boolean driverMode) {
         driverModePublisher.set(driverMode);
+    }
+
+    /**
+     * Returns whether the camera is recording.
+     *
+     * @return Whether the camera is recording.
+     */
+    public boolean isRecording() {
+        return recordingSubscriber.get();
+    }
+
+    /**
+     * Sets whether the camera is recording.
+     *
+     * @param recording Whether to set recording.
+     */
+    public void setRecording(boolean recording) {
+        recordingPublisher.set(recording);
     }
 
     /**
@@ -601,5 +622,20 @@ public class PhotonCamera implements AutoCloseable {
                             return rootPhotonTable.getSubTable(it).getEntry("rawBytes").exists();
                         })
                 .toList();
+    }
+
+    /**
+     * Indicate that space needs to be reserved for this camera to record. This means that when {@link
+     * PhotonUtils#reserveSpace} is called, this camera will have space allocated for it. Note that
+     * calling this method does not itself reserve space; it only indicates that space should be
+     * reserved later.
+     */
+    public void willRecord() {
+        var entry =
+                rootPhotonTable.getStringArrayTopic("reserveRecordingSpace").getEntry(new String[0]);
+        String[] cur = entry.get();
+        String[] next = Arrays.copyOf(cur, cur.length + 1);
+        next[cur.length] = getName();
+        rootPhotonTable.getStringArrayTopic("reserveRecordingSpace").publish().set(next);
     }
 }
