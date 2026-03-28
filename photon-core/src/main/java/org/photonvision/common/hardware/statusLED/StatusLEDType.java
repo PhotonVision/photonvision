@@ -17,7 +17,10 @@
 
 package org.photonvision.common.hardware.statusLED;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public enum StatusLEDType {
     RGB,
-    LL;
+    @JsonAlias("Green-Yellow")
+    GY;
 }

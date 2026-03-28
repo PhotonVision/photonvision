@@ -36,9 +36,9 @@ public interface StatusLED extends AutoCloseable {
                     statusLedPins.size() == 3
                             ? new RGBStatusLED(deviceFactory, statusLedPins, activeHigh)
                             : null;
-            case LL ->
+            case GY ->
                     statusLedPins.size() == 2
-                            ? new LLStatusLED(deviceFactory, statusLedPins, activeHigh)
+                            ? new GYStatusLED(deviceFactory, statusLedPins, activeHigh)
                             : null;
         };
     }

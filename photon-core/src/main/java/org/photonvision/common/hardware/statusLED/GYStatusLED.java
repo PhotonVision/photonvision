@@ -24,14 +24,14 @@ import org.photonvision.common.hardware.PhotonStatus;
 import org.photonvision.common.util.TimedTaskManager;
 
 /** A pair of green and yellow LEDs, as used on the Limelight cameras */
-public class LLStatusLED implements StatusLED {
+public class GYStatusLED implements StatusLED {
     public final LED greenLED;
     public final LED yellowLED;
     protected int blinkCounter;
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
-    public LLStatusLED(
+    public GYStatusLED(
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
         // fill unassigned pins with -1 to disable
         if (statusLedPins.size() != 3) {
