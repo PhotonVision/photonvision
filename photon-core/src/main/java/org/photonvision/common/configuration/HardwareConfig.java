@@ -17,8 +17,10 @@
 
 package org.photonvision.common.configuration;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
+import org.photonvision.common.hardware.statusLED.StatusLEDType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HardwareConfig {
@@ -29,8 +31,13 @@ public class HardwareConfig {
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledBrightnessRange;
     public final int ledPWMFrequency;
-    public final ArrayList<Integer> statusRGBPins;
-    public final boolean statusRGBActiveHigh;
+    public final StatusLEDType statusLEDType;
+
+    @JsonAlias("statusRGBPins")
+    public final ArrayList<Integer> statusLEDPins;
+
+    @JsonAlias("statusRGBActiveHigh")
+    public final boolean statusLEDActiveHigh;
 
     // Custom GPIO
     public final String getGPIOCommand;
@@ -49,8 +56,9 @@ public class HardwareConfig {
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
             int ledPwmFrequency,
-            ArrayList<Integer> statusRGBPins,
-            boolean statusRGBActiveHigh,
+            StatusLEDType statusLEDType,
+            ArrayList<Integer> statusLEDPins,
+            boolean statusLEDActiveHigh,
             String getGPIOCommand,
             String setGPIOCommand,
             String setPWMCommand,
@@ -63,8 +71,9 @@ public class HardwareConfig {
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
         this.ledPWMFrequency = ledPwmFrequency;
-        this.statusRGBPins = statusRGBPins;
-        this.statusRGBActiveHigh = statusRGBActiveHigh;
+        this.statusLEDType = statusLEDType;
+        this.statusLEDPins = statusLEDPins;
+        this.statusLEDActiveHigh = statusLEDActiveHigh;
         this.getGPIOCommand = getGPIOCommand;
         this.setGPIOCommand = setGPIOCommand;
         this.setPWMCommand = setPWMCommand;
@@ -80,8 +89,9 @@ public class HardwareConfig {
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
         ledPWMFrequency = 0;
-        statusRGBPins = new ArrayList<>();
-        statusRGBActiveHigh = false;
+        statusLEDType = StatusLEDType.RGB;
+        statusLEDPins = new ArrayList<>();
+        statusLEDActiveHigh = false;
         getGPIOCommand = "";
         setGPIOCommand = "";
         setPWMCommand = "";
@@ -121,10 +131,12 @@ public class HardwareConfig {
                 + ledBrightnessRange
                 + ", ledPWMFrequency="
                 + ledPWMFrequency
-                + ", statusRGBPins="
-                + statusRGBPins
-                + ", statusRGBActiveHigh"
-                + statusRGBActiveHigh
+                + ", statusLEDType="
+                + statusLEDType
+                + ", statusLEDPins="
+                + statusLEDPins
+                + ", statusLEDActiveHigh"
+                + statusLEDActiveHigh
                 + ", getGPIOCommand="
                 + getGPIOCommand
                 + ", setGPIOCommand="
