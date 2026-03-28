@@ -27,8 +27,8 @@ When running on Linux, PhotonVision can use [diozero](https://www.diozero.com) t
 
 There are currently two types of status LEDs supported:
 
-* RGB (default): A singular LED mixing separate red, green, and blue inputs
-* LL: A pair of independent Green and yellow LEDs
+* `RGB` (default): A singular LED mixing separate red, green, and blue inputs
+* `GY`/`Green-Yellow`: A pair of independent green and yellow LEDs
 
 ### GPIO Pinout
 
