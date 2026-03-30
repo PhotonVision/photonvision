@@ -50,7 +50,6 @@ import org.photonvision.vision.pipe.impl.AprilTagROIDecodePipe.ROIDecodeParams;
  * that corners detected within ROIs are correctly mapped back to full-frame coordinates.
  */
 public class AprilTagROIDecodePipeTest {
-
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
@@ -63,9 +62,9 @@ public class AprilTagROIDecodePipeTest {
     }
 
     /**
-     * CRITICAL TEST: Verify coordinate mapping from ROI to full frame. This test compares
-     * ML-assisted detection (simulated with manual ROI) against traditional full-frame detection.
-     * The mapped corners should match within a small tolerance.
+     * CRITICAL TEST: Verify coordinate mapping from ROI to full frame. This test compares ML-assisted
+     * detection (simulated with manual ROI) against traditional full-frame detection. The mapped
+     * corners should match within a small tolerance.
      */
     @Test
     public void testCoordinateMappingAccuracy() {
@@ -110,7 +109,8 @@ public class AprilTagROIDecodePipeTest {
         // Add some padding around the tag (simulating ML detection bbox)
         double padding = 20;
         RotatedRect simulatedMLBbox =
-                roiFromXYWH(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+                roiFromXYWH(
+                        minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
 
         // Run the ROI decode pipe
         AprilTagROIDecodePipe decodePipe = new AprilTagROIDecodePipe();
@@ -225,7 +225,8 @@ public class AprilTagROIDecodePipeTest {
         var result = decodePipe.run(input);
 
         // Should deduplicate to a single detection
-        assertTrue(result.output.size() <= 1, "Overlapping ROIs detecting same tag should be deduplicated");
+        assertTrue(
+                result.output.size() <= 1, "Overlapping ROIs detecting same tag should be deduplicated");
 
         decodePipe.release();
     }
@@ -310,13 +311,12 @@ public class AprilTagROIDecodePipeTest {
 
     // ==================== Homography Transformation Tests ====================
 
-    /**
-     * Helper method to access the private transformHomography method via reflection.
-     */
-    private double[] invokeTransformHomography(AprilTagROIDecodePipe pipe,
-            double[] h, int offsetX, int offsetY) throws Exception {
-        Method method = AprilTagROIDecodePipe.class.getDeclaredMethod(
-            "transformHomography", double[].class, int.class, int.class);
+    /** Helper method to access the private transformHomography method via reflection. */
+    private double[] invokeTransformHomography(
+            AprilTagROIDecodePipe pipe, double[] h, int offsetX, int offsetY) throws Exception {
+        Method method =
+                AprilTagROIDecodePipe.class.getDeclaredMethod(
+                        "transformHomography", double[].class, int.class, int.class);
         method.setAccessible(true);
         return (double[]) method.invoke(pipe, h, offsetX, offsetY);
     }
@@ -331,8 +331,8 @@ public class AprilTagROIDecodePipeTest {
 
         double tolerance = 1e-15;
         for (int i = 0; i < 9; i++) {
-            assertEquals(h[i], result[i], tolerance,
-                "Element " + i + " should be unchanged with zero offset");
+            assertEquals(
+                    h[i], result[i], tolerance, "Element " + i + " should be unchanged with zero offset");
         }
 
         pipe.release();
@@ -384,12 +384,9 @@ public class AprilTagROIDecodePipeTest {
             int[] offset = offsets[t];
             double[] result = invokeTransformHomography(pipe, h, offset[0], offset[1]);
 
-            assertEquals(h[6], result[6], tolerance,
-                "h[6] should be unchanged for test case " + t);
-            assertEquals(h[7], result[7], tolerance,
-                "h[7] should be unchanged for test case " + t);
-            assertEquals(h[8], result[8], tolerance,
-                "h[8] should be unchanged for test case " + t);
+            assertEquals(h[6], result[6], tolerance, "h[6] should be unchanged for test case " + t);
+            assertEquals(h[7], result[7], tolerance, "h[7] should be unchanged for test case " + t);
+            assertEquals(h[8], result[8], tolerance, "h[8] should be unchanged for test case " + t);
         }
 
         pipe.release();
@@ -407,13 +404,13 @@ public class AprilTagROIDecodePipeTest {
 
         // Manually compute expected T*H where T = [[1,0,100],[0,1,150],[0,0,1]]
         // Row 0: H[0][j] + offsetX * H[2][j]
-        double expected0 = 0.9 + 100 * 0.001;   // 0.9 + 0.1 = 1.0
-        double expected1 = 0.1 + 100 * 0.002;   // 0.1 + 0.2 = 0.3
-        double expected2 = 50.0 + 100 * 1.0;    // 50 + 100 = 150
+        double expected0 = 0.9 + 100 * 0.001; // 0.9 + 0.1 = 1.0
+        double expected1 = 0.1 + 100 * 0.002; // 0.1 + 0.2 = 0.3
+        double expected2 = 50.0 + 100 * 1.0; // 50 + 100 = 150
         // Row 1: H[1][j] + offsetY * H[2][j]
-        double expected3 = -0.1 + 150 * 0.001;  // -0.1 + 0.15 = 0.05
-        double expected4 = 0.9 + 150 * 0.002;   // 0.9 + 0.3 = 1.2
-        double expected5 = 60.0 + 150 * 1.0;    // 60 + 150 = 210
+        double expected3 = -0.1 + 150 * 0.001; // -0.1 + 0.15 = 0.05
+        double expected4 = 0.9 + 150 * 0.002; // 0.9 + 0.3 = 1.2
+        double expected5 = 60.0 + 150 * 1.0; // 60 + 150 = 210
         // Row 2: unchanged
         double expected6 = 0.001;
         double expected7 = 0.002;
@@ -456,7 +453,7 @@ public class AprilTagROIDecodePipeTest {
             {1.0, -1.0},
             {1.0, 1.0},
             {-1.0, 1.0},
-            {0.0, 0.0}  // center
+            {0.0, 0.0} // center
         };
 
         double tolerance = 1e-10;
@@ -469,18 +466,24 @@ public class AprilTagROIDecodePipeTest {
             // Project with full-frame homography
             double[] fullProjected = projectPoint(hFull, point[0], point[1]);
 
-            assertEquals(roiFullX, fullProjected[0], tolerance,
-                "X coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
-            assertEquals(roiFullY, fullProjected[1], tolerance,
-                "Y coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
+            assertEquals(
+                    roiFullX,
+                    fullProjected[0],
+                    tolerance,
+                    "X coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
+            assertEquals(
+                    roiFullY,
+                    fullProjected[1],
+                    tolerance,
+                    "Y coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
         }
 
         pipe.release();
     }
 
     /**
-     * Helper method to project a point using a homography.
-     * Computes [x', y'] from H * [X, Y, 1]^T with perspective division.
+     * Helper method to project a point using a homography. Computes [x', y'] from H * [X, Y, 1]^T
+     * with perspective division.
      */
     private double[] projectPoint(double[] h, double X, double Y) {
         double w = h[6] * X + h[7] * Y + h[8];
@@ -532,18 +535,17 @@ public class AprilTagROIDecodePipeTest {
 
     private static Stream<Arguments> offsetTestCases() {
         return Stream.of(
-            Arguments.of(0, 0, "Zero offset"),
-            Arguments.of(100, 0, "X only"),
-            Arguments.of(0, 100, "Y only"),
-            Arguments.of(100, 100, "Equal offsets"),
-            Arguments.of(640, 480, "VGA resolution"),
-            Arguments.of(1920, 1080, "1080p resolution")
-        );
+                Arguments.of(0, 0, "Zero offset"),
+                Arguments.of(100, 0, "X only"),
+                Arguments.of(0, 100, "Y only"),
+                Arguments.of(100, 100, "Equal offsets"),
+                Arguments.of(640, 480, "VGA resolution"),
+                Arguments.of(1920, 1080, "1080p resolution"));
     }
 
     /**
-     * Parameterized test for various offset values.
-     * Verifies the transformation formula holds for different offset combinations.
+     * Parameterized test for various offset values. Verifies the transformation formula holds for
+     * different offset combinations.
      */
     @ParameterizedTest(name = "{2}: offset=({0}, {1})")
     @MethodSource("offsetTestCases")
@@ -560,20 +562,14 @@ public class AprilTagROIDecodePipeTest {
 
         // Verify the transformation formula: T * H
         // Row 0: h[i] + offsetX * h[6+i%3] for i in 0,1,2
-        assertEquals(h[0] + offsetX * h[6], result[0], tolerance,
-            description + ": h[0] incorrect");
-        assertEquals(h[1] + offsetX * h[7], result[1], tolerance,
-            description + ": h[1] incorrect");
-        assertEquals(h[2] + offsetX * h[8], result[2], tolerance,
-            description + ": h[2] incorrect");
+        assertEquals(h[0] + offsetX * h[6], result[0], tolerance, description + ": h[0] incorrect");
+        assertEquals(h[1] + offsetX * h[7], result[1], tolerance, description + ": h[1] incorrect");
+        assertEquals(h[2] + offsetX * h[8], result[2], tolerance, description + ": h[2] incorrect");
 
         // Row 1: h[i] + offsetY * h[3+i%3] for i in 3,4,5
-        assertEquals(h[3] + offsetY * h[6], result[3], tolerance,
-            description + ": h[3] incorrect");
-        assertEquals(h[4] + offsetY * h[7], result[4], tolerance,
-            description + ": h[4] incorrect");
-        assertEquals(h[5] + offsetY * h[8], result[5], tolerance,
-            description + ": h[5] incorrect");
+        assertEquals(h[3] + offsetY * h[6], result[3], tolerance, description + ": h[3] incorrect");
+        assertEquals(h[4] + offsetY * h[7], result[4], tolerance, description + ": h[4] incorrect");
+        assertEquals(h[5] + offsetY * h[8], result[5], tolerance, description + ": h[5] incorrect");
 
         // Row 2: unchanged
         assertEquals(h[6], result[6], tolerance, description + ": h[6] should be unchanged");
@@ -584,9 +580,9 @@ public class AprilTagROIDecodePipeTest {
     }
 
     /**
-     * Integration test: Verify that homography transformation produces consistent results
-     * when comparing full-frame detection vs ROI-based detection with transformation.
-     * This extends testCoordinateMappingAccuracy to also verify homography values.
+     * Integration test: Verify that homography transformation produces consistent results when
+     * comparing full-frame detection vs ROI-based detection with transformation. This extends
+     * testCoordinateMappingAccuracy to also verify homography values.
      */
     @Test
     public void testTransformHomography_Integration_HomographyProducesCorrectPoseInput() {
@@ -629,7 +625,8 @@ public class AprilTagROIDecodePipeTest {
 
         double padding = 20;
         RotatedRect simulatedMLBbox =
-                roiFromXYWH(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+                roiFromXYWH(
+                        minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
 
         // Run the ROI decode pipe
         AprilTagROIDecodePipe decodePipe = new AprilTagROIDecodePipe();
@@ -659,13 +656,20 @@ public class AprilTagROIDecodePipeTest {
         // Test projection of normalized tag corners
         double[][] tagCorners = {{-1, -1}, {1, -1}, {1, 1}, {-1, 1}};
         for (int i = 0; i < 4; i++) {
-            double[] gtProjected = projectPoint(groundTruthHomography, tagCorners[i][0], tagCorners[i][1]);
+            double[] gtProjected =
+                    projectPoint(groundTruthHomography, tagCorners[i][0], tagCorners[i][1]);
             double[] mappedProjected = projectPoint(mappedHomography, tagCorners[i][0], tagCorners[i][1]);
 
-            assertEquals(gtProjected[0], mappedProjected[0], tolerance,
-                "Corner " + i + " X projection should match");
-            assertEquals(gtProjected[1], mappedProjected[1], tolerance,
-                "Corner " + i + " Y projection should match");
+            assertEquals(
+                    gtProjected[0],
+                    mappedProjected[0],
+                    tolerance,
+                    "Corner " + i + " X projection should match");
+            assertEquals(
+                    gtProjected[1],
+                    mappedProjected[1],
+                    tolerance,
+                    "Corner " + i + " Y projection should match");
         }
 
         fullFrameDetector.close();
@@ -674,20 +678,19 @@ public class AprilTagROIDecodePipeTest {
 
     // ==================== ATR (Adaptive Tag Resizing) Tests ====================
 
-    /**
-     * Helper method to access the private transformHomographyWithScale method via reflection.
-     */
-    private double[] invokeTransformHomographyWithScale(AprilTagROIDecodePipe pipe,
-            double[] h, int offsetX, int offsetY, double S) throws Exception {
-        Method method = AprilTagROIDecodePipe.class.getDeclaredMethod(
-            "transformHomographyWithScale", double[].class, int.class, int.class, double.class);
+    /** Helper method to access the private transformHomographyWithScale method via reflection. */
+    private double[] invokeTransformHomographyWithScale(
+            AprilTagROIDecodePipe pipe, double[] h, int offsetX, int offsetY, double S) throws Exception {
+        Method method =
+                AprilTagROIDecodePipe.class.getDeclaredMethod(
+                        "transformHomographyWithScale", double[].class, int.class, int.class, double.class);
         method.setAccessible(true);
         return (double[]) method.invoke(pipe, h, offsetX, offsetY, S);
     }
 
     /**
-     * Test ATR scale factor calculation: S = min(1.0, T_dim / w)
-     * Verifies the formula produces correct values for various ROI widths.
+     * Test ATR scale factor calculation: S = min(1.0, T_dim / w) Verifies the formula produces
+     * correct values for various ROI widths.
      */
     @Test
     public void testATR_ScaleFactorCalculation() {
@@ -715,8 +718,8 @@ public class AprilTagROIDecodePipeTest {
     }
 
     /**
-     * Test ATR coordinate mapping: x_full = (x_scaled / S) + roi_x
-     * Verifies corner coordinates are correctly mapped from scaled space to full-frame.
+     * Test ATR coordinate mapping: x_full = (x_scaled / S) + roi_x Verifies corner coordinates are
+     * correctly mapped from scaled space to full-frame.
      */
     @Test
     public void testATR_CoordinateMappingWithScale() {
@@ -754,16 +757,19 @@ public class AprilTagROIDecodePipeTest {
 
         double tolerance = 1e-10;
         for (int i = 0; i < 9; i++) {
-            assertEquals(resultOriginal[i], resultWithScale[i], tolerance,
-                "Element " + i + " should match original transform when S=1.0");
+            assertEquals(
+                    resultOriginal[i],
+                    resultWithScale[i],
+                    tolerance,
+                    "Element " + i + " should match original transform when S=1.0");
         }
 
         pipe.release();
     }
 
     /**
-     * Test homography transformation with scaling: H_full = T * S_inv * H_scaled
-     * Verifies the combined scale+translation transformation is mathematically correct.
+     * Test homography transformation with scaling: H_full = T * S_inv * H_scaled Verifies the
+     * combined scale+translation transformation is mathematically correct.
      */
     @Test
     public void testATR_TransformHomographyWithScale_Computation() throws Exception {
@@ -805,8 +811,8 @@ public class AprilTagROIDecodePipeTest {
     }
 
     /**
-     * Test point mapping consistency with ATR scaling.
-     * For a point p: project(H_scaled, p) -> scale up -> translate == project(H_full, p)
+     * Test point mapping consistency with ATR scaling. For a point p: project(H_scaled, p) -> scale
+     * up -> translate == project(H_full, p)
      */
     @Test
     public void testATR_TransformHomographyWithScale_PointMappingConsistency() throws Exception {
@@ -822,9 +828,7 @@ public class AprilTagROIDecodePipeTest {
         double[] hFull = invokeTransformHomographyWithScale(pipe, hScaled, offsetX, offsetY, S);
 
         // Test points (normalized tag corners)
-        double[][] testPoints = {
-            {-1.0, -1.0}, {1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}, {0.0, 0.0}
-        };
+        double[][] testPoints = {{-1.0, -1.0}, {1.0, -1.0}, {1.0, 1.0}, {-1.0, 1.0}, {0.0, 0.0}};
 
         double tolerance = 1e-10;
         for (double[] point : testPoints) {
@@ -836,18 +840,23 @@ public class AprilTagROIDecodePipeTest {
             // Project with full-frame homography
             double[] fullProjected = projectPoint(hFull, point[0], point[1]);
 
-            assertEquals(scaledFullX, fullProjected[0], tolerance,
-                "X coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
-            assertEquals(scaledFullY, fullProjected[1], tolerance,
-                "Y coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
+            assertEquals(
+                    scaledFullX,
+                    fullProjected[0],
+                    tolerance,
+                    "X coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
+            assertEquals(
+                    scaledFullY,
+                    fullProjected[1],
+                    tolerance,
+                    "Y coordinate mismatch for point (" + point[0] + ", " + point[1] + ")");
         }
 
         pipe.release();
     }
 
     /**
-     * Test ATR with minimum scale factor clamping.
-     * Verifies that extreme downscaling is prevented.
+     * Test ATR with minimum scale factor clamping. Verifies that extreme downscaling is prevented.
      */
     @Test
     public void testATR_MinScaleFactorClamping() {
@@ -863,8 +872,8 @@ public class AprilTagROIDecodePipeTest {
     }
 
     /**
-     * Test ATR enabled vs disabled produces consistent results for small tags.
-     * When tag is smaller than target dimension, ATR should have no effect.
+     * Test ATR enabled vs disabled produces consistent results for small tags. When tag is smaller
+     * than target dimension, ATR should have no effect.
      */
     @Test
     public void testATR_DisabledMatchesOriginalBehavior() {
@@ -905,7 +914,8 @@ public class AprilTagROIDecodePipeTest {
 
         double padding = 20;
         RotatedRect simulatedMLBbox =
-                roiFromXYWH(minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
+                roiFromXYWH(
+                        minX - padding, minY - padding, maxX - minX + 2 * padding, maxY - minY + 2 * padding);
 
         // Run with ATR enabled (should not scale since tag is small)
         AprilTagROIDecodePipe pipeWithATR = new AprilTagROIDecodePipe();
@@ -931,8 +941,10 @@ public class AprilTagROIDecodePipeTest {
         var resultWithoutATR = pipeWithoutATR.run(input);
 
         // Both should detect the same tag with same corners (within tolerance)
-        assertEquals(resultWithATR.output.size(), resultWithoutATR.output.size(),
-            "Same number of detections expected");
+        assertEquals(
+                resultWithATR.output.size(),
+                resultWithoutATR.output.size(),
+                "Same number of detections expected");
 
         if (!resultWithATR.output.isEmpty() && !resultWithoutATR.output.isEmpty()) {
             AprilTagDetection detWithATR = resultWithATR.output.get(0);
@@ -940,10 +952,16 @@ public class AprilTagROIDecodePipeTest {
 
             double tolerance = 0.5;
             for (int i = 0; i < 4; i++) {
-                assertEquals(detWithATR.getCornerX(i), detWithoutATR.getCornerX(i), tolerance,
-                    "Corner " + i + " X should match with/without ATR for small tag");
-                assertEquals(detWithATR.getCornerY(i), detWithoutATR.getCornerY(i), tolerance,
-                    "Corner " + i + " Y should match with/without ATR for small tag");
+                assertEquals(
+                        detWithATR.getCornerX(i),
+                        detWithoutATR.getCornerX(i),
+                        tolerance,
+                        "Corner " + i + " X should match with/without ATR for small tag");
+                assertEquals(
+                        detWithATR.getCornerY(i),
+                        detWithoutATR.getCornerY(i),
+                        tolerance,
+                        "Corner " + i + " Y should match with/without ATR for small tag");
             }
         }
 
@@ -953,8 +971,8 @@ public class AprilTagROIDecodePipeTest {
     }
 
     /**
-     * Test computeHomographyFromCorners produces a valid homography.
-     * Verifies that the computed homography maps normalized tag coords to corners.
+     * Test computeHomographyFromCorners produces a valid homography. Verifies that the computed
+     * homography maps normalized tag coords to corners.
      */
     @Test
     public void testATR_ComputeHomographyFromCorners() throws Exception {
@@ -964,17 +982,19 @@ public class AprilTagROIDecodePipeTest {
         pipe.setParams(params);
 
         // Access the private method via reflection
-        Method method = AprilTagROIDecodePipe.class.getDeclaredMethod(
-            "computeHomographyFromCorners", org.opencv.core.Point[].class);
+        Method method =
+                AprilTagROIDecodePipe.class.getDeclaredMethod(
+                        "computeHomographyFromCorners", org.opencv.core.Point[].class);
         method.setAccessible(true);
 
         // Define test corners (a simple quadrilateral)
-        org.opencv.core.Point[] corners = new org.opencv.core.Point[] {
-            new org.opencv.core.Point(100, 100),  // Corner 0: maps from (-1, -1)
-            new org.opencv.core.Point(200, 100),  // Corner 1: maps from ( 1, -1)
-            new org.opencv.core.Point(200, 200),  // Corner 2: maps from ( 1,  1)
-            new org.opencv.core.Point(100, 200)   // Corner 3: maps from (-1,  1)
-        };
+        org.opencv.core.Point[] corners =
+                new org.opencv.core.Point[] {
+                    new org.opencv.core.Point(100, 100), // Corner 0: maps from (-1, -1)
+                    new org.opencv.core.Point(200, 100), // Corner 1: maps from ( 1, -1)
+                    new org.opencv.core.Point(200, 200), // Corner 2: maps from ( 1,  1)
+                    new org.opencv.core.Point(100, 200) // Corner 3: maps from (-1,  1)
+                };
 
         double[] homography = (double[]) method.invoke(pipe, (Object) corners);
 

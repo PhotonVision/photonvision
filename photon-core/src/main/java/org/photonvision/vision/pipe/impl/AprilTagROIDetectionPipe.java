@@ -34,7 +34,6 @@ import org.photonvision.vision.pipe.CVPipe;
 public class AprilTagROIDetectionPipe
         extends CVPipe<CVMat, List<RotatedRect>, AprilTagROIDetectionPipe.AprilTagROIDetectionParams>
         implements Releasable {
-
     private ObjectDetector detector;
     private Model currentModel;
 
