@@ -71,7 +71,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final AprilTagROIDetectionPipe mlDetectionPipe = new AprilTagROIDetectionPipe();
     private final AprilTagROIDecodePipe mlDecodePipe = new AprilTagROIDecodePipe();
     private boolean mlAvailable = false;
-    private boolean mlWasAvailable = false; 
+    private boolean mlWasAvailable = false;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
@@ -152,9 +152,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 if (apriltagModel != null) {
                     mlDetectionPipe.setParams(
                             new AprilTagROIDetectionPipe.AprilTagROIDetectionParams(
-                                    apriltagModel,
-                                    settings.mlConfidenceThreshold,
-                                    settings.mlNmsThreshold));
+                                    apriltagModel, settings.mlConfidenceThreshold, settings.mlNmsThreshold));
 
                     AprilTagROIDecodePipe.ROIDecodeParams decodeParams =
                             new AprilTagROIDecodePipe.ROIDecodeParams();

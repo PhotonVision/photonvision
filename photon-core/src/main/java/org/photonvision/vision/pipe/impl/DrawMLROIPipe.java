@@ -30,7 +30,6 @@ import org.photonvision.vision.pipe.MutatingPipe;
  */
 public class DrawMLROIPipe
         extends MutatingPipe<Pair<Mat, List<RotatedRect>>, DrawMLROIPipe.DrawMLROIParams> {
-
     private static final Scalar ROI_COLOR = new Scalar(255, 255, 0); // Cyan in BGR
 
     @Override
@@ -48,11 +47,12 @@ public class DrawMLROIPipe
         for (RotatedRect roi : rois) {
             roi.points(corners);
             double d = params.divisor.value;
-            MatOfPoint scaled = new MatOfPoint(
-                    new Point(corners[0].x / d, corners[0].y / d),
-                    new Point(corners[1].x / d, corners[1].y / d),
-                    new Point(corners[2].x / d, corners[2].y / d),
-                    new Point(corners[3].x / d, corners[3].y / d));
+            MatOfPoint scaled =
+                    new MatOfPoint(
+                            new Point(corners[0].x / d, corners[0].y / d),
+                            new Point(corners[1].x / d, corners[1].y / d),
+                            new Point(corners[2].x / d, corners[2].y / d),
+                            new Point(corners[3].x / d, corners[3].y / d));
             Imgproc.polylines(mat, List.of(scaled), true, ROI_COLOR, thickness);
         }
 
@@ -64,8 +64,7 @@ public class DrawMLROIPipe
         public final boolean showDetectionBoxes;
         public final FrameDivisor divisor;
 
-        public DrawMLROIParams(
-                boolean shouldDraw, boolean showDetectionBoxes, FrameDivisor divisor) {
+        public DrawMLROIParams(boolean shouldDraw, boolean showDetectionBoxes, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.showDetectionBoxes = showDetectionBoxes;
             this.divisor = divisor;

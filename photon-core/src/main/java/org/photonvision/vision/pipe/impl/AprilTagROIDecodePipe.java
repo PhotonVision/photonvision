@@ -41,8 +41,8 @@ import org.photonvision.vision.pipe.CVPipe;
  * extracts a sub-image, runs the traditional WPILib AprilTag detector, and maps the detected corner
  * coordinates and homography back to full-frame coordinates.
  *
- * <p>Both corner coordinates AND the homography matrix must be transformed from ROI
- * coordinates to full-frame coordinates.
+ * <p>Both corner coordinates AND the homography matrix must be transformed from ROI coordinates to
+ * full-frame coordinates.
  */
 public class AprilTagROIDecodePipe
         extends CVPipe<
@@ -50,13 +50,11 @@ public class AprilTagROIDecodePipe
                 List<AprilTagDetection>,
                 AprilTagROIDecodePipe.ROIDecodeParams>
         implements Releasable {
-
-    private static final Logger logger = new Logger(AprilTagROIDecodePipe.class, LogGroup.VisionModule);
+    private static final Logger logger =
+            new Logger(AprilTagROIDecodePipe.class, LogGroup.VisionModule);
     private static final boolean DEBUG_COORDINATE_MAPPING = false;
 
-    /**
-     * Context object containing ATR scaling information for a single ROI.
-     */
+    /** Context object containing ATR scaling information for a single ROI. */
     private static class ATRContext {
         final double scaleFactor;
         final boolean wasScaled;
@@ -93,15 +91,17 @@ public class AprilTagROIDecodePipe
         // Adaptive Tag Resizing (ATR) parameters
         /** Enable ATR (adaptive tag resizing) */
         public boolean atrEnabled = true;
+
         /** Target dimension for ATR - tags wider than this will be downscaled */
         public int atrTargetDimension = 160;
+
         /** Minimum scale factor for ATR (prevents extreme downscaling) */
         public double atrMinScaleFactor = 0.25;
 
         public ROIDecodeParams() {
             detectorConfig = new AprilTagDetector.Config();
             detectorConfig.numThreads = 1;
-            detectorConfig.quadDecimate = 1; 
+            detectorConfig.quadDecimate = 1;
             quadParams = new AprilTagDetector.QuadThresholdParameters();
             // Match the defaults from AprilTagPipeline
             quadParams.minClusterPixels = 5;
@@ -263,8 +263,8 @@ public class AprilTagROIDecodePipe
     /**
      * Maps detection coordinates from ROI space to full-frame space.
      *
-     * Both corners AND homography must be transformed. The pose estimator uses the
-     * homography matrix internally for pose estimation, not just the corners.
+     * <p>Both corners AND homography must be transformed. The pose estimator uses the homography
+     * matrix internally for pose estimation, not just the corners.
      *
      * @param det The detection in ROI coordinates
      * @param roiOffset The ROI rectangle defining the offset from full frame origin
@@ -298,8 +298,8 @@ public class AprilTagROIDecodePipe
     }
 
     /**
-     * Maps detection coordinates from scaled ROI space to full-frame space.
-     * Handles both translation AND scaling transformations.
+     * Maps detection coordinates from scaled ROI space to full-frame space. Handles both translation
+     * AND scaling transformations.
      *
      * @param det The detection in scaled ROI coordinates
      * @param roiOffset The ROI rectangle defining the offset from full frame origin
@@ -343,8 +343,8 @@ public class AprilTagROIDecodePipe
      *
      * <p>The homography H satisfies: [x_roi, y_roi, 1]^T ~ H * [X_tag, Y_tag, 1]^T
      *
-     * <p>To convert to full-frame coordinates where x_full = x_roi + offsetX and
-     * y_full = y_roi + offsetY, we compute H_full = T * H_roi where T is the translation matrix:
+     * <p>To convert to full-frame coordinates where x_full = x_roi + offsetX and y_full = y_roi +
+     * offsetY, we compute H_full = T * H_roi where T is the translation matrix:
      *
      * <pre>
      * | 1  0  offsetX |
@@ -352,9 +352,8 @@ public class AprilTagROIDecodePipe
      * | 0  0  1       |
      * </pre>
      *
-     * <p>The UMich AprilTag library stores homography as row-major 3x3:
-     * [h00, h01, h02, h10, h11, h12, h20, h21, h22]
-     * source: https://april.eecs.umich.edu/media/pdfs/olson2011tags.pdf
+     * <p>The UMich AprilTag library stores homography as row-major 3x3: [h00, h01, h02, h10, h11,
+     * h12, h20, h21, h22] source: https://april.eecs.umich.edu/media/pdfs/olson2011tags.pdf
      *
      * @param h The original homography (9 elements, row-major 3x3)
      * @param offsetX The x offset from ROI origin to full-frame origin
@@ -386,17 +385,13 @@ public class AprilTagROIDecodePipe
     /**
      * Transforms a homography matrix from scaled ROI coordinates to full-frame coordinates.
      *
-     * <p>The transformation combines inverse scaling and translation:
-     * H_full = T * S_inv * H_scaled
+     * <p>The transformation combines inverse scaling and translation: H_full = T * S_inv * H_scaled
      *
-     * <p>Where:
-     * - S_inv = [[1/S, 0, 0], [0, 1/S, 0], [0, 0, 1]] (inverse scale)
-     * - T = [[1, 0, offsetX], [0, 1, offsetY], [0, 0, 1]] (translation)
+     * <p>Where: - S_inv = [[1/S, 0, 0], [0, 1/S, 0], [0, 0, 1]] (inverse scale) - T = [[1, 0,
+     * offsetX], [0, 1, offsetY], [0, 0, 1]] (translation)
      *
-     * <p>Combined formula:
-     * Row 0: H[0..2] / S + offsetX * H[6..8]
-     * Row 1: H[3..5] / S + offsetY * H[6..8]
-     * Row 2: unchanged (H[6..8])
+     * <p>Combined formula: Row 0: H[0..2] / S + offsetX * H[6..8] Row 1: H[3..5] / S + offsetY *
+     * H[6..8] Row 2: unchanged (H[6..8])
      *
      * @param h The original homography (9 elements, row-major 3x3)
      * @param offsetX The x offset from ROI origin to full-frame origin
@@ -428,8 +423,8 @@ public class AprilTagROIDecodePipe
 
     /**
      * Expands a bounding box by adding fixed pixel padding on each side, then clamping to image
-     * bounds. Additive padding naturally provides more relative expansion for small/far tags and
-     * less for large/close tags.
+     * bounds. Additive padding naturally provides more relative expansion for small/far tags and less
+     * for large/close tags.
      *
      * @param bbox Original bounding box
      * @param paddingPixels Number of pixels to add on each side of the bounding box
@@ -451,9 +446,7 @@ public class AprilTagROIDecodePipe
         return new RotatedRect(new Point(cx, cy), new Size(newWidth, newHeight), bbox.angle);
     }
 
-    /**
-     * Converts a RotatedRect to integer Rect (axis-aligned bounding rectangle).
-     */
+    /** Converts a RotatedRect to integer Rect (axis-aligned bounding rectangle). */
     private Rect toIntRect(RotatedRect r) {
         return r.boundingRect();
     }

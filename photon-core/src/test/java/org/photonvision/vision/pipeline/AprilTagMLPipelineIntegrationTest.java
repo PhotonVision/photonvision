@@ -36,7 +36,6 @@ import org.photonvision.vision.target.TargetModel;
  * correctly falls back to traditional detection.
  */
 public class AprilTagMLPipelineIntegrationTest {
-
     @BeforeEach
     public void setup() {
         LoadJNI.loadLibraries();

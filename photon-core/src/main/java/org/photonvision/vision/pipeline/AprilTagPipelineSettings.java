@@ -48,8 +48,10 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     // Adaptive Tag Resizing (ATR) settings
     /** Enable adaptive tag resizing for ML-assisted detection */
     public boolean atrEnabled = true;
+
     /** Target dimension (pixels) for ATR resizing. Tags larger than this will be downscaled. */
     public int atrTargetDimension = 200;
+
     /** Minimum scale factor - prevents extreme downscaling. Default: 0.25 (4x max downscale) */
     public double atrMinScaleFactor = 0.25;
 

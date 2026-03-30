@@ -332,8 +332,8 @@ public class NeuralNetworkModelManager {
     }
 
     /**
-     * Gets the default AprilTag detection model. Searches for a model with "apriltag" in its
-     * nickname (case-insensitive).
+     * Gets the default AprilTag detection model. Searches for a model with "apriltag" in its nickname
+     * (case-insensitive).
      *
      * @return Optional containing the AprilTag model if found
      */
@@ -370,9 +370,7 @@ public class NeuralNetworkModelManager {
         for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
-                        models.get(backend).stream()
-                                .filter(m -> m.getNickname().equals(name))
-                                .findFirst();
+                        models.get(backend).stream().filter(m -> m.getNickname().equals(name)).findFirst();
                 if (model.isPresent()) {
                     return model;
                 }

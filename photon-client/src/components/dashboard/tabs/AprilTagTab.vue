@@ -121,7 +121,7 @@ const selectedModel = computed({
     />
 
     <!-- ML-Assisted Detection Section -->
-    <v-divider class="mt-3 mb-2" v-if="mlDetectionAvailable" />
+    <v-divider v-if="mlDetectionAvailable" class="mt-3 mb-2" />
     <div v-if="mlDetectionAvailable" class="ml-settings-section">
       <p class="text-subtitle-2 mb-2">AI-Assisted Detection (NPU)</p>
       <pv-switch
