@@ -81,6 +81,9 @@ const quarkyPhrases = [
     "Robots should not quit, but yours did!",
     "Don’t forget to disable auto-exposure! Or enable it. I'm not sure. ",
     "Have you glued your lenses to keep them in focus?",
+    "Don’t put spaces in your camera names — it makes the robot very sad",
+    "Upgrade to Photon Pro for gtsam support 👍",
+    "Did you forget to take off the lense covers? It’s dark in here…"
 ];
 
 // State-specific humorous phrases
