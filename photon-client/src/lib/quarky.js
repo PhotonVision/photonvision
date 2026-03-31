@@ -182,6 +182,19 @@ function playAnimation(animation) {
     }
 }
 
+// Mini Quarky management
+let miniQuarkies = [];
+const MAX_MINI_QUARKIES = 20;
+const MINI_QUARKY_SIZE = 120;
+const MINI_QUARKY_Z_INDEX = 999;
+const MINI_QUARKY_VELOCITY_MULTIPLIER = 12;
+const MINI_QUARKY_VELOCITY_CENTER = 0.5;
+const DIRECTION_CHANGE_PROBABILITY = 0.02;
+const DIRECTION_CHANGE_VELOCITY_MULTIPLIER = 4;
+const MINI_QUARKY_ANIMATION_INTERVAL_MS = 50;
+const MINI_QUARKY_SPAWN_BASE_DELAY_MS = 1000;
+const MINI_QUARKY_SPAWN_DELAY_RANGE_MS = 1000;
+
 // Random movement every few cycles
 let randomMoveCounter = 0;
 let mouseX = window.innerWidth / 2;
@@ -305,6 +318,90 @@ function clickToPoint(e){
     }, 1000);
 }
 
+/**
+ * Spawn a mini Quarky that moves randomly around the screen
+ */
+function spawnMiniQuarky() {
+    console.log("SPAWNING A QUARKY");
+
+    // If at max, don't spawn
+    if (miniQuarkies.length >= MAX_MINI_QUARKIES) {
+        return;
+    }
+
+    const miniContainer = document.createElement('div');
+    miniContainer.style.position = 'fixed';
+    miniContainer.style.width = `${MINI_QUARKY_SIZE}px`;
+    miniContainer.style.height = `${MINI_QUARKY_SIZE}px`;
+    miniContainer.style.pointerEvents = 'none';
+    miniContainer.style.zIndex = MINI_QUARKY_Z_INDEX.toString();
+    
+    // Spawn from main quarky's actual position
+    const rect = quarkyContainer.getBoundingClientRect();
+    const startX = rect.left + window.scrollX + rect.width / 2;
+    const startY = rect.top + window.scrollY + rect.height / 2;
+    miniContainer.style.left = startX + 'px';
+    miniContainer.style.top = startY + 'px';
+    
+    const miniImage = document.createElement('img');
+    miniImage.src = ANIMATIONS['idle'];
+    miniImage.style.width = '100%';
+    miniImage.style.height = '100%';
+    miniImage.style.objectFit = 'contain';
+    
+    miniContainer.appendChild(miniImage);
+    document.body.appendChild(miniContainer);
+    
+    const miniQuarky = {
+        container: miniContainer,
+        image: miniImage,
+        x: startX,
+        y: startY,
+        vx: (Math.random() - MINI_QUARKY_VELOCITY_CENTER) * MINI_QUARKY_VELOCITY_MULTIPLIER,
+        vy: (Math.random() - MINI_QUARKY_VELOCITY_CENTER) * MINI_QUARKY_VELOCITY_MULTIPLIER,
+        animationInterval: null
+    };
+    
+    miniQuarkies.push(miniQuarky);
+    
+    // Start movement loop
+    miniQuarky.animationInterval = setInterval(() => {
+        miniQuarky.x += miniQuarky.vx;
+        miniQuarky.y += miniQuarky.vy;
+        
+        // Bounce off edges
+        if (miniQuarky.x <= 0 || miniQuarky.x >= window.innerWidth - MINI_QUARKY_SIZE) {
+            miniQuarky.vx *= -1;
+            miniQuarky.x = Math.max(0, Math.min(miniQuarky.x, window.innerWidth - MINI_QUARKY_SIZE));
+        }
+        if (miniQuarky.y <= 0 || miniQuarky.y >= window.innerHeight - MINI_QUARKY_SIZE) {
+            miniQuarky.vy *= -1;
+            miniQuarky.y = Math.max(0, Math.min(miniQuarky.y, window.innerHeight - MINI_QUARKY_SIZE));
+        }
+        
+        // Occasionally change direction randomly
+        if (Math.random() < DIRECTION_CHANGE_PROBABILITY) {
+            miniQuarky.vx = (Math.random() - MINI_QUARKY_VELOCITY_CENTER) * DIRECTION_CHANGE_VELOCITY_MULTIPLIER;
+            miniQuarky.vy = (Math.random() - MINI_QUARKY_VELOCITY_CENTER) * DIRECTION_CHANGE_VELOCITY_MULTIPLIER;
+        }
+        
+        miniContainer.style.left = miniQuarky.x + 'px';
+        miniContainer.style.top = miniQuarky.y + 'px';
+    }, MINI_QUARKY_ANIMATION_INTERVAL_MS);
+}
+
+/**
+ * Clean up all mini Quarkies
+ */
+function cleanupMiniQuarkies() {
+    miniQuarkies.forEach(mini => {
+        clearInterval(mini.animationInterval);
+        mini.container.remove();
+    });
+    miniQuarkies = [];
+}
+
+
 
 
 export default function setup() {
@@ -322,4 +419,14 @@ export default function setup() {
     window.addEventListener('click', (e) => {
         clickToPoint(e);
     });
+
+    // Spawn mini Quarkies on a random timer
+    function scheduleNextMiniQuarkySpawn() {
+        const delayMs = MINI_QUARKY_SPAWN_BASE_DELAY_MS + Math.random() * MINI_QUARKY_SPAWN_DELAY_RANGE_MS;
+        setTimeout(() => {
+            spawnMiniQuarky();
+            scheduleNextMiniQuarkySpawn();
+        }, delayMs);
+    }
+    scheduleNextMiniQuarkySpawn();
 }
