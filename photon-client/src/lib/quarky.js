@@ -5,6 +5,8 @@ import WAVEGIF from '@/assets/images/wave.gif';
 import SPEAKGIF from '@/assets/images/speak.gif';
 import SHRINKGIF from '@/assets/images/shrink.gif';
 import POINTGIF from '@/assets/images/point.gif';
+import { useCameraSettingsStore } from '@/stores/settings/CameraSettingsStore';
+import { useStateStore } from '@/stores/StateStore';
 
 const ANIMATIONS = {
     idle: IDLEGIF,
@@ -76,7 +78,65 @@ const quarkyPhrases = [
     "asdflkjaslkdflklnf2222",
     "00110101? That's just gibberish!",
     "Three is my favorite number too!",
+    "Robots should not quit, but yours did!",
+    "Don’t forget to disable auto-exposure! Or enable it. I'm not sure. ",
+    "Have you glued your lenses to keep them in focus?",
 ];
+
+// State-specific humorous phrases
+const cameraNeedsSetupPhrases = [
+    "These cameras are just standing there... menacingly",
+    "Are your cameras plugged in? Trick question -- they aren't!",
+    "Have you hot-glued your USB cameras?",
+];
+
+const backendNotConnectedPhrases = [
+    "Um, is this thing even on?",
+    "Anyone home? Bulldozer? Bulldozer?",
+    "Have you tried turning the NI™ RoboRIO™ off and on again?",
+];
+
+const ntDisconnectedPhrases = [
+    "NetworkTables? More like Network'(; DROP TABLE websockets;--",
+    "Robots shouldn't quit, but I sure can't talk to yours!",
+    "Are you an OM5P? Because I can't talk to you over the LAN!",
+    "I'm a sentient subatomic particle, not a networking engineer."
+];
+
+/**
+ * Get list of applicable phrase categories based on current UI state
+ */
+function getApplicablePhraseLists() {
+    const cameraStore = useCameraSettingsStore();
+    const stateStore = useStateStore();
+    
+    // Build list of applicable phrase categories
+    const applicableLists = [quarkyPhrases];
+    
+    // Add state-specific categories (additive, not replacing)
+    if (cameraStore?.needsCameraConfiguration) {
+        applicableLists.push(cameraNeedsSetupPhrases);
+    }
+    
+    if (!stateStore?.backendConnected) {
+        applicableLists.push(backendNotConnectedPhrases);
+    }
+    
+    if (!stateStore?.ntConnectionStatus?.connected) {
+        applicableLists.push(ntDisconnectedPhrases);
+    }
+    
+    return applicableLists;
+}
+
+/**
+ * Pick a random phrase from applicable categories
+ */
+function pickRandomPhrase() {
+    const applicableLists = getApplicablePhraseLists();
+    const randomList = applicableLists[Math.floor(Math.random() * applicableLists.length)];
+    return randomList[Math.floor(Math.random() * randomList.length)];
+}
 
 /**
  * Get the duration of an animation in milliseconds
@@ -110,11 +170,15 @@ function playAnimation(animation) {
     quarkyImage.style.display = 'block';
     quarkyImage.src = ANIMATIONS[animation];
     if (animation === 'speak') {
-        // Pick random phrase
-        quarkySpeechText = quarkyPhrases[Math.floor(Math.random() * quarkyPhrases.length)];
+        // Pick random phrase from applicable categories
+        quarkySpeechText = pickRandomPhrase();
         speechBubble.textContent = quarkySpeechText;
         speechBubble.style.display = 'block';
-        setTimeout(() => { speechBubble.style.opacity = 1; }, 1250);
+        speechBubble.style.opacity = 1;
+        setTimeout(() => {
+            speechBubble.style.opacity = 0;
+            setTimeout(() => { speechBubble.style.display = 'none'; }, 700);
+        }, 3000);
     }
 }
 
@@ -172,16 +236,19 @@ function playNextAnimation() {
 
     // Show speech bubble before speak
     if (currentStep.animation === 'speak') {
-        quarkySpeechText = quarkyPhrases[Math.floor(Math.random() * quarkyPhrases.length)];
+        quarkySpeechText = pickRandomPhrase();
         speechBubble.textContent = quarkySpeechText;
         speechBubble.style.display = 'block';
-        setTimeout(() => { speechBubble.style.opacity = 1; }, 10);
+        speechBubble.style.opacity = 1;
+        setTimeout(() => {
+            speechBubble.style.opacity = 0;
+            setTimeout(() => { speechBubble.style.display = 'none'; }, 700);
+        }, 3000);
     }
 
     // Fade out speech bubble after speak (during idle)
     if (SEQUENCE[currentSequenceIndex - 1]?.animation === 'speak' && currentStep.animation === 'idle') {
-        speechBubble.style.opacity = 0;
-        setTimeout(() => { speechBubble.style.display = 'none'; }, 700);
+        // Speech bubble already has its own timeout from above
     }
 
     // Always return to corner when idle
