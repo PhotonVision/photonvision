@@ -52,6 +52,7 @@ import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseE
 import org.photonvision.vision.pipe.impl.AprilTagROIDecodePipe;
 import org.photonvision.vision.pipe.impl.AprilTagROIDetectionPipe;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
+import org.photonvision.vision.pipe.impl.MLDetectionResult;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -206,11 +207,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         if (settings.useMLDetection && mlAvailable) {
             // Use ML-assisted hybrid detection
             var mlDetectionResult = processMLHybrid(frame);
-            detections = mlDetectionResult.detections;
-            detectionNanos = mlDetectionResult.nanosElapsed;
+            detections = mlDetectionResult.detections();
+            detectionNanos = mlDetectionResult.nanosElapsed();
 
             // Preserve ROIs for visualization in the output stream
-            frame.mlDetectionRois = mlDetectionResult.rois;
+            frame.mlDetectionRois = mlDetectionResult.rois();
 
             // Fallback to traditional detection if ML found nothing
             if (detections.isEmpty() && settings.mlFallbackToTraditional) {
@@ -356,20 +357,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         return new CVPipelineResult(
                 frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
-    }
-
-    /** Result container for ML hybrid detection */
-    private static class MLDetectionResult {
-        final List<AprilTagDetection> detections;
-        final List<RotatedRect> rois;
-        final long nanosElapsed;
-
-        MLDetectionResult(
-                List<AprilTagDetection> detections, List<RotatedRect> rois, long nanosElapsed) {
-            this.detections = detections;
-            this.rois = rois;
-            this.nanosElapsed = nanosElapsed;
-        }
     }
 
     /**
