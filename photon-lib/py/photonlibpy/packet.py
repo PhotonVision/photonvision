@@ -19,7 +19,7 @@ import struct
 from typing import Generic, Optional, Protocol, TypeVar
 
 import wpilib
-from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
+from wpimath import Quaternion, Rotation3d, Transform3d, Translation3d
 
 T = TypeVar("T")
 
@@ -57,17 +57,16 @@ class Packet:
     """
 
     def _getNextByteAsInt(self) -> int:
-        retVal = 0x00
-
         if not self.outOfBytes:
             try:
                 retVal = 0x00FF & self.packetData[self.readPos]
                 self.readPos += 1
+                return retVal
             except IndexError:
                 wpilib.reportError(Packet._NO_MORE_BYTES_MESSAGE, True)
                 self.outOfBytes = True
 
-        return retVal
+        return 0x00
 
     def getData(self) -> bytes:
         """

@@ -1,7 +1,7 @@
 import math
 from typing import List, Self
 
-from wpimath.geometry import Pose3d, Rotation2d, Rotation3d, Translation3d
+from wpimath import Pose3d, Rotation2d, Rotation3d, Translation3d
 from wpimath.units import meters
 
 from . import RotTrlTransform3d
