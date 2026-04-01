@@ -415,7 +415,8 @@ function spawnMiniQuarky() {
 /**
  * Clean up all mini Quarkies
  */
-function cleanupMiniQuarkies() { // eslint-disable-line @typescript-eslint/no-unused-vars
+function cleanupMiniQuarkies() {
+  // eslint-disable-line @typescript-eslint/no-unused-vars
   miniQuarkies.forEach((mini) => {
     clearInterval(mini.animationInterval);
     mini.container.remove();
