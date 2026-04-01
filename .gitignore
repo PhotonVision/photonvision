@@ -156,3 +156,8 @@ photon-client/playwright-report/
 photon-client/blob-report/
 photon-client/playwright/.cache/
 photon-client/playwright/.auth/
+
+# Nix files
+shell.nix
+flake.nix
+flake.lock

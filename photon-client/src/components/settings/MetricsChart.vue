@@ -53,9 +53,9 @@ const getOptions = (data: ChartData[] = []) => {
 
         return `${tooltip}</div>`;
       },
-      backgroundColor: theme.themes.value[theme.global.name.value].colors.background,
+      backgroundColor: theme.global.current.value.colors.background,
       textStyle: {
-        color: theme.themes.value[theme.global.name.value].colors.onBackground
+        color: theme.global.current.value.colors.onBackground
       },
       axisPointer: {
         animation: false
@@ -149,10 +149,9 @@ const getSeries = (data: ChartData[] = []) => {
           : null,
       lineStyle: {
         width: 1.5,
-        color:
-          theme.global.name.value === "LightTheme"
-            ? theme.themes.value[theme.global.name.value].colors.primary
-            : `rgb(${color.r}, ${color.g}, ${color.b})`
+        color: theme.global.current.value.dark
+          ? `rgb(${color.r}, ${color.g}, ${color.b})`
+          : theme.global.current.value.colors.primary
       },
       areaStyle: {
         color: {
@@ -164,17 +163,15 @@ const getSeries = (data: ChartData[] = []) => {
           colorStops: [
             {
               offset: 0,
-              color:
-                theme.global.name.value === "LightTheme"
-                  ? `${theme.themes.value[theme.global.name.value].colors.primary}40`
-                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+              color: theme.global.current.value.dark
+                ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+                : `${theme.global.current.value.colors.primary}40`
             },
             {
               offset: 1,
-              color:
-                theme.global.name.value === "LightTheme"
-                  ? `${theme.themes.value[theme.global.name.value].colors.primary}40`
-                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+              color: theme.global.current.value.dark
+                ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+                : `${theme.global.current.value.colors.primary}40`
             }
           ]
         }

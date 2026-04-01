@@ -10,15 +10,15 @@
   },
   "devDependencies": {
     "@toolwind/anchors": "^1.0.10",
-    "prettier": "^3.5.3",
-    "typescript": "~5.7.2",
-    "vite": "^7.1.2",
-    "vite-ssg": "^28.2.2"
+    "prettier": "^3.8.1",
+    "typescript": "~5.7.3",
+    "vite": "^8.0.3",
+    "vite-ssg": "^28.3.0"
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.1.12",
-    "@vitejs/plugin-vue": "^6.0.2",
-    "tailwindcss": "^4.1.12",
-    "vue": "^3.5.25"
+    "@tailwindcss/vite": "^4.2.2",
+    "@vitejs/plugin-vue": "^6.0.5",
+    "tailwindcss": "^4.2.2",
+    "vue": "^3.5.31"
   }
 }

@@ -122,14 +122,14 @@ const onBeforeTabUpdate = () => {
         density="compact"
         text="Camera is not connected. Please check your connection and try again."
         icon="mdi-alert-circle-outline"
-        :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+        :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
       />
     </template>
     <template v-else>
       <v-col
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
-        :cols="tabGroupIndex == 1 && useCameraSettingsStore().currentPipelineSettings.doMultiTarget ? 7 : ''"
+        :cols="tabGroupIndex === 1 && useCameraSettingsStore().currentPipelineSettings.doMultiTarget ? 7 : ''"
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
         @vue:before-update="onBeforeTabUpdate"
       >
