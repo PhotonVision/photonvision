@@ -248,11 +248,11 @@ jobs:
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build
         name: Build with Gradle
-      - run: ./gradlew photon-lib:publish photon-targeting:publish
-        name: Publish
-        env:
-          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+      # - run: ./gradlew photon-lib:publish photon-targeting:publish
+      #   name: Publish
+      #   env:
+      #     ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+      #   if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
       - uses: actions/upload-artifact@v6
@@ -289,11 +289,11 @@ jobs:
       - name: Build PhotonLib
         # We don't need to run tests, since we specify only non-native platforms
         run: ./gradlew photon-targeting:build photon-lib:build ${{ matrix.build-options }} -x test
-      - name: Publish
-        run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
-        env:
-          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+      # - name: Publish
+      #   run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
+      #   env:
+      #     ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+      #   if: github.event_name == 'push' && github.repository_owner == 'photonvision'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
       - uses: actions/upload-artifact@v6
@@ -664,12 +664,9 @@ jobs:
           pattern: image-*
 
       - run: find
-      # Push to dev release
       - uses: pyTooling/Actions/releaser@r6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
-          rm: true
           snapshots: false
           files: |
             **/*.xz
@@ -677,13 +674,13 @@ jobs:
             **/*win*.jar
             **/photonlib*.json
             **/photonlib*.zip
-        if: github.event_name == 'push'
-      - name: Create Vendor JSON Repo PR
-        uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@HEAD
-        with:
-          repo: PhotonVision/vendor-json-repo
-          token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
-          vendordep_file: ${{ github.workspace }}/photonlib-${{ github.ref_name }}.json
-          pr_title: Update photonlib to ${{ github.ref_name }}
-          pr_branch: photonlib-${{ github.ref_name }}
-        if: github.repository == 'PhotonVision/photonvision' && startsWith(github.ref, 'refs/tags/v')
+        if: startsWith(github.ref, 'refs/tags/v')
+      # - name: Create Vendor JSON Repo PR
+      #   uses: wpilibsuite/vendor-json-repo/.github/actions/add_vendordep@HEAD
+      #   with:
+      #     repo: PhotonVision/vendor-json-repo
+      #     token: ${{ secrets.VENDOR_JSON_REPO_PUSH_TOKEN }}
+      #     vendordep_file: ${{ github.workspace }}/photonlib-${{ github.ref_name }}.json
+      #     pr_title: Update photonlib to ${{ github.ref_name }}
+      #     pr_branch: photonlib-${{ github.ref_name }}
+      #   if: github.repository == 'PhotonVision/photonvision' && startsWith(github.ref, 'refs/tags/v')

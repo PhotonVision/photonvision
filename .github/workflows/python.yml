@@ -123,23 +123,23 @@ jobs:
             ./run.sh $folder
           done
 
-  deploy:
-    needs: [test-py, build-python-examples]
-    runs-on: ubuntu-24.04
-    # Only upload on tags
-    if: startsWith(github.ref, 'refs/tags/v')
+  # deploy:
+  #   needs: [test-py, build-python-examples]
+  #   runs-on: ubuntu-24.04
+  #   # Only upload on tags
+  #   if: startsWith(github.ref, 'refs/tags/v')
 
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v6
-        with:
-          name: dist
-          path: dist/
+  #   steps:
+  #     - name: Download artifacts
+  #       uses: actions/download-artifact@v6
+  #       with:
+  #         name: dist
+  #         path: dist/
 
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: ./dist/
+  #     - name: Publish package distributions to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         packages-dir: ./dist/
 
-    permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+  #   permissions:
+  #     id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
