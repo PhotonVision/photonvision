@@ -20,11 +20,11 @@ from typing import List
 
 import hal
 import ntcore
+import wpilib
+from wpilib import RobotController, Timer
 
 # magical import to make serde stuff work
 import photonlibpy.generated  # noqa
-import wpilib
-from wpilib import RobotController, Timer
 
 from .packet import Packet
 from .targeting.photonPipelineResult import PhotonPipelineResult
@@ -118,7 +118,10 @@ class PhotonCamera:
         inst.start()
 
         # Usage reporting
-        hal.reportUsage("PhotonVision/PhotonCamera", PhotonCamera.instance_count, "")
+        hal.reportUsage(
+            "PhotonVision/PhotonCamera",  # Not 100% sure if this is correct
+            str(PhotonCamera.instance_count),
+        )
         PhotonCamera.instance_count += 1
 
     def getAllUnreadResults(self) -> List[PhotonPipelineResult]:

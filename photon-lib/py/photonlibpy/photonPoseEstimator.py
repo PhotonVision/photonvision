@@ -21,16 +21,16 @@ import hal
 import wpilib
 import wpimath.units
 from robotpy_apriltag import AprilTagFieldLayout
-from wpimath.geometry import (
+from wpimath import (
     Pose2d,
     Pose3d,
     Rotation2d,
     Rotation3d,
+    TimeInterpolatableRotation2dBuffer,
     Transform3d,
     Translation2d,
     Translation3d,
 )
-from wpimath.interpolation import TimeInterpolatableRotation2dBuffer
 
 from .estimatedRobotPose import EstimatedRobotPose
 from .targeting.photonPipelineResult import PhotonPipelineResult
@@ -67,7 +67,8 @@ class PhotonPoseEstimator:
 
         # Usage reporting
         hal.reportUsage(
-            "PhotonVision/PhotonPoseEstimator", PhotonPoseEstimator.instance_count, ""
+            "PhotonVision/PhotonPoseEstimator",
+            str(PhotonPoseEstimator.instance_count),
         )
         PhotonPoseEstimator.instance_count += 1
 
