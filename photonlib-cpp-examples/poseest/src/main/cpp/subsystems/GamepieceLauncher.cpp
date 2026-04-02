@@ -35,10 +35,10 @@ void GamepieceLauncher::setRunning(bool shouldRun) {
 
 void GamepieceLauncher::periodic() {
   // Calculate the maximum RPM
-  double maxRPM =
-      wpi::units::radians_per_second_t(wpi::math::DCMotor::Falcon500(1).freeSpeed)
-          .to<double>() *
-      60 / (2 * std::numbers::pi);
+  double maxRPM = wpi::units::radians_per_second_t(
+                      wpi::math::DCMotor::Falcon500(1).freeSpeed)
+                      .to<double>() *
+                  60 / (2 * std::numbers::pi);
   curMotorCmd = curDesSpd / maxRPM;
   curMotorCmd = std::clamp(curMotorCmd, 0.0, 1.0);
   motor->Set(curMotorCmd);

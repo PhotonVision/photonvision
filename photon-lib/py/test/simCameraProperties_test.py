@@ -2,9 +2,10 @@ import math
 
 import numpy as np
 import pytest
+from wpimath import Rotation2d, Translation3d
+
 from photonlibpy.estimation import RotTrlTransform3d
 from photonlibpy.simulation import SimCameraProperties
-from wpimath import Rotation2d, Translation3d
 
 
 @pytest.fixture(autouse=True)

@@ -1,9 +1,6 @@
 import math
 
 import pytest
-from photonlibpy.estimation import TargetModel, VisionEstimation
-from photonlibpy.photonCamera import PhotonCamera
-from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
 from robotpy_apriltag import AprilTag, AprilTagFieldLayout
 from wpimath import (
     Pose2d,
@@ -15,6 +12,10 @@ from wpimath import (
     Translation3d,
 )
 from wpimath.units import feetToMeters, meters
+
+from photonlibpy.estimation import TargetModel, VisionEstimation
+from photonlibpy.photonCamera import PhotonCamera
+from photonlibpy.simulation import PhotonCameraSim, VisionSystemSim, VisionTargetSim
 
 
 def test_VisibilityCupidShuffle() -> None:

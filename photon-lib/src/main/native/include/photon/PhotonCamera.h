@@ -204,7 +204,9 @@ class PhotonCamera {
    */
   static void SetVersionCheckEnabled(bool enabled);
 
-  std::shared_ptr<wpi::nt::NetworkTable> GetCameraTable() const { return rootTable; }
+  std::shared_ptr<wpi::nt::NetworkTable> GetCameraTable() const {
+    return rootTable;
+  }
 
   // For use in tests
   bool test = false;

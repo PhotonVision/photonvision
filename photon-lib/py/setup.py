@@ -58,7 +58,7 @@ setup(
     version=versionString,
     install_requires=[
         "numpy~=2.3",
-        "wpilib>=2027.0.0.0a4",
+        "wpilib>=2027.0.0a4",
         "robotpy-wpimath>=2027.0.0a4",
         "robotpy-apriltag>=2027.0.0a4",
         "robotpy-cscore>=2027.0.0a4",
