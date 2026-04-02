@@ -191,8 +191,8 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
       guess2.X().value(), guess2.Y().value(),
       guess2.Rotation().Radians().value()};
 
-  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
-      constrained_solvepnp::do_optimization(
+  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
+      result = constrained_solvepnp::do_optimization(
           headingFree, knownTags.size(), cameraCal, robotToCamera, guessMat,
           field2points, pointObservations, gyroTheta.Radians().value(),
           gyroErrorScaleFac);
@@ -203,7 +203,8 @@ std::optional<photon::PnpResult> EstimateRobotPoseConstrainedSolvePNP(
     photon::PnpResult res{};
 
     res.best = wpi::math::Transform3d{wpi::math::Transform2d{
-        wpi::units::meter_t{result.value()[0]}, wpi::units::meter_t{result.value()[1]},
+        wpi::units::meter_t{result.value()[0]},
+        wpi::units::meter_t{result.value()[1]},
         wpi::math::Rotation2d{wpi::units::radian_t{result.value()[2]}}}};
 
     return res;

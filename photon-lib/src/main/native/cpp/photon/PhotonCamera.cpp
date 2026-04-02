@@ -29,10 +29,10 @@
 #include <string_view>
 #include <vector>
 
-#include <wpi/hal/UsageReporting.h>
 #include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
+#include <wpi/hal/UsageReporting.h>
 #include <wpi/system/Errors.hpp>
 #include <wpi/system/RobotController.hpp>
 #include <wpi/system/Timer.hpp>

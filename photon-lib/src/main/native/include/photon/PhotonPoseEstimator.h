@@ -27,12 +27,12 @@
 #include <optional>
 #include <span>
 
-#include <wpi/util/SmallVector.hpp>
 #include <wpi/apriltag/AprilTagFieldLayout.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
 #include <wpi/math/interpolation/TimeInterpolatableBuffer.hpp>
+#include <wpi/util/SmallVector.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/targeting/PhotonPipelineResult.h"
@@ -212,9 +212,7 @@ class PhotonPoseEstimator {
    */
   [[deprecated("Use individual estimation methods instead.")]]
   inline void SetLastPose(wpi::math::Pose3d lastPose) {
-   
     this->lastPose = lastPose;
- 
   }
 
   /**
@@ -417,8 +415,8 @@ class PhotonPoseEstimator {
   std::optional<EstimatedRobotPose> EstimateConstrainedSolvepnpPose(
       photon::PhotonPipelineResult cameraResult,
       photon::PhotonCamera::CameraMatrix cameraMatrix,
-      photon::PhotonCamera::DistortionMatrix distCoeffs, wpi::math::Pose3d seedPose,
-      bool headingFree, double headingScaleFactor);
+      photon::PhotonCamera::DistortionMatrix distCoeffs,
+      wpi::math::Pose3d seedPose, bool headingFree, double headingScaleFactor);
 
  private:
   wpi::apriltag::AprilTagFieldLayout aprilTags;

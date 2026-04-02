@@ -71,7 +71,8 @@ void SwerveModule::SetDesiredState(wpi::math::SwerveModuleState newState,
 }
 
 wpi::math::Rotation2d SwerveModule::GetAbsoluteHeading() const {
-  return wpi::math::Rotation2d{wpi::units::radian_t{steerEncoder.GetDistance()}};
+  return wpi::math::Rotation2d{
+      wpi::units::radian_t{steerEncoder.GetDistance()}};
 }
 
 wpi::math::SwerveModuleState SwerveModule::GetState() const {
@@ -132,8 +133,8 @@ void SwerveModule::Log() {
 
 void SwerveModule::SimulationUpdate(
     wpi::units::meter_t driveEncoderDist,
-    wpi::units::meters_per_second_t driveEncoderRate, wpi::units::ampere_t driveCurrent,
-    wpi::units::radian_t steerEncoderDist,
+    wpi::units::meters_per_second_t driveEncoderRate,
+    wpi::units::ampere_t driveCurrent, wpi::units::radian_t steerEncoderDist,
     wpi::units::radians_per_second_t steerEncoderRate,
     wpi::units::ampere_t steerCurrent) {
   driveEncoderSim.SetDistance(driveEncoderDist.to<double>());

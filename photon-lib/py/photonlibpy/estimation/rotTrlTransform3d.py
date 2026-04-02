@@ -1,6 +1,6 @@
 from typing import Self
 
-from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
+from wpimath import Pose3d, Rotation3d, Transform3d, Translation3d
 
 
 class RotTrlTransform3d:
@@ -22,7 +22,7 @@ class RotTrlTransform3d:
 
     def inverse(self) -> Self:
         """The inverse of this transformation. Applying the inverse will "undo" this transformation."""
-        invRot = -self.rot
+        invRot = self.rot.inverse()
         invTrl = -(self.trl.rotateBy(invRot))
         return type(self)(invRot, invTrl)
 
@@ -42,7 +42,7 @@ class RotTrlTransform3d:
         return trlToApply.rotateBy(self.rot) + self.trl
 
     def applyRotation(self, rotToApply: Rotation3d) -> Rotation3d:
-        return rotToApply + self.rot
+        return rotToApply.rotateBy(self.rot)
 
     def applyPose(self, poseToApply: Pose3d) -> Pose3d:
         return Pose3d(

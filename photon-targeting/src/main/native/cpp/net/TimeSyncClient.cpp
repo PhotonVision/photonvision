@@ -106,7 +106,8 @@ void wpi::tsp::TimeSyncClient::Tick() {
   m_lastPing = ping;
 }
 
-void wpi::tsp::TimeSyncClient::UdpCallback(wpi::net::uv::Buffer& buf, size_t nbytes,
+void wpi::tsp::TimeSyncClient::UdpCallback(wpi::net::uv::Buffer& buf,
+                                           size_t nbytes,
                                            const sockaddr& sender,
                                            unsigned flags) {
   uint64_t pong_local_time = m_timeProvider();
@@ -183,8 +184,9 @@ void wpi::tsp::TimeSyncClient::Start() {
   using namespace std::chrono_literals;
   m_pingTimer->timeout.connect(&wpi::tsp::TimeSyncClient::Tick, this);
 
-  m_loopRunner.ExecSync(
-      [this](wpi::net::uv::Loop&) { m_pingTimer->Start(m_loopDelay, m_loopDelay); });
+  m_loopRunner.ExecSync([this](wpi::net::uv::Loop&) {
+    m_pingTimer->Start(m_loopDelay, m_loopDelay);
+  });
 }
 
 void wpi::tsp::TimeSyncClient::Stop() { m_loopRunner.Stop(); }

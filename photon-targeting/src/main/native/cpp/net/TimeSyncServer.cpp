@@ -23,11 +23,10 @@
 
 #include <wpi/net/UDPClient.hpp>
 #include <wpi/net/uv/util.hpp>
+#include <wpi/nt/ntcore_cpp.hpp>
 #include <wpi/util/Logger.hpp>
 #include <wpi/util/print.hpp>
 #include <wpi/util/struct/Struct.hpp>
-
-#include <wpi/nt/ntcore_cpp.hpp>
 
 static void ServerLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {

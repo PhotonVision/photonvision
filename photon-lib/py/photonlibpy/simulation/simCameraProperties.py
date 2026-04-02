@@ -5,7 +5,7 @@ import typing
 import cv2 as cv
 import numpy as np
 import numpy.typing as npt
-from wpimath.geometry import Rotation2d, Rotation3d, Translation3d
+from wpimath import Rotation2d, Rotation3d, Translation3d
 from wpimath.units import hertz, milliseconds, seconds
 
 from ..estimation import RotTrlTransform3d

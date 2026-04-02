@@ -50,10 +50,9 @@ class PhotonUtils {
    * values up.
    * @return The estimated distance to the target.
    */
-  static wpi::units::meter_t CalculateDistanceToTarget(wpi::units::meter_t cameraHeight,
-                                                  wpi::units::meter_t targetHeight,
-                                                  wpi::units::radian_t cameraPitch,
-                                                  wpi::units::radian_t targetPitch) {
+  static wpi::units::meter_t CalculateDistanceToTarget(
+      wpi::units::meter_t cameraHeight, wpi::units::meter_t targetHeight,
+      wpi::units::radian_t cameraPitch, wpi::units::radian_t targetPitch) {
     return (targetHeight - cameraHeight) /
            wpi::units::math::tan(cameraPitch + targetPitch);
   }

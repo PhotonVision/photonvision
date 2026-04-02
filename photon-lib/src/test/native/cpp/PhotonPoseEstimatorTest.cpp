@@ -205,8 +205,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
   std::optional<photon::EstimatedRobotPose> estimatedPose;
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
     estimatedPose = estimator.EstimateClosestToReferencePose(
-        result,
-        wpi::math::Pose3d(1_m, 1_m, 1_m, wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)));
+        result, wpi::math::Pose3d(1_m, 1_m, 1_m,
+                                  wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)));
   }
 
   ASSERT_TRUE(estimatedPose);

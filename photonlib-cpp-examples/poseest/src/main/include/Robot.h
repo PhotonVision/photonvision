@@ -51,7 +51,8 @@ class Robot : public wpi::TimedRobot {
 
  private:
   SwerveDrive drivetrain{};
-  Vision vision{[=, this](wpi::math::Pose2d pose, wpi::units::second_t timestamp,
+  Vision vision{[=, this](wpi::math::Pose2d pose,
+                          wpi::units::second_t timestamp,
                           Eigen::Matrix<double, 3, 1> stddevs) {
     drivetrain.AddVisionMeasurement(pose, timestamp, stddevs);
   }};
