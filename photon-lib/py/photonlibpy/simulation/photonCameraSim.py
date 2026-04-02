@@ -5,8 +5,9 @@ import cscore as cs
 import cv2 as cv
 import numpy as np
 import wpilib
+import wpiutil
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
-from wpimath.geometry import Pose3d, Transform3d
+from wpimath import Pose3d, Transform3d
 from wpimath.units import meters, seconds
 
 from ..estimation import OpenCVHelp, RotTrlTransform3d, TargetModel, VisionEstimation
@@ -76,7 +77,7 @@ class PhotonCameraSim:
         # TODO Check fps is right
         self.videoSimRaw = cs.CvSource(
             self.cam.getName() + "-raw",
-            cs.VideoMode.PixelFormat.kGray,
+            wpiutil._wpiutil.PixelFormat.kGray,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
             1,
@@ -88,7 +89,7 @@ class PhotonCameraSim:
         # TODO Check fps is right
         self.videoSimProcessed = cs.CvSource(
             self.cam.getName() + "-processed",
-            cs.VideoMode.PixelFormat.kGray,
+            wpiutil._wpiutil.PixelFormat.kGray,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
             1,

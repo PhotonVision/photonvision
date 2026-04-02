@@ -3,10 +3,9 @@ import typing
 import wpilib
 from robotpy_apriltag import AprilTagFieldLayout
 from wpilib import Field2d
-from wpimath.geometry import Pose2d, Pose3d, Transform3d
 
 # TODO(auscompgeek): update import path when RobotPy re-exports are fixed
-from wpimath.interpolation._interpolation import TimeInterpolatablePose3dBuffer
+from wpimath import Pose2d, Pose3d, TimeInterpolatablePose3dBuffer, Transform3d
 from wpimath.units import seconds
 
 from ..estimation import TargetModel

@@ -118,9 +118,9 @@ class PhotonCamera:
         inst.start()
 
         # Usage reporting
-        hal.report(
-            hal.tResourceType.kResourceType_PhotonCamera.value,
-            PhotonCamera.instance_count,
+        hal.reportUsage(
+            "PhotonCamera",  # Not 100% sure if this is correct
+            str(PhotonCamera.instance_count),
         )
         PhotonCamera.instance_count += 1
 
