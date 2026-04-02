@@ -534,7 +534,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              v-if="isCalibrating"
               :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"

@@ -436,7 +436,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      */
     startCalibrationSnapshotLoop(intervalMs = 500, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
       // store the interval id on the store instance (avoid changing state shape)
-      if ((this as any)._calibrationSnapshotInterval != null) return;
+      if ((this as any)._calibrationSnapshotInterval !== null) return;
       // take one immediately then schedule
       this.takeCalibrationSnapshot(cameraUniqueName);
       (this as any)._calibrationSnapshotInterval = window.setInterval(() => {
@@ -448,7 +448,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * Stop a running calibration snapshot loop started with startCalibrationSnapshotLoop().
      */
     stopCalibrationSnapshotLoop() {
-      if ((this as any)._calibrationSnapshotInterval == null) return;
+      if ((this as any)._calibrationSnapshotInterval === null) return;
       clearInterval((this as any)._calibrationSnapshotInterval);
       (this as any)._calibrationSnapshotInterval = null;
     },
