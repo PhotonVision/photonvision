@@ -29,15 +29,20 @@ myst:
     animation: led-blink 0.45s steps(1) infinite;
   }
 
-  @keyframes led-fast-blink {
+  @keyframes led-even-blink {
     50% {
       color: var(--off-color);
     }
   }
   
   :not(.solid).fast > svg.led {
-    animation-name: led-fast-blink;
+    animation-name: led-even-blink;
     animation-duration: 150ms;
+  }
+
+  :not(.solid).error > svg.led {
+    animation-name: led-even-blink;
+    animation-duration: 0.90s;
   }
 
   .green > svg.led {
@@ -51,6 +56,11 @@ myst:
   }
   .red > svg.led {
     --on-color: red;
+  }
+
+  .anti-yellow > svg.led {
+    --on-color: transparent;
+    --off-color: yellow;
   }
 
   .off > svg.led {
@@ -79,12 +89,13 @@ Used on Limelight 1, 2, 2+, 3, 3G, and 3A
 
 Green and Yellow LED patterns may be active at the same time
 
- Color  | Pattern        | Preview                                       | Status
---------|----------------|:---------------------------------------------:|-------------------------------------------------
- Green  | Slow Flashing  | [{{ led }}]{.green} [{{ led }}]{.off}         | No targets visible
- Green  | Quick Flashing | [{{ led }}]{.fast .green} [{{ led }}]{.off}   | Targets visible
- Yellow | Flashing       | [{{ led }}]{.off} [{{ led }}]{.yellow}        | NT Disconnected
- Yellow | Solid          | [{{ led }}]{.off} [{{ led }}]{.solid .yellow} | NT Connected
- Both   | Off            | [{{ led }}]{.off} [{{ led }}]{.off}           | No power, initializing, or faulted, not running
+ Color  | Pattern        | Preview                                                     | Status
+--------|----------------|:-----------------------------------------------------------:|-------------------------------------------------
+ Green  | Slow Flashing  | [{{ led }}]{.green} [{{ led }}]{.off}                       | No targets visible
+ Green  | Quick Flashing | [{{ led }}]{.fast .green} [{{ led }}]{.off}                 | Targets visible
+ Yellow | Flashing       | [{{ led }}]{.off} [{{ led }}]{.yellow}                      | NT Disconnected
+ Yellow | Solid          | [{{ led }}]{.off} [{{ led }}]{.solid .yellow}               | NT Connected
+ Both   | Alternating    | [{{ led }}]{.green .error} [{{ led }}]{.anti-yellow .error} | Initializing or faulted, not running
+ Both   | Off            | [{{ led }}]{.off} [{{ led }}]{.off}                         | No power or initialization fault, not running
 
 {{ led_loader }}
