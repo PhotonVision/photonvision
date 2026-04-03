@@ -5,60 +5,58 @@ myst:
       ```{image} images/led.svg
       :height: 0
       ```
-    led_green: |
+    led: |
       ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="limegreen"/>
-      </object>
-      ```
-    led_solid_blue: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="blue"/>
-        <param name="onTime" value="indefinite"/>
-      </object>
-      ```
-    led_yellow: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="yellow"/>
-      </object>
-      ```
-    led_blue: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="blue"/>
-      </object>
-      ```
-    led_red: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="red"/>
-      </object>
-      ```
-    led_off: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="transparent"/>
-        <param name="onTime" value="indefinite"/>
-      </object>
-      ```
-    led_fast_green: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="limegreen"/>
-        <param name="onTime" value="75ms"/>
-        <param name="offTime" value="75ms"/>
-      </object>
-      ```
-    led_solid_yellow: |
-      ```{raw} html
-      <object data="../../_images/led.svg">
-        <param name="onColor" value="yellow"/>
-        <param name="onTime" value="indefinite"/>
-      </object>
+      <svg class="led" height="30" width="30">
+        <use href="../../_images/led.svg#led"/>
+      </svg>
       ```
 ---
+<!-- markdownlint-disable-next-line MD033 MD041 -->
+<style>
+  svg.led {
+    --off-color: transparent;
+    color: var(--on-color);
+  }
+
+  @keyframes led-blink {
+    66% {
+      color: var(--off-color);
+    }
+  }
+
+  :not(.solid) > svg.led {
+    animation: led-blink 0.45s steps(1) infinite;
+  }
+
+  @keyframes led-fast-blink {
+    50% {
+      color: var(--off-color);
+    }
+  }
+  
+  :not(.solid).fast > svg.led {
+    animation-name: led-fast-blink;
+    animation-duration: 150ms;
+  }
+
+  .green > svg.led {
+    --on-color: limegreen;
+  }
+  .blue > svg.led {
+    --on-color: blue;
+  }
+  .yellow > svg.led {
+    --on-color: yellow;
+  }
+  .red > svg.led {
+    --on-color: red;
+  }
+
+  .off > svg.led {
+    color: var(--off-color);
+  }
+</style>
 
 # Status LEDs
 
@@ -66,14 +64,14 @@ PhotonVision has support for multiple kinds of status LEDs. Make sure you refere
 
 ## RGB LED
 
- Color  | Flashing | Preview              | Status
---------|----------|:--------------------:|-----------------------------------------------
- Green  | Yes      | {{ led_green }}      | Running normally, no targets visible
- Blue   | No       | {{ led_solid_blue }} | Running normally, targets visible
- Yellow | Yes      | {{ led_yellow }}     | NT Disconnected, no targets visible
- Blue   | Yes      | {{ led_blue }}       | NT Disconnected, targets visible
- Red    | Yes      | {{ led_red }}        | Initializing or faulted, not running
- Off    | No       | {{ led_off }}        | No power or initialization fault, not running
+ Color  | Flashing | Preview                   | Status
+--------|----------|:-------------------------:|-----------------------------------------------
+ Green  | Yes      | [{{ led }}]{.green}       | Running normally, no targets visible
+ Blue   | No       | [{{ led }}]{.solid .blue} | Running normally, targets visible
+ Yellow | Yes      | [{{ led }}]{.yellow}      | NT Disconnected, no targets visible
+ Blue   | Yes      | [{{ led }}]{.blue}        | NT Disconnected, targets visible
+ Red    | Yes      | [{{ led }}]{.red}         | Initializing or faulted, not running
+ Off    | No       | [{{ led }}]{.off}         | No power or initialization fault, not running
 
 ## Green and Yellow LEDs
 
@@ -81,12 +79,12 @@ Used on Limelight 1, 2, 2+, 3, 3G, and 3A
 
 Green and Yellow LED patterns may be active at the same time
 
- Color  | Pattern        | Preview                              | Status
---------|----------------|:------------------------------------:|-------------------------------------------------
- Green  | Slow Flashing  | {{ led_green }} {{ led_off }}        | No targets visible
- Green  | Quick Flashing | {{ led_fast_green }} {{ led_off }}   | Targets visible
- Yellow | Flashing       | {{ led_off }} {{ led_yellow }}       | NT Disconnected
- Yellow | Solid          | {{ led_off }} {{ led_solid_yellow }} | NT Connected
- Both   | Off            | {{ led_off }} {{ led_off }}          | No power, initializing, or faulted, not running
+ Color  | Pattern        | Preview                                       | Status
+--------|----------------|:---------------------------------------------:|-------------------------------------------------
+ Green  | Slow Flashing  | [{{ led }}]{.green} [{{ led }}]{.off}         | No targets visible
+ Green  | Quick Flashing | [{{ led }}]{.fast .green} [{{ led }}]{.off}   | Targets visible
+ Yellow | Flashing       | [{{ led }}]{.off} [{{ led }}]{.yellow}        | NT Disconnected
+ Yellow | Solid          | [{{ led }}]{.off} [{{ led }}]{.solid .yellow} | NT Connected
+ Both   | Off            | [{{ led }}]{.off} [{{ led }}]{.off}           | No power, initializing, or faulted, not running
 
 {{ led_loader }}
