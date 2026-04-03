@@ -58,8 +58,9 @@ public class GYStatusLED implements StatusLED {
     }
 
     protected void updateLED() {
-        boolean slowBlink = blinkCounter > 1;
+        boolean slowBlink = (blinkCounter % 6) > 1;
         boolean fastBlink = (blinkCounter % 2) > 0;
+        boolean errorBlink = blinkCounter > 5;
 
         switch (status) {
             case NT_CONNECTED_TARGETS_VISIBLE ->
@@ -75,12 +76,12 @@ public class GYStatusLED implements StatusLED {
                     // Green slow, yellow slow
                     setLEDs(slowBlink, slowBlink);
             case GENERIC_ERROR ->
-                    // No lights
-                    setLEDs(false, false);
+                    // Extra slow alternating blink
+                    setLEDs(errorBlink, !errorBlink);
         }
 
         blinkCounter++;
-        blinkCounter %= 6;
+        blinkCounter %= 12;
     }
 
     @Override
