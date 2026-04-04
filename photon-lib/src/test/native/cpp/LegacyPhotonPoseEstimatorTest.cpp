@@ -26,14 +26,14 @@
 #include <utility>
 #include <vector>
 
-#include <frc/apriltag/AprilTagFieldLayout.h>
-#include <frc/geometry/Pose3d.h>
-#include <frc/geometry/Rotation3d.h>
-#include <frc/geometry/Transform3d.h>
-#include <units/angle.h>
-#include <units/length.h>
-#include <wpi/SmallVector.h>
-#include <wpi/deprecated.h>
+#include <wpi/apriltag/AprilTagFieldLayout.hpp>
+#include <wpi/math/geometry/Pose3d.hpp>
+#include <wpi/math/geometry/Rotation3d.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
+#include <wpi/units/angle.hpp>
+#include <wpi/units/length.hpp>
+#include <wpi/util/SmallVector.hpp>
+#include <wpi/util/deprecated.hpp>
 
 #include "gtest/gtest.h"
 #include "photon/PhotonCamera.h"
@@ -47,6 +47,8 @@
 #include "photon/targeting/PhotonTrackedTarget.h"
 #include "photon/targeting/PnpResult.h"
 WPI_IGNORE_DEPRECATED
+
+namespace units = wpi::units;
 
 static std::vector<wpi::apriltag::AprilTag> tags = {
     {0, wpi::math::Pose3d(units::meter_t(3), units::meter_t(3),

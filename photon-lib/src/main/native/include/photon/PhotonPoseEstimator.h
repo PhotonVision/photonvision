@@ -94,7 +94,7 @@ class PhotonPoseEstimator {
    * @param robotToCamera Transform3d from the center of the robot to the camera
    * mount positions (ie, robot ➔ camera).
    */
-  explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
+  explicit PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout aprilTags,
                                wpi::math::Transform3d robotToCamera);
 
   /**

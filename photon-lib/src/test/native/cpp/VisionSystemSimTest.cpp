@@ -133,7 +133,7 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
         wpi::math::Pose3d{
             wpi::math::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
             wpi::math::Rotation3d{0_rad, 0_rad,
-                                  units::radian_t{std::numbers::pi}}},
+                                  wpi::units::radian_t{std::numbers::pi}}},
         photon::TargetModel{0.5_m, 0.5_m}, i);
   }
   visionSysSim.AddVisionTargets(targets);

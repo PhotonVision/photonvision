@@ -32,7 +32,7 @@
 #include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
-#include <wpi/hal/UsageReporting.h>
+#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/system/Errors.hpp>
 #include <wpi/system/RobotController.hpp>
 #include <wpi/system/Timer.hpp>
@@ -169,8 +169,7 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::WARNING) {
   verifyDependencies();
   InstanceCount++;
-  HAL_ReportUsage(wpi::util::make_string("PhotonVision/PhotonCamera")*,
-                  InstanceCount, "");
+  HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
   // The Robot class is actually created here:
   // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/wpi/opmode/RobotBase.hpp#L33

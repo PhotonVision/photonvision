@@ -34,7 +34,7 @@
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
 #include <wpi/util/deprecated.hpp>
-#include <wpi/hal/UsageReporting.h>
+#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -74,7 +74,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(
       poseCacheTimestamp(-1_s),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+      HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
   InstanceCount++;
 }
 
@@ -90,7 +90,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
   InstanceCount++;
-  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+      HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
 }
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
@@ -186,10 +186,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       }
       break;
     case CONSTRAINED_SOLVEPNP: {
-      using namespace frc;
-
       if (!cameraMatrixData || !cameraDistCoeffs) {
-        WPILib_ReportError(
+        WPILIB_ReportError(
             wpi::warn::Warning,
             "No camera calibration data provided for Constrained SolvePnP!");
         ret = Update(result, this->multiTagFallbackStrategy);
@@ -254,7 +252,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 bool ShouldEstimate(const PhotonPipelineResult& result) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
-    WPILib_ReportError(wpi::warn::Warning,
+    WPILIB_ReportError(wpi::warn::Warning,
                        "Result timestamp was reported in the past!");
     return false;
   }
@@ -623,7 +621,7 @@ PhotonPoseEstimator::EstimateAverageBestTargetsPose(
            pair : tempPoses) {
     double const weight = (1. / pair.second.first) / totalAmbiguity;
     transform = transform + pair.first.Translation() * weight;
-    rotation = rotation + pair.first.Rotation() * weight;
+    rotation = rotation.RotateBy(pair.first.Rotation() * weight);
   }
 
   return EstimatedRobotPose{wpi::math::Pose3d(transform, rotation),

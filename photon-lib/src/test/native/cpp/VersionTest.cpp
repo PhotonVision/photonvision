@@ -23,10 +23,10 @@
  */
 
 #include <gtest/gtest.h>
-#include <wpi/print.h>
+#include <wpi/util/print.hpp>
 
 #include "PhotonVersion.h"
 
 TEST(VersionTest, PrintVersion) {
-  wpi::println("{}", photon::PhotonVersion::versionString);
+  wpi::util::println("{}", photon::PhotonVersion::versionString);
 }
