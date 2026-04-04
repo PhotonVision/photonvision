@@ -75,32 +75,32 @@ void SimCameraProperties::SetCalibration(
           1_m,
           wpi::math::Rotation3d{
               0_rad, 0_rad,
-              (GetPixelYaw(0) +
-               wpi::math::Rotation2d{wpi::units::radian_t{-std::numbers::pi / 2.0}})
+              (GetPixelYaw(0) + wpi::math::Rotation2d{wpi::units::radian_t{
+                                    -std::numbers::pi / 2.0}})
                   .Radians()}},
       wpi::math::Translation3d{
           1_m,
           wpi::math::Rotation3d{
               0_rad, 0_rad,
-              (GetPixelYaw(width) +
-               wpi::math::Rotation2d{wpi::units::radian_t{std::numbers::pi / 2.0}})
+              (GetPixelYaw(width) + wpi::math::Rotation2d{wpi::units::radian_t{
+                                        std::numbers::pi / 2.0}})
                   .Radians()}},
       wpi::math::Translation3d{
           1_m,
           wpi::math::Rotation3d{
               0_rad,
-              (GetPixelPitch(0) +
-               wpi::math::Rotation2d{wpi::units::radian_t{std::numbers::pi / 2.0}})
+              (GetPixelPitch(0) + wpi::math::Rotation2d{wpi::units::radian_t{
+                                      std::numbers::pi / 2.0}})
                   .Radians(),
               0_rad}},
       wpi::math::Translation3d{
           1_m,
-          wpi::math::Rotation3d{
-              0_rad,
-              (GetPixelPitch(height) +
-               wpi::math::Rotation2d{wpi::units::radian_t{-std::numbers::pi / 2.0}})
-                  .Radians(),
-              0_rad}},
+          wpi::math::Rotation3d{0_rad,
+                                (GetPixelPitch(height) +
+                                 wpi::math::Rotation2d{wpi::units::radian_t{
+                                     -std::numbers::pi / 2.0}})
+                                    .Radians(),
+                                0_rad}},
   };
   viewplanes.clear();
   for (size_t i = 0; i < p.size(); i++) {

@@ -32,8 +32,9 @@ class RotTrlTransform3d {
 
   RotTrlTransform3d(const wpi::math::Pose3d& initial,
                     const wpi::math::Pose3d& last)
-      : trl{last.Translation() - initial.Translation().RotateBy(
-                                     last.Rotation().RelativeTo(initial.Rotation()))},
+      : trl{last.Translation() -
+            initial.Translation().RotateBy(
+                last.Rotation().RelativeTo(initial.Rotation()))},
         rot{last.Rotation().RelativeTo(initial.Rotation())} {}
   explicit RotTrlTransform3d(const wpi::math::Transform3d& trf)
       : RotTrlTransform3d(trf.Rotation(), trf.Translation()) {}

@@ -67,9 +67,7 @@ class PhotonPoseEstimator:
 
         # Usage reporting
         hal.reportUsage(
-            "PhotonVision/PhotonPoseEstimator",
-            PhotonPoseEstimator.instance_count,
-            ""
+            "PhotonVision/PhotonPoseEstimator", PhotonPoseEstimator.instance_count, ""
         )
         PhotonPoseEstimator.instance_count += 1
 

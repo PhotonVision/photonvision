@@ -115,7 +115,8 @@ void Robot::SimulationPeriodic() {
       wpi::sim::BatterySim::Calculate({totalCurrent});
   // Using max(0.1, voltage) here isn't a *physically correct* solution,
   // but it avoids problems with battery voltage measuring 0.
-  wpi::sim::RoboRioSim::SetVInVoltage(wpi::units::math::max(0.1_V, loadedBattVolts));
+  wpi::sim::RoboRioSim::SetVInVoltage(
+      wpi::units::math::max(0.1_V, loadedBattVolts));
 }
 
 #ifndef RUNNING_FRC_TESTS

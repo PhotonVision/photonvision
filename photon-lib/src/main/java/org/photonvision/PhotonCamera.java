@@ -33,6 +33,7 @@ import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.timesync.TimeSyncSingleton;
+import org.wpilib.driverstation.Alert;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.linalg.MatBuilder;
@@ -51,7 +52,6 @@ import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.PubSubOption;
 import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.system.Timer;
-import org.wpilib.driverstation.Alert;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -136,7 +136,9 @@ public class PhotonCamera implements AutoCloseable {
         name = cameraName;
         disconnectAlert =
                 new Alert(
-                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", Alert.Level.WARNING);
+                        PHOTON_ALERT_GROUP,
+                        "PhotonCamera '" + name + "' is disconnected.",
+                        Alert.Level.WARNING);
         timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", Alert.Level.WARNING);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
@@ -171,8 +173,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // Existing is enough to make this multisubscriber do its thing
         topicNameSubscriber =
-                new MultiSubscriber(
-                        instance, new String[] {"/photonvision/"}, PubSubOption.TOPICS_ONLY);
+                new MultiSubscriber(instance, new String[] {"/photonvision/"}, PubSubOption.TOPICS_ONLY);
 
         InstanceCount++;
         HAL.reportUsage("PhotonVision/PhotonCamera", InstanceCount, "");

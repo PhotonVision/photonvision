@@ -23,7 +23,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.jni.CscoreExtras;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
-import org.wpilib.networktables.BooleanSubscriber;
 import org.wpilib.util.PixelFormat;
 import org.wpilib.util.RawFrame;
 import org.wpilib.vision.camera.CvSink;

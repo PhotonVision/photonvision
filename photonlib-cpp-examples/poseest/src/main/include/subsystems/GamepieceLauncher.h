@@ -50,8 +50,8 @@ class GamepieceLauncher {
   double curDesSpd = 0.0;
   double curMotorCmd = 0.0;
 
-  static constexpr wpi::units::kilogram_square_meter_t kFlywheelMomentOfInertia =
-      0.5 * 1.5_lb * 4_in * 4_in;
+  static constexpr wpi::units::kilogram_square_meter_t
+      kFlywheelMomentOfInertia = 0.5 * 1.5_lb * 4_in * 4_in;
 
   wpi::math::DCMotor m_gearbox = wpi::math::DCMotor::Falcon500(1);
   wpi::math::LinearSystem<1, 1, 1> m_plant{

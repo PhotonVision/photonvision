@@ -151,7 +151,8 @@ void SwerveDrive::Log() {
   wpi::SmartDashboard::PutNumber(table + "VY", chassisSpeeds.vy.to<double>());
   wpi::SmartDashboard::PutNumber(
       table + "Omega Degrees",
-      chassisSpeeds.omega.convert<wpi::units::degrees_per_second>().to<double>());
+      chassisSpeeds.omega.convert<wpi::units::degrees_per_second>()
+          .to<double>());
   wpi::SmartDashboard::PutNumber(table + "Target VX",
                                  targetChassisSpeeds.vx.to<double>());
   wpi::SmartDashboard::PutNumber(table + "Target VY",
@@ -207,4 +208,6 @@ wpi::math::Pose2d SwerveDrive::GetSimPose() const {
   return swerveDriveSim.GetPose();
 }
 
-wpi::units::ampere_t SwerveDrive::GetCurrentDraw() const { return totalCurrentDraw; }
+wpi::units::ampere_t SwerveDrive::GetCurrentDraw() const {
+  return totalCurrentDraw;
+}

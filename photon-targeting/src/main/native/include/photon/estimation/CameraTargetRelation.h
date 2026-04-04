@@ -43,7 +43,7 @@ class CameraTargetRelation {
         camToTarg(wpi::math::Transform3d{cameraPose, targetPose}),
         camToTargDist(camToTarg.Translation().Norm()),
         camToTargDistXY(wpi::units::math::hypot(camToTarg.Translation().X(),
-                                           camToTarg.Translation().Y())),
+                                                camToTarg.Translation().Y())),
         camToTargYaw(wpi::math::Rotation2d{camToTarg.X().to<double>(),
                                            camToTarg.Y().to<double>()}),
         camToTargPitch(wpi::math::Rotation2d{camToTargDistXY.to<double>(),

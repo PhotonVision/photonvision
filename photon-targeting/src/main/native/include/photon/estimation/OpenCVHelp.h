@@ -194,9 +194,9 @@ static wpi::math::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {
   cv::Mat wrapped{tvecInput.rows, tvecInput.cols, CV_32F};
   tvecInput.convertTo(wrapped, CV_32F);
   data = wrapped.at<cv::Vec3f>(cv::Point{0, 0});
-  return TranslationEDNToNWU(wpi::math::Translation3d{wpi::units::meter_t{data[0]},
-                                                      wpi::units::meter_t{data[1]},
-                                                      wpi::units::meter_t{data[2]}});
+  return TranslationEDNToNWU(wpi::math::Translation3d{
+      wpi::units::meter_t{data[0]}, wpi::units::meter_t{data[1]},
+      wpi::units::meter_t{data[2]}});
 }
 
 static wpi::math::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
