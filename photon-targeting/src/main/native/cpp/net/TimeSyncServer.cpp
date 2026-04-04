@@ -29,6 +29,8 @@
 
 #include <wpi/nt/ntcore_cpp.hpp>
 
+#include "net/TimeSyncStructs.h"
+
 static void ServerLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {
   if (level == 20) {

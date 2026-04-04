@@ -25,7 +25,7 @@
 #include <Eigen/LU>
 #include <fmt/core.h>
 #include <wpi/math/fmt/Eigen.hpp>
-#include <wpi/util/timestamp.h>
+#include <wpi/util/timestamp.hpp>
 
 #include "../generate/constrained_solvepnp_10_tags_fixed.h"
 #include "../generate/constrained_solvepnp_10_tags_free.h"
