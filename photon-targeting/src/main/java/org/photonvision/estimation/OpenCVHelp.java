@@ -48,7 +48,6 @@ import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.numbers.*;
 import org.wpilib.math.util.Nat;
 import org.wpilib.math.util.Num;
-import org.wpilib.vision.camera.OpenCvLoader;
 
 /**
  * A set of various utility functions for getting non-OpenCV data into an OpenCV-compatible format,
