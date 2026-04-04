@@ -33,7 +33,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <wpi/deprecated.h>
+#include <wpi/util/deprecated.hpp>
 #include <wpi/hal/UsageReporting.h>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>

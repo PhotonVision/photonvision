@@ -124,8 +124,8 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
-  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
-  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
+  visionSysSim.AddCamera(&cameraSim, wpi::math::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, wpi::math::Rotation2d{80_deg});
 
   std::vector<photon::VisionTargetSim> targets;
   for (int i = 0; i < 100; i++) {
@@ -138,8 +138,8 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
   }
   visionSysSim.AddVisionTargets(targets);
 
-  wpi::math::Pose2d robotPose{frc::Translation2d{5_m, 0_m},
-                              frc::Rotation2d{5_deg}};
+  wpi::math::Pose2d robotPose{wpi::math::Translation2d{5_m, 0_m},
+                              wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
 
   ASSERT_EQ(camera.GetLatestResult().targets.size(), 50u);

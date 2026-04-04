@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <frc/fmt/Eigen.h>
+#include <wpi/math/fmt/Eigen.hpp>
 #include <gtest/gtest.h>
 #include <wpi/util/print.hpp>
 #include <wpi/util/timestamp.h>

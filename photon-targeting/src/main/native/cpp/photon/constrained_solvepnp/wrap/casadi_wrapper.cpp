@@ -48,6 +48,8 @@
 #include "../generate/constrained_solvepnp_9_tags_fixed.h"
 #include "../generate/constrained_solvepnp_9_tags_free.h"
 
+#include "wpi/nt/ntcore_cpp.hpp"
+
 constexpr bool VERBOSE = false;
 
 struct Problem {
