@@ -33,7 +33,6 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <wpi/util/deprecated.hpp>
 #include <wpi/hal/UsageReporting.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
@@ -42,6 +41,7 @@
 #include <wpi/units/angle.hpp>
 #include <wpi/units/math.hpp>
 #include <wpi/units/time.hpp>
+#include <wpi/util/deprecated.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -74,7 +74,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(
       poseCacheTimestamp(-1_s),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-      HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
   InstanceCount++;
 }
 
@@ -90,7 +90,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
   InstanceCount++;
-      HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
 }
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
