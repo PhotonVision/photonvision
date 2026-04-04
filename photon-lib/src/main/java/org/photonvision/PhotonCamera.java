@@ -51,8 +51,7 @@ import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.PubSubOption;
 import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.system.Timer;
-import org.wpilib.util.Alert;
-import org.wpilib.util.Alert.AlertType;
+import org.wpilib.driverstation.Alert;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
@@ -137,8 +136,8 @@ public class PhotonCamera implements AutoCloseable {
         name = cameraName;
         disconnectAlert =
                 new Alert(
-                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", AlertType.kWarning);
-        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", AlertType.kWarning);
+                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", Alert.Level.WARNING);
+        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", Alert.Level.WARNING);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();
@@ -149,7 +148,7 @@ public class PhotonCamera implements AutoCloseable {
                                 PhotonPipelineResult.photonStruct.getTypeString(),
                                 new byte[0],
                                 PubSubOption.periodic(0.01),
-                                PubSubOption.sendAll(true),
+                                PubSubOption.SEND_ALL,
                                 PubSubOption.pollStorage(20));
         resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
@@ -173,7 +172,7 @@ public class PhotonCamera implements AutoCloseable {
         // Existing is enough to make this multisubscriber do its thing
         topicNameSubscriber =
                 new MultiSubscriber(
-                        instance, new String[] {"/photonvision/"}, PubSubOption.topicsOnly(true));
+                        instance, new String[] {"/photonvision/"}, PubSubOption.TOPICS_ONLY);
 
         InstanceCount++;
         HAL.reportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
@@ -576,7 +575,7 @@ public class PhotonCamera implements AutoCloseable {
             // spotless:on
 
             DriverStation.reportWarning(bfw, false);
-            var versionMismatchMessage =
+            String versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
                             + " (message definition version "

@@ -152,7 +152,7 @@ public class PhotonPoseEstimator {
         this.fieldTags = fieldTags;
         this.robotToCamera = robotToCamera;
 
-        HAL.report(tResourceType.kResourceType_PhotonPoseEstimator, InstanceCount);
+        HAL.reportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
         InstanceCount++;
     }
 
@@ -1140,7 +1140,7 @@ public class PhotonPoseEstimator {
             double weight = (1.0 / pair.getFirst().getPoseAmbiguity()) / totalAmbiguity;
             Pose3d estimatedPose = pair.getSecond();
             transform = transform.plus(estimatedPose.getTranslation().times(weight));
-            rotation = rotation.plus(estimatedPose.getRotation().times(weight));
+            rotation = rotation.rotateBy(estimatedPose.getRotation().times(weight));
         }
 
         return Optional.of(

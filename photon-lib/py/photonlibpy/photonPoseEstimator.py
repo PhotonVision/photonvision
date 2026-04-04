@@ -66,9 +66,10 @@ class PhotonPoseEstimator:
         self._headingBuffer = TimeInterpolatableRotation2dBuffer(1)
 
         # Usage reporting
-        hal.report(
-            hal.tResourceType.kResourceType_PhotonPoseEstimator.value,
+        hal.reportUsage(
+            "PhotonVision/PhotonPoseEstimator",
             PhotonPoseEstimator.instance_count,
+            ""
         )
         PhotonPoseEstimator.instance_count += 1
 

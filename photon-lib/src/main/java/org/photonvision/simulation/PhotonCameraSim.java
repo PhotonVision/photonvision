@@ -531,7 +531,7 @@ public class PhotonCameraSim implements AutoCloseable {
                 // Simulate confidence using sqrt-scaled area for a more realistic
                 // curve. Raw areaPercent/100 is tiny for most targets; sqrt scaling
                 // gives reasonable values even for small-but-visible objects.
-                conf = (float) MathUtil.clamp(Math.sqrt(areaPercent / 100.0) * 2.0, 0.0, 1.0);
+                conf = (float) Math.clamp(Math.sqrt(areaPercent / 100.0) * 2.0, 0.0, 1.0);
             }
 
             detectableTgts.add(

@@ -74,8 +74,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(
       poseCacheTimestamp(-1_s),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
-             InstanceCount);
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
   InstanceCount++;
 }
 
