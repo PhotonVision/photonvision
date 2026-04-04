@@ -243,8 +243,6 @@ public class Main {
 
         if (OsImageData.IMAGE_METADATA.isPresent()) {
             logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
-        } else if (OsImageData.IMAGE_VERSION.isPresent()) {
-            logger.info("PhotonVision image version: " + OsImageData.IMAGE_VERSION.get());
         } else {
             logger.info("PhotonVision image version: unknown");
         }
