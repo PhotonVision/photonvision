@@ -4,7 +4,6 @@ plugins {
     id "cpp"
     id "com.diffplug.spotless" version "8.1.0"
     id "org.wpilib.WPILibRepositoriesPlugin" version "2027.0.0"
-    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-2"
     id 'org.photonvision.tools.WpilibTools' version '2.4.1-photon'
     id 'com.google.protobuf' version '0.9.3' apply false
     id 'org.wpilib.GradleJni' version '2027.0.0'
@@ -37,6 +36,10 @@ ext {
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
+    ejmlVersion = "0.43.1";
+    jacksonVersion = "2.15.2";
+    quickbufVersion = "1.3.3";
+
     javalinVersion = "6.7.0"
     libcameraDriverVersion = "v2026.0.0"
     rknnVersion = "dev-v2026.0.1-1-g89b2888"
