@@ -55,6 +55,7 @@ import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Rotation2d;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
