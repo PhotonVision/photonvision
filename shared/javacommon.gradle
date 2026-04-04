@@ -126,7 +126,7 @@ test {
     finalizedBy jacocoTestReport
 }
 
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 dependencies {
     if(project.hasProperty('includePhotonTargeting')) {
@@ -144,14 +144,14 @@ dependencies {
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
     implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, wpi.versions.opencvVersion.get())
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, openCVversion)
 
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: jacksonVersion
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: jacksonVersion
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
 
-    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
-    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
+    implementation group: "org.ejml", name: "ejml-simple", version: ejmlVersion
+    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
 
     testImplementation(platform('org.junit:junit-bom:5.11.4'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'

@@ -269,7 +269,7 @@ public final class OpenCVHelp {
      * @return The converted rotation in the NWU coordinate system
      */
     private static Rotation3d rotationEDNtoNWU(Rotation3d rot) {
-        return EDN_TO_NWU.unaryMinus().plus(rot.plus(EDN_TO_NWU));
+        return EDN_TO_NWU.inverse().rotateBy(rot.rotateBy(EDN_TO_NWU));
     }
 
     /**
@@ -279,7 +279,7 @@ public final class OpenCVHelp {
      * @return The converted rotation in the EDN coordinate system
      */
     private static Rotation3d rotationNWUtoEDN(Rotation3d rot) {
-        return NWU_TO_EDN.unaryMinus().plus(rot.plus(NWU_TO_EDN));
+        return NWU_TO_EDN.inverse().rotateBy(rot.rotateBy(NWU_TO_EDN));
     }
 
     /**

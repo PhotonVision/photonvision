@@ -186,7 +186,7 @@ static wpi::math::Translation3d TranslationEDNToNWU(
 
 static wpi::math::Rotation3d RotationEDNToNWU(
     const wpi::math::Rotation3d& rot) {
-  return -EDN_TO_NWU + (rot + EDN_TO_NWU);
+  return -EDN_TO_NWU.rotateBy(rot.rotateBy(EDN_TO_NWU));
 }
 
 static wpi::math::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {

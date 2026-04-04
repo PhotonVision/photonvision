@@ -35,6 +35,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.Alert.Level;
 import org.wpilib.networktables.LogMessage;
 import org.wpilib.networktables.MultiSubscriber;
 import org.wpilib.networktables.NetworkTable;
@@ -43,8 +45,6 @@ import org.wpilib.networktables.NetworkTableEvent.Kind;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.StringSubscriber;
 import org.wpilib.smartdashboard.SmartDashboard;
-import org.wpilib.util.Alert;
-import org.wpilib.util.Alert.AlertType;
 import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 import org.wpilib.vision.camera.CameraServerJNI;
 
@@ -66,9 +66,9 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert conflictAlert = new Alert("PhotonAlerts", "", Level.WARNING);
 
-    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", Level.WARNING);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
