@@ -38,6 +38,7 @@
 #include <wpi/system/Timer.hpp>
 #include <wpi/system/WPILibVersion.hpp>
 #include <wpi/util/json.hpp>
+#include <wpi/util/string.hpp>
 
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -164,11 +165,12 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       disconnectAlert(PHOTON_ALERT_GROUP,
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
-                      wpi::Alert::AlertType::kWarning),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::AlertType::kWarning) {
+                      wpi::Alert::Level::WARNING),
+      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::WARNING) {
   verifyDependencies();
   InstanceCount++;
-  HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
+  HAL_ReportUsage(wpi::util::make_string("PhotonVision/PhotonCamera")*,
+                  InstanceCount, "");
 
   // The Robot class is actually created here:
   // https://github.com/wpilibsuite/allwpilib/blob/811b1309683e930a1ce69fae818f943ff161b7a5/wpilibc/src/main/native/include/wpi/opmode/RobotBase.hpp#L33

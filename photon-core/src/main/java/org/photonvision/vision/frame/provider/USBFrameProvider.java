@@ -80,7 +80,7 @@ public class USBFrameProvider extends CpuImageProcessor {
         if (m_blockForFrames) {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             var mat = new CVMat();
-            // This is from wpi::util::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called
             // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
             // can.
@@ -105,7 +105,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                     cameraMode.width * 3,
                     PixelFormat.kBGR);
 
-            // This is from wpi::util::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called
             long captureTimeUs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(

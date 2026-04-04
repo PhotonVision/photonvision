@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-#include <frc/Errors.h>
+#include <wpi/system/Errors.hpp>
 
 using namespace photon;
 

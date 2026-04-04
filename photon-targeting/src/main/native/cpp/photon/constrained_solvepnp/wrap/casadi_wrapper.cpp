@@ -225,7 +225,7 @@ constrained_solvepnp::do_optimization(
   constexpr double ERROR_TOL = 1e-4;
 
   for (int iter = 0; iter < 100; iter++) {
-    auto iter_start = wpi::util::Now();
+    auto iter_start = wpi::nt::Now();
 
     // Check for diverging iterates
     if (x.template lpNorm<Eigen::Infinity>() > 1e20 || !x.allFinite()) {
@@ -343,7 +343,7 @@ constrained_solvepnp::do_optimization(
       }
     }
 
-    auto iter_end = wpi::util::Now();
+    auto iter_end = wpi::nt::Now();
     if constexpr (VERBOSE) {
       fmt::println(
           "{}: {} uS, ‖∇J‖={}, α={} ({} refinement steps), {} regularization "

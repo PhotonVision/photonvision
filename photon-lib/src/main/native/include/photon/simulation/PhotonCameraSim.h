@@ -245,7 +245,7 @@ class PhotonCameraSim {
   NTTopicSet ts{};
   int64_t heartbeatCounter{0};
 
-  uint64_t nextNTEntryTime{wpi::util::Now()};
+  uint64_t nextNTEntryTime{wpi::nt::Now()};
 
   wpi::units::meter_t maxSightRange{std::numeric_limits<double>::max()};
   static constexpr double kDefaultMinAreaPx{100};

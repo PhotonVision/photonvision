@@ -89,7 +89,7 @@ bool PhotonCameraSim::CanSeeCorner(const std::vector<cv::Point2f>& points) {
   return true;
 }
 std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
-  uint64_t now = wpi::util::Now();
+  uint64_t now = wpi::nt::Now();
   uint64_t timestamp{};
   int iter = 0;
   while (now >= nextNTEntryTime) {
@@ -363,7 +363,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
-  SubmitProcessedFrame(result, wpi::util::Now());
+  SubmitProcessedFrame(result, wpi::nt::Now());
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
                                            uint64_t ReceiveTimestamp) {

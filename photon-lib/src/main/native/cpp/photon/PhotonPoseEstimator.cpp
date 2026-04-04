@@ -660,7 +660,6 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
           cameraMatrix, distCoeffs, targets, m_robotToCamera, seedPose,
           aprilTags, photon::kAprilTag36h11, headingFree,
           wpi::math::Rotation2d{
-
               headingBuffer.Sample(cameraResult.GetTimestamp()).value()},
           headingScaleFactor);
 

@@ -130,14 +130,16 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
   std::vector<photon::VisionTargetSim> targets;
   for (int i = 0; i < 100; i++) {
     targets.emplace_back(
-        frc::Pose3d{
-            frc::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
-            frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}},
+        wpi::math::Pose3d{
+            wpi::math::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
+            wpi::math::Rotation3d{0_rad, 0_rad,
+                                  units::radian_t{std::numbers::pi}}},
         photon::TargetModel{0.5_m, 0.5_m}, i);
   }
   visionSysSim.AddVisionTargets(targets);
 
-  frc::Pose2d robotPose{frc::Translation2d{5_m, 0_m}, frc::Rotation2d{5_deg}};
+  wpi::math::Pose2d robotPose{frc::Translation2d{5_m, 0_m},
+                              frc::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
 
   ASSERT_EQ(camera.GetLatestResult().targets.size(), 50u);
