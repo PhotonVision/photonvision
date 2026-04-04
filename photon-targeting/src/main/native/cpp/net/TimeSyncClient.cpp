@@ -22,12 +22,12 @@
 #include <mutex>
 
 #include <Eigen/Core>
-#include <wpi/Logger.h>
-#include <wpi/print.h>
-#include <wpi/struct/Struct.h>
-#include <wpinet/uv/util.h>
+#include <wpi/net/uv/util.hpp>
+#include <wpi/util/Logger.hpp>
+#include <wpi/util/print.hpp>
+#include <wpi/util/struct/Struct.hpp>
 
-#include "ntcore_cpp.h"
+#include "wpi/nt/ntcore_cpp.hpp"
 
 static void ClientLoggerFunc(unsigned int level, const char* file,
                              unsigned int line, const char* msg) {
@@ -62,8 +62,8 @@ void wpi::tsp::TimeSyncClient::UpdateStatistics(uint64_t pong_local_time,
 
   auto filtered = m_lastOffsets.Calculate(serverTimeOffsetUs);
 
-  // wpi::println("Ping-ponged! RTT2 {} uS, offset {}/filtered offset {} uS",
-  // rtt2,
+  // wpi::util::println("Ping-ponged! RTT2 {} uS, offset {}/filtered offset {}
+  // uS", rtt2,
   //              serverTimeOffsetUs, filtered);
 
   {
@@ -76,7 +76,7 @@ void wpi::tsp::TimeSyncClient::UpdateStatistics(uint64_t pong_local_time,
 }
 
 void wpi::tsp::TimeSyncClient::Tick() {
-  // wpi::println("wpi::tsp::TimeSyncClient::Tick");
+  // wpi::util::println("wpi::tsp::TimeSyncClient::Tick");
   // Regardless of if we've gotten a pong back yet, we'll ping again. this is
   // pretty naive but should be "fine" for now?
 
@@ -84,15 +84,16 @@ void wpi::tsp::TimeSyncClient::Tick() {
 
   TspPing ping{.version = 1, .message_id = 1, .client_time = ping_local_time};
 
-  wpi::SmallVector<uint8_t, wpi::Struct<TspPing>::GetSize()> pingData(
-      wpi::Struct<TspPing>::GetSize());
-  wpi::PackStruct(pingData, ping);
+  wpi::util::SmallVector<uint8_t, wpi::util::Struct<TspPing>::GetSize()>
+      pingData(wpi::util::Struct<TspPing>::GetSize());
+  wpi::util::PackStruct(pingData, ping);
 
   // Wrap our buffer - pingData should free itself
-  wpi::uv::Buffer pingBuf{pingData};
-  int sent = m_udp->TrySend(wpi::SmallVector<wpi::uv::Buffer, 1>{pingBuf});
+  wpi::net::uv::Buffer pingBuf{pingData};
+  int sent =
+      m_udp->TrySend(wpi::util::SmallVector<wpi::net::uv::Buffer, 1>{pingBuf});
 
-  if (static_cast<size_t>(sent) != wpi::Struct<TspPing>::GetSize()) {
+  if (static_cast<size_t>(sent) != wpi::util::Struct<TspPing>::GetSize()) {
     WPI_ERROR(m_logger, "Didn't send the whole ping out? sent {} bytes", sent);
     return;
   }
@@ -105,29 +106,29 @@ void wpi::tsp::TimeSyncClient::Tick() {
   m_lastPing = ping;
 }
 
-void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
+void wpi::tsp::TimeSyncClient::UdpCallback(wpi::net::uv::Buffer& buf, size_t nbytes,
                                            const sockaddr& sender,
                                            unsigned flags) {
   uint64_t pong_local_time = m_timeProvider();
 
-  if (static_cast<size_t>(nbytes) != wpi::Struct<TspPong>::GetSize()) {
+  if (static_cast<size_t>(nbytes) != wpi::util::Struct<TspPong>::GetSize()) {
     WPI_ERROR(m_logger, "Got {} bytes for pong?", nbytes);
     return;
   }
 
   TspPong pong{
-      wpi::UnpackStruct<TspPong>(buf.bytes()),
+      wpi::util::UnpackStruct<TspPong>(buf.bytes()),
   };
 
-  // wpi::println("->[client] Got pong: {} {} {} {}", pong.version,
+  // wpi::util::println("->[client] Got pong: {} {} {} {}", pong.version,
   //              pong.message_id, pong.client_time, pong.server_time);
 
   if (pong.version != 1) {
-    wpi::println("Bad version from server?");
+    wpi::util::println("Bad version from server?");
     return;
   }
   if (pong.message_id != 2) {
-    wpi::println("Bad message id from server?");
+    wpi::util::println("Bad message id from server?");
     return;
   }
 
@@ -143,9 +144,9 @@ void wpi::tsp::TimeSyncClient::UdpCallback(uv::Buffer& buf, size_t nbytes,
   UpdateStatistics(pong_local_time, ping, pong);
 
   // using std::cout;
-  // wpi::println("Ping-ponged! RTT2 {} uS, offset {} uS", rtt2,
+  // wpi::util::println("Ping-ponged! RTT2 {} uS, offset {} uS", rtt2,
   //              serverTimeOffsetUs);
-  // wpi::println("Estimated server time {} s",
+  // wpi::util::println("Estimated server time {} s",
   //              (m_timeProvider() + serverTimeOffsetUs) / 1000000.0);
 }
 
@@ -153,37 +154,37 @@ wpi::tsp::TimeSyncClient::TimeSyncClient(std::string_view server,
                                          int remote_port,
                                          std::chrono::milliseconds ping_delay)
     : m_logger(::ClientLoggerFunc),
-      m_timeProvider(nt::Now),
+      m_timeProvider(wpi::nt::Now),
       m_udp{},
       m_pingTimer{},
       m_serverIP{server},
       m_serverPort{remote_port},
       m_loopDelay(ping_delay) {
-  // wpi::println("Starting client (with server address {}:{})", server,
+  // wpi::util::println("Starting client (with server address {}:{})", server,
   //              remote_port);
 }
 
 void wpi::tsp::TimeSyncClient::Start() {
-  // wpi::println("Connecting received");
+  // wpi::util::println("Connecting received");
 
-  m_loopRunner.ExecSync([this](uv::Loop&) {
+  m_loopRunner.ExecSync([this](wpi::net::uv::Loop&) {
     struct sockaddr_in serverAddr;
-    uv::NameToAddr(m_serverIP, m_serverPort, &serverAddr);
+    wpi::net::uv::NameToAddr(m_serverIP, m_serverPort, &serverAddr);
 
-    m_udp = {wpi::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)};
-    m_pingTimer = {wpi::uv::Timer::Create(m_loopRunner.GetLoop())};
+    m_udp = {wpi::net::uv::Udp::Create(m_loopRunner.GetLoop(), AF_INET)};
+    m_pingTimer = {wpi::net::uv::Timer::Create(m_loopRunner.GetLoop())};
 
     m_udp->Connect(serverAddr);
     m_udp->received.connect(&wpi::tsp::TimeSyncClient::UdpCallback, this);
     m_udp->StartRecv();
   });
 
-  // wpi::println("Starting pinger");
+  // wpi::util::println("Starting pinger");
   using namespace std::chrono_literals;
   m_pingTimer->timeout.connect(&wpi::tsp::TimeSyncClient::Tick, this);
 
   m_loopRunner.ExecSync(
-      [this](uv::Loop&) { m_pingTimer->Start(m_loopDelay, m_loopDelay); });
+      [this](wpi::net::uv::Loop&) { m_pingTimer->Start(m_loopDelay, m_loopDelay); });
 }
 
 void wpi::tsp::TimeSyncClient::Stop() { m_loopRunner.Stop(); }

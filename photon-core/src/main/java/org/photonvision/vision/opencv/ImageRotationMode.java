@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.opencv;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import org.opencv.core.Core;
 import org.opencv.core.Point;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.util.Units;
 
 /**
  * An image rotation about the camera's +Z axis, which points out of the camera towards the world.

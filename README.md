@@ -45,7 +45,7 @@ Note that these are case sensitive!
 - `-Pprofile`: enables JVM profiling
 - `-PwithSanitizers`: On Linux, enables `-fsanitize=address,undefined,leak`
 
-If you're cross-compiling, you'll need the WPILib toolchain installed. This must be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
+If you're cross-compiling, you'll need the WPILib toolchain installed. This must be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installSystemCoreToolchain`
 
 ## Out-of-Source Dependencies
 

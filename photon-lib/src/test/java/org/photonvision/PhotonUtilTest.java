@@ -26,9 +26,9 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.util.Units;
 import org.junit.jupiter.api.Test;
+import org.wpilib.math.geometry.*;
+import org.wpilib.math.util.Units;
 
 class PhotonUtilTest {
     @Test

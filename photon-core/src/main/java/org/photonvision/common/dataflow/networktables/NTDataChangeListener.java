@@ -17,11 +17,11 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.Subscriber;
 import java.util.EnumSet;
 import java.util.function.Consumer;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.Subscriber;
 
 public class NTDataChangeListener {
     private final NetworkTableInstance instance;

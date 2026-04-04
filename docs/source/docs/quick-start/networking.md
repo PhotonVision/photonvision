@@ -81,7 +81,7 @@ If you would like to access your Ethernet-connected vision device from a compute
 
     .. code-block:: c++
 
-        wpi::PortForwarder::GetInstance().Add(5800, "photonvision.local", 5800);
+        wpi::net::PortForwarder::GetInstance().Add(5800, "photonvision.local", 5800);
 
     .. code-block:: python
 

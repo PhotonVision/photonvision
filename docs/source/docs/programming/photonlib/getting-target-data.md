@@ -107,7 +107,7 @@ You can get a list of tracked targets using the `getTargets()`/`GetTargets()` (J
    .. code-block:: c++
 
       // Get a list of currently tracked targets.
-      wpi::ArrayRef<photonlib::PhotonTrackedTarget> targets = result.GetTargets();
+      std::span<photonlib::PhotonTrackedTarget> targets = result.GetTargets();
 
    .. code-block:: python
 
@@ -166,8 +166,8 @@ You can get the {ref}`best target <docs/reflectiveAndShape/contour-filtering:Con
       double pitch = target.GetPitch();
       double area = target.GetArea();
       double skew = target.GetSkew();
-      frc::Transform2d pose = target.GetCameraToTarget();
-      wpi::SmallVector<std::pair<double, double>, 4> corners = target.GetCorners();
+      wpi::math::Transform2d pose = target.GetCameraToTarget();
+      wpi::util::SmallVector<std::pair<double, double>, 4> corners = target.GetCorners();
 
    .. code-block:: python
 
@@ -206,8 +206,8 @@ All of the data above (**except skew**) is available when using AprilTags.
       // Get information from target.
       int targetID = target.GetFiducialId();
       double poseAmbiguity = target.GetPoseAmbiguity();
-      frc::Transform3d bestCameraToTarget = target.getBestCameraToTarget();
-      frc::Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
+      wpi::math::Transform3d bestCameraToTarget = target.getBestCameraToTarget();
+      wpi::math::Transform3d alternateCameraToTarget = target.getAlternateCameraToTarget();
 
    .. code-block:: python
 

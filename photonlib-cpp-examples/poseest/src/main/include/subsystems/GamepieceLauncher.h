@@ -27,14 +27,14 @@
 #include <cmath>
 #include <numbers>
 
-#include <frc/RobotController.h>
-#include <frc/motorcontrol/PWMSparkMax.h>
-#include <frc/simulation/FlywheelSim.h>
-#include <frc/smartdashboard/SmartDashboard.h>
-#include <frc/system/plant/DCMotor.h>
-#include <frc/system/plant/LinearSystemId.h>
-#include <units/angle.h>
-#include <units/moment_of_inertia.h>
+#include <wpi/hardware/motor/PWMSparkMax.hpp>
+#include <wpi/math/system/plant/DCMotor.hpp>
+#include <wpi/math/system/plant/LinearSystemId.hpp>
+#include <wpi/simulation/FlywheelSim.hpp>
+#include <wpi/smartdashboard/SmartDashboard.hpp>
+#include <wpi/system/RobotController.hpp>
+#include <wpi/units/angle.hpp>
+#include <wpi/units/moment_of_inertia.hpp>
 
 class GamepieceLauncher {
  public:
@@ -44,20 +44,21 @@ class GamepieceLauncher {
   void simulationPeriodic();        // Method to handle simulation updates
 
  private:
-  frc::PWMSparkMax* motor;  // Motor controller
+  wpi::PWMSparkMax* motor;  // Motor controller
 
   const double LAUNCH_SPEED_RPM = 2500;
   double curDesSpd = 0.0;
   double curMotorCmd = 0.0;
 
-  static constexpr units::kilogram_square_meter_t kFlywheelMomentOfInertia =
+  static constexpr wpi::units::kilogram_square_meter_t kFlywheelMomentOfInertia =
       0.5 * 1.5_lb * 4_in * 4_in;
 
-  frc::DCMotor m_gearbox = frc::DCMotor::Falcon500(1);
-  frc::LinearSystem<1, 1, 1> m_plant{frc::LinearSystemId::FlywheelSystem(
-      m_gearbox, kFlywheelMomentOfInertia, 1.0)};
+  wpi::math::DCMotor m_gearbox = wpi::math::DCMotor::Falcon500(1);
+  wpi::math::LinearSystem<1, 1, 1> m_plant{
+      wpi::math::LinearSystemId::FlywheelSystem(m_gearbox,
+                                                kFlywheelMomentOfInertia, 1.0)};
 
-  frc::sim::FlywheelSim launcherSim{m_plant, m_gearbox};
+  wpi::sim::FlywheelSim launcherSim{m_plant, m_gearbox};
 
   void simulationInit();  // Method to initialize simulation components
 };

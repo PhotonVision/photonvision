@@ -93,7 +93,7 @@ def get_qualified_cpp_name(
     """
     Get the full name of the type encoded. Eg:
       std::optional<photon::TargetCorner>
-      std::array<frc::Transform3d>
+      std::array<wpi::math::Transform3d>
     """
 
     if get_shimmed_filter(message_db)(field["type"]):

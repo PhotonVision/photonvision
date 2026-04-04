@@ -24,13 +24,6 @@
 
 package org.photonvision.simulation;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.util.RawFrame;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,6 +41,13 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.util.Units;
+import org.wpilib.util.RawFrame;
+import org.wpilib.vision.apriltag.AprilTag;
+import org.wpilib.vision.camera.CvSource;
+import org.wpilib.vision.camera.OpenCvLoader;
 
 public class VideoSimUtil {
     // Tag IDs start at 0, this should be set to 1 greater than the maximum tag ID required

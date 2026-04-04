@@ -17,10 +17,10 @@
 
 package org.photonvision.targeting.proto;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.util.protobuf.Protobuf;
 import org.photonvision.proto.Photon.ProtobufPNPResult;
 import org.photonvision.targeting.PnpResult;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.util.protobuf.Protobuf;
 import us.hebi.quickbuf.Descriptors.Descriptor;
 
 public class PNPResultProto implements Protobuf<PnpResult, ProtobufPNPResult> {
