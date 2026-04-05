@@ -260,13 +260,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/systemcore-cross-ubuntu:2025-24.04
+          - container: wpilib/systemcore-cross-ubuntu:2027-24.04
             artifact-name: SystemCore
             build-options: "-Ponlylinuxsystemcore"
-          - container: wpilib/raspbian-cross-ubuntu:bookworm-24.04
+          - container: wpilib/raspbian-cross-ubuntu:2027-bookworm-24.04
             artifact-name: Raspbian
             build-options: "-Ponlylinuxarm32"
-          - container: wpilib/aarch64-cross-ubuntu:bookworm-24.04
+          - container: wpilib/aarch64-cross-ubuntu:2027-bookworm-24.04
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
 
