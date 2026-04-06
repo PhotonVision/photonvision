@@ -493,10 +493,16 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
   photon::PhotonPoseEstimator estimator(
       wpi::apriltag::AprilTagFieldLayout::LoadField(
           wpi::apriltag::AprilTagField::k2024Crescendo),
-      photon::CONSTRAINED_SOLVEPNP, wpi::math::Transform3d());
+      wpi::math::Transform3d());
 
   photon::PhotonPipelineResult result;
-  auto estimate = estimator.Update(result);
+  auto distortion = Eigen::VectorXd::Zero(8);
+  auto cameraMat =
+      Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
+                      {0, 399.16666666666674, 239.5},
+                      {0, 0, 1}};
+  auto estimate = estimator.EstimateConstrainedSolvepnpPose(
+      result, cameraMat, distortion, wpi::math::Pose3d(), true, 0.0);
   EXPECT_FALSE(estimate.has_value());
 }
 
