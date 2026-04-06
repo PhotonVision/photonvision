@@ -497,10 +497,9 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
 
   photon::PhotonPipelineResult result;
   auto distortion = Eigen::VectorXd::Zero(8);
-  auto cameraMat =
-      Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
-                      {0, 399.16666666666674, 239.5},
-                      {0, 0, 1}};
+  auto cameraMat = Eigen::Matrix3d{{399.37500000000006, 0, 319.5},
+                                   {0, 399.16666666666674, 239.5},
+                                   {0, 0, 1}};
   auto estimate = estimator.EstimateConstrainedSolvepnpPose(
       result, cameraMat, distortion, wpi::math::Pose3d(), true, 0.0);
   EXPECT_FALSE(estimate.has_value());
