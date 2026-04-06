@@ -10,6 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # WHEN BUMPING, UPDATE RUBIK IMAGE TO POINT TO VAR INSTEAD OF BEING HARDCODED
   IMAGE_VERSION: v2026.1.3
 
 jobs:
@@ -560,7 +561,8 @@ jobs:
             artifact-name: LinuxArm64
             image_suffix: rubikpi3
             plat_override: LINUX_QCS6490
-            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
+            # CHANGE BACK TO $IMAGE_VERSION AFTER BUMPING
+            image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/v2026.1.4/photonvision_rubikpi3.tar.xz
             minimum_free_mb: 1024
             root_location: 'offset=569376768'
             shrink_image: 'no'
