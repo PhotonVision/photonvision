@@ -19,7 +19,7 @@ const navLinks = [
     icon: "fab fa-github",
   },
   {
-    href: "https://www.redbubble.com/people/PhotonVision/shop?asc=u",
+    href: "https://photonvision.printful.me/",
     label: "Merch",
     icon: "fa-solid fa-shirt",
   },
