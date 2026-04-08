@@ -73,6 +73,10 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
 
         var processedCVMat = new CVMat(displayMat);
 
+        // we no longer need the input frame's processed image, and nobody else will release it if we
+        // don't
+        frame.processedImage.release();
+
         return new FocusPipelineResult(
                 frame.sequenceID,
                 MathUtils.nanosToMillis(totalNanos),

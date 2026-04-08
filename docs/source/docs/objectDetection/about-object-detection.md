@@ -4,7 +4,7 @@
 
 PhotonVision supports object detection using neural network accelerator hardware, commonly known as an NPU. The two coprocessors currently supported are the {ref}`Orange Pi 5 <docs/objectDetection/opi:Orange Pi 5 (and variants) Object Detection>` and the {ref}`Rubik Pi 3 <docs/objectDetection/rubik:Rubik Pi 3 Object Detection>`.
 
-PhotonVision currently ships with a model trained on the [COCO dataset](https://cocodataset.org/) by [Ultralytics](https://github.com/ultralytics/ultralytics) (this model is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html)). This model is meant to be used for testing and other miscellaneous purposes. It is not meant to be used in competition. For the 2025 post-season, PhotonVision also ships with a pretrained ALGAE model. A model to detect coral is available in the PhotonVision discord, but will not be distributed with PhotonVision.
+PhotonVision currently ships with a model trained on the [COCO dataset](https://cocodataset.org/) by [Ultralytics](https://github.com/ultralytics/ultralytics) (this model is licensed under [AGPLv3](https://www.gnu.org/licenses/agpl-3.0.en.html)). This model is meant to be used for testing and other miscellaneous purposes. It is not meant to be used in competition. For the 2026 season, PhotonVision ships with a model to detect FUEL, this is also licensed under AGPL.
 
 ## Tracking Objects
 

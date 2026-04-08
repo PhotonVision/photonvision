@@ -58,13 +58,9 @@ public class Draw2dTargetsPipe
             var circleColor = ColorHelper.colorToScalar(params.circleColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
-            for (int i = 0; i < (params.showMultipleTargets ? in.getSecond().size() : 1); i++) {
+            for (int i = 0; i < Math.min(params.outputMaximumTargets, in.getSecond().size()); i++) {
                 Point[] vertices = new Point[4];
                 MatOfPoint contour = new MatOfPoint();
-
-                if (i != 0 && !params.showMultipleTargets) {
-                    break;
-                }
 
                 TrackedTarget target = in.getSecond().get(i);
                 RotatedRect r = target.getMinAreaRect();
@@ -233,8 +229,7 @@ public class Draw2dTargetsPipe
         public Color shapeOutlineColour = Color.MAGENTA;
         public Color textColor = Color.GREEN;
         public Color circleColor = Color.RED;
-
-        public final boolean showMultipleTargets;
+        public int outputMaximumTargets;
         public final boolean shouldDraw;
 
         public final FrameDivisor divisor;
@@ -247,10 +242,9 @@ public class Draw2dTargetsPipe
             return shape != null && shape.shape.equals(ContourShape.Circle);
         }
 
-        public Draw2dTargetsParams(
-                boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
+        public Draw2dTargetsParams(boolean shouldDraw, int outputMaximumTargets, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
-            this.showMultipleTargets = showMultipleTargets;
+            this.outputMaximumTargets = outputMaximumTargets;
             this.divisor = divisor;
         }
     }

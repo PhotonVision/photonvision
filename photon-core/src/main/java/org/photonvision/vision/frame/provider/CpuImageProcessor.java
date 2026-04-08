@@ -24,7 +24,6 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.GrayscalePipe;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
@@ -64,26 +63,18 @@ public abstract class CpuImageProcessor extends FrameProvider {
 
     @Override
     public final Frame get() {
-        // TODO Auto-generated method stub
         var input = getInputMat();
 
+        m_rImagePipe.run(input.colorImage.getMat());
+
         CVMat outputMat = null;
-        long sumNanos = 0;
-
-        {
-            CVPipeResult<Void> out = m_rImagePipe.run(input.colorImage.getMat());
-            sumNanos += out.nanosElapsed;
-        }
-
         if (!input.colorImage.getMat().empty()) {
             if (m_processType == FrameThresholdType.HSV) {
                 var hsvResult = m_hsvPipe.run(input.colorImage.getMat());
                 outputMat = new CVMat(hsvResult.output);
-                sumNanos += hsvResult.nanosElapsed;
             } else if (m_processType == FrameThresholdType.GREYSCALE) {
                 var result = m_grayPipe.run(input.colorImage.getMat());
                 outputMat = new CVMat(result.output);
-                sumNanos += result.nanosElapsed;
             } else {
                 outputMat = new CVMat();
             }

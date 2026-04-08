@@ -13,13 +13,15 @@ import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
 
 const theme = useTheme();
 
-const restartProgram = () => {
-  axiosPost("/utils/restartProgram", "restart PhotonVision");
-  forceReloadPage();
+const restartProgram = async () => {
+  if (await axiosPost("/utils/restartProgram", "restart PhotonVision")) {
+    forceReloadPage();
+  }
 };
-const restartDevice = () => {
-  axiosPost("/utils/restartDevice", "restart the device");
-  forceReloadPage();
+const restartDevice = async () => {
+  if (await axiosPost("/utils/restartDevice", "restart the device")) {
+    forceReloadPage();
+  }
 };
 
 const address = inject<string>("backendHost");
@@ -28,38 +30,96 @@ const offlineUpdate = ref();
 const openOfflineUpdatePrompt = () => {
   offlineUpdate.value.click();
 };
-const handleOfflineUpdate = async () => {
+
+const offlineUpdateRegex = new RegExp("photonvision-((?:dev-)?v[\\w.-]+)-((?:linux|win|mac)\\w+)\\.jar");
+const majorVersionRegex = new RegExp("(?:dev-)?(\\d+)\\.\\d+\\.\\d+");
+
+const offlineUpdateDialog = ref({ show: false, confirmString: "" });
+
+const handleOfflineUpdateRequest = async () => {
   const files = offlineUpdate.value.files;
   if (files.length === 0) return;
+
+  const match = files[0].name.match(offlineUpdateRegex);
+  if (!match) {
+    useStateStore().showSnackbarMessage({
+      message: "Selected file does not match expected naming convention.",
+      color: "error"
+    });
+    return;
+  }
+
+  const version = match[1] as string;
+  const arch = match[2] as string;
+
+  const currentVersion = useSettingsStore().general.imageVersion;
+  const currentArch = useSettingsStore().general.wpilibArch;
+
+  const versionMajor = version.match(majorVersionRegex)?.[1];
+  const currentVersionMajor = currentVersion?.match(majorVersionRegex)?.[1];
+
+  const versionMatch = currentVersion ? versionMajor === currentVersionMajor : false;
+  const dev = version.includes("dev");
+
+  if (currentArch && arch !== currentArch) {
+    useStateStore().showSnackbarMessage({
+      message: `Selected file architecture (${arch}) does not match device architecture (${currentArch}).`,
+      color: "error"
+    });
+    return;
+  } else if (versionMatch && !dev) {
+    handleOfflineUpdate(files[0]);
+  } else if (!versionMatch && !dev) {
+    offlineUpdateDialog.value = {
+      show: true,
+      confirmString: `You are attempting to update from PhotonVision ${currentVersion} on image ${useSettingsStore().general.imageVersion} to ${version} from a different FRC year. These versions may be incompatible. Are you sure you want to proceed?`
+    };
+  } else if (versionMatch && dev) {
+    offlineUpdateDialog.value = {
+      show: true,
+      confirmString:
+        "You are attempting to update to a dev version. This could result in instability. Are you sure you want to proceed?"
+    };
+  } else if (!versionMatch && dev) {
+    offlineUpdateDialog.value = {
+      show: true,
+      confirmString: `You are attempting to update to a dev version, from PhotonVision ${currentVersion} on image ${useSettingsStore().general.imageVersion} to ${version} from a different FRC year. These versions may be incompatible, and you may experience instability. Are you sure you want to proceed?`
+    };
+  }
+};
+
+const handleOfflineUpdate = async (file: File) => {
   const formData = new FormData();
-  formData.append("jarData", files[0]);
+  formData.append("jarData", file);
   useStateStore().showSnackbarMessage({
     message: "New Software Upload in Progress...",
     color: "secondary",
     timeout: -1
   });
-  await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: ({ progress }) => {
-      const uploadPercentage = (progress || 0) * 100.0;
-      if (uploadPercentage < 99.5) {
-        useStateStore().showSnackbarMessage({
-          message: "New Software Upload in Progress",
-          color: "secondary",
-          timeout: -1,
-          progressBar: uploadPercentage,
-          progressBarColor: "primary"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "Installing uploaded software...",
-          color: "secondary",
-          timeout: -1
-        });
+  if (
+    await axiosPost("/utils/offlineUpdate", "upload new software", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "New Software Upload in Progress",
+            color: "secondary",
+            timeout: -1,
+            progressBar: uploadPercentage,
+            progressBarColor: "primary"
+          });
+        }
       }
-    }
-  });
-  forceReloadPage();
+    })
+  ) {
+    useStateStore().showSnackbarMessage({
+      message: "Installing uploaded software...",
+      color: "secondary",
+      timeout: -1
+    });
+    forceReloadPage();
+  }
 };
 
 const exportLogFile = ref();
@@ -116,9 +176,10 @@ const handleSettingsImport = () => {
 };
 
 const showFactoryReset = ref(false);
-const nukePhotonConfigDirectory = () => {
-  axiosPost("/utils/nukeConfigDirectory", "delete the config directory");
-  forceReloadPage();
+const nukePhotonConfigDirectory = async () => {
+  if (await axiosPost("/utils/nukeConfigDirectory", "delete the config directory")) {
+    forceReloadPage();
+  }
 };
 
 interface MetricItem {
@@ -129,6 +190,7 @@ interface MetricItem {
 const generalMetrics = computed<MetricItem[]>(() => {
   const stats = [
     { header: "Version", value: useSettingsStore().general.version || "Unknown" },
+    { header: "Image Version", value: useSettingsStore().general.imageVersion || "Unknown" },
     { header: "Hardware Model", value: useSettingsStore().general.hardwareModel || "Unknown" },
     { header: "Platform", value: useSettingsStore().general.hardwarePlatform || "Unknown" },
     { header: "GPU Acceleration", value: useSettingsStore().general.gpuAcceleration || "None detected" }
@@ -250,7 +312,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="useStateStore().showLogModal = true"
               >
                 <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
@@ -260,7 +322,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="openExportLogsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
@@ -283,7 +345,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="() => (showImportDialog = true)"
               >
                 <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
@@ -293,7 +355,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col>
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="openExportSettingsPrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
@@ -307,7 +369,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6"
               ><v-btn
                 color="buttonActive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="restartProgram"
               >
                 <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
@@ -317,7 +379,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6">
               <v-btn
                 color="buttonPassive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="openOfflineUpdatePrompt"
               >
                 <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
@@ -328,7 +390,7 @@ watch(metricsHistorySnapshot, () => {
                 type="file"
                 accept=".jar"
                 style="display: none"
-                @change="handleOfflineUpdate"
+                @change="handleOfflineUpdateRequest"
               />
             </v-col>
           </v-row>
@@ -338,7 +400,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6">
               <v-btn
                 color="buttonActive"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="restartDevice"
               >
                 <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
@@ -348,7 +410,7 @@ watch(metricsHistorySnapshot, () => {
             <v-col cols="12" sm="6">
               <v-btn
                 color="error"
-                :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                 @click="() => (showFactoryReset = true)"
               >
                 <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
@@ -371,21 +433,33 @@ watch(metricsHistorySnapshot, () => {
             <span>CPU Usage</span>
             <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
-          <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0 pb-2">
           <div class="d-flex justify-space-between pb-3 pt-3">
             <span>CPU Temperature</span>
-            <span>{{ cpuTempData.at(-1)?.value == -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
+            <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
-          <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <div class="d-flex justify-space-between pb-3 pt-3">
@@ -396,10 +470,17 @@ watch(metricsHistorySnapshot, () => {
               tooltip="Measured rate for this coprocessor ONLY. This FMS limit is for ALL robot communication. If you are experiencing bandwidth issues while under this limit, check other sources."
             />
             <span
-              >{{ networkUsageData.at(-1)?.value == -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3) }} Mb/s</span
+              >{{
+                networkUsageData.at(-1)?.value === -1 ? "---" : networkUsageData.at(-1)?.value.toFixed(3)
+              }}
+              Mb/s</span
             >
           </div>
-          <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
+          <Suspense>
+            <!-- Allows us to import echarts when it's actually needed  -->
+            <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
+            <template #fallback> Loading... </template>
+          </Suspense>
         </v-card-text>
       </v-card>
     </v-col>
@@ -451,13 +532,40 @@ watch(metricsHistorySnapshot, () => {
           <v-btn
             color="primary"
             :disabled="importFile === null"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="handleSettingsImport"
           >
             <v-icon start class="open-icon"> mdi-import </v-icon>
             <span class="open-label">Import Settings</span>
           </v-btn>
         </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="offlineUpdateDialog.show" :width="700" dark>
+    <v-card color="surface" flat>
+      <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
+      <v-card-text class="pt-0 pb-10px">
+        <span> {{ offlineUpdateDialog.confirmString }} </span>
+      </v-card-text>
+      <v-card-text class="pt-10px">
+        <v-row class="align-center text-white">
+          <v-col cols="12">
+            <v-btn
+              color="buttonActive"
+              width="100%"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+              @click="
+                offlineUpdateDialog.show = false;
+                handleOfflineUpdate(offlineUpdate.files[0]);
+              "
+            >
+              <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
+              <span class="open-label"> Confirm Update </span>
+            </v-btn>
+          </v-col>
+        </v-row>
       </v-card-text>
     </v-card>
   </v-dialog>

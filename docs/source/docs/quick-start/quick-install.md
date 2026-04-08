@@ -29,6 +29,10 @@ Unless otherwise noted in release notes or if updating from the prior years vers
 Use the [Raspberry Pi Imager](https://www.raspberrypi.com/software/) to flash the image onto the coprocessors microSD card. Select the downloaded `.img.xz` file, select your microSD card, and flash.
 
 :::{warning}
+Avoid using Raspberry Pi Imager version 2.0.2 or later. Those versions fail to write the image to an SD card. Versions 2.0.0 and earlier write images successfully. [GitHub issue 1489](https://github.com/raspberrypi/rpi-imager/issues/1489) was created for this problem.
+:::
+
+:::{warning}
 Balena Etcher has been recommended in the past, but should no longer be used due to instability and lack of ongoing support from developers.
 :::
 
@@ -53,7 +57,7 @@ Limelight models will need a [custom hardware config file](https://github.com/Ph
 The Qualcomm Launcher caches files. If you flash multiple times, you may need to clear the cache by navigating to your temp directory, and deleting the `qualcomm-launcher` folder.
 :::
 
-To flash the Rubik Pi 3 coprocessor, it's necessary to use the [Qualcomm Launcher](https://softwarecenter.qualcomm.com/catalog/item/Qualcomm_Launcher). Upload a custom image by selecting the *Custom* option in the launcher. Choose the downloaded PhotonVision `.tar.xz` file and follow the prompts to complete the installation. It is recommended to skip the *Configure Login* process, as PhotonVision will handle the necessary settings.
+To flash the Rubik Pi 3 coprocessor, it's necessary to use the [Qualcomm Launcher](https://softwarecenter.qualcomm.com/catalog/item/Qualcomm_Launcher). Upload a custom image by selecting the *Custom* option in the launcher. If this is your first time flashing this board, ensure you check the USB firmware option. Choose the downloaded PhotonVision `.tar.xz` file and follow the prompts to complete the installation. It is recommended to skip the *Configure Login* process, as PhotonVision will handle the necessary settings.
 
 ### Alternative Flashing Method (advanced users only)
 

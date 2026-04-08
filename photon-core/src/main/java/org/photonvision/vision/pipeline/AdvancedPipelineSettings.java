@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import java.util.Objects;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
@@ -41,7 +42,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean hueInverted = false;
 
     public boolean outputShouldDraw = true;
-    public boolean outputShowMultipleTargets = false;
+    public int outputMaximumTargets = 20;
 
     public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
     public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
@@ -90,6 +91,22 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
 
+    /**
+     * Handles backward compatibility for the deprecated outputShowMultipleTargets property. When
+     * outputShowMultipleTargets is encountered during deserialization, it sets outputMaximumTargets
+     * appropriately. If outputShowMultipleTargets is false, outputMaximumTargets is set to 1.
+     */
+    @JsonAnySetter
+    public void handleUnknownProperty(String name, Object value) {
+        // Handle the old showMultipleTargets property for backward compatibility
+        if ("outputShowMultipleTargets".equals(name) && value instanceof Boolean showMultipleTargets) {
+            if (!showMultipleTargets) {
+                // If showMultipleTargets is false, limit to 1 target
+                outputMaximumTargets = 1;
+            }
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -97,7 +114,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
         if (!super.equals(o)) return false;
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
-                && outputShowMultipleTargets == that.outputShowMultipleTargets
+                && outputMaximumTargets == that.outputMaximumTargets
                 && contourSpecklePercentage == that.contourSpecklePercentage
                 && Double.compare(that.offsetDualPointAArea, offsetDualPointAArea) == 0
                 && Double.compare(that.offsetDualPointBArea, offsetDualPointBArea) == 0
@@ -136,7 +153,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 hsvValue,
                 hueInverted,
                 outputShouldDraw,
-                outputShowMultipleTargets,
+                outputMaximumTargets,
                 contourArea,
                 contourRatio,
                 contourFullness,

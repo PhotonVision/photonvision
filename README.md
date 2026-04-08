@@ -8,18 +8,18 @@ The latest release of platform-specific jars and images is found [here](https://
 
 If you are interested in contributing code or documentation to the project, please [read our getting started page for contributors](https://docs.photonvision.org/en/latest/docs/contributing/index.html) and **[join the Discord](https://discord.gg/wYxTwym) to introduce yourself!** We hope to provide a welcoming community to anyone who is interested in helping.
 
-## Authors
-
-<a href="https://github.com/PhotonVision/photonvision/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=PhotonVision/photonvision" />
-</a>
-
 ## Documentation
 
 - Our main documentation page: [docs.photonvision.org](https://docs.photonvision.org)
 - Photon UI demo: [demo.photonvision.org](https://demo.photonvision.org)
 - Javadocs: [javadocs.photonvision.org](https://javadocs.photonvision.org)
-- C++ Doxygen  [cppdocs.photonvision.org](https://cppdocs.photonvision.org)
+- C++ Doxygen: [cppdocs.photonvision.org](https://cppdocs.photonvision.org)
+
+## Authors
+
+<a href="https://github.com/PhotonVision/photonvision/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=PhotonVision/photonvision" />
+</a>
 
 ## Building
 
@@ -32,7 +32,6 @@ You can run one of the many built in examples straight from the command line, to
 Note that these are case sensitive!
 
 * `-PArchOverride=foobar`: builds for a target system other than your current architecture. [Valid overrides](https://github.com/wpilibsuite/wpilib-tool-plugin/blob/main/src/main/java/edu/wpi/first/tools/NativePlatforms.java) are:
-    * winx32
     * winx64
     * winarm64
     * macx64
@@ -46,33 +45,34 @@ Note that these are case sensitive!
 - `-Pprofile`: enables JVM profiling
 - `-PwithSanitizers`: On Linux, enables `-fsanitize=address,undefined,leak`
 
-If you're cross-compiling, you'll need the wpilib toolchain installed. This can be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
+If you're cross-compiling, you'll need the WPILib toolchain installed. This must be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
 
 ## Out-of-Source Dependencies
 
 PhotonVision uses the following additional out-of-source repositories for building code.
 
-- Base system images for Raspberry Pi & Orange Pi: https://github.com/PhotonVision/photon-image-modifier
+- Base system images for supported coprocessors: https://github.com/PhotonVision/photon-image-modifier
 - C++ driver for Raspberry Pi CSI cameras: https://github.com/PhotonVision/photon-libcamera-gl-driver
 - JNI code for [mrcal](https://mrcal.secretsauce.net/): https://github.com/PhotonVision/mrcal-java
-- Custom build of OpenCV with GStreamer/Protobuf/other custom flags: https://github.com/PhotonVision/thirdparty-opencv
-- JNI code for aruco-nano: https://github.com/PhotonVision/aruconano-jni
+- JNI code for RKNN: https://github.com/PhotonVision/rknn_jni
+- JNI code for Rubik Pi NPU: https://github.com/PhotonVision/rubik_jni
 
 ## Acknowledgments
 
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
 
-* [WPILib](https://github.com/wpilibsuite) - Specifically [cscore](https://github.com/wpilibsuite/allwpilib/tree/main/cscore), [CameraServer](https://github.com/wpilibsuite/allwpilib/tree/main/cameraserver), [NTCore](https://github.com/wpilibsuite/allwpilib/tree/main/ntcore), and [OpenCV](https://github.com/wpilibsuite/thirdparty-opencv).
-
-* [Apache Commons](https://commons.apache.org/) - Specifically [Commons Math](https://commons.apache.org/proper/commons-math/), and [Commons Lang](https://commons.apache.org/proper/commons-lang/)
-
+* [WPILib](https://github.com/wpilibsuite) - Specifically [allwpilib](https://github.com/wpilibsuite/allwpilib) and [their build of OpenCV](https://github.com/wpilibsuite/thirdparty-opencv).
+* [Apache Commons](https://commons.apache.org/) - Specifically [Commons IO](https://commons.apache.org/proper/commons-io/), and [Commons CLI](https://commons.apache.org/proper/commons-cli/)
+* [diozero](https://www.diozero.com/)
+* [EJML](https://github.com/lessthanoptimal/ejml)
 * [Javalin](https://javalin.io/)
-
 * [JSON](https://json.org)
-
 * [FasterXML](https://github.com/FasterXML) - Specifically [jackson](https://github.com/FasterXML/jackson)
-
+* [MessagePack for Java](https://github.com/msgpack/msgpack-java)
 * [OSHI](https://github.com/oshi/oshi)
+* [QuickBuffers](https://github.com/HebiRobotics/QuickBuffers)
+* [SQLite JDBC](https://github.com/xerial/sqlite-jdbc)
+* [ZT ZIP](https://github.com/zeroturnaround/zt-zip)
 
 ## License
 

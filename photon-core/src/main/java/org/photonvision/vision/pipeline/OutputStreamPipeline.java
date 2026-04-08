@@ -58,19 +58,19 @@ public class OutputStreamPipeline {
         draw2dTargetsPipe.setParams(
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor));
 
         draw2dAprilTagsPipe.setParams(
                 new Draw2dAprilTagsPipe.Draw2dAprilTagsParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor));
 
         draw2dArucoPipe.setParams(
                 new Draw2dArucoPipe.Draw2dArucoParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor));
 
         draw2dCrosshairPipe.setParams(
@@ -150,7 +150,7 @@ public class OutputStreamPipeline {
             if (!(settings instanceof AprilTagPipelineSettings)
                     && !(settings instanceof ArucoPipelineSettings)
                     && !(settings instanceof Calibration3dPipelineSettings)) {
-                // If we're processing anything other than Apriltags..
+                // If we're processing anything other than AprilTags or Aruco targets
                 var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
@@ -203,7 +203,7 @@ public class OutputStreamPipeline {
                 }
             } else if (settings instanceof ArucoPipelineSettings) {
                 if (settings.solvePNPEnabled) {
-                    // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
+                    // Draw 3d aruco markers (camera is calibrated and running in 3d mode)
                     pipeProfileNanos[5] = 0;
                     pipeProfileNanos[6] = 0;
 
@@ -213,7 +213,7 @@ public class OutputStreamPipeline {
                     pipeProfileNanos[8] = 0;
 
                 } else {
-                    // Draw 2d apriltag markers
+                    // Draw 2d aruco markers
                     var draw2dTargetsOnInput = draw2dArucoPipe.run(Pair.of(outMat, targetsToDraw));
                     sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 

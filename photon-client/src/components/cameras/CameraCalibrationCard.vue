@@ -14,6 +14,7 @@ import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
@@ -27,7 +28,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
-    const contains = index != -1;
+    const contains = index !== -1;
     let skip = false;
     if (contains && format.fps > uniqueResolutions[index].fps) {
       uniqueResolutions.splice(index, 1);
@@ -131,7 +132,7 @@ const downloadCalibBoard = async () => {
           const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
           // Only draw the odd squares to create the chessboard pattern
-          if (squareY % 2 != squareX % 2) {
+          if (squareY % 2 !== squareX % 2) {
             doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
           }
         }
@@ -243,7 +244,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3 rounded-12" color="surface" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <v-card-text v-if="!isCalibrating" class="pb-0">
-        <v-card-subtitle class="pa-0 pb-3 text-white">Current Calibrations</v-card-subtitle>
+        <div class="pb-3">
+          <tooltipped-label
+            label="Curent Calibrations"
+            icon="mdi-information"
+            location="top"
+            tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
+          />
+        </div>
         <v-table fixed-header height="100%" density="compact">
           <thead>
             <tr>
@@ -282,22 +290,10 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       </v-card-text>
       <v-card-text class="pt-0">
         <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
-          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
+          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100"
             >Configure New Calibration</v-card-subtitle
           >
-          <v-form ref="form" v-model="settingsValid">
-            <v-alert
-              closable
-              density="compact"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
-              :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
-              :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
-              :text="
-                useSettingsStore().general.mrCalWorking
-                  ? 'Mrcal was successfully loaded and will be used!'
-                  : 'MrCal failed to load, check journalctl logs for details.'
-              "
-            />
+          <v-form v-model="settingsValid">
             <pv-select
               v-model="uniqueVideoResolutionString"
               label="Resolution"
@@ -470,9 +466,22 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             "
           />
         </div>
-        <div v-if="isCalibrating" class="d-flex justify-center align-center pt-10px pb-5">
+        <v-alert
+          closable
+          density="compact"
+          class="mb-5"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
+          :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
+          :text="
+            useSettingsStore().general.mrCalWorking
+              ? 'Mrcal was successfully loaded and will be used!'
+              : 'MrCal failed to load, check journalctl logs for details.'
+          "
+        />
+        <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
           <v-chip
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             label
             :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'"
           >
@@ -485,7 +494,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             color="buttonPassive"
             size="small"
             block
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             :disabled="!settingsValid"
             @click="downloadCalibBoard"
           >
@@ -500,7 +509,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           density="compact"
           text="Too many corners. Finish calibration now!"
           icon="mdi-alert-circle-outline"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <div class="d-flex pt-5">
           <v-col cols="6" class="pa-0 pr-2">
@@ -508,7 +517,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               color="buttonActive"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
@@ -522,7 +531,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-btn
               size="small"
               block
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"

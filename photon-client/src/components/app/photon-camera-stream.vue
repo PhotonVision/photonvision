@@ -50,7 +50,7 @@ const containerStyle = computed<StyleValue>(() => {
 });
 
 const overlayStyle = computed<StyleValue>(() => {
-  if (useStateStore().colorPickingMode || streamSrc.value == emptyStreamSrc) {
+  if (useStateStore().colorPickingMode || streamSrc.value === emptyStreamSrc) {
     return { display: "none" };
   } else {
     return {};

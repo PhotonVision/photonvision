@@ -94,7 +94,7 @@ public class CirclePNPTest {
         pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
         pipeline.getSettings().targetModel = TargetModel.kCircularPowerCell7in;
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = false;
+        pipeline.getSettings().outputMaximumTargets = 20;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().contourShape = ContourShape.Circle;
@@ -144,7 +144,7 @@ public class CirclePNPTest {
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(190, 255);
         settings.outputShouldDraw = true;
-        settings.outputShowMultipleTargets = true;
+        settings.outputMaximumTargets = 20;
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 

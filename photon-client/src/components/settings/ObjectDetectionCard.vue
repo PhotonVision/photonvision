@@ -26,7 +26,7 @@ const importWidth = ref<number | null>(null);
 const importVersion = ref<string | null>(null);
 
 // TODO gray out the button when model is uploading
-const handleImport = () => {
+const handleImport = async () => {
   if (importModelFile.value === null) return;
 
   const formData = new FormData();
@@ -43,25 +43,27 @@ const handleImport = () => {
     timeout: -1
   });
 
-  axiosPost("/objectdetection/import", "import an object detection model", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: ({ progress }) => {
-      const uploadPercentage = (progress || 0) * 100.0;
-      if (uploadPercentage < 99.5) {
-        useStateStore().showSnackbarMessage({
-          message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
-          color: "secondary",
-          timeout: -1
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "Processing uploaded Object Detection Model...",
-          color: "secondary",
-          timeout: -1
-        });
+  if (
+    await axiosPost("/objectdetection/import", "import an object detection model", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "Object Detection Model Upload in Process, " + uploadPercentage.toFixed(2) + "% complete",
+            color: "secondary",
+            timeout: -1
+          });
+        }
       }
-    }
-  });
+    })
+  ) {
+    useStateStore().showSnackbarMessage({
+      message: "Processing uploaded Object Detection Model...",
+      color: "secondary",
+      timeout: -1
+    });
+  }
 
   showImportDialog.value = false;
 
@@ -121,33 +123,35 @@ const nukeModels = () => {
 
 const showBulkImportDialog = ref(false);
 const importFile = ref<File | null>(null);
-const handleBulkImport = () => {
+const handleBulkImport = async () => {
   if (importFile.value === null) return;
 
   const formData = new FormData();
   formData.append("data", importFile.value);
 
-  axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    onUploadProgress: ({ progress }) => {
-      const uploadPercentage = (progress || 0) * 100.0;
-      if (uploadPercentage < 99.5) {
-        useStateStore().showSnackbarMessage({
-          message: "Object Detection Models Upload in Progress",
-          color: "secondary",
-          timeout: -1,
-          progressBar: uploadPercentage,
-          progressBarColor: "primary"
-        });
-      } else {
-        useStateStore().showSnackbarMessage({
-          message: "Importing New Object Detection Models...",
-          color: "secondary",
-          timeout: -1
-        });
+  if (
+    await axiosPost("/objectdetection/bulkimport", "import object detection models", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+      onUploadProgress: ({ progress }) => {
+        const uploadPercentage = (progress || 0) * 100.0;
+        if (uploadPercentage < 99.5) {
+          useStateStore().showSnackbarMessage({
+            message: "Object Detection Models Upload in Progress",
+            color: "secondary",
+            timeout: -1,
+            progressBar: uploadPercentage,
+            progressBarColor: "primary"
+          });
+        }
       }
-    }
-  });
+    })
+  ) {
+    useStateStore().showSnackbarMessage({
+      message: "Importing New Object Detection Models...",
+      color: "secondary",
+      timeout: -1
+    });
+  }
   showImportDialog.value = false;
   importFile.value = null;
 };
@@ -162,7 +166,7 @@ const handleBulkImport = () => {
           <v-btn
             color="buttonActive"
             class="justify-center"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="() => (showImportDialog = true)"
           >
             <v-icon start class="open-icon"> mdi-import </v-icon>
@@ -241,7 +245,7 @@ const handleBulkImport = () => {
                       importHeight === null ||
                       importVersion === null
                     "
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="handleImport()"
                   >
                     <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
@@ -256,7 +260,7 @@ const handleBulkImport = () => {
           <v-btn
             color="buttonActive"
             class="justify-center"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="() => (showBulkImportDialog = true)"
           >
             <v-icon start class="open-icon"> mdi-import </v-icon>
@@ -274,7 +278,7 @@ const handleBulkImport = () => {
                     color="buttonActive"
                     width="100%"
                     :disabled="importFile === null"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="handleBulkImport()"
                   >
                     <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
@@ -288,7 +292,7 @@ const handleBulkImport = () => {
         <v-col cols="12" sm="6">
           <v-btn
             color="buttonPassive"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openExportPrompt"
           >
             <v-icon start class="open-icon"> mdi-export </v-icon>
@@ -305,7 +309,7 @@ const handleBulkImport = () => {
         <v-col cols="12" sm="6">
           <v-btn
             color="error"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="() => (showNukeDialog = true)"
           >
             <v-icon left class="open-icon"> mdi-trash </v-icon>
@@ -335,7 +339,7 @@ const handleBulkImport = () => {
                     small
                     color="error"
                     title="Delete Model"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="() => (confirmDeleteDialog = { show: true, model })"
                   >
                     <v-icon size="large">mdi-trash-can-outline</v-icon>
@@ -347,7 +351,7 @@ const handleBulkImport = () => {
                     small
                     color="buttonActive"
                     title="Rename Model"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="() => (showRenameDialog = { show: true, model, newName: '' })"
                   >
                     <v-icon size="large">mdi-pencil</v-icon>
@@ -358,7 +362,7 @@ const handleBulkImport = () => {
                     icon
                     small
                     color="buttonPassive"
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="() => (showInfo = { show: true, model })"
                   >
                     <v-icon size="large">mdi-information</v-icon>
@@ -387,13 +391,13 @@ const handleBulkImport = () => {
                 </div>
                 <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
                   <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     color="error"
                     @click="showRenameDialog.show = false"
                     >Cancel</v-btn
                   >
                   <v-btn
-                    :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     color="buttonActive"
                     @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
                     >Rename</v-btn
@@ -409,7 +413,7 @@ const handleBulkImport = () => {
                 <v-btn
                   color="buttonPassive"
                   width="100%"
-                  :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="openExportIndividualModelPrompt"
                 >
                   <v-icon left class="open-icon" size="large"> mdi-export </v-icon>
@@ -442,8 +446,8 @@ const handleBulkImport = () => {
       :on-backup="openExportPrompt"
       :on-confirm="nukeModels"
       title="Delete and Reset All Object Detection Models"
-      :description="'This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone.'"
-      :expected-confirmation-text="'Delete Models'"
+      description="This will delete ALL object detection models and re-extract the default object detection models. This action cannot be undone."
+      expected-confirmation-text="Delete Models"
       delete-text="Delete all models"
     />
   </v-card>

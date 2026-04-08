@@ -24,23 +24,15 @@
 
 #pragma once
 
-#include <algorithm>
 #include <limits>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include <cameraserver/CameraServer.h>
-#include <frc/Timer.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/apriltag/AprilTagFields.h>
 #include <photon/PhotonCamera.h>
-#include <photon/PhotonTargetSortMode.h>
-#include <photon/estimation/CameraTargetRelation.h>
-#include <photon/estimation/VisionEstimation.h>
 #include <photon/networktables/NTTopicSet.h>
 #include <photon/simulation/SimCameraProperties.h>
-#include <photon/simulation/VideoSimUtil.h>
 #include <photon/simulation/VisionTargetSim.h>
 #include <units/math.h>
 #include <wpi/timestamp.h>

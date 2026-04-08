@@ -102,7 +102,7 @@ public class ColoredShapePipelineTest {
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(100, 255);
         settings.outputShouldDraw = true;
-        settings.outputShowMultipleTargets = true;
+        settings.outputMaximumTargets = 20;
         settings.contourGroupingMode = ContourGroupingMode.Single;
         settings.contourIntersection = ContourIntersectionDirection.Up;
         settings.contourShape = ContourShape.Triangle;

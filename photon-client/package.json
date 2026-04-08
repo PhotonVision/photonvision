@@ -41,11 +41,11 @@
     "@vue/eslint-config-typescript": "^14.5.0",
     "@vue/tsconfig": "^0.7.0",
     "eslint": "^9.31.0",
-    "eslint-plugin-vue": "^10.3.0",
+    "eslint-plugin-vue": "^10.7.0",
     "prettier": "^3.6.2",
     "sass": "^1.89.2",
     "typescript": "^5.8.3",
-    "vite": "^7.0.5",
+    "vite": "^8.0.2",
     "vite-plugin-vuetify": "^2.1.1"
   }
 }

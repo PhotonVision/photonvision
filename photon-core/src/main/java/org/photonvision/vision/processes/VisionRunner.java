@@ -191,8 +191,8 @@ public class VisionRunner {
                 // give up without increasing loop count
                 // Still feed with blank frames just dont run any pipelines
 
+                frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-
             } else if (pipeline == pipelineSupplier.get()) {
                 // If the pipeline has changed while we are getting our frame we should scrap
                 // that frame it may result in incorrect frame settings like hsv values
