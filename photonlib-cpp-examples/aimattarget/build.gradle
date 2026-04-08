@@ -11,7 +11,7 @@ repositories {
 
 wpi.maven.useLocal = false
 wpi.maven.useDevelopment = false
-wpi.versions.wpilibVersion = "2027.0.+"
+wpi.versions.wpilibVersion = "2027.0.0-alpha-4"
 
 // Define my targets (SystemCore) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
