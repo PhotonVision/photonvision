@@ -425,6 +425,8 @@ jobs:
             artifact-name: photonvision-*-winx64.jar
           - os: macos-latest
             artifact-name: photonvision-*-macarm64.jar
+          - os: ubuntu-24.04-arm
+            artifact-name: photonvision-*-linuxarm64.jar
 
 
     runs-on: ${{ matrix.os }}
