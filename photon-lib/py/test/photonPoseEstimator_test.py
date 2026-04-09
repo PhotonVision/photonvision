@@ -180,7 +180,7 @@ def test_pnpDistanceTrigSolve():
 
     realPose = Pose3d(7.3, 4.42, 0, Rotation3d(0, 0, 2.197))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transformBy(cameraOne.getRobotToCamera()), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -206,7 +206,7 @@ def test_pnpDistanceTrigSolve():
     cameraOne.setRobotToCamera(straightOnTestTransform)
     realPose = Pose3d(4.81, 2.38, 0, Rotation3d(0, 0, 2.818))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transformBy(cameraOne.getRobotToCamera()), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
