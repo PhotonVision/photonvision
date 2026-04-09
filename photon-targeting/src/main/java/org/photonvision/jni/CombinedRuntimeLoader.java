@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.photonvision.common.hardware.Platform;
 
 /** Loads dynamic libraries for all platforms. */
 public final class CombinedRuntimeLoader {
@@ -102,7 +103,7 @@ public final class CombinedRuntimeLoader {
                 filePath = "/linux/x86/";
             } else if (intel64) {
                 filePath = "/linux/x86-64/";
-            } else if (new File("/usr/local/frc/bin/frcRunRobot.sh").exists()) {
+            } else if (Platform.isAthena()) {
                 filePath = "/linux/athena/";
             } else if ("arm".equals(arch) || "arm32".equals(arch)) {
                 filePath = "/linux/arm32/";
