@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10
       - name: Setup Node.js
@@ -44,7 +44,7 @@ jobs:
         run: pnpm i --frozen-lockfile
       - name: Build Production Client
         run: pnpm run build-demo
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: built-demo
           path: photon-client/dist/
@@ -69,7 +69,7 @@ jobs:
       run: |
         chmod +x gradlew
         ./gradlew photon-docs:generateJavaDocs photon-docs:doxygen
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@v7
       with:
         name: docs-java-cpp
         path: photon-docs/build/docs
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Download docs artifact
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: docs-*
       - run: find .
@@ -106,7 +106,7 @@ jobs:
       needs: [build_demo]
       runs-on: ubuntu-24.04
       steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: built-demo
       - run: find .

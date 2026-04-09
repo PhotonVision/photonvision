@@ -36,7 +36,7 @@ jobs:
         run: python setup.py sdist bdist_wheel
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: dist
           path: ./photon-lib/py/dist/
@@ -62,7 +62,7 @@ jobs:
           pip install pytest mypy
 
       - name: Download artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
@@ -102,7 +102,7 @@ jobs:
           python -m pip install --upgrade pip
 
       - name: Download artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: ./photon-lib/py/dist/
@@ -131,7 +131,7 @@ jobs:
 
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/

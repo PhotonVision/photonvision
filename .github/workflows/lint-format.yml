@@ -46,9 +46,9 @@ jobs:
       - name: Generate diff
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
-          name: wpiformat fixes
+          archive: false
           path: wpiformat-fixes.patch
         if: ${{ failure() }}
   javaformat:
@@ -81,7 +81,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
         with:
           version: 10
       - name: Setup Node.js
