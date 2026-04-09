@@ -74,6 +74,12 @@ class PhotonCamera:
         self._driverModeSubscriber = self._cameraTable.getBooleanTopic(
             "driverMode"
         ).subscribe(False)
+        self._recordingPublisher = self._cameraTable.getBooleanTopic(
+            "recordingRequest"
+        ).publish()
+        self._recordingSubscriber = self._cameraTable.getBooleanTopic(
+            "recording"
+        ).subscribe(False)
         self._fpsLimitPublisher = self._cameraTable.getIntegerTopic(
             "fpsLimitRequest"
         ).publish()
@@ -195,6 +201,22 @@ class PhotonCamera:
         """
 
         self._driverModePublisher.set(driverMode)
+
+    def getRecording(self) -> bool:
+        """Returns whether the camera is recording.
+
+        :returns: Whether the camera is recording.
+        """
+
+        return self._recordingSubscriber.get()
+
+    def setRecording(self, recording: bool) -> None:
+        """Toggles recording.
+
+        :param recording: Whether to set recording.
+        """
+
+        self._recordingPublisher.set(recording)
 
     def getFPSLimit(self) -> int:
         """Returns the current FPS limit set on the camera.

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.camera;
 
-import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -101,6 +100,16 @@ public class TestSource extends VisionSource {
             @Override
             public boolean isConnected() {
                 return true;
+            }
+
+            @Override
+            public void setRecording(boolean shouldRecord) {
+                throw new UnsupportedOperationException("Unimplemented method 'setRecording'");
+            }
+
+            @Override
+            public boolean getRecording() {
+                return false;
             }
         };
     }
