@@ -181,4 +181,4 @@ if token:
     linkcheck_auth = [(R"https://github.com/.+", token)]
 
 # MyST configuration (https://myst-parser.readthedocs.io/en/latest/configuration.html)
-myst_enable_extensions = ["colon_fence", "substitution"]
+myst_enable_extensions = ["colon_fence", "substitution", "attrs_inline"]
