@@ -5,19 +5,50 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import type { ActivePipelineSettings } from "@/types/PipelineTypes";
+import type { AprilTagPipelineSettings } from "@/types/PipelineTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
+import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 import { useDisplay } from "vuetify";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = computed<ActivePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings
+const currentPipelineSettings = computed<AprilTagPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
 const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
 );
+
+// Check if ML detection is available on this platform
+const mlDetectionAvailable = computed(() => useSettingsStore().general.supportedBackends.length > 0);
+
+// Filter models to only those supported by available backends
+const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
+  const { availableModels, supportedBackends } = useSettingsStore().general;
+  const isSupported = (model: ObjectDetectionModelProperties) => {
+    return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
+  };
+  return availableModels.filter(isSupported);
+});
+
+const selectedModel = computed({
+  get: () => {
+    const currentModelName = currentPipelineSettings.value.mlModelName;
+    if (!currentModelName) return undefined;
+
+    const index = supportedModels.value.findIndex((model) => model.nickname === currentModelName);
+    return index === -1 ? undefined : index;
+  },
+
+  set: (v) => {
+    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
+      const newModel = supportedModels.value[v];
+      useCameraSettingsStore().changeCurrentPipelineSetting({ mlModelName: newModel.nickname }, true);
+    }
+  }
+});
 </script>
 
 <template>
@@ -88,5 +119,83 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
+
+    <!-- ML-Assisted Detection Section -->
+    <v-divider v-if="mlDetectionAvailable" class="mt-3 mb-2" />
+    <div v-if="mlDetectionAvailable" class="ml-settings-section">
+      <p class="text-subtitle-2 mb-2">AI-Assisted Detection (NPU)</p>
+      <pv-switch
+        v-model="currentPipelineSettings.useMLDetection"
+        :switch-cols="interactiveCols"
+        label="Enable AI Detection"
+        tooltip="Use NPU-accelerated ML model for faster AprilTag detection. Requires compatible hardware (RK3588 or QCS6490)"
+        @update:modelValue="
+          (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useMLDetection: value }, false)
+        "
+      />
+      <div v-if="currentPipelineSettings.useMLDetection">
+        <pv-select
+          v-model="selectedModel"
+          label="Model"
+          tooltip="The model used for AI-assisted AprilTag detection"
+          :select-cols="interactiveCols"
+          :items="supportedModels.map((model) => model.nickname)"
+        />
+        <pv-slider
+          v-model="currentPipelineSettings.mlConfidenceThreshold"
+          :slider-cols="interactiveCols"
+          label="Confidence Threshold"
+          tooltip="Minimum confidence score for ML detection (0-1). Higher values reduce false positives"
+          :min="0.1"
+          :max="1.0"
+          :step="0.05"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlConfidenceThreshold: value }, false)
+          "
+        />
+        <pv-slider
+          v-model="currentPipelineSettings.mlNmsThreshold"
+          :slider-cols="interactiveCols"
+          label="NMS Threshold"
+          tooltip="Non-maximum suppression threshold for overlapping detections (0-1)"
+          :min="0.1"
+          :max="1.0"
+          :step="0.05"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlNmsThreshold: value }, false)
+          "
+        />
+        <pv-slider
+          v-model="currentPipelineSettings.mlRoiPaddingPixels"
+          :slider-cols="interactiveCols"
+          label="ROI Padding (px)"
+          tooltip="Pixels of padding added around each detected region. Naturally adapts: small/far tags get more relative expansion, large/close tags get less"
+          :min="10"
+          :max="150"
+          :step="5"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlRoiPaddingPixels: value }, false)
+          "
+        />
+        <pv-switch
+          v-model="currentPipelineSettings.mlFallbackToTraditional"
+          :switch-cols="interactiveCols"
+          label="Fallback to Traditional"
+          tooltip="If ML detection finds no tags, fall back to traditional full-frame detection"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlFallbackToTraditional: value }, false)
+          "
+        />
+        <pv-switch
+          v-model="currentPipelineSettings.showDetectionBoxes"
+          :switch-cols="interactiveCols"
+          label="Show ROI Boxes"
+          tooltip="Draw the ML model's detected bounding boxes on the processed image for tuning visualization"
+          @update:modelValue="
+            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ showDetectionBoxes: value }, false)
+          "
+        />
+      </div>
+    </div>
   </div>
 </template>

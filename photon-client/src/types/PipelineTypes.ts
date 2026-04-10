@@ -228,6 +228,15 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   tagFamily: AprilTagFamily;
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
+  multiTagAmbiguityThreshold: number;
+  // ML-assisted detection settings
+  useMLDetection: boolean;
+  mlConfidenceThreshold: number;
+  mlNmsThreshold: number;
+  mlRoiPaddingPixels: number;
+  mlFallbackToTraditional: boolean;
+  mlModelName: string | null;
+  showDetectionBoxes: boolean;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
   Omit<AprilTagPipelineSettings, "pipelineType" | "hammingDist" | "debug">
@@ -251,7 +260,16 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   threads: 4,
   tagFamily: AprilTagFamily.Family36h11,
   doMultiTarget: false,
-  doSingleTargetAlways: false
+  doSingleTargetAlways: false,
+  multiTagAmbiguityThreshold: 0.2,
+  // ML-assisted detection defaults
+  useMLDetection: false,
+  mlConfidenceThreshold: 0.5,
+  mlNmsThreshold: 0.45,
+  mlRoiPaddingPixels: 40,
+  mlFallbackToTraditional: true,
+  mlModelName: null,
+  showDetectionBoxes: true
 };
 
 export interface ArucoPipelineSettings extends PipelineSettings {
@@ -272,6 +290,7 @@ export interface ArucoPipelineSettings extends PipelineSettings {
 
   doMultiTarget: boolean;
   doSingleTargetAlways: boolean;
+  multiTagAmbiguityThreshold: number;
 }
 export type ConfigurableArucoPipelineSettings = Partial<Omit<ArucoPipelineSettings, "pipelineType">> &
   ConfigurablePipelineSettings;
@@ -294,7 +313,8 @@ export const DefaultArucoPipelineSettings: ArucoPipelineSettings = {
   aruco3MinMarkerSideRatio: 0.02,
   aruco3MinCanonicalImgSide: 32,
   doMultiTarget: false,
-  doSingleTargetAlways: false
+  doSingleTargetAlways: false,
+  multiTagAmbiguityThreshold: 0.2
 };
 
 export interface ObjectDetectionPipelineSettings extends PipelineSettings {

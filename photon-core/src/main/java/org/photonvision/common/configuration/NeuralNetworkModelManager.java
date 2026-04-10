@@ -171,6 +171,16 @@ public class NeuralNetworkModelManager {
 
         nnProps.addModelProperties(
                 new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "apriltagV4-yolo11.rknn"),
+                        "AprilTag V4",
+                        new LinkedList<String>(List.of("AprilTag")),
+                        640,
+                        640,
+                        Family.RKNN,
+                        Version.YOLOV11));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
                         Path.of(modelsDirectory.getAbsolutePath(), "yolov8nCOCO.tflite"),
                         "COCO",
                         cocoLabels,
@@ -184,6 +194,16 @@ public class NeuralNetworkModelManager {
                         Path.of(modelsDirectory.getAbsolutePath(), "fuelV1-yolo11n.tflite"),
                         "Fuel v11n",
                         new LinkedList<String>(List.of("Fuel")),
+                        640,
+                        640,
+                        Family.RUBIK,
+                        Version.YOLOV11));
+
+        nnProps.addModelProperties(
+                new ModelProperties(
+                        Path.of(modelsDirectory.getAbsolutePath(), "apriltagV4-yolo11.tflite"),
+                        "AprilTag V4",
+                        new LinkedList<String>(List.of("AprilTag")),
                         640,
                         640,
                         Family.RUBIK,
@@ -309,6 +329,54 @@ public class NeuralNetworkModelManager {
         }
 
         return models.get(supportedBackends.get(0)).stream().findFirst();
+    }
+
+    /**
+     * Gets the default AprilTag detection model. Searches for a model with "apriltag" in its nickname
+     * (case-insensitive).
+     *
+     * @return Optional containing the AprilTag model if found
+     */
+    public Optional<Model> getDefaultAprilTagModel() {
+        if (models == null || supportedBackends.isEmpty()) {
+            return Optional.empty();
+        }
+
+        for (Family backend : supportedBackends) {
+            if (models.containsKey(backend)) {
+                Optional<Model> model =
+                        models.get(backend).stream()
+                                .filter(m -> m.getNickname().toLowerCase().contains("apriltag"))
+                                .findFirst();
+                if (model.isPresent()) {
+                    return model;
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Gets a model by its exact nickname.
+     *
+     * @param name The nickname of the model to retrieve
+     * @return Optional containing the model if found
+     */
+    public Optional<Model> getModelByName(String name) {
+        if (models == null || supportedBackends.isEmpty() || name == null) {
+            return Optional.empty();
+        }
+
+        for (Family backend : supportedBackends) {
+            if (models.containsKey(backend)) {
+                Optional<Model> model =
+                        models.get(backend).stream().filter(m -> m.getNickname().equals(name)).findFirst();
+                if (model.isPresent()) {
+                    return model;
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     // Do checking later on, when we create the model object

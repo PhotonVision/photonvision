@@ -88,6 +88,25 @@ const interactiveCols = computed(() =>
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
       "
     />
+    <pv-slider
+      v-if="
+        (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+          currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+        useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
+        useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled &&
+        currentPipelineSettings.doMultiTarget
+      "
+      v-model="currentPipelineSettings.multiTagAmbiguityThreshold"
+      label="Max Allowed Ambiguity"
+      tooltip="Tags with pose ambiguity above this value are excluded from multi-tag estimation. Lower = stricter. 0 = only unambiguous tags. 1 = include all (disabled)."
+      :min="0"
+      :max="1"
+      :step="0.05"
+      :switch-cols="interactiveCols"
+      @update:modelValue="
+        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ multiTagAmbiguityThreshold: value }, false)
+      "
+    />
     <pv-switch
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
