@@ -19,14 +19,14 @@ package org.photonvision.targeting.proto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.proto.Photon.ProtobufPhotonTrackedTarget;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
 import us.hebi.quickbuf.RepeatedMessage;
 
 public class PhotonTrackedTargetProtoTest {

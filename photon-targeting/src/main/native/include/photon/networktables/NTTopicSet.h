@@ -20,14 +20,14 @@
 #include <memory>
 #include <string>
 
-#include <frc/geometry/Transform3d.h>
-#include <networktables/BooleanTopic.h>
-#include <networktables/DoubleArrayTopic.h>
-#include <networktables/DoubleTopic.h>
-#include <networktables/IntegerTopic.h>
-#include <networktables/NetworkTable.h>
-#include <networktables/RawTopic.h>
-#include <networktables/StructTopic.h>
+#include <wpi/math/geometry/Transform3d.hpp>
+#include <wpi/nt/BooleanTopic.hpp>
+#include <wpi/nt/DoubleArrayTopic.hpp>
+#include <wpi/nt/DoubleTopic.hpp>
+#include <wpi/nt/IntegerTopic.hpp>
+#include <wpi/nt/NetworkTable.hpp>
+#include <wpi/nt/RawTopic.hpp>
+#include <wpi/nt/StructTopic.hpp>
 
 namespace photon {
 const std::string PhotonPipelineResult_TYPE_STRING =
@@ -36,35 +36,35 @@ const std::string PhotonPipelineResult_TYPE_STRING =
 
 class NTTopicSet {
  public:
-  std::shared_ptr<nt::NetworkTable> subTable;
-  nt::RawPublisher rawBytesEntry;
+  std::shared_ptr<wpi::nt::NetworkTable> subTable;
+  wpi::nt::RawPublisher rawBytesEntry;
 
-  nt::IntegerPublisher pipelineIndexPublisher;
-  nt::IntegerSubscriber pipelineIndexRequestSub;
+  wpi::nt::IntegerPublisher pipelineIndexPublisher;
+  wpi::nt::IntegerSubscriber pipelineIndexRequestSub;
 
-  nt::BooleanTopic driverModeEntry;
-  nt::BooleanPublisher driverModePublisher;
-  nt::BooleanSubscriber driverModeSubscriber;
+  wpi::nt::BooleanTopic driverModeEntry;
+  wpi::nt::BooleanPublisher driverModePublisher;
+  wpi::nt::BooleanSubscriber driverModeSubscriber;
 
-  nt::DoublePublisher latencyMillisEntry;
-  nt::BooleanPublisher hasTargetEntry;
-  nt::DoublePublisher targetPitchEntry;
-  nt::DoublePublisher targetYawEntry;
-  nt::DoublePublisher targetAreaEntry;
-  nt::StructPublisher<frc::Transform3d> targetPoseEntry;
-  nt::DoublePublisher targetSkewEntry;
+  wpi::nt::DoublePublisher latencyMillisEntry;
+  wpi::nt::BooleanPublisher hasTargetEntry;
+  wpi::nt::DoublePublisher targetPitchEntry;
+  wpi::nt::DoublePublisher targetYawEntry;
+  wpi::nt::DoublePublisher targetAreaEntry;
+  wpi::nt::StructPublisher<wpi::math::Transform3d> targetPoseEntry;
+  wpi::nt::DoublePublisher targetSkewEntry;
 
-  nt::DoublePublisher bestTargetPosX;
-  nt::DoublePublisher bestTargetPosY;
+  wpi::nt::DoublePublisher bestTargetPosX;
+  wpi::nt::DoublePublisher bestTargetPosY;
 
-  nt::IntegerTopic heartbeatTopic;
-  nt::IntegerPublisher heartbeatPublisher;
+  wpi::nt::IntegerTopic heartbeatTopic;
+  wpi::nt::IntegerPublisher heartbeatPublisher;
 
-  nt::DoubleArrayPublisher cameraIntrinsicsPublisher;
-  nt::DoubleArrayPublisher cameraDistortionPublisher;
+  wpi::nt::DoubleArrayPublisher cameraIntrinsicsPublisher;
+  wpi::nt::DoubleArrayPublisher cameraDistortionPublisher;
 
   void UpdateEntries() {
-    nt::PubSubOptions options;
+    wpi::nt::PubSubOptions options;
     options.periodic = 0.01;
     options.sendAll = true;
     rawBytesEntry = subTable->GetRawTopic("rawBytes")
@@ -88,7 +88,8 @@ class NTTopicSet {
     targetAreaEntry = subTable->GetDoubleTopic("targetArea").Publish();
     targetYawEntry = subTable->GetDoubleTopic("targetYaw").Publish();
     targetPoseEntry =
-        subTable->GetStructTopic<frc::Transform3d>("targetPose").Publish();
+        subTable->GetStructTopic<wpi::math::Transform3d>("targetPose")
+            .Publish();
     targetSkewEntry = subTable->GetDoubleTopic("targetSkew").Publish();
 
     bestTargetPosX = subTable->GetDoubleTopic("targetPixelsX").Publish();

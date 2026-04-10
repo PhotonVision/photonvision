@@ -18,9 +18,6 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +28,8 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.util.Units;
 
 public class TestUtils {
     @SuppressWarnings("unused")

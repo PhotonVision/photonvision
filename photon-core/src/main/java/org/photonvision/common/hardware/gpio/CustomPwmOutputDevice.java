@@ -24,14 +24,14 @@ import com.diozero.internal.spi.InternalPwmOutputDeviceInterface;
 public class CustomPwmOutputDevice extends AbstractDevice
         implements InternalPwmOutputDeviceInterface {
     protected final CustomAdapter adapter;
-    protected final int gpio;
+    protected final PinIdentifier gpio;
     private float state;
     private int frequency;
 
     public CustomPwmOutputDevice(
             CustomDeviceFactory deviceFactory,
             String key,
-            int gpio,
+            PinIdentifier gpio,
             int pwmFrequency,
             float initialValue) {
         super(key, deviceFactory);
@@ -45,12 +45,12 @@ public class CustomPwmOutputDevice extends AbstractDevice
 
     @Override
     public int getGpio() {
-        return gpio;
+        return gpio.getDeviceNumber();
     }
 
     @Override
     public int getPwmNum() {
-        return gpio;
+        return gpio.getDeviceNumber();
     }
 
     @Override

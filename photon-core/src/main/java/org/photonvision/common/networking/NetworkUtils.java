@@ -17,7 +17,6 @@
 
 package org.photonvision.common.networking;
 
-import edu.wpi.first.networktables.NetworkTableInstance;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -30,6 +29,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
+import org.wpilib.networktables.NetworkTableInstance;
 
 public class NetworkUtils {
     private static final Logger logger = new Logger(NetworkUtils.class, LogGroup.General);

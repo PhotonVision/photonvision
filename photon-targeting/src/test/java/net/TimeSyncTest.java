@@ -17,8 +17,6 @@
 
 package net;
 
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.TimeSyncServer;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.util.runtime.RuntimeLoader;
 
 public class TimeSyncTest {
     @BeforeAll

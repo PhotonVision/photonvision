@@ -14,11 +14,11 @@
   shimmed: True
   java_decode_shim: PacketUtils.unpackTransform3d
   java_encode_shim: PacketUtils.packTransform3d
-  cpp_type: frc::Transform3d
-  cpp_include: "<frc/geometry/Transform3d.h>"
+  cpp_type: wpi::math::Transform3d
+  cpp_include: "<wpi/math/geometry/Transform3d.h>"
   python_decode_shim: decodeTransform
   python_encode_shim: encodeTransform
-  java_import: edu.wpi.first.math.geometry.Transform3d
+  java_import: org.wpilib.math.geometry.Transform3d
   # shim since we expect fields to at least exist
   fields: []
 

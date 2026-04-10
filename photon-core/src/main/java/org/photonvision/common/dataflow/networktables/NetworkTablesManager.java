@@ -17,18 +17,6 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.LogMessage;
-import edu.wpi.first.networktables.MultiSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableEvent.Kind;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -47,6 +35,18 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.wpilib.networktables.LogMessage;
+import org.wpilib.networktables.MultiSubscriber;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTableEvent.Kind;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StringSubscriber;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.util.Alert;
+import org.wpilib.util.Alert.AlertType;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.camera.CameraServerJNI;
 
 public class NetworkTablesManager {
     private static final Logger logger =
@@ -358,7 +358,7 @@ public class NetworkTablesManager {
         ntInstance.stopClient();
         String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
         logger.debug("Starting NT Client with hostname: " + hostname);
-        ntInstance.startClient4(hostname);
+        ntInstance.startClient(hostname);
         try {
             int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
