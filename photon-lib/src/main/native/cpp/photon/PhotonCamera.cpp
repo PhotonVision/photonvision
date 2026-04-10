@@ -165,8 +165,8 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       disconnectAlert(PHOTON_ALERT_GROUP,
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
-                      wpi::Alert::Level::WARNING),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::WARNING) {
+                      wpi::Alert::Level::MEDIUM),
+      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
   verifyDependencies();
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");

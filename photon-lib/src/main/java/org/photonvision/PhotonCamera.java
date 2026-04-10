@@ -136,10 +136,8 @@ public class PhotonCamera implements AutoCloseable {
         name = cameraName;
         disconnectAlert =
                 new Alert(
-                        PHOTON_ALERT_GROUP,
-                        "PhotonCamera '" + name + "' is disconnected.",
-                        Alert.Level.WARNING);
-        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", Alert.Level.WARNING);
+                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", Alert.Level.MEDIUM);
+        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", Alert.Level.MEDIUM);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();

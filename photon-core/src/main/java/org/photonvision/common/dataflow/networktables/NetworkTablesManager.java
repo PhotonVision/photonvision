@@ -66,9 +66,9 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    private final Alert conflictAlert = new Alert("PhotonAlerts", "", Level.WARNING);
+    private final Alert conflictAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
 
-    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", Level.WARNING);
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
