@@ -64,7 +64,7 @@ static wpi::math::Translation3d TranslationNWUtoEDN(
 
 static wpi::math::Rotation3d RotationNWUtoEDN(
     const wpi::math::Rotation3d& rot) {
-  return NWU_TO_EDN.RotateBy(rot.RotateBy(NWU_TO_EDN)).Inverse();
+  return NWU_TO_EDN.Inverse().RotateBy(rot.RotateBy(NWU_TO_EDN));
 }
 
 static std::vector<cv::Point3f> TranslationToTVec(
@@ -186,7 +186,7 @@ static wpi::math::Translation3d TranslationEDNToNWU(
 
 static wpi::math::Rotation3d RotationEDNToNWU(
     const wpi::math::Rotation3d& rot) {
-  return EDN_TO_NWU.RotateBy(rot.RotateBy(EDN_TO_NWU)).Inverse();
+  return EDN_TO_NWU.Inverse().RotateBy(rot.RotateBy(EDN_TO_NWU));
 }
 
 static wpi::math::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {
