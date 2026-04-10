@@ -26,12 +26,16 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.IntegerArrayPublisher;
+import edu.wpi.first.networktables.IntegerArraySubscriber;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
@@ -61,6 +65,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
+
+    IntegerArrayPublisher rejectTagIdPublisher;
+    IntegerArraySubscriber rejectTagIdSubscriber;
+    BooleanSubscriber overrideCoprocRejectTag;
 
     public AprilTagPipeline() {
         super(PROCESSING_TYPE);
@@ -145,10 +153,24 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
         List<AprilTagDetection> usedDetections = new ArrayList<>();
+        List<TrackedTarget> rejectedTags = new ArrayList<>();
         List<TrackedTarget> targetList = new ArrayList<>();
+
+        logger.log(settings.rejectTagIds.toString(), LogLevel.DEBUG);
 
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
+            if (settings.rejectTagIds.contains(Integer.valueOf(detection.getId()))) {
+                TrackedTarget target =
+                        new TrackedTarget(
+                                detection,
+                                null,
+                                new TargetCalculationParameters(
+                                        false, null, null, null, null, frameStaticProperties));
+                rejectedTags.add(target);
+                continue;
+            }
+
             // TODO this should be in a pipe, not in the top level here (Matt)
             if (detection.getDecisionMargin() < settings.decisionMargin) continue;
             if (detection.getHamming() > settings.hammingDist) continue;
@@ -247,13 +269,22 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                multiTagResult,
+                rejectedTags,
+                frame);
     }
 
     @Override
     public void release() {
         aprilTagDetectionPipe.release();
         singleTagPoseEstimatorPipe.release();
+        rejectTagIdPublisher.close();
+        rejectTagIdSubscriber.close();
+        overrideCoprocRejectTag.close();
         super.release();
     }
 }

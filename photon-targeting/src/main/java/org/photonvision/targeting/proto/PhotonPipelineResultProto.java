@@ -50,6 +50,7 @@ public class PhotonPipelineResultProto
                 msg.getNtPublishTimestampMicros(),
                 msg.getTimeSinceLastPongMicros(),
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
+                PhotonTrackedTarget.proto.unpack(msg.getRejectedTags()),
                 msg.hasMultiTargetResult()
                         ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
                         : Optional.empty());

@@ -225,6 +225,7 @@ class PhotonCameraSim {
   inline void EnabledProcessedStream(double enabled) {
     videoSimProcEnabled = enabled;
   }
+
   PhotonPipelineResult Process(units::second_t latency,
                                const frc::Pose3d& cameraPose,
                                std::vector<VisionTargetSim> targets);
