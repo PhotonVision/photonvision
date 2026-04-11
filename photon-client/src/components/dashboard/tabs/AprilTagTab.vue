@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { PipelineType } from "@/types/PipelineTypes";
+import { PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import type { ActivePipelineSettings } from "@/types/PipelineTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useDisplay } from "vuetify";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
-const currentPipelineSettings = computed<ActivePipelineSettings>(
-  () => useCameraSettingsStore().currentPipelineSettings
+const currentPipelineSettings = computed<AprilTagPipelineSettings>(
+  () => useCameraSettingsStore().currentPipelineSettings as AprilTagPipelineSettings
 );
 const { mdAndDown } = useDisplay();
 const interactiveCols = computed(() =>
@@ -25,7 +24,10 @@ const interactiveCols = computed(() =>
     <pv-select
       v-model="currentPipelineSettings.tagFamily"
       label="Target family"
-      :items="['AprilTag 36h11 (6.5in)', 'AprilTag 16h5 (6in)']"
+      :items="[
+        { value: AprilTagFamily.Family36h11, name: 'AprilTag 36h11 (6.5in)' },
+        { value: AprilTagFamily.Family16h5, name: 'AprilTag 16h5 (6in)' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
     />

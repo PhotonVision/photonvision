@@ -3,7 +3,7 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
-import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 const {
   ArrowHelper,
@@ -20,7 +20,7 @@ const {
   Scene,
   WebGLRenderer
 } = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
@@ -213,14 +213,14 @@ onMounted(async () => {
     renderer.render(scene, camera);
   };
 
-  drawTargets(props.targets);
+  await drawTargets(props.targets);
   animate();
 });
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onWindowResize);
 });
 watchEffect(() => {
-  drawTargets(props.targets);
+  void drawTargets(props.targets);
 });
 </script>
 

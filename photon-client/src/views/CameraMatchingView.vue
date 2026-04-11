@@ -2,14 +2,8 @@
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import {
-  PlaceholderCameraSettings,
-  PVCameraInfo,
-  type PVCSICameraInfo,
-  type PVFileCameraInfo,
-  type PVUsbCameraInfo
-} from "@/types/SettingTypes";
-import { axiosPost, getResolutionString } from "@/lib/PhotonUtils";
+import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
+import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
@@ -18,20 +12,22 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
-const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+const backendHostname = inject<string>("backendHostname");
+const formatUrl = (port: number) => `http://${backendHostname}:${port}/stream.mjpg`;
 
 const activatingModule = ref(false);
-const activateModule = (moduleUniqueName: string) => {
+const activateModule = async (moduleUniqueName: string) => {
   if (activatingModule.value) return;
   activatingModule.value = true;
 
-  axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
+  await axiosPost("/utils/activateMatchedCamera", "activate a matched camera", {
     cameraUniqueName: moduleUniqueName
-  }).finally(() => (activatingModule.value = false));
+  });
+  activatingModule.value = false;
 };
 
 const assigningCamera = ref(false);
-const assignCamera = (cameraInfo: PVCameraInfo) => {
+const assignCamera = async (cameraInfo: PVCameraInfo) => {
   if (assigningCamera.value) return;
   assigningCamera.value = true;
 
@@ -39,32 +35,30 @@ const assignCamera = (cameraInfo: PVCameraInfo) => {
     cameraInfo: cameraInfo
   };
 
-  axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload).finally(
-    () => (assigningCamera.value = false)
-  );
+  await axiosPost("/utils/assignUnmatchedCamera", "assign an unmatched camera", payload);
+  assigningCamera.value = false;
 };
 
 const deactivatingModule = ref(false);
-const deactivateModule = (cameraUniqueName: string) => {
+const deactivateModule = async (cameraUniqueName: string) => {
   if (deactivatingModule.value) return;
   deactivatingModule.value = true;
-  axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName }).finally(
-    () => (deactivatingModule.value = false)
-  );
+  await axiosPost("/utils/unassignCamera", "unassign a camera", { cameraUniqueName: cameraUniqueName });
+  deactivatingModule.value = false;
 };
 
 const confirmDeleteDialog = ref({ show: false, nickname: "", cameraUniqueName: "" });
 const deletingCamera = ref<string | null>(null);
 
-const deleteThisCamera = (cameraUniqueName: string) => {
+const deleteThisCamera = async (cameraUniqueName: string) => {
   if (deletingCamera.value) return;
   deletingCamera.value = cameraUniqueName;
-  axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName }).finally(() => {
-    deletingCamera.value = null;
-  });
+  await axiosPost("/utils/nukeOneCamera", "delete a camera", { cameraUniqueName: cameraUniqueName });
+  deletingCamera.value = null;
 };
 
-const cameraConnected = (uniquePath: string): boolean => {
+const cameraConnected = (uniquePath: string | undefined): boolean => {
+  if (!uniquePath) return false;
   return (
     useStateStore().vsmState.allConnectedCameras.find((it) => cameraInfoFor(it).uniquePath === uniquePath) !== undefined
   );
@@ -103,23 +97,6 @@ const viewingCamera = ref<[PVCameraInfo | null, boolean | null]>([null, null]);
 const setCameraView = (camera: PVCameraInfo | null, isConnected: boolean | null) => {
   viewingDetails.value = camera !== null && isConnected !== null;
   viewingCamera.value = [camera, isConnected];
-};
-
-/**
- * Get the connection-type-specific camera info from the given PVCameraInfo object.
- */
-const cameraInfoFor = (camera: PVCameraInfo | null): PVUsbCameraInfo | PVCSICameraInfo | PVFileCameraInfo | any => {
-  if (!camera) return null;
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
 };
 
 /**

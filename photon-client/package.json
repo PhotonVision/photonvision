@@ -14,8 +14,8 @@
     "format-ci": "prettier --check src/",
     "test": "playwright test",
     "test-ui": "playwright test --ui",
-    "test-setup": "playwright install --with-deps"
-
+    "test-setup": "playwright install --with-deps",
+    "type-check": "vue-tsc"
   },
   "dependencies": {
     "@fontsource/prompt": "^5.2.6",
@@ -37,6 +37,7 @@
     "@types/node": "^22.15.14",
     "@types/three": "^0.178.0",
     "@vitejs/plugin-vue": "^6.0.0",
+    "vue-tsc": "^3.2.5",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.5.0",
     "@vue/tsconfig": "^0.7.0",
