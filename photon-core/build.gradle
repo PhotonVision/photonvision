@@ -6,7 +6,7 @@ ext.licenseFile = file("$rootDir/LICENSE")
 ext.externalLicensesFolder = file("$rootDir/ExternalLicenses")
 apply from: "${rootDir}/shared/common.gradle"
 
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 def nativeConfigName = 'wpilibNatives'
 configurations {
@@ -28,7 +28,7 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("cscore")
     wpilibNatives wpilibTools.deps.wpilib("apriltag")
     wpilibNatives wpilibTools.deps.wpilib("hal")
-    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)
 
     // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'

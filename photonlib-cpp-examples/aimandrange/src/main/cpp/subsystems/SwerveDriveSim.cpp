@@ -60,11 +60,12 @@ SwerveDriveSim::SwerveDriveSim(
           steerFF.GetKs(), steerMotor, steerGearing, kinematics) {}
 
 SwerveDriveSim::SwerveDriveSim(
-    const wpi::math::LinearSystem<2, 1, 2>& drivePlant, wpi::units::volt_t driveKs,
-    const wpi::math::DCMotor& driveMotor, double driveGearing,
-    wpi::units::meter_t driveWheelRadius,
-    const wpi::math::LinearSystem<2, 1, 2>& steerPlant, wpi::units::volt_t steerKs,
-    const wpi::math::DCMotor& steerMotor, double steerGearing,
+    const wpi::math::LinearSystem<2, 1, 2>& drivePlant,
+    wpi::units::volt_t driveKs, const wpi::math::DCMotor& driveMotor,
+    double driveGearing, wpi::units::meter_t driveWheelRadius,
+    const wpi::math::LinearSystem<2, 1, 2>& steerPlant,
+    wpi::units::volt_t steerKs, const wpi::math::DCMotor& steerMotor,
+    double steerGearing,
     const wpi::math::SwerveDriveKinematics<numModules>& kinematics)
     : drivePlant(drivePlant),
       driveKs(driveKs),
@@ -230,7 +231,9 @@ SwerveDriveSim::GetSteerStates() const {
   return steerStates;
 }
 
-wpi::units::radians_per_second_t SwerveDriveSim::GetOmega() const { return omega; }
+wpi::units::radians_per_second_t SwerveDriveSim::GetOmega() const {
+  return omega;
+}
 
 wpi::units::ampere_t SwerveDriveSim::GetCurrentDraw(
     const wpi::math::DCMotor& motor, wpi::units::radians_per_second_t velocity,
@@ -245,8 +248,8 @@ wpi::units::ampere_t SwerveDriveSim::GetCurrentDraw(
   return retVal;
 }
 
-std::array<wpi::units::ampere_t, numModules> SwerveDriveSim::GetDriveCurrentDraw()
-    const {
+std::array<wpi::units::ampere_t, numModules>
+SwerveDriveSim::GetDriveCurrentDraw() const {
   std::array<wpi::units::ampere_t, numModules> currents;
   for (int i = 0; i < numModules; i++) {
     wpi::units::radians_per_second_t speed =
@@ -258,8 +261,8 @@ std::array<wpi::units::ampere_t, numModules> SwerveDriveSim::GetDriveCurrentDraw
   return currents;
 }
 
-std::array<wpi::units::ampere_t, numModules> SwerveDriveSim::GetSteerCurrentDraw()
-    const {
+std::array<wpi::units::ampere_t, numModules>
+SwerveDriveSim::GetSteerCurrentDraw() const {
   std::array<wpi::units::ampere_t, numModules> currents;
   for (int i = 0; i < numModules; i++) {
     wpi::units::radians_per_second_t speed =

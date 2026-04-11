@@ -118,10 +118,7 @@ class PhotonCamera:
         inst.start()
 
         # Usage reporting
-        hal.report(
-            hal.tResourceType.kResourceType_PhotonCamera.value,
-            PhotonCamera.instance_count,
-        )
+        hal.reportUsage("PhotonVision/PhotonCamera", PhotonCamera.instance_count, "")
         PhotonCamera.instance_count += 1
 
     def getAllUnreadResults(self) -> List[PhotonPipelineResult]:

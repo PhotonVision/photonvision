@@ -35,7 +35,8 @@ class SwerveDrive {
  public:
   SwerveDrive();
   void Periodic();
-  void Drive(wpi::units::meters_per_second_t vx, wpi::units::meters_per_second_t vy,
+  void Drive(wpi::units::meters_per_second_t vx,
+             wpi::units::meters_per_second_t vy,
              wpi::units::radians_per_second_t omega);
   void SetChassisSpeeds(const wpi::math::ChassisSpeeds& targetChassisSpeeds,
                         bool openLoop, bool steerInPlace);

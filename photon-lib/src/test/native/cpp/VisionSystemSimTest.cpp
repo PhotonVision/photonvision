@@ -50,13 +50,14 @@ class VisionSystemSimTestWithParamsTest
       public testing::WithParamInterface<wpi::units::degree_t> {};
 class VisionSystemSimTestDistanceParamsTest
     : public VisionSystemSimTest,
-      public testing::WithParamInterface<
-          std::tuple<wpi::units::foot_t, wpi::units::degree_t, wpi::units::foot_t>> {};
+      public testing::WithParamInterface<std::tuple<
+          wpi::units::foot_t, wpi::units::degree_t, wpi::units::foot_t>> {};
 
 TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 2_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
 
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
@@ -110,10 +111,11 @@ TEST_F(VisionSystemSimTest, TestVisibilityCupidShuffle) {
 
   // Now walk it by yourself
   visionSysSim.AdjustCamera(
-      &cameraSim, wpi::math::Transform3d{
-                      wpi::math::Translation3d{},
-                      wpi::math::Rotation3d{
-                          0_deg, 0_deg, wpi::units::radian_t{std::numbers::pi}}});
+      &cameraSim,
+      wpi::math::Transform3d{
+          wpi::math::Translation3d{},
+          wpi::math::Rotation3d{0_deg, 0_deg,
+                                wpi::units::radian_t{std::numbers::pi}}});
   visionSysSim.Update(robotPose);
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
 }
@@ -122,20 +124,22 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
   photon::PhotonCameraSim cameraSim{&camera};
-  visionSysSim.AddCamera(&cameraSim, frc::Transform3d{});
-  cameraSim.prop.SetCalibration(640, 480, frc::Rotation2d{80_deg});
+  visionSysSim.AddCamera(&cameraSim, wpi::math::Transform3d{});
+  cameraSim.prop.SetCalibration(640, 480, wpi::math::Rotation2d{80_deg});
 
   std::vector<photon::VisionTargetSim> targets;
   for (int i = 0; i < 100; i++) {
     targets.emplace_back(
-        frc::Pose3d{
-            frc::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
-            frc::Rotation3d{0_rad, 0_rad, units::radian_t{std::numbers::pi}}},
+        wpi::math::Pose3d{
+            wpi::math::Translation3d{15.98_m + i * 0.1_m, 0_m, 1_m},
+            wpi::math::Rotation3d{0_rad, 0_rad,
+                                  wpi::units::radian_t{std::numbers::pi}}},
         photon::TargetModel{0.5_m, 0.5_m}, i);
   }
   visionSysSim.AddVisionTargets(targets);
 
-  frc::Pose2d robotPose{frc::Translation2d{5_m, 0_m}, frc::Rotation2d{5_deg}};
+  wpi::math::Pose2d robotPose{wpi::math::Translation2d{5_m, 0_m},
+                              wpi::math::Rotation2d{5_deg}};
   visionSysSim.Update(robotPose);
 
   ASSERT_EQ(camera.GetLatestResult().targets.size(), 50u);
@@ -144,7 +148,8 @@ TEST_F(VisionSystemSimTest, TestBunchaTargets) {
 TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 1_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
 
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
@@ -160,10 +165,11 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
   ASSERT_TRUE(camera.GetLatestResult().HasTargets());
 
   visionSysSim.AdjustCamera(
-      &cameraSim, wpi::math::Transform3d{
-                      wpi::math::Translation3d{0_m, 0_m, 5000_m},
-                      wpi::math::Rotation3d{
-                          0_deg, 0_deg, wpi::units::radian_t{std::numbers::pi}}});
+      &cameraSim,
+      wpi::math::Transform3d{
+          wpi::math::Translation3d{0_m, 0_m, 5000_m},
+          wpi::math::Rotation3d{0_deg, 0_deg,
+                                wpi::units::radian_t{std::numbers::pi}}});
   visionSysSim.Update(robotPose);
   ASSERT_FALSE(camera.GetLatestResult().HasTargets());
 }
@@ -171,7 +177,8 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert1) {
 TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 2_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
 
   wpi::math::Transform3d robotToCamera{
       wpi::math::Translation3d{0_m, 0_m, 1_m},
@@ -200,7 +207,8 @@ TEST_F(VisionSystemSimTest, TestNotVisibleVert2) {
 TEST_F(VisionSystemSimTest, TestNotVisibleTargetSize) {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 1_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
 
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
@@ -225,7 +233,8 @@ TEST_F(VisionSystemSimTest, TestNotVisibleTargetSize) {
 TEST_F(VisionSystemSimTest, TestNotVisibleTooFarLeds) {
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{15.98_m, 0_m, 1_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
 
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
@@ -291,10 +300,10 @@ TEST_P(VisionSystemSimTestWithParamsTest, PitchAngles) {
   robotPose = wpi::math::Pose2d{wpi::math::Translation2d{10_m, 0_m},
                                 wpi::math::Rotation2d{-1 * GetParam()}};
   visionSysSim.AdjustCamera(
-      &cameraSim,
-      wpi::math::Transform3d{
-          wpi::math::Translation3d{},
-          wpi::math::Rotation3d{0_rad, wpi::units::degree_t{GetParam()}, 0_rad}});
+      &cameraSim, wpi::math::Transform3d{
+                      wpi::math::Translation3d{},
+                      wpi::math::Rotation3d{
+                          0_rad, wpi::units::degree_t{GetParam()}, 0_rad}});
   visionSysSim.Update(robotPose);
 
   const auto result = camera.GetLatestResult();
@@ -370,13 +379,16 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(VisionSystemSimTest, TestMultipleTargets) {
   wpi::math::Pose3d targetPoseL{
       wpi::math::Translation3d{15.98_m, 2_m, 0_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
   wpi::math::Pose3d targetPoseC{
       wpi::math::Translation3d{15.98_m, 0_m, 0_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
   wpi::math::Pose3d targetPoseR{
       wpi::math::Translation3d{15.98_m, -2_m, 0_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
 
   photon::VisionSystemSim visionSysSim{"Test"};
   photon::PhotonCamera camera{"camera"};
@@ -449,20 +461,20 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
 
   std::vector<wpi::apriltag::AprilTag> tagList;
   tagList.emplace_back(wpi::apriltag::AprilTag{
-      0,
-      wpi::math::Pose3d{12_m, 3_m, 1_m,
-                        wpi::math::Rotation3d{
-                            0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}}});
+      0, wpi::math::Pose3d{
+             12_m, 3_m, 1_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
   tagList.emplace_back(wpi::apriltag::AprilTag{
-      1,
-      wpi::math::Pose3d{12_m, 1_m, -1_m,
-                        wpi::math::Rotation3d{
-                            0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}}});
+      1, wpi::math::Pose3d{
+             12_m, 1_m, -1_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
   tagList.emplace_back(wpi::apriltag::AprilTag{
-      2,
-      wpi::math::Pose3d{11_m, 0_m, 2_m,
-                        wpi::math::Rotation3d{
-                            0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}}});
+      2, wpi::math::Pose3d{
+             11_m, 0_m, 2_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
   wpi::units::meter_t fieldLength{54};
   wpi::units::meter_t fieldWidth{27};
   wpi::apriltag::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
@@ -488,8 +500,9 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
   ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
-  ASSERT_NEAR(wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>(),
-              pose.Rotation().Z().to<double>(), 0.01);
+  ASSERT_NEAR(
+      wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>(),
+      pose.Rotation().Z().to<double>(), 0.01);
 
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{tagList[1].pose, photon::kAprilTag16h5, 1}});
@@ -510,8 +523,9 @@ TEST_F(VisionSystemSimTest, TestPoseEstimation) {
   ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
   ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
-  ASSERT_NEAR(wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>(),
-              pose2.Rotation().Z().to<double>(), 0.01);
+  ASSERT_NEAR(
+      wpi::units::degree_t{5}.convert<wpi::units::radians>().to<double>(),
+      pose2.Rotation().Z().to<double>(), 0.01);
 }
 
 TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
@@ -528,20 +542,20 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
 
   std::vector<wpi::apriltag::AprilTag> tagList;
   tagList.emplace_back(wpi::apriltag::AprilTag{
-      0,
-      wpi::math::Pose3d{12_m, 3_m, 1_m,
-                        wpi::math::Rotation3d{
-                            0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}}});
+      0, wpi::math::Pose3d{
+             12_m, 3_m, 1_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
   tagList.emplace_back(wpi::apriltag::AprilTag{
-      1,
-      wpi::math::Pose3d{12_m, 1_m, -1_m,
-                        wpi::math::Rotation3d{
-                            0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}}});
+      1, wpi::math::Pose3d{
+             12_m, 1_m, -1_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
   tagList.emplace_back(wpi::apriltag::AprilTag{
-      2,
-      wpi::math::Pose3d{11_m, 0_m, 2_m,
-                        wpi::math::Rotation3d{
-                            0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}}});
+      2, wpi::math::Pose3d{
+             11_m, 0_m, 2_m,
+             wpi::math::Rotation3d{0_rad, 0_rad,
+                                   wpi::units::radian_t{std::numbers::pi}}}});
   wpi::units::meter_t fieldLength{54};
   wpi::units::meter_t fieldWidth{27};
   wpi::apriltag::AprilTagFieldLayout layout{tagList, fieldLength, fieldWidth};
@@ -572,8 +586,9 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   ASSERT_NEAR(5, pose.X().to<double>(), 0.01);
   ASSERT_NEAR(1, pose.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose.Z().to<double>(), 0.01);
-  ASSERT_NEAR(wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
-              pose.Rotation().Z().to<double>(), 0.01);
+  ASSERT_NEAR(
+      wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
+      pose.Rotation().Z().to<double>(), 0.01);
 
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{tagList[1].pose, photon::kAprilTag36h11, 1}});
@@ -595,8 +610,9 @@ TEST_F(VisionSystemSimTest, TestPoseEstimationRotated) {
   ASSERT_NEAR(robotPose.X().to<double>(), pose2.X().to<double>(), 0.01);
   ASSERT_NEAR(robotPose.Y().to<double>(), pose2.Y().to<double>(), 0.01);
   ASSERT_NEAR(0, pose2.Z().to<double>(), 0.01);
-  ASSERT_NEAR(wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
-              pose2.Rotation().Z().to<double>(), 0.01);
+  ASSERT_NEAR(
+      wpi::units::degree_t{-5}.convert<wpi::units::radians>().to<double>(),
+      pose2.Rotation().Z().to<double>(), 0.01);
 }
 
 TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
@@ -609,7 +625,8 @@ TEST_F(VisionSystemSimTest, TestTagAmbiguity) {
 
   wpi::math::Pose3d targetPose{
       wpi::math::Translation3d{2_m, 0_m, 0_m},
-      wpi::math::Rotation3d{0_rad, 0_rad, wpi::units::radian_t{std::numbers::pi}}};
+      wpi::math::Rotation3d{0_rad, 0_rad,
+                            wpi::units::radian_t{std::numbers::pi}}};
   visionSysSim.AddVisionTargets(
       {photon::VisionTargetSim{targetPose, photon::kAprilTag36h11, 3}});
 

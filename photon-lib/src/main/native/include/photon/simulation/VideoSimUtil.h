@@ -35,7 +35,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/objdetect.hpp>
 #include <wpi/apriltag/AprilTag.hpp>
-#include <wpi/cs/cscore_cv.hpp>
+#include <wpi/cs/CvSource.hpp>
 #include <wpi/units/length.hpp>
 
 #include "photon/simulation/SimCameraProperties.h"

@@ -36,7 +36,7 @@
 #include "photon/targeting/TargetCorner.h"
 #include <stdint.h>
 #include <vector>
-#include <wpi/math/geometry/Transform3d.h>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 
 namespace photon {

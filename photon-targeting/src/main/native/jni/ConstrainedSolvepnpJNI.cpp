@@ -41,11 +41,12 @@ extern "C" {
  * Signature: (ZI[D[D[D[D[DDD)[D
  */
 JNIEXPORT jdoubleArray JNICALL
-Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization(
-    JNIEnv* env, jclass, jboolean headingFree, jint nTags,
-    jdoubleArray cameraCal, jdoubleArray robot2camera, jdoubleArray xGuess,
-    jdoubleArray field2points, jdoubleArray pointObservations, jdouble gyro_θ,
-    jdouble gyro_error_scale_fac) {
+Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
+  (JNIEnv* env, jclass, jboolean headingFree, jint nTags,
+   jdoubleArray cameraCal, jdoubleArray robot2camera, jdoubleArray xGuess,
+   jdoubleArray field2points, jdoubleArray pointObservations, jdouble gyro_θ,
+   jdouble gyro_error_scale_fac)
+{
   auto cameraCalVec = convertJDoubleArray(env, cameraCal);
   auto robot2cameraVec = convertJDoubleArray(env, robot2camera);
   auto xGuessVec = convertJDoubleArray(env, xGuess);

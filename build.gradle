@@ -4,12 +4,13 @@ plugins {
     id "cpp"
     id "com.diffplug.spotless" version "8.1.0"
     id "org.wpilib.WPILibRepositoriesPlugin" version "2027.0.0"
-    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-2"
-    id 'org.photonvision.tools.WpilibTools' version '2.4.1-photon'
-    id 'com.google.protobuf' version '0.9.3' apply false
+    id 'org.wpilib.NativeUtils' version '2027.4.1' apply false
+    id 'org.wpilib.DeployUtils' version '2027.1.0' apply false
+    id 'org.photonvision.tools.WpilibTools' version '3.0.0-photon'
+    id 'com.google.protobuf' version '0.9.5' apply false
     id 'org.wpilib.GradleJni' version '2027.0.0'
     id "org.ysb33r.doxygen" version "2.0.0" apply false
-    id 'com.gradleup.shadow' version '8.3.4' apply false
+    id 'com.gradleup.shadow' version '9.0.0' apply false
     id "com.github.node-gradle.node" version "7.0.1" apply false
 }
 
@@ -33,16 +34,20 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2027.0.0-alpha-3-203-g0001ddc7e"
+    wpilibVersion = "2027.0.0-alpha-4"
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
+    ejmlVersion = "0.43.1";
+    jacksonVersion = "2.15.2";
+    quickbufVersion = "1.3.3";
+
     javalinVersion = "6.7.0"
     libcameraDriverVersion = "v2026.0.0"
     rknnVersion = "dev-v2026.0.1-1-g89b2888"
     rubikVersion = "dev-v2026.0.1-4-g13d6279"
-    frcYear = "2027_alpha1"
-    mrcalVersion = "dev-v2026.0.0-1-g239d80e";
+    frcYear = "2027_alpha4"
+    mrcalVersion = "v2027.0.1";
 
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
@@ -95,7 +100,7 @@ spotless {
 }
 
 wrapper {
-    gradleVersion = '8.14.3'
+    gradleVersion = '9.2.0'
 }
 
 ext.getCurrentArch = {

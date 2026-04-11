@@ -35,29 +35,7 @@ import org.photonvision.common.logging.Logger;
 public class OsImageData {
     private static final Logger logger = new Logger(OsImageData.class, LogGroup.General);
 
-    private static Path imageVersionFile = Path.of("/opt/photonvision/image-version");
     private static Path imageMetadataFile = Path.of("/opt/photonvision/image-version.json");
-
-    /**
-     * The OS image version string, if available. This is legacy, use {@link ImageMetadata}.
-     * Deprecated for removal in 2027.
-     */
-    @Deprecated public static final Optional<String> IMAGE_VERSION = getImageVersion();
-
-    private static Optional<String> getImageVersion() {
-        if (!imageVersionFile.toFile().exists()) {
-            logger.warn("Photon cannot locate base OS image version at " + imageVersionFile.toString());
-            return Optional.empty();
-        }
-
-        try {
-            return Optional.of(Files.readString(imageVersionFile).strip());
-        } catch (IOException e) {
-            logger.error("Couldn't read image-version file", e);
-        }
-
-        return Optional.empty();
-    }
 
     public static final Optional<ImageMetadata> IMAGE_METADATA = getImageMetadata();
 

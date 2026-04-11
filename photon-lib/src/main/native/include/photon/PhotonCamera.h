@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include <wpi/driverstation/Alert.hpp>
 #include <wpi/nt/BooleanTopic.hpp>
 #include <wpi/nt/DoubleArrayTopic.hpp>
 #include <wpi/nt/DoubleTopic.hpp>
@@ -38,7 +39,6 @@
 #include <wpi/nt/RawTopic.hpp>
 #include <wpi/nt/StringTopic.hpp>
 #include <wpi/units/time.hpp>
-#include <wpi/util/Alert.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
@@ -204,7 +204,9 @@ class PhotonCamera {
    */
   static void SetVersionCheckEnabled(bool enabled);
 
-  std::shared_ptr<wpi::nt::NetworkTable> GetCameraTable() const { return rootTable; }
+  std::shared_ptr<wpi::nt::NetworkTable> GetCameraTable() const {
+    return rootTable;
+  }
 
   // For use in tests
   bool test = false;

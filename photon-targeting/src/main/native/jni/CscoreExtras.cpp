@@ -18,10 +18,11 @@
 #include <string>
 
 #include <opencv2/core/mat.hpp>
+#include <wpi/util/RawFrame.hpp>
 #include <wpi/util/jni_util.hpp>
 
 #include "org_photonvision_jni_CscoreExtras.h"
-#include "wpi/cs/cscore_raw.h"
+#include "wpi/cs/cscore_raw.hpp"
 
 // from wpilib, licensed under the wpilib BSD license
 using namespace wpi::util::java;

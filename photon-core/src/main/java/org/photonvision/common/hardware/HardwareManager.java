@@ -36,7 +36,6 @@ import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.common.util.TimedTaskManager;
 import org.wpilib.networktables.IntegerPublisher;
 import org.wpilib.networktables.IntegerSubscriber;
 
