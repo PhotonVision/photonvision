@@ -106,6 +106,7 @@ const saveGeneralSettings = async () => {
 
     // Update the local settings cause the backend checked their validity. Assign is to deref value
     useSettingsStore().network = { ...useSettingsStore().network, ...Object.assign({}, tempSettingsStruct.value) };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     resetTempSettingsStruct();
     if (error.response) {
@@ -150,14 +151,16 @@ const saveGeneralSettings = async () => {
   }
 };
 
-const currentNetworkInterfaceIndex = computed<number | undefined>({
+const currentNetworkInterfaceIndex = computed<number | string>({
   get: () => {
     const index = useSettingsStore().networkInterfaceNames.indexOf(
       useSettingsStore().network.networkManagerIface || ""
     );
-    return index === -1 ? undefined : index;
+    return index === -1 ? "" : index;
   },
-  set: (v) => v && (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+  set: (v) =>
+    typeof v === "number" &&
+    (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
 });
 
 watchEffect(() => {

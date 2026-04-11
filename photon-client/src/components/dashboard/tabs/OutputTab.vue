@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { type ActivePipelineSettings, PipelineType, RobotOffsetPointMode } from "@/types/PipelineTypes";
+import {
+  type ActivePipelineSettings,
+  PipelineType,
+  RobotOffsetPointMode,
+  ContourTargetOrientation,
+  ContourTargetOffsetPointEdge
+} from "@/types/PipelineTypes";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
@@ -108,7 +114,13 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOffsetPointEdge"
       label="Target Offset Point"
       tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
-      :items="['Center', 'Top', 'Bottom', 'Left', 'Right']"
+      :items="[
+        { value: ContourTargetOffsetPointEdge.Center, name: 'Center' },
+        { value: ContourTargetOffsetPointEdge.Top, name: 'Top' },
+        { value: ContourTargetOffsetPointEdge.Bottom, name: 'Bottom' },
+        { value: ContourTargetOffsetPointEdge.Left, name: 'Left' },
+        { value: ContourTargetOffsetPointEdge.Right, name: 'Right' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
@@ -119,7 +131,10 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.contourTargetOrientation"
       label="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
-      :items="['Portrait', 'Landscape']"
+      :items="[
+        { value: ContourTargetOrientation.Portrait, name: 'Portrait' },
+        { value: ContourTargetOrientation.Landscape, name: 'Landscape' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
@@ -129,7 +144,11 @@ const interactiveCols = computed(() =>
       v-model="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode"
       label="Robot Offset Mode"
       tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
-      :items="['None', 'Single Point', 'Dual Point']"
+      :items="[
+        { value: RobotOffsetPointMode.None, name: 'None' },
+        { value: RobotOffsetPointMode.Single, name: 'Single Point' },
+        { value: RobotOffsetPointMode.Dual, name: 'Dual Point' }
+      ]"
       :select-cols="interactiveCols"
       @update:modelValue="
         (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)

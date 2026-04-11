@@ -31,7 +31,8 @@ interface StateStore {
   currentCameraUniqueName: string;
   networkUsageHistory: NetworkUsageEntry[];
 
-  backendResults: Record<number, PipelineResult>;
+  // Key is a string, although often used as an index, because we need to reference using the camera unique name at times.
+  backendResults: Record<string, PipelineResult>;
   multitagResultBuffer: Record<string, MultitagResult[]>;
 
   colorPickingMode: boolean;
