@@ -58,10 +58,11 @@ inline constexpr wpi::units::meter_t kTrackLength{18.5_in};
 inline constexpr wpi::units::meter_t kRobotWidth{25_in + 3.25_in * 2};
 inline constexpr wpi::units::meter_t kRobotLength{25_in + 3.25_in * 2};
 inline constexpr wpi::units::meters_per_second_t kMaxLinearSpeed{15.5_fps};
-inline constexpr wpi::units::radians_per_second_t kMaxAngularSpeed{720_deg_per_s};
+inline constexpr wpi::units::radians_per_second_t kMaxAngularSpeed{
+    720_deg_per_s};
 inline constexpr wpi::units::meter_t kWheelDiameter{4_in};
 inline constexpr wpi::units::meter_t kWheelCircumference{kWheelDiameter *
-                                                    std::numbers::pi};
+                                                         std::numbers::pi};
 
 inline constexpr double kDriveGearRatio = 6.75;
 inline constexpr double kSteerGearRatio = 12.8;
@@ -101,8 +102,8 @@ struct ModuleConstants {
 
   ModuleConstants(int moduleNum, int driveMotorId, int driveEncoderA,
                   int driveEncoderB, int steerMotorId, int steerEncoderA,
-                  int steerEncoderB, double angleOffset, wpi::units::meter_t xOffset,
-                  wpi::units::meter_t yOffset)
+                  int steerEncoderB, double angleOffset,
+                  wpi::units::meter_t xOffset, wpi::units::meter_t yOffset)
       : moduleNum(moduleNum),
         driveMotorId(driveMotorId),
         driveEncoderA(driveEncoderA),

@@ -33,8 +33,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
-#include <wpi/deprecated.h>
-#include <wpi/hal/UsageReporting.h>
+#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/math/geometry/Pose3d.hpp>
 #include <wpi/math/geometry/Rotation3d.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
@@ -42,6 +41,7 @@
 #include <wpi/units/angle.hpp>
 #include <wpi/units/math.hpp>
 #include <wpi/units/time.hpp>
+#include <wpi/util/deprecated.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -74,8 +74,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(
       poseCacheTimestamp(-1_s),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-  HAL_Report(HALUsageReporting::kResourceType_PhotonPoseEstimator,
-             InstanceCount);
+  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
   InstanceCount++;
 }
 
@@ -187,10 +186,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       }
       break;
     case CONSTRAINED_SOLVEPNP: {
-      using namespace frc;
-
       if (!cameraMatrixData || !cameraDistCoeffs) {
-        WPILib_ReportError(
+        WPILIB_ReportError(
             wpi::warn::Warning,
             "No camera calibration data provided for Constrained SolvePnP!");
         ret = Update(result, this->multiTagFallbackStrategy);
@@ -255,7 +252,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 bool ShouldEstimate(const PhotonPipelineResult& result) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
-    WPILib_ReportError(wpi::warn::Warning,
+    WPILIB_ReportError(wpi::warn::Warning,
                        "Result timestamp was reported in the past!");
     return false;
   }
@@ -624,7 +621,7 @@ PhotonPoseEstimator::EstimateAverageBestTargetsPose(
            pair : tempPoses) {
     double const weight = (1. / pair.second.first) / totalAmbiguity;
     transform = transform + pair.first.Translation() * weight;
-    rotation = rotation + pair.first.Rotation() * weight;
+    rotation = rotation.RotateBy(pair.first.Rotation() * weight);
   }
 
   return EstimatedRobotPose{wpi::math::Pose3d(transform, rotation),
@@ -661,7 +658,6 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
           cameraMatrix, distCoeffs, targets, m_robotToCamera, seedPose,
           aprilTags, photon::kAprilTag36h11, headingFree,
           wpi::math::Rotation2d{
-
               headingBuffer.Sample(cameraResult.GetTimestamp()).value()},
           headingScaleFactor);
 

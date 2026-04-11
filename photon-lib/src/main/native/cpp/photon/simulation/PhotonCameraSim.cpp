@@ -51,7 +51,7 @@ PhotonCameraSim::PhotonCameraSim(
   videoSimRaw =
       wpi::CameraServer::PutVideo(std::string{camera->GetCameraName()} + "-raw",
                                   prop.GetResWidth(), prop.GetResHeight());
-  videoSimRaw.SetPixelFormat(wpi::cs::VideoMode::PixelFormat::kGray);
+  videoSimRaw.SetPixelFormat(wpi::util::PixelFormat::kGray);
   videoSimProcessed = wpi::CameraServer::PutVideo(
       std::string{camera->GetCameraName()} + "-processed", prop.GetResWidth(),
       prop.GetResHeight());
@@ -89,14 +89,16 @@ bool PhotonCameraSim::CanSeeCorner(const std::vector<cv::Point2f>& points) {
   return true;
 }
 std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
-  uint64_t now = wpi::util::Now();
-  uint64_t timestamp{};
+  int64_t now = wpi::nt::Now();
+  int64_t timestamp{};
+  bool hasTimestamp = false;
   int iter = 0;
   while (now >= nextNTEntryTime) {
     timestamp = nextNTEntryTime;
-    uint64_t frameTime = prop.EstSecUntilNextFrame()
-                             .convert<wpi::units::microseconds>()
-                             .to<uint64_t>();
+    hasTimestamp = true;
+    int64_t frameTime = prop.EstSecUntilNextFrame()
+                            .convert<wpi::units::microseconds>()
+                            .to<int64_t>();
     nextNTEntryTime += frameTime;
 
     if (iter++ > 50) {
@@ -106,8 +108,8 @@ std::optional<uint64_t> PhotonCameraSim::ConsumeNextEntryTime() {
     }
   }
 
-  if (timestamp != 0) {
-    return timestamp;
+  if (hasTimestamp) {
+    return static_cast<uint64_t>(timestamp);
   } else {
     return std::nullopt;
   }
@@ -363,7 +365,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
       detectableTgts, multiTagResults};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
-  SubmitProcessedFrame(result, wpi::util::Now());
+  SubmitProcessedFrame(result, wpi::nt::Now());
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result,
                                            uint64_t ReceiveTimestamp) {

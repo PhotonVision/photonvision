@@ -1,6 +1,11 @@
+import org.wpilib.deployutils.deploy.artifact.*
+import org.wpilib.deployutils.deploy.target.RemoteTarget
+import org.wpilib.deployutils.deploy.target.location.SshDeployLocation
+
 apply plugin: "com.github.node-gradle.node"
 apply plugin: 'com.gradleup.shadow'
 apply plugin: "application"
+apply plugin: 'org.wpilib.DeployUtils'
 
 apply from: "${rootDir}/shared/common.gradle"
 
@@ -75,9 +80,6 @@ run {
     }
 }
 
-import org.wpilib.deployutils.deploy.artifact.*
-import org.wpilib.deployutils.deploy.target.RemoteTarget
-import org.wpilib.deployutils.deploy.target.location.SshDeployLocation
 deploy {
     targets {
         pi(RemoteTarget) {

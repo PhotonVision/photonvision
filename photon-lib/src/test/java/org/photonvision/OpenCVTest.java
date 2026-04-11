@@ -102,7 +102,7 @@ public class OpenCVTest {
         var rvec = OpenCVHelp.rotationToRvec(rot);
         var result = OpenCVHelp.rvecToRotation(rvec);
         rvec.release();
-        var diff = result.minus(rot);
+        var diff = result.relativeTo(rot);
         assertSame(new Rotation3d(), diff);
     }
 

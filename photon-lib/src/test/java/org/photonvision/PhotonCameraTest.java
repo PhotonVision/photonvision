@@ -34,6 +34,7 @@ import static org.photonvision.UnitTestUtils.waitForSequenceNumber;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
@@ -56,6 +57,7 @@ import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.NetworkTablesJNI;
+import org.wpilib.simulation.AlertSim;
 import org.wpilib.simulation.SimHooks;
 import org.wpilib.smartdashboard.SmartDashboard;
 import org.wpilib.system.DataLogManager;
@@ -322,13 +324,16 @@ class PhotonCameraTest {
             // WHEN we update the camera
             camera.getAllUnreadResults();
 
-            // AND we tick SmartDashboard
-            SmartDashboard.updateValues();
+            // TODO: change to getActive once that exists
+            String[] alertsText =
+                    Arrays.stream(AlertSim.getAll())
+                            .filter(it -> it.isActive())
+                            .map(it -> it.text)
+                            .toArray(String[]::new);
 
             // The alert state will be set (hard-coded here)
             assertTrue(
-                    Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
-                            .anyMatch(it -> it.equals(disconnectedCameraString)));
+                    Arrays.stream(alertsText).anyMatch(it -> Objects.equals(it, disconnectedCameraString)));
 
             Thread.sleep(20);
         }
@@ -351,16 +356,18 @@ class PhotonCameraTest {
                 // WHEN we update the camera
                 camera.getAllUnreadResults();
 
-                // AND we tick SmartDashboard
-                SmartDashboard.updateValues();
+                // TODO: change to getActive once that exists
+                String[] alertsText =
+                        Arrays.stream(AlertSim.getAll())
+                                .filter(it -> it.isActive())
+                                .map(it -> it.text)
+                                .toArray(String[]::new);
 
                 // THEN the camera isn't disconnected
-                assertTrue(
-                        Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
-                                .noneMatch(it -> it.equals(disconnectedCameraString)));
+                assertTrue(Arrays.stream(alertsText).noneMatch(it -> it.equals(disconnectedCameraString)));
                 // AND the alert string looks like a timesync warning
                 assertTrue(
-                        Arrays.stream(SmartDashboard.getStringArray("PhotonAlerts/warnings", new String[0]))
+                        Arrays.stream(alertsText)
                                         .filter(it -> it.contains("is not connected to the TimeSyncServer"))
                                         .count()
                                 == 1);

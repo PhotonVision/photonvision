@@ -34,7 +34,7 @@ import org.photonvision.utils.PacketUtils;
 import org.photonvision.targeting.*;
 
 // WPILib imports (if any)
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.util.struct.Struct;
 import org.wpilib.math.geometry.Transform3d;
 
 /**

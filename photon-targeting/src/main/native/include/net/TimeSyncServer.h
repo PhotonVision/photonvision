@@ -45,8 +45,8 @@ class TimeSyncServer {
   std::thread m_listener;
 
  private:
-  void UdpCallback(wpi::net::uv::Buffer& buf, size_t nbytes, const sockaddr& sender,
-                   unsigned flags);
+  void UdpCallback(wpi::net::uv::Buffer& buf, size_t nbytes,
+                   const sockaddr& sender, unsigned flags);
 
  public:
   explicit TimeSyncServer(int port = 5810);

@@ -85,15 +85,15 @@ public class NTTopicSet {
                         .publish(
                                 PhotonPipelineResult.photonStruct.getTypeString(),
                                 PubSubOption.periodic(0.01),
-                                PubSubOption.sendAll(true),
-                                PubSubOption.keepDuplicates(true));
+                                PubSubOption.SEND_ALL,
+                                PubSubOption.KEEP_DUPLICATES);
 
         resultPublisher =
                 new PacketPublisher<PhotonPipelineResult>(rawBytesEntry, PhotonPipelineResult.photonStruct);
         protoResultPublisher =
                 subTable
                         .getProtobufTopic("result_proto", PhotonPipelineResult.proto)
-                        .publish(PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
+                        .publish(PubSubOption.periodic(0.01), PubSubOption.SEND_ALL);
 
         pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
         pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);

@@ -25,7 +25,7 @@
 #include <Eigen/LU>
 #include <fmt/core.h>
 #include <wpi/math/fmt/Eigen.hpp>
-#include <wpi/util/timestamp.h>
+#include <wpi/util/timestamp.hpp>
 
 #include "../generate/constrained_solvepnp_10_tags_fixed.h"
 #include "../generate/constrained_solvepnp_10_tags_free.h"
@@ -47,6 +47,7 @@
 #include "../generate/constrained_solvepnp_8_tags_free.h"
 #include "../generate/constrained_solvepnp_9_tags_fixed.h"
 #include "../generate/constrained_solvepnp_9_tags_free.h"
+#include "wpi/nt/ntcore_cpp.hpp"
 
 constexpr bool VERBOSE = false;
 
@@ -225,7 +226,7 @@ constrained_solvepnp::do_optimization(
   constexpr double ERROR_TOL = 1e-4;
 
   for (int iter = 0; iter < 100; iter++) {
-    auto iter_start = wpi::util::Now();
+    auto iter_start = wpi::nt::Now();
 
     // Check for diverging iterates
     if (x.template lpNorm<Eigen::Infinity>() > 1e20 || !x.allFinite()) {
@@ -343,7 +344,7 @@ constrained_solvepnp::do_optimization(
       }
     }
 
-    auto iter_end = wpi::util::Now();
+    auto iter_end = wpi::nt::Now();
     if constexpr (VERBOSE) {
       fmt::println(
           "{}: {} uS, ‖∇J‖={}, α={} ({} refinement steps), {} regularization "

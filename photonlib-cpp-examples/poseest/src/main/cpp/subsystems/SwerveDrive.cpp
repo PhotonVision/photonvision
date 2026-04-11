@@ -81,7 +81,8 @@ void SwerveDrive::SetModuleStates(
 void SwerveDrive::Stop() { Drive(0_mps, 0_mps, 0_rad_per_s); }
 
 void SwerveDrive::AddVisionMeasurement(
-    const wpi::math::Pose2d& visionMeasurement, wpi::units::second_t timestamp) {
+    const wpi::math::Pose2d& visionMeasurement,
+    wpi::units::second_t timestamp) {
   poseEstimator.AddVisionMeasurement(visionMeasurement, timestamp);
 }
 
@@ -163,7 +164,8 @@ void SwerveDrive::Log() {
   wpi::SmartDashboard::PutNumber(table + "VY", chassisSpeeds.vy.to<double>());
   wpi::SmartDashboard::PutNumber(
       table + "Omega Degrees",
-      chassisSpeeds.omega.convert<wpi::units::degrees_per_second>().to<double>());
+      chassisSpeeds.omega.convert<wpi::units::degrees_per_second>()
+          .to<double>());
   wpi::SmartDashboard::PutNumber(table + "Target VX",
                                  targetChassisSpeeds.vx.to<double>());
   wpi::SmartDashboard::PutNumber(table + "Target VY",
@@ -219,4 +221,6 @@ wpi::math::Pose2d SwerveDrive::GetSimPose() const {
   return swerveDriveSim.GetPose();
 }
 
-wpi::units::ampere_t SwerveDrive::GetCurrentDraw() const { return totalCurrentDraw; }
+wpi::units::ampere_t SwerveDrive::GetCurrentDraw() const {
+  return totalCurrentDraw;
+}

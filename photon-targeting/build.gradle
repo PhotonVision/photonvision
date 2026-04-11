@@ -169,7 +169,7 @@ cppHeadersZip {
 }
 
 // setup wpilib bundled native libs
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 def nativeConfigName = 'wpilibNatives'
 def nativeConfig = configurations.create(nativeConfigName)
@@ -187,5 +187,5 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")

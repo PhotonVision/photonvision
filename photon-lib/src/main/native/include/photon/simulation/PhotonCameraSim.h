@@ -88,7 +88,8 @@ class PhotonCameraSim {
    * separate from this.
    */
   PhotonCameraSim(PhotonCamera* camera, const SimCameraProperties& props,
-                  double minTargetAreaPercent, wpi::units::meter_t maxSightRange);
+                  double minTargetAreaPercent,
+                  wpi::units::meter_t maxSightRange);
 
   /**
    * Returns the camera being simulated.
@@ -183,7 +184,9 @@ class PhotonCameraSim {
    *
    * @param rangeMeters The distance
    */
-  inline void SetMaxSightRange(wpi::units::meter_t range) { maxSightRange = range; }
+  inline void SetMaxSightRange(wpi::units::meter_t range) {
+    maxSightRange = range;
+  }
 
   /**
    * Sets whether the raw video stream simulation is enabled.
@@ -242,7 +245,7 @@ class PhotonCameraSim {
   NTTopicSet ts{};
   int64_t heartbeatCounter{0};
 
-  uint64_t nextNTEntryTime{wpi::util::Now()};
+  int64_t nextNTEntryTime{wpi::nt::Now()};
 
   wpi::units::meter_t maxSightRange{std::numeric_limits<double>::max()};
   static constexpr double kDefaultMinAreaPx{100};

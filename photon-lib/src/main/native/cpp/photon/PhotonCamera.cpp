@@ -29,15 +29,16 @@
 #include <string_view>
 #include <vector>
 
-#include <wpi/hal/UsageReporting.h>
 #include <net/TimeSyncServer.h>
 #include <opencv2/core.hpp>
 #include <opencv2/core/utility.hpp>
+#include <wpi/hal/UsageReporting.hpp>
 #include <wpi/system/Errors.hpp>
 #include <wpi/system/RobotController.hpp>
 #include <wpi/system/Timer.hpp>
 #include <wpi/system/WPILibVersion.hpp>
 #include <wpi/util/json.hpp>
+#include <wpi/util/string.hpp>
 
 #include "PhotonVersion.h"
 #include "photon/dataflow/structures/Packet.h"
@@ -164,8 +165,8 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       disconnectAlert(PHOTON_ALERT_GROUP,
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
-                      wpi::Alert::AlertType::kWarning),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::AlertType::kWarning) {
+                      wpi::Alert::Level::MEDIUM),
+      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
   verifyDependencies();
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");

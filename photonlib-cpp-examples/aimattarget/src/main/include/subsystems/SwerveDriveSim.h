@@ -44,11 +44,12 @@ class SwerveDriveSim {
       const wpi::math::DCMotor& steerMotor, double steerGearing,
       const wpi::math::SwerveDriveKinematics<numModules>& kinematics);
   SwerveDriveSim(
-      const wpi::math::LinearSystem<2, 1, 2>& drivePlant, wpi::units::volt_t driveKs,
-      const wpi::math::DCMotor& driveMotor, double driveGearing,
-      wpi::units::meter_t driveWheelRadius,
-      const wpi::math::LinearSystem<2, 1, 2>& steerPlant, wpi::units::volt_t steerKs,
-      const wpi::math::DCMotor& steerMotor, double steerGearing,
+      const wpi::math::LinearSystem<2, 1, 2>& drivePlant,
+      wpi::units::volt_t driveKs, const wpi::math::DCMotor& driveMotor,
+      double driveGearing, wpi::units::meter_t driveWheelRadius,
+      const wpi::math::LinearSystem<2, 1, 2>& steerPlant,
+      wpi::units::volt_t steerKs, const wpi::math::DCMotor& steerMotor,
+      double steerGearing,
       const wpi::math::SwerveDriveKinematics<numModules>& kinematics);
   void SetDriveInputs(const std::array<wpi::units::volt_t, numModules>& inputs);
   void SetSteerInputs(const std::array<wpi::units::volt_t, numModules>& inputs);
@@ -75,9 +76,9 @@ class SwerveDriveSim {
   std::array<Eigen::Matrix<double, 2, 1>, numModules> GetSteerStates() const;
   wpi::units::radians_per_second_t GetOmega() const;
   wpi::units::ampere_t GetCurrentDraw(const wpi::math::DCMotor& motor,
-                                 wpi::units::radians_per_second_t velocity,
-                                 wpi::units::volt_t inputVolts,
-                                 wpi::units::volt_t batteryVolts) const;
+                                      wpi::units::radians_per_second_t velocity,
+                                      wpi::units::volt_t inputVolts,
+                                      wpi::units::volt_t batteryVolts) const;
   std::array<wpi::units::ampere_t, numModules> GetDriveCurrentDraw() const;
   std::array<wpi::units::ampere_t, numModules> GetSteerCurrentDraw() const;
   wpi::units::ampere_t GetTotalCurrentDraw() const;

@@ -209,7 +209,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         camToTag =
                                 new Transform3d(
                                         camToTag.getTranslation(),
-                                        new Rotation3d(0, Math.PI, 0).plus(camToTag.getRotation()));
+                                        new Rotation3d(0, Math.PI, 0).rotateBy(camToTag.getRotation()));
                         tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                     }
                 }

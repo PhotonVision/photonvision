@@ -290,8 +290,8 @@ class SimCameraProperties {
   }
 
   wpi::math::Rotation2d GetDiagFOV() const {
-    return wpi::math::Rotation2d{
-        wpi::units::math::hypot(GetHorizFOV().Radians(), GetVertFOV().Radians())};
+    return wpi::math::Rotation2d{wpi::units::math::hypot(
+        GetHorizFOV().Radians(), GetVertFOV().Radians())};
   }
 
   /**
@@ -353,8 +353,8 @@ class SimCameraProperties {
    * @return The latency estimate
    */
   wpi::units::second_t EstLatency() {
-    return wpi::units::math::max(avgLatency + gaussian(generator) * latencyStdDev,
-                            0_s);
+    return wpi::units::math::max(
+        avgLatency + gaussian(generator) * latencyStdDev, 0_s);
   }
 
   /**

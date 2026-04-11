@@ -64,7 +64,7 @@ static wpi::math::Translation3d TranslationNWUtoEDN(
 
 static wpi::math::Rotation3d RotationNWUtoEDN(
     const wpi::math::Rotation3d& rot) {
-  return -NWU_TO_EDN + (rot + NWU_TO_EDN);
+  return NWU_TO_EDN.Inverse().RotateBy(rot.RotateBy(NWU_TO_EDN));
 }
 
 static std::vector<cv::Point3f> TranslationToTVec(
@@ -186,7 +186,7 @@ static wpi::math::Translation3d TranslationEDNToNWU(
 
 static wpi::math::Rotation3d RotationEDNToNWU(
     const wpi::math::Rotation3d& rot) {
-  return -EDN_TO_NWU + (rot + EDN_TO_NWU);
+  return EDN_TO_NWU.Inverse().RotateBy(rot.RotateBy(EDN_TO_NWU));
 }
 
 static wpi::math::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {
@@ -194,9 +194,9 @@ static wpi::math::Translation3d TVecToTranslation(const cv::Mat& tvecInput) {
   cv::Mat wrapped{tvecInput.rows, tvecInput.cols, CV_32F};
   tvecInput.convertTo(wrapped, CV_32F);
   data = wrapped.at<cv::Vec3f>(cv::Point{0, 0});
-  return TranslationEDNToNWU(wpi::math::Translation3d{wpi::units::meter_t{data[0]},
-                                                      wpi::units::meter_t{data[1]},
-                                                      wpi::units::meter_t{data[2]}});
+  return TranslationEDNToNWU(wpi::math::Translation3d{
+      wpi::units::meter_t{data[0]}, wpi::units::meter_t{data[1]},
+      wpi::units::meter_t{data[2]}});
 }
 
 static wpi::math::Rotation3d RVecToRotation(const cv::Mat& rvecInput) {
