@@ -3,7 +3,7 @@ import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-vis
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
@@ -13,28 +13,28 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat as VideoFormat });
+const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
-const removeCalibration = (vf: VideoFormat) => {
-  axiosPost("/calibration/remove", "delete a camera calibration", {
+const removeCalibration = async (vf: VideoFormat) => {
+  await axiosPost("/calibration/remove", "delete a camera calibration", {
     cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
     width: vf.resolution.width,
     height: vf.resolution.height
   });
 };
 
-const exportCalibration = ref();
+const exportCalibration = useTemplateRef("exportCalibration");
 const openExportCalibrationPrompt = () => {
-  exportCalibration.value.click();
+  exportCalibration.value?.click();
 };
 
-const importCalibrationFromPhotonJson = ref();
+const importCalibrationFromPhotonJson = useTemplateRef("importCalibrationFromPhotonJson");
 const openUploadPhotonCalibJsonPrompt = () => {
-  importCalibrationFromPhotonJson.value.click();
+  importCalibrationFromPhotonJson.value?.click();
 };
 const importCalibration = async () => {
-  const files = importCalibrationFromPhotonJson.value.files;
-  if (files.length === 0) return;
+  const files = importCalibrationFromPhotonJson.value?.files;
+  if (!files?.length) return;
   const uploadedJson = files[0];
 
   const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);

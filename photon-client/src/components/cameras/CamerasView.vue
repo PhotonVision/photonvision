@@ -6,6 +6,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
+import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 
 const theme = useTheme();
 
@@ -15,7 +16,7 @@ const driverMode = computed<boolean>({
   get: () => useCameraSettingsStore().isDriverMode,
   set: (v) =>
     useCameraSettingsStore().changeCurrentPipelineIndex(
-      v ? -1 : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
+      v ? WebsocketPipelineType.DriverMode : useCameraSettingsStore().currentCameraSettings.lastPipelineIndex || 0,
       true
     )
 });
