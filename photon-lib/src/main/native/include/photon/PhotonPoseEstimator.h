@@ -98,91 +98,12 @@ class PhotonPoseEstimator {
                                wpi::math::Transform3d robotToCamera);
 
   /**
-   * Create a new PhotonPoseEstimator.
-   *
-   * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
-   * respect to the FIRST field.
-   * @param strategy The strategy it should use to determine the best pose.
-   * @param robotToCamera Transform3d from the center of the robot to the camera
-   * mount positions (ie, robot ➔ camera).
-   * @deprecated Use individual estimation methods with the 2 argument
-   * constructor instead.
-   */
-  [[deprecated(
-      "Use individual estimation methods with the 2 argument constructor "
-      "instead.")]]
-  explicit PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout aprilTags,
-                               PoseStrategy strategy,
-                               wpi::math::Transform3d robotToCamera);
-
-  /**
    * Get the AprilTagFieldLayout being used by the PositionEstimator.
    *
    * @return the AprilTagFieldLayout
    */
   wpi::apriltag::AprilTagFieldLayout GetFieldLayout() const {
     return aprilTags;
-  }
-
-  /**
-   * Get the Position Estimation Strategy being used by the Position Estimator.
-   *
-   * @return the strategy
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  PoseStrategy GetPoseStrategy() const {
-    return strategy;
-  }
-
-  /**
-   * Set the Position Estimation Strategy used by the Position Estimator.
-   *
-   * @param strategy the strategy to set
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  inline void SetPoseStrategy(PoseStrategy strat) {
-    if (strategy != strat) {
-      InvalidatePoseCache();
-    }
-    strategy = strat;
-  }
-
-  /**
-   * Set the Position Estimation Strategy used in multi-tag mode when
-   * only one tag can be seen. Must NOT be MULTI_TAG_PNP
-   *
-   * @param strategy the strategy to set
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
-
-  /**
-   * Return the reference position that is being used by the estimator.
-   *
-   * @return the referencePose
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  wpi::math::Pose3d GetReferencePose() const {
-    return referencePose;
-  }
-
-  /**
-   * Update the stored reference pose for use when using the
-   * CLOSEST_TO_REFERENCE_POSE strategy.
-   *
-   * @param referencePose the referencePose to set
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  inline void SetReferencePose(wpi::math::Pose3d referencePose) {
-    if (this->referencePose != referencePose) {
-      InvalidatePoseCache();
-    }
-    this->referencePose = referencePose;
   }
 
   /**
@@ -201,18 +122,6 @@ class PhotonPoseEstimator {
    */
   inline void SetRobotToCameraTransform(wpi::math::Transform3d robotToCamera) {
     m_robotToCamera = robotToCamera;
-  }
-
-  /**
-   * Update the stored last pose. Useful for setting the initial estimate when
-   * using the CLOSEST_TO_LAST_POSE strategy.
-   *
-   * @param lastPose the lastPose to set
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  inline void SetLastPose(wpi::math::Pose3d lastPose) {
-    this->lastPose = lastPose;
   }
 
   /**
@@ -269,29 +178,6 @@ class PhotonPoseEstimator {
                                wpi::math::Rotation3d heading) {
     ResetHeadingData(timestamp, heading.ToRotation2d());
   }
-
-  /**
-   * Update the pose estimator. If updating multiple times per loop, you should
-   * call this exactly once per new result, in order of increasing result
-   * timestamp.
-   *
-   * @param result The vision targeting result to process
-   * @param cameraIntrinsics The camera calibration pinhole coefficients matrix.
-   * Only required if doing multitag-on-rio, and may be nullopt otherwise.
-   * @param distCoeffsData The camera calibration distortion coefficients. Only
-   * required if doing multitag-on-rio, and may be nullopt otherwise.
-   * @param constrainedPnpParams Constrained SolvePNP params, if needed.
-   * @deprecated Use individual estimation methods instead.
-   */
-  [[deprecated("Use individual estimation methods instead.")]]
-  std::optional<EstimatedRobotPose> Update(
-      const photon::PhotonPipelineResult& result,
-      std::optional<photon::PhotonCamera::CameraMatrix> cameraMatrixData =
-          std::nullopt,
-      std::optional<photon::PhotonCamera::DistortionMatrix> coeffsData =
-          std::nullopt,
-      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams =
-          std::nullopt);
 
   /**
    * Return the estimated position of the robot with the lowest position
@@ -420,43 +306,12 @@ class PhotonPoseEstimator {
 
  private:
   wpi::apriltag::AprilTagFieldLayout aprilTags;
-  PoseStrategy strategy;
-  PoseStrategy multiTagFallbackStrategy = LOWEST_AMBIGUITY;
 
   wpi::math::Transform3d m_robotToCamera;
-
-  wpi::math::Pose3d lastPose;
-  wpi::math::Pose3d referencePose;
-
-  wpi::units::second_t poseCacheTimestamp;
 
   wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d> headingBuffer;
 
   inline static int InstanceCount = 1;
-
-  inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
-
-  /**
-   * Internal convenience method for using a fallback strategy for update().
-   * This should only be called after timestamp checks have been done by another
-   * update() overload.
-   *
-   * @param cameraResult A pipeline result from the camera.
-   * @param strategy The pose strategy to use
-   * @return An EstimatedRobotPose with an estimated pose, timestamp, and
-   * targets used to create the estimate.
-   */
-  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result,
-                                           PoseStrategy strategy) {
-    return Update(result, std::nullopt, std::nullopt, std::nullopt, strategy);
-  }
-
-  std::optional<EstimatedRobotPose> Update(
-      const PhotonPipelineResult& result,
-      std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
-      std::optional<PhotonCamera::DistortionMatrix> coeffsData,
-      std::optional<ConstrainedSolvepnpParams> constrainedPnpParams,
-      PoseStrategy strategy);
 };
 
 }  // namespace photon
