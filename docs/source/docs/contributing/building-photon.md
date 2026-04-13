@@ -205,6 +205,30 @@ What the script does:
 
 This flow requires a Linux host with `sudo`, loop-device support, `wget`, and `xz-utils`.
 
+Example for a custom Jetson-style image:
+
+```bash
+./gradlew :photon-server:shadowJar -PArchOverride=linuxarm64
+PV_ROOT_PARTITION=1 \
+./scripts/generatePiImage.sh \
+  https://example.com/your-jetson-photon-base.img.xz \
+  JetsonOrinNano
+```
+
+The Jetson example above assumes:
+
+- the base image is already a PhotonVision-ready Linux ARM64 image
+- the root filesystem is on partition `1`
+- PhotonVision should live at `/opt/photonvision`
+
+If your Jetson image uses different paths, the helper also supports:
+
+- `PV_ROOT_PARTITION`
+- `PV_PHOTON_DIR`
+- `PV_SYSTEMD_UNIT_DIR`
+
+This repo does not currently publish an official Jetson base image in CI, so you must provide the base `.img.xz` yourself.
+
 ### Using PhotonLib Builds
 
 The build process automatically generates a vendordep JSON of your local build at `photon-lib/build/generated/vendordeps/photonlib.json`.

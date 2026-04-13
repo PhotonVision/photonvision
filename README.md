@@ -78,6 +78,18 @@ Example for a Raspberry Pi image:
 
 This script downloads the base image, mounts the root partition, replaces `/opt/photonvision/photonvision.jar`, recreates the `photonvision.service` unit, and recompresses the image next to the built jar.
 
+Example for a custom Jetson-style image:
+
+```bash
+./gradlew :photon-server:shadowJar -PArchOverride=linuxarm64
+PV_ROOT_PARTITION=1 \
+./scripts/generatePiImage.sh \
+  https://example.com/your-jetson-photon-base.img.xz \
+  JetsonOrinNano
+```
+
+This Jetson example assumes the root filesystem is on partition `1`. If your image uses a different layout, set `PV_ROOT_PARTITION` accordingly. The helper also supports `PV_PHOTON_DIR` and `PV_SYSTEMD_UNIT_DIR` when the target image uses different install paths.
+
 ## Gradle Arguments
 
 Note that these are case sensitive!
