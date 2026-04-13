@@ -175,7 +175,7 @@ class VisionSystemSim {
    * @return The pose of this camera, or an empty optional if it is invalid
    */
   std::optional<wpi::math::Pose3d> GetCameraPose(PhotonCameraSim* cameraSim) {
-    return GetCameraPose(cameraSim, wpi::Timer::getMonotonicTimestamp());
+    return GetCameraPose(cameraSim, wpi::Timer::GetMonotonicTimestamp());
   }
 
   /**
@@ -207,7 +207,7 @@ class VisionSystemSim {
   bool AdjustCamera(PhotonCameraSim* cameraSim,
                     const wpi::math::Transform3d& robotToCamera) {
     if (camTrfMap.find(cameraSim) != camTrfMap.end()) {
-      camTrfMap.at(cameraSim).AddSample(wpi::Timer::getMonotonicTimestamp(),
+      camTrfMap.at(cameraSim).AddSample(wpi::Timer::GetMonotonicTimestamp(),
                                         wpi::math::Pose3d{} + robotToCamera);
       return true;
     } else {
@@ -230,7 +230,7 @@ class VisionSystemSim {
    * @return If the cameraSim was valid and transforms were reset
    */
   bool ResetCameraTransforms(PhotonCameraSim* cameraSim) {
-    wpi::units::second_t now = wpi::Timer::getMonotonicTimestamp();
+    wpi::units::second_t now = wpi::Timer::GetMonotonicTimestamp();
     if (camTrfMap.find(cameraSim) != camTrfMap.end()) {
       auto trfBuffer = camTrfMap.at(cameraSim);
       wpi::math::Transform3d lastTrf{
@@ -369,7 +369,7 @@ class VisionSystemSim {
    * @return The latest robot pose
    */
   wpi::math::Pose3d GetRobotPose() {
-    return GetRobotPose(wpi::Timer::getMonotonicTimestamp());
+    return GetRobotPose(wpi::Timer::GetMonotonicTimestamp());
   }
 
   /**
@@ -398,7 +398,7 @@ class VisionSystemSim {
    */
   void ResetRobotPose(const wpi::math::Pose3d& robotPose) {
     robotPoseBuffer.Clear();
-    robotPoseBuffer.AddSample(wpi::Timer::getMonotonicTimestamp(), robotPose);
+    robotPoseBuffer.AddSample(wpi::Timer::GetMonotonicTimestamp(), robotPose);
   }
   wpi::Field2d& GetDebugField() { return dbgField; }
 
@@ -427,7 +427,7 @@ class VisionSystemSim {
       dbgField.GetObject(set.first)->SetPoses(posesToAdd);
     }
 
-    wpi::units::second_t now = wpi::Timer::getMonotonicTimestamp();
+    wpi::units::second_t now = wpi::Timer::GetMonotonicTimestamp();
     robotPoseBuffer.AddSample(now, robotPose);
     dbgField.SetRobotPose(robotPose.ToPose2d());
 
