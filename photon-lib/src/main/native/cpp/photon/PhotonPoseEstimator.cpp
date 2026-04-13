@@ -131,7 +131,7 @@ PhotonPoseEstimator::EstimateClosestToCameraHeightPose(
   wpi::units::meter_t smallestHeightDifference =
       wpi::units::meter_t(std::numeric_limits<double>::infinity());
 
-  wpi::math::Pose3d pose;
+  std::optional<EstimatedRobotPose> pose = std::nullopt;
 
   for (auto& target : cameraResult.GetTargets()) {
     std::optional<wpi::math::Pose3d> fiducialPose =
