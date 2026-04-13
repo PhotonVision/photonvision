@@ -165,7 +165,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
             logger.warn("Did not receive event name, defaulting to 'UNKNOWN'");
         }
 
-        MatchType wpiMatchType = MatchType.None; // Default is to be unknown
+        MatchType wpiMatchType = MatchType.NONE; // Default is to be unknown
         if (matchType.value < 0 || matchType.value >= MatchType.values().length) {
             logger.error("Invalid match type from FMS: " + matchType.value);
         } else {
