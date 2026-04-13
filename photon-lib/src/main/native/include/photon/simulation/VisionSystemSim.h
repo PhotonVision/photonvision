@@ -101,7 +101,7 @@ class VisionSystemSim {
           std::make_pair(std::move(cameraSim),
                          wpi::math::TimeInterpolatableBuffer<wpi::math::Pose3d>{
                              bufferLength}));
-      camTrfMap.at(cameraSim).AddSample(wpi::Timer::getMonotonicTimestamp(),
+      camTrfMap.at(cameraSim).AddSample(wpi::Timer::GetMonotonicTimestamp(),
                                         wpi::math::Pose3d{} + robotToCamera);
     }
   }
@@ -138,7 +138,7 @@ class VisionSystemSim {
    */
   std::optional<wpi::math::Transform3d> GetRobotToCamera(
       PhotonCameraSim* cameraSim) {
-    return GetRobotToCamera(cameraSim, wpi::Timer::getMonotonicTimestamp());
+    return GetRobotToCamera(cameraSim, wpi::Timer::GetMonotonicTimestamp());
   }
 
   /**

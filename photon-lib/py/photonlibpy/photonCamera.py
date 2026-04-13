@@ -169,7 +169,7 @@ class PhotonCamera:
 
         self._versionCheck()
 
-        now = RobotController.getFPGATime()
+        now = RobotController.getMonotonicTime()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
         packetWithTimestamp.time

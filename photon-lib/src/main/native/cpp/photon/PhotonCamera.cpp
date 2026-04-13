@@ -195,7 +195,7 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
 
   // Fill the packet with latest data and populate result.
   wpi::units::microsecond_t now =
-      wpi::units::microsecond_t(wpi::RobotController::GetFPGATime());
+      wpi::units::microsecond_t(wpi::RobotController::GetMonotonicTime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return PhotonPipelineResult{};
 
@@ -265,9 +265,9 @@ void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
     timesyncAlert.SetText(warningText);
     timesyncAlert.Set(true);
 
-    if (wpi::Timer::getMonotonicTimestamp() <
+    if (wpi::Timer::GetMonotonicTimestamp() <
         (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
-      prevTimeSyncWarnTime = wpi::Timer::getMonotonicTimestamp();
+      prevTimeSyncWarnTime = wpi::Timer::GetMonotonicTimestamp();
 
       WPILIB_ReportWarning(
           warningText +
@@ -325,7 +325,7 @@ const std::string_view PhotonCamera::GetCameraName() const {
 
 bool PhotonCamera::IsConnected() {
   auto currentHeartbeat = heartbeatSubscriber.Get();
-  auto now = wpi::Timer::getMonotonicTimestamp();
+  auto now = wpi::Timer::GetMonotonicTimestamp();
 
   if (currentHeartbeat < 0) {
     // we have never heard from the camera
@@ -373,10 +373,9 @@ void PhotonCamera::VerifyVersion() {
     return;
   }
 
-  if ((wpi::Timer::getMonotonicTimestamp() - lastVersionCheckTime) <
-      VERSION_CHECK_INTERVAL)
+  if ((wpi::Timer::GetMonotonicTimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL)
     return;
-  this->lastVersionCheckTime = wpi::Timer::getMonotonicTimestamp();
+  this->lastVersionCheckTime = wpi::Timer::GetMonotonicTimestamp();
 
   const std::string& versionString = versionEntry.Get("");
   if (versionString.empty()) {
