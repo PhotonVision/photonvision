@@ -373,7 +373,8 @@ void PhotonCamera::VerifyVersion() {
     return;
   }
 
-  if ((wpi::Timer::GetMonotonicTimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL)
+  if ((wpi::Timer::GetMonotonicTimestamp() - lastVersionCheckTime) <
+      VERSION_CHECK_INTERVAL)
     return;
   this->lastVersionCheckTime = wpi::Timer::GetMonotonicTimestamp();
 
