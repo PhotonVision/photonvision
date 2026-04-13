@@ -224,6 +224,15 @@ public class Main {
         }
     }
 
+    private static void tryLoadOptionalJNI(JNITypes type, String unavailableMessage) {
+        try {
+            LoadJNI.forceLoad(type);
+            logger.info("Loaded " + type.name() + "-JNI");
+        } catch (IOException e) {
+            logger.info(unavailableMessage + ": " + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
@@ -284,6 +293,11 @@ public class Main {
 
         if (Platform.isRaspberryPi()) {
             tryLoadJNI(JNITypes.LIBCAMERA);
+        }
+
+        if (Platform.isLinux()) {
+            tryLoadOptionalJNI(
+                    JNITypes.NVIDIA_APRILTAG, "NVIDIA AprilTag backend is unavailable on this host");
         }
 
         if (Platform.isRK3588()) {

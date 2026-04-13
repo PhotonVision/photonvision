@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.websocket;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.LoadJNI.JNITypes;
@@ -28,6 +29,7 @@ import org.photonvision.common.hardware.OsImageData;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.networking.NetworkUtils;
+import org.photonvision.vision.apriltag.AprilTagBackendManager;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 
@@ -56,8 +58,13 @@ public class UIPhotonConfiguration {
                                 OsImageData.IMAGE_METADATA.isPresent()
                                         ? OsImageData.IMAGE_METADATA.get().commitTag()
                                         : "",
-                                // TODO add support for other types of GPU accel
-                                LoadJNI.hasLoaded(JNITypes.LIBCAMERA) ? "Zerocopy Libcamera Working" : "",
+                                Stream.of(
+                                                LoadJNI.hasLoaded(JNITypes.LIBCAMERA)
+                                                        ? "Zerocopy Libcamera Working"
+                                                        : "",
+                                                AprilTagBackendManager.getUiStatus())
+                                        .filter(s -> s != null && !s.isBlank())
+                                        .collect(java.util.stream.Collectors.joining("; ")),
                                 LoadJNI.hasLoaded(JNITypes.MRCAL),
                                 c.neuralNetworkPropertyManager().getModels(),
                                 NeuralNetworkModelManager.getInstance().getSupportedBackends(),

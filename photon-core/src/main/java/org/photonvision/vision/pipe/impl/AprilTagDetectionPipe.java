@@ -20,16 +20,28 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.apriltag.AprilTagBackendManager;
+import org.photonvision.vision.apriltag.AprilTagDetectorBackend;
 import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.apriltag.NvidiaAprilTagDetector;
+import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
         extends CVPipe<
-                CVMat, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
+                Frame, List<AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionPipeParams>
         implements Releasable {
+    private static final Logger logger = new Logger(AprilTagDetectionPipe.class, LogGroup.VisionModule);
+
     private AprilTagDetector m_detector = new AprilTagDetector();
+    private final NvidiaAprilTagDetector nvidiaDetector = new NvidiaAprilTagDetector();
+    private final Mat cpuFallbackGray = new Mat();
+    private AprilTagDetectorBackend lastDetectionBackend = AprilTagDetectorBackend.CPU_WPILIB;
 
     public AprilTagDetectionPipe() {
         super();
@@ -39,8 +51,8 @@ public class AprilTagDetectionPipe
     }
 
     @Override
-    protected List<AprilTagDetection> process(CVMat in) {
-        if (in.getMat().empty()) {
+    protected List<AprilTagDetection> process(Frame frame) {
+        if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
             return List.of();
         }
 
@@ -48,7 +60,25 @@ public class AprilTagDetectionPipe
             throw new RuntimeException("Apriltag detector was released!");
         }
 
-        var ret = m_detector.detect(in.getMat());
+        if (params.backend() == AprilTagDetectorBackend.NVIDIA_CUDA
+                && !frame.colorImage.getMat().empty()) {
+            try {
+                var detections =
+                        nvidiaDetector.detect(
+                                frame.colorImage.getMat(), params.detectorParams().quadDecimate);
+                lastDetectionBackend = AprilTagDetectorBackend.NVIDIA_CUDA;
+                return detections;
+            } catch (RuntimeException ex) {
+                logger.warn(
+                        "NVIDIA AprilTag detection failed; falling back to the WPILib CPU backend: "
+                                + ex.getMessage());
+                AprilTagBackendManager.markRuntimeFailure(
+                        "the NVIDIA detector failed at runtime");
+            }
+        }
+
+        var ret = m_detector.detect(getCpuInputMat(frame));
+        lastDetectionBackend = AprilTagDetectorBackend.CPU_WPILIB;
 
         if (ret == null) {
             return List.of();
@@ -74,10 +104,40 @@ public class AprilTagDetectionPipe
     public void release() {
         m_detector.close();
         m_detector = null;
+        nvidiaDetector.release();
+        cpuFallbackGray.release();
+    }
+
+    public AprilTagDetectorBackend getLastDetectionBackend() {
+        return lastDetectionBackend;
+    }
+
+    private Mat getCpuInputMat(Frame frame) {
+        if (!frame.processedImage.getMat().empty()) {
+            return frame.processedImage.getMat();
+        }
+
+        if (frame.colorImage.getMat().empty()) {
+            return cpuFallbackGray;
+        }
+
+        if (frame.colorImage.getMat().channels() == 1) {
+            frame.colorImage.getMat().copyTo(cpuFallbackGray);
+            return cpuFallbackGray;
+        }
+
+        if (frame.colorImage.getMat().channels() == 4) {
+            Imgproc.cvtColor(frame.colorImage.getMat(), cpuFallbackGray, Imgproc.COLOR_BGRA2GRAY);
+        } else {
+            Imgproc.cvtColor(frame.colorImage.getMat(), cpuFallbackGray, Imgproc.COLOR_BGR2GRAY);
+        }
+
+        return cpuFallbackGray;
     }
 
     public static record AprilTagDetectionPipeParams(
             AprilTagFamily family,
             AprilTagDetector.Config detectorParams,
-            AprilTagDetector.QuadThresholdParameters quadParams) {}
+            AprilTagDetector.QuadThresholdParameters quadParams,
+            AprilTagDetectorBackend backend) {}
 }

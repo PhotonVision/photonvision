@@ -187,7 +187,7 @@ public class VisionModule {
 
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
-        // If idx = 0, we want (1181, 1182)
+        // If idx = 0, we want (1181, 1182). Index 15 maps to (1211, 1212).
         this.inputStreamPort = 1181 + (camStreamIdx * 2);
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 

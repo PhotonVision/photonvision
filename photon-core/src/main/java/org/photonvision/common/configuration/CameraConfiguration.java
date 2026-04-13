@@ -60,7 +60,7 @@ public class CameraConfiguration {
     public List<CameraCalibrationCoefficients> calibrations = new ArrayList<>();
     public int currentPipelineIndex = 0;
 
-    public int streamIndex = 0; // 0 index means ports [1181, 1182], 1 means [1183, 1184], etc...
+    public int streamIndex = 0; // 0 index means ports [1181, 1182], 1 means [1183, 1184], etc.
 
     // Ignore the pipes, as we serialize them to their own column to hack around
     // polymorphic lists

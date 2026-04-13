@@ -28,6 +28,7 @@ public class LoadJNI {
     public enum JNITypes {
         RUBIK_DETECTOR("tensorflowlite", "tensorflowlite_c", "external_delegate", "rubik_jni"),
         RKNN_DETECTOR("rga", "rknnrt", "rknn_jni"),
+        NVIDIA_APRILTAG("nvidiaapriltagJNI"),
         MRCAL("mrcal_jni"),
         LIBCAMERA("photonlibcamera");
 
@@ -45,7 +46,11 @@ public class LoadJNI {
             return;
         }
 
-        CombinedRuntimeLoader.loadLibraries(LoadJNI.class, type.libraries);
+        if (type == JNITypes.NVIDIA_APRILTAG) {
+            LibraryLoader.loadNvidiaAprilTag();
+        } else {
+            CombinedRuntimeLoader.loadLibraries(LoadJNI.class, type.libraries);
+        }
         loadedMap.put(type, true);
     }
 

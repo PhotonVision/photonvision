@@ -23,6 +23,8 @@ import org.photonvision.common.logging.Logger;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
+    static final int MAX_CAMERA_STREAMS = 16;
+
     private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
 
     private final List<VisionModule> visionModules = new ArrayList<>();
@@ -61,7 +63,7 @@ public class VisionModuleManager {
         // But by operating on the list, we have a fairly good idea of which we need to change,
         // but it's not guaranteed that we change the correct one
         // The best we can do is try to avoid a case where the stream index runs away to infinity
-        // since we can only stream 5 cameras at once
+        // since we only assign stream ports for the first MAX_CAMERA_STREAMS cameras
 
         // Big list, which should contain every vision source (currently loaded plus the new ones being
         // added)
@@ -73,8 +75,11 @@ public class VisionModuleManager {
             idx++;
         }
 
-        if (idx >= 5) {
-            logger.warn("VisionModuleManager has reached the maximum number of cameras (5).");
+        if (idx >= MAX_CAMERA_STREAMS) {
+            logger.warn(
+                    "VisionModuleManager has reached the configured camera stream limit ("
+                            + MAX_CAMERA_STREAMS
+                            + ").");
         }
 
         return idx;

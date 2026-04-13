@@ -18,10 +18,12 @@
 package org.photonvision.vision.processes;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import edu.wpi.first.cscore.VideoMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -242,6 +244,32 @@ public class VisionModuleManagerTest {
         assertTrue(idxs.contains(2));
         assertTrue(idxs.contains(3));
         assertTrue(idxs.contains(4));
+    }
+
+    @Test
+    public void testSupportsSixteenStreamIndexes() {
+        ConfigManager.getInstance().load();
+
+        var vmm = new VisionModuleManager();
+        var modules = new ArrayList<VisionModule>();
+
+        for (int i = 0; i < VisionModuleManager.MAX_CAMERA_STREAMS; i++) {
+            var conf = new CameraConfiguration(PVCameraInfo.fromFileInfo("Cam" + i, "/dev/video" + i));
+            conf.streamIndex = 0;
+            var ffp =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(
+                                    TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                            TestUtils.WPI2019Image.FOV);
+            modules.add(vmm.addSource(new TestSource(ffp, conf)));
+        }
+
+        var idxs = modules.stream().map(it -> it.getCameraConfiguration().streamIndex).sorted().toList();
+
+        assertEquals(VisionModuleManager.MAX_CAMERA_STREAMS, idxs.size());
+        for (int i = 0; i < VisionModuleManager.MAX_CAMERA_STREAMS; i++) {
+            assertEquals(i, idxs.get(i));
+        }
     }
 
     private void sleep(int millis) {

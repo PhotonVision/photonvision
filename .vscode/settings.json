@@ -2,5 +2,18 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.cwd": "photon-lib/py",
-    "java.configuration.updateBuildConfiguration": "automatic"
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "ROS2.distro": "humble",
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/home/kevin/Robot/AdaptiGraph/PyFleX/bindings/build",
+        ""
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages",
+        "/home/kevin/Robot/AdaptiGraph/PyFleX/bindings/build",
+        ""
+    ]
 }

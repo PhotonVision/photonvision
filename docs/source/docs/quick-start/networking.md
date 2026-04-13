@@ -94,7 +94,7 @@ The address in the code above (`photonvision.local`) is the hostname of the copr
 
 ## Camera Stream Ports
 
-The camera streams start at 1181 with two ports for each camera (ex. 1181 and 1182 for camera one, 1183 and 1184 for camera two, etc.). The easiest way to identify the port of the camera that you want is by double clicking on the stream, which opens it in a separate page. The port will be listed below the stream.
+The camera streams start at 1181 with two ports for each camera (for example, 1181 and 1182 for camera one, 1183 and 1184 for camera two, etc.). The current stream index allocation supports up to 16 cameras, so the last default pair is 1211 and 1212. The easiest way to identify the port of the camera that you want is by double clicking on the stream, which opens it in a separate page. The port will be listed below the stream.
 
 :::{warning}
 If your camera stream isn't sent to the same port as it's originally found on, its stream will not be visible in the UI.

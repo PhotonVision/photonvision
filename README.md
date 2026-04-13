@@ -25,7 +25,58 @@ If you are interested in contributing code or documentation to the project, plea
 
 Gradle is used for all C++ and Java code, and pnpm is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#compiling-instructions).
 
+This repo currently requires JDK 17 and Node 22+ for local builds.
+
 You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the [`photonlib-java-examples`](photonlib-java-examples) and [`photonlib-cpp-examples`](photonlib-cpp-examples) subdirectories, respectively. Instructions for running these examples directly from the repo are found [in the docs](https://docs.photonvision.org/en/latest/docs/contributing/building-photon.html#running-examples).
+
+### Optional NVIDIA AprilTag Backend
+
+PhotonVision can optionally build an NVIDIA CUDA AprilTag detector backend for supported Linux hosts. This path is opt-in and falls back to the existing CPU detector when the JNI library, SDK, or runtime support is unavailable.
+
+Build and run with the optional backend enabled:
+
+```bash
+export JAVA_HOME=/path/to/jdk-17
+export PATH="$JAVA_HOME/bin:/path/to/node-v22/bin:$PATH"
+export NVIDIA_APRILTAG_SDK_ROOT=/path/to/cuapriltags-root
+export CUDA_HOME=/path/to/cuda
+
+./gradlew :photon-targeting:nvidiaapriltagJNILinuxx86-64ReleaseSharedLibrary \
+  :photon-server:run \
+  -PenableNvidiaAprilTag \
+  -Dphotonvision.apriltag.backend=auto
+```
+
+Backend selection controls:
+
+- `-PenableNvidiaAprilTag` enables the optional CUDA JNI build.
+- `NVIDIA_APRILTAG_SDK_ROOT` must contain `libcuapriltags.a`.
+- `CUDA_HOME` must contain a compatible CUDA runtime, usually under `lib64/libcudart.so`.
+- `-Dphotonvision.apriltag.backend=auto|cpu|nvidia` controls runtime backend selection for testing.
+
+The current implementation only enables the NVIDIA path for `tag36h11`. Other families continue to use the existing CPU detector.
+
+### Generating Device Images
+
+PhotonVision release artifacts for coprocessors are board images such as `.img.xz` or `.tar.xz`. This repo does not generate a bootable desktop ISO.
+
+To build a Linux ARM64 jar and inject it into a base PhotonVision device image locally:
+
+```bash
+./gradlew :photon-server:shadowJar -PArchOverride=linuxarm64
+./scripts/generatePiImage.sh <base-image-url> <image-suffix>
+```
+
+Example for a Raspberry Pi image:
+
+```bash
+./gradlew :photon-server:shadowJar -PArchOverride=linuxarm64
+./scripts/generatePiImage.sh \
+  https://github.com/PhotonVision/photon-image-modifier/releases/download/<image-version>/photonvision_raspi.img.xz \
+  RaspberryPi
+```
+
+This script downloads the base image, mounts the root partition, replaces `/opt/photonvision/photonvision.jar`, recreates the `photonvision.service` unit, and recompresses the image next to the built jar.
 
 ## Gradle Arguments
 
@@ -44,6 +95,7 @@ Note that these are case sensitive!
 - `-PtgtPw`: Specifies custom password for `./gradlew deploy` to SSH into
 - `-Pprofile`: enables JVM profiling
 - `-PwithSanitizers`: On Linux, enables `-fsanitize=address,undefined,leak`
+- `-PenableNvidiaAprilTag`: builds the optional NVIDIA CUDA AprilTag JNI when the SDK is available
 
 If you're cross-compiling, you'll need the WPILib toolchain installed. This must be done via Gradle: for example `./gradlew installArm64Toolchain` or `./gradlew installRoboRioToolchain`
 

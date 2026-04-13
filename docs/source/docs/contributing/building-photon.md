@@ -101,6 +101,40 @@ Running the following command under the root directory will build the jar under 
       ``gradlew shadowJar``
 ```
 
+### Build and Run PhotonVision with the Optional NVIDIA AprilTag Backend
+
+The CUDA AprilTag backend is optional and only builds when `-PenableNvidiaAprilTag` is set and the required SDK pieces are present. Runtime selection still falls back to the existing CPU detector when the NVIDIA path cannot be used.
+
+Current requirements for the optional backend:
+
+- Linux host with a supported NVIDIA GPU and driver
+- JDK 17
+- Node 22+
+- `NVIDIA_APRILTAG_SDK_ROOT` pointing at a directory that contains `libcuapriltags.a`
+- `CUDA_HOME` pointing at a CUDA install that contains `lib64/libcudart.so`
+
+Example build and run flow on Linux x86_64:
+
+```bash
+export JAVA_HOME=/path/to/jdk-17
+export PATH="$JAVA_HOME/bin:/path/to/node-v22/bin:$PATH"
+export NVIDIA_APRILTAG_SDK_ROOT=/path/to/cuapriltags-root
+export CUDA_HOME=/path/to/cuda
+
+./gradlew :photon-targeting:nvidiaapriltagJNILinuxx86-64ReleaseSharedLibrary \
+  :photon-server:run \
+  -PenableNvidiaAprilTag \
+  -Dphotonvision.apriltag.backend=auto
+```
+
+Useful backend selection modes:
+
+- `-Dphotonvision.apriltag.backend=auto`: prefer NVIDIA when supported, otherwise fall back to CPU
+- `-Dphotonvision.apriltag.backend=cpu`: force the existing CPU path
+- `-Dphotonvision.apriltag.backend=nvidia`: request the CUDA path and log a fallback reason if it cannot be used
+
+The current NVIDIA implementation only applies to `tag36h11`. Other tag families continue to run on the CPU detector.
+
 ### Build and Run PhotonVision on a Raspberry Pi Coprocessor
 
 As a convenience, the build has a built-in `deploy` command which builds, deploys, and starts the current source code on a coprocessor. It uses [deploy-utils](https://github.com/wpilibsuite/deploy-utils/blob/main/README.md), so it works very similarly to deploys on robot projects.
@@ -133,6 +167,43 @@ An architecture override is required to specify the deploy target's architecture
 ```
 
 The `deploy` command is tested against Raspberry Pi coprocessors. Other similar coprocessors may work too.
+
+### Generate a Device Image Locally
+
+PhotonVision coprocessor releases are delivered as board images such as `.img.xz` or `.tar.xz`. This repo does not produce a desktop installer ISO.
+
+If you want to inject a locally built Linux ARM64 jar into an existing PhotonVision base image, use the helper script in `scripts/generatePiImage.sh`.
+
+1. Build a Linux ARM64 jar:
+
+```bash
+./gradlew :photon-server:shadowJar -PArchOverride=linuxarm64
+```
+
+2. Download and repack a board image by passing the base image URL and the desired artifact suffix:
+
+```bash
+./scripts/generatePiImage.sh <base-image-url> <image-suffix>
+```
+
+Example for Raspberry Pi:
+
+```bash
+./scripts/generatePiImage.sh \
+  https://github.com/PhotonVision/photon-image-modifier/releases/download/<image-version>/photonvision_raspi.img.xz \
+  RaspberryPi
+```
+
+What the script does:
+
+- downloads the base `.img.xz`
+- decompresses it
+- mounts the root filesystem with `losetup`
+- replaces `/opt/photonvision/photonvision.jar`
+- rewrites the `photonvision.service` systemd unit
+- recompresses the result as `photonvision*-image_<suffix>.xz`
+
+This flow requires a Linux host with `sudo`, loop-device support, `wget`, and `xz-utils`.
 
 ### Using PhotonLib Builds
 

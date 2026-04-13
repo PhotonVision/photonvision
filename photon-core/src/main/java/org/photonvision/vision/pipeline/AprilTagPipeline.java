@@ -34,6 +34,9 @@ import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.apriltag.AprilTagBackendManager;
+import org.photonvision.vision.apriltag.AprilTagBackendSelection;
+import org.photonvision.vision.apriltag.AprilTagDetectorBackend;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -60,15 +63,17 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
+    private static final FrameThresholdType CPU_PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
+    private static final FrameThresholdType NVIDIA_PROCESSING_TYPE = FrameThresholdType.NONE;
+    private AprilTagBackendSelection backendSelection;
 
     public AprilTagPipeline() {
-        super(PROCESSING_TYPE);
+        super(CPU_PROCESSING_TYPE);
         settings = new AprilTagPipelineSettings();
     }
 
     public AprilTagPipeline(AprilTagPipelineSettings settings) {
-        super(PROCESSING_TYPE);
+        super(CPU_PROCESSING_TYPE);
         this.settings = settings;
     }
 
@@ -105,8 +110,18 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         quadParams.minWhiteBlackDiff = 5;
         quadParams.deglitch = false;
 
+        var newBackendSelection = AprilTagBackendManager.select(settings.tagFamily);
+        if (!newBackendSelection.equals(backendSelection)) {
+            if (newBackendSelection.warning() != null) {
+                logger.warn(newBackendSelection.warning());
+            }
+            logger.info(newBackendSelection.summary());
+            backendSelection = newBackendSelection;
+        }
+
         aprilTagDetectionPipe.setParams(
-                new AprilTagDetectionPipeParams(settings.tagFamily, config, quadParams));
+                new AprilTagDetectionPipeParams(
+                        settings.tagFamily, config, quadParams, backendSelection.backend()));
 
         if (frameStaticProperties.cameraCalibration != null) {
             var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
@@ -134,14 +149,20 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        if (frame.type != FrameThresholdType.GREYSCALE) {
-            // We asked for a GREYSCALE frame, but didn't get one -- best we can do is give up
+        if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {
             return new CVPipelineResult(frame.sequenceID, 0, 0, List.of(), frame);
         }
 
         CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
-                aprilTagDetectionPipe.run(frame.processedImage);
+                aprilTagDetectionPipe.run(frame);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+        var activeBackend = aprilTagDetectionPipe.getLastDetectionBackend();
+        AprilTagBackendManager.updateActiveBackend(
+                activeBackend, backendSelection.summary(), settings.tagFamily);
+
+        if (frame.processedImage.getMat().empty() && !frame.colorImage.getMat().empty()) {
+            frame.colorImage.getMat().copyTo(frame.processedImage.getMat());
+        }
 
         List<AprilTagDetection> detections = tagDetectionPipeResult.output;
         List<AprilTagDetection> usedDetections = new ArrayList<>();
@@ -149,9 +170,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         // Filter out detections based on pipeline settings
         for (AprilTagDetection detection : detections) {
-            // TODO this should be in a pipe, not in the top level here (Matt)
-            if (detection.getDecisionMargin() < settings.decisionMargin) continue;
-            if (detection.getHamming() > settings.hammingDist) continue;
+            if (activeBackend == AprilTagDetectorBackend.CPU_WPILIB) {
+                // TODO this should be in a pipe, not in the top level here (Matt)
+                if (detection.getDecisionMargin() < settings.decisionMargin) continue;
+                if (detection.getHamming() > settings.hammingDist) continue;
+            }
 
             usedDetections.add(detection);
 
@@ -248,6 +271,18 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         return new CVPipelineResult(
                 frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+    }
+
+    @Override
+    public FrameThresholdType getThresholdType() {
+        if (settings == null) {
+            return CPU_PROCESSING_TYPE;
+        }
+
+        var selection = AprilTagBackendManager.select(settings.tagFamily);
+        return selection.backend() == AprilTagDetectorBackend.NVIDIA_CUDA
+                ? NVIDIA_PROCESSING_TYPE
+                : CPU_PROCESSING_TYPE;
     }
 
     @Override

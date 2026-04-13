@@ -2,6 +2,52 @@ ext {
     nativeName = "photontargeting"
 }
 
+def nvidiaAprilTagJniName = "nvidiaapriltagJNI"
+def enableNvidiaAprilTag = project.hasProperty('enableNvidiaAprilTag')
+def hostIsSupportedNvidiaPlatform =
+        System.getProperty("os.name").startsWith("Linux")
+                && ["amd64", "x86_64", "aarch64", "arm64"].contains(System.getProperty("os.arch"))
+
+def findExistingPath = { List<String> candidates ->
+    candidates.collect { it != null ? file(it) : null }.find { it != null && it.exists() }
+}
+
+def nvidiaAprilTagSdkRoot = System.getenv("NVIDIA_APRILTAG_SDK_ROOT")
+def cudaHome = System.getenv("CUDA_HOME")
+def nvidiaAprilTagLibrary =
+        nvidiaAprilTagSdkRoot
+                ? findExistingPath(
+                        [
+                            "${nvidiaAprilTagSdkRoot}/libcuapriltags.a",
+                            "${nvidiaAprilTagSdkRoot}/lib/libcuapriltags.a",
+                            "${nvidiaAprilTagSdkRoot}/lib_x86_64_cuda_12_6/libcuapriltags.a",
+                            "${nvidiaAprilTagSdkRoot}/lib_aarch64_cuda_12_6/libcuapriltags.a",
+                            "${nvidiaAprilTagSdkRoot}/isaac_ros_nitros/lib/cuapriltags/lib_x86_64_cuda_12_6/libcuapriltags.a",
+                            "${nvidiaAprilTagSdkRoot}/isaac_ros_nitros/lib/cuapriltags/lib_aarch64_cuda_12_6/libcuapriltags.a",
+                        ])
+                : null
+def cudaLibraryDir =
+        cudaHome
+                ? findExistingPath(
+                        [
+                            "${cudaHome}/lib64",
+                            "${cudaHome}/lib/x64",
+                            "${cudaHome}/targets/x86_64-linux/lib",
+                            "${cudaHome}/targets/aarch64-linux/lib",
+                        ])
+                : null
+
+def nvidiaAprilTagBuildEnabled =
+        enableNvidiaAprilTag
+                && hostIsSupportedNvidiaPlatform
+                && nvidiaAprilTagLibrary != null
+                && cudaLibraryDir != null
+
+if (enableNvidiaAprilTag && !nvidiaAprilTagBuildEnabled) {
+    println(
+            "NVIDIA AprilTag JNI disabled: expected NVIDIA_APRILTAG_SDK_ROOT/libcuapriltags.a and CUDA_HOME runtime libraries on a supported Linux host.")
+}
+
 apply plugin: 'cpp'
 apply plugin: 'c'
 apply plugin: 'google-test-test-suite'
@@ -87,6 +133,38 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpinet_shared")
             nativeUtils.useRequiredLibrary(it, "ntcore_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
+        }
+        "${nvidiaAprilTagJniName}"(JniNativeLibrarySpec) {
+            javaCompileTasks << compileJava
+
+            sources {
+                cpp {
+                    source {
+                        srcDirs 'src/main/native/nvidia'
+                        include '**/*.cpp', '**/*.cc'
+                    }
+                    exportedHeaders {
+                        srcDirs 'src/main/native/include'
+                        include "**/*.h"
+                    }
+                }
+            }
+
+            binaries.all {
+                if (!nvidiaAprilTagBuildEnabled || it.targetPlatform.name != getCurrentArch()) {
+                    it.buildable = false
+                    return
+                }
+
+                it.cppCompiler.args << "-DPHOTONVISION_ENABLE_NVIDIA_APRILTAG=1"
+                it.linker.args << nvidiaAprilTagLibrary.absolutePath
+                it.linker.args << "-L${cudaLibraryDir.absolutePath}"
+                it.linker.args << "-lcudart"
+                it.linker.args << "-ldl"
+                it.linker.args << "-Wl,-rpath,${cudaLibraryDir.absolutePath}"
+            }
+
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
