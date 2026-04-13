@@ -316,8 +316,8 @@ public class PhotonCamera implements AutoCloseable {
             timesyncAlert.setText(warningText);
             timesyncAlert.set(true);
 
-            if (Timer.getFPGATimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
-                prevTimeSyncWarnTime = Timer.getFPGATimestamp();
+            if (Timer.getMonotonicTimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
+                prevTimeSyncWarnTime = Timer.getMonotonicTimestamp();
 
                 DriverStation.reportWarning(
                         warningText
@@ -465,7 +465,7 @@ public class PhotonCamera implements AutoCloseable {
      */
     public boolean isConnected() {
         var curHeartbeat = heartbeatSubscriber.get();
-        var now = Timer.getFPGATimestamp();
+        var now = Timer.getMonotonicTimestamp();
 
         if (curHeartbeat < 0) {
             // we have never heard from the camera
@@ -518,8 +518,8 @@ public class PhotonCamera implements AutoCloseable {
     void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
-        if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
-        lastVersionCheckTime = Timer.getFPGATimestamp();
+        if ((Timer.getMonotonicTimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
+        lastVersionCheckTime = Timer.getMonotonicTimestamp();
 
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.

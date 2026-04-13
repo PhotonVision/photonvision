@@ -31,10 +31,10 @@ public class CalculateFPSPipe
     @Override
     protected Integer process(Void in) {
         if (lastTime < 0) {
-            lastTime = Timer.getFPGATimestamp();
+            lastTime = Timer.getMonotonicTimestamp();
         }
 
-        var now = Timer.getFPGATimestamp();
+        var now = Timer.getMonotonicTimestamp();
         var dtSeconds = now - lastTime;
         lastTime = now;
 
