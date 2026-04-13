@@ -37,6 +37,7 @@ dependencies {
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: jacksonVersion
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: jacksonVersion
     implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
+    implementation "io.avaje:avaje-jsonb:$avajeJsonbVersion"
 
     implementation group: "org.ejml", name: "ejml-simple", version: ejmlVersion
     implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
