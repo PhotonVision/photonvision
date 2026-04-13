@@ -108,7 +108,7 @@ public class FileVisionSource extends VisionSource {
             this.frameStaticProperties = frameStaticProperties;
             videoMode =
                     new VideoMode(
-                            PixelFormat.kMJPEG,
+                            PixelFormat.MJPEG,
                             frameStaticProperties.imageWidth,
                             frameStaticProperties.imageHeight,
                             30);

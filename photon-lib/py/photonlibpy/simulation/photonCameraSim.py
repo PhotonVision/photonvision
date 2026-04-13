@@ -76,7 +76,7 @@ class PhotonCameraSim:
         # TODO Check fps is right
         self.videoSimRaw = cs.CvSource(
             self.cam.getName() + "-raw",
-            cs.VideoMode.PixelFormat.kGray,
+            cs.VideoMode.PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
             1,
@@ -88,7 +88,7 @@ class PhotonCameraSim:
         # TODO Check fps is right
         self.videoSimProcessed = cs.CvSource(
             self.cam.getName() + "-processed",
-            cs.VideoMode.PixelFormat.kGray,
+            cs.VideoMode.PixelFormat.GRAY,
             self.prop.getResWidth(),
             self.prop.getResHeight(),
             1,

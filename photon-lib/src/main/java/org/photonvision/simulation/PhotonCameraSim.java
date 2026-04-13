@@ -153,7 +153,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
         videoSimRaw =
                 CameraServer.putVideo(camera.getName() + "-raw", prop.getResWidth(), prop.getResHeight());
-        videoSimRaw.setPixelFormat(PixelFormat.kGray);
+        videoSimRaw.setPixelFormat(PixelFormat.GRAY);
         videoSimProcessed =
                 CameraServer.putVideo(
                         camera.getName() + "-processed", prop.getResWidth(), prop.getResHeight());
