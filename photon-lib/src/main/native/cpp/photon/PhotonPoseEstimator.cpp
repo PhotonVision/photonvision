@@ -41,7 +41,6 @@
 #include <wpi/units/angle.hpp>
 #include <wpi/units/math.hpp>
 #include <wpi/units/time.hpp>
-#include <wpi/util/deprecated.hpp>
 
 #include "photon/PhotonCamera.h"
 #include "photon/estimation/TargetModel.h"
@@ -51,7 +50,6 @@
 
 #define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT
 #include <opencv2/core/eigen.hpp>
-WPI_IGNORE_DEPRECATED
 namespace photon {
 
 namespace detail {
@@ -69,184 +67,10 @@ PhotonPoseEstimator::PhotonPoseEstimator(
     wpi::math::Transform3d robotToCamera)
     : aprilTags(tags),
       m_robotToCamera(robotToCamera),
-      lastPose(wpi::math::Pose3d()),
-      referencePose(wpi::math::Pose3d()),
-      poseCacheTimestamp(-1_s),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
   HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
   InstanceCount++;
-}
-
-PhotonPoseEstimator::PhotonPoseEstimator(
-    wpi::apriltag::AprilTagFieldLayout tags, PoseStrategy strat,
-    wpi::math::Transform3d robotToCamera)
-    : aprilTags(tags),
-      strategy(strat),
-      m_robotToCamera(robotToCamera),
-      lastPose(wpi::math::Pose3d()),
-      referencePose(wpi::math::Pose3d()),
-      poseCacheTimestamp(-1_s),
-      headingBuffer(
-          wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
-  InstanceCount++;
-  HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
-}
-
-void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
-  if (strategy == MULTI_TAG_PNP_ON_COPROCESSOR ||
-      strategy == MULTI_TAG_PNP_ON_RIO) {
-    WPILIB_ReportError(
-        wpi::warn::Warning,
-        "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
-        "");
-    strategy = LOWEST_AMBIGUITY;
-  }
-  if (this->multiTagFallbackStrategy != strategy) {
-    InvalidatePoseCache();
-  }
-  multiTagFallbackStrategy = strategy;
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result,
-    std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
-    std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs,
-    std::optional<ConstrainedSolvepnpParams> constrainedPnpParams) {
-  // Time in the past -- give up, since the following if expects times > 0
-  if (result.GetTimestamp() < 0_s) {
-    WPILIB_ReportError(wpi::warn::Warning,
-                       "Result timestamp was reported in the past!");
-    return std::nullopt;
-  }
-
-  // If the pose cache timestamp was set, and the result is from the same
-  // timestamp, return an empty result
-  if (poseCacheTimestamp > 0_s &&
-      wpi::units::math::abs(poseCacheTimestamp - result.GetTimestamp()) <
-          0.001_ms) {
-    return std::nullopt;
-  }
-
-  // Remember the timestamp of the current result used
-  poseCacheTimestamp = result.GetTimestamp();
-
-  // If no targets seen, trivial case -- return empty result
-  if (!result.HasTargets()) {
-    return std::nullopt;
-  }
-
-  return Update(result, cameraMatrixData, cameraDistCoeffs,
-                constrainedPnpParams, this->strategy);
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result,
-    std::optional<PhotonCamera::CameraMatrix> cameraMatrixData,
-    std::optional<PhotonCamera::DistortionMatrix> cameraDistCoeffs,
-    std::optional<ConstrainedSolvepnpParams> constrainedPnpParams,
-    PoseStrategy strategy) {
-  std::optional<EstimatedRobotPose> ret = std::nullopt;
-
-  switch (strategy) {
-    case LOWEST_AMBIGUITY:
-      ret = EstimateLowestAmbiguityPose(result);
-      break;
-    case CLOSEST_TO_CAMERA_HEIGHT:
-      ret = EstimateClosestToCameraHeightPose(result);
-      break;
-    case CLOSEST_TO_REFERENCE_POSE:
-      ret = EstimateClosestToReferencePose(result, this->referencePose);
-      break;
-    case CLOSEST_TO_LAST_POSE:
-      SetReferencePose(lastPose);
-      ret = EstimateClosestToReferencePose(result, this->referencePose);
-      break;
-    case AVERAGE_BEST_TARGETS:
-      ret = EstimateAverageBestTargetsPose(result);
-      break;
-    case MULTI_TAG_PNP_ON_COPROCESSOR:
-      if (!result.MultiTagResult()) {
-        ret = Update(result, this->multiTagFallbackStrategy);
-      } else {
-        ret = EstimateCoprocMultiTagPose(result);
-      }
-      break;
-    case MULTI_TAG_PNP_ON_RIO:
-      if (!cameraMatrixData && !cameraDistCoeffs) {
-        WPILIB_ReportError(
-            wpi::warn::Warning,
-            "No camera calibration provided to multi-tag-on-rio!", "");
-        ret = Update(result, this->multiTagFallbackStrategy);
-      }
-      ret =
-          EstimateRioMultiTagPose(result, *cameraMatrixData, *cameraDistCoeffs);
-      if (!ret) {
-        ret = Update(result, this->multiTagFallbackStrategy);
-      }
-      break;
-    case CONSTRAINED_SOLVEPNP: {
-      if (!cameraMatrixData || !cameraDistCoeffs) {
-        WPILIB_ReportError(
-            wpi::warn::Warning,
-            "No camera calibration data provided for Constrained SolvePnP!");
-        ret = Update(result, this->multiTagFallbackStrategy);
-        break;
-      }
-
-      if (!constrainedPnpParams) {
-        return {};
-      }
-
-      if (!constrainedPnpParams->headingFree &&
-          !headingBuffer.Sample(result.GetTimestamp()).has_value()) {
-        ret = Update(result, cameraMatrixData, cameraDistCoeffs, {},
-                     this->multiTagFallbackStrategy);
-        break;
-      }
-
-      wpi::math::Pose3d fieldToRobotSeed;
-
-      if (result.MultiTagResult().has_value()) {
-        fieldToRobotSeed =
-            wpi::math::Pose3d{} + (result.MultiTagResult()->estimatedPose.best +
-                                   m_robotToCamera.Inverse());
-      } else {
-        std::optional<EstimatedRobotPose> nestedUpdate =
-            Update(result, cameraMatrixData, cameraDistCoeffs, {},
-                   this->multiTagFallbackStrategy);
-
-        if (!nestedUpdate.has_value()) {
-          return {};
-        }
-
-        fieldToRobotSeed = nestedUpdate->estimatedPose;
-      }
-
-      ret = EstimateConstrainedSolvepnpPose(
-          result, *cameraMatrixData, *cameraDistCoeffs, fieldToRobotSeed,
-          constrainedPnpParams->headingFree,
-          constrainedPnpParams->headingScalingFactor);
-
-      if (!ret) {
-        ret = Update(result, cameraMatrixData, cameraDistCoeffs, {},
-                     this->multiTagFallbackStrategy);
-      }
-      break;
-    }
-    case PNP_DISTANCE_TRIG_SOLVE:
-      ret = EstimatePnpDistanceTrigSolvePose(result);
-      break;
-    default:
-      WPILIB_ReportError(wpi::warn::Warning, "Invalid Pose Strategy selected!",
-                         "");
-      ret = std::nullopt;
-  }
-
-  if (ret) {
-    lastPose = ret->estimatedPose;
-  }
-  return ret;
 }
 
 bool ShouldEstimate(const PhotonPipelineResult& result) {
@@ -359,7 +183,7 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
   wpi::units::meter_t smallestDifference =
       wpi::units::meter_t(std::numeric_limits<double>::infinity());
   wpi::units::second_t stateTimestamp = wpi::units::second_t(0);
-  wpi::math::Pose3d pose = lastPose;
+  wpi::math::Pose3d pose;
 
   auto targets = cameraResult.GetTargets();
   for (auto& target : targets) {
