@@ -156,7 +156,7 @@ public class NetworkTablesManager {
     }
 
     public void checkNtConnectState(NetworkTableEvent event) {
-        var isConnEvent = event.is(Kind.DISCONNECTED);
+        var isConnEvent = event.is(Kind.CONNECTED);
         var isDisconnEvent = event.is(Kind.DISCONNECTED);
 
         if (isDisconnEvent) {
