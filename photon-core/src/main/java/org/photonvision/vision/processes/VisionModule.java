@@ -178,7 +178,10 @@ public class VisionModule {
         if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
-                    .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
+                    .ifPresent(
+                            (visionLED) ->
+                                    visionLED.setPipelineModeSupplier(
+                                            () -> pipelineManager.getCurrentPipelineSettings().ledMode));
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
@@ -513,8 +516,9 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
-            HardwareManager.getInstance().visionLED.setState(on);
+        if (camShouldControlLEDs()) {
+            HardwareManager.getInstance().visionLED.ifPresent((visionLED) -> visionLED.setState(on));
+        }
     }
 
     public void saveModule() {

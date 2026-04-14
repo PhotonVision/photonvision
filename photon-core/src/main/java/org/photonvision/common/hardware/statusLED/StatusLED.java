@@ -19,28 +19,28 @@ package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
-import org.jetbrains.annotations.Nullable;
 import org.photonvision.common.hardware.PhotonStatus;
 
 public interface StatusLED extends AutoCloseable {
     public void setStatus(PhotonStatus status);
 
-    @Nullable
-    static StatusLED ofType(
+    static Optional<StatusLED> ofType(
             StatusLEDType type,
             Supplier<NativeDeviceFactoryInterface> lazyDeviceFactory,
             List<Integer> statusLedPins,
             boolean activeHigh) {
-        return switch (type) {
-            case RGB ->
-                    statusLedPins.size() == 3
-                            ? new RGBStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh)
-                            : null;
-            case GY ->
-                    statusLedPins.size() == 2
-                            ? new GYStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh)
-                            : null;
-        };
+        return Optional.ofNullable(
+                switch (type) {
+                    case RGB ->
+                            statusLedPins.size() == 3
+                                    ? new RGBStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh)
+                                    : null;
+                    case GY ->
+                            statusLedPins.size() == 2
+                                    ? new GYStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh)
+                                    : null;
+                });
     }
 }
