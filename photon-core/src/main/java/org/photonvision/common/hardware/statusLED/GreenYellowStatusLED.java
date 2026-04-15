@@ -27,8 +27,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
 /** A pair of green and yellow LEDs, as used on the Limelight cameras */
-public class GYStatusLED implements StatusLED {
-    private final Logger logger = new Logger(GYStatusLED.class, LogGroup.General);
+public class GreenYellowStatusLED implements StatusLED {
+    private final Logger logger = new Logger(GreenYellowStatusLED.class, LogGroup.General);
 
     public final LED greenLED;
     public final LED yellowLED;
@@ -36,7 +36,7 @@ public class GYStatusLED implements StatusLED {
 
     protected PhotonStatus status = PhotonStatus.GENERIC_ERROR;
 
-    public GYStatusLED(
+    public GreenYellowStatusLED(
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
         if (statusLedPins.size() != 2) {
             logger.warn(
