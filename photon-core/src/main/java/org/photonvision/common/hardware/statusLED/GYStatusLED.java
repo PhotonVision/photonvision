@@ -19,12 +19,17 @@ package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.devices.LED;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
+import java.util.Collections;
 import java.util.List;
 import org.photonvision.common.hardware.PhotonStatus;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
 /** A pair of green and yellow LEDs, as used on the Limelight cameras */
 public class GYStatusLED implements StatusLED {
+    private final Logger logger = new Logger(GYStatusLED.class, LogGroup.General);
+
     public final LED greenLED;
     public final LED yellowLED;
     protected int blinkCounter;
@@ -33,11 +38,13 @@ public class GYStatusLED implements StatusLED {
 
     public GYStatusLED(
             NativeDeviceFactoryInterface deviceFactory, List<Integer> statusLedPins, boolean activeHigh) {
+        if (statusLedPins.size() != 2) {
+            logger.warn(
+                    pinErrorTemplate.formatted(2, "Green and Yellow status LEDs", statusLedPins.size()));
+        }
         // fill unassigned pins with -1 to disable
-        if (statusLedPins.size() != 3) {
-            for (int i = 0; i < 3 - statusLedPins.size(); i++) {
-                statusLedPins.add(-1);
-            }
+        if (statusLedPins.size() < 2) {
+            statusLedPins.addAll(Collections.nCopies(statusLedPins.size() - 2, -1));
         }
 
         // Outputs are active-low for a common-anode RGB LED

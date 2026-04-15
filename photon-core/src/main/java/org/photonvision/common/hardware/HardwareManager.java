@@ -101,11 +101,14 @@ public class HardwareManager {
                 };
 
         statusLED =
-                StatusLED.ofType(
-                        hardwareConfig.statusLEDType,
-                        lazyDeviceFactory,
-                        hardwareConfig.statusLEDPins,
-                        hardwareConfig.statusLEDActiveHigh);
+                hardwareConfig.statusLEDPins.isEmpty()
+                        ? Optional.empty()
+                        : Optional.of(
+                                StatusLED.ofType(
+                                        hardwareConfig.statusLEDType,
+                                        lazyDeviceFactory,
+                                        hardwareConfig.statusLEDPins,
+                                        hardwareConfig.statusLEDActiveHigh));
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =

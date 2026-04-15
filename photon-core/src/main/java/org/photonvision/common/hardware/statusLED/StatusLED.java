@@ -19,28 +19,23 @@ package org.photonvision.common.hardware.statusLED;
 
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 import org.photonvision.common.hardware.PhotonStatus;
 
 public interface StatusLED extends AutoCloseable {
+    static final String pinErrorTemplate =
+            "Expected %d pins for %s, but found %n pins; unassigned pins will be skipped, extra pins will be ignored";
+
     public void setStatus(PhotonStatus status);
 
-    static Optional<StatusLED> ofType(
+    static StatusLED ofType(
             StatusLEDType type,
             Supplier<NativeDeviceFactoryInterface> lazyDeviceFactory,
             List<Integer> statusLedPins,
             boolean activeHigh) {
-        return Optional.ofNullable(
-                switch (type) {
-                    case RGB ->
-                            statusLedPins.size() == 3
-                                    ? new RGBStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh)
-                                    : null;
-                    case GY ->
-                            statusLedPins.size() == 2
-                                    ? new GYStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh)
-                                    : null;
-                });
+        return switch (type) {
+            case RGB -> new RGBStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
+            case GY -> new GYStatusLED(lazyDeviceFactory.get(), statusLedPins, activeHigh);
+        };
     }
 }
