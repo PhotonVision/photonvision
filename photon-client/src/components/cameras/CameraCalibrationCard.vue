@@ -47,7 +47,9 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
 
         // minPixelCount is the total area, in pixels, of the 640x480 (the minimum for proper calibration) resolution
         const minPixelCount = ref(307200);
-        const resArea = computed(() => { return (format.resolution.width * format.resolution.height);});
+        const resArea = computed(() => {
+          return format.resolution.width * format.resolution.height;
+        });
         if (resArea.value > minPixelCount.value) {
           format.resolution.width = 640;
           format.resolution.height = 480;
