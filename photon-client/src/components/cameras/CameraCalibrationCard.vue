@@ -188,7 +188,7 @@ const isCalibrating = computed(
   () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
 );
 
-const startCalibration = () => { 
+const startCalibration = () => {
   {
     useCameraSettingsStore().startPnPCalibration({
       squareSizeIn: squareSizeIn.value,
