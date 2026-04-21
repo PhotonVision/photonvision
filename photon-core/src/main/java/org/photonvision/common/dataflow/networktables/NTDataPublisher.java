@@ -55,6 +55,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Consumer<Integer> fpsLimitConsumer;
     private final Supplier<Integer> fpsLimitSupplier;
 
+    NTDataChangeListener robotToCameraListener;
+    private final Consumer<Transform3d> robotToCameraConsumer;
+
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -62,13 +65,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             BooleanSupplier driverModeSupplier,
             Consumer<Boolean> driverModeConsumer,
             Supplier<Integer> fpsLimitSupplier,
-            Consumer<Integer> fpsLimitConsumer) {
+            Consumer<Integer> fpsLimitConsumer,
+            Consumer<Transform3d> robotToCameraConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.fpsLimitConsumer = fpsLimitConsumer;
+        this.robotToCameraConsumer = robotToCameraConsumer;
 
         updateCameraNickname(cameraNickname);
         updateEntries();
@@ -96,6 +101,14 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             // TODO: Log
         }
         logger.debug("Set pipeline index to " + newIndex);
+    }
+
+    private void onRobotToCameraChange(NetworkTableEvent entryNotification) {
+        // HACK: the entryNotification's value can't be cast to Transform3d, so we read directly from
+        // the subscriber
+        var robotToCamera = ts.robotToCameraSubscriber.get();
+        robotToCameraConsumer.accept(robotToCamera);
+        logger.debug("Updated robot to camera transform to " + robotToCamera);
     }
 
     private void onDriverModeChange(NetworkTableEvent entryNotification) {
@@ -134,6 +147,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
         if (fpsLimitListener != null) fpsLimitListener.remove();
+        if (robotToCameraListener != null) robotToCameraListener.remove();
 
         ts.updateEntries();
 
@@ -148,6 +162,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         fpsLimitListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
+
+        robotToCameraListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.robotToCameraSubscriber, this::onRobotToCameraChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -187,7 +205,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         now + offset,
                         NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
-                        acceptedResult.multiTagResult);
+                        acceptedResult.multiTagResult,
+                        acceptedResult.robotToCamera);
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);

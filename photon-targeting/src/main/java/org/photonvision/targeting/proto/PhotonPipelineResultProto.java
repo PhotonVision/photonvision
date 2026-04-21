@@ -17,6 +17,7 @@
 
 package org.photonvision.targeting.proto;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import java.util.Optional;
 import org.photonvision.proto.Photon.ProtobufPhotonPipelineResult;
 import org.photonvision.targeting.MultiTargetPNPResult;
@@ -52,7 +53,10 @@ public class PhotonPipelineResultProto
                 PhotonTrackedTarget.proto.unpack(msg.getTargets()),
                 msg.hasMultiTargetResult()
                         ? Optional.of(MultiTargetPNPResult.proto.unpack(msg.getMultiTargetResult()))
-                        : Optional.empty());
+                        : Optional.empty(),
+                msg.hasRobotToCamera()
+                        ? Optional.<Transform3d>of(Transform3d.proto.unpack(msg.getRobotToCamera()))
+                        : Optional.<Transform3d>empty());
     }
 
     @Override
@@ -64,6 +68,12 @@ public class PhotonPipelineResultProto
                     msg.getMutableMultiTargetResult(), value.getMultiTagResult().get());
         } else {
             msg.clearMultiTargetResult();
+        }
+
+        if (value.getRobotToCamera().isPresent()) {
+            Transform3d.proto.pack(msg.getMutableRobotToCamera(), value.getRobotToCamera().get());
+        } else {
+            msg.clearRobotToCamera();
         }
 
         msg.setSequenceId(value.metadata.getSequenceID());

@@ -17,11 +17,13 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -49,6 +51,9 @@ public class PipelineManager {
 
     /** The currently active pipeline. */
     private CVPipeline currentUserPipeline = driverModePipeline;
+
+    /** The current robot to camera transform. */
+    private AtomicReference<Transform3d> robotToCamera = new AtomicReference<>();
 
     /**
      * Index of the last active user-created pipeline. <br>
@@ -182,6 +187,14 @@ public class PipelineManager {
         return requestedIndex;
     }
 
+    public Transform3d getRobotToCamera() {
+        return robotToCamera.get();
+    }
+
+    public void setRobotToCamera(Transform3d newTransform) {
+        robotToCamera.set(newTransform);
+    }
+
     /**
      * Internal method for setting the active pipeline. <br>
      * <br>
@@ -245,26 +258,32 @@ public class PipelineManager {
             case Reflective -> {
                 logger.debug("Creating Reflective pipeline");
                 currentUserPipeline =
-                        new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
+                        new ReflectivePipeline(
+                                (ReflectivePipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
             }
             case ColoredShape -> {
                 logger.debug("Creating ColoredShape pipeline");
                 currentUserPipeline =
-                        new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
+                        new ColoredShapePipeline(
+                                (ColoredShapePipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
             }
             case AprilTag -> {
                 logger.debug("Creating AprilTag pipeline");
                 currentUserPipeline =
-                        new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
+                        new AprilTagPipeline(
+                                (AprilTagPipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
             }
             case Aruco -> {
                 logger.debug("Creating ArUco Pipeline");
-                currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                currentUserPipeline =
+                        new ArucoPipeline(
+                                (ArucoPipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
             }
             case ObjectDetection -> {
                 logger.debug("Creating ObjectDetection Pipeline");
                 currentUserPipeline =
-                        new ObjectDetectionPipeline((ObjectDetectionPipelineSettings) desiredPipelineSettings);
+                        new ObjectDetectionPipeline(
+                                (ObjectDetectionPipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
             }
             case Calib3d, DriverMode, FocusCamera -> {}
         }

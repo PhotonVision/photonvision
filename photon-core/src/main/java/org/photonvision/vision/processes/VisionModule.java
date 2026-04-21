@@ -17,6 +17,10 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.VideoException;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -153,7 +157,8 @@ public class VisionModule {
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
                         this::getFPSLimit,
-                        this::setFPSLimit);
+                        this::setFPSLimit,
+                        this::setRobotToCameraTransform);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
@@ -633,6 +638,26 @@ public class VisionModule {
     public void setFPSLimit(int fps) {
         this.fpsLimit = fps;
         saveAndBroadcastAll();
+    }
+
+    /**
+     * Set camera transform for this vision module.
+     *
+     * @param robotToCameraTransform the transform from the robot's origin to the camera's origin, in
+     *     the robot's coordinate system. This should be provided in meters.
+     */
+    public void setRobotToCameraTransform(Transform3d robotToCameraTransform) {
+        this.pipelineManager.setRobotToCamera(robotToCameraTransform);
+    }
+
+    /**
+     * Get robot to camera transform for this vision module.
+     *
+     * @return the transform from the robot's origin to the camera's origin, in the robot's coordinate
+     *     system, in meters. May return null if no transform is set.
+     */
+    public Transform3d getRobotToCameraTransform() {
+        return this.pipelineManager.getRobotToCamera();
     }
 
     /**

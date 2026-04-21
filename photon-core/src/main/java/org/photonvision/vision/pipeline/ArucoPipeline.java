@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.Objdetect;
@@ -55,12 +56,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public ArucoPipeline() {
-        super(FrameThresholdType.GREYSCALE);
+        super(FrameThresholdType.GREYSCALE, () -> null);
         settings = new ArucoPipelineSettings();
     }
 
-    public ArucoPipeline(ArucoPipelineSettings settings) {
-        super(FrameThresholdType.GREYSCALE);
+    public ArucoPipeline(
+            ArucoPipelineSettings settings, Supplier<Transform3d> robotToCameraSupplier) {
+        super(FrameThresholdType.GREYSCALE, robotToCameraSupplier);
         this.settings = settings;
     }
 
@@ -235,7 +237,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                multiTagResult,
+                frame,
+                Optional.ofNullable(robotToCameraSupplier.get()));
     }
 
     private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {

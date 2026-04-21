@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline.result;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +36,7 @@ public class CVPipelineResult implements Releasable {
     public final Frame inputAndOutputFrame;
     public Optional<MultiTargetPNPResult> multiTagResult;
     public final List<String> objectDetectionClassNames;
+    public Optional<Transform3d> robotToCamera;
 
     public CVPipelineResult(
             long sequenceID,
@@ -51,8 +53,45 @@ public class CVPipelineResult implements Releasable {
             double fps,
             List<TrackedTarget> targets,
             Frame inputFrame,
+            Optional<Transform3d> robotToCamera) {
+        this(
+                sequenceID,
+                processingNanos,
+                fps,
+                targets,
+                Optional.empty(),
+                inputFrame,
+                List.of(),
+                robotToCamera);
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Frame inputFrame,
             List<String> classNames) {
         this(sequenceID, processingNanos, fps, targets, Optional.empty(), inputFrame, classNames);
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Frame inputFrame,
+            List<String> classNames,
+            Optional<Transform3d> robotToCamera) {
+        this(
+                sequenceID,
+                processingNanos,
+                fps,
+                targets,
+                Optional.empty(),
+                inputFrame,
+                classNames,
+                robotToCamera);
     }
 
     public CVPipelineResult(
@@ -73,12 +112,52 @@ public class CVPipelineResult implements Releasable {
             Optional<MultiTargetPNPResult> multiTagResult,
             Frame inputFrame,
             List<String> classNames) {
+        this(
+                sequenceID,
+                processingNanos,
+                fps,
+                targets,
+                multiTagResult,
+                inputFrame,
+                classNames,
+                Optional.empty());
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Optional<MultiTargetPNPResult> multiTagResult,
+            Frame inputFrame,
+            Optional<Transform3d> robotToCamera) {
+        this(
+                sequenceID,
+                processingNanos,
+                fps,
+                targets,
+                multiTagResult,
+                inputFrame,
+                List.of(),
+                robotToCamera);
+    }
+
+    public CVPipelineResult(
+            long sequenceID,
+            double processingNanos,
+            double fps,
+            List<TrackedTarget> targets,
+            Optional<MultiTargetPNPResult> multiTagResult,
+            Frame inputFrame,
+            List<String> classNames,
+            Optional<Transform3d> robotToCamera) {
         this.sequenceID = sequenceID;
         this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
         this.multiTagResult = multiTagResult;
         this.objectDetectionClassNames = classNames;
+        this.robotToCamera = robotToCamera;
 
         this.inputAndOutputFrame = inputFrame;
     }

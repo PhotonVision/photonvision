@@ -16,7 +16,7 @@
 ###############################################################################
 
 import struct
-from typing import Generic, Optional, Protocol, TypeVar
+from typing import Callable, Generic, Optional, Protocol, TypeVar
 
 import wpilib
 from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
@@ -207,6 +207,12 @@ class Packet:
         else:
             return None
 
+    def decodeOptionalShimmed(self, shim: Callable[[], T]) -> Optional[T]:
+        if self.decodeBoolean():
+            return shim()
+        else:
+            return None
+
     def _encodeGeneric(self, packFormat, value):
         """
         Append bytes to the packet data buffer.
@@ -309,6 +315,16 @@ class Packet:
             packed = serde.pack(value)
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
+
+    def encodeOptionalShimmed(self, value: Optional[T], shim: Callable[[T], None]):
+        """
+        Encodes an optional value using a specific shimmed serializer.
+        """
+        if value is None:
+            self.encodeBoolean(False)
+        else:
+            self.encodeBoolean(True)
+            shim(value)
 
     def encodeBytes(self, value: bytes):
         self.packetData = self.packetData + value

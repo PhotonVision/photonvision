@@ -17,6 +17,9 @@
 
 package org.photonvision.utils;
 
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.wpilib.math.geometry.*;
 
@@ -113,5 +116,24 @@ public class PacketUtils {
 
     public static Pose3d unpackPose3d(Packet packet) {
         return new Pose3d(unpackTranslation3d(packet), unpackRotation3d(packet));
+    }
+
+    public static <T> void packOptional(
+            Packet packet, Optional<T> optional, BiConsumer<Packet, T> packer) {
+        if (optional.isPresent()) {
+            packet.encode(true);
+            packer.accept(packet, optional.get());
+        } else {
+            packet.encode(false);
+        }
+    }
+
+    public static <T> Optional<T> unpackOptional(Packet packet, Function<Packet, T> unpacker) {
+        boolean isPresent = packet.decodeBoolean();
+        if (isPresent) {
+            return Optional.of(unpacker.apply(packet));
+        } else {
+            return Optional.empty();
+        }
     }
 }

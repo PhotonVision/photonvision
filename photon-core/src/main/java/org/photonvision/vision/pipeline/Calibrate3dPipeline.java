@@ -74,7 +74,7 @@ public class Calibrate3dPipeline
     }
 
     public Calibrate3dPipeline(int minSnapshots) {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, () -> null);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;

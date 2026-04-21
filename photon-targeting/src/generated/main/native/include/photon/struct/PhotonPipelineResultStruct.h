@@ -30,6 +30,7 @@
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineMetadata.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
+#include <frc/geometry/Transform3d.h>
 #include <optional>
 #include <stdint.h>
 #include <vector>
@@ -41,6 +42,7 @@ struct PhotonPipelineResult_PhotonStruct {
   photon::PhotonPipelineMetadata metadata;
   std::vector<photon::PhotonTrackedTarget> targets;
   std::optional<photon::MultiTargetPNPResult> multitagResult;
+  std::optional<frc::Transform3d> robotToCamera;
 
   friend bool operator==(PhotonPipelineResult_PhotonStruct const&, PhotonPipelineResult_PhotonStruct const&) = default;
 };

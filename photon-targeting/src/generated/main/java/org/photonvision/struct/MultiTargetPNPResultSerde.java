@@ -32,6 +32,10 @@ import org.photonvision.common.dataflow.structures.PacketSerde;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
 

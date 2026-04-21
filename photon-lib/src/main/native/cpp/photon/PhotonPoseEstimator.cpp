@@ -62,11 +62,8 @@ cv::Point3d TagCornerToObjectPoint(wpi::units::meter_t cornerX,
                                    wpi::math::Pose3d tagPose);
 }  // namespace detail
 
-PhotonPoseEstimator::PhotonPoseEstimator(
-    wpi::apriltag::AprilTagFieldLayout tags,
-    wpi::math::Transform3d robotToCamera)
+PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags)
     : aprilTags(tags),
-      m_robotToCamera(robotToCamera),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
   HAL_ReportUsage("PhotonVision/PhotonPoseEstimator", InstanceCount, "");
@@ -78,6 +75,13 @@ bool ShouldEstimate(const PhotonPipelineResult& result) {
   if (result.GetTimestamp() < 0_s) {
     WPILIB_ReportError(wpi::warn::Warning,
                        "Result timestamp was reported in the past!");
+    return false;
+  }
+
+  // Result has no robot to camera transform -- can't do estimation
+  if (!result.GetRobotToCamera().has_value()) {
+    FRC_ReportError(frc::warn::Warning,
+                    "Result has no robot to camera transform!");
     return false;
   }
 
@@ -118,7 +122,7 @@ PhotonPoseEstimator::EstimateLowestAmbiguityPose(
 
   return EstimatedRobotPose{
       fiducialPose->TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
-          .TransformBy(m_robotToCamera.Inverse()),
+          .TransformBy(cameraResult.GetRobotToCamera().value().Inverse()),
       cameraResult.GetTimestamp(), cameraResult.GetTargets(), LOWEST_AMBIGUITY};
 }
 
@@ -145,19 +149,19 @@ PhotonPoseEstimator::EstimateClosestToCameraHeightPose(
     wpi::math::Pose3d const targetPose = *fiducialPose;
 
     wpi::units::meter_t const alternativeDifference = wpi::units::math::abs(
-        m_robotToCamera.Z() -
+        cameraResult.GetRobotToCamera().value().Z() -
         targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
             .Z());
 
     wpi::units::meter_t const bestDifference = wpi::units::math::abs(
-        m_robotToCamera.Z() -
+        cameraResult.GetRobotToCamera().value().Z() -
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()).Z());
 
     if (alternativeDifference < smallestHeightDifference) {
       smallestHeightDifference = alternativeDifference;
       pose = EstimatedRobotPose{
           targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
+              .TransformBy(cameraResult.GetRobotToCamera().value().Inverse()),
           cameraResult.GetTimestamp(), cameraResult.GetTargets(),
           CLOSEST_TO_CAMERA_HEIGHT};
     }
@@ -165,7 +169,7 @@ PhotonPoseEstimator::EstimateClosestToCameraHeightPose(
       smallestHeightDifference = bestDifference;
       pose = EstimatedRobotPose{
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
+              .TransformBy(cameraResult.GetRobotToCamera().value().Inverse()),
           cameraResult.GetTimestamp(), cameraResult.GetTargets(),
           CLOSEST_TO_CAMERA_HEIGHT};
     }
@@ -199,10 +203,10 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
 
     const auto altPose =
         targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
-            .TransformBy(m_robotToCamera.Inverse());
+            .TransformBy(cameraResult.GetRobotToCamera().value().Inverse());
     const auto bestPose =
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
-            .TransformBy(m_robotToCamera.Inverse());
+            .TransformBy(cameraResult.GetRobotToCamera().value().Inverse());
 
     wpi::units::meter_t const alternativeDifference = wpi::units::math::abs(
         referencePose.Translation().Distance(altPose.Translation()));
@@ -283,8 +287,8 @@ PhotonPoseEstimator::EstimateCoprocMultiTagPose(
 
   const auto field2camera = cameraResult.MultiTagResult()->estimatedPose.best;
 
-  const auto fieldToRobot =
-      wpi::math::Pose3d() + field2camera + m_robotToCamera.Inverse();
+  const auto fieldToRobot = wpi::math::Pose3d() + field2camera +
+                            cameraResult.GetRobotToCamera().value().Inverse();
   return photon::EstimatedRobotPose(fieldToRobot, cameraResult.GetTimestamp(),
                                     cameraResult.GetTargets(),
                                     MULTI_TAG_PNP_ON_COPROCESSOR);
@@ -341,8 +345,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::EstimateRioMultiTagPose(
   const wpi::math::Pose3d pose = detail::ToPose3d(tvec, rvec);
 
   return photon::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), cameraResult.GetTimestamp(),
-      cameraResult.GetTargets(), MULTI_TAG_PNP_ON_RIO);
+      pose.TransformBy(cameraResult.GetRobotToCamera().value().Inverse()),
+      cameraResult.GetTimestamp(), cameraResult.GetTargets(),
+      MULTI_TAG_PNP_ON_RIO);
 }
 
 std::optional<EstimatedRobotPose>
@@ -369,7 +374,7 @@ PhotonPoseEstimator::EstimatePnpDistanceTrigSolvePose(
           wpi::math::Rotation3d(0_rad,
                                 -wpi::units::degree_t(bestTarget.GetPitch()),
                                 -wpi::units::degree_t(bestTarget.GetYaw())))
-          .RotateBy(m_robotToCamera.Rotation())
+          .RotateBy(cameraResult.GetRobotToCamera().value().Rotation())
           .ToTranslation2d()
           .RotateBy(headingSample);
 
@@ -388,7 +393,7 @@ PhotonPoseEstimator::EstimatePnpDistanceTrigSolvePose(
       tagPose.Translation() - camToTagTranslation;
 
   wpi::math::Translation2d camToRobotTranslation =
-      (-m_robotToCamera.Translation().ToTranslation2d())
+      (-cameraResult.GetRobotToCamera().value().Translation().ToTranslation2d())
           .RotateBy(headingSample);
 
   wpi::math::Pose2d robotPose = wpi::math::Pose2d(
@@ -426,7 +431,7 @@ PhotonPoseEstimator::EstimateAverageBestTargetsPose(
     if (target.GetPoseAmbiguity() == 0) {
       return EstimatedRobotPose{
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
+              .TransformBy(cameraResult.GetRobotToCamera().value().Inverse()),
           cameraResult.GetTimestamp(), cameraResult.GetTargets(),
           AVERAGE_BEST_TARGETS};
     }
@@ -479,8 +484,9 @@ PhotonPoseEstimator::EstimateConstrainedSolvepnpPose(
 
   std::optional<photon::PnpResult> pnpResult =
       VisionEstimation::EstimateRobotPoseConstrainedSolvePNP(
-          cameraMatrix, distCoeffs, targets, m_robotToCamera, seedPose,
-          aprilTags, photon::kAprilTag36h11, headingFree,
+          cameraMatrix, distCoeffs, targets,
+          cameraResult.GetRobotToCamera().value(), seedPose, aprilTags,
+          photon::kAprilTag36h11, headingFree,
           wpi::math::Rotation2d{
               headingBuffer.Sample(cameraResult.GetTimestamp()).value()},
           headingScaleFactor);

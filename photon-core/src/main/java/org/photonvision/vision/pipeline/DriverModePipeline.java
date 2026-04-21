@@ -17,7 +17,10 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Transform3d;
 import java.util.List;
+import java.util.function.Supplier;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -36,12 +39,13 @@ public class DriverModePipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public DriverModePipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, () -> null);
         settings = new DriverModePipelineSettings();
     }
 
-    public DriverModePipeline(DriverModePipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public DriverModePipeline(
+            DriverModePipelineSettings settings, Supplier<Transform3d> robotToCameraSupplier) {
+        super(PROCESSING_TYPE, robotToCameraSupplier);
         this.settings = settings;
     }
 

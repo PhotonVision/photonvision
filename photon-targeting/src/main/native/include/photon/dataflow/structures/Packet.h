@@ -30,6 +30,30 @@ namespace photon {
 
 class Packet;
 
+template <typename T>
+struct optional_inner;
+
+template <typename T>
+struct optional_inner<std::optional<T>> {
+  using type = T;
+};
+
+template <typename T>
+using optional_inner_t = typename optional_inner<std::remove_cvref_t<T>>::type;
+
+template <typename T>
+struct is_optional : std::false_type {};
+
+template <typename T>
+struct is_optional<std::optional<T>> : std::true_type {};
+
+template <typename T>
+concept Optional = is_optional<std::remove_cvref_t<T>>::value;
+
+template <typename Opt, typename... I>
+concept OptionalWPIStructSerializable =
+    Optional<Opt> && wpi::StructSerializable<optional_inner_t<Opt>, I...>;
+
 // Struct is where all our actual ser/de methods are implemented
 template <typename T>
 struct SerdeType {};
@@ -104,6 +128,19 @@ class Packet {
     writePos = newWritePos;
   }
 
+  // Support encoding optional wpi structs
+  template <typename Opt, typename... I>
+    requires OptionalWPIStructSerializable<Opt, I...>
+  inline void Pack(const std::optional<optional_inner_t<Opt>>& value) {
+    using T = optional_inner_t<Opt>;
+    if (value) {
+      this->Pack<uint8_t>(1u);
+      this->Pack<T, I...>(*value);
+    } else {
+      this->Pack<uint8_t>(0u);
+    }
+  }
+
   template <typename T>
     requires(PhotonStructSerializable<T>)
   inline void Pack(const T& value) {
@@ -118,6 +155,18 @@ class Packet {
         std::span<uint8_t>{packetData.begin() + readPos, packetData.end()});
     readPos += wpi::util::GetStructSize<T, I...>();
     return ret;
+  }
+
+  // Support decoding optional wpi structs
+  template <typename Opt, typename... I>
+    requires OptionalWPIStructSerializable<Opt, I...>
+  inline std::optional<optional_inner_t<Opt>> Unpack() {
+    using T = optional_inner_t<Opt>;
+    if (this->Unpack<uint8_t>() == 0u) {
+      return std::nullopt;
+    } else {
+      return std::make_optional<T>(this->Unpack<T, I...>());
+    }
   }
 
   template <typename T>

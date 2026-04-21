@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import java.util.List;
+import java.util.Optional;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.Contour;
@@ -46,12 +48,14 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.HSV;
 
     public ReflectivePipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, () -> null);
         settings = new ReflectivePipelineSettings();
     }
 
-    public ReflectivePipeline(ReflectivePipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public ReflectivePipeline(
+            ReflectivePipelineSettings settings,
+            java.util.function.Supplier<Transform3d> robotToCameraSupplier) {
+        super(PROCESSING_TYPE, robotToCameraSupplier);
         this.settings = settings;
     }
 
@@ -159,6 +163,12 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
-        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                frame,
+                Optional.ofNullable(robotToCameraSupplier.get()));
     }
 }

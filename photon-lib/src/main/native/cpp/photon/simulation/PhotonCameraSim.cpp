@@ -362,7 +362,7 @@ PhotonPipelineResult PhotonCameraSim::Process(
       PhotonPipelineMetadata{heartbeatCounter, 0,
                              wpi::units::microsecond_t{latency}.to<int64_t>(),
                              1000000},
-      detectableTgts, multiTagResults};
+      detectableTgts, multiTagResults, cam->GetRobotToCamera()};
 }
 void PhotonCameraSim::SubmitProcessedFrame(const PhotonPipelineResult& result) {
   SubmitProcessedFrame(result, wpi::nt::Now());

@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 
 class PhotonPipelineResultSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "4b2ff16a964b5e2bf04be0c1454d91c4"
-    MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"
+    MESSAGE_VERSION = "c3e6b96bad05f102560d0abcad50debc"
+    MESSAGE_FORMAT = "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional Transform3d robotToCamera;"
 
     @staticmethod
     def pack(value: "PhotonPipelineResult") -> "Packet":
@@ -56,6 +56,8 @@ class PhotonPipelineResultSerde:
 
         # multitagResult is optional! it better not be a VLA too
         ret.encodeOptional(value.multitagResult, MultiTargetPNPResult.photonStruct)
+
+        ret.encodeOptionalShimmed(value.robotToCamera, ret.encodeTransform)
         return ret
 
     @staticmethod
@@ -70,6 +72,9 @@ class PhotonPipelineResultSerde:
 
         # multitagResult is optional! it better not be a VLA too
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct)
+
+        # robotToCamera is optional and shimmed!
+        ret.robotToCamera = packet.decodeOptionalShimmed(packet.decodeTransform)
 
         return ret
 

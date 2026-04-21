@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.geometry.Transform3d;
+import java.util.function.Supplier;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
@@ -35,12 +37,13 @@ public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public FocusPipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, () -> null);
         settings = new FocusPipelineSettings();
     }
 
-    public FocusPipeline(FocusPipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public FocusPipeline(
+            FocusPipelineSettings settings, Supplier<Transform3d> robotToCameraSupplier) {
+        super(PROCESSING_TYPE, robotToCameraSupplier);
         this.settings = settings;
     }
 

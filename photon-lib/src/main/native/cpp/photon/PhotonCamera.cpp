@@ -123,7 +123,8 @@ static const std::string TYPE_STRING =
     std::string{SerdeType<PhotonPipelineResult>::GetSchemaHash()};
 
 PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
-                           const std::string_view cameraName)
+                           const std::string_view cameraName,
+                           std::optional<frc::Transform3d> robotToCamera)
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
@@ -131,6 +132,9 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
               .Subscribe(
                   TYPE_STRING, {},
                   {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
+      robotToCameraPublisher(
+          rootTable->GetStructTopic<frc::Transform3d>("robotToCamera")
+              .Publish()),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -166,8 +170,11 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
                       wpi::Alert::Level::MEDIUM),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
+      timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM),
+      robotToCamera(robotToCamera) {
   verifyDependencies();
+  if (robotToCamera.has_value())
+    robotToCameraPublisher.Set(robotToCamera.value());
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 
@@ -177,8 +184,22 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
   InitTspServer();
 }
 
+PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
+                           const std::string_view cameraName)
+    : PhotonCamera(instance, cameraName, std::nullopt) {}
+
+PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
+                           const std::string_view cameraName,
+                           const frc::Transform3d robotToCamera)
+    : PhotonCamera(instance, cameraName, std::make_optional(robotToCamera)) {}
+
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(wpi::nt::NetworkTableInstance::GetDefault(), cameraName) {}
+
+PhotonCamera::PhotonCamera(const std::string_view cameraName,
+                           const frc::Transform3d robotToCamera)
+    : PhotonCamera(wpi::nt::NetworkTableInstance::GetDefault(), cameraName,
+                   std::make_optional(robotToCamera)) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
   if (test) {
@@ -453,6 +474,11 @@ std::vector<std::string> PhotonCamera::tablesThatLookLikePhotonCameras() {
       });
 
   return ret;
+}
+
+void PhotonCamera::SetRobotToCamera(frc::Transform3d newRobotToCamera) {
+  robotToCamera = std::make_optional(newRobotToCamera);
+  robotToCameraPublisher.Set(robotToCamera.value());
 }
 
 }  // namespace photon

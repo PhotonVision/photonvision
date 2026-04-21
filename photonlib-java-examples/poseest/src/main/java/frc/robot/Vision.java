@@ -59,8 +59,8 @@ public class Vision {
      */
     public Vision(EstimateConsumer estConsumer) {
         this.estConsumer = estConsumer;
-        camera = new PhotonCamera(kCameraName);
-        photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
+        camera = new PhotonCamera(kCameraName, kRobotToCam);
+        photonEstimator = new PhotonPoseEstimator(kTagLayout);
 
         // ----- Simulation
         if (Robot.isSimulation()) {

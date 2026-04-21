@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.geometry.Transform3d;
+import java.util.function.Supplier;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -29,14 +31,16 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     protected S settings;
     protected FrameStaticProperties frameStaticProperties;
     protected QuirkyCamera cameraQuirks;
+    protected Supplier<Transform3d> robotToCameraSupplier;
 
     private final FrameThresholdType thresholdType;
 
     // So releaseable doesn't keep track of if we double-free something. so (ew) remember that here
     protected volatile boolean released = false;
 
-    public CVPipeline(FrameThresholdType thresholdType) {
+    public CVPipeline(FrameThresholdType thresholdType, Supplier<Transform3d> robotToCameraSupplier) {
         this.thresholdType = thresholdType;
+        this.robotToCameraSupplier = robotToCameraSupplier;
     }
 
     public FrameThresholdType getThresholdType() {

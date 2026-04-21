@@ -17,6 +17,7 @@
 
 package org.photonvision.targeting;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,9 +41,12 @@ public class PhotonPipelineResult
     /** The multitag result, if using an AprilTag pipeline with Multi-Target Estimation enabled. */
     public Optional<MultiTargetPNPResult> multitagResult;
 
+    /** The transform from the robot to the camera. This is an optional value */
+    public Optional<Transform3d> robotToCamera;
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {
-        this(new PhotonPipelineMetadata(), List.of(), Optional.empty());
+        this(new PhotonPipelineMetadata(), List.of(), Optional.empty(), Optional.empty());
     }
 
     /**
@@ -66,6 +70,7 @@ public class PhotonPipelineResult
                 new PhotonPipelineMetadata(
                         captureTimestampMicros, publishTimestampMicros, sequenceID, timeSinceLastPong),
                 targets,
+                Optional.empty(),
                 Optional.empty());
     }
 
@@ -92,16 +97,55 @@ public class PhotonPipelineResult
                 new PhotonPipelineMetadata(
                         captureTimestamp, publishTimestamp, sequenceID, timeSinceLastPong),
                 targets,
-                result);
+                result,
+                Optional.empty());
     }
 
     public PhotonPipelineResult(
             PhotonPipelineMetadata metadata,
             List<PhotonTrackedTarget> targets,
             Optional<MultiTargetPNPResult> result) {
+        this(metadata, targets, result, Optional.empty());
+    }
+
+    /**
+     * Constructs a pipeline result.
+     *
+     * @param sequenceID The number of frames processed by this camera since boot
+     * @param captureTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     captured the image this result contains the targeting info of
+     * @param publishTimestamp The time, in uS in the coprocessor's timebase, that the coprocessor
+     *     published targeting info
+     * @param timeSinceLastPong The time since the last Time Sync Pong in uS.
+     * @param targets The list of targets identified by the pipeline.
+     * @param result Result from multi-target PNP.
+     * @param robotToCamera The transform from the robot to the camera.
+     */
+    public PhotonPipelineResult(
+            long sequenceID,
+            long captureTimestamp,
+            long publishTimestamp,
+            long timeSinceLastPong,
+            List<PhotonTrackedTarget> targets,
+            Optional<MultiTargetPNPResult> result,
+            Optional<Transform3d> robotToCamera) {
+        this(
+                new PhotonPipelineMetadata(
+                        captureTimestamp, publishTimestamp, sequenceID, timeSinceLastPong),
+                targets,
+                result,
+                robotToCamera);
+    }
+
+    public PhotonPipelineResult(
+            PhotonPipelineMetadata metadata,
+            List<PhotonTrackedTarget> targets,
+            Optional<MultiTargetPNPResult> result,
+            Optional<Transform3d> robotToCamera) {
         this.metadata = metadata;
         this.targets.addAll(targets);
         this.multitagResult = result;
+        this.robotToCamera = robotToCamera;
     }
 
     /**
@@ -168,6 +212,16 @@ public class PhotonPipelineResult
     }
 
     /**
+     * Return the robot to camera transform. Be sure to check {@code getRobotToCamera().isPresent()}
+     * before using the transform!
+     *
+     * @return The robot to camera transform. Empty if no transform is set.
+     */
+    public Optional<Transform3d> getRobotToCamera() {
+        return robotToCamera;
+    }
+
+    /**
      * Returns the estimated time the frame was taken, in the Time Sync Server's time base
      * (wpi::nt::Now). This is calculated using the estimated offset between Time Sync Server time and
      * local time. The robot shall run a server, so the offset shall be 0.
@@ -186,6 +240,8 @@ public class PhotonPipelineResult
                 + targets
                 + ", multitagResult="
                 + multitagResult
+                + ", robotToCamera="
+                + robotToCamera
                 + "]";
     }
 
@@ -214,6 +270,9 @@ public class PhotonPipelineResult
         if (multitagResult == null) {
             if (other.multitagResult != null) return false;
         } else if (!multitagResult.equals(other.multitagResult)) return false;
+        if (robotToCamera == null) {
+            if (other.robotToCamera != null) return false;
+        } else if (!robotToCamera.equals(other.robotToCamera)) return false;
         return true;
     }
 

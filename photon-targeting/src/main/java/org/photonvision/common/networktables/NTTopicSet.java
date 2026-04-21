@@ -31,6 +31,8 @@ import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.ProtobufPublisher;
 import org.wpilib.networktables.PubSubOption;
 import org.wpilib.networktables.StructPublisher;
+import org.wpilib.networktables.StructSubscriber;
+import org.wpilib.networktables.StructTopic;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
@@ -77,6 +79,10 @@ public class NTTopicSet {
     // Camera Calibration
     public DoubleArrayPublisher cameraIntrinsicsPublisher;
     public DoubleArrayPublisher cameraDistortionPublisher;
+
+    // Camera Intrinsics
+    public StructTopic<Transform3d> robotToCameraTopic;
+    public StructSubscriber<Transform3d> robotToCameraSubscriber;
 
     public void updateEntries() {
         var rawBytesEntry =
@@ -127,6 +133,12 @@ public class NTTopicSet {
 
         cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
         cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
+        robotToCameraTopic = subTable.getStructTopic("robotToCamera", Transform3d.struct);
+        robotToCameraSubscriber = robotToCameraTopic.subscribe(null);
+    }
+
+    public boolean robotToCameraExists() {
+        return robotToCameraTopic.exists();
     }
 
     @SuppressWarnings("DuplicatedCode")
@@ -156,5 +168,6 @@ public class NTTopicSet {
 
         if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
         if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
+        if (robotToCameraSubscriber != null) robotToCameraSubscriber.close();
     }
 }
