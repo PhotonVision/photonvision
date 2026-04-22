@@ -62,7 +62,8 @@ cv::Point3d TagCornerToObjectPoint(wpi::units::meter_t cornerX,
                                    wpi::math::Pose3d tagPose);
 }  // namespace detail
 
-PhotonPoseEstimator::PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout tags)
+PhotonPoseEstimator::PhotonPoseEstimator(
+    wpi::apriltag::AprilTagFieldLayout tags)
     : aprilTags(tags),
       headingBuffer(
           wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d>(1_s)) {
@@ -81,7 +82,7 @@ bool ShouldEstimate(const PhotonPipelineResult& result) {
   // Result has no robot to camera transform -- can't do estimation
   if (!result.GetRobotToCamera().has_value()) {
     WPILIB_ReportError(wpi::warn::Warning,
-                    "Result has no robot to camera transform!");
+                       "Result has no robot to camera transform!");
     return false;
   }
 

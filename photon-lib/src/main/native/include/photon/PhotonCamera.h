@@ -28,7 +28,6 @@
 #include <string>
 #include <vector>
 
-#include <wpi/nt/StructTopic.hpp>
 #include <wpi/driverstation/Alert.hpp>
 #include <wpi/math/geometry/Transform3d.hpp>
 #include <wpi/nt/BooleanTopic.hpp>
@@ -40,8 +39,8 @@
 #include <wpi/nt/NetworkTableInstance.hpp>
 #include <wpi/nt/RawTopic.hpp>
 #include <wpi/nt/StringTopic.hpp>
+#include <wpi/nt/StructTopic.hpp>
 #include <wpi/units/time.hpp>
-#include <wpi/math/geometry/Transform3d.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
@@ -113,7 +112,9 @@ class PhotonCamera {
    * @return The transform from the robot's center to the camera, if it was set.
    * Empty otherwise.
    */
-  std::optional<wpi::math::Transform3d> GetRobotToCamera() { return robotToCamera; }
+  std::optional<wpi::math::Transform3d> GetRobotToCamera() {
+    return robotToCamera;
+  }
 
   /**
    * Sets the robot to camera transform

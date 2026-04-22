@@ -543,8 +543,9 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       std::vector<int16_t>{8});
 
   const wpi::units::radian_t camPitch = 30_deg;
-  const wpi::math::Transform3d kRobotToCam{wpi::math::Translation3d(0.5_m, 0.0_m, 0.5_m),
-                                     wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
+  const wpi::math::Transform3d kRobotToCam{
+      wpi::math::Translation3d(0.5_m, 0.0_m, 0.5_m),
+      wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
   photon::PhotonPipelineResult result{
       photon::PhotonPipelineMetadata{1, 10000, 2000, 100}, targets,
       multiTagResult, std::make_optional<wpi::math::Transform3d>(kRobotToCam)};
