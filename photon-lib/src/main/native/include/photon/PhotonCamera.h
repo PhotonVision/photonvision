@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include <networktables/StructTopic.h>
 #include <wpi/driverstation/Alert.hpp>
 #include <wpi/math/geometry/Transform3d.h>
 #include <wpi/nt/BooleanTopic.hpp>
@@ -39,7 +40,6 @@
 #include <wpi/nt/NetworkTableInstance.hpp>
 #include <wpi/nt/RawTopic.hpp>
 #include <wpi/nt/StringTopic.hpp>
-#include <networktables/StructTopic.h>
 #include <wpi/units/time.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
