@@ -45,6 +45,16 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
         else format.mean = NaN;
 
+        // minPixelCount is the total area, in pixels, of the 640x480 (the minimum for proper calibration) resolution
+        const minPixelCount = 307200;
+        const resArea = format.resolution.width * format.resolution.height;
+
+        if (resArea > minPixelCount) {
+          format.resolution.width = 640;
+          format.resolution.height = 480;
+          uniqueResolutions.push(format);
+        }
+
         format.horizontalFOV =
           2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
         format.verticalFOV =
