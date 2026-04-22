@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
@@ -28,6 +27,7 @@ import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.FocusPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.FocusPipelineResult;
+import org.wpilib.math.geometry.Transform3d;
 
 public class FocusPipeline extends CVPipeline<FocusPipelineResult, FocusPipelineSettings> {
     private final FocusPipe focusPipe = new FocusPipe();

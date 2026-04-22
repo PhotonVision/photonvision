@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,6 +33,7 @@ import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.util.Pair;
 
 public class ColoredShapePipeline

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +31,7 @@ import org.photonvision.common.dataflow.websocket.UIPhotonConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
+import org.wpilib.math.geometry.Transform3d;
 
 @SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager {

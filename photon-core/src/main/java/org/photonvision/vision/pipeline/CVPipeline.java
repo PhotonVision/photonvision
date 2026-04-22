@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.function.Supplier;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -25,6 +24,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.wpilib.math.geometry.Transform3d;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings>
         implements Releasable {

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -34,6 +33,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {

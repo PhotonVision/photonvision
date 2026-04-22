@@ -36,10 +36,10 @@
 #include "photon/targeting/MultiTargetPNPResult.h"
 #include "photon/targeting/PhotonPipelineMetadata.h"
 #include "photon/targeting/PhotonTrackedTarget.h"
-#include <frc/geometry/Transform3d.h>
 #include <optional>
 #include <stdint.h>
 #include <vector>
+#include <wpi/math/geometry/Transform3d.h>
 
 
 namespace photon {

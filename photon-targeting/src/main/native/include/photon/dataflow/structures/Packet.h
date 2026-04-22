@@ -52,7 +52,7 @@ concept Optional = is_optional<std::remove_cvref_t<T>>::value;
 
 template <typename Opt, typename... I>
 concept OptionalWPIStructSerializable =
-    Optional<Opt> && wpi::StructSerializable<optional_inner_t<Opt>, I...>;
+    Optional<Opt> && wpi::util::StructSerializable<optional_inner_t<Opt>, I...>;
 
 // Struct is where all our actual ser/de methods are implemented
 template <typename T>

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline.result;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +25,7 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 
 public class CVPipelineResult implements Releasable {
     public final long sequenceID;

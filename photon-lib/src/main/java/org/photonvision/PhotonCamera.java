@@ -36,6 +36,7 @@ import org.photonvision.timesync.TimeSyncSingleton;
 import org.wpilib.driverstation.Alert;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.linalg.MatBuilder;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.*;
@@ -51,6 +52,7 @@ import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.PubSubOption;
 import org.wpilib.networktables.StringSubscriber;
+import org.wpilib.networktables.StructPublisher;
 import org.wpilib.system.Timer;
 
 /** Represents a camera that is connected to PhotonVision. */

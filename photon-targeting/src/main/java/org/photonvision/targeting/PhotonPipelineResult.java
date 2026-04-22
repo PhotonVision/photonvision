@@ -17,7 +17,6 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +24,7 @@ import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.PhotonPipelineResultSerde;
 import org.photonvision.targeting.proto.PhotonPipelineResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /** Represents a pipeline result from a PhotonCamera. */

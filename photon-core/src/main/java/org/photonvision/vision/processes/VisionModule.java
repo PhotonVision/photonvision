@@ -17,10 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +54,7 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.util.Units;
 import org.wpilib.vision.camera.CameraServerJNI;
 import org.wpilib.vision.camera.VideoException;

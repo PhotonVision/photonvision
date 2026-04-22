@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Transform3d;
 import java.util.List;
 import java.util.function.Supplier;
 import org.photonvision.common.util.math.MathUtils;
@@ -28,6 +26,7 @@ import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.util.Pair;
 
 public class DriverModePipeline
