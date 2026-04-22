@@ -34,7 +34,7 @@
 
 // Includes for dependant types
 #include <stdint.h>
-#include <wpi/math/geometry/Transform3d.h>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 
 namespace photon {

@@ -28,9 +28,9 @@
 #include <string>
 #include <vector>
 
-#include <networktables/StructTopic.h>
+#include <wpi/nt/StructTopic.hpp>
 #include <wpi/driverstation/Alert.hpp>
-#include <wpi/math/geometry/Transform3d.h>
+#include <wpi/math/geometry/Transform3d.hpp>
 #include <wpi/nt/BooleanTopic.hpp>
 #include <wpi/nt/DoubleArrayTopic.hpp>
 #include <wpi/nt/DoubleTopic.hpp>
@@ -41,6 +41,7 @@
 #include <wpi/nt/RawTopic.hpp>
 #include <wpi/nt/StringTopic.hpp>
 #include <wpi/units/time.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
 
@@ -85,7 +86,7 @@ class PhotonCamera {
    * mount positions (ie, robot ➔ camera).
    */
   explicit PhotonCamera(const std::string_view cameraName,
-                        frc::Transform3d robotToCamera);
+                        wpi::math::Transform3d robotToCamera);
 
   /**
    * Constructs a PhotonCamera from a root table.
@@ -98,9 +99,9 @@ class PhotonCamera {
    * @param robotToCamera Transform3d from the center of the robot to the camera
    * mount positions (ie, robot ➔ camera).
    */
-  explicit PhotonCamera(nt::NetworkTableInstance instance,
+  explicit PhotonCamera(wpi::nt::NetworkTableInstance instance,
                         const std::string_view cameraName,
-                        frc::Transform3d robotToCamera);
+                        wpi::math::Transform3d robotToCamera);
 
   PhotonCamera(PhotonCamera&&) = default;
 
@@ -112,7 +113,7 @@ class PhotonCamera {
    * @return The transform from the robot's center to the camera, if it was set.
    * Empty otherwise.
    */
-  std::optional<frc::Transform3d> GetRobotToCamera() { return robotToCamera; }
+  std::optional<wpi::math::Transform3d> GetRobotToCamera() { return robotToCamera; }
 
   /**
    * Sets the robot to camera transform
@@ -120,7 +121,7 @@ class PhotonCamera {
    * @param newRobotToCamera Transform3d from the center of the robot to the
    * camera mount positions (ie, robot ➔ camera).
    */
-  void SetRobotToCamera(frc::Transform3d newRobotToCamera);
+  void SetRobotToCamera(wpi::math::Transform3d newRobotToCamera);
   /**
    * The list of pipeline results sent by PhotonVision since the last call to
    * GetAllUnreadResults(). Calling this function clears the internal FIFO
@@ -259,7 +260,7 @@ class PhotonCamera {
   std::shared_ptr<wpi::nt::NetworkTable> mainTable;
   std::shared_ptr<wpi::nt::NetworkTable> rootTable;
   wpi::nt::RawSubscriber rawBytesEntry;
-  nt::StructPublisher<frc::Transform3d> robotToCameraPublisher;
+  wpi::nt::StructPublisher<wpi::math::Transform3d> robotToCameraPublisher;
   wpi::nt::IntegerPublisher inputSaveImgEntry;
   wpi::nt::IntegerSubscriber inputSaveImgSubscriber;
   wpi::nt::IntegerPublisher outputSaveImgEntry;
@@ -296,7 +297,7 @@ class PhotonCamera {
    */
   explicit PhotonCamera(wpi::nt::NetworkTableInstance instance,
                         const std::string_view cameraName,
-                        std::optional<wpi::frc::Transform3d> robotToCamera);
+                        std::optional<wpi::math::Transform3d> robotToCamera);
   wpi::units::second_t lastVersionCheckTime = 0_s;
   static bool VERSION_CHECK_ENABLED;
   inline static int InstanceCount = 1;
@@ -312,7 +313,7 @@ class PhotonCamera {
   void CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result);
 
   std::vector<std::string> tablesThatLookLikePhotonCameras();
-  std::optional<frc::Transform3d> robotToCamera;
+  std::optional<wpi::math::Transform3d> robotToCamera;
 };
 
 }  // namespace photon

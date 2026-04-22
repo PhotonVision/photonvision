@@ -90,7 +90,7 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>({})}};
+      std::make_optional<wpi::math::Transform3d>({})}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(11));
 
   photon::PhotonPoseEstimator estimator(aprilTags);
@@ -151,7 +151,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>({{0_m, 0_m, 4_m}, {}})}};
+      std::make_optional<wpi::math::Transform3d>({{0_m, 0_m, 4_m}, {}})}};
   cameraOne.testResult[0].SetReceiveTimestamp(17_s);
 
   photon::PhotonPoseEstimator estimator(aprilTags);
@@ -200,7 +200,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToReferencePoseStrategy) {
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>({})}};
+      std::make_optional<wpi::math::Transform3d>({})}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags);
@@ -251,7 +251,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>({})}};
+      std::make_optional<wpi::math::Transform3d>({})}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(17));
 
   photon::PhotonPoseEstimator estimator(aprilTags);
@@ -291,7 +291,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
 
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targetsThree,
-      std::nullopt, std::make_optional<frc::Transform3d>({})}};
+      std::nullopt, std::make_optional<wpi::math::Transform3d>({})}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(21));
 
   for (const auto& result : cameraOne.GetAllUnreadResults()) {
@@ -416,7 +416,7 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>({})}};
+      std::make_optional<wpi::math::Transform3d>({})}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(15));
 
   photon::PhotonPoseEstimator estimator(aprilTags);
@@ -459,7 +459,7 @@ TEST(PhotonPoseEstimatorTest, MultiTagOnCoprocFallback) {
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>({})}};
+      std::make_optional<wpi::math::Transform3d>({})}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(11));
 
   photon::PhotonPoseEstimator estimator(aprilTags);
@@ -488,8 +488,8 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 
   auto testResult = photon::PhotonPipelineResult{
       photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt,
-      std::make_optional<frc::Transform3d>(frc::Transform3d{
-          frc::Translation3d(0_m, 0_m, 1_m), frc::Rotation3d()})};
+      std::make_optional<wpi::math::Transform3d>(wpi::math::Transform3d{
+          wpi::math::Translation3d(0_m, 0_m, 1_m), wpi::math::Rotation3d()})};
   testResult.SetReceiveTimestamp(wpi::units::second_t(11));
 
   auto test2 = testResult;
@@ -501,8 +501,7 @@ TEST(PhotonPoseEstimatorTest, CopyResult) {
 TEST(PhotonPoseEstimatorTest, ConstrainedPnpEmptyCase) {
   photon::PhotonPoseEstimator estimator(
       wpi::apriltag::AprilTagFieldLayout::LoadField(
-          wpi::apriltag::AprilTagField::k2024Crescendo),
-      wpi::math::Transform3d());
+          wpi::apriltag::AprilTagField::k2024Crescendo));
 
   photon::PhotonPipelineResult result;
   auto distortion = Eigen::VectorXd::Zero(8);
@@ -543,26 +542,20 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       photon::PnpResult{poseTransform, poseTransform, 0.1, 0.1, 0.0},
       std::vector<int16_t>{8});
 
-  const units::radian_t camPitch = 30_deg;
-  const frc::Transform3d kRobotToCam{frc::Translation3d(0.5_m, 0.0_m, 0.5_m),
-                                     frc::Rotation3d(0_rad, -camPitch, 0_rad)};
+  const wpi::units::radian_t camPitch = 30_deg;
+  const wpi::math::Transform3d kRobotToCam{wpi::math::Translation3d(0.5_m, 0.0_m, 0.5_m),
+                                     wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
   photon::PhotonPipelineResult result{
       photon::PhotonPipelineMetadata{1, 10000, 2000, 100}, targets,
-      multiTagResult, std::make_optional<frc::Transform3d>(kRobotToCam)};
+      multiTagResult, std::make_optional<wpi::math::Transform3d>(kRobotToCam)};
 
   cameraOne.test = true;
   cameraOne.testResult = {result};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(15));
 
-  const wpi::units::radian_t camPitch = 30_deg;
-  const wpi::math::Transform3d kRobotToCam{
-      wpi::math::Translation3d(0.5_m, 0.0_m, 0.5_m),
-      wpi::math::Rotation3d(0_rad, -camPitch, 0_rad)};
-
   photon::PhotonPoseEstimator estimator(
       wpi::apriltag::AprilTagFieldLayout::LoadField(
-          wpi::apriltag::AprilTagField::k2024Crescendo),
-      kRobotToCam);
+          wpi::apriltag::AprilTagField::k2024Crescendo));
 
   auto estimatedMultiTagPose =
       estimator.EstimateCoprocMultiTagPose(cameraOne.testResult[0]);

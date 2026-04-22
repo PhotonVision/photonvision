@@ -81,7 +81,7 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
     return HasTargets() ? targets[0] : PhotonTrackedTarget{};
   }
 
-  std::optional<frc::Transform3d> GetRobotToCamera() const {
+  std::optional<wpi::math::Transform3d> GetRobotToCamera() const {
     return robotToCamera;
   }
 

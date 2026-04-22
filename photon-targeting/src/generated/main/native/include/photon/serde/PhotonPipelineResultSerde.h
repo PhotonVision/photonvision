@@ -39,7 +39,7 @@
 #include <optional>
 #include <stdint.h>
 #include <vector>
-#include <wpi/math/geometry/Transform3d.h>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 
 namespace photon {

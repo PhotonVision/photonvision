@@ -124,7 +124,7 @@ static const std::string TYPE_STRING =
 
 PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                            const std::string_view cameraName,
-                           std::optional<frc::Transform3d> robotToCamera)
+                           std::optional<wpi::math::Transform3d> robotToCamera)
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
@@ -133,7 +133,7 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                   TYPE_STRING, {},
                   {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       robotToCameraPublisher(
-          rootTable->GetStructTopic<frc::Transform3d>("robotToCamera")
+          rootTable->GetStructTopic<wpi::math::Transform3d>("robotToCamera")
               .Publish()),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
@@ -190,14 +190,14 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
 
 PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                            const std::string_view cameraName,
-                           const frc::Transform3d robotToCamera)
+                           const wpi::math::Transform3d robotToCamera)
     : PhotonCamera(instance, cameraName, std::make_optional(robotToCamera)) {}
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(wpi::nt::NetworkTableInstance::GetDefault(), cameraName) {}
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName,
-                           const frc::Transform3d robotToCamera)
+                           const wpi::math::Transform3d robotToCamera)
     : PhotonCamera(wpi::nt::NetworkTableInstance::GetDefault(), cameraName,
                    std::make_optional(robotToCamera)) {}
 
@@ -476,7 +476,7 @@ std::vector<std::string> PhotonCamera::tablesThatLookLikePhotonCameras() {
   return ret;
 }
 
-void PhotonCamera::SetRobotToCamera(frc::Transform3d newRobotToCamera) {
+void PhotonCamera::SetRobotToCamera(wpi::math::Transform3d newRobotToCamera) {
   robotToCamera = std::make_optional(newRobotToCamera);
   robotToCameraPublisher.Set(robotToCamera.value());
 }
