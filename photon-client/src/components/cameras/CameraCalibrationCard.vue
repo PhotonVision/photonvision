@@ -45,11 +45,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
         else format.mean = NaN;
 
-        // minPixelCount is the total area, in pixels, of the 640x480 (the minimum for proper calibration) resolution
-        const minPixelCount = 307200;
+        // minPixelCount is the multiplied area of a 640x480 (the minimum for proper calibration) resolution
+        const minPixelCount = 640 * 480;
         const resArea = format.resolution.width * format.resolution.height;
 
-        if (resArea > minPixelCount) {
+        if (resArea < minPixelCount) {
           format.resolution.width = 640;
           format.resolution.height = 480;
           uniqueResolutions.push(format);
