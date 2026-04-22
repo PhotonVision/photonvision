@@ -90,7 +90,7 @@ export const useStateStore = defineStore("state", {
       calibrationData: {
         imageCount: 0,
         videoFormatIndex: 0,
-        minimumImageCount: 12,
+        minimumImageCount: 100,
         hasEnoughImages: false
       },
 
