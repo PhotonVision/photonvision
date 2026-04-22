@@ -46,11 +46,10 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
         else format.mean = NaN;
 
         // minPixelCount is the total area, in pixels, of the 640x480 (the minimum for proper calibration) resolution
-        const minPixelCount = ref(307200);
-        const resArea = computed(() => {
-          return format.resolution.width * format.resolution.height;
-        });
-        if (resArea.value > minPixelCount.value) {
+        const minPixelCount = 307200;
+        const resArea = format.resolution.width * format.resolution.height;
+
+        if (resArea > minPixelCount) {
           format.resolution.width = 640;
           format.resolution.height = 480;
           uniqueResolutions.push(format);
@@ -191,17 +190,15 @@ const isCalibrating = computed(
 );
 
 const startCalibration = () => {
-  {
-    useCameraSettingsStore().startPnPCalibration({
-      squareSizeIn: squareSizeIn.value,
-      markerSizeIn: markerSizeIn.value,
-      patternHeight: patternHeight.value,
-      patternWidth: patternWidth.value,
-      boardType: boardType.value,
-      useOldPattern: useOldPattern.value,
-      tagFamily: tagFamily.value
-    });
-  }
+  useCameraSettingsStore().startPnPCalibration({
+    squareSizeIn: squareSizeIn.value,
+    markerSizeIn: markerSizeIn.value,
+    patternHeight: patternHeight.value,
+    patternWidth: patternWidth.value,
+    boardType: boardType.value,
+    useOldPattern: useOldPattern.value,
+    tagFamily: tagFamily.value
+  });
   // The Start PnP method already handles updating the backend so only a store update is required
   useCameraSettingsStore().currentCameraSettings.currentPipelineIndex = WebsocketPipelineType.Calib3d;
   // isCalibrating.value = true;
