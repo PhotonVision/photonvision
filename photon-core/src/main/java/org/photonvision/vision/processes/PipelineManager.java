@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -45,15 +45,13 @@ public class PipelineManager {
     protected final Calibrate3dPipeline calibration3dPipeline;
     protected final FocusPipeline focusPipeline = new FocusPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
+    protected final Supplier<Transform3d> robotToCamSupplier;
 
     /** Index of the currently active pipeline. Defaults to 0. */
     private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
     private CVPipeline currentUserPipeline = driverModePipeline;
-
-    /** The current robot to camera transform. */
-    private AtomicReference<Transform3d> robotToCamera = new AtomicReference<>();
 
     /**
      * Index of the last active user-created pipeline. <br>
@@ -63,13 +61,15 @@ public class PipelineManager {
     private int lastUserPipelineIdx;
 
     /**
-     * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
-     * pipelines.
+     * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, a robotToCamera
+     * supplier, and all provided pipelines.
      */
     PipelineManager(
             DriverModePipelineSettings driverSettings,
             List<CVPipelineSettings> userPipelines,
+            Supplier<Transform3d> robotToCamSupplier,
             int defaultIndex) {
+        this.robotToCamSupplier = robotToCamSupplier;
         this.userPipelineSettings = new ArrayList<>(userPipelines);
         // This is to respect the default res idx for vendor cameras
 
@@ -86,8 +86,19 @@ public class PipelineManager {
         updatePipelineFromRequested();
     }
 
-    public PipelineManager(CameraConfiguration config) {
-        this(config.driveModeSettings, config.pipelineSettings, config.currentPipelineIndex);
+    PipelineManager(
+            DriverModePipelineSettings driverSettings,
+            List<CVPipelineSettings> userPipelines,
+            int defaultIndex) {
+        this(driverSettings, userPipelines, () -> null, defaultIndex);
+    }
+
+    public PipelineManager(CameraConfiguration config, Supplier<Transform3d> robotToCamSupplier) {
+        this(
+                config.driveModeSettings,
+                config.pipelineSettings,
+                robotToCamSupplier,
+                config.currentPipelineIndex);
     }
 
     /**
@@ -187,14 +198,6 @@ public class PipelineManager {
         return requestedIndex;
     }
 
-    public Transform3d getRobotToCamera() {
-        return robotToCamera.get();
-    }
-
-    public void setRobotToCamera(Transform3d newTransform) {
-        robotToCamera.set(newTransform);
-    }
-
     /**
      * Internal method for setting the active pipeline. <br>
      * <br>
@@ -259,31 +262,30 @@ public class PipelineManager {
                 logger.debug("Creating Reflective pipeline");
                 currentUserPipeline =
                         new ReflectivePipeline(
-                                (ReflectivePipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
+                                (ReflectivePipelineSettings) desiredPipelineSettings, robotToCamSupplier);
             }
             case ColoredShape -> {
                 logger.debug("Creating ColoredShape pipeline");
                 currentUserPipeline =
                         new ColoredShapePipeline(
-                                (ColoredShapePipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
+                                (ColoredShapePipelineSettings) desiredPipelineSettings, robotToCamSupplier);
             }
             case AprilTag -> {
                 logger.debug("Creating AprilTag pipeline");
                 currentUserPipeline =
                         new AprilTagPipeline(
-                                (AprilTagPipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
+                                (AprilTagPipelineSettings) desiredPipelineSettings, robotToCamSupplier);
             }
             case Aruco -> {
                 logger.debug("Creating ArUco Pipeline");
                 currentUserPipeline =
-                        new ArucoPipeline(
-                                (ArucoPipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
+                        new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings, robotToCamSupplier);
             }
             case ObjectDetection -> {
                 logger.debug("Creating ObjectDetection Pipeline");
                 currentUserPipeline =
                         new ObjectDetectionPipeline(
-                                (ObjectDetectionPipelineSettings) desiredPipelineSettings, this::getRobotToCamera);
+                                (ObjectDetectionPipelineSettings) desiredPipelineSettings, robotToCamSupplier);
             }
             case Calib3d, DriverMode, FocusCamera -> {}
         }

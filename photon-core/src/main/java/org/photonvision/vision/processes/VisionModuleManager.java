@@ -43,8 +43,7 @@ public class VisionModuleManager {
     public synchronized VisionModule addSource(VisionSource visionSource) {
         visionSource.cameraConfiguration.streamIndex = newCameraIndex();
 
-        var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-        var module = new VisionModule(pipelineManager, visionSource);
+        var module = new VisionModule(visionSource);
         visionModules.add(module);
 
         return module;

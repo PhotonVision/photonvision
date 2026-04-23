@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -98,12 +99,17 @@ public class VisionModule {
 
     boolean mismatch;
 
-    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
+    private AtomicReference<Transform3d> robotToCamera = new AtomicReference<>();
+
+    public VisionModule(VisionSource visionSource) {
         logger =
                 new Logger(
                         VisionModule.class,
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
+
+        pipelineManager =
+                new PipelineManager(visionSource.getCameraConfiguration(), this::getRobotToCameraTransform);
 
         mismatch = false;
 
@@ -128,7 +134,6 @@ public class VisionModule {
                     });
         }
 
-        this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
         changeSubscriber = new VisionModuleChangeSubscriber(this);
         this.visionRunner =
@@ -644,7 +649,7 @@ public class VisionModule {
      *     the robot's coordinate system. This should be provided in meters.
      */
     public void setRobotToCameraTransform(Transform3d robotToCameraTransform) {
-        this.pipelineManager.setRobotToCamera(robotToCameraTransform);
+        this.robotToCamera.set(robotToCameraTransform);
     }
 
     /**
@@ -654,7 +659,7 @@ public class VisionModule {
      *     system, in meters. May return null if no transform is set.
      */
     public Transform3d getRobotToCameraTransform() {
-        return this.pipelineManager.getRobotToCamera();
+        return this.robotToCamera.get();
     }
 
     /**
