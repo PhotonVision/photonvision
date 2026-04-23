@@ -46,9 +46,9 @@ You can use the `setPipelineIndex()`/`SetPipelineIndex()` (Java and C++ respecti
         # Coming Soon!
 ```
 
-## Getting the Pipeline Latency
+## Getting the Pipeline Image Capture Time
 
-You can also get the pipeline latency from a pipeline result using the `getLatencyMillis()`/`GetLatency()` (Java and C++ respectively) methods on a `PhotonPipelineResult`.
+You can also get the pipeline's image capture time from a pipeline result using the `getTimestampSeconds()`/`GetTimestamp()` (Java and C++ respectively) methods on a `PhotonPipelineResult`.
 
 ```{eval-rst}
 .. tab-set-code::
@@ -60,7 +60,7 @@ You can also get the pipeline latency from a pipeline result using the `getLaten
    .. code-block:: c++
 
       // Get the pipeline latency.
-      units::second_t latency = result.GetTimestampSeconds();
+      units::second_t latency = result.GetTimestamp();
 
    .. code-block:: python
 
