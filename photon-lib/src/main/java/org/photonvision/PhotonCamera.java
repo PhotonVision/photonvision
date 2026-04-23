@@ -34,7 +34,7 @@ import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.timesync.TimeSyncSingleton;
 import org.wpilib.driverstation.Alert;
-import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.hardware.hal.HAL;
 import org.wpilib.math.linalg.MatBuilder;
 import org.wpilib.math.linalg.Matrix;
@@ -232,8 +232,8 @@ public class PhotonCamera implements AutoCloseable {
                     """;
             // spotless:on
 
-            DriverStation.reportWarning(bfw, false);
-            DriverStation.reportError(bfw, false);
+            DriverStationErrors.reportWarning(bfw, false);
+            DriverStationErrors.reportError(bfw, false);
             throw new UnsupportedOperationException(bfw);
         }
     }
@@ -319,7 +319,7 @@ public class PhotonCamera implements AutoCloseable {
             if (Timer.getMonotonicTimestamp() > (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
                 prevTimeSyncWarnTime = Timer.getMonotonicTimestamp();
 
-                DriverStation.reportWarning(
+                DriverStationErrors.reportWarning(
                         warningText
                                 + "\n\nCheck /photonvision/.timesync/{COPROCESSOR_HOSTNAME} for more information.",
                         false);
@@ -526,11 +526,11 @@ public class PhotonCamera implements AutoCloseable {
         if (!heartbeatSubscriber.exists()) {
             var cameraNames = getTablesThatLookLikePhotonCameras();
             if (cameraNames.isEmpty()) {
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "Could not find **any** PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
                         false);
             } else {
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "PhotonVision coprocessor at path "
                                 + path
                                 + " not found on NetworkTables. Double check that your camera names match!",
@@ -543,7 +543,7 @@ public class PhotonCamera implements AutoCloseable {
                     cameraNameStr.append("\n");
                 }
 
-                DriverStation.reportError(
+                DriverStationErrors.reportError(
                         "Found the following PhotonVision cameras on NetworkTables:\n"
                                 + cameraNameStr.toString(),
                         false);
@@ -551,7 +551,7 @@ public class PhotonCamera implements AutoCloseable {
         }
         // Check for connection status. Warn if disconnected.
         else if (!isConnected()) {
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "PhotonVision coprocessor at path " + path + " is not sending new data.", false);
         }
 
@@ -563,7 +563,7 @@ public class PhotonCamera implements AutoCloseable {
 
         if (remote_uuid == null || remote_uuid.isEmpty()) {
             // not connected yet?
-            DriverStation.reportWarning(
+            DriverStationErrors.reportWarning(
                     "PhotonVision coprocessor at path "
                             + path
                             + " has not reported a message interface UUID - is your coprocessor's camera started?",
@@ -597,7 +597,7 @@ public class PhotonCamera implements AutoCloseable {
                     """;
             // spotless:on
 
-            DriverStation.reportWarning(bfw, false);
+            DriverStationErrors.reportWarning(bfw, false);
             String versionMismatchMessage =
                     "Photon version "
                             + PhotonVersion.versionString
@@ -610,7 +610,7 @@ public class PhotonCamera implements AutoCloseable {
                             + remote_uuid
                             + ")"
                             + "!";
-            DriverStation.reportError(versionMismatchMessage, false);
+            DriverStationErrors.reportError(versionMismatchMessage, false);
             throw new UnsupportedOperationException(versionMismatchMessage);
         }
     }

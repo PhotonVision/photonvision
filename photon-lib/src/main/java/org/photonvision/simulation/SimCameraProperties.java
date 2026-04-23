@@ -38,7 +38,7 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
-import org.wpilib.driverstation.DriverStation;
+import org.wpilib.driverstation.DriverStationErrors;
 import org.wpilib.math.geometry.Pose3d;
 import org.wpilib.math.geometry.Rotation2d;
 import org.wpilib.math.geometry.Rotation3d;
@@ -167,7 +167,7 @@ public class SimCameraProperties {
     public SimCameraProperties setCalibration(int resWidth, int resHeight, Rotation2d fovDiag) {
         if (fovDiag.getDegrees() < 1 || fovDiag.getDegrees() > 179) {
             fovDiag = Rotation2d.fromDegrees(Math.clamp(fovDiag.getDegrees(), 1, 179));
-            DriverStation.reportError(
+            DriverStationErrors.reportError(
                     "Requested invalid FOV! Clamping between (1, 179) degrees...", false);
         }
         double resDiag = Math.hypot(resWidth, resHeight);

@@ -29,7 +29,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
-import org.wpilib.driverstation.DriverStation.MatchType;
+import org.wpilib.driverstation.MatchType;
 import org.wpilib.networktables.IntegerEntry;
 import org.wpilib.networktables.IntegerSubscriber;
 import org.wpilib.networktables.NetworkTable;
