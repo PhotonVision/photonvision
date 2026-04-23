@@ -63,7 +63,7 @@ test {
 }
 
 jacoco {
-    toolVersion = "0.8.14"
+    toolVersion = jacocoVersion
     reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
 }
 
