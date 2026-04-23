@@ -55,12 +55,12 @@ You can also get the pipeline latency from a pipeline result using the `getLaten
    .. code-block:: java
 
       // Get the pipeline latency.
-      double latencySeconds = result.getLatencyMillis() / 1000.0;
+      double latencySeconds = result.getTimestampSeconds() / 1000.0;
 
    .. code-block:: c++
 
       // Get the pipeline latency.
-      units::second_t latency = result.GetLatency();
+      units::second_t latency = result.GetTimestampSeconds();
 
    .. code-block:: python
 
