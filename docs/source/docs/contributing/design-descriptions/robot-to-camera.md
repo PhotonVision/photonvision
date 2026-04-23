@@ -3,7 +3,7 @@
 ## How 3D pose estimation works
 
 At its core, Photonvision's 3D pose estimation is built around solving the Perspective-n-Point (PnP) problem. The PnP problem is essentially, 'given a set of points in 3D space, and their projections on a 2D image, determine the pose of the camera'. In photonvision's case, the points are the corners of one or more apriltags.
-However, this leaves us with the camera's pose, *not* the robot's pose. The solution, of course, is to apply an offset. For 3D Pose estimation, Photonvision associates to each camera a `Transform3d` object, representing a vector encoding the 6DOF transformation from the robot (or, rather, the point on the robot considered to be its center) to the camera, and the final step of pose estimation is to transform the camera's pose (that got spit out of the PnP solver) by the inverse of this vector, yielding an estimate of the robot's pose. 
+However, this leaves us with the camera's pose, *not* the robot's pose. The solution, of course, is to apply an offset. For 3D Pose estimation, Photonvision associates to each camera a `Transform3d` object, representing a vector encoding the 6DOF transformation from the robot (or, rather, the point on the robot considered to be its center) to the camera, and the final step of pose estimation is to transform the camera's pose (that got spit out of the PnP solver) by the inverse of this vector, yielding an estimate of the robot's pose.
 
 ## What does the plumbing look like?
 
