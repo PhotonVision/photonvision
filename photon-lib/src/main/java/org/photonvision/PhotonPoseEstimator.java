@@ -122,7 +122,6 @@ public class PhotonPoseEstimator {
 
     private AprilTagFieldLayout fieldTags;
     private TargetModel tagModel = TargetModel.kAprilTag36h11;
-    private Transform3d robotToCamera;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
     private final TimeInterpolatableBuffer<Rotation2d> headingBuffer =
@@ -231,23 +230,6 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * @return The current transform from the center of the robot to the camera mount position
-     */
-    public Transform3d getRobotToCameraTransform() {
-        return robotToCamera;
-    }
-
-    /**
-     * Useful for pan and tilt mechanisms and such.
-     *
-     * @param robotToCamera The current transform from the center of the robot to the camera mount
-     *     position
-     */
-    public void setRobotToCameraTransform(Transform3d robotToCamera) {
-        this.robotToCamera = robotToCamera;
-    }
-
-    /**
      * @param cameraResult A pipeline result from the camera.
      * @return Whether or not pose estimation should be performed.
      */
@@ -300,7 +282,7 @@ public class PhotonPoseEstimator {
                                         0,
                                         -Math.toRadians(bestTarget.getPitch()),
                                         -Math.toRadians(bestTarget.getYaw())))
-                        .rotateBy(cameraResult.robotToCamera.get().getRotation())
+                        .rotateBy(cameraResult.getRobotToCamera().get().getRotation())
                         .toTranslation2d()
                         .rotateBy(headingSample);
 
@@ -315,7 +297,7 @@ public class PhotonPoseEstimator {
 
         Translation2d camToRobotTranslation =
                 cameraResult
-                        .robotToCamera
+                        .getRobotToCamera()
                         .get()
                         .getTranslation()
                         .toTranslation2d()
@@ -384,7 +366,7 @@ public class PhotonPoseEstimator {
                         cameraMatrix,
                         distCoeffs,
                         cameraResult.getTargets(),
-                        cameraResult.robotToCamera.get(),
+                        cameraResult.getRobotToCamera().get(),
                         seedPose,
                         fieldTags,
                         tagModel,
@@ -422,7 +404,7 @@ public class PhotonPoseEstimator {
                 Pose3d.kZero
                         .plus(best_tf) // field-to-camera
                         .relativeTo(fieldTags.getOrigin())
-                        .plus(cameraResult.robotToCamera.get().inverse()); // field-to-robot
+                        .plus(cameraResult.getRobotToCamera().get().inverse()); // field-to-robot
         return Optional.of(
                 new EstimatedRobotPose(
                         best,
@@ -456,7 +438,7 @@ public class PhotonPoseEstimator {
         var best =
                 Pose3d.kZero
                         .plus(pnpResult.get().best) // field-to-camera
-                        .plus(cameraResult.robotToCamera.get().inverse()); // field-to-robot
+                        .plus(cameraResult.getRobotToCamera().get().inverse()); // field-to-robot
 
         return Optional.of(
                 new EstimatedRobotPose(
@@ -510,7 +492,7 @@ public class PhotonPoseEstimator {
                         targetPosition
                                 .get()
                                 .transformBy(lowestAmbiguityTarget.getBestCameraToTarget().inverse())
-                                .transformBy(cameraResult.robotToCamera.get().inverse()),
+                                .transformBy(cameraResult.getRobotToCamera().get().inverse()),
                         cameraResult.getTimestampSeconds(),
                         cameraResult.getTargets(),
                         PoseStrategy.LOWEST_AMBIGUITY));
@@ -549,14 +531,14 @@ public class PhotonPoseEstimator {
 
             double alternateTransformDelta =
                     Math.abs(
-                            cameraResult.robotToCamera.get().getZ()
+                            cameraResult.getRobotToCamera().get().getZ()
                                     - targetPosition
                                             .get()
                                             .transformBy(target.getAlternateCameraToTarget().inverse())
                                             .getZ());
             double bestTransformDelta =
                     Math.abs(
-                            cameraResult.robotToCamera.get().getZ()
+                            cameraResult.getRobotToCamera().get().getZ()
                                     - targetPosition
                                             .get()
                                             .transformBy(target.getBestCameraToTarget().inverse())
@@ -569,7 +551,7 @@ public class PhotonPoseEstimator {
                                 targetPosition
                                         .get()
                                         .transformBy(target.getAlternateCameraToTarget().inverse())
-                                        .transformBy(cameraResult.robotToCamera.get().inverse()),
+                                        .transformBy(cameraResult.getRobotToCamera().get().inverse()),
                                 cameraResult.getTimestampSeconds(),
                                 cameraResult.getTargets(),
                                 PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
@@ -582,7 +564,7 @@ public class PhotonPoseEstimator {
                                 targetPosition
                                         .get()
                                         .transformBy(target.getBestCameraToTarget().inverse())
-                                        .transformBy(cameraResult.robotToCamera.get().inverse()),
+                                        .transformBy(cameraResult.getRobotToCamera().get().inverse()),
                                 cameraResult.getTimestampSeconds(),
                                 cameraResult.getTargets(),
                                 PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
@@ -636,12 +618,12 @@ public class PhotonPoseEstimator {
                     targetPosition
                             .get()
                             .transformBy(target.getAlternateCameraToTarget().inverse())
-                            .transformBy(cameraResult.robotToCamera.get().inverse());
+                            .transformBy(cameraResult.getRobotToCamera().get().inverse());
             Pose3d bestTransformPosition =
                     targetPosition
                             .get()
                             .transformBy(target.getBestCameraToTarget().inverse())
-                            .transformBy(cameraResult.robotToCamera.get().inverse());
+                            .transformBy(cameraResult.getRobotToCamera().get().inverse());
 
             double altDifference = Math.abs(calculateDifference(referencePose, altTransformPosition));
             double bestDifference = Math.abs(calculateDifference(referencePose, bestTransformPosition));
@@ -707,7 +689,7 @@ public class PhotonPoseEstimator {
                                 targetPosition
                                         .get()
                                         .transformBy(target.getBestCameraToTarget().inverse())
-                                        .transformBy(cameraResult.robotToCamera.get().inverse()),
+                                        .transformBy(cameraResult.getRobotToCamera().get().inverse()),
                                 cameraResult.getTimestampSeconds(),
                                 cameraResult.getTargets(),
                                 PoseStrategy.AVERAGE_BEST_TARGETS));
@@ -721,7 +703,7 @@ public class PhotonPoseEstimator {
                             targetPosition
                                     .get()
                                     .transformBy(target.getBestCameraToTarget().inverse())
-                                    .transformBy(cameraResult.robotToCamera.get().inverse())));
+                                    .transformBy(cameraResult.getRobotToCamera().get().inverse())));
         }
 
         // Take the average
