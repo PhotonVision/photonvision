@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const devMode = process.env.NODE_ENV === "development";
+const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org" : "docs/index.html";
 </script>
 <template>
   <div style="overflow: hidden; height: 100vh; width: 100%">
@@ -21,7 +22,7 @@ const devMode = process.env.NODE_ENV === "development";
     </div>
     <div v-else style="width: 100%; height: 100%">
       <!--suppress HtmlUnknownTarget -->
-      <iframe src="import.meta.env.MODE === 'demo' ? 'https://docs.photonvision.org' : 'docs/index.html'" style="overflow: hidden; height: 100%; width: 100%; border: 0" />
+      <iframe :src="docsSrc" style="overflow: hidden; height: 100%; width: 100%; border: 0" />
     </div>
   </div>
 </template>
