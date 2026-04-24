@@ -48,19 +48,19 @@ You can use the `setPipelineIndex()`/`SetPipelineIndex()` (Java and C++ respecti
 
 ## Getting the Pipeline Image Capture Time
 
-You can also get the pipeline's image capture time from a pipeline result using the `getTimestampSeconds()`/`GetTimestamp()` (Java and C++ respectively) methods on a `PhotonPipelineResult`.
+You can also get the pipeline's image capture time from a pipeline result using the `getTimestampSeconds()`/`GetTimestamp()` (Java and C++ respectively) methods on a `PhotonPipelineResult`. This is useful when adding vision pose estimates to a pose estimator or Kalman Filter, to help express the idea that camera image for the estimates was taken some time in the past.
 
 ```{eval-rst}
 .. tab-set-code::
    .. code-block:: java
 
-      // Get the pipeline latency.
-      double latencySeconds = result.getTimestampSeconds() / 1000.0;
+      // Get the pipeline image capture timestamp.
+      double resultTime = result.getTimestampSeconds() / 1000.0;
 
    .. code-block:: c++
 
-      // Get the pipeline latency.
-      units::second_t latency = result.GetTimestamp();
+      // Get the pipeline image capture timestamp.
+      units::second_t resultTime = result.GetTimestamp();
 
    .. code-block:: python
 
@@ -68,5 +68,5 @@ You can also get the pipeline's image capture time from a pipeline result using 
 ```
 
 :::{note}
-The C++ version of PhotonLib returns the latency in a unit container. For more information on the Units library, see [here](https://docs.wpilib.org/en/stable/docs/software/basic-programming/cpp-units.html).
+The C++ version of PhotonLib returns the image capture time in a unit container. For more information on the Units library, see [here](https://docs.wpilib.org/en/stable/docs/software/basic-programming/cpp-units.html).
 :::
