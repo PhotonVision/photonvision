@@ -19,7 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -46,13 +46,13 @@ public class ObjectDetectionPipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public ObjectDetectionPipeline() {
-        super(PROCESSING_TYPE, () -> null);
+        super(PROCESSING_TYPE, (time) -> null);
         settings = new ObjectDetectionPipelineSettings();
     }
 
     public ObjectDetectionPipeline(
-            ObjectDetectionPipelineSettings settings, Supplier<Transform3d> robotToCameraSupplier) {
-        super(PROCESSING_TYPE, robotToCameraSupplier);
+            ObjectDetectionPipelineSettings settings, Function<Long, Transform3d> robotToCameraSampler) {
+        super(PROCESSING_TYPE, robotToCameraSampler);
         this.settings = settings;
     }
 
@@ -138,7 +138,7 @@ public class ObjectDetectionPipeline
                 collect2dTargetsResult.output,
                 frame,
                 names,
-                Optional.ofNullable(robotToCameraSupplier.get()));
+                Optional.ofNullable(robotToCameraSampler.apply(frame.timestampNanos)));
     }
 
     @Override

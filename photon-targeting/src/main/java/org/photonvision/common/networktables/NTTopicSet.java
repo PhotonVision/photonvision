@@ -134,11 +134,10 @@ public class NTTopicSet {
         cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
         cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
         robotToCameraTopic = subTable.getStructTopic("robotToCamera", Transform3d.struct);
-        robotToCameraSubscriber = robotToCameraTopic.subscribe(null);
-    }
-
-    public boolean robotToCameraExists() {
-        return robotToCameraTopic.exists();
+        robotToCameraSubscriber =
+                subTable
+                        .getStructTopic("robotToCamera", Transform3d.struct)
+                        .subscribe(null, PubSubOption.periodic(0.01));
     }
 
     @SuppressWarnings("DuplicatedCode")

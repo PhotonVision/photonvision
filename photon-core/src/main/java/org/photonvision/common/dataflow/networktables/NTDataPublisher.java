@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -35,6 +36,7 @@ import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableEvent;
 import org.wpilib.networktables.NetworkTablesJNI;
+import org.wpilib.networktables.TimestampedObject;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
@@ -56,7 +58,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Supplier<Integer> fpsLimitSupplier;
 
     NTDataChangeListener robotToCameraListener;
-    private final Consumer<Transform3d> robotToCameraConsumer;
+    private final BiConsumer<Double, Transform3d> robotToCameraConsumer;
 
     public NTDataPublisher(
             String cameraNickname,
@@ -66,7 +68,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             Consumer<Boolean> driverModeConsumer,
             Supplier<Integer> fpsLimitSupplier,
             Consumer<Integer> fpsLimitConsumer,
-            Consumer<Transform3d> robotToCameraConsumer) {
+            BiConsumer<Double, Transform3d> robotToCameraConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
@@ -106,9 +108,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private void onRobotToCameraChange(NetworkTableEvent entryNotification) {
         // HACK: the entryNotification's value can't be cast to Transform3d, so we read directly from
         // the subscriber
-        var robotToCamera = ts.robotToCameraSubscriber.get();
-        robotToCameraConsumer.accept(robotToCamera);
-        logger.debug("Updated robot to camera transform to " + robotToCamera);
+        TimestampedObject<Transform3d> robotToCamera = ts.robotToCameraSubscriber.getAtomic(null);
+        var doubleTime = (robotToCamera.serverTime) * (double) 1e6;
+        robotToCameraConsumer.accept(doubleTime, robotToCamera.value);
+        logger.debug("Sampled robot to camera transform as " + robotToCamera + " at t=" + doubleTime);
     }
 
     private void onDriverModeChange(NetworkTableEvent entryNotification) {
