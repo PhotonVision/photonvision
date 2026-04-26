@@ -38,22 +38,16 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
 
     if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
+
+      // minPixelCount is the multiplied area of a 640x480 (the minimum for proper calibration) resolution
+      const minPixelCount = 640 * 480;
+      const resArea = format.resolution.width * format.resolution.height;
       if (calib !== undefined) {
         // Mean overall reprojection error
         // Calculated as average of each observation's mean error
         if (calib.meanErrors.length)
           format.mean = calib.meanErrors.reduce((a, b) => a + b, 0) / calib.meanErrors.length;
         else format.mean = NaN;
-
-        // minPixelCount is the multiplied area of a 640x480 (the minimum for proper calibration) resolution
-        const minPixelCount = 640 * 480;
-        const resArea = format.resolution.width * format.resolution.height;
-
-        if (resArea < minPixelCount) {
-          format.resolution.width = 640;
-          format.resolution.height = 480;
-          uniqueResolutions.push(format);
-        }
 
         format.horizontalFOV =
           2 * Math.atan2(format.resolution.width / 2, calib.cameraIntrinsics.data[0]) * (180 / Math.PI);
@@ -70,7 +64,9 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           ) *
           (180 / Math.PI);
       }
-      uniqueResolutions.push(format);
+      if (resArea > minPixelCount) {
+        uniqueResolutions.push(format);
+      }
     }
   });
   uniqueResolutions.sort(
