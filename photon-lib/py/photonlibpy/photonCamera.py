@@ -70,7 +70,7 @@ class PhotonCamera:
         )
         self._robotToCameraPublisher = self._cameraTable.getStructTopic(
             "robotToCamera", Transform3d
-        ).publish()
+        ).publish(ntcore.PubSubOptions(periodic=0.01))
         self._driverModePublisher = self._cameraTable.getBooleanTopic(
             "driverModeRequest"
         ).publish()

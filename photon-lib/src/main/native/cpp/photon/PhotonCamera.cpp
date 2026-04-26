@@ -134,7 +134,7 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                   {.pollStorage = 20, .periodic = 0.01, .sendAll = true})),
       robotToCameraPublisher(
           rootTable->GetStructTopic<wpi::math::Transform3d>("robotToCamera")
-              .Publish()),
+              .Publish({.periodic = 0.01})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
