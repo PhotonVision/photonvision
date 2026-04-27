@@ -34,7 +34,7 @@ ext.allOutputsFolder = file("$project.buildDir/outputs")
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2027.0.0-alpha-4-124-g44b9545f3"
+    wpilibVersion = "2027.0.0-alpha-5"
     wpimathVersion = wpilibVersion
     openCVYear = "2025"
     openCVversion = "4.10.0-3"
