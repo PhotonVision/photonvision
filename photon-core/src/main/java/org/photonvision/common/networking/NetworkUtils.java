@@ -327,7 +327,6 @@ public class NetworkUtils {
 
     private static NetworkInterface getInterfaceForRemoteAddress(
             InetAddress remoteAddress, int remotePort) {
-
         // Paranoia -- validate remote address
         if (remoteAddress == null
                 || remoteAddress.isLoopbackAddress()
