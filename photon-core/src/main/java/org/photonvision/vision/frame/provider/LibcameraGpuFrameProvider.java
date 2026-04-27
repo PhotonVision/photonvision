@@ -37,11 +37,6 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
 
     public LibcameraGpuFrameProvider(LibcameraGpuSettables visionSettables) {
         this.settables = visionSettables;
-
-        var vidMode = settables.getCurrentVideoMode();
-        settables.setVideoMode(vidMode);
-        this.cameraPropertiesCached =
-                true; // Camera properties are not able to be changed so they are always cached
     }
 
     @Override
@@ -150,7 +145,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     }
 
     @Override
-    public boolean checkCameraConnected() {
+    public boolean isConnected() {
         String[] cameraNames = LibCameraJNI.getCameraNames();
         for (String name : cameraNames) {
             if (name.equals(settables.getConfiguration().getDevicePath())) {
@@ -160,9 +155,13 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
         return false;
     }
 
-    // To our knowledge the camera is always connected (after boot) with csi cameras
     @Override
-    public boolean isConnected() {
-        return checkCameraConnected();
+    protected void onCameraConnected() {
+        logger.info("Camera connected! running callback");
+
+        super.onCameraConnected();
+
+        var vidMode = settables.getCurrentVideoMode();
+        settables.setVideoMode(vidMode);
     }
 }
