@@ -39,9 +39,8 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
     if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
 
-      // minPixelCount is the multiplied area of a 640x480 (the minimum for proper calibration) resolution
-      const minPixelCount = 640 * 480;
-      const resArea = format.resolution.width * format.resolution.height;
+      const resWidth = format.resolution.width;
+      const resHeight = format.resolution.height;
       if (calib !== undefined) {
         // Mean overall reprojection error
         // Calculated as average of each observation's mean error
@@ -64,7 +63,8 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           ) *
           (180 / Math.PI);
       }
-      if (resArea > minPixelCount) {
+
+      if (resWidth < 640 || resHeight < 480) {
         uniqueResolutions.push(format);
       }
     }
