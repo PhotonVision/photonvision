@@ -7,6 +7,7 @@ PhotonVision runs object detection on the Rubik Pi 3 by use of [TensorflowLite](
 ## Supported models
 
 PhotonVision currently ONLY supports 640x640 Ultralytics YOLOv8 and YOLOv11 models trained and converted to `.tflite` format for QCS6490 SOCs! Other models require different post-processing code and will NOT work.
+If you have a YOLO-Pro model from Edge Impulse, it can be converted using [this notebook](https://github.com/ramalamadingdong/yolo-pro-to-yolo11/tree/main).
 
 ## Converting Custom Models
 
