@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite-ssg build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "format-ci": "prettier --check ."
   },
   "devDependencies": {
     "@toolwind/anchors": "^1.0.10",
