@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref } from "vue";
 import PresentationCard from "./PresentationCard.vue";
 
 export interface PresentationCardData {
@@ -17,20 +17,20 @@ const props = defineProps<{
 const currentSlide = ref(0);
 
 const previousSlide = () => {
-  currentSlide.value = (currentSlide.value - 1 + props.slides.length) % props.slides.length;
+  if (currentSlide.value > 0) {
+    currentSlide.value--;
+  }
 };
 
 const nextSlide = () => {
-  currentSlide.value = (currentSlide.value + 1) % props.slides.length;
-};
-
-const goToSlide = (index: number) => {
-  currentSlide.value = index;
+  if (currentSlide.value < props.slides.length - 1) {
+    currentSlide.value++;
+  }
 };
 </script>
 
 <template>
-  <section class="relative py-16 px-8 md:px-16 lg:px-28 bg-zinc-900">
+  <section class="relative w-full bg-zinc-900">
     <div class="relative">
       <!-- Carousel slides -->
       <div class="overflow-hidden">
@@ -44,40 +44,36 @@ const goToSlide = (index: number) => {
         />
       </div>
 
-      <!-- Navigation buttons -->
-      <div v-if="props.slides.length > 1" class="flex items-center justify-center gap-4 mt-8">
-        <button
-          @click="previousSlide"
-          class="p-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-white"
-          aria-label="Previous slide"
-        >
-          <i class="fa-solid fa-chevron-left text-xl"></i>
-        </button>
+      <!-- Side navigation arrows -->
+      <button
+        v-if="props.slides.length > 1"
+        @click="previousSlide"
+        :disabled="currentSlide === 0"
+        :class="[
+          'absolute left-8 top-1/2 -translate-y-1/2 p-4 transition-all duration-300 text-4xl z-10',
+          currentSlide === 0
+            ? 'text-zinc-600 cursor-not-allowed'
+            : 'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
+        ]"
+        aria-label="Previous slide"
+      >
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
 
-        <!-- Slide indicators -->
-        <div class="flex gap-2">
-          <button
-            v-for="(_, index) in props.slides"
-            :key="index"
-            @click="goToSlide(index)"
-            :class="[
-              'w-3 h-3 rounded-full transition-colors',
-              index === currentSlide
-                ? 'bg-brand-yellow'
-                : 'bg-zinc-600 hover:bg-zinc-500',
-            ]"
-            :aria-label="`Go to slide ${index + 1}`"
-          ></button>
-        </div>
-
-        <button
-          @click="nextSlide"
-          class="p-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors text-white"
-          aria-label="Next slide"
-        >
-          <i class="fa-solid fa-chevron-right text-xl"></i>
-        </button>
-      </div>
+      <button
+        v-if="props.slides.length > 1"
+        @click="nextSlide"
+        :disabled="currentSlide === props.slides.length - 1"
+        :class="[
+          'absolute right-8 top-1/2 -translate-y-1/2 p-4 transition-all duration-300 text-4xl z-10',
+          currentSlide === props.slides.length - 1
+            ? 'text-zinc-600 cursor-not-allowed'
+            : 'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
+        ]"
+        aria-label="Next slide"
+      >
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
     </div>
   </section>
 </template>
