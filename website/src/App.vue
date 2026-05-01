@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "./components/Button.vue";
 import GridSection from "./components/GridSection.vue";
-import PresentationCard from "./components/PresentationCard.vue";
+import PresentationCarousel from "./components/PresentationCarousel.vue";
 
 const navLinks = [
   {
@@ -92,6 +92,23 @@ const socialLinks = [
     href: "https://discord.gg/wYxTwym",
     icon: "fab fa-discord",
     label: "Discord",
+  },
+];
+
+const presentations = [
+  {
+    title: "Champs 2026 Talk",
+    description: "Information on the Rubik Pi 3 and how to use Object Detection with PhotonVision.",
+    slidedeckLink: "https://docs.google.com/presentation/d/1eCt9OmOISldCxsxp-aWAvT6YFkfdPzhbeEZn2ihcltA/edit?usp=sharing",
+  },
+  {
+    title: "Champs 2024 Talk",
+    description:
+      "Watch our presentation from the 2024 FIRST Championship and learn how to get the most out of PhotonVision.",
+    slidedeckLink:
+      "https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p",
+    codeLink: "https://github.com/PhotonVision/champs_2024",
+    videoEmbedUrl: "https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF",
   },
 ];
 </script>
@@ -269,13 +286,7 @@ const socialLinks = [
       </div>
     </section>
 
-    <PresentationCard
-      title="Champs 2024 Talk"
-      description="Watch our presentation from the 2024 FIRST Championship and learn how to get the most out of PhotonVision."
-      slidedeckLink="https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p"
-      codeLink="https://github.com/PhotonVision/champs_2024"
-      videoEmbedUrl="https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF"
-    />
+    <PresentationCarousel :slides="presentations" />
 
     <GridSection
       id="foss"
