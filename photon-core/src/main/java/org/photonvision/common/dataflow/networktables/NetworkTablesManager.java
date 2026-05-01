@@ -163,9 +163,7 @@ public class NetworkTablesManager {
             var msg =
                     String.format(
                             "NT lost connection to %s:%d! (NT version %d). Will retry in background.",
-                            event.connInfo.remote_ip,
-                            event.connInfo.remote_port,
-                            event.connInfo.protocol_version);
+                            event.connInfo.remoteIp, event.connInfo.remotePort, event.connInfo.protocolVersion);
             logger.error(msg);
             HardwareManager.getInstance().setNTConnected(false);
 
@@ -174,9 +172,7 @@ public class NetworkTablesManager {
             var msg =
                     String.format(
                             "NT connected to %s:%d! (NT version %d)",
-                            event.connInfo.remote_ip,
-                            event.connInfo.remote_port,
-                            event.connInfo.protocol_version);
+                            event.connInfo.remoteIp, event.connInfo.remotePort, event.connInfo.protocolVersion);
             logger.info(msg);
             HardwareManager.getInstance().setNTConnected(true);
 
@@ -225,7 +221,7 @@ public class NetworkTablesManager {
         if (ntInstance.isConnected()) {
             var connections = ntInstance.getConnections();
             if (connections.length > 0) {
-                subMap.put("address", connections[0].remote_ip + ":" + connections[0].remote_port);
+                subMap.put("address", connections[0].remoteIp + ":" + connections[0].remotePort);
             }
             subMap.put("clients", connections.length);
         }
