@@ -145,7 +145,7 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
     }
 
     @Override
-    public boolean isConnected() {
+    public boolean checkCameraConnected() {
         String[] cameraNames = LibCameraJNI.getCameraNames();
         for (String name : cameraNames) {
             if (name.equals(settables.getConfiguration().getDevicePath())) {

@@ -141,7 +141,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     }
 
     @Override
-    public boolean isConnected() {
+    public boolean checkCameraConnected() {
         return camera.isConnected();
     }
 
