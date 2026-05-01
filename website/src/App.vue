@@ -98,8 +98,10 @@ const socialLinks = [
 const presentations = [
   {
     title: "Champs 2026 Talk",
-    description: "Information on the Rubik Pi 3 and how to use Object Detection with PhotonVision.",
-    slidedeckLink: "https://docs.google.com/presentation/d/1eCt9OmOISldCxsxp-aWAvT6YFkfdPzhbeEZn2ihcltA/edit?usp=sharing",
+    description:
+      "Information on the Rubik Pi 3 and how to use Object Detection with PhotonVision.",
+    slidedeckLink:
+      "https://docs.google.com/presentation/d/1eCt9OmOISldCxsxp-aWAvT6YFkfdPzhbeEZn2ihcltA/edit?usp=sharing",
   },
   {
     title: "Champs 2024 Talk",
@@ -108,7 +110,8 @@ const presentations = [
     slidedeckLink:
       "https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p",
     codeLink: "https://github.com/PhotonVision/champs_2024",
-    videoEmbedUrl: "https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF",
+    videoEmbedUrl:
+      "https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF",
   },
 ];
 </script>

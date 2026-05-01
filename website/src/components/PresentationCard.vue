@@ -23,9 +23,7 @@ defineProps<{
         {{ description }}
       </p>
       <div class="flex gap-4">
-        <Button :href="slidedeckLink" variant="secondary">
-          Slide Deck
-        </Button>
+        <Button :href="slidedeckLink" variant="secondary"> Slide Deck </Button>
         <Button v-if="codeLink" :href="codeLink" variant="outline">
           View Code
         </Button>
