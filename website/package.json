@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite-ssg build",
     "preview": "vite preview",
-    "format": "prettier --write .",
-    "format-ci": "prettier --check ."
+    "format": "prettier --write src/",
+    "format-ci": "prettier --check src/"
   },
   "devDependencies": {
     "@toolwind/anchors": "^1.0.10",
