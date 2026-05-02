@@ -99,8 +99,7 @@ watchEffect(() => {
   const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
     getResolutionString(f.resolution)
   );
-  const lastIndex = names.lastIndexOf("");
-  uniqueVideoResolutionString.value = names[currentIndex] ?? names[lastIndex] ?? "";
+  uniqueVideoResolutionString.value = names[currentIndex] ?? names[names.length - 1] ?? "";
 });
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
