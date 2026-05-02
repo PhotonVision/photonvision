@@ -49,7 +49,7 @@ pnpm install
 
 ### Building the UI
 
-In order to properly builf UI changes before running the project, run the following `gradlew` command in the project's root directory:
+In order to properly build UI changes before running the project, run the following `gradlew` command in the project's root directory:
 
 ```{eval-rst}
 .. tab-set::
