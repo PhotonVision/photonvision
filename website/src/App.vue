@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from "./components/Button.vue";
 import GridSection from "./components/GridSection.vue";
+import PresentationCarousel from "./components/PresentationCarousel.vue";
 
 const navLinks = [
   {
@@ -91,6 +92,26 @@ const socialLinks = [
     href: "https://discord.gg/wYxTwym",
     icon: "fab fa-discord",
     label: "Discord",
+  },
+];
+
+const presentations = [
+  {
+    title: "Champs 2026 Talk",
+    description:
+      "Information on the Rubik Pi 3 and how to use Object Detection with PhotonVision.",
+    slidedeckLink:
+      "https://docs.google.com/presentation/d/1eCt9OmOISldCxsxp-aWAvT6YFkfdPzhbeEZn2ihcltA/edit?usp=sharing",
+  },
+  {
+    title: "Champs 2024 Talk",
+    description:
+      "Watch our presentation from the 2024 FIRST Championship and learn how to get the most out of PhotonVision.",
+    slidedeckLink:
+      "https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p",
+    codeLink: "https://github.com/PhotonVision/champs_2024",
+    videoEmbedUrl:
+      "https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF",
   },
 ];
 </script>
@@ -268,57 +289,7 @@ const socialLinks = [
       </div>
     </section>
 
-    <section
-      id="champs"
-      class="flex flex-col lg:flex-row items-center justify-center relative py-16 px-8 md:px-16 lg:px-28 gap-12 bg-primary"
-    >
-      <header
-        class="flex flex-col gap-6 justify-center items-center lg:items-start text-center lg:text-left"
-      >
-        <h2 class="text-4xl font-bold font-heading">Champs 2024 Talk</h2>
-        <p class="text-zinc-200 text-lg max-w-md">
-          Watch our presentation from the 2024 FIRST Championship and learn how
-          to get the most out of PhotonVision.
-        </p>
-        <div class="flex gap-4">
-          <Button
-            href="https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p"
-            variant="secondary"
-          >
-            Slide Deck
-          </Button>
-          <Button
-            href="https://github.com/PhotonVision/champs_2024"
-            variant="outline"
-          >
-            View Code
-          </Button>
-        </div>
-      </header>
-      <div class="flex-1 max-w-3xl w-full">
-        <div
-          class="relative rounded-xl overflow-hidden shadow-2xl border border-white/10"
-        >
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF"
-            title="YouTube video player"
-            frameborder="0"
-            allow="
-              accelerometer;
-              autoplay;
-              clipboard-write;
-              encrypted-media;
-              gyroscope;
-              picture-in-picture;
-              web-share;
-            "
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-            class="w-full aspect-video"
-          ></iframe>
-        </div>
-      </div>
-    </section>
+    <PresentationCarousel :slides="presentations" />
 
     <GridSection
       id="foss"
