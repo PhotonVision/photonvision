@@ -47,6 +47,30 @@ In the photon-client directory:
 pnpm install
 ```
 
+### Building the UI
+
+In order to properly builf UI changes before running the project, run the following `gradlew` command in the project's root directory:
+
+```{eval-rst}
+.. tab-set::
+
+   .. tab-item:: Linux
+      :sync: linux
+
+      ``./gradlew buildAndCopyUI``
+
+   .. tab-item:: macOS
+      :sync: macos
+
+      ``./gradlew buildAndCopyUI``
+
+   .. tab-item:: Windows (cmd)
+      :sync: windows
+
+      ``gradlew buildAndCopyUI``
+```
+
+
 ### Using hot reload on the UI
 
 In the photon-client directory:
