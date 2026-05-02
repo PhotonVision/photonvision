@@ -36,8 +36,8 @@ apply from: "versioningHelper.gradle"
 ext {
     wpilibVersion = "2027.0.0-alpha-5"
     wpimathVersion = wpilibVersion
-    openCVYear = "2025"
-    openCVversion = "4.10.0-3"
+    openCVYear = "2027"
+    openCVversion = "4.13.0-1"
     ejmlVersion = "0.43.1";
     jacksonVersion = "2.15.2";
     avajeJsonbVersion = "3.11";
