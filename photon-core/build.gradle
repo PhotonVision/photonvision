@@ -28,7 +28,7 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("cscore")
     wpilibNatives wpilibTools.deps.wpilib("apriltag")
     wpilibNatives wpilibTools.deps.wpilib("hal")
-    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)
+    wpilibNatives wpilibTools.deps.wpilibOpenCv(openCVversion)
 
     // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'

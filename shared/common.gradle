@@ -32,7 +32,7 @@ dependencies {
     implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
     implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
     implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, openCVversion)
+    implementation wpilibTools.deps.wpilibOpenCvJava(openCVversion)
 
     implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: jacksonVersion
     implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: jacksonVersion
