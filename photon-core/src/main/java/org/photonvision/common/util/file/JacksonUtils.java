@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.jetty.io.EofException;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 public class JacksonUtils {
     public static class UIMap extends HashMap<String, Object> {}
@@ -79,6 +80,10 @@ public class JacksonUtils {
         pathModule.addKeySerializer(Path.class, new PathKeySerializer());
         pathModule.addDeserializer(Path.class, new NioPathDeserializer());
         pathModule.addKeyDeserializer(Path.class, new PathKeyDeserializer());
+        
+        // Add custom serializers for AprilTagFieldLayout
+        pathModule.addSerializer(AprilTagFieldLayout.class, new AprilTagFieldLayoutSerializer());
+        pathModule.addDeserializer(AprilTagFieldLayout.class, new AprilTagFieldLayoutDeserializer());
 
         return JsonMapper.builder()
                 .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
