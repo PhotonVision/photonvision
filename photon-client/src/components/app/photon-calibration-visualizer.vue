@@ -202,9 +202,6 @@ const resetCamThirdPerson = () => {
 let animationFrameId: number | null = null;
 
 onMounted(async () => {
-  // Grab data first off
-  await fetchCalibrationData();
-
   scene = new Scene();
   camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
 
@@ -263,6 +260,10 @@ onMounted(async () => {
   resetCamThirdPerson();
 
   controls.update();
+
+  // Fetch calibration only after the scene is ready so the initial draw
+  // can happen immediately when the data arrives.
+  await fetchCalibrationData();
 
   const animate = () => {
     if (!scene || !camera || !renderer || !controls) {
