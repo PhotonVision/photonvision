@@ -19,12 +19,16 @@ const currentSlide = ref(0);
 const previousSlide = () => {
   if (currentSlide.value > 0) {
     currentSlide.value--;
+  } else {
+    currentSlide.value = props.slides.length -1;
   }
 };
 
 const nextSlide = () => {
   if (currentSlide.value < props.slides.length - 1) {
     currentSlide.value++;
+  } else {
+    currentSlide.value = 0;
   }
 };
 </script>
@@ -48,12 +52,9 @@ const nextSlide = () => {
       <button
         v-if="props.slides.length > 1"
         @click="previousSlide"
-        :disabled="currentSlide === 0"
         :class="[
           'absolute left-8 top-1/2 -translate-y-1/2 p-4 transition-all duration-300 text-4xl z-10',
-          currentSlide === 0
-            ? 'text-zinc-600 cursor-not-allowed'
-            : 'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
+            'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
         ]"
         aria-label="Previous slide"
       >
@@ -63,12 +64,9 @@ const nextSlide = () => {
       <button
         v-if="props.slides.length > 1"
         @click="nextSlide"
-        :disabled="currentSlide === props.slides.length - 1"
         :class="[
           'absolute right-8 top-1/2 -translate-y-1/2 p-4 transition-all duration-300 text-4xl z-10',
-          currentSlide === props.slides.length - 1
-            ? 'text-zinc-600 cursor-not-allowed'
-            : 'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
+            'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
         ]"
         aria-label="Next slide"
       >
