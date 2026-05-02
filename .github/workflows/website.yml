@@ -61,4 +61,4 @@ jobs:
           exit_code=$?
           if test "$exit_code" -ne "0"; then
             echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
-            exit $exit_code
+          exit $exit_code
