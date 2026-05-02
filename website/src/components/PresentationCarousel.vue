@@ -20,7 +20,7 @@ const previousSlide = () => {
   if (currentSlide.value > 0) {
     currentSlide.value--;
   } else {
-    currentSlide.value = props.slides.length -1;
+    currentSlide.value = props.slides.length - 1;
   }
 };
 
@@ -54,7 +54,7 @@ const nextSlide = () => {
         @click="previousSlide"
         :class="[
           'absolute left-8 top-1/2 -translate-y-1/2 p-4 transition-all duration-300 text-4xl z-10',
-            'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
+          'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
         ]"
         aria-label="Previous slide"
       >
@@ -66,7 +66,7 @@ const nextSlide = () => {
         @click="nextSlide"
         :class="[
           'absolute right-8 top-1/2 -translate-y-1/2 p-4 transition-all duration-300 text-4xl z-10',
-            'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
+          'text-brand-yellow/70 hover:text-brand-yellow cursor-pointer',
         ]"
         aria-label="Next slide"
       >
