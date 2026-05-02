@@ -94,12 +94,14 @@ const uniqueVideoResolutionString = ref("");
 // Use a watchEffect so the value is populated/reacts when the stores become available or update.
 // This avoids trying to index into an array that may be empty during page reload.
 watchEffect(() => {
-  const currentIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
-  useStateStore().calibrationData.videoFormatIndex = currentIndex;
   const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
     getResolutionString(f.resolution)
   );
-  uniqueVideoResolutionString.value = names[currentIndex] ?? names[names.length - 1] ?? "";
+  const currentFormatIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
+  // Checks if the current resolution is present in the list of valid formats, if not defaults to the last index (which is usually the highest resolution)
+  const currentIndex = getUniqueVideoResolutionStrings().map(x => x.name).find((n) => n === names[currentFormatIndex]) !== undefined ? currentFormatIndex : names.length - 1;
+  useStateStore().calibrationData.videoFormatIndex = currentIndex;
+  uniqueVideoResolutionString.value = names[currentIndex] ?? "";
 });
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
