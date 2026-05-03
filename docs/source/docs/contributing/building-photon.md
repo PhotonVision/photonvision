@@ -12,7 +12,7 @@ This section contains the build instructions from the source code available at [
 
 **Node JS:**
 
- The UI is written in Node JS. To compile the UI, Node 22 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
+ The UI is written in Node JS. To compile the UI, Node 24 or later is required. To install Node JS, follow the instructions for your platform [on the official Node JS website](https://nodejs.org/en/download/).
 
 **pnpm:**
 

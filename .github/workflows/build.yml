@@ -93,6 +93,9 @@ jobs:
 
   playwright-tests:
     name: "Playwright E2E tests"
+    defaults:
+      run:
+        working-directory: photon-client
     runs-on: ubuntu-24.04
     needs: [validation]
     steps:
@@ -107,23 +110,20 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          cache: pnpm
+          node-version: 24
       - name: Setup tests
-        working-directory: photon-client
         run: |
           pnpm install
           pnpm test-setup
       - name: Prebuild Gradle
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
-        working-directory: photon-client
         run: pnpm test
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
@@ -147,14 +147,13 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          cache: pnpm
+          node-version: 24
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
@@ -346,14 +345,12 @@ jobs:
         with:
           java-version: 25
           distribution: temurin
-      - name: Install pnpm
-        uses: pnpm/action-setup@v5
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Arm64 Toolchain
