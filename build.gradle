@@ -44,7 +44,7 @@ ext {
     jacocoVersion = "0.8.14";
 
     javalinVersion = "6.7.0"
-    libcameraDriverVersion = "v2026.0.0"
+    libcameraDriverVersion = "dev-v2026.0.0-2-gef3d7a0"
     rknnVersion = "dev-v2026.0.1-1-g89b2888"
     rubikVersion = "dev-v2026.0.1-4-g13d6279"
     frcYear = "2027_alpha4"
