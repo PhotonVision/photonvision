@@ -116,6 +116,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
       - name: Setup tests
         run: |
@@ -153,6 +154,7 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
