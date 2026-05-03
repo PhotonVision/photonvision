@@ -66,7 +66,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           (180 / Math.PI);
       }
 
-      if (resArea > minPixelCount) {
+      if (resArea >= minPixelCount) {
         uniqueResolutions.push(format);
       }
     }
