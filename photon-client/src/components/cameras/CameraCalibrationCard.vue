@@ -99,7 +99,12 @@ watchEffect(() => {
   );
   const currentFormatIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
   // Checks if the current resolution is present in the list of valid formats, if not defaults to the last index (which is usually the highest resolution)
-  const currentIndex = getUniqueVideoResolutionStrings().map(x => x.name).find((n) => n === names[currentFormatIndex]) !== undefined ? currentFormatIndex : names.length - 1;
+  const currentIndex =
+    getUniqueVideoResolutionStrings()
+      .map((x) => x.name)
+      .find((n) => n === names[currentFormatIndex]) !== undefined
+      ? currentFormatIndex
+      : names.length - 1;
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
   uniqueVideoResolutionString.value = names[currentIndex] ?? "";
 });
