@@ -68,7 +68,9 @@ class RotTrlTransform3d:
     @classmethod
     def makeBetweenPoses(cls, initial: Pose3d, last: Pose3d) -> Self:
         return cls(
-            last.rotation() - initial.rotation(),
+            last.rotation().relativeTo(initial.rotation()),
             last.translation()
-            - initial.translation().rotateBy(last.rotation() - initial.rotation()),
+            - initial.translation().rotateBy(
+                last.rotation().relativeTo(initial.rotation())
+            ),
         )
