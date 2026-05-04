@@ -93,9 +93,6 @@ jobs:
 
   playwright-tests:
     name: "Playwright E2E tests"
-    defaults:
-      run:
-        working-directory: photon-client
     runs-on: ubuntu-24.04
     needs: [validation]
     steps:
@@ -119,14 +116,14 @@ jobs:
           cache-dependency-path: photon-client/pnpm-lock.yaml
           node-version: 24
       - name: Setup tests
+        working-directory: photon-client
         run: |
           pnpm install
           pnpm test-setup
       - name: Prebuild Gradle
-        run: |
-          cd ..
-          ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
+        run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Run Playwright tests
+        working-directory: photon-client
         run: pnpm test
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
