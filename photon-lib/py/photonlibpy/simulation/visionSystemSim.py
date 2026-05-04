@@ -91,7 +91,7 @@ class VisionSystemSim:
     def getRobotToCamera(
         self,
         cameraSim: PhotonCameraSim,
-        time: seconds = wpilib.Timer.getMonotonicTimestamp(),
+        time: seconds | None = None,
     ) -> Transform3d | None:
         """Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
         empty optional is returned.
@@ -101,6 +101,8 @@ class VisionSystemSim:
 
         :returns: The transform of this camera, or an empty optional if it is invalid
         """
+        if time is None:
+            time = wpilib.Timer.getMonotonicTimestamp()
         if cameraSim in self.camTrfMap:
             trfBuffer = self.camTrfMap[cameraSim]
             sample = trfBuffer.sample(time)
@@ -114,7 +116,7 @@ class VisionSystemSim:
     def getCameraPose(
         self,
         cameraSim: PhotonCameraSim,
-        time: seconds = wpilib.Timer.getMonotonicTimestamp(),
+        time: seconds | None = None,
     ) -> Pose3d | None:
         """Get a simulated camera's position on the field. If the requested camera is invalid, an empty
         optional is returned.
@@ -123,6 +125,8 @@ class VisionSystemSim:
 
         :returns: The pose of this camera, or an empty optional if it is invalid
         """
+        if time is None:
+            time = wpilib.Timer.getMonotonicTimestamp()
         robotToCamera = self.getRobotToCamera(cameraSim, time)
         if robotToCamera is None:
             return None
@@ -239,14 +243,13 @@ class VisionSystemSim:
                     currentTargets.remove(target)
         return removedList
 
-    def getRobotPose(
-        self, timestamp: seconds = wpilib.Timer.getMonotonicTimestamp()
-    ) -> Pose3d | None:
+    def getRobotPose(self, timestamp: seconds | None = None) -> Pose3d | None:
         """Get the robot pose in meters saved by the vision system at this timestamp.
 
         :param timestamp: Timestamp of the desired robot pose
         """
-
+        if timestamp is None:
+            timestamp = wpilib.Timer.getMonotonicTimestamp()
         return self.robotPoseBuffer.sample(timestamp)
 
     def resetRobotPose(self, robotPose: Pose2d | Pose3d) -> None:
