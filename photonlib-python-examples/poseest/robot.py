@@ -26,13 +26,13 @@
 
 import drivetrain
 import wpilib
-import wpimath.geometry
+import wpimath
 from photonlibpy import PhotonCamera, PhotonPoseEstimator
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 
-kRobotToCam = wpimath.geometry.Transform3d(
-    wpimath.geometry.Translation3d(0.5, 0.0, 0.5),
-    wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
+kRobotToCam = wpimath.Transform3d(
+    wpimath.Translation3d(0.5, 0.0, 0.5),
+    wpimath.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
 
 

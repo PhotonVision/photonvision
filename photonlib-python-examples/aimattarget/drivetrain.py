@@ -28,8 +28,6 @@ import math
 import swervemodule
 import wpilib
 import wpilib.simulation
-import wpimath.geometry
-import wpimath.kinematics
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
@@ -41,10 +39,10 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeftLocation = wpimath.geometry.Translation2d(0.381, 0.381)
-        self.frontRightLocation = wpimath.geometry.Translation2d(0.381, -0.381)
-        self.backLeftLocation = wpimath.geometry.Translation2d(-0.381, 0.381)
-        self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
+        self.frontLeftLocation = wpimath.Translation2d(0.381, 0.381)
+        self.frontRightLocation = wpimath.Translation2d(0.381, -0.381)
+        self.backLeftLocation = wpimath.Translation2d(-0.381, 0.381)
+        self.backRightLocation = wpimath.Translation2d(-0.381, -0.381)
 
         self.frontLeft = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3, 1)
         self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7, 2)
@@ -57,14 +55,14 @@ class Drivetrain:
         self.gyro = wpilib.AnalogGyro(0)
         self.simGyro = wpilib.simulation.AnalogGyroSim(self.gyro)
 
-        self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
+        self.kinematics = wpimath.SwerveDrive4Kinematics(
             self.frontLeftLocation,
             self.frontRightLocation,
             self.backLeftLocation,
             self.backRightLocation,
         )
 
-        self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
+        self.odometry = wpimath.SwerveDrive4Odometry(
             self.kinematics,
             self.gyro.getRotation2d(),
             (
@@ -75,7 +73,7 @@ class Drivetrain:
             ),
         )
 
-        self.targetChassisSpeeds = wpimath.kinematics.ChassisSpeeds()
+        self.targetChassisSpeeds = wpimath.ChassisSpeeds()
 
         self.gyro.reset()
 
@@ -98,16 +96,16 @@ class Drivetrain:
         swerveModuleStates = self.kinematics.toSwerveModuleStates(
             wpimath.kinematics.ChassisSpeeds.discretize(
                 (
-                    wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
+                    wpimath.ChassisSpeeds.fromFieldRelativeSpeeds(
                         xSpeed, ySpeed, rot, self.gyro.getRotation2d()
                     )
                     if fieldRelative
-                    else wpimath.kinematics.ChassisSpeeds(xSpeed, ySpeed, rot)
+                    else wpimath.ChassisSpeeds(xSpeed, ySpeed, rot)
                 ),
                 periodSeconds,
             )
         )
-        wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(
+        wpimath.SwerveDrive4Kinematics.desaturateWheelSpeeds(
             swerveModuleStates, kMaxSpeed
         )
         self.frontLeft.setDesiredState(swerveModuleStates[0])
@@ -129,7 +127,7 @@ class Drivetrain:
             ),
         )
 
-    def getModuleStates(self) -> list[wpimath.kinematics.SwerveModuleState]:
+    def getModuleStates(self) -> list[wpimath.SwerveModuleState]:
         return [
             self.frontLeft.getState(),
             self.frontRight.getState(),
@@ -137,18 +135,18 @@ class Drivetrain:
             self.backRight.getState(),
         ]
 
-    def getModulePoses(self) -> list[wpimath.geometry.Pose2d]:
+    def getModulePoses(self) -> list[wpimath.Pose2d]:
         p = self.odometry.getPose()
-        flTrans = wpimath.geometry.Transform2d(
+        flTrans = wpimath.Transform2d(
             self.frontLeftLocation, self.frontLeft.getAbsoluteHeading()
         )
-        frTrans = wpimath.geometry.Transform2d(
+        frTrans = wpimath.Transform2d(
             self.frontRightLocation, self.frontRight.getAbsoluteHeading()
         )
-        blTrans = wpimath.geometry.Transform2d(
+        blTrans = wpimath.Transform2d(
             self.backLeftLocation, self.backLeft.getAbsoluteHeading()
         )
-        brTrans = wpimath.geometry.Transform2d(
+        brTrans = wpimath.Transform2d(
             self.backRightLocation, self.backRight.getAbsoluteHeading()
         )
         return [
@@ -158,7 +156,7 @@ class Drivetrain:
             p.transformBy(brTrans),
         ]
 
-    def getChassisSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
+    def getChassisSpeeds(self) -> wpimath.ChassisSpeeds:
         return self.kinematics.toChassisSpeeds(self.getModuleStates())
 
     def log(self):
