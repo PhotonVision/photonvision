@@ -234,8 +234,9 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
+        // TODO add here
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, List.of(), frame);
     }
 
     private void drawThresholdFrame(Mat greyMat, Mat outputMat, int windowSize, double constant) {

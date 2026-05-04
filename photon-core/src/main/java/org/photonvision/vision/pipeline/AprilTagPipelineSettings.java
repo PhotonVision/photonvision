@@ -18,6 +18,8 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import java.util.ArrayList;
+import java.util.List;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
@@ -34,8 +36,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int decisionMargin = 35;
     public boolean doMultiTarget = false;
     public boolean doSingleTargetAlways = false;
-
-    // 3d settings
+    public List<Integer> rejectTagIds = new ArrayList<>();
 
     public AprilTagPipelineSettings() {
         super();
@@ -63,6 +64,9 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + decisionMargin;
         result = prime * result + (doMultiTarget ? 1231 : 1237);
         result = prime * result + (doSingleTargetAlways ? 1231 : 1237);
+        for (var id : rejectTagIds) {
+            result = prime * result + id;
+        }
         return result;
     }
 
@@ -83,6 +87,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (decisionMargin != other.decisionMargin) return false;
         if (doMultiTarget != other.doMultiTarget) return false;
         if (doSingleTargetAlways != other.doSingleTargetAlways) return false;
+        if (rejectTagIds != other.rejectTagIds) return false;
         return true;
     }
 }

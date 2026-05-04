@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { PipelineType } from "@/types/PipelineTypes";
 import PvSelect from "@/components/common/pv-select.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
@@ -47,6 +48,23 @@ const interactiveCols = computed(() =>
       :max="5"
       :step="0.1"
       @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)"
+    />
+    <pv-input
+      v-model="currentPipelineSettings.rejectTagIds"
+      label="Reject Tag IDs"
+      tooltip="Tag IDs to reject for multitag estimation"
+      @update:modelValue="
+        (value) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting(
+            {
+              rejectTagIds: value
+                .split(',')
+                .filter((s) => s.trim() !== '')
+                .map(Number)
+            },
+            false
+          )
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.threads"

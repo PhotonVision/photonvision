@@ -33,6 +33,7 @@ using StructType = SerdeType<PhotonPipelineResult>;
 void StructType::Pack(Packet& packet, const PhotonPipelineResult& value) {
   packet.Pack<photon::PhotonPipelineMetadata>(value.metadata);
   packet.Pack<std::vector<photon::PhotonTrackedTarget>>(value.targets);
+  packet.Pack<std::vector<photon::PhotonTrackedTarget>>(value.rejectedTags);
   packet.Pack<std::optional<photon::MultiTargetPNPResult>>(value.multitagResult);
 }
 
@@ -40,6 +41,7 @@ PhotonPipelineResult StructType::Unpack(Packet& packet) {
   return PhotonPipelineResult{ PhotonPipelineResult_PhotonStruct{
     .metadata = packet.Unpack<photon::PhotonPipelineMetadata>(),
     .targets = packet.Unpack<std::vector<photon::PhotonTrackedTarget>>(),
+    .rejectedTags = packet.Unpack<std::vector<photon::PhotonTrackedTarget>>(),
     .multitagResult = packet.Unpack<std::optional<photon::MultiTargetPNPResult>>(),
   }};
 }

@@ -43,9 +43,9 @@ import edu.wpi.first.util.struct.Struct;
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
 
     @Override
-    public final String getInterfaceUUID() { return "4b2ff16a964b5e2bf04be0c1454d91c4"; }
+    public final String getInterfaceUUID() { return "829142ea1cc21c437194a69e22a6aac4"; }
     @Override
-    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
+    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 rejectedTags[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineResult"; }
 
@@ -63,6 +63,9 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // targets is a custom VLA!
         packet.encodeList(value.targets);
 
+        // rejectedTags is a custom VLA!
+        packet.encodeList(value.rejectedTags);
+
         // multitagResult is optional! it better not be a VLA too
         packet.encodeOptional(value.multitagResult);
     }
@@ -77,6 +80,9 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // targets is a custom VLA!
         ret.targets = packet.decodeList(PhotonTrackedTarget.photonStruct);
 
+        // rejectedTags is a custom VLA!
+        ret.rejectedTags = packet.decodeList(PhotonTrackedTarget.photonStruct);
+
         // multitagResult is optional! it better not be a VLA too
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
 
@@ -86,7 +92,7 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            MultiTargetPNPResult.photonStruct,PhotonPipelineMetadata.photonStruct,PhotonTrackedTarget.photonStruct
+            PhotonTrackedTarget.photonStruct,MultiTargetPNPResult.photonStruct,PhotonPipelineMetadata.photonStruct
         };
     }
 

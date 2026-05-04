@@ -89,6 +89,9 @@
   - name: targets
     type: PhotonTrackedTarget
     vla: True
+  - name: rejectedTags
+    type: PhotonTrackedTarget
+    vla: True
   - name: multitagResult
     type: MultiTargetPNPResult
     optional: True
