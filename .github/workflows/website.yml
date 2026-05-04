@@ -37,6 +37,9 @@ jobs:
 
   format-check:
     name: Check Formatting
+    defaults:
+      run:
+        working-directory: website
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -52,7 +55,11 @@ jobs:
           cache-dependency-path: website/pnpm-lock.yaml
       - name: Install Packages
         run: pnpm i --frozen-lockfile
-        working-directory: website
-      - name: Run Formatting Check
-        run: pnpm prettier -c .
-        working-directory: website
+      - run: |
+          set +e
+          pnpm run format-ci
+          exit_code=$?
+          if test "$exit_code" -ne "0"; then
+            echo "::error ::Linting failed. See https://docs.photonvision.org/en/latest/docs/contributing/linting.html"
+          fi
+          exit $exit_code
