@@ -1,5 +1,4 @@
 import pytest
-
 from photonlibpy import Packet
 from photonlibpy.targeting import PhotonPipelineResult
 
