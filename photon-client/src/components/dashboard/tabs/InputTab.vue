@@ -54,12 +54,19 @@ const streamResolutions = computed(() => {
     value: i
   }));
 });
-const handleStreamResolutionChange = (value: number) => {
-  useCameraSettingsStore().changeCurrentPipelineSetting(
-    { streamingFrameDivisor: value + getNumberOfSkippedDivisors() },
-    false
-  );
-};
+const currentStreamResolutionIndex = computed<number>({
+  get: () => {
+    const stored = useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor;
+    const skipped = getNumberOfSkippedDivisors();
+    return stored - skipped;
+  },
+  set: (index) => {
+    useCameraSettingsStore().changeCurrentPipelineSetting(
+      { streamingFrameDivisor: index + getNumberOfSkippedDivisors() },
+      false
+    );
+  }
+});
 const { mdAndDown } = useDisplay();
 
 const interactiveCols = computed(() =>
@@ -184,12 +191,11 @@ const interactiveCols = computed(() =>
       @update:modelValue="(args) => handleResolutionChange(args)"
     />
     <pv-select
-      v-model="useCameraSettingsStore().currentPipelineSettings.streamingFrameDivisor"
+      v-model="currentStreamResolutionIndex"
       label="Stream Resolution"
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :items="streamResolutions"
       :select-cols="interactiveCols"
-      @update:modelValue="(args) => handleStreamResolutionChange(args)"
     />
     <pv-switch
       v-if="useCameraSettingsStore().isDriverMode"

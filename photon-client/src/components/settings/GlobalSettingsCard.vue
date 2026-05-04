@@ -151,16 +151,11 @@ const saveGeneralSettings = async () => {
   }
 };
 
-const currentNetworkInterfaceIndex = computed<number | string>({
-  get: () => {
-    const index = useSettingsStore().networkInterfaceNames.indexOf(
-      useSettingsStore().network.networkManagerIface || ""
-    );
-    return index === -1 ? "" : index;
-  },
-  set: (v) =>
-    typeof v === "number" &&
-    (tempSettingsStruct.value.networkManagerIface = useSettingsStore().networkInterfaceNames[v])
+const currentNetworkInterfaceIndex = computed<string>({
+  get: () => useSettingsStore().network.networkManagerIface || "",
+  set: (v) => {
+    tempSettingsStruct.value.networkManagerIface = v;
+  }
 });
 
 watchEffect(() => {
