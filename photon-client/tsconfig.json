@@ -2,6 +2,7 @@
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "include": ["env.d.ts", "vite.config.ts", "playwright.config.ts", "src/**/*", "src/**/*.vue", "tests/**/*"],
   "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "noImplicitAny": true,
     "strict": true,
