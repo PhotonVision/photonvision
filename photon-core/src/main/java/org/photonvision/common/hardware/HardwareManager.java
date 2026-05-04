@@ -24,20 +24,27 @@ import com.diozero.sbc.DeviceFactoryHelper;
 import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
+import org.photonvision.common.dataflow.networktables.NTDriverStation;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.gpio.CustomAdapter;
 import org.photonvision.common.hardware.gpio.CustomDeviceFactory;
+import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
+import org.photonvision.vision.processes.VisionModule;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -248,5 +255,113 @@ public class HardwareManager {
             }
         }
         statusLED.setStatus(status);
+    }
+
+    /**
+     * Ensures there is enough space for new recordings by clearing stored recordings to free up disk
+     * space. This method should delete the oldest recordings, prioritizing recordings from matches
+     * over practice sessions regardless of age. We leave a default buffer of 5 GB, plus the space
+     * each module will need for a 5-minute recording.
+     *
+     * @param modules The vision modules that will be recording
+     * @return true if enough space was cleared, false otherwise
+     */
+    public boolean reserveRecordingSpace(VisionModule[] modules) {
+        double totalRequestedSpace = 5 * 1024; // Start with 5 GB buffer
+
+        for (VisionModule module : modules) {
+            totalRequestedSpace += module.recordingSpaceNeeded();
+        }
+
+        return reserveRecordingSpace(totalRequestedSpace);
+    }
+
+    /**
+     * Ensures there is enough space for new recordings by clearing stored recordings to free up disk
+     * space. This method should delete the oldest recordings, prioritizing recordings from matches
+     * over practice sessions regardless of age.
+     *
+     * @param requestedSpace The amount of space to free in MB
+     * @return true if enough space was cleared, false otherwise
+     */
+    public boolean reserveRecordingSpace(double requestedSpace) {
+        if (SystemMonitor.getInstance().getUsableDiskSpace() > requestedSpace * 1024 * 1024) {
+            return true; // Enough space already available
+        }
+
+        Path recordingsDir = ConfigManager.getInstance().getRecordingsDirectory().toPath();
+
+        // Create a list of all the recordings
+        ArrayList<Path> recordings = new ArrayList<>();
+        try {
+            if (!java.nio.file.Files.exists(recordingsDir)
+                    || !java.nio.file.Files.isDirectory(recordingsDir)) {
+                logger.error("Recordings directory does not exist");
+                return false; // No recordings directory
+            }
+
+            try (var cameraStream = java.nio.file.Files.list(recordingsDir)) {
+                cameraStream
+                        .filter(java.nio.file.Files::isDirectory)
+                        .forEach(
+                                cameraDir -> {
+                                    try (var recStream = java.nio.file.Files.list(cameraDir)) {
+                                        recStream.filter(java.nio.file.Files::isDirectory).forEach(recordings::add);
+                                    } catch (Exception e) {
+                                        // skip unreadable camera folder
+                                    }
+                                });
+            }
+        } catch (Exception e) {
+            return false; // Unable to list recordings
+        }
+
+        if (recordings.isEmpty()) {
+            return false; // No recordings to delete
+        }
+
+        // Create practice list and match list
+        ArrayList<Path> matchRecordings = new ArrayList<>();
+        ArrayList<Path> practiceRecordings = new ArrayList<>();
+
+        for (Path rec : recordings) {
+            String dirName = rec.getFileName().toString().toLowerCase();
+            if (dirName.startsWith("event")) {
+                matchRecordings.add(rec);
+            } else {
+                practiceRecordings.add(rec);
+            }
+        }
+
+        // Sort both lists based on solely the filename
+        matchRecordings.sort(
+                (a, b) ->
+                        NTDriverStation.compareMatchData(
+                                a.getFileName().toString(), b.getFileName().toString()));
+        practiceRecordings.sort(
+                (a, b) -> a.getFileName().toString().compareTo(b.getFileName().toString()));
+
+        while (requestedSpace * 1024 * 1024 > SystemMonitor.getInstance().getUsableDiskSpace()) {
+            Path toDelete = null;
+            if (!practiceRecordings.isEmpty()) {
+                toDelete = practiceRecordings.remove(0);
+            } else if (!matchRecordings.isEmpty()) {
+                toDelete = matchRecordings.remove(0);
+            } else {
+                return false; // No recordings left to delete
+            }
+            try {
+                FileUtils.deleteDirectory(toDelete.toFile());
+            } catch (Exception e) {
+                logger.error("Failed to delete recording: " + toDelete.toString(), e);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public RecordingStrategy getRecordingStrategy() {
+        return hardwareConfig.recordingStrategy;
     }
 }

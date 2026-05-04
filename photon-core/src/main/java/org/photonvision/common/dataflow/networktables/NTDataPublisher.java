@@ -51,6 +51,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final BooleanSupplier driverModeSupplier;
     private final Consumer<Boolean> driverModeConsumer;
 
+    NTDataChangeListener recordingListener;
+    private final BooleanSupplier recordingSupplier;
+    private final Consumer<Boolean> recordingConsumer;
     NTDataChangeListener fpsLimitListener;
     private final Consumer<Integer> fpsLimitConsumer;
     private final Supplier<Integer> fpsLimitSupplier;
@@ -61,12 +64,16 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             Consumer<Integer> pipelineIndexConsumer,
             BooleanSupplier driverModeSupplier,
             Consumer<Boolean> driverModeConsumer,
+            BooleanSupplier recordingSupplier,
+            Consumer<Boolean> recordingConsumer,
             Supplier<Integer> fpsLimitSupplier,
             Consumer<Integer> fpsLimitConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
+        this.recordingSupplier = recordingSupplier;
+        this.recordingConsumer = recordingConsumer;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.fpsLimitConsumer = fpsLimitConsumer;
 
@@ -111,6 +118,19 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Set driver mode to " + newDriverMode);
     }
 
+    private void onRecordingChange(NetworkTableEvent entryNotification) {
+        var newRecording = entryNotification.valueData.value.getBoolean();
+        var originalRecording = recordingSupplier.getAsBoolean();
+
+        if (newRecording == originalRecording) {
+            logger.debug("Recording state is already " + newRecording);
+            return;
+        }
+
+        recordingConsumer.accept(newRecording);
+        logger.debug("Set recording state to " + newRecording);
+    }
+
     private void onFPSLimitChange(NetworkTableEvent entryNotification) {
         var newFPSLimit = (int) entryNotification.valueData.value.getInteger();
         var originalFPSLimit = fpsLimitSupplier.get();
@@ -127,12 +147,14 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private void removeEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (recordingListener != null) recordingListener.remove();
         ts.removeEntries();
     }
 
     private void updateEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
+        if (recordingListener != null) recordingListener.remove();
         if (fpsLimitListener != null) fpsLimitListener.remove();
 
         ts.updateEntries();
@@ -145,6 +167,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
 
+        recordingListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.recordingSubscriber, this::onRecordingChange);
         fpsLimitListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
@@ -196,6 +221,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
         ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        ts.recordingPublisher.set(recordingSupplier.getAsBoolean());
         ts.fpsLimitPublisher.set(fpsLimitSupplier.get());
         ts.latencyMillisEntry.set(acceptedResult.getLatencyMillis());
         ts.fpsEntry.set(acceptedResult.fps);

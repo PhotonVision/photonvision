@@ -372,6 +372,13 @@ public class ConfigManager {
         return ret;
     }
 
+    /** Get (and create if not present) the subfolder where recordings are stored */
+    public File getRecordingsDirectory() {
+        var ret = new File(configDirectoryFile, "recordings");
+        if (!ret.exists()) ret.mkdirs();
+        return ret;
+    }
+
     /**
      * Disable flushing settings to disk as part of our JVM exit hook. Used to prevent uploading all
      * settings from getting its new configs overwritten at program exit and before they're all

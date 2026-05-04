@@ -164,4 +164,14 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
         var vidMode = settables.getCurrentVideoMode();
         settables.setVideoMode(vidMode);
     }
+
+    @Override
+    public void setRecording(boolean shouldRecord) {
+        throw new UnsupportedOperationException("LibcameraGpuFrameProvider does not support recording");
+    }
+
+    @Override
+    public boolean getRecording() {
+        return false;
+    }
 }
