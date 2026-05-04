@@ -67,7 +67,7 @@ class PhotonCameraSim:
         # TODO switch this back to default True when the functionality is enabled
         self.videoSimProcEnabled: bool = False
         self.heartbeatCounter: int = 0
-        self.nextNtEntryTime = wpilib.Timer.getFPGATimestamp()
+        self.nextNtEntryTime = wpilib.Timer.getTimestamp()
         self.tagLayout = tagLayout
 
         self.cam = camera
@@ -183,7 +183,7 @@ class PhotonCameraSim:
                   ready
         """
         # check if this camera is ready for another frame update
-        now = wpilib.Timer.getFPGATimestamp()
+        now = wpilib.Timer.getTimestamp()
         timestamp = 0.0
         iter = 0
         # prepare next latest update
@@ -435,7 +435,7 @@ class PhotonCameraSim:
 
         # put this simulated data to NT
         self.heartbeatCounter += 1
-        publishTimestampMicros = wpilib.Timer.getFPGATimestamp() * 1e6
+        publishTimestampMicros = wpilib.Timer.getTimestamp() * 1e6
         return PhotonPipelineResult(
             ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
@@ -462,7 +462,7 @@ class PhotonCameraSim:
         :param receiveTimestamp: The (sim) timestamp when this result was read by NT in microseconds. If not passed image capture time is assumed be (current time - latency)
         """
         if receiveTimestamp_us is None:
-            receiveTimestamp_us = wpilib.Timer.getFPGATimestamp() * 1e6
+            receiveTimestamp_us = wpilib.Timer.getTimestamp() * 1e6
         receiveTimestamp_us = int(receiveTimestamp_us)
 
         self.ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp_us)
