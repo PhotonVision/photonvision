@@ -84,10 +84,9 @@ jobs:
         uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Dependencies

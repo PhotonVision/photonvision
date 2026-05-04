@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
     "preview": "vite preview --port 4173",
@@ -34,9 +37,9 @@
   "devDependencies": {
     "@eslint/js": "^9.31.0",
     "@playwright/test": "^1.56.1",
-    "@types/node": "^22.15.14",
+    "@types/node": "^24.0.0",
     "@types/three": "^0.178.0",
-    "@vitejs/plugin-vue": "^6.0.0",
+    "@vitejs/plugin-vue": "^6.0.6",
     "@vue/eslint-config-prettier": "^10.2.0",
     "@vue/eslint-config-typescript": "^14.5.0",
     "@vue/tsconfig": "^0.7.0",
@@ -45,7 +48,7 @@
     "prettier": "^3.6.2",
     "sass": "^1.89.2",
     "typescript": "^5.8.3",
-    "vite": "^8.0.2",
+    "vite": "^8.0.10",
     "vite-plugin-vuetify": "^2.1.1"
   }
 }
