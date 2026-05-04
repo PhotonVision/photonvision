@@ -57,18 +57,6 @@ public class USBFrameProvider extends CpuImageProcessor {
         this.connectedCallback = connectedCallback;
     }
 
-    @Override
-    public boolean checkCameraConnected() {
-        boolean connected = camera.isConnected();
-
-        if (!cameraPropertiesCached && connected) {
-            logger.info("Camera connected! running callback");
-            onCameraConnected();
-        }
-
-        return connected;
-    }
-
     final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
 
     @Override
@@ -145,13 +133,15 @@ public class USBFrameProvider extends CpuImageProcessor {
 
     @Override
     public void onCameraConnected() {
+        logger.info("Camera connected! running callback");
+
         super.onCameraConnected();
 
         this.connectedCallback.run();
     }
 
     @Override
-    public boolean isConnected() {
+    public boolean checkCameraConnected() {
         return camera.isConnected();
     }
 

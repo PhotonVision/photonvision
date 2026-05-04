@@ -132,7 +132,7 @@ public class VisionRunner {
 
     private void update() {
         // wait for the camera to connect
-        while (!frameSupplier.checkCameraConnected() && !Thread.interrupted()) {
+        while (!frameSupplier.isConnected() && !Thread.interrupted()) {
             // yield
             pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             try {
