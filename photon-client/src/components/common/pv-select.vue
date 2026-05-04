@@ -53,6 +53,7 @@ const items = computed<SelectItem<T>[]>(() => {
         :items="items"
         item-title="name"
         item-value="value"
+        item-props
         :disabled="disabled"
         hide-details="auto"
         variant="underlined"
