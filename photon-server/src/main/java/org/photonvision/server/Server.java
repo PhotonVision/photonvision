@@ -145,6 +145,7 @@ public class Server {
         app.post("/api/utils/activateMatchedCamera", RequestHandler::onActivateMatchedCameraRequest);
         app.post("/api/utils/assignUnmatchedCamera", RequestHandler::onAssignUnmatchedCameraRequest);
         app.post("/api/utils/unassignCamera", RequestHandler::onUnassignCameraRequest);
+        app.post("/api/utils/swapCameras", RequestHandler::onSwapCamerasRequest);
 
         // Calibration
         app.post("/api/calibration/end", RequestHandler::onCalibrationEndRequest);
