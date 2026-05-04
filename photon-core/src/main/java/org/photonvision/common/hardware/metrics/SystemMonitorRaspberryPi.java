@@ -25,13 +25,7 @@ public class SystemMonitorRaspberryPi extends SystemMonitor {
 
     @Override
     public String getCpuThrottleReason() {
-        int state = 0;
-        String output = vcgencmd("get_throttled");
-        try {
-            state = Integer.decode(output);
-        } catch (NumberFormatException e) {
-            logger.warn("Could not parse return value: " + output);
-        }
+        int state = getThrottleState();
         if ((state & 0x01) != 0) {
             return "LOW VOLTAGE";
         } else if ((state & 0x08) != 0) {
@@ -42,6 +36,22 @@ public class SystemMonitorRaspberryPi extends SystemMonitor {
             return "Prev. High Temp";
         }
         return "None";
+    }
+
+    @Override
+    public boolean isThermallyThrottling() {
+        return (getThrottleState() & 0x08) != 0;
+    }
+
+    private int getThrottleState() {
+        int state = 0;
+        String output = vcgencmd("get_throttled");
+        try {
+            state = Integer.decode(output);
+        } catch (NumberFormatException e) {
+            logger.warn("Could not parse return value: " + output);
+        }
+        return state;
     }
 
     @Override

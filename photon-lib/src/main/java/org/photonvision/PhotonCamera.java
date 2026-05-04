@@ -59,7 +59,6 @@ import org.photonvision.timesync.TimeSyncSingleton;
 public class PhotonCamera implements AutoCloseable {
     private static int InstanceCount = 1;
     public static final String kTableName = "photonvision";
-    private static final String PHOTON_ALERT_GROUP = "PhotonAlerts";
 
     private final NetworkTable cameraTable;
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
@@ -138,8 +137,10 @@ public class PhotonCamera implements AutoCloseable {
         name = cameraName;
         disconnectAlert =
                 new Alert(
-                        PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", AlertType.kWarning);
-        timesyncAlert = new Alert(PHOTON_ALERT_GROUP, "", AlertType.kWarning);
+                        AlertGroups.PHOTON_ALERTS,
+                        "PhotonCamera '" + name + "' is disconnected.",
+                        AlertType.kWarning);
+        timesyncAlert = new Alert(AlertGroups.PHOTON_ALERTS, "", AlertType.kWarning);
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();

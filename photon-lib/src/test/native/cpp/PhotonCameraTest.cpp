@@ -32,6 +32,7 @@
 #include <net/TimeSyncClient.h>
 #include <net/TimeSyncServer.h>
 #include <networktables/NetworkTableInstance.h>
+#include <photon/AlertGroups.h>
 #include <photon/PhotonCamera.h>
 #include <photon/simulation/PhotonCameraSim.h>
 
@@ -61,6 +62,8 @@ TEST(TimeSyncProtocolTest, Smoketest) {
 
 TEST(PhotonCameraTest, Alerts) {
   using frc::SmartDashboard;
+  const std::string warningsAlertKey =
+      std::string{photon::AlertGroups::kPhotonAlerts} + "/warnings";
 
   // GIVEN a local-only NT instance
   auto inst = nt::NetworkTableInstance::GetDefault();
@@ -86,7 +89,7 @@ TEST(PhotonCameraTest, Alerts) {
     SmartDashboard::UpdateValues();
 
     // The alert state will be set (hard-coded here)
-    auto alerts = SmartDashboard::GetStringArray("PhotonAlerts/warnings", {});
+    auto alerts = SmartDashboard::GetStringArray(warningsAlertKey, {});
     EXPECT_TRUE(
         std::any_of(alerts.begin(), alerts.end(),
                     [&disconnectedCameraString](const std::string& alert) {
@@ -113,7 +116,7 @@ TEST(PhotonCameraTest, Alerts) {
     SmartDashboard::UpdateValues();
 
     // THEN the camera isn't disconnected
-    auto alerts = SmartDashboard::GetStringArray("PhotonAlerts/warnings", {});
+    auto alerts = SmartDashboard::GetStringArray(warningsAlertKey, {});
     fmt::println("{}:{}: saw alerts: {}", __FILE__, __LINE__, alerts);
     EXPECT_TRUE(
         std::none_of(alerts.begin(), alerts.end(),

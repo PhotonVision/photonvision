@@ -39,6 +39,7 @@
 #include <wpi/json.h>
 
 #include "PhotonVersion.h"
+#include "photon/AlertGroups.h"
 #include "photon/dataflow/structures/Packet.h"
 
 static constexpr units::second_t WARN_DEBOUNCE_SEC = 5_s;
@@ -109,7 +110,6 @@ namespace photon {
 
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
-static const std::string PHOTON_ALERT_GROUP{"PhotonAlerts"};
 bool PhotonCamera::VERSION_CHECK_ENABLED = true;
 
 void PhotonCamera::SetVersionCheckEnabled(bool enabled) {
@@ -160,11 +160,12 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       cameraName(cameraName),
-      disconnectAlert(PHOTON_ALERT_GROUP,
+      disconnectAlert(AlertGroups::kPhotonAlerts,
                       std::string{"PhotonCamera '"} + std::string{cameraName} +
                           "' is disconnected.",
                       frc::Alert::AlertType::kWarning),
-      timesyncAlert(PHOTON_ALERT_GROUP, "", frc::Alert::AlertType::kWarning) {
+      timesyncAlert(AlertGroups::kPhotonAlerts, "",
+                    frc::Alert::AlertType::kWarning) {
   verifyDependencies();
   HAL_Report(HALUsageReporting::kResourceType_PhotonCamera, InstanceCount);
   InstanceCount++;
