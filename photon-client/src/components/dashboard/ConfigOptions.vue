@@ -13,9 +13,9 @@ import OutputTab from "@/components/dashboard/tabs/OutputTab.vue";
 import TargetsTab from "@/components/dashboard/tabs/TargetsTab.vue";
 import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
+import { PipelineType } from "@/types/PipelineTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { useDisplay } from "vuetify/lib/composables/display";
-import { useTheme } from "vuetify";
+import { useDisplay, useTheme } from "vuetify";
 
 const theme = useTheme();
 
@@ -106,6 +106,17 @@ const tabGroups = computed<ConfigOption[][]>(() => {
     .filter((it) => it.length); // Remove empty tab groups
 });
 
+// This boolean is used to satisfy type-checking requirements.
+const shouldUseWideSecondTabGroup = computed(() => {
+  const currentPipelineSettings = useCameraSettingsStore().currentPipelineSettings;
+
+  return (
+    (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
+      currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
+    currentPipelineSettings.doMultiTarget
+  );
+});
+
 const onBeforeTabUpdate = () => {
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
@@ -129,7 +140,7 @@ const onBeforeTabUpdate = () => {
       <v-col
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
-        :cols="tabGroupIndex === 1 && useCameraSettingsStore().currentPipelineSettings.doMultiTarget ? 7 : ''"
+        :cols="tabGroupIndex === 1 && shouldUseWideSecondTabGroup ? 7 : ''"
         :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
         @vue:before-update="onBeforeTabUpdate"
       >

@@ -89,7 +89,7 @@ const calibrationDivisors = computed(() =>
   })
 );
 
-const uniqueVideoResolutionString = ref("");
+const uniqueVideoResolutionIndex = ref(getUniqueVideoResolutionStrings()?.[0]?.value);
 
 // Use a watchEffect so the value is populated/reacts when the stores become available or update.
 // This avoids trying to index into an array that may be empty during page reload.
@@ -106,7 +106,7 @@ watchEffect(() => {
       ? currentFormatIndex
       : names.length - 1;
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
-  uniqueVideoResolutionString.value = names[currentIndex] ?? "";
+  uniqueVideoResolutionIndex.value = currentIndex;
 });
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
@@ -191,7 +191,7 @@ const downloadCalibBoard = async () => {
 };
 
 const isCalibrating = computed(
-  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
 );
 
 const startCalibration = () => {
@@ -310,23 +310,23 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           >
           <v-form v-model="settingsValid">
             <pv-select
-              v-model="uniqueVideoResolutionString"
+              v-model="uniqueVideoResolutionIndex"
               label="Resolution"
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
               :items="getUniqueVideoResolutionStrings()"
-              @update:model-value="
-                useStateStore().calibrationData.videoFormatIndex =
-                  getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
-              "
+              @update:model-value="(value) => (useStateStore().calibrationData.videoFormatIndex = value)"
             />
             <pv-select
               v-model="boardType"
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'ChArUco']"
+              :items="[
+                { value: CalibrationBoardTypes.Charuco, name: 'ChArUco' },
+                { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
+              ]"
               :disabled="isCalibrating"
             />
             <v-alert
@@ -356,7 +356,12 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Tag Family"
               tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
-              :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
+              :items="[
+                { value: CalibrationTagFamilies.Dict_4X4_1000, name: 'Dict_4X4_1000' },
+                { value: CalibrationTagFamilies.Dict_5X5_1000, name: 'Dict_5X5_1000' },
+                { value: CalibrationTagFamilies.Dict_6X6_1000, name: 'Dict_6X6_1000' },
+                { value: CalibrationTagFamilies.Dict_7X7_1000, name: 'Dict_7X7_1000' }
+              ]"
               :disabled="isCalibrating"
             />
             <pv-number-input
