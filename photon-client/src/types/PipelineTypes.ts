@@ -41,8 +41,8 @@ export enum ContourSortMode {
   Smallest = 1,
   Highest = 2,
   Lowest = 3,
-  Rightmost = 4,
-  Leftmost = 5,
+  Leftmost = 4,
+  Rightmost = 5,
   Centermost = 6
 }
 
