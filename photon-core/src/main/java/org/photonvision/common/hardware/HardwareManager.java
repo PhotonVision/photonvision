@@ -59,7 +59,11 @@ public class HardwareManager {
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private NTDataChangeListener ledModeListener;
 
-    public VisionLED visionLED; // May be null if no LED is specified
+    private VisionLED visionLED; // May be null if no LED is specified
+
+    public VisionLED getVisionLED() {
+        return visionLED;
+    }
 
     public static HardwareManager getInstance() {
         if (instance == null) {
@@ -120,15 +124,10 @@ public class HardwareManager {
                                 ledModeRequest,
                                 visionLED::onLedModeChange);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
-
         if (visionLED != null) {
             visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
             visionLED.blink(85, 4); // bootup blink
         }
-
-        // Start hardware metrics thread (Disabled until implemented)
-        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     private HardwareManager() {
@@ -175,6 +174,10 @@ public class HardwareManager {
     }
 
     public void setBrightnessPercent(int percent) {
+        if (hardwareSettings == null) {
+            logger.error("Could not set led brightness! No hardware settings found");
+            return;
+        }
         if (percent != hardwareSettings.ledBrightnessPercentage) {
             hardwareSettings.ledBrightnessPercentage = percent;
             if (visionLED != null) visionLED.setBrightness(percent);
@@ -200,6 +203,10 @@ public class HardwareManager {
             }
         }
         try {
+            if (hardwareConfig == null) {
+                logger.error("Could not restart device! No hardware configuration found");
+                return false;
+            }
             return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
         } catch (IOException e) {
             logger.error("Could not restart device!", e);

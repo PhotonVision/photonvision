@@ -175,9 +175,9 @@ public class VisionModule {
         }
 
         // Configure LED's if supported by the underlying hardware
-        if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
+        if (HardwareManager.getInstance().getVisionLED() != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
-                    .visionLED
+                    .getVisionLED()
                     .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
@@ -513,8 +513,8 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
-            HardwareManager.getInstance().visionLED.setState(on);
+        if (camShouldControlLEDs() && HardwareManager.getInstance().getVisionLED() != null)
+            HardwareManager.getInstance().getVisionLED().setState(on);
     }
 
     public void saveModule() {
