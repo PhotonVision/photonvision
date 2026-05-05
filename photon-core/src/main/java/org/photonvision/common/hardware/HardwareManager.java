@@ -45,11 +45,11 @@ public class HardwareManager {
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
-    private final HardwareConfig hardwareConfig;
-    private final HardwareSettings hardwareSettings;
+    private HardwareConfig hardwareConfig;
+    private HardwareSettings hardwareSettings;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private final StatusLED statusLED;
+    private StatusLED statusLED;
 
     @SuppressWarnings("FieldCanBeLocal")
     private final IntegerSubscriber ledModeRequest;
@@ -57,30 +57,20 @@ public class HardwareManager {
     private final IntegerPublisher ledModeState;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
-    private final NTDataChangeListener ledModeListener;
+    private NTDataChangeListener ledModeListener;
 
-    public final VisionLED visionLED; // May be null if no LED is specified
+    public VisionLED visionLED; // May be null if no LED is specified
 
     public static HardwareManager getInstance() {
         if (instance == null) {
-            var conf = ConfigManager.getInstance().getConfig();
-            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
+            instance = new HardwareManager();
         }
         return instance;
     }
 
-    private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
+    public void setConfig(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
-
-        ledModeRequest =
-                NetworkTablesManager.getInstance()
-                        .kRootTable
-                        .getIntegerTopic("ledModeRequest")
-                        .subscribe(-1);
-        ledModeState =
-                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
-        ledModeState.set(VisionLEDMode.kDefault.value);
 
         // Device factory is lazy to prevent creating one if it will go unused.
         Supplier<NativeDeviceFactoryInterface> lazyDeviceFactory =
@@ -136,6 +126,22 @@ public class HardwareManager {
             visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
             visionLED.blink(85, 4); // bootup blink
         }
+
+        // Start hardware metrics thread (Disabled until implemented)
+        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+    }
+
+    private HardwareManager() {
+        ledModeRequest =
+                NetworkTablesManager.getInstance()
+                        .kRootTable
+                        .getIntegerTopic("ledModeRequest")
+                        .subscribe(-1);
+        ledModeState =
+                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledModeState").publish();
+        ledModeState.set(VisionLEDMode.kDefault.value);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();

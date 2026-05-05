@@ -328,7 +328,8 @@ public class Main {
 
         logger.debug("Loading HardwareManager...");
         // Force load the hardware manager
-        HardwareManager.getInstance();
+        var conf = ConfigManager.getInstance().getConfig();
+        HardwareManager.getInstance().setConfig(conf.getHardwareConfig(), conf.getHardwareSettings());
 
         if (isSmoketest) {
             logger.info("PhotonVision base functionality loaded -- smoketest complete");
