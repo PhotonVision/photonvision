@@ -21,7 +21,7 @@ const streamSrc = computed<string>(() => {
     return emptyStreamSrc;
   }
 
-  return `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+  return `http://${inject("backendHost")}/port/${port}/stream.mjpg`;
 });
 const streamDesc = computed<string>(() => `${props.streamType} Stream View`);
 const streamStyle = computed<StyleValue>(() => {

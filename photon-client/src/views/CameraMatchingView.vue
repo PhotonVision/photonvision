@@ -18,7 +18,7 @@ import { useTheme } from "vuetify";
 
 const theme = useTheme();
 
-const formatUrl = (port) => `http://${inject("backendHostname")}:${port}/stream.mjpg`;
+const formatUrl = (port) => `http://${inject("backendHost")}/port/${port}/stream.mjpg`;
 
 const activatingModule = ref(false);
 const activateModule = (moduleUniqueName: string) => {
