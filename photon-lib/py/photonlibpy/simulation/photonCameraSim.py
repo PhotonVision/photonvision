@@ -5,10 +5,10 @@ import cscore as cs
 import cv2 as cv
 import numpy as np
 import wpilib
+import wpiutil
 from robotpy_apriltag import AprilTagField, AprilTagFieldLayout
 from wpimath import Pose3d, Transform3d
 from wpimath.units import meters, seconds
-import wpiutil
 
 from ..estimation import OpenCVHelp, RotTrlTransform3d, TargetModel, VisionEstimation
 from ..estimation.cameraTargetRelation import CameraTargetRelation

@@ -96,12 +96,8 @@ class SwerveModule:
         self.simTurningEncoder = wpilib.simulation.EncoderSim(self.turningEncoder)
         self.simDrivingMotor = wpilib.simulation.PWMSim(self.driveMotor)
         self.simTurningMotor = wpilib.simulation.PWMSim(self.turningMotor)
-        self.simDrivingMotorFilter = wpimath.LinearFilter.singlePoleIIR(
-            0.1, 0.02
-        )
-        self.simTurningMotorFilter = wpimath.LinearFilter.singlePoleIIR(
-            0.0001, 0.02
-        )
+        self.simDrivingMotorFilter = wpimath.LinearFilter.singlePoleIIR(0.1, 0.02)
+        self.simTurningMotorFilter = wpimath.LinearFilter.singlePoleIIR(0.0001, 0.02)
         self.simTurningEncoderPos = 0
         self.simDrivingEncoderPos = 0
 
@@ -125,9 +121,7 @@ class SwerveModule:
             wpimath.Rotation2d(self.turningEncoder.getDistance()),
         )
 
-    def setDesiredVelocity(
-        self, desiredVelocity: wpimath.SwerveModuleVelocity
-    ) -> None:
+    def setDesiredVelocity(self, desiredVelocity: wpimath.SwerveModuleVelocity) -> None:
         """Sets the desired state for the module.
 
         :param desiredVelocity: Desired state with speed and angle.
@@ -142,14 +136,18 @@ class SwerveModule:
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
-        self.desiredVelocity.velocity *= (self.desiredVelocity.angle - encoderRotation).cos()
+        self.desiredVelocity.velocity *= (
+            self.desiredVelocity.angle - encoderRotation
+        ).cos()
 
         # Calculate the drive output from the drive PID controller.
         driveOutput = self.drivePIDController.calculate(
             self.driveEncoder.getRate(), self.desiredVelocity.velocity
         )
 
-        driveFeedforward = self.driveFeedforward.calculate(self.desiredVelocity.velocity)
+        driveFeedforward = self.driveFeedforward.calculate(
+            self.desiredVelocity.velocity
+        )
 
         # Calculate the turning motor output from the turning PID controller.
         turnOutput = self.turningPIDController.calculate(
@@ -174,7 +172,9 @@ class SwerveModule:
             table + "Steer Target Degrees",
             math.degrees(self.turningPIDController.getSetpoint()),
         )
-        wpilib.SmartDashboard.putNumber(table + "Drive Velocity Feet", state.velocity_fps)
+        wpilib.SmartDashboard.putNumber(
+            table + "Drive Velocity Feet", state.velocity_fps
+        )
         wpilib.SmartDashboard.putNumber(
             table + "Drive Velocity Target Feet", self.desiredVelocity.velocity_fps
         )

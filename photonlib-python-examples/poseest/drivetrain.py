@@ -102,7 +102,9 @@ class Drivetrain:
         """
         chassisVelocities = wpimath.ChassisVelocities(xSpeed, ySpeed, rot)
         if fieldRelative:
-            chassisVelocities = chassisVelocities.toRobotRelative(self.gyro.getRotation2d())
+            chassisVelocities = chassisVelocities.toRobotRelative(
+                self.gyro.getRotation2d()
+            )
 
         chassisVelocities = chassisVelocities.discretize(periodSeconds)
         swerveModuleStates = self.kinematics.desaturateWheelVelocities(
@@ -113,7 +115,9 @@ class Drivetrain:
         self.backLeft.setDesiredVelocity(swerveModuleStates[2])
         self.backRight.setDesiredVelocity(swerveModuleStates[3])
 
-        self.targetChassisVelocities = self.kinematics.toChassisVelocities(swerveModuleStates)
+        self.targetChassisVelocities = self.kinematics.toChassisVelocities(
+            swerveModuleStates
+        )
 
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
@@ -127,9 +131,7 @@ class Drivetrain:
             ),
         )
 
-    def addVisionPoseEstimate(
-        self, pose: wpimath.Pose3d, timestamp: float
-    ) -> None:
+    def addVisionPoseEstimate(self, pose: wpimath.Pose3d, timestamp: float) -> None:
         self.poseEst.addVisionMeasurement(pose, timestamp)
 
     def resetPose(self) -> None:

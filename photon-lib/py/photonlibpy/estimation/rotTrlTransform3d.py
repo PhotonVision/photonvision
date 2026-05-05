@@ -70,5 +70,7 @@ class RotTrlTransform3d:
         return cls(
             last.rotation().rotateBy(initial.rotation()),
             last.translation()
-            - initial.translation().rotateBy(last.rotation().rotateBy(initial.rotation())),
+            - initial.translation().rotateBy(
+                last.rotation().rotateBy(initial.rotation())
+            ),
         )
