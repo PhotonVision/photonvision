@@ -112,7 +112,7 @@ class PhotonCamera:
         )
 
         self._prevHeartbeat = 0
-        self._prevHeartbeatChangeTime = Timer.getFPGATimestamp()
+        self._prevHeartbeatChangeTime = Timer.getTimestamp()
 
         # Start the time sync server
         inst.start()
@@ -163,7 +163,7 @@ class PhotonCamera:
 
         self._versionCheck()
 
-        now = RobotController.getFPGATime()
+        now = RobotController.getMonotonicTime()
         packetWithTimestamp = self._rawBytesEntry.getAtomic()
         byteList = packetWithTimestamp.value
         packetWithTimestamp.time
@@ -274,7 +274,7 @@ class PhotonCamera:
         """
 
         curHeartbeat = self._heartbeatEntry.get()
-        now = Timer.getFPGATimestamp()
+        now = Timer.getTimestamp()
 
         if curHeartbeat != self._prevHeartbeat:
             self._prevHeartbeat = curHeartbeat
@@ -288,10 +288,10 @@ class PhotonCamera:
         if not _VERSION_CHECK_ENABLED:
             return
 
-        if (Timer.getFPGATimestamp() - _lastVersionTimeCheck) < 5.0:
+        if (Timer.getTimestamp() - _lastVersionTimeCheck) < 5.0:
             return
 
-        _lastVersionTimeCheck = Timer.getFPGATimestamp()
+        _lastVersionTimeCheck = Timer.getTimestamp()
 
         # Heartbeat entry is assumed to always be present. If it's not present, we
         # assume that a camera with that name was never connected in the first place.
