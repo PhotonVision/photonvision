@@ -26,6 +26,7 @@ import math
 
 import wpilib
 import wpilib.simulation
+import wpimath
 import wpimath.units
 
 kWheelRadius = 0.0508
@@ -55,7 +56,7 @@ class SwerveModule:
         :param turningEncoderChannelB: DIO input for the turning encoder channel B
         """
         self.moduleNumber = moduleNumber
-        self.desiredState = wpimath.SwerveModuleState()
+        self.desiredVelocity = wpimath.SwerveModuleVelocity()
 
         self.driveMotor = wpilib.PWMSparkMax(driveMotorChannel)
         self.turningMotor = wpilib.PWMSparkMax(turningMotorChannel)
@@ -101,12 +102,12 @@ class SwerveModule:
         self.simTurningEncoderPos = 0
         self.simDrivingEncoderPos = 0
 
-    def getState(self) -> wpimath.SwerveModuleState:
+    def getVelocity(self) -> wpimath.SwerveModuleVelocity:
         """Returns the current state of the module.
 
         :returns: The current state of the module.
         """
-        return wpimath.SwerveModuleState(
+        return wpimath.SwerveModuleVelocity(
             self.driveEncoder.getRate(),
             wpimath.Rotation2d(self.turningEncoder.getDistance()),
         )
@@ -121,33 +122,33 @@ class SwerveModule:
             wpimath.Rotation2d(self.turningEncoder.getDistance()),
         )
 
-    def setDesiredState(self, desiredState: wpimath.SwerveModuleState) -> None:
+    def setDesiredVelocity(self, desiredVelocity: wpimath.SwerveModuleVelocity) -> None:
         """Sets the desired state for the module.
 
-        :param desiredState: Desired state with speed and angle.
+        :param desiredVelocity: Desired state with speed and angle.
         """
-        self.desiredState = desiredState
+        self.desiredVelocity = desiredVelocity
 
         encoderRotation = wpimath.Rotation2d(self.turningEncoder.getDistance())
 
         # Optimize the reference state to avoid spinning further than 90 degrees
-        desiredState.optimize(encoderRotation)
+        desiredVelocity.optimize(encoderRotation)
 
         # Scale speed by cosine of angle error. This scales down movement perpendicular to the desired
         # direction of travel that can occur when modules change directions. This results in smoother
         # driving.
-        desiredState.speed *= (desiredState.angle - encoderRotation).cos()
+        desiredVelocity.velocity *= (desiredVelocity.angle - encoderRotation).cos()
 
         # Calculate the drive output from the drive PID controller.
         driveOutput = self.drivePIDController.calculate(
-            self.driveEncoder.getRate(), desiredState.speed
+            self.driveEncoder.getRate(), desiredVelocity.velocity
         )
 
-        driveFeedforward = self.driveFeedforward.calculate(desiredState.speed)
+        driveFeedforward = self.driveFeedforward.calculate(desiredVelocity.velocity)
 
         # Calculate the turning motor output from the turning PID controller.
         turnOutput = self.turningPIDController.calculate(
-            self.turningEncoder.getDistance(), desiredState.angle.radians()
+            self.turningEncoder.getDistance(), desiredVelocity.angle.radians()
         )
 
         turnFeedforward = self.turnFeedforward.calculate(
@@ -161,7 +162,7 @@ class SwerveModule:
         return wpimath.Rotation2d(self.turningEncoder.getDistance())
 
     def log(self) -> None:
-        state = self.getState()
+        state = self.getVelocity()
 
         table = "Module " + str(self.moduleNumber) + "/"
         wpilib.SmartDashboard.putNumber(
@@ -172,15 +173,17 @@ class SwerveModule:
             table + "Steer Target Degrees",
             math.degrees(self.turningPIDController.getSetpoint()),
         )
-        wpilib.SmartDashboard.putNumber(table + "Drive Velocity Feet", state.speed_fps)
         wpilib.SmartDashboard.putNumber(
-            table + "Drive Velocity Target Feet", self.desiredState.speed_fps
+            table + "Drive Velocity Feet", state.velocity_fps
         )
         wpilib.SmartDashboard.putNumber(
-            table + "Drive Voltage", self.driveMotor.get() * 12.0
+            table + "Drive Velocity Target Feet", self.desiredVelocity.velocity_fps
         )
         wpilib.SmartDashboard.putNumber(
-            table + "Steer Voltage", self.turningMotor.get() * 12.0
+            table + "Drive Voltage", self.driveMotor.getDutyCycle() * 12.0
+        )
+        wpilib.SmartDashboard.putNumber(
+            table + "Steer Voltage", self.turningMotor.getDutyCycle() * 12.0
         )
 
     def simulationPeriodic(self) -> None:
