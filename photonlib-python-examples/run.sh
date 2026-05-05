@@ -1,3 +1,4 @@
+set -e
 # Check if the first argument is provided
 if [ $# -eq 0 ]
   then
