@@ -104,13 +104,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Typecheck Client
         working-directory: photon-client
         run: |
-          pnpm install
+          pnpm install --frozen-lockfile
           pnpm type-check
   playwright-tests:
     name: "Playwright E2E tests"
