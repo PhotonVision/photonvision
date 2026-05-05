@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import mrcal
 import numpy as np
-from wpimath.geometry import Quaternion as _Quat
+from wpimath import Quaternion as _Quat
 
 
 @dataclass

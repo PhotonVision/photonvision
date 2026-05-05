@@ -28,8 +28,7 @@ import math
 import swervemodule
 import wpilib
 import wpilib.simulation
-import wpimath.geometry
-import wpimath.kinematics
+import wpimath
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
@@ -41,10 +40,10 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeftLocation = wpimath.geometry.Translation2d(0.381, 0.381)
-        self.frontRightLocation = wpimath.geometry.Translation2d(0.381, -0.381)
-        self.backLeftLocation = wpimath.geometry.Translation2d(-0.381, 0.381)
-        self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
+        self.frontLeftLocation = wpimath.Translation2d(0.381, 0.381)
+        self.frontRightLocation = wpimath.Translation2d(0.381, -0.381)
+        self.backLeftLocation = wpimath.Translation2d(-0.381, 0.381)
+        self.backRightLocation = wpimath.Translation2d(-0.381, -0.381)
 
         self.frontLeft = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3, 1)
         self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7, 2)
@@ -137,18 +136,18 @@ class Drivetrain:
             self.backRight.getState(),
         ]
 
-    def getModulePoses(self) -> list[wpimath.geometry.Pose2d]:
+    def getModulePoses(self) -> list[wpimath.Pose2d]:
         p = self.odometry.getPose()
-        flTrans = wpimath.geometry.Transform2d(
+        flTrans = wpimath.Transform2d(
             self.frontLeftLocation, self.frontLeft.getAbsoluteHeading()
         )
-        frTrans = wpimath.geometry.Transform2d(
+        frTrans = wpimath.Transform2d(
             self.frontRightLocation, self.frontRight.getAbsoluteHeading()
         )
-        blTrans = wpimath.geometry.Transform2d(
+        blTrans = wpimath.Transform2d(
             self.backLeftLocation, self.backLeft.getAbsoluteHeading()
         )
-        brTrans = wpimath.geometry.Transform2d(
+        brTrans = wpimath.Transform2d(
             self.backRightLocation, self.backRight.getAbsoluteHeading()
         )
         return [
