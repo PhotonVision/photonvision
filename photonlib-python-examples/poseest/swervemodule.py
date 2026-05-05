@@ -95,8 +95,8 @@ class SwerveModule:
         # Simulation Support
         self.simDriveEncoder = wpilib.simulation.EncoderSim(self.driveEncoder)
         self.simTurningEncoder = wpilib.simulation.EncoderSim(self.turningEncoder)
-        self.simDrivingMotor = wpilib.simulation.PWMSim(self.driveMotor)
-        self.simTurningMotor = wpilib.simulation.PWMSim(self.turningMotor)
+        self.simDrivingMotor = wpilib.simulation.PWMSim(driveMotorChannel)
+        self.simTurningMotor = wpilib.simulation.PWMSim(turningMotorChannel)
         self.simDrivingMotorFilter = wpimath.LinearFilter.singlePoleIIR(0.1, 0.02)
         self.simTurningMotorFilter = wpimath.LinearFilter.singlePoleIIR(0.0001, 0.02)
         self.simTurningEncoderPos = 0
