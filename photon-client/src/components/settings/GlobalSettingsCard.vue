@@ -151,7 +151,7 @@ const saveGeneralSettings = async () => {
   }
 };
 
-const currentNetworkInterfaceIndex = computed<string>({
+const currentNetworkInterface = computed<string>({
   get: () => useSettingsStore().network.networkManagerIface || "",
   set: (v) => {
     tempSettingsStruct.value.networkManagerIface = v;
@@ -254,7 +254,7 @@ watchEffect(() => {
         />
         <pv-select
           v-show="!useSettingsStore().network.networkingDisabled"
-          v-model="currentNetworkInterfaceIndex"
+          v-model="currentNetworkInterface"
           label="NetworkManager interface"
           :disabled="
             !tempSettingsStruct.shouldManage ||
