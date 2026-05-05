@@ -28,8 +28,7 @@ import math
 import swervemodule
 import wpilib
 import wpilib.simulation
-import wpimath.geometry
-import wpimath.kinematics
+import wpimath
 
 kMaxSpeed = 3.0  # 3 meters per second
 kMaxAngularSpeed = math.pi  # 1/2 rotation per second
@@ -41,10 +40,10 @@ class Drivetrain:
     """
 
     def __init__(self) -> None:
-        self.frontLeftLocation = wpimath.geometry.Translation2d(0.381, 0.381)
-        self.frontRightLocation = wpimath.geometry.Translation2d(0.381, -0.381)
-        self.backLeftLocation = wpimath.geometry.Translation2d(-0.381, 0.381)
-        self.backRightLocation = wpimath.geometry.Translation2d(-0.381, -0.381)
+        self.frontLeftLocation = wpimath.Translation2d(0.381, 0.381)
+        self.frontRightLocation = wpimath.Translation2d(0.381, -0.381)
+        self.backLeftLocation = wpimath.Translation2d(-0.381, 0.381)
+        self.backRightLocation = wpimath.Translation2d(-0.381, -0.381)
 
         self.frontLeft = swervemodule.SwerveModule(1, 2, 0, 1, 2, 3, 1)
         self.frontRight = swervemodule.SwerveModule(3, 4, 4, 5, 6, 7, 2)
@@ -57,14 +56,14 @@ class Drivetrain:
         self.gyro = wpilib.AnalogGyro(0)
         self.simGyro = wpilib.simulation.AnalogGyroSim(self.gyro)
 
-        self.kinematics = wpimath.kinematics.SwerveDrive4Kinematics(
+        self.kinematics = wpimath.SwerveDrive4Kinematics(
             self.frontLeftLocation,
             self.frontRightLocation,
             self.backLeftLocation,
             self.backRightLocation,
         )
 
-        self.odometry = wpimath.kinematics.SwerveDrive4Odometry(
+        self.odometry = wpimath.SwerveDrive4Odometry(
             self.kinematics,
             self.gyro.getRotation2d(),
             (
@@ -75,7 +74,7 @@ class Drivetrain:
             ),
         )
 
-        self.targetChassisSpeeds = wpimath.kinematics.ChassisSpeeds()
+        self.targetChassisVelocities = wpimath.ChassisVelocities()
 
         self.gyro.reset()
 
@@ -95,27 +94,20 @@ class Drivetrain:
         :param fieldRelative: Whether the provided x and y speeds are relative to the field.
         :param periodSeconds: Time
         """
-        swerveModuleStates = self.kinematics.toSwerveModuleStates(
-            wpimath.kinematics.ChassisSpeeds.discretize(
-                (
-                    wpimath.kinematics.ChassisSpeeds.fromFieldRelativeSpeeds(
-                        xSpeed, ySpeed, rot, self.gyro.getRotation2d()
-                    )
-                    if fieldRelative
-                    else wpimath.kinematics.ChassisSpeeds(xSpeed, ySpeed, rot)
-                ),
-                periodSeconds,
-            )
-        )
-        wpimath.kinematics.SwerveDrive4Kinematics.desaturateWheelSpeeds(
-            swerveModuleStates, kMaxSpeed
-        )
-        self.frontLeft.setDesiredState(swerveModuleStates[0])
-        self.frontRight.setDesiredState(swerveModuleStates[1])
-        self.backLeft.setDesiredState(swerveModuleStates[2])
-        self.backRight.setDesiredState(swerveModuleStates[3])
+        chassisVelocities = wpimath.ChassisVelocities(xSpeed, ySpeed, rot)
+        if fieldRelative:
+            chassisVelocities = chassisVelocities.toRobotRelative(self.gyro.getRotation2d())
 
-        self.targetChassisSpeeds = self.kinematics.toChassisSpeeds(swerveModuleStates)
+        chassisVelocities = chassisVelocities.discretize(periodSeconds)
+        swerveModuleStates = self.kinematics.desaturateWheelVelocities(
+            self.kinematics.toSwerveModuleVelocities(chassisVelocities), kMaxSpeed
+        )
+        self.frontLeft.setDesiredVelocity(swerveModuleStates[0])
+        self.frontRight.setDesiredVelocity(swerveModuleStates[1])
+        self.backLeft.setDesiredVelocity(swerveModuleStates[2])
+        self.backRight.setDesiredVelocity(swerveModuleStates[3])
+
+        self.targetChassisVelocities = self.kinematics.toChassisVelocities(swerveModuleStates)
 
     def updateOdometry(self) -> None:
         """Updates the field relative position of the robot."""
@@ -129,26 +121,26 @@ class Drivetrain:
             ),
         )
 
-    def getModuleStates(self) -> list[wpimath.kinematics.SwerveModuleState]:
+    def getModuleVelocities(self) -> list[wpimath.SwerveModuleVelocity]:
         return [
-            self.frontLeft.getState(),
-            self.frontRight.getState(),
-            self.backLeft.getState(),
-            self.backRight.getState(),
+            self.frontLeft.getVelocity(),
+            self.frontRight.getVelocity(),
+            self.backLeft.getVelocity(),
+            self.backRight.getVelocity(),
         ]
 
-    def getModulePoses(self) -> list[wpimath.geometry.Pose2d]:
+    def getModulePoses(self) -> list[wpimath.Pose2d]:
         p = self.odometry.getPose()
-        flTrans = wpimath.geometry.Transform2d(
+        flTrans = wpimath.Transform2d(
             self.frontLeftLocation, self.frontLeft.getAbsoluteHeading()
         )
-        frTrans = wpimath.geometry.Transform2d(
+        frTrans = wpimath.Transform2d(
             self.frontRightLocation, self.frontRight.getAbsoluteHeading()
         )
-        blTrans = wpimath.geometry.Transform2d(
+        blTrans = wpimath.Transform2d(
             self.backLeftLocation, self.backLeft.getAbsoluteHeading()
         )
-        brTrans = wpimath.geometry.Transform2d(
+        brTrans = wpimath.Transform2d(
             self.backRightLocation, self.backRight.getAbsoluteHeading()
         )
         return [
@@ -158,8 +150,8 @@ class Drivetrain:
             p.transformBy(brTrans),
         ]
 
-    def getChassisSpeeds(self) -> wpimath.kinematics.ChassisSpeeds:
-        return self.kinematics.toChassisSpeeds(self.getModuleStates())
+    def getChassisVelocities(self) -> wpimath.ChassisVelocities:
+        return self.kinematics.toChassisVelocities(self.getModuleVelocities())
 
     def log(self):
         table = "Drive/"
@@ -169,7 +161,7 @@ class Drivetrain:
         wpilib.SmartDashboard.putNumber(table + "Y", pose.Y())
         wpilib.SmartDashboard.putNumber(table + "Heading", pose.rotation().degrees())
 
-        chassisSpeeds = self.getChassisSpeeds()
+        chassisSpeeds = self.getChassisVelocities()
         wpilib.SmartDashboard.putNumber(table + "VX", chassisSpeeds.vx)
         wpilib.SmartDashboard.putNumber(table + "VY", chassisSpeeds.vy)
         wpilib.SmartDashboard.putNumber(
@@ -177,13 +169,13 @@ class Drivetrain:
         )
 
         wpilib.SmartDashboard.putNumber(
-            table + "Target VX", self.targetChassisSpeeds.vx
+            table + "Target VX", self.targetChassisVelocities.vx
         )
         wpilib.SmartDashboard.putNumber(
-            table + "Target VY", self.targetChassisSpeeds.vy
+            table + "Target VY", self.targetChassisVelocities.vy
         )
         wpilib.SmartDashboard.putNumber(
-            table + "Target Omega Degrees", self.targetChassisSpeeds.omega_dps
+            table + "Target Omega Degrees", self.targetChassisVelocities.omega_dps
         )
 
         self.frontLeft.log()
@@ -199,5 +191,5 @@ class Drivetrain:
         self.frontRight.simulationPeriodic()
         self.backLeft.simulationPeriodic()
         self.backRight.simulationPeriodic()
-        self.simGyro.setRate(-1.0 * self.getChassisSpeeds().omega_dps)
+        self.simGyro.setRate(-1.0 * self.getChassisVelocities().omega_dps)
         self.simGyro.setAngle(self.simGyro.getAngle() + self.simGyro.getRate() * 0.02)
