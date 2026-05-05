@@ -180,10 +180,10 @@ class SwerveModule:
             table + "Drive Velocity Target Feet", self.desiredVelocity.velocity_fps
         )
         wpilib.SmartDashboard.putNumber(
-            table + "Drive Voltage", self.driveMotor.getDutyCycle() * 12.0
+            table + "Drive Throttle", self.driveMotor.getThrottle() * 12.0
         )
         wpilib.SmartDashboard.putNumber(
-            table + "Steer Voltage", self.turningMotor.getDutyCycle() * 12.0
+            table + "Steer Throttle", self.turningMotor.getThrottle() * 12.0
         )
 
     def simulationPeriodic(self) -> None:
