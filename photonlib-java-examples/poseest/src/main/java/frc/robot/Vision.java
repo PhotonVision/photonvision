@@ -111,9 +111,8 @@ public class Vision {
                         var estStdDevs = getEstimationStdDevs();
 
                         // Filter out poses that are likely to be incorrect (off the field, not flat on the
-                        // ground, etc).
-                        // This is optional, but can help prevent bad vision estimates from hurting your pose
-                        // estimator.
+                        // ground, etc). This is optional, but can help prevent bad vision estimates from
+                        // hurting your pose estimator.
                         if (Math.abs(estPose.getZ()) < kMaxAcceptedRobotZ
                                 && estPose.getX() > -kTagLayout.getFieldLength() / 2
                                 && estPose.getX() < kTagLayout.getFieldLength() / 2
