@@ -110,16 +110,18 @@ public class Vision {
                         // Change our trust in the measurement based on the tags we can see
                         var estStdDevs = getEstimationStdDevs();
 
-                        // Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc). 
-                        // This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
+                        // Filter out poses that are likely to be incorrect (off the field, not flat on the
+                        // ground, etc).
+                        // This is optional, but can help prevent bad vision estimates from hurting your pose
+                        // estimator.
                         if (Math.abs(estPose.getZ()) < kMaxAcceptedRobotZ
-                            && estPose.getX() > -kTagLayout.getFieldLength() / 2
-                            && estPose.getX() < kTagLayout.getFieldLength() / 2
-                            && estPose.getY() > -kTagLayout.getFieldWidth() / 2
-                            && estPose.getY() < kTagLayout.getFieldWidth() / 2
-                            && Math.abs(estPose.getRotation().getX()) < kMaxAcceptedRobotPitch
-                            && Math.abs(estPose.getRotation().getY()) < kMaxAcceptedRobotRoll
-                            && result.getBestTarget().poseAmbiguity < kMaxAcceptedPoseAmbiguity) {
+                                && estPose.getX() > -kTagLayout.getFieldLength() / 2
+                                && estPose.getX() < kTagLayout.getFieldLength() / 2
+                                && estPose.getY() > -kTagLayout.getFieldWidth() / 2
+                                && estPose.getY() < kTagLayout.getFieldWidth() / 2
+                                && Math.abs(estPose.getRotation().getX()) < kMaxAcceptedRobotPitch
+                                && Math.abs(estPose.getRotation().getY()) < kMaxAcceptedRobotRoll
+                                && result.getBestTarget().poseAmbiguity < kMaxAcceptedPoseAmbiguity) {
                             estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
                         }
                     });
