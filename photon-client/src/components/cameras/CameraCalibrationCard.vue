@@ -24,6 +24,8 @@ const MM_PER_INCH = 25.4;
 
 const settingsValid = ref(true);
 
+const bypassMinImages = 10;
+
 const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   const uniqueResolutions: VideoFormat[] = [];
   if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
@@ -601,7 +603,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               :color="
                 useStateStore().calibrationData.hasEnoughImages ||
-                (calibBypass && useStateStore().calibrationData.imageCount >= 10)
+                (calibBypass && useStateStore().calibrationData.imageCount >= bypassMinImages)
                   ? 'buttonActive'
                   : 'error'
               "
@@ -611,14 +613,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               <v-icon start class="calib-btn-icon" size="large">
                 {{
                   useStateStore().calibrationData.hasEnoughImages ||
-                  (calibBypass && useStateStore().calibrationData.imageCount >= 10)
+                  (calibBypass && useStateStore().calibrationData.imageCount >= bypassMinImages)
                     ? "mdi-flag-checkered"
                     : "mdi-flag-off-outline"
                 }}
               </v-icon>
               <span class="calib-btn-label">{{
                 useStateStore().calibrationData.hasEnoughImages ||
-                (calibBypass && useStateStore().calibrationData.imageCount >= 10)
+                (calibBypass && useStateStore().calibrationData.imageCount >= bypassMinImages)
                   ? "Finish Calibration"
                   : "Cancel Calibration"
               }}</span>
