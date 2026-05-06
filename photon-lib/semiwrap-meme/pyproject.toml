@@ -42,6 +42,6 @@ name = "photonlibpy"
 # - You can use `python -m semiwrap scan-headers` to autogenerate a list of
 #   headers that are available to be wrapped, and paste the list here
 [tool.semiwrap.extension_modules."photonlibpy._lib".headers]
-PhotonVersion = "../../src/main/native/include/PhotonVersion.h"
-PhotonCamera = "../../src/main/native/include/photon/PhotonCamera.h"
-PhotonUtils = "../../src/main/native/include/photon/PhotonUtils.h"
+PhotonVersion = "PhotonVersion.h"
+PhotonCamera = "photon/PhotonCamera.h"
+PhotonUtils = "photon/PhotonUtils.h"

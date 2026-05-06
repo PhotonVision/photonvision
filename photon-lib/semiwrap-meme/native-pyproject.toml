@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling", "hatch-nativelib"]
+build-backend = "hatchling.build"
+
+[project]
+name = "photonlib-native"
+version = "0.0.1"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/native"]
+
+[tool.hatch.build.hooks.custom]
+path = "build_hook.py"
+
+[[tool.hatch.build.hooks.nativelib.pcfile]]
+pcfile = "src/native/photonlib-native/photonlib-native.pc"
+name = "photonlib-native"
+
+includedir = "src/native/photonlib-native/include"
+libdir = "src/native/photonlib-native/lib"
+shared_libraries = ["photonlib-native"]
