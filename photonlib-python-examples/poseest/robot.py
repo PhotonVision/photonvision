@@ -53,9 +53,19 @@ class MyRobot(wpilib.TimedRobot):
             if camEstPose is None:
                 camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
 
-            self.swerve.addVisionPoseEstimate(
-                camEstPose.estimatedPose, camEstPose.timestampSeconds
-            )
+            # Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc). 
+            # This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
+            estPose = camEstPose.estimatedPose
+            if (
+                abs(estPose.Z()) < 0.2
+                and 0 < estPose.X() < 16.5
+                and 0 < estPose.Y() < 8.5
+                and abs(estPose.rotation().X()) < 0.2
+                and abs(estPose.rotation().Y()) < 0.2
+            ):
+                self.swerve.addVisionPoseEstimate(
+                    camEstPose.estimatedPose, camEstPose.timestampSeconds
+                )
 
         self.swerve.updateOdometry()
         self.swerve.log()

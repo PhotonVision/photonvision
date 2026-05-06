@@ -93,9 +93,20 @@ class Vision {
         }
       }
 
+      // Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc). 
+      // This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
       if (visionEst) {
-        estConsumer(visionEst->estimatedPose.ToPose2d(), visionEst->timestamp,
-                    GetEstimationStdDevs(visionEst->estimatedPose.ToPose2d()));
+        auto estPose = visionEst->estimatedPose;
+        if (std::abs(estPose.Z().value()) < 0.2 && 
+            estPose.X().value() > 0 && 
+            estPose.X().value() < 16.5 && 
+            estPose.Y().value() > 0 && 
+            estPose.Y().value() < 8.5 && 
+            std::abs(estPose.Rotation().X().value()) < 0.2 && 
+            std::abs(estPose.Rotation().Y().value()) < 0.2) {
+          estConsumer(estPose.ToPose2d(), visionEst->timestamp,
+                      GetEstimationStdDevs(estPose.ToPose2d()));
+        }
       }
     }
   }
