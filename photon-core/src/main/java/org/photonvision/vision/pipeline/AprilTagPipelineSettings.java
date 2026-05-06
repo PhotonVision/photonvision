@@ -18,7 +18,10 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.photonvision.common.configuration.NeuralNetworkModelManager;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("AprilTagPipelineSettings")
@@ -42,7 +45,11 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public double mlNmsThreshold = 0.45;
     public int mlRoiPaddingPixels = 40;
     public boolean mlFallbackToTraditional = true;
-    public String mlModelName = null;
+    public ModelProperties model =
+            NeuralNetworkModelManager.getInstance()
+                    .getDefaultModel()
+                    .map(Model::getProperties)
+                    .orElse(null);
     public boolean showDetectionBoxes = true;
 
     // Adaptive Tag Resizing (ATR) settings
@@ -93,7 +100,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + mlRoiPaddingPixels;
         result = prime * result + (mlFallbackToTraditional ? 1231 : 1237);
-        result = prime * result + ((mlModelName == null) ? 0 : mlModelName.hashCode());
+        result = prime * result + ((model.modelPath() == null) ? 0 : model.modelPath().hashCode());
         result = prime * result + (showDetectionBoxes ? 1231 : 1237);
         // ATR fields
         result = prime * result + (atrEnabled ? 1231 : 1237);
@@ -130,9 +137,9 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
             return false;
         if (mlRoiPaddingPixels != other.mlRoiPaddingPixels) return false;
         if (mlFallbackToTraditional != other.mlFallbackToTraditional) return false;
-        if (mlModelName == null) {
-            if (other.mlModelName != null) return false;
-        } else if (!mlModelName.equals(other.mlModelName)) return false;
+        if (model == null) {
+            if (other.model != null) return false;
+        } else if (!model.equals(other.model)) return false;
         if (showDetectionBoxes != other.showDetectionBoxes) return false;
         // ATR fields
         if (atrEnabled != other.atrEnabled) return false;

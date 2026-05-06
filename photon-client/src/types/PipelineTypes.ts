@@ -283,7 +283,7 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   mlNmsThreshold: number;
   mlRoiPaddingPixels: number;
   mlFallbackToTraditional: boolean;
-  mlModelName: string | null;
+  model: ObjectDetectionModelProperties;
   showDetectionBoxes: boolean;
 }
 export type ConfigurableAprilTagPipelineSettings = Partial<
@@ -316,7 +316,7 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   mlNmsThreshold: 0.45,
   mlRoiPaddingPixels: 40,
   mlFallbackToTraditional: true,
-  mlModelName: null,
+  model: {} as ObjectDetectionModelProperties,
   showDetectionBoxes: true
 };
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PipelineType, type AprilTagPipelineSettings, AprilTagFamily } from "@/types/PipelineTypes";
-import PvSelect from "@/components/common/pv-select.vue";
+import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvSlider from "@/components/common/pv-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { computed } from "vue";
@@ -23,6 +23,22 @@ const interactiveCols = computed(() =>
 // Check if ML detection is available on this platform
 const mlDetectionAvailable = computed(() => useSettingsStore().general.supportedBackends.length > 0);
 
+const modelWrapper = computed<SelectItem<string>[]>(() =>
+  supportedModels.value.map((model) => ({
+    name: model.nickname,
+    value: model.modelPath
+  }))
+);
+
+const selectedModel = computed<string>({
+  get: () => currentPipelineSettings.value.model?.modelPath ?? "",
+  set: (value) => {
+    const model = supportedModels.value.find((supportedModel) => supportedModel.modelPath === value);
+    if (model) {
+      useCameraSettingsStore().changeCurrentPipelineSetting({ model }, true);
+    }
+  }
+});
 // Filter models to only those supported by available backends
 const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
   const { availableModels, supportedBackends } = useSettingsStore().general;
@@ -30,23 +46,6 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
     return supportedBackends.some((backend: string) => backend.toLowerCase() === model.family.toLowerCase());
   };
   return availableModels.filter(isSupported);
-});
-
-const selectedModel = computed({
-  get: () => {
-    const currentModelName = currentPipelineSettings.value.mlModelName;
-    if (!currentModelName) return undefined;
-
-    const index = supportedModels.value.findIndex((model) => model.nickname === currentModelName);
-    return index === -1 ? undefined : index;
-  },
-
-  set: (v) => {
-    if (v !== undefined && v >= 0 && v < supportedModels.value.length) {
-      const newModel = supportedModels.value[v];
-      useCameraSettingsStore().changeCurrentPipelineSetting({ mlModelName: newModel.nickname }, true);
-    }
-  }
 });
 </script>
 
@@ -141,7 +140,7 @@ const selectedModel = computed({
           label="Model"
           tooltip="The model used for AI-assisted AprilTag detection"
           :select-cols="interactiveCols"
-          :items="supportedModels.map((model) => model.nickname)"
+          :items="modelWrapper"
         />
         <pv-slider
           v-model="currentPipelineSettings.mlConfidenceThreshold"

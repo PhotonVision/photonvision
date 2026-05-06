@@ -148,7 +148,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             mlAvailable = checkMLAvailability();
 
             if (mlAvailable) {
-                Model apriltagModel = getAprilTagModel(settings.mlModelName);
+                Model apriltagModel =
+                        NeuralNetworkModelManager.getInstance()
+                                .getModel(settings.model.modelPath().toString())
+                                .orElse(null);
 
                 if (apriltagModel != null) {
                     mlDetectionPipe.setParams(
