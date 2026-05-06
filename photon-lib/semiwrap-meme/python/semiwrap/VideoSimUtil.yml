@@ -1,0 +1,19 @@
+functions:
+  sgn:
+  Get36h11TagImage:
+  LoadAprilTagImages:
+  GetImageCorners:
+  Get36h11MarkerPts:
+    overloads:
+      int:
+      "":
+  UpdateVideoProp:
+  Warp165h5TagImage:
+  GetScaledThickness:
+  DrawInscribedEllipse:
+  DrawPoly:
+  DrawTagDetection:
+  GetFieldWallLines:
+  GetFieldFloorLines:
+  PolyFrom3dLines:
+  DrawFieldWireFrame:

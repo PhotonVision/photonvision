@@ -32,16 +32,24 @@ version = "0.0.1" # Replace with meaningful version number in production
 #
 
 [tool.semiwrap]
-update_init = ["photonlib photonlibpy._photonlibpy"]
+update_init = ["photonlib photonlibpy._lib"]
 
 [tool.semiwrap.extension_modules."photonlibpy._lib"]
 name = "photonlibpy"
+wraps = ["photonlib-native"]
 
 # semiwrap will parse any header files mentioned here and autogenerate pybind11
 # wrappers around the contents of the header
 # - You can use `python -m semiwrap scan-headers` to autogenerate a list of
 #   headers that are available to be wrapped, and paste the list here
 [tool.semiwrap.extension_modules."photonlibpy._lib".headers]
-PhotonVersion = "PhotonVersion.h"
-PhotonCamera = "photon/PhotonCamera.h"
-PhotonUtils = "photon/PhotonUtils.h"
+# photon
+PhotonPoseEstimator = "photon/PhotonPoseEstimator.h"
+PhotonTargetSortMode = "photon/PhotonTargetSortMode.h"
+
+# photon/simulation
+PhotonCameraSim = "photon/simulation/PhotonCameraSim.h"
+SimCameraProperties = "photon/simulation/SimCameraProperties.h"
+VideoSimUtil = "photon/simulation/VideoSimUtil.h"
+VisionSystemSim = "photon/simulation/VisionSystemSim.h"
+VisionTargetSim = "photon/simulation/VisionTargetSim.h"
