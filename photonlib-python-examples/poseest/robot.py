@@ -35,6 +35,12 @@ kRobotToCam = wpimath.geometry.Transform3d(
     wpimath.geometry.Rotation3d.fromDegrees(0.0, -30.0, 0.0),
 )
 
+# Constants for filtering vision estimates.
+kMaxAcceptedRobotZ = 0.2
+kMaxAcceptedRobotPitch = 0.2
+kMaxAcceptedRobotRoll = 0.2
+kMaxAcceptedPoseAmbiguity = 0.2
+
 
 class MyRobot(wpilib.TimedRobot):
     def robotInit(self) -> None:
@@ -58,11 +64,12 @@ class MyRobot(wpilib.TimedRobot):
             # This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
             estPose = camEstPose.estimatedPose
             if (
-                abs(estPose.Z()) < 0.2
+                abs(estPose.Z()) < kMaxAcceptedRobotZ
                 and -self.aprilTagField.getFieldLength() / 2 < estPose.X() < self.aprilTagField.getFieldLength() / 2
                 and -self.aprilTagField.getFieldWidth() / 2 < estPose.Y() < self.aprilTagField.getFieldWidth() / 2
-                and abs(estPose.rotation().X()) < 0.2
-                and abs(estPose.rotation().Y()) < 0.2
+                and abs(estPose.rotation().X()) < kMaxAcceptedRobotPitch
+                and abs(estPose.rotation().Y()) < kMaxAcceptedRobotRoll
+                and result.getBestTarget().poseAmbiguity < kMaxAcceptedPoseAmbiguity
             ):
                 self.swerve.addVisionPoseEstimate(
                     camEstPose.estimatedPose, camEstPose.timestampSeconds
