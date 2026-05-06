@@ -168,8 +168,8 @@ public class Calibrate3dPipeline
         return foundCornersList.size() >= minSnapshots;
     }
 
-    public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
-        if (!hasEnough()) {
+    public CameraCalibrationCoefficients tryCalibration(Path imageSavePath, boolean bypass) {
+        if (!bypass && !hasEnough()) {
             logger.info(
                     "Not enough snapshots! Only got "
                             + foundCornersList.size()

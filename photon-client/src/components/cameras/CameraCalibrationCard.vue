@@ -235,6 +235,7 @@ const startCalibration = () => {
   requestedVideoFormatIndex.value = useStateStore().calibrationData.videoFormatIndex;
 };
 const showCalibEndDialog = ref(false);
+const calibBypass = ref<boolean>(false);
 const calibCanceled = ref(false);
 const calibSuccess = ref<boolean | undefined>(undefined);
 const calibEndpointFail = ref(false);
@@ -242,14 +243,14 @@ const endCalibration = () => {
   calibSuccess.value = undefined;
   calibEndpointFail.value = false;
 
-  if (!useStateStore().calibrationData.hasEnoughImages) {
+  if (!useStateStore().calibrationData.hasEnoughImages && !calibBypass.value) {
     calibCanceled.value = true;
   }
 
   showCalibEndDialog.value = true;
   // Check if calibration finished cleanly or was canceled
   useCameraSettingsStore()
-    .endPnPCalibration()
+    .endPnPCalibration(calibBypass.value)
     .then(() => {
       calibSuccess.value = true;
     })
@@ -545,6 +546,8 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
             {{ useStateStore().calibrationData.minimumImageCount }}
           </v-chip>
+          <v-spacer />
+          <v-switch v-model="calibBypass" color="error" hide-details class="ml-4" label="Bypass limit (dev use only)" />
         </div>
         <div>
           <v-btn
@@ -589,15 +592,21 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
+              :color="useStateStore().calibrationData.hasEnoughImages || calibBypass ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
               <v-icon start class="calib-btn-icon" size="large">
-                {{ useStateStore().calibrationData.hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
+                {{
+                  useStateStore().calibrationData.hasEnoughImages || calibBypass
+                    ? "mdi-flag-checkered"
+                    : "mdi-flag-off-outline"
+                }}
               </v-icon>
               <span class="calib-btn-label">{{
-                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+                useStateStore().calibrationData.hasEnoughImages || calibBypass
+                  ? "Finish Calibration"
+                  : "Cancel Calibration"
               }}</span>
             </v-btn>
           </v-col>

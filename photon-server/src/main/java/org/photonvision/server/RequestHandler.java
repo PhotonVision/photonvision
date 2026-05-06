@@ -484,18 +484,20 @@ public class RequestHandler {
         }
     }
 
+    private record CalibrationEndRequest(String cameraUniqueName, boolean bypass) {}
+
     public static void onCalibrationEndRequest(Context ctx) {
         logger.info("Calibrating camera! This will take a long time...");
 
         try {
-            CommonCameraUniqueName request =
-                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            CalibrationEndRequest request =
+                    kObjectMapper.readValue(ctx.body(), CalibrationEndRequest.class);
 
             var calData =
                     VisionSourceManager.getInstance()
                             .vmm
                             .getModule(request.cameraUniqueName)
-                            .endCalibration();
+                            .endCalibration(request.bypass);
             if (calData == null) {
                 ctx.result("The calibration process failed");
                 ctx.status(500);
