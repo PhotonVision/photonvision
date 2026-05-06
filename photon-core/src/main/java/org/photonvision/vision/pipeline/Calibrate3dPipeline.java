@@ -64,20 +64,22 @@ public class Calibrate3dPipeline
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
     private final int minSnapshots;
+    private final int bypassMinSnapshots;
 
     private boolean calibrating = false;
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public Calibrate3dPipeline() {
-        this(100);
+        this(100, 10);
     }
 
-    public Calibrate3dPipeline(int minSnapshots) {
+    public Calibrate3dPipeline(int minSnapshots, int bypassMinSnapshots) {
         super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
+        this.bypassMinSnapshots = bypassMinSnapshots;
     }
 
     @Override
@@ -165,11 +167,11 @@ public class Calibrate3dPipeline
     }
 
     public boolean hasEnough() {
-        return foundCornersList.size() >= minSnapshots;
+        return foundCornersList.size() >= (settings.bypass ? bypassMinSnapshots : minSnapshots);
     }
 
-    public CameraCalibrationCoefficients tryCalibration(Path imageSavePath, boolean bypass) {
-        if (!bypass && !hasEnough()) {
+    public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
+        if (!hasEnough()) {
             logger.info(
                     "Not enough snapshots! Only got "
                             + foundCornersList.size()
@@ -224,7 +226,8 @@ public class Calibrate3dPipeline
                                 settings.boardHeight,
                                 settings.boardType,
                                 settings.useOldPattern,
-                                settings.tagFamily));
+                                settings.tagFamily,
+                                settings.bypass));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

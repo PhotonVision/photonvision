@@ -216,7 +216,7 @@ public class Calibrate3dPipeTest {
 
         assertTrue(directoryListing.length >= 12);
 
-        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(10);
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(10, 10);
         calibration3dPipeline.getSettings().boardType = boardType;
         calibration3dPipeline.getSettings().markerSize = markerSize;
         calibration3dPipeline.getSettings().tagFamily = tagFamily;
@@ -256,8 +256,7 @@ public class Calibrate3dPipeTest {
         var cal =
                 calibration3dPipeline.tryCalibration(
                         ConfigManager.getInstance()
-                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"),
-                        false);
+                                .getCalibrationImageSavePathWithRes(imgRes, "Calibration_Test"));
         calibration3dPipeline.finishCalibration();
 
         // visuallyDebugDistortion(directoryListing, imgRes, cal );

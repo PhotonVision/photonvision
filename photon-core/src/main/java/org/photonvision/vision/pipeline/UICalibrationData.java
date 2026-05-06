@@ -31,6 +31,7 @@ public class UICalibrationData {
     public double markerSizeIn;
     public boolean useOldPattern;
     public TagFamily tagFamily;
+    public boolean bypass;
 
     public UICalibrationData() {}
 
@@ -45,7 +46,8 @@ public class UICalibrationData {
             int patternHeight,
             BoardType boardType,
             boolean useOldPattern,
-            TagFamily tagFamily) {
+            TagFamily tagFamily,
+            boolean bypass) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
@@ -57,6 +59,7 @@ public class UICalibrationData {
         this.boardType = boardType;
         this.useOldPattern = useOldPattern;
         this.tagFamily = tagFamily;
+        this.bypass = bypass;
     }
 
     public enum BoardType {
@@ -108,6 +111,8 @@ public class UICalibrationData {
                 + tagFamily
                 + ", useOldPattern="
                 + useOldPattern
+                + ", bypass="
+                + bypass
                 + '}';
     }
 }

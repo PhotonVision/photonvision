@@ -92,6 +92,7 @@ export interface WebsocketCalibrationData {
   patternHeight: number;
   squareSizeIn: number;
   markerSizeIn: number;
+  bypass: boolean;
 }
 
 export interface IncomingWebsocketData {

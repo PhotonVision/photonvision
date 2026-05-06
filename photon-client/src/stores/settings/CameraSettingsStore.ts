@@ -388,6 +388,7 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           minCount: stateCalibData.minimumImageCount,
           hasEnough: stateCalibData.hasEnoughImages,
           videoModeIndex: stateCalibData.videoFormatIndex,
+          bypass: stateCalibData.bypass,
           ...calibrationInitData
         },
         cameraUniqueName: cameraUniqueName
@@ -400,8 +401,8 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
      * @param cameraUniqueName the unique name of the camera.
      * @return HTTP request promise to the backend
      */
-    endPnPCalibration(bypass: boolean = false, cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
-      return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName, bypass: bypass });
+    endPnPCalibration(cameraUniqueName: string = useStateStore().currentCameraUniqueName) {
+      return axios.post("/calibration/end", { cameraUniqueName: cameraUniqueName });
     },
 
     importCalibrationFromData(

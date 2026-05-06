@@ -41,6 +41,7 @@ interface StateStore {
     imageCount: number;
     videoFormatIndex: number;
     minimumImageCount: number;
+    bypass: boolean;
     hasEnoughImages: boolean;
   };
 
@@ -91,6 +92,7 @@ export const useStateStore = defineStore("state", {
         imageCount: 0,
         videoFormatIndex: 0,
         minimumImageCount: 100,
+        bypass: false,
         hasEnoughImages: false
       },
 
@@ -164,6 +166,7 @@ export const useStateStore = defineStore("state", {
         imageCount: data.count,
         videoFormatIndex: data.videoModeIndex,
         minimumImageCount: data.minCount,
+        bypass: data.bypass,
         hasEnoughImages: data.hasEnough
       };
     },
