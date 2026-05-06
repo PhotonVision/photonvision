@@ -13,11 +13,11 @@ packages = ["src"]
 path = "build_hook.py"
 
 [[tool.hatch.build.hooks.nativelib.pcfile]]
-pcfile = "src/photonlib-native/photonlib-native.pc"
+pcfile = "src/photonlib-native.pc"
 name = "photonlib-native"
 description = "Native Photonvision vendordep"
 
 
-includedir = "src/photonlib-native/include"
-libdir = "src/photonlib-native/lib"
+includedir = "src/include"
+libdir = "src/lib"
 shared_libraries = ["photonlib"]

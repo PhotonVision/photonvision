@@ -1,6 +1,6 @@
 import shutil
 import os
-#from pathlib import Path
+from pathlib import Path
 
 from hatchling.builders.hooks.plugin.interface import BuildHookInterface
 
@@ -13,10 +13,13 @@ class PhotonlibNativeBuildHook(BuildHookInterface):
         target = "linuxx86-64"
         variant = "release"
 
-        gradle_lib = f"../../build/libs/photonlib/shared/{target}/{variant}/libphotonlib.so"
-        dest = "src/photonlib-native"
+        lib_root_dir = Path(__file__).resolve().parent.parent.parent
 
-        gradle_include = "../../src/main/native/include"
+
+        gradle_lib = lib_root_dir / "build" / "libs" / "photonlib" / "shared" / target / variant / "libphotonlib.so"
+        dest = "src"
+
+        gradle_include = lib_root_dir / "src" / "main" / "native" / "include"
 
         # clean
         if os.path.exists(dest):
