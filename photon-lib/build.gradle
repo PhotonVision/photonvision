@@ -335,6 +335,8 @@ task combinedHeadersZip(type: Zip) {
     duplicatesStrategy = DuplicatesStrategy.FAIL
 }
 
+// TODO: Automatically build semiwrap wheels as part of gradle compilation
+
 // Add the uberzip to our maven publications
 publishing {
     publications {
