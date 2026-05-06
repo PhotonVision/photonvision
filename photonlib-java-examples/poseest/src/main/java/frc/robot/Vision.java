@@ -117,8 +117,8 @@ public class Vision {
                             && estPose.getX() < kTagLayout.getFieldLength() / 2
                             && estPose.getY() > -kTagLayout.getFieldWidth() / 2
                             && estPose.getY() < kTagLayout.getFieldWidth() / 2
-                            && estPose.getRotation().getX() < 0.2
-                            && estPose.getRotation().getY() < 0.2) {
+                            && Math.abs(estPose.getRotation().getX()) < 0.2
+                            && Math.abs(estPose.getRotation().getY()) < 0.2) {
                             estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);
                         }
                     });
