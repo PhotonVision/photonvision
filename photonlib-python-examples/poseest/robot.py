@@ -42,8 +42,9 @@ class MyRobot(wpilib.TimedRobot):
         self.controller = wpilib.XboxController(0)
         self.swerve = drivetrain.Drivetrain()
         self.cam = PhotonCamera("YOUR CAMERA NAME")
+        self.aprilTagField = AprilTagFieldLayout.loadField(AprilTagField.kDefaultField)
         self.camPoseEst = PhotonPoseEstimator(
-            AprilTagFieldLayout.loadField(AprilTagField.kDefaultField),
+            self.aprilTagField,
             kRobotToCam,
         )
 
@@ -58,8 +59,8 @@ class MyRobot(wpilib.TimedRobot):
             estPose = camEstPose.estimatedPose
             if (
                 abs(estPose.Z()) < 0.2
-                and 0 < estPose.X() < 16.5
-                and 0 < estPose.Y() < 8.5
+                and -self.aprilTagField.getFieldLength() / 2 < estPose.X() < self.aprilTagField.getFieldLength() / 2
+                and -self.aprilTagField.getFieldWidth() / 2 < estPose.Y() < self.aprilTagField.getFieldWidth() / 2
                 and abs(estPose.rotation().X()) < 0.2
                 and abs(estPose.rotation().Y()) < 0.2
             ):

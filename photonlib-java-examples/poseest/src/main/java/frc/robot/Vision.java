@@ -113,10 +113,10 @@ public class Vision {
                         // Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc). 
                         // This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
                         if (Math.abs(estPose.getZ()) < 0.2
-                            && estPose.getX() > 0
-                            && estPose.getX() < 16.5
-                            && estPose.getY() > 0
-                            && estPose.getY() < 8.5
+                            && estPose.getX() > -kTagLayout.getFieldLength() / 2
+                            && estPose.getX() < kTagLayout.getFieldLength() / 2
+                            && estPose.getY() > -kTagLayout.getFieldWidth() / 2
+                            && estPose.getY() < kTagLayout.getFieldWidth() / 2
                             && estPose.getRotation().getX() < 0.2
                             && estPose.getRotation().getY() < 0.2) {
                             estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, estStdDevs);

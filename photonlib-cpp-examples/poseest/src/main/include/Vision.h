@@ -98,10 +98,10 @@ class Vision {
       if (visionEst) {
         auto estPose = visionEst->estimatedPose;
         if (std::abs(estPose.Z().value()) < 0.2 && 
-            estPose.X().value() > 0 && 
-            estPose.X().value() < 16.5 && 
-            estPose.Y().value() > 0 && 
-            estPose.Y().value() < 8.5 && 
+            estPose.X().value() > -constants::Vision::kFieldLength / 2 && 
+            estPose.X().value() < constants::Vision::kFieldLength / 2 && 
+            estPose.Y().value() > -constants::Vision::kFieldWidth / 2 && 
+            estPose.Y().value() < constants::Vision::kFieldWidth / 2 && 
             std::abs(estPose.Rotation().X().value()) < 0.2 && 
             std::abs(estPose.Rotation().Y().value()) < 0.2) {
           estConsumer(estPose.ToPose2d(), visionEst->timestamp,
