@@ -198,6 +198,7 @@ public class Calibrate3dPipeline
     }
 
     public void takeSnapshot() {
+        logger.info("Bypass is " + settings.bypass);
         takeSnapshot = true;
     }
 
@@ -226,8 +227,7 @@ public class Calibrate3dPipeline
                                 settings.boardHeight,
                                 settings.boardType,
                                 settings.useOldPattern,
-                                settings.tagFamily,
-                                settings.bypass));
+                                settings.tagFamily));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));

@@ -269,6 +269,7 @@ const endCalibration = () => {
 };
 
 const drawAllSnapshots = ref(true);
+const bypassVal = ref(false);
 
 const showCalDialog = ref(false);
 const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
@@ -547,12 +548,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </v-chip>
           <v-spacer />
           <pv-switch
-            v-model="useStateStore().calibrationData.bypass"
+            v-model="bypassVal"
             color="error"
             hide-details
             class="ml-4"
-            label="Bypass minimum snapshots (dev use only)"
+            label="Bypass (dev use only)"
             tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+            @update:model-value="useCameraSettingsStore().changeCurrentPipelineSetting({ bypass: bypassVal }, true)"
           />
         </div>
         <div>

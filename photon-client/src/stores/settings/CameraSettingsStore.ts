@@ -388,7 +388,6 @@ export const useCameraSettingsStore = defineStore("cameraSettings", {
           minCount: stateCalibData.minimumImageCount,
           hasEnough: stateCalibData.hasEnoughImages,
           videoModeIndex: stateCalibData.videoFormatIndex,
-          bypass: stateCalibData.bypass,
           ...calibrationInitData
         },
         cameraUniqueName: cameraUniqueName
