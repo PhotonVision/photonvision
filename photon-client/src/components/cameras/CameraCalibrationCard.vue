@@ -547,7 +547,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             {{ useStateStore().calibrationData.minimumImageCount }}
           </v-chip>
           <v-spacer />
-          <v-switch v-model="calibBypass" color="error" hide-details class="ml-4" label="Bypass limit (dev use only)" />
+          <pv-switch
+            v-model="calibBypass"
+            color="error"
+            hide-details
+            class="ml-4"
+            label="Bypass minimum snapshots (dev use only)"
+            tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
+          />
         </div>
         <div>
           <v-btn
@@ -592,19 +599,26 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              :color="useStateStore().calibrationData.hasEnoughImages || calibBypass ? 'buttonActive' : 'error'"
+              :color="
+                useStateStore().calibrationData.hasEnoughImages ||
+                (calibBypass && useStateStore().calibrationData.imageCount >= 10)
+                  ? 'buttonActive'
+                  : 'error'
+              "
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
               <v-icon start class="calib-btn-icon" size="large">
                 {{
-                  useStateStore().calibrationData.hasEnoughImages || calibBypass
+                  useStateStore().calibrationData.hasEnoughImages ||
+                  (calibBypass && useStateStore().calibrationData.imageCount >= 10)
                     ? "mdi-flag-checkered"
                     : "mdi-flag-off-outline"
                 }}
               </v-icon>
               <span class="calib-btn-label">{{
-                useStateStore().calibrationData.hasEnoughImages || calibBypass
+                useStateStore().calibrationData.hasEnoughImages ||
+                (calibBypass && useStateStore().calibrationData.imageCount >= 10)
                   ? "Finish Calibration"
                   : "Cancel Calibration"
               }}</span>
