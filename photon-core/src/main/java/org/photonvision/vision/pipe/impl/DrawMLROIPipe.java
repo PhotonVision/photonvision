@@ -17,12 +17,12 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.math.Pair;
 import java.util.List;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
+import org.wpilib.math.util.Pair;
 
 /**
  * Draws ML detection ROI bounding boxes on the output image. Used to visualize where the ML model

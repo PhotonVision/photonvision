@@ -20,8 +20,6 @@ package org.photonvision.vision.pipe;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
 
-import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +42,8 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.AprilTagROIDecodePipe;
 import org.photonvision.vision.pipe.impl.AprilTagROIDecodePipe.ROIDecodeInput;
 import org.photonvision.vision.pipe.impl.AprilTagROIDecodePipe.ROIDecodeParams;
+import org.wpilib.vision.apriltag.AprilTagDetection;
+import org.wpilib.vision.apriltag.AprilTagDetector;
 
 /**
  * Unit tests for AprilTagROIDecodePipe, focusing on coordinate mapping accuracy. These tests verify
