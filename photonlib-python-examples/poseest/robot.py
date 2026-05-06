@@ -60,13 +60,17 @@ class MyRobot(wpilib.TimedRobot):
             if camEstPose is None:
                 camEstPose = self.camPoseEst.estimateLowestAmbiguityPose(result)
 
-            # Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc). 
+            # Filter out poses that are likely to be incorrect (off the field, not flat on the ground, etc).
             # This is optional, but can help prevent bad vision estimates from hurting your pose estimator.
             estPose = camEstPose.estimatedPose
             if (
                 abs(estPose.Z()) < kMaxAcceptedRobotZ
-                and -self.aprilTagField.getFieldLength() / 2 < estPose.X() < self.aprilTagField.getFieldLength() / 2
-                and -self.aprilTagField.getFieldWidth() / 2 < estPose.Y() < self.aprilTagField.getFieldWidth() / 2
+                and -self.aprilTagField.getFieldLength() / 2
+                < estPose.X()
+                < self.aprilTagField.getFieldLength() / 2
+                and -self.aprilTagField.getFieldWidth() / 2
+                < estPose.Y()
+                < self.aprilTagField.getFieldWidth() / 2
                 and abs(estPose.rotation().X()) < kMaxAcceptedRobotPitch
                 and abs(estPose.rotation().Y()) < kMaxAcceptedRobotRoll
                 and result.getBestTarget().poseAmbiguity < kMaxAcceptedPoseAmbiguity
