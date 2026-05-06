@@ -601,11 +601,9 @@ public class VisionModule {
             temp.put(k.getKey(), internalMap);
         }
 
-        if (videoModes.size() == 0) {
-            logger.error("no video modes, guhhhhh");
+        if (videoModes.size() > 0) {
+            ret.videoFormatList = temp;
         }
-
-        ret.videoFormatList = temp;
         ret.outputStreamPort = this.outputStreamPort;
         ret.inputStreamPort = this.inputStreamPort;
 
