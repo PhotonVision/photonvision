@@ -70,7 +70,7 @@ public class Calibrate3dPipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public Calibrate3dPipeline() {
-        this(12);
+        this(100);
     }
 
     public Calibrate3dPipeline(int minSnapshots) {
