@@ -1,0 +1,21 @@
+[build-system]
+build-backend = "hatchling.build"
+requires = ["semiwrap", "hatch-meson", "hatchling"]
+
+[project]
+name = "photonlibpy"
+description = "PhotonVision library for python using semiwrap"
+version = "0.0.dev1"
+
+[tool.hatch.build.hooks.semiwrap]
+[tool.hatch.build.hooks.meson]
+
+[tool.semiwrap]
+update_init = ["photonlibpy photonlibpy._photonlibpy"]
+
+[tool.semiwrap.extension_modules."photonlibpy._photonlibpy"]
+name = "photonlibpy"
+includes = ["photonlibpy/src", "../native/include"]
+
+[tool.semiwrap.extension_modules."photonlibpy._photonlibpy".headers]
+PhotonVersion = "PhotonVersion.h"
