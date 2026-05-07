@@ -1,0 +1,7 @@
+classes:
+  photon::MultiTargetPNPResult:
+    methods:
+      MultiTargetPNPResult:
+        overloads:
+          Base&&:
+          Args&&...:

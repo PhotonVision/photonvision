@@ -1,0 +1,25 @@
+classes:
+  photon::NTTopicSet:
+    attributes:
+      subTable:
+      rawBytesEntry:
+      pipelineIndexPublisher:
+      pipelineIndexRequestSub:
+      driverModeEntry:
+      driverModePublisher:
+      driverModeSubscriber:
+      latencyMillisEntry:
+      hasTargetEntry:
+      targetPitchEntry:
+      targetYawEntry:
+      targetAreaEntry:
+      targetPoseEntry:
+      targetSkewEntry:
+      bestTargetPosX:
+      bestTargetPosY:
+      heartbeatTopic:
+      heartbeatPublisher:
+      cameraIntrinsicsPublisher:
+      cameraDistortionPublisher:
+    methods:
+      UpdateEntries:

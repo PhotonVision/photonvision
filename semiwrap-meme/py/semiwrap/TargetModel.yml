@@ -1,0 +1,14 @@
+classes:
+  photon::TargetModel:
+    methods:
+      TargetModel:
+        overloads:
+          wpi::units::meter_t, wpi::units::meter_t:
+          wpi::units::meter_t, wpi::units::meter_t, wpi::units::meter_t:
+          wpi::units::meter_t:
+          const std::vector<wpi::math::Translation3d>&:
+      GetFieldVertices:
+      GetOrientedPose:
+      GetVertices:
+      GetIsPlanar:
+      GetIsSpherical:

@@ -1,0 +1,6 @@
+classes:
+  photon::PhotonPipelineResult_PhotonStruct:
+    attributes:
+      metadata:
+      targets:
+      multitagResult:
