@@ -15,6 +15,7 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import type { Calibration3dPipelineSettings } from "@/types/PipelineTypes";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
@@ -269,7 +270,12 @@ const endCalibration = () => {
 };
 
 const drawAllSnapshots = ref(true);
-const bypassVal = ref(false);
+// We really gotta fix our typing system
+const bypassVal = computed<boolean>({
+  get: () =>
+    !!(useCameraSettingsStore().currentPipelineSettings as Calibration3dPipelineSettings | undefined)?.bypass,
+  set: (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ bypass: value }, true)
+});
 
 const showCalDialog = ref(false);
 const selectedVideoFormat = ref<VideoFormat | undefined>(undefined);
@@ -554,7 +560,6 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             class="ml-4"
             label="Bypass (dev use only)"
             tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."
-            @update:model-value="useCameraSettingsStore().changeCurrentPipelineSetting({ bypass: bypassVal }, true)"
           />
         </div>
         <div>
