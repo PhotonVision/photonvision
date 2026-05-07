@@ -2,40 +2,21 @@ project('photonlibpy', ['cpp'],
         default_options: ['warning_level=1', 'cpp_std=c++20',
                           'b_colorout=auto', 'optimization=2', 'b_pie=true'])
 
-python = import('python').find_installation()
-
-subdir('semiwrap')
-
-# All of this is so stupid and absoutly needs to be changed
-native_inc = include_directories('../native/include')
+# All dependencies are resolved via pkg-config.
+# build-native.sh exports PKG_CONFIG_PATH covering:
+#   - photontargeting-native, photonlib-native (built locally)
+#   - semiwrap, pybind11 (from the venv's site-packages)
+# semiwrap.pc has `Requires: pybind11`, so pybind11 flags come through transitively.
 semiwrap_dep = dependency('semiwrap')
+photontargeting_native_dep = dependency('photontargeting-native')
 
-semiwrap_inc_path = run_command(  
-  python,
-  '-c',
-  'import pathlib, semiwrap; print(pathlib.Path(semiwrap.__file__).resolve().parent / "include")',
-  check: true,
-).stdout().strip()
-semiwrap_inc = include_directories(semiwrap_inc_path)
+# photon-lib's own C++ headers (sibling of this directory)
+native_inc = include_directories('../native/include')
 
-pybind11_inc_path = run_command(
-  python,
-  '-c',
-  'import pybind11; print(pybind11.get_include())',
-  check: true,
-).stdout().strip()
+photonlibpy_sources = files('photonlibpy/src/main.cpp')
 
-pybind11_inc = include_directories(pybind11_inc_path)
-
-photonlibpy_sources = files(
-  'photonlibpy/src/main.cpp',
-)
-
-photonlibpy_deps += [
+photonlibpy_deps = [
   semiwrap_dep,
-  declare_dependency(
-    include_directories: [native_inc, semiwrap_inc, pybind11_inc],
-  )
+  photontargeting_native_dep,
+  declare_dependency(include_directories: native_inc),
 ]
-
-subdir('semiwrap/modules')

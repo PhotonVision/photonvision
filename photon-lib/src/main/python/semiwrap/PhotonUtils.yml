@@ -5,7 +5,9 @@ classes:
       EstimateCameraToTargetTranslation:
       EstimateFieldToRobot:
         overloads:
-          ? wpi::units::meter_t, wpi::units::meter_t, wpi::units::radian_t, wpi::units::radian_t, const wpi::math::Rotation2d&, const wpi::math::Rotation2d&, const wpi::math::Pose2d&, const wpi::math::Transform2d&
+          ? wpi::units::meter_t, wpi::units::meter_t, wpi::units::radian_t, wpi::units::radian_t,
+            const wpi::math::Rotation2d&, const wpi::math::Rotation2d&, const wpi::math::Pose2d&,
+            const wpi::math::Transform2d&
           :
           const wpi::math::Transform2d&, const wpi::math::Pose2d&, const wpi::math::Transform2d&:
       EstimateCameraToTarget:

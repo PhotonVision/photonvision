@@ -3,7 +3,7 @@ requires = ["hatchling", "hatch-nativelib"]
 build-backend = "hatchling.build"
 
 [project]
-name = "photonlib-native"
+name = "photontargeting-native"
 version = "0.0.1"
 
 [tool.hatch.build.targets.wheel]
@@ -12,12 +12,12 @@ packages = ["src"]
 [tool.hatch.build.hooks.custom]
 path = "build_hook.py"
 
+[tool.hatch.build.hooks.nativelib]
+
 [[tool.hatch.build.hooks.nativelib.pcfile]]
-pcfile = "src/photonlib-native.pc"
-name = "photonlib-native"
-description = "Native Photonvision vendordep"
-
-
+pcfile = "src/photontargeting-native.pc"
+name = "photontargeting-native"
+description = "Native Photonvision targeting"
 includedir = "src/include"
 libdir = "src/lib"
-shared_libraries = ["photonlib"]
+shared_libraries = ["photontargeting"]
