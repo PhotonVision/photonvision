@@ -164,7 +164,7 @@ constrained_solvepnp::do_optimization(
     Eigen::Matrix<casadi_real, 4, Eigen::Dynamic, Eigen::ColMajor> field2points,
     Eigen::Matrix<casadi_real, 2, Eigen::Dynamic, Eigen::ColMajor>
         point_observations,
-    double gyroθ, double gyroErrorScaleFac) {
+    double gyro_theta, double gyroErrorScaleFac) {
   if (field2points.cols() != (nTags * 4) ||
       point_observations.cols() != (nTags * 4)) {
     if constexpr (VERBOSE) fmt::println("Got unexpected num cols!");
@@ -183,7 +183,7 @@ constrained_solvepnp::do_optimization(
 
   if constexpr (VERBOSE) {
     fmt::println("----------------------------------");
-    fmt::println("heading free {}; heading {}, cost={}", heading_free, gyroθ,
+    fmt::println("heading free {}; heading {}, cost={}", heading_free, gyro_theta,
                  gyroErrorScaleFac);
     fmt::println("Camera cal {} {} {} {}", cameraCal.fx, cameraCal.fy,
                  cameraCal.cx, cameraCal.cy);
@@ -204,7 +204,7 @@ constrained_solvepnp::do_optimization(
   }
 
   ProblemState<3> pState{robot2camera,     field2points, point_observations,
-                         cameraCal,        *problemOpt,  gyroθ,
+                         cameraCal,        *problemOpt,  gyro_theta,
                          gyroErrorScaleFac};
 
   using FullStateMat = typename decltype(pState)::FullStateMat;
