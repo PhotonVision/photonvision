@@ -8,7 +8,6 @@ import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useDisplay } from "vuetify";
 
-import { Console } from "console";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
@@ -97,8 +96,8 @@ const interactiveCols = computed(() =>
       v-for="(tag,index) in useSettingsStore().currentFieldLayout.tags"
       :key="index"
       :model-value="
-        (currentPipelineSettings.excludeTags instanceof Set) 
-          ? currentPipelineSettings.excludeTags.has(tag.ID) 
+        (currentPipelineSettings.excludeTags instanceof Set)
+          ? currentPipelineSettings.excludeTags.has(tag.ID)
           : false
       "
       :switch-cols="interactiveCols"
@@ -106,7 +105,7 @@ const interactiveCols = computed(() =>
       @update:modelValue="
         (value) => {
           const next = new Set<number>(
-            (currentPipelineSettings.excludeTags instanceof Set) 
+            (currentPipelineSettings.excludeTags instanceof Set)
               ? currentPipelineSettings.excludeTags
               : []
           )
@@ -116,7 +115,7 @@ const interactiveCols = computed(() =>
           } else {
             next.delete(tag.ID)
           }
-          
+
 
           useCameraSettingsStore().changeCurrentPipelineSetting(
             { excludeTags: next },
