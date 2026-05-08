@@ -93,34 +93,26 @@ const interactiveCols = computed(() =>
       "
     />
     <pv-switch
-      v-for="(tag,index) in useSettingsStore().currentFieldLayout.tags"
+      v-for="(tag, index) in useSettingsStore().currentFieldLayout.tags"
       :key="index"
       :model-value="
-        (currentPipelineSettings.excludeTags instanceof Set)
-          ? currentPipelineSettings.excludeTags.has(tag.ID)
-          : false
+        currentPipelineSettings.excludeTags instanceof Set ? currentPipelineSettings.excludeTags.has(tag.ID) : false
       "
       :switch-cols="interactiveCols"
       :label="`Ignore tag ${tag.ID}`"
       @update:modelValue="
         (value) => {
           const next = new Set<number>(
-            (currentPipelineSettings.excludeTags instanceof Set)
-              ? currentPipelineSettings.excludeTags
-              : []
-          )
+            currentPipelineSettings.excludeTags instanceof Set ? currentPipelineSettings.excludeTags : []
+          );
 
           if (value) {
-            next.add(tag.ID)
+            next.add(tag.ID);
           } else {
-            next.delete(tag.ID)
+            next.delete(tag.ID);
           }
 
-
-          useCameraSettingsStore().changeCurrentPipelineSetting(
-            { excludeTags: next },
-            true
-          )
+          useCameraSettingsStore().changeCurrentPipelineSetting({ excludeTags: next }, true);
         }
       "
     />
