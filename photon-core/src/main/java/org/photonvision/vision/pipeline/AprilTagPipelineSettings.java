@@ -18,14 +18,14 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.ArrayList;
+import java.util.HashSet;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
-    public ArrayList<Integer> excludeTags = new ArrayList<>();
+    public HashSet<Integer> excludeTags = new HashSet<>();
     public int decimate = 1;
     public double blur = 0;
     public int threads = 4; // Multiple threads seems to be better performance on most platforms
