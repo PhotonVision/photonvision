@@ -24,11 +24,11 @@ import org.opencv.objdetect.Objdetect;
 public class UICalibrationData {
     public int videoModeIndex;
     public int count;
-    public double squareSizeIn;
+    public double squareSizeMm;
     public int patternWidth;
     public int patternHeight;
     public BoardType boardType;
-    public double markerSizeIn;
+    public double markerSizeMm;
     public boolean useOldPattern;
     public TagFamily tagFamily;
 
@@ -37,8 +37,8 @@ public class UICalibrationData {
     public UICalibrationData(
             int count,
             int videoModeIndex,
-            double squareSizeIn,
-            double markerSizeIn,
+            double squareSizeMm,
+            double markerSizeMm,
             int patternWidth,
             int patternHeight,
             BoardType boardType,
@@ -46,8 +46,8 @@ public class UICalibrationData {
             TagFamily tagFamily) {
         this.count = count;
         this.videoModeIndex = videoModeIndex;
-        this.squareSizeIn = squareSizeIn;
-        this.markerSizeIn = markerSizeIn;
+        this.squareSizeMm = squareSizeMm;
+        this.markerSizeMm = markerSizeMm;
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
         this.boardType = boardType;
@@ -98,10 +98,10 @@ public class UICalibrationData {
                 + videoModeIndex
                 + ", count="
                 + count
-                + ", squareSizeIn="
-                + squareSizeIn
-                + ", markerSizeIn="
-                + markerSizeIn
+                + ", squareSizeMm="
+                + squareSizeMm
+                + ", markerSizeMm="
+                + markerSizeMm
                 + ", patternWidth="
                 + patternWidth
                 + ", patternHeight="

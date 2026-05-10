@@ -110,8 +110,8 @@ watchEffect(() => {
   uniqueVideoResolutionIndex.value = currentIndex;
 });
 const dimensionUnit = ref<"in" | "mm">("in");
-const squareSizeIn = ref(1);
-const markerSizeIn = ref(0.75);
+const squareSizeMm = ref(30);
+const markerSizeMm = ref(22);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
@@ -119,23 +119,23 @@ const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
 
-const convertInchesToDisplay = (valueInInches: number) =>
-  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
+const convertMetricToDisplay = (valueInMm: number) =>
+  dimensionUnit.value === "in" ? valueInMm / MM_PER_INCH : valueInMm;
 
-const convertDisplayToInches = (displayValue: number) =>
-  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
+const convertDisplayToMetric = (displayValue: number) =>
+  dimensionUnit.value === "in" ? displayValue * MM_PER_INCH : displayValue;
 
 const squareSize = computed({
-  get: () => convertInchesToDisplay(squareSizeIn.value),
+  get: () => convertMetricToDisplay(squareSizeMm.value),
   set(value) {
-    squareSizeIn.value = convertDisplayToInches(value);
+    squareSizeMm.value = convertDisplayToMetric(value);
   }
 });
 
 const markerSize = computed({
-  get: () => convertInchesToDisplay(markerSizeIn.value),
+  get: () => convertMetricToDisplay(markerSizeMm.value),
   set(value) {
-    markerSizeIn.value = convertDisplayToInches(value);
+    markerSizeMm.value = convertDisplayToMetric(value);
   }
 });
 
@@ -149,7 +149,7 @@ const tooManyPoints = computed(
 const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
   const { font } = await PromptRegular;
-  const doc = new jsPDF({ unit: "in", format: "letter" });
+  const doc = new jsPDF({ unit: "mm", format: "letter" });
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -161,28 +161,34 @@ const downloadCalibBoard = async () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeIn.value) / 2;
+      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeMm.value) / 2;
 
-      const chessboardStartY = (paperHeight - patternWidth.value * squareSizeIn.value) / 2;
+      const chessboardStartY = (paperHeight - patternWidth.value * squareSizeMm.value) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeIn.value;
-          const yPos = chessboardStartY + squareY * squareSizeIn.value;
+          const xPos = chessboardStartX + squareX * squareSizeMm.value;
+          const yPos = chessboardStartY + squareY * squareSizeMm.value;
 
           // Only draw the odd squares to create the chessboard pattern
           if (squareY % 2 !== squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
+            doc.rect(xPos, yPos, squareSizeMm.value, squareSizeMm.value, "F");
           }
         }
       }
-      doc.text(`${patternWidth.value} x ${patternHeight.value} | ${squareSizeIn.value}in`, paperWidth - 1, 1.0, {
-        maxWidth: (paperWidth - 2.0) / 2,
-        align: "right"
-      });
+      doc.text(
+        `${patternWidth.value} x ${patternHeight.value} | ${squareSize.value}${dimensionUnit.value}`,
+        paperWidth - 1,
+        1.0,
+        {
+          maxWidth: (paperWidth - 2.0) / 2,
+          align: "right"
+        }
+      );
       break;
 
     case CalibrationBoardTypes.Charuco:
+      // TODO: Dynamically generate ChArUco using opencv
       // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
@@ -220,8 +226,8 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
-    squareSizeIn: squareSizeIn.value,
-    markerSizeIn: markerSizeIn.value,
+    squareSizeMm: squareSizeMm.value,
+    markerSizeMm: markerSizeMm.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
