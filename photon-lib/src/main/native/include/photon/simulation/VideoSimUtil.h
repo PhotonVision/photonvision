@@ -513,7 +513,8 @@ static std::vector<std::vector<cv::Point2f>> PolyFrom3dLines(
  * @param floorSubdivisions A NxN "grid" is created from the floor where this
  * parameter is N, which defines the floor lines.
  * @param floorThickness Thickness of the lines used for drawing the field floor
- * grid in pixels. This is scaled by \ref GetScaledThickness "GetScaledThickness()".
+ * grid in pixels. This is scaled by \ref GetScaledThickness
+ * "GetScaledThickness()".
  * @param floorColor Color of the lines used for drawing the field floor grid.
  * @param destination The destination image to draw to.
  */

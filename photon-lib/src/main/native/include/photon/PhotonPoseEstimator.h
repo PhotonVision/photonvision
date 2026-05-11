@@ -234,7 +234,7 @@ class PhotonPoseEstimator {
    * due to the RIO's weak computing power.
    *
    * @param cameraResult A pipeline result from the camera.
-  * @param camMat Camera intrinsics from camera calibration data.
+   * @param camMat Camera intrinsics from camera calibration data.
    * @param distCoeffs Distortion coefficients from camera calibration data.
    * @return An EstimatedRobotPose with an estimated pose, timestamp, and
    * targets used to create the estimate, or std::nullopt if there's less than 2
