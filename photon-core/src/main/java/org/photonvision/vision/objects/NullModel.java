@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.objects;
 
+import java.nio.file.Path;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
@@ -43,8 +44,8 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public String getUID() {
-        return "NullModel";
+    public Path getUID() {
+        return Path.of("null");
     }
 
     @Override

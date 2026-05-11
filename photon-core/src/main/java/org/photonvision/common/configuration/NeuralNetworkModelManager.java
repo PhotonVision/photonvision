@@ -283,7 +283,7 @@ public class NeuralNetworkModelManager {
      * @param modelUID the unique identifier of the model to retrieve
      * @return an Optional containing the model if found, or an empty Optional if not found
      */
-    public Optional<Model> getModel(String modelUID) {
+    public Optional<Model> getModel(Path modelUID) {
         if (models == null) {
             return Optional.empty();
         }
