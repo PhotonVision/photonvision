@@ -81,9 +81,7 @@ doxygen.sourceSets.main {
             "\"__cplusplus\"\\\n" +
             "\"HAL_ENUM(name)=enum name : int32_t"
 
-    if (project.hasProperty('docWarningsAsErrors')) {
-        warn_as_error 'FAIL_ON_WARNINGS'
-    }
+    option 'warn_as_error', 'FAIL_ON_WARNINGS'
 }
 
 tasks.register("zipCppDocs", Zip) {
