@@ -557,7 +557,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             color="error"
             hide-details
             class="ml-4"
-            label="Bypass (dev use only)"
+            label="Bypass minimum"
             :label-cols="6"
             :switch-cols="6"
             tooltip="Bypass the minimum recommended amount of snapshots for a calibration. Should only be used for dev work or temporary tests not competitions. Still requires 10 images to calibrate."

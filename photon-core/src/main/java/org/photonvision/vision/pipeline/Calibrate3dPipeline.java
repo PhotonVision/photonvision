@@ -202,7 +202,6 @@ public class Calibrate3dPipeline
     }
 
     public void takeSnapshot() {
-        logger.info("Bypass is " + settings.bypass);
         takeSnapshot = true;
     }
 
