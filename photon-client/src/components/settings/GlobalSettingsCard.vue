@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, ref, watchEffect } from "vue";
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvRadio from "@/components/common/pv-radio.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
@@ -168,8 +170,10 @@ watchEffect(() => {
   <v-card class="mb-3 rounded-12" color="surface">
     <v-card-title style="display: flex; justify-content: space-between">
       <span>Global Settings</span>
-      <v-btn
+      <pv-button
         variant="text"
+        size="sm"
+        icon="mdi-palette-outline"
         @click="
           () => {
             loadCurrentColors();
@@ -177,9 +181,8 @@ watchEffect(() => {
           }
         "
       >
-        <v-icon size="x-large">mdi-palette-outline</v-icon>
         Theme
-      </v-btn>
+      </pv-button>
     </v-card-title>
     <div class="pa-5 pt-0">
       <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
@@ -309,18 +312,17 @@ watchEffect(() => {
           :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
       </v-form>
-      <v-btn
-        color="primary"
+      <pv-button
+        variant="primary"
         class="mt-3"
-        :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-        style="color: black; width: 100%"
+        block
         :disabled="!settingsValid || !settingsHaveChanged()"
         @click="saveGeneralSettings"
       >
         Save
-      </v-btn>
+      </pv-button>
     </div>
-    <v-dialog v-model="showThemeConfig" width="800" dark>
+    <pv-dialog v-model="showThemeConfig" width="800">
       <v-card color="surface" flat>
         <v-card-title class="text-center">Theme Configuration</v-card-title>
         <v-card-text class="pt-0 pb-10px">
@@ -374,18 +376,11 @@ watchEffect(() => {
           </v-row>
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            color="buttonPassive"
-            class="text-black"
-            @click="showThemeConfig = false"
-          >
+          <pv-button variant="passive" @click="showThemeConfig = false">
             Close
-          </v-btn>
-          <v-btn
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            color="buttonActive"
-            class="text-black"
+          </pv-button>
+          <pv-button
+            variant="primary"
             @click="
               () => {
                 resetTheme(theme);
@@ -394,10 +389,10 @@ watchEffect(() => {
             "
           >
             Reset Default
-          </v-btn>
+          </pv-button>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </pv-dialog>
   </v-card>
 </template>
 

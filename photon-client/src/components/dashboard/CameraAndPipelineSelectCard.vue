@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
@@ -362,7 +364,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         />
       </v-col>
     </v-row>
-    <v-dialog v-model="showPipelineCreationDialog" persistent width="500">
+    <pv-dialog v-model="showPipelineCreationDialog" persistent width="500">
       <v-card color="surface">
         <v-card-title class="pb-0"> Create New Pipeline </v-card-title>
         <v-card-text class="pt-0 pb-0">
@@ -383,24 +385,19 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           />
         </v-card-text>
         <v-card-actions class="pr-5 pt-10px pb-5">
-          <v-btn
-            color="buttonPassive"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="cancelPipelineCreation"
-          >
+          <pv-button variant="passive" @click="cancelPipelineCreation">
             Cancel
-          </v-btn>
-          <v-btn
-            color="buttonActive"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+          </pv-button>
+          <pv-button
+            variant="primary"
             :disabled="checkPipelineName(newPipelineName) !== true"
             @click="createNewPipeline"
           >
             Create
-          </v-btn>
+          </pv-button>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </pv-dialog>
     <pv-delete-modal
       v-model="showPipelineDeletionConfirmationDialog"
       :width="500"
@@ -408,32 +405,23 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       description="Are you sure you want to delete the current pipeline? This action cannot be undone."
       :on-confirm="confirmDeleteCurrentPipeline"
     />
-    <v-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
+    <pv-dialog v-model="showPipelineTypeChangeDialog" persistent width="600">
       <v-card color="surface" dark>
         <v-card-title class="pb-0">Change Pipeline Type</v-card-title>
-        <v-card-text>
+        <v-card-text class="font-long-text">
           Are you sure you want to change the current pipeline type? This will cause all the pipeline settings to be
           overwritten and they will be lost. If this isn't what you want, duplicate this pipeline first or export
           settings.
         </v-card-text>
         <v-card-actions class="pa-5 pt-0">
-          <v-btn
-            color="buttonPassive"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            class="text-black"
-            @click="cancelChangePipelineType"
-          >
+          <pv-button variant="passive" @click="cancelChangePipelineType">
             Cancel
-          </v-btn>
-          <v-btn
-            color="buttonActive"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="confirmChangePipelineType"
-          >
+          </pv-button>
+          <pv-button variant="primary" @click="confirmChangePipelineType">
             Confirm
-          </v-btn>
+          </pv-button>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </pv-dialog>
   </v-card>
 </template>

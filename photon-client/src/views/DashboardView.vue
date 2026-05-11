@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import CamerasCard from "@/components/dashboard/CamerasCard.vue";
 import CameraAndPipelineSelectCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
 import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
@@ -164,11 +165,10 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
     <!-- TODO - not sure this belongs here -->
     <!-- Need v-model to allow the dialog to be dismissed and v-if to only display when cameras need configuration -->
-    <v-dialog
+    <pv-dialog
       v-if="useCameraSettingsStore().needsCameraConfiguration"
       v-model="showCameraSetupDialog"
       max-width="800"
-      dark
     >
       <v-card flat color="surface">
         <v-card-title>Set up some cameras to get started!</v-card-title>
@@ -177,7 +177,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
           <router-link to="/cameraConfigs">camera matching tab</router-link> to set some up!
         </v-card-text>
       </v-card>
-    </v-dialog>
+    </pv-dialog>
   </v-container>
 </template>
 

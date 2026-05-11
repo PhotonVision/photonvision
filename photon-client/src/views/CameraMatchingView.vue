@@ -4,10 +4,12 @@ import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
+import PvButton from "@/components/common/pv-button.vue";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -206,10 +208,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="buttonPassive"
-                  style="width: 100%"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+                <pv-button
+                  variant="passive"
+                  block
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -218,27 +219,24 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   "
                 >
                   <span>Details</span>
-                </v-btn>
+                </pv-button>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
-                <v-btn
-                  class="text-black"
-                  color="buttonActive"
-                  style="width: 100%"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+                <pv-button
+                  variant="primary"
+                  block
                   :loading="deactivatingModule"
                   @click="deactivateModule(module.uniqueName)"
                 >
                   Deactivate
-                </v-btn>
+                </pv-button>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn
-                  class="pa-0"
-                  color="error"
-                  style="width: 100%"
+                <pv-button
+                  size="icon"
+                  variant="danger"
+                  block
                   :loading="module.uniqueName === deletingCamera"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="
                     () =>
                       (confirmDeleteDialog = {
@@ -248,8 +246,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       })
                   "
                 >
-                  <v-icon size="x-large">mdi-trash-can-outline</v-icon>
-                </v-btn>
+                  <span class="mdi mdi-trash-can-outline text-xl leading-none" aria-hidden="true"></span>
+                </pv-button>
               </v-col>
             </v-row>
           </v-card-text>
@@ -300,10 +298,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
-                <v-btn
-                  color="buttonPassive"
-                  style="width: 100%"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+                <pv-button
+                  variant="passive"
+                  block
                   @click="
                     setCameraView(
                       module.matchedCameraInfo,
@@ -312,27 +309,24 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   "
                 >
                   <span>Details</span>
-                </v-btn>
+                </pv-button>
               </v-col>
               <v-col cols="6" md="5" class="pr-0">
-                <v-btn
-                  class="text-black"
-                  color="buttonActive"
-                  style="width: 100%"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+                <pv-button
+                  variant="primary"
+                  block
                   :loading="activatingModule"
                   @click="activateModule(module.uniqueName)"
                 >
                   Activate
-                </v-btn>
+                </pv-button>
               </v-col>
               <v-col cols="6" md="3">
-                <v-btn
-                  class="pa-0"
-                  color="error"
-                  style="width: 100%"
+                <pv-button
+                  size="icon"
+                  variant="danger"
+                  block
                   :loading="module.uniqueName === deletingCamera"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="
                     () =>
                       (confirmDeleteDialog = {
@@ -342,8 +336,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       })
                   "
                 >
-                  <v-icon size="x-large">mdi-trash-can-outline</v-icon>
-                </v-btn>
+                  <span class="mdi mdi-trash-can-outline text-xl leading-none" aria-hidden="true"></span>
+                </pv-button>
               </v-col>
             </v-row>
           </v-card-text>
@@ -367,26 +361,19 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <v-card-text class="pt-0">
             <v-row>
               <v-col cols="6" class="pr-0">
-                <v-btn
-                  color="buttonPassive"
-                  style="width: 100%"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                  @click="setCameraView(camera, false)"
-                >
+                <pv-button variant="passive" block @click="setCameraView(camera, false)">
                   <span>Details</span>
-                </v-btn>
+                </pv-button>
               </v-col>
               <v-col cols="6">
-                <v-btn
-                  class="text-black"
-                  color="buttonActive"
-                  style="width: 100%"
+                <pv-button
+                  variant="primary"
+                  block
                   :loading="assigningCamera"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                   @click="assignCamera(camera)"
                 >
                   Activate
-                </v-btn>
+                </pv-button>
               </v-col>
             </v-row>
           </v-card-text>
@@ -410,13 +397,11 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     </v-row>
 
     <!-- Camera details modal -->
-    <v-dialog v-model="viewingDetails" max-width="800">
+    <pv-dialog v-model="viewingDetails" max-width="800">
       <v-card v-if="viewingCamera[0] !== null" flat color="surface">
         <v-card-title class="d-flex justify-space-between">
           <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
-          <v-btn variant="text" @click="setCameraView(null, null)">
-            <v-icon size="x-large">mdi-close</v-icon>
-          </v-btn>
+          <pv-button variant="text" size="icon" icon="mdi-close" @click="setCameraView(null, null)" />
         </v-card-title>
         <v-card-text v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
@@ -442,7 +427,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
         </v-card-text>
       </v-card>
-    </v-dialog>
+    </pv-dialog>
 
     <pv-delete-modal
       v-model="confirmDeleteDialog.show"

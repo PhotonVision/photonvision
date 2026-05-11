@@ -1,13 +1,10 @@
 <script setup lang="ts">
+import PvButton from "@/components/common/pv-button.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { angleModulus, toDeg } from "@/lib/MathUtils";
 import { computed } from "vue";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
 // Defer reference to store access method
 const currentPipelineSettings = computed<ActivePipelineSettings>(
@@ -203,14 +200,7 @@ const resetCurrentBuffer = () => {
           >Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </v-card-subtitle>
-        <v-btn
-          color="buttonActive"
-          class="mb-4 mt-1"
-          style="width: min-content"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCurrentBuffer"
-          >Reset Samples</v-btn
-        >
+        <pv-button variant="primary" class="mb-4 mt-1 w-fit" @click="resetCurrentBuffer">Reset Samples</pv-button>
         <v-table density="compact">
           <template #default>
             <thead>

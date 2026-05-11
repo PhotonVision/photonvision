@@ -1,15 +1,12 @@
 <script setup lang="ts">
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, onBeforeUnmount, onMounted } from "vue";
+import PvButton from "@/components/common/pv-button.vue";
 import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
 import { useDisplay } from "vuetify";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
   let val = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue).reduce((a, b) => a + b, 0);
@@ -186,57 +183,44 @@ const interactiveCols = computed(() =>
       <div class="d-flex pt-3">
         <template v-if="!useStateStore().colorPickingMode">
           <v-col cols="4" class="pl-0 pr-2">
-            <v-btn
-              size="small"
+            <pv-button
+              size="sm"
+              variant="primary"
+              icon="mdi-minus"
               block
-              color="primary"
-              class="text-black"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
             >
-              <v-icon start size="large"> mdi-minus </v-icon>
               Shrink Range
-            </v-btn>
+            </pv-button>
           </v-col>
           <v-col cols="4" class="pl-0 pr-0">
-            <v-btn
-              color="primary"
-              class="text-black"
-              size="small"
+            <pv-button
+              size="sm"
+              variant="primary"
+              icon="mdi-plus-minus"
               block
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(1)"
             >
-              <v-icon start size="large"> mdi-plus-minus </v-icon>
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
-            </v-btn>
+            </pv-button>
           </v-col>
           <v-col cols="4" class="pl-2 pr-0">
-            <v-btn
-              size="small"
+            <pv-button
+              size="sm"
+              variant="primary"
+              icon="mdi-plus"
               block
-              color="primary"
-              class="text-black"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
             >
-              <v-icon start size="large"> mdi-plus </v-icon>
               Expand Range
-            </v-btn>
+            </pv-button>
           </v-col>
         </template>
         <template v-else>
           <v-card-text class="pa-0 pt-3 pb-3">
-            <v-btn
-              block
-              color="primary"
-              class="text-black"
-              size="small"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              @click="disableColorPicking"
-            >
+            <pv-button size="sm" variant="primary" block @click="disableColorPicking">
               Cancel
-            </v-btn>
+            </pv-button>
           </v-card-text>
         </template>
       </div>

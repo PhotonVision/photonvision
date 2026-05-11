@@ -1,3 +1,4 @@
 allowBuilds:
   '@parcel/watcher': true
   core-js: true
+  vue-demi: true

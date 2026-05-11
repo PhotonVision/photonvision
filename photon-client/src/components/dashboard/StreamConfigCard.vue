@@ -1,11 +1,9 @@
 <script setup lang="ts">
+import PvToggleGroup, { type ToggleItem } from "@/components/common/pv-toggle-group.vue";
 import { computed } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
 import { PipelineType } from "@/types/PipelineTypes";
-
-const theme = useTheme();
 
 const value = defineModel<number[]>();
 
@@ -15,6 +13,41 @@ const processingMode = computed<number>({
     if (useCameraSettingsStore().isCurrentVideoFormatCalibrated) {
       useCameraSettingsStore().changeCurrentPipelineSetting({ solvePNPEnabled: v === 1 }, true);
     }
+  }
+});
+
+const processingModeItems = computed<ToggleItem<string>[]>(() => [
+  { value: "0", label: "2D", icon: "mdi-square-outline", disabled: !useCameraSettingsStore().hasConnected },
+  {
+    value: "1",
+    label: "3D",
+    icon: "mdi-cube-outline",
+    disabled:
+      !useCameraSettingsStore().hasConnected ||
+      !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
+      useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ObjectDetection ||
+      useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ColoredShape
+  }
+]);
+
+const processingModeModel = computed<string>({
+  get: () => String(processingMode.value),
+  set: (nextValue) => {
+    if (nextValue === undefined || nextValue === "") return;
+    processingMode.value = Number(nextValue);
+  }
+});
+
+const streamDisplayItems: ToggleItem<string>[] = [
+  { value: "0", label: "Raw", icon: "mdi-import" },
+  { value: "1", label: "Processed", icon: "mdi-export" }
+];
+
+const streamDisplayModel = computed<string[]>({
+  get: () => (value.value ?? []).map(String),
+  set: (nextValue) => {
+    if (!nextValue.length) return;
+    value.value = nextValue.map(Number).sort((a, b) => a - b);
   }
 });
 </script>
@@ -31,79 +64,14 @@ const processingMode = computed<number>({
     <v-row class="pa-3 pb-0 align-center">
       <v-col class="pa-4">
         <p style="color: white">Processing Mode</p>
-        <v-btn-toggle v-model="processingMode" mandatory class="fill w-100">
-          <v-btn
-            color="buttonPassive"
-            :disabled="!useCameraSettingsStore().hasConnected"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            class="w-50"
-          >
-            <template #prepend>
-              <v-icon size="large">mdi-square-outline</v-icon>
-            </template>
-            <span>2D</span>
-          </v-btn>
-          <v-btn
-            color="buttonPassive"
-            :disabled="
-              !useCameraSettingsStore().hasConnected ||
-              !useCameraSettingsStore().isCurrentVideoFormatCalibrated ||
-              useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ObjectDetection ||
-              useCameraSettingsStore().currentPipelineSettings.pipelineType === PipelineType.ColoredShape
-            "
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            class="w-50"
-          >
-            <template #prepend>
-              <v-icon size="large">mdi-cube-outline</v-icon>
-            </template>
-            <span>3D</span>
-          </v-btn>
-        </v-btn-toggle>
+        <pv-toggle-group v-model="processingModeModel" :items="processingModeItems" />
       </v-col>
     </v-row>
     <v-row class="pa-3 pt-0 align-center">
       <v-col class="pa-4 pt-0">
         <p style="color: white">Stream Display</p>
-        <v-btn-toggle v-model="value" :multiple="true" mandatory class="fill w-100">
-          <v-btn
-            color="buttonPassive"
-            class="fill w-50"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          >
-            <v-icon start class="mode-btn-icon" size="large">mdi-import</v-icon>
-            <span class="mode-btn-label">Raw</span>
-          </v-btn>
-          <v-btn
-            color="buttonPassive"
-            class="fill w-50"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          >
-            <v-icon start class="mode-btn-icon" size="large">mdi-export</v-icon>
-            <span class="mode-btn-label">Processed</span>
-          </v-btn>
-        </v-btn-toggle>
+        <pv-toggle-group v-model="streamDisplayModel" :items="streamDisplayItems" multiple />
       </v-col>
     </v-row>
   </v-card>
 </template>
-
-<style scoped>
-.v-btn--disabled {
-  background-color: #191919 !important;
-}
-
-th {
-  width: 80px;
-  text-align: center;
-}
-
-@media only screen and (max-width: 351px) {
-  .mode-btn-icon {
-    margin: 0 !important;
-  }
-  .mode-btn-label {
-    display: none;
-  }
-}
-</style>
