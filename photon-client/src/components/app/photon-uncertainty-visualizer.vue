@@ -125,8 +125,11 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
       textStyle: {
         color: textColor
       },
-      formatter: (min: number | string | Date | null | undefined) => {
+      formatter: (min, max) => {
         if (typeof min === "number") {
+          if (typeof max === "number") {
+            return `${min.toFixed(2)} - ${max.toFixed(2)} px`;
+          }
           return `${min.toFixed(2)} px`;
         }
         return "";
@@ -227,7 +230,7 @@ if (import.meta.hot) {
 watch(
   () => uncertaintyData.value,
   () => {
-    drawUncertainty(uncertaintyData.value);
+    void drawUncertainty(uncertaintyData.value);
   }
 );
 
