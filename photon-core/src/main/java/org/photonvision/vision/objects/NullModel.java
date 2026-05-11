@@ -44,7 +44,7 @@ public class NullModel implements Model, ObjectDetector {
     }
 
     @Override
-    public Path getUID() {
+    public Path getPath() {
         return Path.of("null");
     }
 

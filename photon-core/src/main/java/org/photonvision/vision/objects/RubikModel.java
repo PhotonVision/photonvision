@@ -60,7 +60,7 @@ public class RubikModel implements Model {
     }
 
     /** Return the unique identifier for the model. In this case, it's the model's path. */
-    public Path getUID() {
+    public Path getPath() {
         return properties.modelPath();
     }
 

@@ -24,7 +24,12 @@ import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelPr
 public interface Model {
     public ObjectDetector load();
 
-    public Path getUID();
+    /**
+     * Gets the path to the model file. This is being used as a UID.
+     *
+     * @return the path to the model file (for use as a UID)
+     */
+    public Path getPath();
 
     public String getNickname();
 

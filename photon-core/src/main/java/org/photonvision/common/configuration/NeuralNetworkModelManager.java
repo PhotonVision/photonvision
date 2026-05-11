@@ -292,7 +292,7 @@ public class NeuralNetworkModelManager {
         for (Family backend : supportedBackends) {
             if (models.containsKey(backend)) {
                 Optional<Model> model =
-                        models.get(backend).stream().filter(m -> m.getUID().equals(modelUID)).findFirst();
+                        models.get(backend).stream().filter(m -> m.getPath().equals(modelUID)).findFirst();
                 if (model.isPresent()) {
                     return model;
                 }
@@ -406,7 +406,8 @@ public class NeuralNetworkModelManager {
         // After loading all of the models, sort them by name to ensure a consistent
         // ordering
         models.forEach(
-                (backend, backendModels) -> backendModels.sort((a, b) -> a.getUID().compareTo(b.getUID())));
+                (backend, backendModels) ->
+                        backendModels.sort((a, b) -> a.getPath().compareTo(b.getPath())));
 
         // Log
         StringBuilder sb = new StringBuilder();
@@ -414,7 +415,7 @@ public class NeuralNetworkModelManager {
         models.forEach(
                 (backend, backendModels) -> {
                     sb.append(backend).append(" [");
-                    backendModels.forEach(model -> sb.append(model.getUID()).append(", "));
+                    backendModels.forEach(model -> sb.append(model.getPath()).append(", "));
                     sb.append("] ");
                 });
     }
