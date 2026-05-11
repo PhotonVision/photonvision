@@ -216,8 +216,8 @@ class SimCameraProperties {
    * The pitch from the principal point of this camera to the pixel y value.
    * Pitch is positive down.
    *
-   * Note that this angle is naively computed and may be incorrect. See
-   * #getCorrectedPixelRot(const cv::Point2d).
+  * Note that this angle is naively computed and may be incorrect. See
+  * \ref GetCorrectedPixelRot "GetCorrectedPixelRot()".
    */
   wpi::math::Rotation2d GetPixelPitch(double pixelY) const {
     double fy = camIntrinsics(1, 1);
@@ -229,8 +229,8 @@ class SimCameraProperties {
    * Finds the yaw and pitch to the given image point. Yaw is positive left, and
    * pitch is positive down.
    *
-   * Note that pitch is naively computed and may be incorrect. See
-   * #getCorrectedPixelRot(const cv::Point2d).
+  * Note that pitch is naively computed and may be incorrect. See
+  * \ref GetCorrectedPixelRot "GetCorrectedPixelRot()".
    */
   wpi::math::Rotation3d GetPixelRot(const cv::Point2d& point) const {
     return wpi::math::Rotation3d{0_rad, GetPixelPitch(point.y).Radians(),

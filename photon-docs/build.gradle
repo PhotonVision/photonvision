@@ -48,7 +48,7 @@ doxygen.sourceSets.main {
         }
     }
     option 'case_sense_names', false
-    option 'extension_mapping', 'inc=C++ no_extension=C++'
+    option 'extension_mapping', ['inc=C++', 'no_extension=C++']
     option 'extract_all', true
     option 'extract_static', true
     option 'file_patterns', '*'

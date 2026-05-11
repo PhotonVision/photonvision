@@ -331,9 +331,9 @@ class VisionSystemSim {
   /**
    * Removes every VisionTargetSim of the specified type from the simulated
    * field.
-   *
-   * @param type Type of target (e.g. "cargo"). Same as the type passed into
-   *  #addVisionTargets(String, VisionTargetSim...)
+  *
+  * @param type Type of target (e.g. "cargo"). Same as the type passed into
+  *  \ref AddVisionTargets "AddVisionTargets(std::string, const std::vector<VisionTargetSim>&)"
    */
   void RemoveVisionTargets(std::string type) { targetSets.erase(type); }
 
