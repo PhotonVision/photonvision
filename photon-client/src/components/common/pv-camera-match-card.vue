@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { PVCameraInfo } from "@/types/SettingTypes";
+import { cameraInfoFor } from "@/lib/PhotonUtils";
 
 function isEqual<T>(a: T, b: T): boolean {
   if (a === b) {
@@ -25,19 +26,6 @@ const { saved, current } = defineProps({
     required: true
   }
 });
-
-const cameraInfoFor = (camera: PVCameraInfo): any => {
-  if (camera.PVUsbCameraInfo) {
-    return camera.PVUsbCameraInfo;
-  }
-  if (camera.PVCSICameraInfo) {
-    return camera.PVCSICameraInfo;
-  }
-  if (camera.PVFileCameraInfo) {
-    return camera.PVFileCameraInfo;
-  }
-  return {};
-};
 </script>
 
 <template>

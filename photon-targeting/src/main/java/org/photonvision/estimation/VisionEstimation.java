@@ -17,18 +17,6 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.cscore.OpenCvLoader;
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +31,18 @@ import org.photonvision.jni.ConstrainedSolvepnpJni;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.targeting.TargetCorner;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.linalg.MatBuilder;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.numbers.*;
+import org.wpilib.math.util.Nat;
+import org.wpilib.vision.apriltag.AprilTag;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.camera.OpenCvLoader;
 
 public class VisionEstimation {
     private VisionEstimation() {}

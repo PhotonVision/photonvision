@@ -1,8 +1,7 @@
 // Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
-nativeUtils.withCrossRoboRIO()
-nativeUtils.withCrossLinuxArm32()
 nativeUtils.withCrossLinuxArm64()
+nativeUtils.withCrossSystemCore()
 
 // Configure WPI dependencies.
 nativeUtils.wpi.configureDependencies {
@@ -18,6 +17,8 @@ nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
 
 nativeUtils.setSinglePrintPerPlatform()
+
+def externalLicensesFolder = file("$rootDir/ExternalLicenses")
 
 // Enable builds for all platforms.
 model {
@@ -118,6 +119,10 @@ ext.createComponentZipTasks = { components, names, base, type, project, func ->
             duplicatesStrategy = 'exclude'
 
             from(licenseFile) {
+                into '/'
+            }
+
+            from(externalLicensesFolder) {
                 into '/'
             }
 

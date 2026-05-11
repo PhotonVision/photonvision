@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import * as echarts from "echarts";
-import { onMounted, ref, onBeforeUnmount, watch } from "vue";
+import { onMounted, onBeforeUnmount, watch, useTemplateRef } from "vue";
 import { useTheme } from "vuetify";
 
 // Color  -  original        (adjusted)
@@ -9,14 +8,14 @@ import { useTheme } from "vuetify";
 // green  -   65, 181, 127   (r:  75, g: 209, b: 147)
 // red    -  238, 102, 102   (r: 238, g: 102, b: 102)
 const colors = {
-  "blue-LightTheme": { r: 255, g: 216, b: 67 },
-  "blue-DarkTheme": { r: 92, g: 154, b: 255 },
-  "purple-LightTheme": { r: 255, g: 216, b: 67 },
-  "purple-DarkTheme": { r: 167, g: 104, b: 196 },
-  "red-LightTheme": { r: 255, g: 216, b: 67 },
-  "red-DarkTheme": { r: 238, g: 102, b: 102 },
-  "green-LightTheme": { r: 255, g: 216, b: 67 },
-  "green-DarkTheme": { r: 75, g: 209, b: 147 }
+  "blue-light": { r: 255, g: 216, b: 67 },
+  "blue-dark": { r: 92, g: 154, b: 255 },
+  "purple-light": { r: 255, g: 216, b: 67 },
+  "purple-dark": { r: 167, g: 104, b: 196 },
+  "red-light": { r: 255, g: 216, b: 67 },
+  "red-dark": { r: 238, g: 102, b: 102 },
+  "green-light": { r: 255, g: 216, b: 67 },
+  "green-dark": { r: 75, g: 209, b: 147 }
 };
 const DEFAULT_COLOR = "blue";
 
@@ -27,8 +26,12 @@ const typeLabels = {
 };
 
 const theme = useTheme();
-const chartRef = ref(null);
+const chartRef = useTemplateRef("chartRef");
 let chart: echarts.ECharts | null = null;
+
+interface TooltipSeriesParam {
+  value: [number, number];
+}
 
 const getOptions = (data: ChartData[] = []) => {
   const now = Date.now();
@@ -38,7 +41,7 @@ const getOptions = (data: ChartData[] = []) => {
     },
     tooltip: {
       trigger: "axis",
-      formatter: (params: any) => {
+      formatter: (params: TooltipSeriesParam[]) => {
         const p = params[0];
         const append = typeLabels[props.type];
         const fmsLimitLabel = "FMS Limit - 7.000 Mb/s";
@@ -54,9 +57,9 @@ const getOptions = (data: ChartData[] = []) => {
 
         return `${tooltip}</div>`;
       },
-      backgroundColor: theme.themes.value[theme.global.name.value].colors.background,
+      backgroundColor: theme.global.current.value.colors.background,
       textStyle: {
-        color: theme.themes.value[theme.global.name.value].colors.onBackground
+        color: theme.global.current.value.colors.onBackground
       },
       axisPointer: {
         animation: false
@@ -81,12 +84,12 @@ const getOptions = (data: ChartData[] = []) => {
       min: now - 55 * 1000,
       axisLine: {
         lineStyle: {
-          color: theme.global.name.value === "LightTheme" ? "#aaa" : "#777"
+          color: theme.global.current.value.dark ? "#777" : "#aaa"
         }
       },
       axisLabel: {
         align: "left",
-        color: theme.global.name.value === "LightTheme" ? "#fff" : "#ddd",
+        color: theme.global.current.value.dark ? "#ddd" : "#fff",
         formatter: (value: number) => {
           const date = new Date(value);
           return date.toLocaleTimeString([], {
@@ -103,12 +106,12 @@ const getOptions = (data: ChartData[] = []) => {
       position: "right",
       min:
         props.min ??
-        function (value) {
+        function (value: { min: number; max: number }) {
           return Math.max(0, (value.min - 10) | 0);
         },
       max:
         props.max ??
-        function (value) {
+        function (value: { min: number; max: number }) {
           return (value.max + 10) | 0;
         },
       splitNumber: 2,
@@ -119,7 +122,7 @@ const getOptions = (data: ChartData[] = []) => {
         }
       },
       axisLabel: {
-        color: theme.global.name.value === "LightTheme" ? "#fff" : "#ddd"
+        color: theme.global.current.value.dark ? "#ddd" : "#fff"
       }
     },
     series: getSeries(data),
@@ -128,7 +131,7 @@ const getOptions = (data: ChartData[] = []) => {
 };
 
 const getSeries = (data: ChartData[] = []) => {
-  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.name.value}`];
+  const color = colors[`${props.color ?? DEFAULT_COLOR}-${theme.global.current.value.dark ? "dark" : "light"}`];
   return [
     {
       type: "line",
@@ -150,10 +153,9 @@ const getSeries = (data: ChartData[] = []) => {
           : null,
       lineStyle: {
         width: 1.5,
-        color:
-          theme.global.name.value === "LightTheme"
-            ? theme.themes.value[theme.global.name.value].colors.primary
-            : `rgb(${color.r}, ${color.g}, ${color.b})`
+        color: theme.global.current.value.dark
+          ? `rgb(${color.r}, ${color.g}, ${color.b})`
+          : theme.global.current.value.colors.primary
       },
       areaStyle: {
         color: {
@@ -165,17 +167,15 @@ const getSeries = (data: ChartData[] = []) => {
           colorStops: [
             {
               offset: 0,
-              color:
-                theme.global.name.value === "LightTheme"
-                  ? `${theme.themes.value[theme.global.name.value].colors.primary}40`
-                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+              color: theme.global.current.value.dark
+                ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+                : `${theme.global.current.value.colors.primary}40`
             },
             {
               offset: 1,
-              color:
-                theme.global.name.value === "LightTheme"
-                  ? `${theme.themes.value[theme.global.name.value].colors.primary}40`
-                  : `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+              color: theme.global.current.value.dark
+                ? `rgba(${color.r}, ${color.g}, ${color.b}, 0.15)`
+                : `${theme.global.current.value.colors.primary}40`
             }
           ]
         }
@@ -192,13 +192,14 @@ interface ChartData {
 // Type options: "percentage", "temperature", "mb"
 const props = defineProps<{
   data: ChartData[];
-  type: string;
+  type: keyof typeof typeLabels;
   min?: number;
   max?: number;
-  color?: string;
+  color?: "red" | "green" | "blue" | "purple";
 }>();
 
-onMounted(() => {
+onMounted(async () => {
+  const echarts = await import("echarts");
   chart = echarts.init(chartRef.value);
   chart.setOption(getOptions(props.data));
 

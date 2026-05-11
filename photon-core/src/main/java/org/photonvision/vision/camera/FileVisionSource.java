@@ -17,9 +17,6 @@
 
 package org.photonvision.vision.camera;
 
-import edu.wpi.first.cscore.UsbCameraInfo;
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.util.PixelFormat;
 import java.nio.file.Path;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -28,6 +25,9 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.UsbCameraInfo;
+import org.wpilib.vision.camera.VideoMode;
 
 public class FileVisionSource extends VisionSource {
     private final FileFrameProvider frameProvider;

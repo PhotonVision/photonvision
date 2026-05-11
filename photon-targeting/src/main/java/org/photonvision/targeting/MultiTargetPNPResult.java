@@ -17,12 +17,12 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.MultiTargetPNPResultSerde;
 import org.photonvision.targeting.proto.MultiTargetPNPResultProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 public class MultiTargetPNPResult
         implements ProtobufSerializable, PhotonStructSerializable<MultiTargetPNPResult> {

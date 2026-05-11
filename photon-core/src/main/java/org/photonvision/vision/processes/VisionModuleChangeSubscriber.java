@@ -18,14 +18,13 @@
 package org.photonvision.vision.processes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.Pair;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import org.opencv.core.Point;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -39,6 +38,7 @@ import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.target.RobotOffsetPointOperation;
+import org.wpilib.math.util.Pair;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {

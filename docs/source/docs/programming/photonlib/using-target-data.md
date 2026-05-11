@@ -38,8 +38,8 @@ You can get your robot's `Pose2D` on the field using various camera data, target
    .. code-block:: c++
 
       // Calculate robot's field relative pose
-      frc::Pose2D robotPose = photonlib::EstimateFieldToRobot(
-        kCameraHeight, kTargetHeight, kCameraPitch, kTargetPitch, frc::Rotation2d(units::degree_t(-target.GetYaw())), frc::Rotation2d(units::degree_t(gyro.GetRotation2d)), targetPose, cameraToRobot);
+      wpi::math::Pose2d robotPose = photonlib::EstimateFieldToRobot(
+        kCameraHeight, kTargetHeight, kCameraPitch, kTargetPitch, wpi::math::Rotation2d(wpi::units::degree_t(-target.GetYaw())), wpi::math::Rotation2d(wpi::units::degree_t(gyro.GetRotation2d)), targetPose, cameraToRobot);
 
    .. code-block:: python
 
@@ -106,8 +106,8 @@ You can get a [translation](https://docs.wpilib.org/en/latest/docs/software/adva
    .. code-block:: c++
 
       // Calculate a translation from the camera to the target.
-      frc::Translation2d translation = photonlib::PhotonUtils::EstimateCameraToTargetTranslation(
-        distance, frc::Rotation2d(units::degree_t(-target.GetYaw())));
+      wpi::math::Translation2d translation = photonlib::PhotonUtils::EstimateCameraToTargetTranslation(
+        distance, wpi::math::Rotation2d(wpi::units::degree_t(-target.GetYaw())));
 
    .. code-block:: python
 

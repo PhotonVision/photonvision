@@ -26,17 +26,17 @@ package frc.robot.subsystems.drivetrain;
 
 import static frc.robot.Constants.Swerve.*;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.hardware.motor.PWMSparkMax;
+import org.wpilib.hardware.rotation.Encoder;
+import org.wpilib.math.controller.PIDController;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.SwerveModulePosition;
+import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.util.Units;
+import org.wpilib.simulation.EncoderSim;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.system.RobotController;
 
 public class SwerveModule {
     // --- Module Constants
@@ -88,12 +88,11 @@ public class SwerveModule {
         steerMotor.setVoltage(steerPid);
 
         // Use feedforward model to translate target drive velocities into voltages
-        double driveFF = kDriveFF.calculate(desiredState.speedMetersPerSecond);
+        double driveFF = kDriveFF.calculate(desiredState.speed);
         double drivePid = 0;
         if (!openLoop) {
             // Perform PID feedback control to compensate for disturbances
-            drivePid =
-                    drivePidController.calculate(driveEncoder.getRate(), desiredState.speedMetersPerSecond);
+            drivePid = drivePidController.calculate(driveEncoder.getRate(), desiredState.speed);
         }
 
         driveMotor.setVoltage(driveFF + drivePid);
@@ -156,11 +155,9 @@ public class SwerveModule {
                 table + "Steer Degrees", Math.toDegrees(MathUtil.angleModulus(state.angle.getRadians())));
         SmartDashboard.putNumber(
                 table + "Steer Target Degrees", Math.toDegrees(steerPidController.getSetpoint()));
+        SmartDashboard.putNumber(table + "Drive Velocity Feet", Units.metersToFeet(state.speed));
         SmartDashboard.putNumber(
-                table + "Drive Velocity Feet", Units.metersToFeet(state.speedMetersPerSecond));
-        SmartDashboard.putNumber(
-                table + "Drive Velocity Target Feet",
-                Units.metersToFeet(desiredState.speedMetersPerSecond));
+                table + "Drive Velocity Target Feet", Units.metersToFeet(desiredState.speed));
         SmartDashboard.putNumber(table + "Drive Current", driveCurrentSim);
         SmartDashboard.putNumber(table + "Steer Current", steerCurrentSim);
     }

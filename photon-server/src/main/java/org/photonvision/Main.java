@@ -17,9 +17,6 @@
 
 package org.photonvision;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -57,6 +54,8 @@ import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Rotation2d;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
@@ -256,8 +255,6 @@ public class Main {
 
         if (OsImageData.IMAGE_METADATA.isPresent()) {
             logger.info("PhotonVision image data: " + OsImageData.IMAGE_METADATA.get());
-        } else if (OsImageData.IMAGE_VERSION.isPresent()) {
-            logger.info("PhotonVision image version: " + OsImageData.IMAGE_VERSION.get());
         } else {
             logger.info("PhotonVision image version: unknown");
         }

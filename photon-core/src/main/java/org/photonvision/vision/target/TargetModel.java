@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.MatOfPoint3f;
@@ -29,6 +28,7 @@ import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
 import org.photonvision.vision.pipe.impl.SolvePNPPipe;
+import org.wpilib.math.util.Units;
 
 /**
  * A model representing the vertices of targets with known shapes. The vertices are in the EDN

@@ -3,7 +3,7 @@ import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-vis
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
-import { computed, inject, ref } from "vue";
+import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
@@ -14,35 +14,35 @@ const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
 
-const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat as VideoFormat });
+const confirmRemoveDialog = ref({ show: false, vf: props.videoFormat });
 
-const removeCalibration = (vf: VideoFormat) => {
-  axiosPost("/calibration/remove", "delete a camera calibration", {
+const removeCalibration = async (vf: VideoFormat) => {
+  await axiosPost("/calibration/remove", "delete a camera calibration", {
     cameraUniqueName: useCameraSettingsStore().currentCameraSettings.uniqueName,
     width: vf.resolution.width,
     height: vf.resolution.height
   });
 };
 
-const exportCalibration = ref();
+const exportCalibration = useTemplateRef("exportCalibration");
 const openExportCalibrationPrompt = () => {
-  exportCalibration.value.click();
+  exportCalibration.value?.click();
 };
 
-const importCalibrationFromPhotonJson = ref();
+const importCalibrationFromPhotonJson = useTemplateRef("importCalibrationFromPhotonJson");
 const openUploadPhotonCalibJsonPrompt = () => {
-  importCalibrationFromPhotonJson.value.click();
+  importCalibrationFromPhotonJson.value?.click();
 };
 const importCalibration = async () => {
-  const files = importCalibrationFromPhotonJson.value.files;
-  if (files.length === 0) return;
+  const files = importCalibrationFromPhotonJson.value?.files;
+  if (!files?.length) return;
   const uploadedJson = files[0];
 
   const data = await parseJsonFile<CameraCalibrationResult>(uploadedJson);
 
   if (
-    data.resolution.height != props.videoFormat.resolution.height ||
-    data.resolution.width != props.videoFormat.resolution.width
+    data.resolution.height !== props.videoFormat.resolution.height ||
+    data.resolution.width !== props.videoFormat.resolution.width
   ) {
     useStateStore().showSnackbarMessage({
       color: "error",
@@ -122,7 +122,7 @@ const viewingImg = ref(0);
           <v-btn
             color="buttonPassive"
             style="width: 100%"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openUploadPhotonCalibJsonPrompt"
           >
             <v-icon start size="large"> mdi-import</v-icon>
@@ -141,7 +141,7 @@ const viewingImg = ref(0);
             color="buttonPassive"
             :disabled="!currentCalibrationCoeffs"
             style="width: 100%"
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openExportCalibrationPrompt"
           >
             <v-icon start size="large">mdi-export</v-icon>
@@ -333,7 +333,7 @@ const viewingImg = ref(0);
               color="primary"
               text="The selected video format has not been calibrated."
               icon="mdi-alert-circle-outline"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+              :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             />
           </div>
           <Suspense v-else-if="tab === 'details'">
@@ -365,7 +365,7 @@ const viewingImg = ref(0);
   <pv-delete-modal
     v-model="confirmRemoveDialog.show"
     :width="500"
-    :title="'Delete Calibration'"
+    title="Delete Calibration"
     :description="`Are you sure you want to delete the calibration for '${confirmRemoveDialog.vf.resolution.width}x${confirmRemoveDialog.vf.resolution.height}'? This action cannot be undone.`"
     :on-confirm="() => removeCalibration(confirmRemoveDialog.vf)"
   />

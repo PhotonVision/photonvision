@@ -3,7 +3,7 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
-import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls";
+import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 import { onBeforeUnmount, onMounted, watchEffect } from "vue";
 const {
   ArrowHelper,
@@ -20,7 +20,7 @@ const {
   Scene,
   WebGLRenderer
 } = await import("three");
-const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls");
+const { TrackballControls } = await import("three/examples/jsm/controls/TrackballControls.js");
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
@@ -44,14 +44,14 @@ let renderer: WebGLRenderer | undefined;
 let controls: TrackballControls | undefined;
 
 let previousTargets: Object3D[] = [];
-const drawTargets = (targets: PhotonTarget[]) => {
+const drawTargets = async (targets: PhotonTarget[]) => {
   // Check here, since if we check in watchEffect this never gets called
   if (!scene || !camera || !renderer || !controls) {
     return;
   }
 
-  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
-  else scene.background = new Color(0x000000);
+  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
+  else scene.background = new Color(0xa9a9a9);
 
   scene.remove(...previousTargets);
   previousTargets = [];
@@ -89,7 +89,11 @@ const drawTargets = (targets: PhotonTarget[]) => {
 
   if (calibrationCoeffs) {
     // And show camera frustum
-    const calibCamera = createPerspectiveCamera(calibrationCoeffs.resolution, calibrationCoeffs.cameraIntrinsics, 10);
+    const calibCamera = await createPerspectiveCamera(
+      calibrationCoeffs.resolution,
+      calibrationCoeffs.cameraIntrinsics,
+      10
+    );
     const helper = new CameraHelper(calibCamera);
     const helperGroup = new Group();
     helperGroup.add(helper);
@@ -154,8 +158,8 @@ onMounted(async () => {
   if (!canvas) return;
   renderer = new WebGLRenderer({ canvas: canvas });
 
-  if (theme.global.name.value === "LightTheme") scene.background = new Color(0xa9a9a9);
-  else scene.background = new Color(0x000000);
+  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
+  else scene.background = new Color(0xa9a9a9);
 
   onWindowResize();
   window.addEventListener("resize", onWindowResize);
@@ -209,14 +213,14 @@ onMounted(async () => {
     renderer.render(scene, camera);
   };
 
-  drawTargets(props.targets);
+  await drawTargets(props.targets);
   animate();
 });
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onWindowResize);
 });
 watchEffect(() => {
-  drawTargets(props.targets);
+  void drawTargets(props.targets);
 });
 </script>
 
@@ -230,7 +234,7 @@ watchEffect(() => {
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCamFirstPerson"
         >
           First Person
@@ -240,7 +244,7 @@ watchEffect(() => {
         <v-btn
           style="width: 100%"
           color="buttonActive"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
           @click="resetCamThirdPerson"
         >
           Third Person

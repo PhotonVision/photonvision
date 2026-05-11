@@ -17,15 +17,15 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent.Kind;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringSubscriber;
 import java.util.EnumSet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.wpilib.networktables.BooleanSubscriber;
+import org.wpilib.networktables.IntegerSubscriber;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableEvent.Kind;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StringSubscriber;
 
 // Helper to print when the robot transitions modes
 public class NTDriverStation {
@@ -125,7 +125,7 @@ public class NTDriverStation {
     }
 
     // Copied from
-    // https://github.com/wpilibsuite/allwpilib/blob/07192285f65321a2f7363227a2216f09b715252d/hal/src/main/java/edu/wpi/first/hal/DriverStationJNI.java#L123C1-L140C4
+    // https://github.com/wpilibsuite/allwpilib/blob/07192285f65321a2f7363227a2216f09b715252d/hal/src/main/java/org/wpilib/hardware/hal/DriverStationJNI.java#L123C1-L140C4
     // TODO: upstream!
     /**
      * Gets the current control word of the driver station.

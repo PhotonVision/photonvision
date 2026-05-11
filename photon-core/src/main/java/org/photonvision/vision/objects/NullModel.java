@@ -20,7 +20,7 @@ package org.photonvision.vision.objects;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
-import org.photonvision.common.configuration.NeuralNetworkPropertyManager.ModelProperties;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.vision.pipe.impl.NeuralNetworkPipeResult;
 
 /**

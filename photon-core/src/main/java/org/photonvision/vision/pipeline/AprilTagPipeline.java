@@ -17,19 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
-import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
-import edu.wpi.first.math.geometry.CoordinateSystem;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.estimation.TargetModel;
 import org.photonvision.targeting.MultiTargetPNPResult;
@@ -47,8 +41,19 @@ import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipePa
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
+import org.wpilib.math.geometry.CoordinateSystem;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.util.Units;
+import org.wpilib.vision.apriltag.AprilTagDetection;
+import org.wpilib.vision.apriltag.AprilTagDetector;
+import org.wpilib.vision.apriltag.AprilTagPoseEstimate;
+import org.wpilib.vision.apriltag.AprilTagPoseEstimator.Config;
 
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
+    private static final Logger logger = new Logger(AprilTagPipeline.class, LogGroup.VisionModule);
+
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
     private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe =
             new AprilTagPoseEstimatorPipe();
@@ -204,7 +209,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         camToTag =
                                 new Transform3d(
                                         camToTag.getTranslation(),
-                                        new Rotation3d(0, Math.PI, 0).plus(camToTag.getRotation()));
+                                        new Rotation3d(0, Math.PI, 0).rotateBy(camToTag.getRotation()));
                         tagPoseEstimate = new AprilTagPoseEstimate(camToTag, camToTag, 0, 0);
                     }
                 }
@@ -230,6 +235,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
                 targetList.add(target);
             }
+        }
+
+        if (targetList.size() > Packet.MAX_ARRAY_LEN) {
+            logger.error(
+                    "We have " + targetList.size() + " targets! Arbitrarily dropping some on the floor");
+            targetList = targetList.subList(0, Packet.MAX_ARRAY_LEN);
         }
 
         var fpsResult = calculateFPSPipe.run(null);

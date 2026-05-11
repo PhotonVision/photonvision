@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.wpi.first.math.geometry.Pose3d;
 import java.awt.Color;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -35,6 +34,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
+import org.wpilib.math.geometry.Pose3d;
 
 // Ignore the previous calibration data that was stored in the json file.
 @JsonIgnoreProperties(ignoreUnknown = true)

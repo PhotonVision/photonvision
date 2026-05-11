@@ -17,13 +17,10 @@
 
 #pragma once
 
-#include <cstddef>
-#include <string>
 #include <utility>
 #include <vector>
 
-#include <frc/geometry/Transform3d.h>
-#include <wpi/SmallVector.h>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 #include "photon/struct/PhotonTrackedTargetStruct.h"
 
@@ -124,14 +121,16 @@ class PhotonTrackedTarget : public PhotonTrackedTarget_PhotonStruct {
    * reprojection error is the ambiguity, which is between 0 and 1.
    * @return The pose of the target relative to the robot.
    */
-  frc::Transform3d GetBestCameraToTarget() const { return bestCameraToTarget; }
+  wpi::math::Transform3d GetBestCameraToTarget() const {
+    return bestCameraToTarget;
+  }
 
   /**
    * Get the transform that maps camera space (X = forward, Y = left, Z = up) to
    * object/fiducial tag space (X forward, Y left, Z up) with the highest
    * reprojection error
    */
-  frc::Transform3d GetAlternateCameraToTarget() const {
+  wpi::math::Transform3d GetAlternateCameraToTarget() const {
     return altCameraToTarget;
   }
 

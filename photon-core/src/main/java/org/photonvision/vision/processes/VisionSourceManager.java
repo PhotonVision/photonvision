@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.cscore.UsbCamera;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,6 +46,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
+import org.wpilib.vision.camera.UsbCamera;
 
 /**
  * This class manages starting up VisionModules for serialized devices ({@link

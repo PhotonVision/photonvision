@@ -20,21 +20,21 @@ package jni;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.hal.HAL;
-import edu.wpi.first.util.PixelFormat;
-import edu.wpi.first.util.RawFrame;
-import edu.wpi.first.util.RuntimeLoader;
 import java.io.IOException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.opencv.core.Mat;
 import org.photonvision.jni.CscoreExtras;
 import org.photonvision.jni.LibraryLoader;
+import org.wpilib.hardware.hal.HAL;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.util.RawFrame;
+import org.wpilib.util.runtime.RuntimeLoader;
+import org.wpilib.vision.camera.CameraServerJNI;
+import org.wpilib.vision.camera.CvSink;
+import org.wpilib.vision.camera.CvSource;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.stream.CameraServer;
 
 public class CscoreExtrasTest {
     @BeforeAll

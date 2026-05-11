@@ -10,6 +10,7 @@ import { NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import axios from "axios";
 import type { WebsocketSettingsUpdate } from "@/types/WebsocketDataTypes";
+import type { AprilTagFieldLayout } from "@/types/PhotonTrackingTypes";
 import { ref } from "vue";
 
 interface GeneralSettingsStore {
@@ -17,7 +18,7 @@ interface GeneralSettingsStore {
   network: NetworkSettings;
   lighting: LightingSettings;
   metrics: MetricData;
-  currentFieldLayout;
+  currentFieldLayout: AprilTagFieldLayout;
 }
 
 interface MetricsEntry {
@@ -68,9 +69,11 @@ export const useSettingsStore = defineStore("settings", {
   state: (): GeneralSettingsStore => ({
     general: {
       version: undefined,
+      imageVersion: undefined,
       gpuAcceleration: undefined,
       hardwareModel: undefined,
       hardwarePlatform: undefined,
+      wpilibArch: undefined,
       mrCalWorking: true,
       availableModels: [],
       supportedBackends: [],
@@ -155,8 +158,10 @@ export const useSettingsStore = defineStore("settings", {
     updateGeneralSettingsFromWebsocket(data: WebsocketSettingsUpdate) {
       this.general = {
         version: data.general.version || undefined,
+        imageVersion: data.general.imageVersion || undefined,
         hardwareModel: data.general.hardwareModel || undefined,
         hardwarePlatform: data.general.hardwarePlatform || undefined,
+        wpilibArch: data.general.wpilibArch || undefined,
         gpuAcceleration: data.general.gpuAcceleration || undefined,
         mrCalWorking: data.general.mrCalWorking,
         availableModels: data.general.availableModels || undefined,
@@ -180,7 +185,7 @@ export const useSettingsStore = defineStore("settings", {
       const payload = {
         enabledLEDPercentage: brightness
       };
-      useStateStore().websocket?.send(payload, true);
+      useStateStore().websocket?.send(payload);
     }
   }
 });

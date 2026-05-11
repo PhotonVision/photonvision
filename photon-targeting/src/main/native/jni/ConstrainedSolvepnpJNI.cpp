@@ -15,12 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <span>
 #include <vector>
-
-#include <fmt/core.h>
-#include <fmt/ranges.h>
 
 #include "org_photonvision_jni_ConstrainedSolvepnpJni.h"
 #include "photon/constrained_solvepnp/wrap/casadi_wrapper.h"
@@ -72,20 +68,8 @@ Java_org_photonvision_jni_ConstrainedSolvepnpJni_do_1optimization
       pointObservationsMat(pointObservationsVec.data(), 2,
                            pointObservationsVec.size() / 2);
 
-#if 0
-  fmt::println("======================================================");
-  fmt::println("Got robot2camera raw {}", robot2cameraVec);
-  fmt::println("Camera cal {} {} {} {}", cameraCal_.fx, cameraCal_.fy,
-               cameraCal_.cx, cameraCal_.cy);
-  fmt::println("{} tags", nTags);
-  std::cout << "robot2camera:\n" << robot2cameraMat << std::endl;
-  std::cout << "x guess:\n" << xGuessMat << std::endl;
-  std::cout << "field2pt:\n" << field2pointsMat << std::endl;
-  std::cout << "observations:\n" << pointObservationsMat << std::endl;
-#endif
-
-  wpi::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus> result =
-      constrained_solvepnp::do_optimization(
+  wpi::util::expected<constrained_solvepnp::RobotStateMat, slp::ExitStatus>
+      result = constrained_solvepnp::do_optimization(
           headingFree, nTags, cameraCal_, robot2cameraMat, xGuessMat,
           field2pointsMat, pointObservationsMat, gyro_θ, gyro_error_scale_fac);
 

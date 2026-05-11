@@ -3,9 +3,10 @@ apply plugin: 'org.photonvision.tools.WpilibTools'
 import java.nio.file.Path
 
 ext.licenseFile = file("$rootDir/LICENSE")
+ext.externalLicensesFolder = file("$rootDir/ExternalLicenses")
 apply from: "${rootDir}/shared/common.gradle"
 
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 def nativeConfigName = 'wpilibNatives'
 configurations {
@@ -22,11 +23,12 @@ dependencies {
     wpilibNatives wpilibTools.deps.wpilib("wpimath")
     wpilibNatives wpilibTools.deps.wpilib("wpinet")
     wpilibNatives wpilibTools.deps.wpilib("wpiutil")
+    wpilibNatives wpilibTools.deps.wpilib("datalog")
     wpilibNatives wpilibTools.deps.wpilib("ntcore")
     wpilibNatives wpilibTools.deps.wpilib("cscore")
     wpilibNatives wpilibTools.deps.wpilib("apriltag")
     wpilibNatives wpilibTools.deps.wpilib("hal")
-    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+    wpilibNatives wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)
 
     // These stay as implementation dependencies since they don't have native code that gets packaged
     implementation 'org.zeroturnaround:zt-zip:1.14'

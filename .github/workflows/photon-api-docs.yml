@@ -30,21 +30,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Dependencies
         run: pnpm i --frozen-lockfile
       - name: Build Production Client
         run: pnpm run build-demo
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: built-demo
           path: photon-client/dist/
@@ -60,16 +58,15 @@ jobs:
         fetch-depth: 0
     - name: Fetch tags
       run: git fetch --tags --force
-    - name: Install Java 17
-      uses: actions/setup-java@v5
+    - uses: actions/setup-java@v5
       with:
-        java-version: 17
+        java-version: 25
         distribution: temurin
     - name: Build javadocs/doxygen
       run: |
         chmod +x gradlew
         ./gradlew photon-docs:generateJavaDocs photon-docs:doxygen
-    - uses: actions/upload-artifact@v6
+    - uses: actions/upload-artifact@v7
       with:
         name: docs-java-cpp
         path: photon-docs/build/docs
@@ -80,7 +77,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Download docs artifact
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           pattern: docs-*
       - run: find .
@@ -106,7 +103,7 @@ jobs:
       needs: [build_demo]
       runs-on: ubuntu-24.04
       steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: built-demo
       - run: find .

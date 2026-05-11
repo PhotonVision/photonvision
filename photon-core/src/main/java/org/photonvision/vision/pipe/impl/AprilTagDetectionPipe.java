@@ -17,13 +17,13 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.CVPipe;
+import org.wpilib.vision.apriltag.AprilTagDetection;
+import org.wpilib.vision.apriltag.AprilTagDetector;
 
 public class AprilTagDetectionPipe
         extends CVPipe<

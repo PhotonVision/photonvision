@@ -12,7 +12,7 @@ ext {
 
 apply plugin: 'cpp'
 apply plugin: 'google-test-test-suite'
-apply plugin: 'edu.wpi.first.NativeUtils'
+apply plugin: 'org.wpilib.NativeUtils'
 
 apply from: "${rootDir}/shared/config.gradle"
 apply from: "${rootDir}/shared/javacommon.gradle"
@@ -90,9 +90,10 @@ model {
                 }
             }
 
+            nativeUtils.useRequiredLibrary(it, "datalog_shared")
             nativeUtils.useRequiredLibrary(it, "cscore_shared")
             nativeUtils.useRequiredLibrary(it, "cameraserver_shared")
-            nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
+            nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "opencv_shared")
@@ -352,7 +353,7 @@ publishing {
 }
 
 // setup wpilib bundled native libs
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 def nativeConfigName = 'wpilibNatives'
 def nativeConfig = configurations.create(nativeConfigName)
@@ -369,8 +370,9 @@ dependencies {
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("datalog")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, wpi.versions.opencvVersion.get())
+nativeConfig.dependencies.add wpilibTools.deps.wpilibOpenCv("frc" + openCVYear, openCVversion)

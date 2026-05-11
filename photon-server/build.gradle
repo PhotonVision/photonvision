@@ -1,6 +1,11 @@
+import org.wpilib.deployutils.deploy.artifact.*
+import org.wpilib.deployutils.deploy.target.RemoteTarget
+import org.wpilib.deployutils.deploy.target.location.SshDeployLocation
+
 apply plugin: "com.github.node-gradle.node"
 apply plugin: 'com.gradleup.shadow'
 apply plugin: "application"
+apply plugin: 'org.wpilib.DeployUtils'
 
 apply from: "${rootDir}/shared/common.gradle"
 
@@ -38,6 +43,7 @@ shadowJar {
 
 node {
     nodeProjectDir = file("${projectDir}/../photon-client")
+    pnpmVersion = "11.0.9"
 }
 
 tasks.register('copyClientUIToResources', Copy) {
@@ -75,9 +81,6 @@ run {
     }
 }
 
-import edu.wpi.first.deployutils.deploy.artifact.*
-import edu.wpi.first.deployutils.deploy.target.RemoteTarget
-import edu.wpi.first.deployutils.deploy.target.location.SshDeployLocation
 deploy {
     targets {
         pi(RemoteTarget) {

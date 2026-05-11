@@ -25,7 +25,7 @@ export default defineConfig({
     }
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       external: ["html2canvas", "dompurify", "canvg"]
     },
     sourcemap: true
