@@ -355,7 +355,13 @@ public class PhotonCamera implements AutoCloseable {
     /**
      * Sets the FPS limit on the camera.
      *
-     * @param fps The FPS limit to set. Set to -1 for unlimited FPS.
+     * <p>An FPS of 0 means to pause processing until a FPS limit greater than 0 is set.
+     *
+     * <p>A negative FPS limit is treated as no FPS limit, and will run as fast as possible.
+     *
+     * <p>Otherwise, will limit processing to at most the provided FPS limit
+     *
+     * @param fps The FPS limit to set.
      */
     public void setFPSLimit(int fps) {
         fpsLimitPublisher.set(fps);

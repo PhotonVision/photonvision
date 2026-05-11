@@ -130,6 +130,37 @@ public class VisionRunner {
         return future;
     }
 
+    /**
+     * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
+     */
+    private void waitUntilNextTick(long start) {
+        int fpsLimit = fpsLimitSupplier.get();
+
+        if (fpsLimit > 0) {
+            long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
+
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        } else if (fpsLimit == 0) {
+            // If the FPS limit is 0, we want to wait for user to set a non-zero FPS limit
+            logger.info("FPS limit = 0, waiting for non-zero FPS limit...");
+            while (fpsLimitSupplier.get() == 0 && !Thread.interrupted()) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        } else {
+            // Fall through to no limit
+        }
+    }
+
     private void update() {
         // wait for the camera to connect
         while (!frameSupplier.isConnected() && !Thread.interrupted()) {
@@ -207,18 +238,8 @@ public class VisionRunner {
                 }
                 loopCount++;
             }
-            int fpsLimit = fpsLimitSupplier.get();
-            if (fpsLimit > 0) {
-                long sleepTime = (long) (1000 / fpsLimit - (System.currentTimeMillis() - start));
 
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            }
+            waitUntilNextTick(start);
         }
     }
 }
