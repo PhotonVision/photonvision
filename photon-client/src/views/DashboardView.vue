@@ -77,8 +77,18 @@ const conflictingCameraShown = computed<boolean>(() => {
   return useSettingsStore().general.conflictingCameras.length > 0;
 });
 
-const fpsLimitWarningShown = computed<boolean>(() => {
-  return Object.values(useCameraSettingsStore().cameras).some((c) => c.fpsLimit > 0);
+const fpsLimitedCameras = computed<string>(() => {
+  return Object.values(useCameraSettingsStore().cameras)
+    .filter((c) => c.fpsLimit > 0)
+    .map((c) => c.nickname)
+    .join(", ");
+});
+
+const disabledCameras = computed<string>(() => {
+  return Object.values(useCameraSettingsStore().cameras)
+    .filter((c) => c.fpsLimit === 0)
+    .map((c) => c.nickname)
+    .join(", ");
 });
 
 const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfiguration);
@@ -111,7 +121,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       </span>
     </v-alert>
     <v-alert
-      v-if="fpsLimitWarningShown"
+      v-if="fpsLimitedCameras"
       class="mb-3"
       color="error"
       density="compact"
@@ -119,8 +129,20 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
     >
       <span
-        >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
+        >{{ fpsLimitedCameras }} have an FPS limit set! This may cause performance issues. Check your logs for more
         information.
+      </span>
+    </v-alert>
+    <v-alert
+      v-if="disabledCameras"
+      class="mb-3"
+      color="error"
+      density="compact"
+      icon="mdi-alert-circle-outline"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+    >
+      <span
+        >{{ disabledCameras }} are disabled! This may cause performance issues. Check your logs for more information.
       </span>
     </v-alert>
     <v-alert
