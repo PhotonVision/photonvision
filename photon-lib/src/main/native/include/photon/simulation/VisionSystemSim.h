@@ -334,8 +334,6 @@ class VisionSystemSim {
    *
    * @param type Type of target (e.g. "cargo"). Same as the type passed into
    *  #addVisionTargets(String, VisionTargetSim...)
-   * @return The removed targets, or null if no targets of the specified type
-   * exist
    */
   void RemoveVisionTargets(std::string type) { targetSets.erase(type); }
 
@@ -406,7 +404,7 @@ class VisionSystemSim {
    * Periodic update. Ensure this is called repeatedly-- camera performance is
    * used to automatically determine if a new frame should be submitted.
    *
-   * @param robotPoseMeters The simulated robot pose in meters
+  * @param robotPose The simulated robot pose in meters
    */
   void Update(const wpi::math::Pose2d& robotPose) {
     Update(wpi::math::Pose3d{robotPose});
@@ -416,7 +414,7 @@ class VisionSystemSim {
    * Periodic update. Ensure this is called repeatedly-- camera performance is
    * used to automatically determine if a new frame should be submitted.
    *
-   * @param robotPoseMeters The simulated robot pose in meters
+  * @param robotPose The simulated robot pose in meters
    */
   void Update(const wpi::math::Pose3d& robotPose) {
     for (auto& set : targetSets) {

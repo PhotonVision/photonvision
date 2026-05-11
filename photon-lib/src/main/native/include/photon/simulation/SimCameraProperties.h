@@ -247,7 +247,7 @@ class SimCameraProperties {
    * to be confused with lens distortion)-- for example, the pitch angle is
    * naively calculated as:
    *
-   * <pre>pitch = arctan(pixel y offset / focal length y)<pre>
+  * <pre>pitch = arctan(pixel y offset / focal length y)</pre>
    *
    * However, using focal length as a side of the associated right triangle is
    * not correct when the pixel x value is not 0, because the distance from this
