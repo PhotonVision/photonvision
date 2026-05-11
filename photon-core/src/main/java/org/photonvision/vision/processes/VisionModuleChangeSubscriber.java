@@ -119,25 +119,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.saveAndBroadcastAll();
                     }
                     case "isDriverMode" -> parentModule.setDriverMode((Boolean) newPropValue);
-                    case "bypass" -> {
-                        try {
-                            setProperty(currentSettings, propName, newPropValue);
-                            logger.trace("Set prop bypass to value " + newPropValue);
-                        } catch (NoSuchFieldException | IllegalAccessException e) {
-                            logger.error(
-                                    "Could not set prop bypass with value "
-                                            + newPropValue
-                                            + " on "
-                                            + currentSettings
-                                            + " | "
-                                            + e.getClass().getSimpleName(),
-                                    e);
-                        } catch (Exception e) {
-                            logger.error("Unknown exception when setting bypass prop!", e);
-                        }
-                        // Rebroadcast calibration data when bypass changes
-                        parentModule.pipelineManager.calibration3dPipeline.broadcastState();
-                    }
                     default -> {
                         // special case for camera settables
                         if (propName.startsWith("camera")) {
@@ -173,6 +154,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         }
 
                         parentModule.saveAndBroadcastSelective(originContext, propName, newPropValue);
+
+                        if (propName.equals("bypass")) {
+                            // Rebroadcast calibration data when bypass changes
+                            parentModule.pipelineManager.calibration3dPipeline.broadcastState();
+                        }
                     }
                 }
             }
