@@ -42,6 +42,8 @@ shadowJar {
 }
 
 node {
+    version = '24'
+    pnpmVersion = '11'
     nodeProjectDir = file("${projectDir}/../photon-client")
 }
 
