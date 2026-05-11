@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from "vue";
 import { computed, ref } from "vue";
+import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -37,7 +38,7 @@ const allTabs = Object.freeze({
   map3dTab: { tabName: "3D", component: Map3DTab }
 });
 
-const selectedTabs = ref([0, 0, 0, 0]);
+const selectedTabs = ref(["Input", "Threshold", "Contours", "Targets"]);
 const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
 
 const getTabGroups = (): ConfigOption[][] => {
@@ -120,9 +121,16 @@ const shouldUseWideSecondTabGroup = computed(() => {
 const onBeforeTabUpdate = () => {
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
-    selectedTabs.value[0] = 0;
+    selectedTabs.value[0] = "Input";
   }
 };
+
+const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: string): Component => {
+  return tabGroupData.find((tabConfig) => tabConfig.tabName === selectedTabName)?.component ?? tabGroupData[0].component;
+};
+
+const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
+  tabGroupData.map((tabConfig) => ({ label: tabConfig.tabName, value: tabConfig.tabName }));
 </script>
 
 <template>
@@ -145,14 +153,10 @@ const onBeforeTabUpdate = () => {
         @vue:before-update="onBeforeTabUpdate"
       >
         <v-card color="surface" height="100%" class="pr-5 pl-5 rounded-12">
-          <v-tabs v-model="selectedTabs[tabGroupIndex]" grow bg-color="surface" height="48" slider-color="buttonActive">
-            <v-tab v-for="(tabConfig, index) in tabGroupData" :key="index">
-              {{ tabConfig.tabName }}
-            </v-tab>
-          </v-tabs>
+          <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" class="mt-2"/>
           <div class="pt-10px pb-10px">
             <KeepAlive>
-              <Component :is="tabGroupData[selectedTabs[tabGroupIndex]].component" />
+              <Component :is="getSelectedComponent(tabGroupData, selectedTabs[tabGroupIndex])" />
             </KeepAlive>
           </div>
         </v-card>
@@ -160,15 +164,3 @@ const onBeforeTabUpdate = () => {
     </template>
   </v-row>
 </template>
-
-<style>
-.v-slide-group {
-  transition-duration: 0.28s;
-  transition-property: box-shadow, opacity, background;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-.v-slide-group__next--disabled,
-.v-slide-group__prev--disabled {
-  display: none !important;
-}
-</style>

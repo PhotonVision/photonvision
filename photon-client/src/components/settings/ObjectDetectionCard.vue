@@ -3,7 +3,9 @@ import { ref, computed, inject, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { type ObjectDetectionModelProperties } from "@/types/SettingTypes";
+import PvButton from "@/components/common/pv-button.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import { useTheme } from "vuetify";
 import { axiosPost } from "@/lib/PhotonUtils";
 
@@ -163,16 +165,10 @@ const handleBulkImport = async () => {
     <div class="pa-5 pt-0">
       <v-row>
         <v-col cols="12" sm="6">
-          <v-btn
-            color="buttonActive"
-            class="justify-center"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="() => (showImportDialog = true)"
-          >
-            <v-icon start class="open-icon"> mdi-import </v-icon>
+          <pv-button variant="primary" icon="mdi-import" class="justify-center" @click="() => (showImportDialog = true)">
             <span class="open-label">Import Model</span>
-          </v-btn>
-          <v-dialog
+          </pv-button>
+          <pv-dialog
             v-model="showImportDialog"
             width="600"
             @update:modelValue="
@@ -235,9 +231,10 @@ const handleBulkImport = async () => {
                         : ['YOLOv8', 'YOLO11']
                     "
                   />
-                  <v-btn
-                    color="buttonActive"
-                    width="100%"
+                  <pv-button
+                    variant="primary"
+                    icon="mdi-import"
+                    block
                     :disabled="
                       importModelFile === null ||
                       importLabels === null ||
@@ -245,28 +242,20 @@ const handleBulkImport = async () => {
                       importHeight === null ||
                       importVersion === null
                     "
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="handleImport()"
                   >
-                    <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
                     <span class="open-label">Import Object Detection Model</span>
-                  </v-btn>
+                  </pv-button>
                 </div>
               </v-card-text>
             </v-card>
-          </v-dialog>
+          </pv-dialog>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn
-            color="buttonActive"
-            class="justify-center"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="() => (showBulkImportDialog = true)"
-          >
-            <v-icon start class="open-icon"> mdi-import </v-icon>
+          <pv-button variant="primary" icon="mdi-import" class="justify-center" @click="() => (showBulkImportDialog = true)">
             <span class="open-label">Bulk Import</span>
-          </v-btn>
-          <v-dialog v-model="showBulkImportDialog" width="600">
+          </pv-button>
+          <pv-dialog v-model="showBulkImportDialog" width="600">
             <v-card color="surface" dark>
               <v-card-title class="pb-0">Import Multiple Object Detection Models</v-card-title>
               <v-card-text>
@@ -274,30 +263,18 @@ const handleBulkImport = async () => {
                 only come from a previous export of object detection models.
                 <div class="pa-5 pb-0">
                   <v-file-input v-model="importFile" variant="underlined" label="Zip File" accept=".zip" />
-                  <v-btn
-                    color="buttonActive"
-                    width="100%"
-                    :disabled="importFile === null"
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                    @click="handleBulkImport()"
-                  >
-                    <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
+                  <pv-button variant="primary" icon="mdi-import" block :disabled="importFile === null" @click="handleBulkImport()">
                     <span class="open-label">Bulk Import</span>
-                  </v-btn>
+                  </pv-button>
                 </div>
               </v-card-text>
             </v-card>
-          </v-dialog>
+          </pv-dialog>
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn
-            color="buttonPassive"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="openExportPrompt"
-          >
-            <v-icon start class="open-icon"> mdi-export </v-icon>
+          <pv-button variant="passive" icon="mdi-export" @click="openExportPrompt">
             <span class="open-label">Export Models</span>
-          </v-btn>
+          </pv-button>
           <a
             ref="exportModels"
             style="color: black; text-decoration: none; display: none"
@@ -307,14 +284,9 @@ const handleBulkImport = async () => {
           />
         </v-col>
         <v-col cols="12" sm="6">
-          <v-btn
-            color="error"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="() => (showNukeDialog = true)"
-          >
-            <v-icon left class="open-icon"> mdi-trash </v-icon>
+          <pv-button variant="danger" icon="mdi-trash" @click="() => (showNukeDialog = true)">
             <span class="open-label">Clear and reset models</span>
-          </v-btn>
+          </pv-button>
         </v-col>
       </v-row>
       <v-row>
@@ -334,39 +306,29 @@ const handleBulkImport = async () => {
                 <td>{{ model.nickname }}</td>
                 <td>{{ model.labels.join(", ") }}</td>
                 <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="error"
+                  <pv-button
+                    size="icon"
+                    variant="danger"
                     title="Delete Model"
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="() => (confirmDeleteDialog = { show: true, model })"
                   >
-                    <v-icon size="large">mdi-trash-can-outline</v-icon>
-                  </v-btn>
+                    <span class="mdi mdi-trash-can-outline text-lg leading-none" aria-hidden="true"></span>
+                  </pv-button>
                 </td>
                 <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="buttonActive"
+                  <pv-button
+                    size="icon"
+                    variant="primary"
                     title="Rename Model"
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
                     @click="() => (showRenameDialog = { show: true, model, newName: '' })"
                   >
-                    <v-icon size="large">mdi-pencil</v-icon>
-                  </v-btn>
+                    <span class="mdi mdi-pencil text-lg leading-none" aria-hidden="true"></span>
+                  </pv-button>
                 </td>
                 <td class="text-right">
-                  <v-btn
-                    icon
-                    small
-                    color="buttonPassive"
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                    @click="() => (showInfo = { show: true, model })"
-                  >
-                    <v-icon size="large">mdi-information</v-icon>
-                  </v-btn>
+                  <pv-button size="icon" variant="passive" @click="() => (showInfo = { show: true, model })">
+                    <span class="mdi mdi-information text-lg leading-none" aria-hidden="true"></span>
+                  </pv-button>
                 </td>
               </tr>
             </tbody>
@@ -381,7 +343,7 @@ const handleBulkImport = async () => {
             delete-text="Delete model"
           />
 
-          <v-dialog v-model="showRenameDialog.show" width="600">
+          <pv-dialog v-model="showRenameDialog.show" width="600">
             <v-card color="surface" dark>
               <v-card-title>Rename Object Detection Model</v-card-title>
               <v-card-text class="pt-0">
@@ -390,35 +352,19 @@ const handleBulkImport = async () => {
                   <v-text-field v-model="showRenameDialog.newName" hide-details label="New Name" variant="underlined" />
                 </div>
                 <v-card-actions class="pt-5 pb-0 pr-0" style="justify-content: flex-end">
-                  <v-btn
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                    color="error"
-                    @click="showRenameDialog.show = false"
-                    >Cancel</v-btn
-                  >
-                  <v-btn
-                    :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                    color="buttonActive"
-                    @click="renameModel(showRenameDialog.model, showRenameDialog.newName)"
-                    >Rename</v-btn
-                  >
+                  <pv-button variant="danger" @click="showRenameDialog.show = false">Cancel</pv-button>
+                  <pv-button variant="primary" @click="renameModel(showRenameDialog.model, showRenameDialog.newName)">Rename</pv-button>
                 </v-card-actions>
               </v-card-text>
             </v-card>
-          </v-dialog>
-          <v-dialog v-model="showInfo.show" width="600">
+          </pv-dialog>
+          <pv-dialog v-model="showInfo.show" width="600">
             <v-card color="surface" dark>
               <v-card-title>Object Detection Model Info</v-card-title>
               <v-card-text class="pt-0">
-                <v-btn
-                  color="buttonPassive"
-                  width="100%"
-                  :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                  @click="openExportIndividualModelPrompt"
-                >
-                  <v-icon left class="open-icon" size="large"> mdi-export </v-icon>
+                <pv-button variant="passive" icon="mdi-export" block @click="openExportIndividualModelPrompt">
                   <span class="open-label">Export Model</span>
-                </v-btn>
+                </pv-button>
                 <a
                   ref="exportIndividualModel"
                   style="color: black; text-decoration: none; display: none"
@@ -436,7 +382,7 @@ const handleBulkImport = async () => {
                 </div>
               </v-card-text>
             </v-card>
-          </v-dialog>
+          </pv-dialog>
         </v-col>
       </v-row>
     </div>

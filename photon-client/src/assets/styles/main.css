@@ -1,0 +1,41 @@
+@layer theme, base, vuetify, components, utilities;
+@import 'vuetify/styles' layer(vuetify);
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Prompt", sans-serif;
+  --font-long-text: sans-serif;
+  --color-pv-background: rgb(var(--v-theme-background));
+  --color-pv-surface: rgb(var(--v-theme-surface));
+  --color-pv-surface-variant: rgb(var(--v-theme-surface-variant));
+  --color-pv-primary: rgb(var(--v-theme-primary));
+  --color-pv-secondary: rgb(var(--v-theme-secondary));
+  --color-pv-accent: rgb(var(--v-theme-accent));
+  --color-pv-error: rgb(var(--v-theme-error));
+  --color-pv-info: rgb(var(--v-theme-info));
+  --color-pv-success: rgb(var(--v-theme-success));
+  --color-pv-warning: rgb(var(--v-theme-warning));
+  --color-pv-button-active: rgb(var(--v-theme-buttonActive));
+  --color-pv-button-passive: rgb(var(--v-theme-buttonPassive));
+}
+@custom-variant data-on (&[data-state~="on"]);
+
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background-color: rgb(var(--v-theme-background));
+    color: white;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: rgb(var(--v-theme-background));
+    color: white;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}

@@ -2,6 +2,8 @@
 import { inject, computed, ref, watch, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import MetricsChart from "./MetricsChart.vue";
@@ -309,22 +311,12 @@ watch(metricsHistorySnapshot, () => {
         <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="useStateStore().showLogModal = true"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-eye </v-icon>
+              <pv-button variant="passive" icon="mdi-eye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
-              </v-btn>
+              </pv-button>
             </v-col>
             <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="openExportLogsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-download </v-icon>
+              <pv-button variant="passive" icon="mdi-download" block @click="openExportLogsPrompt">
                 <span class="open-label">Download Logs</span>
 
                 <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -335,55 +327,35 @@ watch(metricsHistorySnapshot, () => {
                   download="photonvision-journalctl.txt"
                   target="_blank"
                 />
-              </v-btn>
+              </pv-button>
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="() => (showImportDialog = true)"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-import </v-icon>
+              <pv-button variant="passive" icon="mdi-import" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
-              </v-btn>
+              </pv-button>
             </v-col>
             <v-col>
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="openExportSettingsPrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
+              <pv-button variant="passive" icon="mdi-export" block @click="openExportSettingsPrompt">
                 <span class="open-label">Export Settings</span>
-              </v-btn>
+              </pv-button>
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col cols="12" sm="6"
-              ><v-btn
-                color="buttonActive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="restartProgram"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-restart </v-icon>
+              ><pv-button variant="primary" icon="mdi-restart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
-              </v-btn>
+              </pv-button>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-btn
-                color="buttonPassive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="openOfflineUpdatePrompt"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
+              <pv-button variant="passive" icon="mdi-upload" block @click="openOfflineUpdatePrompt">
                 <span class="open-label">Offline Update</span>
-              </v-btn>
+              </pv-button>
               <input
                 ref="offlineUpdate"
                 type="file"
@@ -397,24 +369,14 @@ watch(metricsHistorySnapshot, () => {
         <v-card-text class="pt-0 flex-0-0">
           <v-row>
             <v-col cols="12" sm="6">
-              <v-btn
-                color="buttonActive"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="restartDevice"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-restart-alert </v-icon>
+              <pv-button variant="primary" icon="mdi-restart-alert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>
-              </v-btn>
+              </pv-button>
             </v-col>
             <v-col cols="12" sm="6">
-              <v-btn
-                color="error"
-                :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-                @click="() => (showFactoryReset = true)"
-              >
-                <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
+              <pv-button variant="danger" icon="mdi-trash-can-outline" block @click="() => (showFactoryReset = true)">
                 <span class="open-icon"> Factory Reset </span>
-              </v-btn>
+              </pv-button>
             </v-col>
           </v-row>
         </v-card-text>
@@ -497,7 +459,7 @@ watch(metricsHistorySnapshot, () => {
   />
 
   <!-- Import settings modal -->
-  <v-dialog
+  <pv-dialog
     v-model="showImportDialog"
     width="600"
     @update:modelValue="
@@ -534,21 +496,15 @@ watch(metricsHistorySnapshot, () => {
             :error-messages="importType === undefined ? 'Settings type not selected' : ''"
             :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
           />
-          <v-btn
-            color="primary"
-            :disabled="importFile === null"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="handleSettingsImport"
-          >
-            <v-icon start class="open-icon"> mdi-import </v-icon>
+          <pv-button variant="primary" icon="mdi-import" block :disabled="importFile === null" @click="handleSettingsImport">
             <span class="open-label">Import Settings</span>
-          </v-btn>
+          </pv-button>
         </div>
       </v-card-text>
     </v-card>
-  </v-dialog>
+  </pv-dialog>
 
-  <v-dialog v-model="offlineUpdateDialog.show" :width="700" dark>
+  <pv-dialog v-model="offlineUpdateDialog.show" :width="700">
     <v-card color="surface" flat>
       <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
       <v-card-text class="pt-0 pb-10px">
@@ -557,10 +513,10 @@ watch(metricsHistorySnapshot, () => {
       <v-card-text class="pt-10px">
         <v-row class="align-center text-white">
           <v-col cols="12">
-            <v-btn
-              color="buttonActive"
-              width="100%"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
+            <pv-button
+              variant="primary"
+              icon="mdi-upload"
+              block
               @click="
                 offlineUpdateDialog.show = false;
                 if (offlineUpdate?.files?.length) {
@@ -568,14 +524,13 @@ watch(metricsHistorySnapshot, () => {
                 }
               "
             >
-              <v-icon start class="open-icon" size="large"> mdi-upload </v-icon>
               <span class="open-label"> Confirm Update </span>
-            </v-btn>
+            </pv-button>
           </v-col>
         </v-row>
       </v-card-text>
     </v-card>
-  </v-dialog>
+  </pv-dialog>
 
   <a
     ref="exportSettings"
@@ -587,9 +542,6 @@ watch(metricsHistorySnapshot, () => {
 </template>
 
 <style scoped lang="scss">
-.v-btn:not(.refresh) {
-  width: 100%;
-}
 .fill-height {
   height: calc(100% - 12px) !important;
 }

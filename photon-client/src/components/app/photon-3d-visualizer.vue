@@ -5,6 +5,8 @@ import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "th
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
 import { onBeforeUnmount, onMounted, watchEffect } from "vue";
+import PvButton from "@/components/common/pv-button.vue";
+import { useTheme } from "vuetify";
 const {
   ArrowHelper,
   BoxGeometry,
@@ -24,10 +26,6 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
 const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
   useCameraSettingsStore().currentCameraSettings.validVideoFormats[
     useCameraSettingsStore().currentPipelineSettings.cameraVideoModeIndex
@@ -37,6 +35,8 @@ const calibrationCoeffs = useCameraSettingsStore().getCalibrationCoeffs(
 const props = defineProps<{
   targets: PhotonTarget[];
 }>();
+
+const theme = useTheme();
 
 let scene: Scene | undefined;
 let camera: PerspectiveCamera | undefined;
@@ -231,24 +231,14 @@ watchEffect(() => {
         <v-card-title class="pa-0"> Target Visualization </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamFirstPerson"
-        >
+        <pv-button variant="primary" block @click="resetCamFirstPerson">
           First Person
-        </v-btn>
+        </pv-button>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamThirdPerson"
-        >
+        <pv-button variant="primary" block @click="resetCamThirdPerson">
           Third Person
-        </v-btn>
+        </pv-button>
       </v-col>
     </div>
     <canvas id="view" class="w-100" />

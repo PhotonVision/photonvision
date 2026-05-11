@@ -1,9 +1,8 @@
 <script setup lang="ts">
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import { ref } from "vue";
-import { useTheme } from "vuetify";
 import pvInput from "./pv-input.vue";
-
-const theme = useTheme();
 
 const value = defineModel<boolean | undefined>({ required: true });
 
@@ -26,7 +25,7 @@ const confirmationText = ref("");
 </script>
 
 <template>
-  <v-dialog v-model="value" :width="props.width" dark>
+  <pv-dialog v-model="value" :width="props.width">
     <v-card color="surface" flat>
       <v-card-title style="display: flex; justify-content: center">
         {{ title }}
@@ -45,41 +44,33 @@ const confirmationText = ref("");
       <v-card-text class="pt-10px">
         <v-row class="align-center text-white">
           <v-col v-if="onBackup" cols="6">
-            <v-btn
-              color="buttonActive"
-              style="float: right"
-              width="100%"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              @click="onBackup"
-            >
-              <v-icon start class="open-icon" size="large"> mdi-export </v-icon>
+            <pv-button variant="primary" icon="mdi-export" block @click="onBackup">
               <span class="open-label">Backup Data</span>
-            </v-btn>
+            </pv-button>
           </v-col>
           <v-col v-if="description" :cols="onBackup ? '6' : '12'">
-            <v-btn
-              color="error"
-              width="100%"
+            <pv-button
+              variant="danger"
+              icon="mdi-trash-can-outline"
+              block
               :disabled="
                 expectedConfirmationText
                   ? confirmationText.toLowerCase() !== expectedConfirmationText.toLowerCase()
                   : false
               "
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               @click="
                 onConfirm();
                 confirmationText = '';
                 value = false;
               "
             >
-              <v-icon start class="open-icon" size="large"> mdi-trash-can-outline </v-icon>
               <span class="open-label">
                 {{ deleteText ?? title }}
               </span>
-            </v-btn>
+            </pv-button>
           </v-col>
         </v-row>
       </v-card-text>
     </v-card>
-  </v-dialog>
+  </pv-dialog>
 </template>

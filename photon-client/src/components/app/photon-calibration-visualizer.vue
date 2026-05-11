@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, watchEffect, type Ref } from "vue";
+import PvButton from "@/components/common/pv-button.vue";
+import { useTheme } from "vuetify";
 import type {
   Scene as SceneType,
   PerspectiveCamera as PerspectiveCameraType,
@@ -28,7 +30,6 @@ const { TrackballControls } = await import("three/examples/jsm/controls/Trackbal
 import type { BoardObservation, CameraCalibrationResult } from "@/types/SettingTypes";
 import axios from "axios";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useTheme } from "vuetify";
 import { createPerspectiveCamera } from "@/lib/ThreeUtils";
 
 const theme = useTheme();
@@ -353,24 +354,14 @@ watch(
         </v-card-title>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamFirstPerson"
-        >
+        <pv-button variant="primary" block @click="resetCamFirstPerson">
           First Person
-        </v-btn>
+        </pv-button>
       </v-col>
       <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
-        <v-btn
-          style="width: 100%"
-          color="buttonActive"
-          :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-          @click="resetCamThirdPerson"
-        >
+        <pv-button variant="primary" block @click="resetCamThirdPerson">
           Third Person
-        </v-btn>
+        </pv-button>
       </v-col>
     </div>
     <div id="container" style="flex: 1 1 auto">

@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
+import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from "reka-ui";
 
 const value = defineModel<[number, number] | WebsocketNumberPair>({
   required: true
@@ -24,6 +25,7 @@ const props = withDefaults(
     sliderCols: 10
   }
 );
+const labelWidth = computed(() => `${((12 - props.sliderCols) / 12) * 100}%`);
 
 const localValue = computed<[number, number]>({
   get: (): [number, number] => {
@@ -52,63 +54,61 @@ const checkNumberRange = (v: string): boolean => {
   const val: number = parseFloat(v);
   return isFinite(val) && val >= props.min && val <= props.max;
 };
+
+const sliderModel = computed<number[]>({
+  get: () => [...localValue.value],
+  set: (v) => {
+    if (v.length !== 2) return;
+    localValue.value = [v[0], v[1]];
+  }
+});
 </script>
 
 <template>
-  <div class="d-flex">
-    <v-col :cols="12 - sliderCols" class="d-flex align-center pl-0">
+  <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
+    <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
       <tooltipped-label :tooltip="tooltip" :label="label" />
-    </v-col>
-    <v-col :cols="sliderCols" class="pr-0">
-      <v-range-slider
-        v-model="localValue"
+    </div>
+    <div class="flex min-w-0 items-center gap-3 sm:flex-1">
+      <input
+        :value="localValue[0]"
         :max="max"
         :min="min"
         :disabled="disabled"
-        hide-details
-        class="align-center ml-0 mr-0"
-        color="primary"
-        :track-color="inverted ? 'primary' : undefined"
-        thumb-color="primary"
         :step="step"
+        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 px-3 text-right text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        type="number"
+        @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 0)"
+      />
+      <slider-root
+        v-model="sliderModel"
+        class="relative flex h-10 w-full touch-none select-none items-center"
+        :min="min"
+        :max="max"
+        :step="step"
+        :disabled="disabled"
+        :min-steps-between-thumbs="0"
       >
-        <template #prepend>
-          <v-text-field
-            :model-value="localValue[0]"
-            color="primary"
-            class="mt-0 pt-0"
-            density="compact"
-            hide-details
-            single-line
-            variant="underlined"
-            :max="max"
-            :min="min"
-            :step="step"
-            :rules="[checkNumberRange]"
-            type="number"
-            style="width: 60px"
-            @update:modelValue="(v) => changeFromSlot(v, 0)"
-          />
-        </template>
-        <template #append>
-          <v-text-field
-            :model-value="localValue[1]"
-            color="primary"
-            class="mt-0 pt-0"
-            density="compact"
-            hide-details
-            single-line
-            variant="underlined"
-            :max="max"
-            :min="min"
-            :step="step"
-            :rules="[checkNumberRange]"
-            type="number"
-            style="width: 60px"
-            @update:modelValue="(v) => changeFromSlot(v, 1)"
-          />
-        </template>
-      </v-range-slider>
-    </v-col>
+        <slider-track class="relative h-2 w-full rounded-full" :class="inverted ? 'bg-pv-primary' : 'bg-white/12'">
+          <slider-range class="absolute h-full rounded-full" :class="inverted ? 'bg-white/12' : 'bg-pv-primary'" />
+        </slider-track>
+        <slider-thumb
+          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50"
+        />
+        <slider-thumb
+          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50"
+        />
+      </slider-root>
+      <input
+        :value="localValue[1]"
+        :max="max"
+        :min="min"
+        :disabled="disabled"
+        :step="step"
+        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 px-3 text-right text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        type="number"
+        @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 1)"
+      />
+    </div>
   </div>
 </template>
