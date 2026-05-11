@@ -63,6 +63,8 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
+    // minSnapshots is the typical limit for the number of snapshots needed, bypassMinSnapshots is the
+    // limit used when the bypass flag is true
     private final int minSnapshots;
     private final int bypassMinSnapshots;
 
