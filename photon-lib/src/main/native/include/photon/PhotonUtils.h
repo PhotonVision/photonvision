@@ -115,7 +115,7 @@ class PhotonUtils {
   }
 
   /**
-   * Estimates a {@link wpi::math::Transform2d} that maps the camera position to
+   * Estimates a @ref wpi::math::Transform2d that maps the camera position to
    * the target position, using the robot's gyro. Note that the gyro angle
    * provided *must* line up with the field coordinate system -- that is, it
    * should read zero degrees when pointed towards the opposing alliance
