@@ -263,7 +263,8 @@ public class Calibrate3dPipeTest {
         // visuallyDebugDistortion(directoryListing, imgRes, cal );
         {
             var uncertainty = cal.estimateUncertainty();
-            System.out.println(uncertainty);
+        //     System.out.println(uncertainty);
+            assertNotNull(uncertainty);
         }
 
         // Confirm we have indeed gotten valid calibration objects

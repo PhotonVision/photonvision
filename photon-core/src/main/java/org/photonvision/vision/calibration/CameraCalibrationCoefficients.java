@@ -351,6 +351,10 @@ public class CameraCalibrationCoefficients implements Releasable {
                         40,
                         warpX,
                         warpY);
+        if (uncertainty == null) {
+            logger.error("Failed to compute uncertainty");
+            throw new RuntimeException("Failed to compute uncertainty");
+        }
 
         var ret = new ArrayList<Point3>();
         for (int j = 0; j < uncertainty.length; j += 3) {

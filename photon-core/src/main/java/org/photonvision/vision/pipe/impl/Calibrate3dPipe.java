@@ -217,6 +217,13 @@ public class Calibrate3dPipe
                         imgPoints,
                         imageSavePath);
 
+        // enforce preconditions
+        for (var board : observations) {
+            if (board.locationInImageSpace.size() != board.cornersUsed.length) {
+                throw new RuntimeException("Length mismatch");
+            }
+        }
+
         cameraMatrix.release();
         distortionCoefficients.release();
         rvecs.forEach(Mat::release);
@@ -341,6 +348,16 @@ public class Calibrate3dPipe
                         objPoints,
                         imgPts,
                         imageSavePath);
+
+        // enforce preconditions
+        for (var board : observations) {
+            if (board.locationInImageSpace.size() != params.boardWidth * params.boardHeight) {
+                throw new RuntimeException("Length mismatch");
+            }
+            if (board.locationInImageSpace.size() != board.cornersUsed.length) {
+                throw new RuntimeException("Length mismatch");
+            }
+        }
 
         rvecs.forEach(Mat::release);
         tvecs.forEach(Mat::release);
@@ -470,6 +487,11 @@ public class Calibrate3dPipe
             if (inputImage != null) {
                 image_path = Paths.get(imageSavePath.toString(), snapshotName);
                 Imgcodecs.imwrite(image_path.toString(), inputImage);
+            }
+
+            // enforce preconditions
+            if (i_imgPts.size() != cornersUsed.get(snapshotId).length) {
+                throw new RuntimeException("Length mismatch -- imgpts size: " + i_imgPts.size() + " objpts size = " + i_objPtsNative.toList().size() + " cornersUsed length: " + cornersUsed.get(snapshotId).length);
             }
 
             observations.add(
