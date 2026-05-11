@@ -3,6 +3,8 @@ import { computed, inject, ref, useTemplateRef, watch } from "vue";
 import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
@@ -73,7 +75,7 @@ document.addEventListener("keydown", (e) => {
 </script>
 
 <template>
-  <v-dialog v-model="useStateStore().showLogModal" width="1500" dark>
+  <pv-dialog v-model="useStateStore().showLogModal" width="1500">
     <v-card class="dialog-container pa-5" color="surface" flat>
       <!-- Logs header -->
       <v-row class="pb-3">
@@ -81,8 +83,7 @@ document.addEventListener("keydown", (e) => {
           <v-card-title class="pa-0">Program Logs</v-card-title>
         </v-col>
         <v-col class="align-self-center pl-3" style="text-align: right">
-          <v-btn variant="text" color="white" @click="handleLogExport">
-            <v-icon start class="menu-icon" size="large"> mdi-download </v-icon>
+          <pv-button variant="text" size="sm" icon="mdi-download" @click="handleLogExport">
             <span class="menu-label">Download</span>
 
             <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
@@ -93,15 +94,13 @@ document.addEventListener("keydown", (e) => {
               download="photonvision-journalctl.txt"
               target="_blank"
             />
-          </v-btn>
-          <v-btn variant="text" color="white" @click="handleLogClear">
-            <v-icon start class="menu-icon" size="large"> mdi-trash-can-outline </v-icon>
+          </pv-button>
+          <pv-button variant="text" size="sm" icon="mdi-trash-can-outline" @click="handleLogClear">
             <span class="menu-label">Clear Client Logs</span>
-          </v-btn>
-          <v-btn variant="text" color="white" @click="() => (useStateStore().showLogModal = false)">
-            <v-icon start class="menu-icon" size="large"> mdi-close </v-icon>
+          </pv-button>
+          <pv-button variant="text" size="sm" icon="mdi-close" @click="() => (useStateStore().showLogModal = false)">
             <span class="menu-label">Close</span>
-          </v-btn>
+          </pv-button>
         </v-col>
       </v-row>
 
@@ -122,9 +121,7 @@ document.addEventListener("keydown", (e) => {
               variant="underlined"
             />
             <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
-            <v-btn icon variant="flat" @click="timeInput = undefined">
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
+            <pv-button size="icon" variant="text" icon="mdi-close" @click="timeInput = undefined" />
           </v-col>
           <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
             <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
@@ -157,7 +154,7 @@ document.addEventListener("keydown", (e) => {
         </div>
       </div>
     </v-card>
-  </v-dialog>
+  </pv-dialog>
 </template>
 
 <style scoped lang="scss">

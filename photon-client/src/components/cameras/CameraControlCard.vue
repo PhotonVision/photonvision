@@ -1,10 +1,9 @@
 <script setup lang="ts">
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
 
 interface SnapshotMetadata {
   snapshotName: string;
@@ -97,16 +96,11 @@ const expanded = ref([]);
   <v-card color="surface" class="rounded-12">
     <v-card-title>Camera Control</v-card-title>
     <v-card-text class="pt-0">
-      <v-btn
-        color="buttonPassive"
-        :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-        @click="fetchSnapshots"
-      >
-        <v-icon start class="open-icon" size="large"> mdi-folder </v-icon>
+      <pv-button variant="passive" icon="mdi-folder" block @click="fetchSnapshots">
         <span class="open-label">Show Saved Snapshots</span>
-      </v-btn>
+      </pv-button>
     </v-card-text>
-    <v-dialog v-model="showSnapshotViewerDialog">
+    <pv-dialog v-model="showSnapshotViewerDialog">
       <v-card color="surface" flat>
         <v-card-title> Saved Frame Snapshots </v-card-title>
         <v-card-text v-if="imgData.length === 0" class="pt-0">
@@ -115,7 +109,7 @@ const expanded = ref([]);
             density="compact"
             text="There are currently no saved snapshots."
             icon="mdi-information-outline"
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+            variant="tonal"
           />
         </v-card-text>
         <v-card-text v-else class="pt-0">
@@ -125,7 +119,7 @@ const expanded = ref([]);
             density="compact"
             text="Snapshot timestamps depend on when the coprocessor was last connected to the internet."
             icon="mdi-information-outline"
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+            variant="tonal"
           />
           <v-data-table
             v-model:expanded="expanded"
@@ -144,15 +138,13 @@ const expanded = ref([]);
             show-expand
           >
             <template #item.data-table-expand="{ internalItem, toggleExpand }">
-              <v-btn
+              <pv-button
+                size="icon"
+                variant="ghost"
                 icon="mdi-eye"
-                class="text-none"
-                color="medium-emphasis"
-                size="small"
-                variant="text"
-                slim
+                class="text-white/70 hover:text-white"
                 @click="toggleExpand(internalItem)"
-              ></v-btn>
+              />
             </template>
 
             <template #expanded-row="{ item, columns }">
@@ -173,16 +165,13 @@ const expanded = ref([]);
           </v-data-table>
         </v-card-text>
       </v-card>
-    </v-dialog>
+    </pv-dialog>
   </v-card>
 </template>
 
 <style scoped lang="scss">
 .v-divider {
   border-color: white !important;
-}
-.v-btn {
-  width: 100%;
 }
 .v-table {
   text-align: center;

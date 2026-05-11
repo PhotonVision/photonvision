@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
+import PvButton from "@/components/common/pv-button.vue";
+import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -108,6 +110,10 @@ const calibrationImageURL = (index: number) =>
 
 const tab = ref("details");
 const viewingImg = ref(0);
+const tabItems: PvTabItem<string>[] = [
+  { label: "Details", value: "details" },
+  { label: "Observations", value: "observations" }
+];
 </script>
 
 <template>
@@ -118,15 +124,7 @@ const viewingImg = ref(0);
           <v-card-title class="pa-0"> Calibration Details </v-card-title>
         </v-col>
         <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
-          <v-btn
-            color="buttonPassive"
-            style="width: 100%"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="openUploadPhotonCalibJsonPrompt"
-          >
-            <v-icon start size="large"> mdi-import</v-icon>
-            <span>Import</span>
-          </v-btn>
+          <pv-button variant="passive" icon="mdi-import" block @click="openUploadPhotonCalibJsonPrompt">Import</pv-button>
           <input
             ref="importCalibrationFromPhotonJson"
             type="file"
@@ -136,16 +134,15 @@ const viewingImg = ref(0);
           />
         </v-col>
         <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
-          <v-btn
-            color="buttonPassive"
+          <pv-button
+            variant="passive"
+            icon="mdi-export"
+            block
             :disabled="!currentCalibrationCoeffs"
-            style="width: 100%"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             @click="openExportCalibrationPrompt"
           >
-            <v-icon start size="large">mdi-export</v-icon>
-            <span>Export</span>
-          </v-btn>
+            Export
+          </pv-button>
           <a
             ref="exportCalibration"
             style="color: black; text-decoration: none; display: none"
@@ -158,12 +155,9 @@ const viewingImg = ref(0);
 
     <v-card-text class="d-flex flex-row pt-0">
       <v-col cols="4" class="pa-0">
-        <v-tabs v-model="tab" grow bg-color="surface" height="48" slider-color="buttonActive">
-          <v-tab key="details" value="details">Details</v-tab>
-          <v-tab key="observations" value="observations">Observations</v-tab>
-        </v-tabs>
-        <v-tabs-window v-model="tab" class="pt-3">
-          <v-tabs-window-item key="details" value="details">
+        <pv-tabs v-model="tab" :items="tabItems" class="mt-2"/>
+        <div class="pt-3">
+          <div v-if="tab === 'details'">
             <v-table style="width: 100%" density="compact">
               <template #default>
                 <tbody>
@@ -275,8 +269,8 @@ const viewingImg = ref(0);
                 </tbody>
               </template>
             </v-table>
-          </v-tabs-window-item>
-          <v-tabs-window-item key="observations" value="observations">
+          </div>
+          <div v-else-if="tab === 'observations'">
             <v-data-table
               id="observations-table"
               items-per-page-text="Page size:"
@@ -291,24 +285,18 @@ const viewingImg = ref(0);
               show-expand
             >
               <template #item.data-table-expand="{ internalItem }">
-                <v-btn
-                  class="text-none"
-                  size="small"
+                <pv-button
+                  size="icon"
                   variant="text"
-                  slim
-                  rounded
+                  :class="viewingImg === internalItem.index ? 'text-pv-button-active' : 'text-white/70'"
                   @click="viewingImg = internalItem.index"
                 >
-                  <v-icon
-                    size="large"
-                    :color="viewingImg === internalItem.index ? 'buttonActive' : 'rgba(255, 255, 255, 0.7)'"
-                    >mdi-eye</v-icon
-                  >
-                </v-btn>
+                  <span class="mdi mdi-eye text-lg leading-none" aria-hidden="true"></span>
+                </pv-button>
               </template>
             </v-data-table>
-          </v-tabs-window-item>
-        </v-tabs-window>
+          </div>
+        </div>
       </v-col>
       <v-col cols="8" class="pa-0 pl-6">
         <v-card-text class="pa-0 fill-height d-flex justify-center align-center">

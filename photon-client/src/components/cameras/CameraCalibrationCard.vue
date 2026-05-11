@@ -9,6 +9,8 @@ import { useStateStore } from "@/stores/StateStore";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
+import PvButton from "@/components/common/pv-button.vue";
+import PvDialog from "@/components/common/pv-dialog.vue";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
@@ -553,17 +555,16 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           />
         </div>
         <div>
-          <v-btn
-            color="buttonPassive"
-            size="small"
+          <pv-button
+            size="sm"
+            variant="passive"
+            icon="mdi-download"
             block
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             :disabled="!settingsValid"
             @click="downloadCalibBoard"
           >
-            <v-icon start class="calib-btn-icon" size="large"> mdi-download </v-icon>
             <span class="calib-btn-label">Generate Board</span>
-          </v-btn>
+          </pv-button>
         </div>
         <v-alert
           v-if="tooManyPoints"
@@ -576,39 +577,37 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         />
         <div class="d-flex pt-5">
           <v-col cols="6" class="pa-0 pr-2">
-            <v-btn
-              size="small"
+            <pv-button
+              size="sm"
+              variant="primary"
+              :icon="isCalibrating ? 'mdi-camera' : 'mdi-flag-outline'"
               block
-              color="buttonActive"
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
-              <v-icon start class="calib-btn-icon" size="large">
-                {{ isCalibrating ? "mdi-camera" : "mdi-flag-outline" }}
-              </v-icon>
               <span class="calib-btn-label">{{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}</span>
-            </v-btn>
+            </pv-button>
           </v-col>
           <v-col cols="6" class="pa-0 pl-2">
-            <v-btn
-              size="small"
+            <pv-button
+              size="sm"
+              :variant="useStateStore().calibrationData.hasEnoughImages ? 'primary' : 'danger'"
+              :icon="
+                useStateStore().calibrationData.hasEnoughImages ? 'mdi-flag-checkered' : 'mdi-flag-off-outline'
+              "
               block
-              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-              :color="hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
             >
-              <v-icon start class="calib-btn-icon" size="large">
-                {{ hasEnoughImages ? "mdi-flag-checkered" : "mdi-flag-off-outline" }}
-              </v-icon>
-              <span class="calib-btn-label">{{ hasEnoughImages ? "Finish Calibration" : "Cancel Calibration" }}</span>
-            </v-btn>
+              <span class="calib-btn-label">{{
+                useStateStore().calibrationData.hasEnoughImages ? "Finish Calibration" : "Cancel Calibration"
+              }}</span>
+            </pv-button>
           </v-col>
         </div>
       </v-card-text>
     </v-card>
-    <v-dialog v-model="showCalibEndDialog" width="500px" :persistent="true">
+    <pv-dialog v-model="showCalibEndDialog" width="500px" persistent>
       <v-card color="surface" dark>
         <v-card-title> Camera Calibration </v-card-title>
         <div style="text-align: center">
@@ -652,13 +651,13 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <v-card-actions class="pa-5 pt-0">
           <v-spacer />
-          <v-btn v-if="!isCalibrating" color="white" variant="text" @click="showCalibEndDialog = false"> OK </v-btn>
+          <pv-button v-if="!isCalibrating" variant="text" @click="showCalibEndDialog = false">OK</pv-button>
         </v-card-actions>
       </v-card>
-    </v-dialog>
-    <v-dialog v-model="showCalDialog" width="80em">
+    </pv-dialog>
+    <pv-dialog v-model="showCalDialog" width="80em">
       <CameraCalibrationInfoCard v-if="selectedVideoFormat" :video-format="selectedVideoFormat" />
-    </v-dialog>
+    </pv-dialog>
   </div>
 </template>
 

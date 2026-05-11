@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PvButton from "@/components/common/pv-button.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import {
@@ -14,10 +15,6 @@ import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useDisplay } from "vuetify";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
-
 const isTagPipeline = computed(
   () =>
     useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -182,27 +179,14 @@ const interactiveCols = computed(() =>
         class="d-flex pa-0 flex-wrap"
       >
         <v-col cols="6" class="pl-0">
-          <v-btn
-            size="small"
-            block
-            color="primary"
-            class="text-black"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
-          >
+          <pv-button size="sm" variant="primary" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)">
             Take Point
-          </v-btn>
+          </pv-button>
         </v-col>
         <v-col cols="6" class="pr-0">
-          <v-btn
-            size="small"
-            block
-            color="error"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
-          >
+          <pv-button size="sm" variant="danger" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)">
             Clear All Points
-          </v-btn>
+          </pv-button>
         </v-col>
       </v-card-text>
       <v-card-text
@@ -210,39 +194,19 @@ const interactiveCols = computed(() =>
         class="d-flex pa-0 flex-wrap"
       >
         <v-col cols="6" lg="4" class="pl-0 pr-2">
-          <v-btn
-            size="small"
-            block
-            color="primary"
-            class="text-black"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
-          >
+          <pv-button size="sm" variant="primary" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)">
             Take First Point
-          </v-btn>
+          </pv-button>
         </v-col>
         <v-col cols="6" lg="4" class="pl-2 pr-0 pr-lg-2">
-          <v-btn
-            size="small"
-            block
-            color="primary"
-            class="text-black"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
-          >
+          <pv-button size="sm" variant="primary" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)">
             Take Second Point
-          </v-btn>
+          </pv-button>
         </v-col>
         <v-col cols="12" lg="4" class="pl-0 pl-lg-2 pr-0">
-          <v-btn
-            size="small"
-            block
-            color="error"
-            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
-            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
-          >
+          <pv-button size="sm" variant="danger" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)">
             Clear All Points
-          </v-btn>
+          </pv-button>
         </v-col>
       </v-card-text>
     </div>

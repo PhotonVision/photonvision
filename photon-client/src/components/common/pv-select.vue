@@ -1,6 +1,18 @@
 <script setup lang="ts" generic="T extends string | number">
 import { computed } from "vue";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import {
+  SelectContent,
+  SelectIcon,
+  SelectItem as SelectItemPrimitive,
+  SelectItemIndicator,
+  SelectItemText,
+  SelectPortal,
+  SelectRoot,
+  SelectTrigger,
+  SelectValue,
+  SelectViewport
+} from "reka-ui";
 
 export interface SelectItem<TValue extends string | number> {
   name: string | number;
@@ -26,6 +38,8 @@ const props = withDefaults(
 );
 
 const areSelectItems = (items: SelectItems): items is SelectItem<T>[] => typeof items[0] === "object";
+const labelWidth = computed(() => `${((12 - props.selectCols) / 12) * 100}%`);
+const selectWidth = computed(() => `${(props.selectCols / 12) * 100}%`);
 
 // Computed in case items changes
 const items = computed<SelectItem<T>[]>(() => {
@@ -40,31 +54,54 @@ const items = computed<SelectItem<T>[]>(() => {
 
   return props.items.map((item) => ({ name: item, value: item }));
 });
+
+const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Select an option"));
 </script>
 
 <template>
-  <div class="d-flex">
-    <v-col :cols="12 - selectCols" class="d-flex align-center pl-0 pt-10px pb-10px">
+  <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
+    <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
       <tooltipped-label :tooltip="tooltip" :label="label" />
-    </v-col>
-    <v-col :cols="selectCols" class="d-flex align-center pr-0 pt-10px pb-10px">
-      <v-select
-        v-model="value"
-        :items="items"
-        item-title="name"
-        item-value="value"
-        item-props
-        :disabled="disabled"
-        hide-details="auto"
-        variant="underlined"
-        density="compact"
-      />
-    </v-col>
+    </div>
+    <div class="min-w-0 sm:flex-1" :style="{ flexBasis: selectWidth }">
+      <select-root v-model="value" :disabled="disabled">
+        <select-trigger
+          class="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm outline-none transition data-[placeholder]:text-white/45 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <select-value :placeholder="placeholder" />
+          <select-icon class="shrink-0 text-white/70">
+            <span class="mdi mdi-chevron-down text-lg leading-none" aria-hidden="true"></span>
+          </select-icon>
+        </select-trigger>
+        <select-portal defer>
+          <select-content
+            position="popper"
+            position-strategy="fixed"
+            side="bottom"
+            align="start"
+            :side-offset="8"
+            :collision-padding="12"
+            class="z-[2500] overflow-hidden rounded-xl border border-white/12 bg-pv-surface text-white shadow-2xl shadow-black/45 ring-1 ring-white/8"
+            :style="{ width: 'var(--reka-select-trigger-width)' }"
+          >
+            <select-viewport class="max-h-72 p-1">
+              <select-item-primitive
+                v-for="item in items"
+                :key="item.value"
+                :value="item.value"
+                :disabled="item.disabled"
+                :text-value="String(item.name)"
+                class="relative flex min-h-9 cursor-default items-center rounded-lg py-2 pr-8 pl-3 text-sm outline-none transition data-[disabled]:pointer-events-none data-[disabled]:opacity-35 data-[highlighted]:bg-pv-primary/20 data-[highlighted]:text-pv-primary data-[state=checked]:text-pv-primary"
+              >
+                <select-item-text>{{ item.name }}</select-item-text>
+                <select-item-indicator class="absolute right-3 inline-flex items-center justify-center">
+                  <span class="mdi mdi-check text-sm leading-none" aria-hidden="true"></span>
+                </select-item-indicator>
+              </select-item-primitive>
+            </select-viewport>
+          </select-content>
+        </select-portal>
+      </select-root>
+    </div>
   </div>
 </template>
-<style scoped>
-.v-select {
-  padding-top: 0px;
-  margin-top: 0px;
-}
-</style>
