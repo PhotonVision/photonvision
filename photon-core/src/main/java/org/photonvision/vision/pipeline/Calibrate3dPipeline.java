@@ -167,7 +167,11 @@ public class Calibrate3dPipeline
     }
 
     public boolean hasEnough() {
-        return foundCornersList.size() >= (settings.bypass ? bypassMinSnapshots : minSnapshots);
+        return foundCornersList.size() >= getEffectiveMinSnapshots();
+    }
+
+    private int getEffectiveMinSnapshots() {
+        return settings.bypass ? bypassMinSnapshots : minSnapshots;
     }
 
     public CameraCalibrationCoefficients tryCalibration(Path imageSavePath) {
@@ -176,7 +180,7 @@ public class Calibrate3dPipeline
                     "Not enough snapshots! Only got "
                             + foundCornersList.size()
                             + " of "
-                            + minSnapshots
+                            + getEffectiveMinSnapshots()
                             + " -- returning null..");
             return null;
         }
@@ -219,7 +223,7 @@ public class Calibrate3dPipeline
                         new UICalibrationData(
                                 foundCornersList.size(),
                                 settings.cameraVideoModeIndex,
-                                minSnapshots,
+                                getEffectiveMinSnapshots(),
                                 hasEnough(),
                                 Units.metersToInches(settings.gridSize),
                                 Units.metersToInches(settings.markerSize),
