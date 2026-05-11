@@ -15,7 +15,7 @@
   java_decode_shim: PacketUtils.unpackTransform3d
   java_encode_shim: PacketUtils.packTransform3d
   cpp_type: wpi::math::Transform3d
-  cpp_include: "<wpi/math/geometry/Transform3d.h>"
+  cpp_include: "<wpi/math/geometry/Transform3d.hpp>"
   python_decode_shim: decodeTransform
   python_encode_shim: encodeTransform
   java_import: org.wpilib.math.geometry.Transform3d
@@ -81,7 +81,6 @@
     type: int16
     vla: True
 
-
 - name: PhotonPipelineResult
   fields:
   - name: metadata
@@ -91,4 +90,7 @@
     vla: True
   - name: multitagResult
     type: MultiTargetPNPResult
+    optional: True
+  - name: robotToCamera
+    type: Transform3d
     optional: True

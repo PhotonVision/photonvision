@@ -446,6 +446,7 @@ class PhotonCameraSim:
             ),
             targets=detectableTgts,
             multitagResult=multiTagResults,
+            robotToCamera=self.cam.getRobotToCamera(),
         )
 
     def submitProcessedFrame(

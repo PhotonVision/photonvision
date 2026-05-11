@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
@@ -63,12 +64,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
 
     public AprilTagPipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, (time) -> null);
         settings = new AprilTagPipelineSettings();
     }
 
-    public AprilTagPipeline(AprilTagPipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public AprilTagPipeline(
+            AprilTagPipelineSettings settings, Function<Long, Transform3d> robotToCameraSampler) {
+        super(PROCESSING_TYPE, robotToCameraSampler);
         this.settings = settings;
     }
 
@@ -247,7 +249,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                multiTagResult,
+                frame,
+                Optional.ofNullable(robotToCameraSampler.apply(frame.timestampNanos)));
     }
 
     @Override

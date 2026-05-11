@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import org.photonvision.common.configuration.NeuralNetworkModelManager;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -32,6 +33,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 
 public class ObjectDetectionPipeline
         extends CVPipeline<CVPipelineResult, ObjectDetectionPipelineSettings> {
@@ -44,12 +46,13 @@ public class ObjectDetectionPipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public ObjectDetectionPipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, (time) -> null);
         settings = new ObjectDetectionPipelineSettings();
     }
 
-    public ObjectDetectionPipeline(ObjectDetectionPipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public ObjectDetectionPipeline(
+            ObjectDetectionPipelineSettings settings, Function<Long, Transform3d> robotToCameraSampler) {
+        super(PROCESSING_TYPE, robotToCameraSampler);
         this.settings = settings;
     }
 
@@ -129,7 +132,13 @@ public class ObjectDetectionPipeline
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, collect2dTargetsResult.output, frame, names);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                collect2dTargetsResult.output,
+                frame,
+                names,
+                Optional.ofNullable(robotToCameraSampler.apply(frame.timestampNanos)));
     }
 
     @Override

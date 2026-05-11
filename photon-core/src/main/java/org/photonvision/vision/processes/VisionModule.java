@@ -31,6 +31,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeService.SubscriberHandle;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.dataflow.statusLEDs.StatusLEDConsumer;
 import org.photonvision.common.dataflow.websocket.UICameraConfiguration;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
@@ -54,6 +55,11 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.interpolation.Interpolator;
+import org.wpilib.math.interpolation.TimeInterpolatableBuffer;
 import org.wpilib.math.util.Units;
 import org.wpilib.vision.camera.CameraServerJNI;
 import org.wpilib.vision.camera.VideoException;
@@ -97,12 +103,46 @@ public class VisionModule {
 
     boolean mismatch;
 
-    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource) {
+    private static final double bufferDuration = 1.5;
+
+    private static class Transform3dInterpolator implements Interpolator<Transform3d> {
+        @Override
+        public Transform3d interpolate(Transform3d start, Transform3d end, double t) {
+            // Maybe clamp t here? TimeInterpolabaleBuffer already does so but IDK if thats a guarantee or
+            // just an implementation detail
+
+            Translation3d p0 = start.getTranslation();
+            Translation3d p1 = end.getTranslation();
+
+            Translation3d interpTranslation =
+                    new Translation3d(
+                            p0.getX() + (p1.getX() - p0.getX()) * t,
+                            p0.getY() + (p1.getY() - p0.getY()) * t,
+                            p0.getZ() + (p1.getZ() - p0.getZ()) * t);
+
+            Rotation3d interpRotation = start.getRotation().interpolate(end.getRotation(), t);
+
+            return new Transform3d(interpTranslation, interpRotation);
+        }
+    }
+
+    private final TimeInterpolatableBuffer<Transform3d> robotToCameraBuffer =
+            TimeInterpolatableBuffer.createBuffer(new Transform3dInterpolator(), bufferDuration);
+
+    public VisionModule(VisionSource visionSource) {
         logger =
                 new Logger(
                         VisionModule.class,
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
+
+        pipelineManager =
+                new PipelineManager(
+                        visionSource.getCameraConfiguration(),
+                        (localtime_ns) ->
+                                getRobotToCameraSample(
+                                        (localtime_ns + NetworkTablesManager.getInstance().getOffset() * 1000)
+                                                / (double) 1e9));
 
         mismatch = false;
 
@@ -127,7 +167,6 @@ public class VisionModule {
                     });
         }
 
-        this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
         changeSubscriber = new VisionModuleChangeSubscriber(this);
         this.visionRunner =
@@ -153,7 +192,8 @@ public class VisionModule {
                         pipelineManager::getDriverMode,
                         this::setDriverMode,
                         this::getFPSLimit,
-                        this::setFPSLimit);
+                        this::setFPSLimit,
+                        this::addRobotToCameraSample);
         uiDataConsumer = new UIDataPublisher(visionSource.getSettables().getConfiguration().uniqueName);
         statusLEDsConsumer =
                 new StatusLEDConsumer(visionSource.getSettables().getConfiguration().uniqueName);
@@ -633,6 +673,32 @@ public class VisionModule {
     public void setFPSLimit(int fps) {
         this.fpsLimit = fps;
         saveAndBroadcastAll();
+    }
+
+    /**
+     * Set camera transform for this vision module.
+     *
+     * @param time the time (in seconds) that the transform was published by the RIO, in server time
+     * @param robotToCameraTransform the transform from the robot's origin to the camera's origin, in
+     *     the robot's coordinate system. This should be provided in meters.
+     */
+    public void addRobotToCameraSample(double time, Transform3d robotToCameraTransform) {
+        synchronized (robotToCameraBuffer) {
+            robotToCameraBuffer.addSample(time, robotToCameraTransform);
+        }
+    }
+
+    /**
+     * Get robot to camera transform for this vision module.
+     *
+     * @param time the time (in seconds) to sample
+     * @return the transform from the robot's origin to the camera's origin, in the robot's coordinate
+     *     system, in meters. May return null if no transform is set.
+     */
+    public Transform3d getRobotToCameraSample(double time) {
+        synchronized (robotToCameraBuffer) {
+            return robotToCameraBuffer.getSample(time).orElse(null);
+        }
     }
 
     /**

@@ -91,11 +91,8 @@ class PhotonPoseEstimator {
    *
    * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
    * respect to the FIRST field.
-   * @param robotToCamera Transform3d from the center of the robot to the camera
-   * mount positions (ie, robot ➔ camera).
    */
-  explicit PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout aprilTags,
-                               wpi::math::Transform3d robotToCamera);
+  explicit PhotonPoseEstimator(wpi::apriltag::AprilTagFieldLayout aprilTags);
 
   /**
    * Get the AprilTagFieldLayout being used by the PositionEstimator.
@@ -104,24 +101,6 @@ class PhotonPoseEstimator {
    */
   wpi::apriltag::AprilTagFieldLayout GetFieldLayout() const {
     return aprilTags;
-  }
-
-  /**
-   * @return The current transform from the center of the robot to the camera
-   *         mount position.
-   */
-  inline wpi::math::Transform3d GetRobotToCameraTransform() {
-    return m_robotToCamera;
-  }
-
-  /**
-   * Useful for pan and tilt mechanisms, or cameras on turrets
-   *
-   * @param robotToCamera The current transform from the center of the robot to
-   * the camera mount position.
-   */
-  inline void SetRobotToCameraTransform(wpi::math::Transform3d robotToCamera) {
-    m_robotToCamera = robotToCamera;
   }
 
   /**
@@ -306,8 +285,6 @@ class PhotonPoseEstimator {
 
  private:
   wpi::apriltag::AprilTagFieldLayout aprilTags;
-
-  wpi::math::Transform3d m_robotToCamera;
 
   wpi::math::TimeInterpolatableBuffer<wpi::math::Rotation2d> headingBuffer;
 

@@ -28,13 +28,18 @@ package org.photonvision.struct;
 
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.photonvision.utils.PacketUtils;
 
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
-
+import org.wpilib.math.geometry.Transform3d;
 
 /**
  * Auto-generated serialization/deserialization helper for PhotonPipelineResult
@@ -42,9 +47,9 @@ import org.wpilib.util.struct.Struct;
 public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResult> {
 
     @Override
-    public final String getInterfaceUUID() { return "4b2ff16a964b5e2bf04be0c1454d91c4"; }
+    public final String getInterfaceUUID() { return "c3e6b96bad05f102560d0abcad50debc"; }
     @Override
-    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;"; }
+    public final String getSchema() { return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional Transform3d robotToCamera;"; }
     @Override
     public final String getTypeName() { return "PhotonPipelineResult"; }
 
@@ -53,6 +58,9 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
+
+    private static BiConsumer<Packet, Transform3d> robotToCamera_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
+    private static Function<Packet, Transform3d> robotToCamera_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
 
     @Override
     public void pack(Packet packet, PhotonPipelineResult value) {
@@ -64,6 +72,9 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
 
         // multitagResult is optional! it better not be a VLA too
         packet.encodeOptional(value.multitagResult);
+
+        // robotToCamera is optional and shimmed!
+        PacketUtils.packOptional(packet, value.robotToCamera, robotToCamera_PSINTERNALencode_shim_callable);
     }
 
     @Override
@@ -79,20 +90,23 @@ public class PhotonPipelineResultSerde implements PacketSerde<PhotonPipelineResu
         // multitagResult is optional! it better not be a VLA too
         ret.multitagResult = packet.decodeOptional(MultiTargetPNPResult.photonStruct);
 
+        // robotToCamera is optional and shimmed!
+        ret.robotToCamera = PacketUtils.unpackOptional(packet, robotToCamera_PSINTERNALdecode_shim_callable);
+
         return ret;
     }
 
     @Override
     public PacketSerde<?>[] getNestedPhotonMessages() {
         return new PacketSerde<?>[] {
-            PhotonTrackedTarget.photonStruct,MultiTargetPNPResult.photonStruct,PhotonPipelineMetadata.photonStruct
+            MultiTargetPNPResult.photonStruct,PhotonTrackedTarget.photonStruct,PhotonPipelineMetadata.photonStruct
         };
     }
 
     @Override
     public Struct<?>[] getNestedWpilibMessages() {
         return new Struct<?>[] {
-            
+            Transform3d.struct
         };
     }
 }

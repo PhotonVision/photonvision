@@ -34,8 +34,8 @@ from wpimath.geometry import Pose3d, Rotation3d, Transform3d, Translation3d
 class PhotonCameraInjector(PhotonCamera):
     result: PhotonPipelineResult
 
-    def __init__(self, cameraName="camera"):
-        super().__init__(cameraName)
+    def __init__(self, cameraName="camera", robotToCamera=Transform3d()):
+        super().__init__(cameraName, robotToCamera)
 
     def getLatestResult(self) -> PhotonPipelineResult:
         return self.result
@@ -134,12 +134,10 @@ def test_lowestAmbiguityStrategy():
         ],
         metadata=PhotonPipelineMetadata(0, int(2 * 1e3), 0),
         multitagResult=None,
+        robotToCamera=Transform3d(),
     )
 
-    estimator = PhotonPoseEstimator(
-        aprilTags,
-        Transform3d(),
-    )
+    estimator = PhotonPoseEstimator(aprilTags)
 
     estimatedPose = estimator.estimateLowestAmbiguityPose(cameraOne.result)
 
@@ -177,14 +175,12 @@ def test_pnpDistanceTrigSolve():
         ),
     )
 
-    estimator = PhotonPoseEstimator(
-        aprilTags,
-        compoundTestTransform,
-    )
+    estimator = PhotonPoseEstimator(aprilTags)
+    cameraOne.setRobotToCamera(compoundTestTransform)
 
     realPose = Pose3d(7.3, 4.42, 0, Rotation3d(0, 0, 2.197))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transformBy(cameraOne.getRobotToCamera()), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -207,10 +203,10 @@ def test_pnpDistanceTrigSolve():
     # Straight on
     fakeTimestampSecs += 60
     straightOnTestTransform = Transform3d(0, 0, 3, Rotation3d())
-    estimator.robotToCamera = straightOnTestTransform
+    cameraOne.setRobotToCamera(straightOnTestTransform)
     realPose = Pose3d(4.81, 2.38, 0, Rotation3d(0, 0, 2.818))  # Pose to compare with
     result = cameraOneSim.process(
-        latencySecs, realPose.transformBy(estimator.robotToCamera), simTargets
+        latencySecs, realPose.transformBy(cameraOne.getRobotToCamera()), simTargets
     )
     bestTarget = result.getBestTarget()
     assert bestTarget is not None
@@ -265,12 +261,10 @@ def test_multiTagOnCoprocStrategy():
         multitagResult=MultiTargetPNPResult(
             PnpResult(Transform3d(1, 3, 2, Rotation3d()))
         ),
+        robotToCamera=Transform3d(),
     )
 
-    estimator = PhotonPoseEstimator(
-        AprilTagFieldLayout(),
-        Transform3d(),
-    )
+    estimator = PhotonPoseEstimator(AprilTagFieldLayout())
 
     estimatedPose = estimator.estimateCoprocMultiTagPose(cameraOne.result)
     assert estimatedPose is not None

@@ -89,7 +89,7 @@ doxygen.sourceSets.main {
 tasks.register("zipCppDocs", Zip) {
     archiveBaseName = zipBaseNameCpp
     destinationDirectory = outputsFolder
-    dependsOn doxygen
+    dependsOn doxygenDox
     from ("$buildDir/docs/doxygen/html")
     into '/'
 }

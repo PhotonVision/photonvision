@@ -81,6 +81,10 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
     return HasTargets() ? targets[0] : PhotonTrackedTarget{};
   }
 
+  std::optional<wpi::math::Transform3d> GetRobotToCamera() const {
+    return robotToCamera;
+  }
+
   /**
    * Returns the latency in the pipeline.
    * @return The latency in the pipeline.

@@ -39,6 +39,7 @@
 #include <optional>
 #include <stdint.h>
 #include <vector>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 
 namespace photon {
@@ -46,11 +47,11 @@ namespace photon {
 template <>
 struct WPILIB_DLLEXPORT SerdeType<PhotonPipelineResult> {
   static constexpr std::string_view GetSchemaHash() {
-    return "4b2ff16a964b5e2bf04be0c1454d91c4";
+    return "c3e6b96bad05f102560d0abcad50debc";
   }
 
   static constexpr std::string_view GetSchema() {
-    return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;";
+    return "PhotonPipelineMetadata:ac0a45f686457856fb30af77699ea356 metadata;PhotonTrackedTarget:cc6dbb5c5c1e0fa808108019b20863f1 targets[?];optional MultiTargetPNPResult:541096947e9f3ca2d3f425ff7b04aa7b multitagResult;optional Transform3d robotToCamera;";
   }
 
   static photon::PhotonPipelineResult Unpack(photon::Packet& packet);

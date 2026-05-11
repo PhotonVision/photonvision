@@ -57,10 +57,6 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
         this(path, fov, maxFPS, null);
     }
 
-    public FileFrameProvider(Path path, double fov, CameraCalibrationCoefficients calibration) {
-        this(path, fov, MAX_FPS, calibration);
-    }
-
     public FileFrameProvider(
             Path path, double fov, int maxFPS, CameraCalibrationCoefficients calibration) {
         if (!Files.exists(path))
@@ -95,6 +91,10 @@ public class FileFrameProvider extends CpuImageProcessor implements Releasable {
      */
     public FileFrameProvider(Path path, double fov) {
         this(path, fov, MAX_FPS);
+    }
+
+    public FileFrameProvider(Path path, double fov, CameraCalibrationCoefficients calibration) {
+        this(path, fov, MAX_FPS, calibration);
     }
 
     @Override

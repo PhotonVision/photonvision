@@ -26,7 +26,6 @@ from wpimath.geometry import (
     Pose3d,
     Rotation2d,
     Rotation3d,
-    Transform3d,
     Translation2d,
     Translation3d,
 )
@@ -48,7 +47,6 @@ class PhotonPoseEstimator:
     def __init__(
         self,
         fieldTags: AprilTagFieldLayout,
-        robotToCamera: Transform3d,
     ):
         """Create a new PhotonPoseEstimator.
 
@@ -56,11 +54,8 @@ class PhotonPoseEstimator:
                            with respect to the FIRST field using the Field Coordinate System.
                            Note that setting the origin of this layout object will affect the
                            results from this class.
-        :param robotToCamera: Transform3d from the center of the robot to the camera mount position (i.e.,
-                                robot ➔ camera) in the Robot Coordinate System.
         """
         self._fieldTags = fieldTags
-        self.robotToCamera = robotToCamera
 
         self._reportedErrors: set[int] = set()
         self._headingBuffer = TimeInterpolatableRotation2dBuffer(1)
@@ -126,6 +121,9 @@ class PhotonPoseEstimator:
         if cameraResult.getTimestampSeconds() < 0:
             return False
 
+        if cameraResult.robotToCamera == None:
+            return False
+
         # If no targets seen, trivial case -- can't do estimation
         return len(cameraResult.targets) > 0
 
@@ -170,7 +168,7 @@ class PhotonPoseEstimator:
                     -wpimath.units.degreesToRadians(bestTarget.getYaw()),
                 ),
             )
-            .rotateBy(self.robotToCamera.rotation())
+            .rotateBy(result.robotToCamera.rotation())
             .toTranslation2d()
             .rotateBy(headingSample)
         )
@@ -179,7 +177,7 @@ class PhotonPoseEstimator:
             tagPose.toPose2d().translation() - camToTagTranslation
         )
         camToRobotTranslation: Translation2d = -(
-            self.robotToCamera.translation().toTranslation2d()
+            result.robotToCamera.translation().toTranslation2d()
         )
         camToRobotTranslation = camToRobotTranslation.rotateBy(headingSample)
         robotPose = Pose2d(
@@ -208,7 +206,7 @@ class PhotonPoseEstimator:
                 Pose3d()
                 .transformBy(best_tf)  # field-to-camera
                 .relativeTo(self._fieldTags.getOrigin())
-                .transformBy(self.robotToCamera.inverse())  # field-to-robot
+                .transformBy(result.robotToCamera.inverse())  # field-to-robot
             )
             return EstimatedRobotPose(
                 best,
@@ -257,7 +255,7 @@ class PhotonPoseEstimator:
         return EstimatedRobotPose(
             targetPosition.transformBy(
                 lowestAmbiguityTarget.getBestCameraToTarget().inverse()
-            ).transformBy(self.robotToCamera.inverse()),
+            ).transformBy(result.robotToCamera.inverse()),
             result.getTimestampSeconds(),
             result.targets,
         )

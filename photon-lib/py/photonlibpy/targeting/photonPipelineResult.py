@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar, Optional
 
+from wpimath.geometry import Transform3d
+
 from .multiTargetPNPResult import MultiTargetPNPResult
 from .photonTrackedTarget import PhotonTrackedTarget
 
@@ -34,6 +36,7 @@ class PhotonPipelineResult:
     # an arbitrary timebase. This is not true in C++ or Java.
     metadata: PhotonPipelineMetadata = field(default_factory=PhotonPipelineMetadata)
     multitagResult: Optional[MultiTargetPNPResult] = None
+    robotToCamera: Optional[Transform3d] = None
 
     def getLatencyMillis(self) -> float:
         return (

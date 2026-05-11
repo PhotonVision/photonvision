@@ -33,6 +33,7 @@
 #include <optional>
 #include <stdint.h>
 #include <vector>
+#include <wpi/math/geometry/Transform3d.hpp>
 
 
 namespace photon {
@@ -41,6 +42,7 @@ struct PhotonPipelineResult_PhotonStruct {
   photon::PhotonPipelineMetadata metadata;
   std::vector<photon::PhotonTrackedTarget> targets;
   std::optional<photon::MultiTargetPNPResult> multitagResult;
+  std::optional<wpi::math::Transform3d> robotToCamera;
 
   friend bool operator==(PhotonPipelineResult_PhotonStruct const&, PhotonPipelineResult_PhotonStruct const&) = default;
 };

@@ -147,9 +147,9 @@ class Vision {
   wpi::Field2d& GetSimDebugField() { return visionSim->GetDebugField(); }
 
  private:
-  photon::PhotonPoseEstimator photonEstimator{constants::Vision::kTagLayout,
-                                              constants::Vision::kRobotToCam};
-  photon::PhotonCamera camera{constants::Vision::kCameraName};
+  photon::PhotonPoseEstimator photonEstimator{constants::Vision::kTagLayout};
+  photon::PhotonCamera camera{constants::Vision::kCameraName,
+                              constants::Vision::kRobotToCam};
   std::unique_ptr<photon::VisionSystemSim> visionSim;
   std::unique_ptr<photon::SimCameraProperties> cameraProp;
   std::shared_ptr<photon::PhotonCameraSim> cameraSim;

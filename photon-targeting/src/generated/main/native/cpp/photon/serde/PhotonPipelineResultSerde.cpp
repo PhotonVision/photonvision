@@ -34,6 +34,7 @@ void StructType::Pack(Packet& packet, const PhotonPipelineResult& value) {
   packet.Pack<photon::PhotonPipelineMetadata>(value.metadata);
   packet.Pack<std::vector<photon::PhotonTrackedTarget>>(value.targets);
   packet.Pack<std::optional<photon::MultiTargetPNPResult>>(value.multitagResult);
+  packet.Pack<std::optional<wpi::math::Transform3d>>(value.robotToCamera);
 }
 
 PhotonPipelineResult StructType::Unpack(Packet& packet) {
@@ -41,6 +42,7 @@ PhotonPipelineResult StructType::Unpack(Packet& packet) {
     .metadata = packet.Unpack<photon::PhotonPipelineMetadata>(),
     .targets = packet.Unpack<std::vector<photon::PhotonTrackedTarget>>(),
     .multitagResult = packet.Unpack<std::optional<photon::MultiTargetPNPResult>>(),
+    .robotToCamera = packet.Unpack<std::optional<wpi::math::Transform3d>>(),
   }};
 }
 

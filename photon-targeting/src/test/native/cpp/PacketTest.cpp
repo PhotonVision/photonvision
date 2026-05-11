@@ -87,8 +87,11 @@ TEST(PacketTest, PnpResult) {
 // }
 
 TEST(PacketTest, PhotonPipelineResult) {
-  PhotonPipelineResult result(PhotonPipelineMetadata(0, 0, 1, 2),
-                              std::vector<PhotonTrackedTarget>{}, std::nullopt);
+  PhotonPipelineResult result(
+      PhotonPipelineMetadata(0, 0, 1, 2), std::vector<PhotonTrackedTarget>{},
+      std::nullopt,
+      std::make_optional<wpi::math::Transform3d>(wpi::math::Transform3d{
+          wpi::math::Translation3d(0_m, 0_m, 1_m), wpi::math::Rotation3d()}));
 
   Packet p;
   p.Pack<decltype(result)>(result);
@@ -132,8 +135,10 @@ TEST(PacketTest, PhotonPipelineResult) {
                 17.0, 22.33, 2.54},
       std::vector<int16_t>{8, 7, 11, 22, 59, 40}};
 
-  PhotonPipelineResult result2(PhotonPipelineMetadata{0, 0, 1, 1}, targets,
-                               mtResult);
+  PhotonPipelineResult result2(
+      PhotonPipelineMetadata{0, 0, 1, 1}, targets, mtResult,
+      std::make_optional<wpi::math::Transform3d>(wpi::math::Transform3d{
+          wpi::math::Translation3d(0_m, 0_m, 1_m), wpi::math::Rotation3d()}));
 
   Packet p2;
   auto t1 = std::chrono::steady_clock::now();

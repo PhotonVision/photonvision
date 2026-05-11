@@ -18,6 +18,7 @@
 package org.photonvision.common.dataflow.networktables;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -35,6 +36,7 @@ import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableEvent;
 import org.wpilib.networktables.NetworkTablesJNI;
+import org.wpilib.networktables.TimestampedObject;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
@@ -55,6 +57,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Consumer<Integer> fpsLimitConsumer;
     private final Supplier<Integer> fpsLimitSupplier;
 
+    NTDataChangeListener robotToCameraListener;
+    private final BiConsumer<Double, Transform3d> robotToCameraConsumer;
+
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -62,13 +67,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             BooleanSupplier driverModeSupplier,
             Consumer<Boolean> driverModeConsumer,
             Supplier<Integer> fpsLimitSupplier,
-            Consumer<Integer> fpsLimitConsumer) {
+            Consumer<Integer> fpsLimitConsumer,
+            BiConsumer<Double, Transform3d> robotToCameraConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
         this.fpsLimitSupplier = fpsLimitSupplier;
         this.fpsLimitConsumer = fpsLimitConsumer;
+        this.robotToCameraConsumer = robotToCameraConsumer;
 
         updateCameraNickname(cameraNickname);
         updateEntries();
@@ -96,6 +103,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             // TODO: Log
         }
         logger.debug("Set pipeline index to " + newIndex);
+    }
+
+    private void onRobotToCameraChange(NetworkTableEvent entryNotification) {
+        // HACK: the entryNotification's value can't be cast to Transform3d, so we read directly from
+        // the subscriber
+        TimestampedObject<Transform3d> robotToCamera = ts.robotToCameraSubscriber.getAtomic(null);
+        var doubleTime = (robotToCamera.serverTime) * (double) 1e6;
+        robotToCameraConsumer.accept(doubleTime, robotToCamera.value);
+        logger.debug("Sampled robot to camera transform as " + robotToCamera + " at t=" + doubleTime);
     }
 
     private void onDriverModeChange(NetworkTableEvent entryNotification) {
@@ -134,6 +150,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
         if (fpsLimitListener != null) fpsLimitListener.remove();
+        if (robotToCameraListener != null) robotToCameraListener.remove();
 
         ts.updateEntries();
 
@@ -148,6 +165,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         fpsLimitListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
+
+        robotToCameraListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.robotToCameraSubscriber, this::onRobotToCameraChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -187,7 +208,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                         now + offset,
                         NetworkTablesManager.getInstance().getTimeSinceLastPong(),
                         TrackedTarget.simpleFromTrackedTargets(acceptedResult.targets),
-                        acceptedResult.multiTagResult);
+                        acceptedResult.multiTagResult,
+                        acceptedResult.robotToCamera);
 
         // random guess at size of the array
         ts.resultPublisher.set(simplified, 1024);

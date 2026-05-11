@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <wpi/driverstation/Alert.hpp>
+#include <wpi/math/geometry/Transform3d.hpp>
 #include <wpi/nt/BooleanTopic.hpp>
 #include <wpi/nt/DoubleArrayTopic.hpp>
 #include <wpi/nt/DoubleTopic.hpp>
@@ -38,6 +39,7 @@
 #include <wpi/nt/NetworkTableInstance.hpp>
 #include <wpi/nt/RawTopic.hpp>
 #include <wpi/nt/StringTopic.hpp>
+#include <wpi/nt/StructTopic.hpp>
 #include <wpi/units/time.hpp>
 
 #include "photon/targeting/PhotonPipelineResult.h"
@@ -74,10 +76,53 @@ class PhotonCamera {
    */
   explicit PhotonCamera(const std::string_view cameraName);
 
+  /**
+   * Constructs a PhotonCamera from the name of the camera and a robot to camera
+   * transform.
+   * @param cameraName The nickname of the camera (found in the PhotonVision
+   * UI).
+   * @param robotToCamera Transform3d from the center of the robot to the camera
+   * mount positions (ie, robot ➔ camera).
+   */
+  explicit PhotonCamera(const std::string_view cameraName,
+                        wpi::math::Transform3d robotToCamera);
+
+  /**
+   * Constructs a PhotonCamera from a root table.
+   *
+   * @param instance The NetworkTableInstance to pull data from. This can be a
+   * custom instance in simulation, but should *usually* be the default
+   * NTInstance from {@link NetworkTableInstance::getDefault}
+   * @param cameraName The name of the camera, as seen in the UI.
+   * over.
+   * @param robotToCamera Transform3d from the center of the robot to the camera
+   * mount positions (ie, robot ➔ camera).
+   */
+  explicit PhotonCamera(wpi::nt::NetworkTableInstance instance,
+                        const std::string_view cameraName,
+                        wpi::math::Transform3d robotToCamera);
+
   PhotonCamera(PhotonCamera&&) = default;
 
   ~PhotonCamera() = default;
 
+  /**
+   * Returns the robot to camera transform
+   *
+   * @return The transform from the robot's center to the camera, if it was set.
+   * Empty otherwise.
+   */
+  std::optional<wpi::math::Transform3d> GetRobotToCamera() {
+    return robotToCamera;
+  }
+
+  /**
+   * Sets the robot to camera transform
+   *
+   * @param newRobotToCamera Transform3d from the center of the robot to the
+   * camera mount positions (ie, robot ➔ camera).
+   */
+  void SetRobotToCamera(wpi::math::Transform3d newRobotToCamera);
   /**
    * The list of pipeline results sent by PhotonVision since the last call to
    * GetAllUnreadResults(). Calling this function clears the internal FIFO
@@ -216,6 +261,7 @@ class PhotonCamera {
   std::shared_ptr<wpi::nt::NetworkTable> mainTable;
   std::shared_ptr<wpi::nt::NetworkTable> rootTable;
   wpi::nt::RawSubscriber rawBytesEntry;
+  wpi::nt::StructPublisher<wpi::math::Transform3d> robotToCameraPublisher;
   wpi::nt::IntegerPublisher inputSaveImgEntry;
   wpi::nt::IntegerSubscriber inputSaveImgSubscriber;
   wpi::nt::IntegerPublisher outputSaveImgEntry;
@@ -247,6 +293,12 @@ class PhotonCamera {
   wpi::Alert timesyncAlert;
 
  private:
+  /**
+   * Internal implementation of the constructor.
+   */
+  explicit PhotonCamera(wpi::nt::NetworkTableInstance instance,
+                        const std::string_view cameraName,
+                        std::optional<wpi::math::Transform3d> robotToCamera);
   wpi::units::second_t lastVersionCheckTime = 0_s;
   static bool VERSION_CHECK_ENABLED;
   inline static int InstanceCount = 1;
@@ -262,6 +314,7 @@ class PhotonCamera {
   void CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result);
 
   std::vector<std::string> tablesThatLookLikePhotonCameras();
+  std::optional<wpi::math::Transform3d> robotToCamera;
 };
 
 }  // namespace photon

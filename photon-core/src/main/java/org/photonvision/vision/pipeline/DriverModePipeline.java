@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
+import java.util.function.Function;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -25,6 +26,7 @@ import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.util.Pair;
 
 public class DriverModePipeline
@@ -36,12 +38,13 @@ public class DriverModePipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
 
     public DriverModePipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, (time) -> null);
         settings = new DriverModePipelineSettings();
     }
 
-    public DriverModePipeline(DriverModePipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public DriverModePipeline(
+            DriverModePipelineSettings settings, Function<Long, Transform3d> robotToCameraSampler) {
+        super(PROCESSING_TYPE, robotToCameraSampler);
         this.settings = settings;
     }
 

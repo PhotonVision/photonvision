@@ -36,6 +36,7 @@ import org.photonvision.timesync.TimeSyncSingleton;
 import org.wpilib.driverstation.Alert;
 import org.wpilib.driverstation.DriverStation;
 import org.wpilib.hardware.hal.HAL;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.linalg.MatBuilder;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.numbers.*;
@@ -51,6 +52,7 @@ import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableInstance;
 import org.wpilib.networktables.PubSubOption;
 import org.wpilib.networktables.StringSubscriber;
+import org.wpilib.networktables.StructPublisher;
 import org.wpilib.system.Timer;
 
 /** Represents a camera that is connected to PhotonVision. */
@@ -61,6 +63,8 @@ public class PhotonCamera implements AutoCloseable {
 
     private final NetworkTable cameraTable;
     PacketSubscriber<PhotonPipelineResult> resultSubscriber;
+    Optional<Transform3d> robotToCamera;
+    StructPublisher<Transform3d> robotToCameraPublisher;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     IntegerPublisher fpsLimitPublisher;
@@ -80,6 +84,7 @@ public class PhotonCamera implements AutoCloseable {
         resultSubscriber.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
+        robotToCameraPublisher.close();
         fpsLimitPublisher.close();
         fpsLimitSubscriber.close();
         versionEntry.close();
@@ -131,9 +136,32 @@ public class PhotonCamera implements AutoCloseable {
      *     simulation, but should *usually* be the default NTInstance from
      *     NetworkTableInstance::getDefault
      * @param cameraName The name of the camera, as seen in the UI.
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
+     *     robot ➔ camera) in the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     Coordinate System</a>.
+     */
+    public PhotonCamera(NetworkTableInstance instance, String cameraName, Transform3d robotToCamera) {
+        this(instance, cameraName, Optional.of(robotToCamera));
+    }
+
+    /**
+     * Constructs a PhotonCamera from a root table.
+     *
+     * @param instance The NetworkTableInstance to pull data from. This can be a custom instance in
+     *     simulation, but should *usually* be the default NTInstance from
+     *     NetworkTableInstance::getDefault
+     * @param cameraName The name of the camera, as seen in the UI.
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
+        this(instance, cameraName, Optional.empty());
+    }
+
+    /** Internal implementation of the constructor */
+    private PhotonCamera(
+            NetworkTableInstance instance, String cameraName, Optional<Transform3d> robotToCamera) {
         name = cameraName;
+        this.robotToCamera = robotToCamera;
         disconnectAlert =
                 new Alert(
                         PHOTON_ALERT_GROUP, "PhotonCamera '" + name + "' is disconnected.", Alert.Level.MEDIUM);
@@ -141,7 +169,7 @@ public class PhotonCamera implements AutoCloseable {
         rootPhotonTable = instance.getTable(kTableName);
         this.cameraTable = rootPhotonTable.getSubTable(cameraName);
         path = cameraTable.getPath();
-        var rawBytesEntry =
+        var rawBytesEntry_pipelineResult =
                 cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
@@ -150,7 +178,12 @@ public class PhotonCamera implements AutoCloseable {
                                 PubSubOption.periodic(0.01),
                                 PubSubOption.SEND_ALL,
                                 PubSubOption.pollStorage(20));
-        resultSubscriber = new PacketSubscriber<>(rawBytesEntry, PhotonPipelineResult.photonStruct);
+        resultSubscriber =
+                new PacketSubscriber<>(rawBytesEntry_pipelineResult, PhotonPipelineResult.photonStruct);
+        robotToCameraPublisher =
+                cameraTable
+                        .getStructTopic("robotToCamera", Transform3d.struct)
+                        .publish(PubSubOption.periodic(0.01));
         driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
@@ -181,6 +214,10 @@ public class PhotonCamera implements AutoCloseable {
 
         // HACK - check if things are compatible
         verifyDependencies();
+
+        if (robotToCamera.isPresent()) {
+            robotToCameraPublisher.set(robotToCamera.get());
+        }
     }
 
     static void verifyDependencies() {
@@ -239,6 +276,19 @@ public class PhotonCamera implements AutoCloseable {
      */
     public PhotonCamera(String cameraName) {
         this(NetworkTableInstance.getDefault(), cameraName);
+    }
+
+    /**
+     * Constructs a PhotonCamera from the name of the camera and its transform from the robot.
+     *
+     * @param cameraName the name of the camera, as seen in the UI
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
+     *     robot ➔ camera) in the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     Coordinate System</a>.
+     */
+    public PhotonCamera(String cameraName, Transform3d robotToCamera) {
+        this(NetworkTableInstance.getDefault(), cameraName, Optional.of(robotToCamera));
     }
 
     /**
@@ -391,6 +441,12 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
+     * Returns the robot-to-camera transform.
+     *
+     * @return The robot-to-camera transform, if it is set. Optional.empty() otherwise.
+     */
+
+    /**
      * Allows the user to select the active pipeline index.
      *
      * @param index The active pipeline index.
@@ -489,6 +545,28 @@ public class PhotonCamera implements AutoCloseable {
      */
     public final NetworkTable getCameraTable() {
         return cameraTable;
+    }
+
+    /**
+     * Returns the camera's transform from the robot
+     *
+     * @return The camera's transform from the robot, if it is set. Empty otherwise.
+     */
+    public Optional<Transform3d> getRobotToCamera() {
+        return robotToCamera;
+    }
+
+    /**
+     * Sets the camera's transform from the robot. This is used for pose estimation.
+     *
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
+     *     robot ➔ camera) in the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     Coordinate System</a>.
+     */
+    public void setRobotToCamera(Transform3d robotToCamera) {
+        this.robotToCamera = Optional.of(robotToCamera);
+        robotToCameraPublisher.set(robotToCamera);
     }
 
     void verifyVersion() {

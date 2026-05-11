@@ -19,6 +19,8 @@ package org.photonvision.vision.pipeline;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -31,6 +33,7 @@ import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.util.Pair;
 
 public class ColoredShapePipeline
@@ -54,12 +57,13 @@ public class ColoredShapePipeline
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.HSV;
 
     public ColoredShapePipeline() {
-        super(PROCESSING_TYPE);
+        super(PROCESSING_TYPE, (time) -> null);
         settings = new ColoredShapePipelineSettings();
     }
 
-    public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
-        super(PROCESSING_TYPE);
+    public ColoredShapePipeline(
+            ColoredShapePipelineSettings settings, Function<Long, Transform3d> robotToCameraSampler) {
+        super(PROCESSING_TYPE, robotToCameraSampler);
         this.settings = settings;
     }
 
@@ -213,6 +217,12 @@ public class ColoredShapePipeline
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(frame.sequenceID, sumPipeNanosElapsed, fps, targetList, frame);
+        return new CVPipelineResult(
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                frame,
+                Optional.ofNullable(robotToCameraSampler.apply(frame.timestampNanos)));
     }
 }

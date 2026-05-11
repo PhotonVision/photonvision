@@ -109,7 +109,9 @@ TEST(PhotonCameraTest, Alerts) {
   // AND a result with a timeSinceLastPong in the past
   photon::PhotonPipelineMetadata metadata{3, 1, 2, 10 * 1000000};
   photon::PhotonPipelineResult noPongResult{
-      metadata, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt};
+      metadata, std::vector<photon::PhotonTrackedTarget>{}, std::nullopt,
+      std::make_optional<wpi::math::Transform3d>(wpi::math::Transform3d{
+          wpi::math::Translation3d(0_m, 0_m, 1_m), wpi::math::Rotation3d()})};
 
   // Loop to hit cases past first iteration
   for (int i = 0; i < 10; i++) {
