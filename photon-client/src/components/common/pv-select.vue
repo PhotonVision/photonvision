@@ -63,28 +63,13 @@ const items = computed<SelectItem<T>[]>(() => {
         <template #selection="{ item }">
           <span>{{ item.raw.name }}</span>
           <v-chip
-            v-if="item.raw.chip"
+            v-if="(item.raw as SelectItem<T>).chip"
             class="ml-2"
             size="x-small"
-            :color="item.raw.chip.color ?? 'info'"
+            :color="(item.raw as SelectItem<T>).chip!.color ?? 'info'"
           >
-            {{ item.raw.chip.text }}
+            {{ (item.raw as SelectItem<T>).chip!.text }}
           </v-chip>
-        </template>
-        <template #item="{ item, props: itemProps }">
-          <v-list-item v-bind="itemProps" :title="undefined">
-            <v-list-item-title class="d-flex align-center">
-              <span>{{ item.raw.name }}</span>
-              <v-chip
-                v-if="item.raw.chip"
-                class="ml-2"
-                size="x-small"
-                :color="item.raw.chip.color ?? 'info'"
-              >
-                {{ item.raw.chip.text }}
-              </v-chip>
-            </v-list-item-title>
-          </v-list-item>
         </template>
       </v-select>
     </v-col>
