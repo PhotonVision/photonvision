@@ -255,8 +255,12 @@ public class FrameRecorder implements Releasable {
                     }
                 }
 
-                if (writeRawFrame(frame.mat)) {
-                    writeMetadataLine(frame.sequenceId, frame.captureTimestampNs);
+                // Metadata before frame: keeps len(jsonl) >= mp4 frame count under any crash,
+                // so replay readers truncate jsonl to the mp4's decoded count — never the
+                // other way around. If metadata write fails, skip the frame to preserve the
+                // invariant (writeMetadataLine stops recording on failure).
+                if (writeMetadataLine(frame.sequenceId, frame.captureTimestampNs)) {
+                    writeRawFrame(frame.mat);
                 }
 
                 frame.mat.release();
@@ -353,14 +357,21 @@ public class FrameRecorder implements Releasable {
      * Write one JSONL line: {"seq":N,"capture_ns":T}. Flushed per-line so a crash doesn't lose
      * the last few frames of metadata. Manually formatted (no Jackson) because the schema is
      * trivial and this is on the writer thread's hot path.
+     *
+     * @return true on success; false on IO failure (after stopping the recording — caller must
+     *     not write the paired frame, or the jsonl-≥-mp4 invariant breaks).
      */
-    private void writeMetadataLine(long sequenceId, long captureTimestampNs) {
+    private boolean writeMetadataLine(long sequenceId, long captureTimestampNs) {
         try {
             metadataWriter.write(
                     "{\"seq\":" + sequenceId + ",\"capture_ns\":" + captureTimestampNs + "}\n");
             metadataWriter.flush();
+            return true;
         } catch (java.io.IOException e) {
-            logger.warn("Failed to write metadata sidecar line: " + e.getMessage());
+            logger.error(
+                    "Failed to write metadata sidecar line; stopping recording: " + e.getMessage());
+            stopRecording();
+            return false;
         }
     }
 
