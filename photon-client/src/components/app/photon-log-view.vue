@@ -4,7 +4,10 @@ import { LogLevel, type LogMessage } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import LogEntry from "@/components/app/photon-log-entry.vue";
 import PvButton from "@/components/common/pv-button.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
+import PvCard from "@/components/common/pv-card.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
+import PvTextField from "@/components/common/pv-text-field.vue";
 import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
@@ -76,13 +79,13 @@ document.addEventListener("keydown", (e) => {
 
 <template>
   <pv-dialog v-model="useStateStore().showLogModal" width="1500">
-    <v-card class="dialog-container pa-5" color="surface" flat>
+    <pv-card class="dialog-container p-5">
       <!-- Logs header -->
-      <v-row class="pb-3">
-        <v-col cols="4">
-          <v-card-title class="pa-0">Program Logs</v-card-title>
-        </v-col>
-        <v-col class="align-self-center pl-3" style="text-align: right">
+      <div class="flex flex-wrap pb-3">
+        <div class="w-1/3">
+          <div class="text-lg font-semibold">Program Logs</div>
+        </div>
+        <div class="flex-1 self-center pl-3 text-right">
           <pv-button variant="text" size="sm" icon="mdi-download" @click="handleLogExport">
             <span class="menu-label">Download</span>
 
@@ -101,46 +104,49 @@ document.addEventListener("keydown", (e) => {
           <pv-button variant="text" size="sm" icon="mdi-close" @click="() => (useStateStore().showLogModal = false)">
             <span class="menu-label">Close</span>
           </pv-button>
-        </v-col>
-      </v-row>
+        </div>
+      </div>
 
       <v-divider />
 
       <div class="dialog-data">
         <!-- Log view options -->
-        <v-row no-gutters class="pt-4 pt-md-0" style="display: flex; justify-content: space-between">
-          <v-col cols="12" md="7" style="display: flex; align-items: center" class="pr-3">
-            <v-text-field
+        <div class="flex flex-wrap justify-between pt-4 md:pt-0">
+          <div class="flex w-full items-center pr-3 md:w-7/12">
+            <pv-text-field
               v-model="searchQuery"
               density="compact"
               clearable
-              hide-details="auto"
+              hide-details
               prepend-icon="mdi-magnify"
-              color="primary"
               label="Search"
               variant="underlined"
             />
             <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
             <pv-button size="icon" variant="text" icon="mdi-close" @click="timeInput = undefined" />
-          </v-col>
-          <v-col v-for="level in [0, 1, 2, 3]" :key="level" class="pr-3">
+          </div>
+          <div v-for="level in [0, 1, 2, 3]" :key="level" class="flex-1 pr-3">
             <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
               {{ getLogLevelFromIndex(level)
-              }}<v-switch
+              }}<pv-switch
                 v-model="selectedLogLevels[level]"
                 class="pl-2"
                 hide-details
                 color="rgb(var(--v-theme-primary))"
-              ></v-switch>
+              ></pv-switch>
             </div>
-          </v-col>
-        </v-row>
+          </div>
+        </div>
 
         <!-- Log entry list display -->
         <div class="log-display">
-          <v-card-text v-if="!logs.length" style="font-size: 18px; font-weight: 150; height: 100%; text-align: center">
+          <div
+            v-if="!logs.length"
+            class="flex h-full items-center justify-center text-center"
+            style="font-size: 18px; font-weight: 150"
+          >
             No available logs
-          </v-card-text>
+          </div>
           <virtual-list
             v-else
             ref="logList"
@@ -153,7 +159,7 @@ document.addEventListener("keydown", (e) => {
           />
         </div>
       </div>
-    </v-card>
+    </pv-card>
   </pv-dialog>
 </template>
 

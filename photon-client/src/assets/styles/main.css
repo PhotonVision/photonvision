@@ -1,10 +1,10 @@
-@layer theme, base, vuetify, components, utilities;
-@import 'vuetify/styles' layer(vuetify);
+@layer theme, base, vuetify-core, vuetify-components, vuetify-overrides,vuetify-utilities, utilities, components, vuetify-final;
+/*@import 'vuetify/styles' layer(vuetify);*/
+@import "@fontsource/dm-sans/600.css";
 
 @import "tailwindcss";
-
 @theme {
-  --font-sans: "Prompt", sans-serif;
+  --font-sans: "DM Sans", sans-serif;
   --font-long-text: sans-serif;
   --color-pv-background: rgb(var(--v-theme-background));
   --color-pv-surface: rgb(var(--v-theme-surface));
@@ -27,12 +27,14 @@
     font-family: var(--font-sans);
     background-color: rgb(var(--v-theme-background));
     color: white;
+    overscroll-behavior: none;
   }
 
   body {
     min-height: 100vh;
     background-color: rgb(var(--v-theme-background));
     color: white;
+    
   }
 
   button:not(:disabled) {

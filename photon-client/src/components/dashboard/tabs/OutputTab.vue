@@ -172,43 +172,68 @@ const interactiveCols = computed(() =>
     </table>
     <div
       v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode !== RobotOffsetPointMode.None"
-      class="d-flex align-center"
+      class="flex items-center"
     >
-      <v-card-text
+      <div
         v-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Single"
-        class="d-flex pa-0 flex-wrap"
+        class="flex flex-wrap p-0"
       >
-        <v-col cols="6" class="pl-0">
-          <pv-button size="sm" variant="primary" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)">
+        <div class="w-1/2 pl-0">
+          <pv-button
+            size="sm"
+            variant="primary"
+            block
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Single)"
+          >
             Take Point
           </pv-button>
-        </v-col>
-        <v-col cols="6" class="pr-0">
-          <pv-button size="sm" variant="danger" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)">
+        </div>
+        <div class="w-1/2 pr-0">
+          <pv-button
+            size="sm"
+            variant="danger"
+            block
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
+          >
             Clear All Points
           </pv-button>
-        </v-col>
-      </v-card-text>
-      <v-card-text
+        </div>
+      </div>
+      <div
         v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
-        class="d-flex pa-0 flex-wrap"
+        class="flex flex-wrap p-0"
       >
-        <v-col cols="6" lg="4" class="pl-0 pr-2">
-          <pv-button size="sm" variant="primary" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)">
+        <div class="w-1/2 pl-0 pr-2 lg:w-1/3">
+          <pv-button
+            size="sm"
+            variant="primary"
+            block
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualFirst)"
+          >
             Take First Point
           </pv-button>
-        </v-col>
-        <v-col cols="6" lg="4" class="pl-2 pr-0 pr-lg-2">
-          <pv-button size="sm" variant="primary" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)">
+        </div>
+        <div class="w-1/2 pl-2 pr-0 lg:w-1/3 lg:pr-2">
+          <pv-button
+            size="sm"
+            variant="primary"
+            block
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.DualSecond)"
+          >
             Take Second Point
           </pv-button>
-        </v-col>
-        <v-col cols="12" lg="4" class="pl-0 pl-lg-2 pr-0">
-          <pv-button size="sm" variant="danger" block @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)">
+        </div>
+        <div class="w-full pl-0 pr-0 lg:w-1/3 lg:pl-2">
+          <pv-button
+            size="sm"
+            variant="danger"
+            block
+            @click="useCameraSettingsStore().takeRobotOffsetPoint(RobotOffsetType.Clear)"
+          >
             Clear All Points
           </pv-button>
-        </v-col>
-      </v-card-text>
+        </div>
+      </div>
     </div>
   </div>
 </template>

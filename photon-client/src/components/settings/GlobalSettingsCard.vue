@@ -2,11 +2,13 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { computed, ref, watchEffect } from "vue";
 import PvButton from "@/components/common/pv-button.vue";
+import PvCard from "@/components/common/pv-card.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvRadio from "@/components/common/pv-radio.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvSelect from "@/components/common/pv-select.vue";
+import PvAlert from "@/components/common/pv-alert.vue";
 import { type ConfigurableNetworkSettings, NetworkConnectionType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
@@ -167,9 +169,9 @@ watchEffect(() => {
 </script>
 
 <template>
-  <v-card class="mb-3 rounded-12" color="surface">
-    <v-card-title style="display: flex; justify-content: space-between">
-      <span>Global Settings</span>
+  <pv-card padding="none" class="my-3">
+    <div class="flex items-center justify-between p-5 pb-2">
+      <div class="text-lg font-semibold">Global Settings</div>
       <pv-button
         variant="text"
         size="sm"
@@ -183,9 +185,9 @@ watchEffect(() => {
       >
         Theme
       </pv-button>
-    </v-card-title>
-    <div class="pa-5 pt-0">
-      <v-card-title class="pl-0 pt-0 pb-10px">Networking</v-card-title>
+    </div>
+    <div class="p-5 pt-0">
+      <div class="pb-10px text-base font-semibold">Networking</div>
       <v-form v-model="settingsValid">
         <pv-input
           v-model="tempSettingsStruct.ntServerAddress"
@@ -199,14 +201,13 @@ watchEffect(() => {
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
-        <v-alert
+        <pv-alert
           v-if="!isValidNetworkTablesIP(tempSettingsStruct.ntServerAddress) && !tempSettingsStruct.runNTServer"
           class="pt-3 pb-3"
           color="error"
           density="compact"
           text="The NetworkTables Server Address is not set or is invalid. NetworkTables is unable to connect."
           icon="mdi-alert-circle-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <pv-radio
           v-show="!useSettingsStore().network.networkingDisabled"
@@ -246,7 +247,7 @@ watchEffect(() => {
             useSettingsStore().network.networkingDisabled
           "
         />
-        <v-card-title class="pl-0 pt-3 pb-10px">Advanced Networking</v-card-title>
+        <div class="pt-3 pb-10px text-base font-semibold">Advanced Networking</div>
         <pv-switch
           v-show="!useSettingsStore().network.networkingDisabled"
           v-model="tempSettingsStruct.shouldManage"
@@ -268,7 +269,7 @@ watchEffect(() => {
           tooltip="Name of the interface PhotonVision should manage the IP address of"
           :items="useSettingsStore().networkInterfaceNames"
         />
-        <v-alert
+        <pv-alert
           v-if="
             !useSettingsStore().networkInterfaceNames.length &&
             tempSettingsStruct.shouldManage &&
@@ -280,7 +281,6 @@ watchEffect(() => {
           density="compact"
           text="Cannot detect any wired connections! Send program logs to the developers for help."
           icon="mdi-alert-circle-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <pv-switch
           v-model="tempSettingsStruct.runNTServer"
@@ -288,28 +288,26 @@ watchEffect(() => {
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           :label-cols="4"
         />
-        <v-alert
+        <pv-alert
           v-if="tempSettingsStruct.runNTServer"
           color="buttonActive"
           density="compact"
           text="This mode is intended for debugging and should be off for proper usage. PhotonLib will NOT work!"
           icon="mdi-information-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
-        <v-card-title class="pl-0 pt-3 pb-10px">Miscellaneous</v-card-title>
+        <div class="pt-3 pb-10px text-base font-semibold">Miscellaneous</div>
         <pv-switch
           v-model="tempSettingsStruct.shouldPublishProto"
           label="Also Publish Protobuf"
           tooltip="If enabled, Photon will publish all pipeline results in both the Packet and Protobuf formats. This is useful for visualizing pipeline results from NT viewers such as glass and logging software such as AdvantageScope. Note: photon-lib will ignore this value and is not recommended on the field for performance."
           :label-cols="4"
         />
-        <v-alert
+        <pv-alert
           v-if="tempSettingsStruct.shouldPublishProto"
           color="buttonActive"
           density="compact"
           text="This mode is intended for debugging and may reduce performance; it should be off for field use."
           icon="mdi-information-outline"
-          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
       </v-form>
       <pv-button
@@ -323,62 +321,60 @@ watchEffect(() => {
       </pv-button>
     </div>
     <pv-dialog v-model="showThemeConfig" width="800">
-      <v-card color="surface" flat>
-        <v-card-title class="text-center">Theme Configuration</v-card-title>
-        <v-card-text class="pt-0 pb-10px">
-          <v-row>
-            <v-col class="text-center">
+      <pv-card padding="none" class="p-5">
+        <div class="text-center text-lg font-semibold pb-3">Theme Configuration</div>
+        <div class="pt-0 pb-10px">
+          <div class="flex flex-wrap -mx-3">
+            <div class="flex-1 px-3 text-center">
               Background
               <v-color-picker
                 v-model:model-value="backgroundColor"
-                class="ma-auto pt-3"
+                class="m-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
                 @update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
               ></v-color-picker>
-            </v-col>
-            <v-col class="text-center">
+            </div>
+            <div class="flex-1 px-3 text-center">
               Surface
               <v-color-picker
                 v-model:model-value="surfaceColor"
-                class="ma-auto pt-3"
+                class="m-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
                 @update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
               ></v-color-picker>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col class="text-center">
+            </div>
+          </div>
+          <div class="flex flex-wrap -mx-3">
+            <div class="flex-1 px-3 text-center">
               Primary
               <v-color-picker
                 v-model:model-value="primaryColor"
-                class="ma-auto pt-3"
+                class="m-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
                 @update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
               ></v-color-picker>
-            </v-col>
-            <v-col class="text-center">
+            </div>
+            <div class="flex-1 px-3 text-center">
               Secondary
               <v-color-picker
                 v-model:model-value="secondaryColor"
-                class="ma-auto pt-3"
+                class="m-auto pt-3"
                 elevation="0"
                 mode="hex"
                 :modes="['hex']"
                 @update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
               ></v-color-picker>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-actions class="pa-5 pt-0">
-          <pv-button variant="passive" @click="showThemeConfig = false">
-            Close
-          </pv-button>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-wrap justify-end gap-3 pt-0">
+          <pv-button variant="passive" @click="showThemeConfig = false"> Close </pv-button>
           <pv-button
             variant="primary"
             @click="
@@ -390,10 +386,10 @@ watchEffect(() => {
           >
             Reset Default
           </pv-button>
-        </v-card-actions>
-      </v-card>
+        </div>
+      </pv-card>
     </pv-dialog>
-  </v-card>
+  </pv-card>
 </template>
 
 <style>

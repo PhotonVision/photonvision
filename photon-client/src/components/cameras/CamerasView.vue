@@ -56,15 +56,16 @@ const streamToggleModel = computed<string[]>({
     id="camera-settings-camera-view-card"
     class="rounded-[12px] bg-pv-surface text-white shadow-lg shadow-black/10 min-[960px]:sticky min-[960px]:top-3"
   >
-    <div class="flex flex-wrap items-center gap-3 px-5 py-4">
+    <div class="flex flex-wrap items-center gap-3 px-5 py-4 justify-between">
       <span class="mr-1 whitespace-nowrap text-xl font-semibold">Cameras</span>
       <span
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
-        class="inline-flex rounded-full px-3 py-1 text-sm font-medium"
+        class="inline-flex rounded-full px-3 py-1 text-sm font-medium gap-1"
         :class="fpsTooLow ? 'bg-pv-error/12 text-pv-error' : 'bg-transparent text-pv-primary'"
       >
-        {{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }} FPS -
-        {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency
+        <span class="tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }} FPS</span>
+        &middot;
+        <span class="tabular-nums"> {{ Math.min(Math.round(useStateStore().currentPipelineResults?.latency || 0), 9999) }} ms latency</span> 
       </span>
       <span v-else class="inline-flex rounded-full px-3 py-1 text-sm font-medium text-pv-error">
         Camera not connected
@@ -75,7 +76,7 @@ const streamToggleModel = computed<string[]>({
       >
         Focus: {{ Math.round(useStateStore().currentPipelineResults?.focus || 0) }}
       </span>
-      <div class="ml-auto w-full min-w-56 sm:w-auto">
+      <div class="  ">
         <pv-switch
           v-model="driverMode"
           :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"

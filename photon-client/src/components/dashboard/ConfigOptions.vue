@@ -2,6 +2,8 @@
 import type { Component } from "vue";
 import { computed, ref } from "vue";
 import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
+import PvCard from "@/components/common/pv-card.vue";
+import PvAlert from "@/components/common/pv-alert.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import InputTab from "@/components/dashboard/tabs/InputTab.vue";
@@ -16,9 +18,7 @@ import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { useDisplay, useTheme } from "vuetify";
-
-const theme = useTheme();
+import { useDisplay } from "vuetify";
 
 interface ConfigOption {
   tabName: string;
@@ -126,7 +126,9 @@ const onBeforeTabUpdate = () => {
 };
 
 const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: string): Component => {
-  return tabGroupData.find((tabConfig) => tabConfig.tabName === selectedTabName)?.component ?? tabGroupData[0].component;
+  return (
+    tabGroupData.find((tabConfig) => tabConfig.tabName === selectedTabName)?.component ?? tabGroupData[0].component
+  );
 };
 
 const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
@@ -134,33 +136,34 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
 </script>
 
 <template>
-  <v-row no-gutters class="tabGroups">
+  <div class="tabGroups flex flex-wrap">
     <template v-if="!useCameraSettingsStore().hasConnected">
-      <v-alert
+      <pv-alert
         color="error"
         density="compact"
         text="Camera is not connected. Please check your connection and try again."
         icon="mdi-alert-circle-outline"
-        :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
       />
     </template>
     <template v-else>
-      <v-col
+      <div
         v-for="(tabGroupData, tabGroupIndex) in tabGroups"
         :key="tabGroupIndex"
-        :cols="tabGroupIndex === 1 && shouldUseWideSecondTabGroup ? 7 : ''"
-        :class="tabGroupIndex !== tabGroups.length - 1 && 'pr-3'"
+        :class="[
+          tabGroupIndex === 1 && shouldUseWideSecondTabGroup ? 'w-7/12' : 'flex-1',
+          tabGroupIndex !== tabGroups.length - 1 && 'pr-3'
+        ]"
         @vue:before-update="onBeforeTabUpdate"
       >
-        <v-card color="surface" height="100%" class="pr-5 pl-5 rounded-12">
-          <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" class="mt-2"/>
+        <pv-card padding="none" class="pr-5 pl-5 h-full">
+          <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" class="mt-2" />
           <div class="pt-10px pb-10px">
             <KeepAlive>
               <Component :is="getSelectedComponent(tabGroupData, selectedTabs[tabGroupIndex])" />
             </KeepAlive>
           </div>
-        </v-card>
-      </v-col>
+        </pv-card>
+      </div>
     </template>
-  </v-row>
+  </div>
 </template>

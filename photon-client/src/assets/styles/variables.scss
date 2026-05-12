@@ -1,6 +1,8 @@
 @use "@fontsource/prompt";
+@use "@fontsource/dm-sans";
 
-$default-font: "Prompt", sans-serif !default;
+
+$default-font: "DM Sans", sans-serif !default;
 $body-font-family: $default-font;
 $heading-font-family: $default-font;
 $body-background: rgb(var(--v-theme-background));
@@ -65,7 +67,7 @@ html {
   padding-right: 10px !important;
 }
 
-.pa-10px {
+.p-10px {
   padding: 10px !important;
 }
 

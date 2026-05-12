@@ -9,10 +9,10 @@ import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
 import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
+import PvAlert from "@/components/common/pv-alert.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
-import { useTheme } from "vuetify";
-
-const theme = useTheme();
+import PvCard from "@/components/common/pv-card.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
 
 const backendHostname = inject<string>("backendHostname");
 const formatUrl = (port: number) => `http://${backendHostname}:${port}/stream.mjpg`;
@@ -118,27 +118,29 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 </script>
 
 <template>
-  <div class="pa-3">
-    <v-row>
+  <div class="p-3">
+    <div class="flex flex-wrap -mx-3">
       <!-- Active modules -->
-      <v-col
+      <div
         v-for="(module, index) in activeVisionModules"
         :key="`enabled-${module.uniqueName}`"
-        cols="12"
-        sm="6"
-        lg="4"
-        class="pr-0"
+        class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3"
       >
-        <v-card color="surface" class="rounded-12">
-          <v-card-title>{{ module.matchedCameraInfo.name }}</v-card-title>
-          <v-card-subtitle v-if="!cameraConnected(module.matchedCameraInfo.uniquePath)"
-            >Status: <span class="inactive-status">Disconnected</span></v-card-subtitle
+        <pv-card class="rounded-2xl">
+          <div class="text-lg font-semibold break-words">
+            {{ cameraInfoFor(module.matchedCameraInfo).name }}
+          </div>
+          <div v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="text-sm">
+            Status: <span class="inactive-status">Disconnected</span>
+          </div>
+          <div
+            v-else-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) && !module.mismatch"
+            class="text-sm"
           >
-          <v-card-subtitle v-else-if="cameraConnected(module.matchedCameraInfo.uniquePath) && !module.mismatch"
-            >Status: <span class="active-status">Active</span></v-card-subtitle
-          >
-          <v-card-subtitle v-else>Status: <span class="mismatch-status">Mismatch</span></v-card-subtitle>
-          <v-card-text class="pt-3">
+            Status: <span class="active-status">Active</span>
+          </div>
+          <div v-else class="text-sm">Status: <span class="mismatch-status">Mismatch</span></div>
+          <div class="pt-3">
             <v-table density="compact">
               <tbody>
                 <tr
@@ -196,10 +198,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 stream-type="Processed"
               />
             </div>
-          </v-card-text>
-          <v-card-text class="pt-0">
-            <v-row>
-              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
+          </div>
+          <div class="pt-0">
+            <div class="flex flex-wrap -mx-2">
+              <div class="w-full md:w-1/3 px-2 pb-3 md:pb-0">
                 <pv-button
                   variant="passive"
                   block
@@ -212,8 +214,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 >
                   <span>Details</span>
                 </pv-button>
-              </v-col>
-              <v-col cols="6" md="5" class="pr-0">
+              </div>
+              <div class="w-1/2 md:w-[41.666%] px-2">
                 <pv-button
                   variant="primary"
                   block
@@ -222,8 +224,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 >
                   Deactivate
                 </pv-button>
-              </v-col>
-              <v-col cols="6" md="3">
+              </div>
+              <div class="w-1/2 md:w-1/4 px-2">
                 <pv-button
                   size="icon"
                   variant="danger"
@@ -240,25 +242,24 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 >
                   <span class="mdi mdi-trash-can-outline text-xl leading-none" aria-hidden="true"></span>
                 </pv-button>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
+              </div>
+            </div>
+          </div>
+        </pv-card>
+      </div>
 
       <!-- Deactivated modules -->
-      <v-col
+      <div
         v-for="module in disabledVisionModules"
         :key="`disabled-${module.uniqueName}`"
-        cols="12"
-        sm="6"
-        lg="4"
-        class="pr-0"
+        class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3"
       >
-        <v-card class="pr-0 rounded-12" color="surface">
-          <v-card-title>{{ module.cameraQuirks.baseName }}</v-card-title>
-          <v-card-subtitle>Status: <span class="inactive-status">Deactivated</span></v-card-subtitle>
-          <v-card-text class="pt-3">
+        <pv-card class="rounded-2xl">
+          <div class="text-lg font-semibold break-words">
+            {{ module.cameraQuirks.baseName }}
+          </div>
+          <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
+          <div class="pt-3">
             <v-table density="compact">
               <tbody>
                 <tr>
@@ -286,10 +287,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 </tr>
               </tbody>
             </v-table>
-          </v-card-text>
-          <v-card-text class="pt-0">
-            <v-row>
-              <v-col cols="12" md="4" class="pr-md-0 pb-0 pb-md-3">
+          </div>
+          <div class="pt-0">
+            <div class="flex flex-wrap -mx-2">
+              <div class="w-full md:w-1/3 px-2 pb-3 md:pb-0">
                 <pv-button
                   variant="passive"
                   block
@@ -302,8 +303,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 >
                   <span>Details</span>
                 </pv-button>
-              </v-col>
-              <v-col cols="6" md="5" class="pr-0">
+              </div>
+              <div class="w-1/2 md:w-[41.666%] px-2">
                 <pv-button
                   variant="primary"
                   block
@@ -312,8 +313,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 >
                   Activate
                 </pv-button>
-              </v-col>
-              <v-col cols="6" md="3">
+              </div>
+              <div class="w-1/2 md:w-1/4 px-2">
                 <pv-button
                   size="icon"
                   variant="danger"
@@ -330,93 +331,90 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                 >
                   <span class="mdi mdi-trash-can-outline text-xl leading-none" aria-hidden="true"></span>
                 </pv-button>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
+              </div>
+            </div>
+          </div>
+        </pv-card>
+      </div>
 
       <!-- Unassigned cameras -->
-      <v-col v-for="(camera, index) in unmatchedCameras" :key="index" cols="12" sm="6" lg="4" class="pr-0">
-        <v-card class="pr-0 rounded-12" color="surface">
-          <v-card-title>
-            <span v-if="camera.type === 'PVUsbCameraInfo'">USB Camera:</span>
-            <span v-else-if="camera.type === 'PVCSICameraInfo'">CSI Camera:</span>
-            <span v-else-if="camera.type === 'PVFileCameraInfo'">File Camera:</span>
+      <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3">
+        <pv-card class="rounded-2xl">
+          <div class="text-lg font-semibold break-words">
+            <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
+            <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
+            <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
             <span v-else>Unknown Camera:</span>
-            &nbsp;<span>{{ camera.name }}</span>
-          </v-card-title>
-          <v-card-subtitle>Status: Unassigned</v-card-subtitle>
-          <v-card-text class="pt-3">
-            <span style="word-break: break-all">{{ camera?.path }}</span>
-          </v-card-text>
-          <v-card-text class="pt-0">
-            <v-row>
-              <v-col cols="6" class="pr-0">
+            &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
+          </div>
+          <div class="text-sm">Status: Unassigned</div>
+          <div class="pt-3">
+            <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
+          </div>
+          <div class="pt-0">
+            <div class="flex flex-wrap -mx-2">
+              <div class="w-1/2 px-2">
                 <pv-button variant="passive" block @click="setCameraView(camera, false)">
                   <span>Details</span>
                 </pv-button>
-              </v-col>
-              <v-col cols="6">
-                <pv-button
-                  variant="primary"
-                  block
-                  :loading="assigningCamera"
-                  @click="assignCamera(camera)"
-                >
+              </div>
+              <div class="w-1/2 px-2">
+                <pv-button variant="primary" block :loading="assigningCamera" @click="assignCamera(camera)">
                   Activate
                 </pv-button>
-              </v-col>
-            </v-row>
-          </v-card-text>
-        </v-card>
-      </v-col>
+              </div>
+            </div>
+          </div>
+        </pv-card>
+      </div>
 
       <!-- Info card -->
-      <v-col cols="12" sm="6" lg="4" class="pr-0">
-        <v-card
-          dark
-          flat
-          class="pl-6 pr-6 d-flex flex-column justify-center"
-          style="background-color: transparent; height: 100%"
+      <div class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3">
+        <pv-card
+          variant="transparent"
+          :bordered="false"
+          :elevated="false"
+          padding="none"
+          class="flex h-full flex-col justify-center px-6"
         >
-          <v-card-text class="d-flex flex-column align-center justify-center" style="flex-grow: 0">
-            <v-icon size="64" color="primary">mdi-plus</v-icon>
-          </v-card-text>
-          <v-card-title>Additional plugged in cameras will display here!</v-card-title>
-        </v-card>
-      </v-col>
-    </v-row>
+          <div class="flex flex-col items-center justify-center">
+            <pv-icon size="64" color="primary">mdi-plus</pv-icon>
+          </div>
+          <div class="pt-3 text-lg font-semibold">Additional plugged in cameras will display here!</div>
+        </pv-card>
+      </div>
+    </div>
 
     <!-- Camera details modal -->
     <pv-dialog v-model="viewingDetails" max-width="800">
-      <v-card v-if="viewingCamera[0] !== null" flat color="surface">
-        <v-card-title class="d-flex justify-space-between">
-          <span>{{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}</span>
+      <pv-card v-if="viewingCamera[0] !== null" class="flex flex-col gap-3">
+        <div class="flex items-center justify-between text-lg font-semibold">
+          <span class="break-words">
+            {{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}
+          </span>
           <pv-button variant="text" size="icon" icon="mdi-close" @click="setCameraView(null, null)" />
-        </v-card-title>
-        <v-card-text v-if="!viewingCamera[1]">
+        </div>
+        <div v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
-        </v-card-text>
-        <v-card-text
+        </div>
+        <div
           v-else-if="
             activeVisionModules.find((it) => it.matchedCameraInfo.uniquePath === viewingCamera[0]?.uniquePath)?.mismatch
           "
         >
-          <v-alert
+          <pv-alert
             class="mb-3"
             color="buttonActive"
             density="compact"
             text="A different camera may have been connected to this device! Compare the following information carefully."
             icon="mdi-information-outline"
-            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
           />
           <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
-        </v-card-text>
-        <v-card-text v-else>
+        </div>
+        <div v-else>
           <PvCameraInfoCard :camera="getMatchedDevice(viewingCamera[0])" />
-        </v-card-text>
-      </v-card>
+        </div>
+      </pv-card>
     </pv-dialog>
 
     <pv-delete-modal
@@ -432,16 +430,6 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 <style scoped>
 td {
   padding: 0 !important;
-}
-
-.v-card-subtitle {
-  padding-top: 0px !important;
-  padding-bottom: 8px !important;
-}
-
-.v-card-title {
-  padding-bottom: 0 !important;
-  text-wrap-mode: wrap !important;
 }
 
 .active-status {
