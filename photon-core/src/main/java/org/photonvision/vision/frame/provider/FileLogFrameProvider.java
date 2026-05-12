@@ -50,9 +50,16 @@ import org.photonvision.vision.opencv.CVMat;
  * spacing matches the recording's {@code capture_ns} deltas. Anchored on the first frame and
  * target-based (via {@link System#nanoTime}) so a slow pipeline doesn't accumulate sleep debt.
  *
- * <p><strong>EOF:</strong> the shorter of {@code frames/} and {@code metadata.jsonl} ends
- * replay. Once exhausted, {@link #isConnected()} reports {@code false} and further
- * {@link #getInputMat()} calls return empty {@link CVMat}s.
+ * <p><strong>EOF — stop and park:</strong> the shorter of {@code frames/} and
+ * {@code metadata.jsonl} ends the linear pass. At EOF, {@link #getInputMat} parks the vision
+ * thread indefinitely (via {@link LockSupport#parkNanos}) — no more pipeline runs, no more NT
+ * updates, no more frame-counter increments. The MJPEG stream's last delivered frame stays
+ * visible in the browser because the server simply stops feeding new frames; the browser
+ * holds the last received MJPEG part. {@link #isConnected} stays {@code true} so the camera
+ * still reads as Active in the UI; to restart playback the user deactivates and reactivates
+ * the camera. The park returns immediately when the vision thread is interrupted (the
+ * deactivation path), at which point {@link #getInputMat} returns an empty {@link CVMat}
+ * with the interrupt flag preserved so {@code VisionRunner}'s outer loop can exit cleanly.
  *
  * <p><strong>Required structure:</strong> construction throws {@link IOException} if
  * {@code frames/000000.jpg} or {@code metadata.jsonl} is missing. Re-recording via
@@ -65,8 +72,9 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private final FrameStaticProperties properties;
     private final Logger logger;
 
-    // CAS in markExhausted dedupes the "exhausted" log line; a plain volatile would not.
-    private final AtomicBoolean exhausted = new AtomicBoolean(false);
+    // CAS-set on the first EOF read; gates the "reached end" log line and the park branch.
+    // Does NOT flip isConnected — see class doc.
+    private final AtomicBoolean stoppedAtEof = new AtomicBoolean(false);
 
     private long emittedFrameCount = 0;
 
@@ -141,8 +149,8 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             onCameraConnected();
         }
 
-        if (exhausted.get()) {
-            return new CapturedFrame(new CVMat(), properties, 0L);
+        if (stoppedAtEof.get()) {
+            return parkUntilInterrupted();
         }
 
         Optional<MetadataSidecarReader.Entry> entry;
@@ -152,15 +160,14 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             logger.error(
                     "metadata.jsonl read failed at frame "
                             + emittedFrameCount
-                            + "; stopping replay: "
+                            + "; stopping at EOF: "
                             + e.getMessage());
-            markExhausted("metadata read failure");
-            return new CapturedFrame(new CVMat(), properties, 0L);
+            return enterStoppedState("metadata read failure");
         }
 
         if (entry.isEmpty()) {
-            markExhausted("metadata.jsonl exhausted after " + emittedFrameCount + " frames");
-            return new CapturedFrame(new CVMat(), properties, 0L);
+            return enterStoppedState(
+                    "metadata.jsonl exhausted after " + emittedFrameCount + " frames");
         }
 
         long seq = entry.get().seq();
@@ -172,13 +179,12 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         Mat decoded = Imgcodecs.imread(framePath.toString());
         if (decoded.empty()) {
             decoded.release();
-            markExhausted(
+            return enterStoppedState(
                     "frame "
                             + framePath.getFileName()
                             + " missing or unreadable (after "
                             + emittedFrameCount
                             + " frames emitted)");
-            return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
         pace(captureNs);
@@ -208,10 +214,30 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         return properties;
     }
 
-    private void markExhausted(String reason) {
-        if (exhausted.compareAndSet(false, true)) {
-            logger.info("Replay source exhausted: " + reason);
+    /** First-time EOF transition: log once, then park. */
+    private CapturedFrame enterStoppedState(String reason) {
+        if (stoppedAtEof.compareAndSet(false, true)) {
+            logger.info("Replay reached end of recording: " + reason);
         }
+        return parkUntilInterrupted();
+    }
+
+    /**
+     * Park the vision thread until {@code VisionRunner.stopProcess()} interrupts it (the
+     * deactivation path — see {@code VisionRunner.java:91}). While parked, no pipeline runs,
+     * no NT updates, no MJPEG frames pushed, so the browser holds the last MJPEG part it
+     * received and the "Frames Processed" counter freezes at the last good count. On wake
+     * the interrupt flag is preserved so {@code VisionRunner}'s outer loop exits cleanly.
+     */
+    private CapturedFrame parkUntilInterrupted() {
+        while (!Thread.currentThread().isInterrupted()) {
+            // parkNanos handles spurious wakeups via the while loop; Long.MAX_VALUE is "park
+            // forever" but capped at JVM ~292 years, so we don't even need a re-park in practice.
+            LockSupport.parkNanos(Long.MAX_VALUE);
+        }
+        // VisionRunner expects an empty Mat as the "no frame this tick" signal; combined with
+        // its outer Thread.interrupted() check that drains the flag and exits the update loop.
+        return new CapturedFrame(new CVMat(), properties, 0L);
     }
 
     @Override
@@ -230,7 +256,11 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     @Override
     public boolean checkCameraConnected() {
-        return !exhausted.get();
+        // Replay source is "alive" from construction through release. The post-EOF parked state
+        // is just "stopped at the end of the recording," not a disconnect — UI status stays
+        // Active so the user can see the frozen scene rather than a Disconnected label. To
+        // restart, deactivate + reactivate.
+        return true;
     }
 
     @Override

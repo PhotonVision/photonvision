@@ -37,6 +37,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
+import org.photonvision.vision.frame.provider.CpuImageProcessor.CapturedFrame;
 
 /**
  * Synthesises a 3-frame image-sequence fixture via {@link Imgcodecs#imwrite} (the same encoder
@@ -122,18 +123,59 @@ class FileLogFrameProviderTest {
                 captured.colorImage.release();
             }
 
-            // After EOF: next read should return an empty frame and flip isConnected to false.
-            var post = provider.getInputMat();
-            assertTrue(
-                    post.colorImage.getMat().empty(),
-                    "post-EOF read should produce an empty Mat");
-            assertFalse(provider.isConnected(), "should report disconnected after EOF");
-            post.colorImage.release();
+            // After EOF the provider parks the vision thread instead of disconnecting — the
+            // MJPEG stream holds whatever the browser last received, the pipeline stops running,
+            // and the "Frames Processed" counter freezes. To restart the user deactivates and
+            // reactivates the camera. See parksTheVisionThreadAtEof below for the wake-on-interrupt
+            // contract; here we just verify isConnected stays true past EOF.
+            assertTrue(provider.isConnected(), "replay source should stay connected after EOF");
+        } finally {
+            provider.release();
+        }
+    }
 
-            // Repeat EOF call: must still short-circuit, not throw.
-            var post2 = provider.getInputMat();
-            assertTrue(post2.colorImage.getMat().empty());
-            post2.colorImage.release();
+    @Test
+    void parksTheVisionThreadAtEof() throws Exception {
+        // After consuming the recording, getInputMat must block until interrupted (mirroring
+        // VisionRunner.stopProcess's path) so the pipeline stops running on deactivation rather
+        // than spinning on a frozen frame. Run getInputMat on a separate thread, confirm it
+        // blocks, then interrupt it and verify it wakes with an empty CVMat + preserved flag.
+        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+        try {
+            // Burn through all frames so the next call hits EOF.
+            for (int i = 0; i < CAPTURE_NS.length; i++) {
+                provider.getInputMat().colorImage.release();
+            }
+
+            java.util.concurrent.atomic.AtomicReference<CapturedFrame> result =
+                    new java.util.concurrent.atomic.AtomicReference<>();
+            java.util.concurrent.atomic.AtomicBoolean interruptedAfter =
+                    new java.util.concurrent.atomic.AtomicBoolean();
+            Thread t =
+                    new Thread(
+                            () -> {
+                                result.set(provider.getInputMat());
+                                interruptedAfter.set(Thread.currentThread().isInterrupted());
+                            });
+            t.setName("parksTheVisionThreadAtEof-runner");
+            t.start();
+
+            Thread.sleep(250); // give it time to enter the park
+            assertTrue(t.isAlive(), "getInputMat should park after EOF, not return");
+
+            t.interrupt();
+            t.join(2_000);
+            assertFalse(t.isAlive(), "getInputMat should wake within 2s of interrupt");
+
+            CapturedFrame captured = result.get();
+            assertNotNull(captured, "returned CapturedFrame should not be null");
+            assertTrue(
+                    captured.colorImage.getMat().empty(),
+                    "post-interrupt CapturedFrame should carry an empty Mat");
+            assertTrue(
+                    interruptedAfter.get(),
+                    "interrupt flag must be preserved so VisionRunner's outer loop exits cleanly");
+            captured.colorImage.release();
         } finally {
             provider.release();
         }
