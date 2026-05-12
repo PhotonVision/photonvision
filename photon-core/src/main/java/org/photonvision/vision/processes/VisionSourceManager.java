@@ -504,6 +504,12 @@ public class VisionSourceManager {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
+                    case FileLogCamera ->
+                            // Stub. Real construction lands in a later commit alongside
+                            // FileLogVisionSource + FileLogFrameProvider. Keeps the sealed-type
+                            // switch exhaustive without forward-referencing those classes.
+                            throw new UnsupportedOperationException(
+                                    "FileLog replay source not yet implemented");
                 };
 
         if (source.getFrameProvider() == null) {

@@ -20,5 +20,6 @@ package org.photonvision.vision.camera;
 public enum CameraType {
     UsbCamera,
     ZeroCopyPicam,
-    FileCamera // special case for File-based vision sources
+    FileCamera, // special case for File-based vision sources
+    FileLogCamera // replay source: recording.mp4 + metadata.jsonl directory written by FrameRecorder
 }
