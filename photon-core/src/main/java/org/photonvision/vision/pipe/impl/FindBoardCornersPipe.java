@@ -386,6 +386,18 @@ public class FindBoardCornersPipe
             return null;
         }
 
+        // enforce preconditions
+        if (outBoardCorners.total() != outLevels.total() || outLevels.total() != objPts.total()) {
+            logger.error(
+                    "Output board corners, levels, and object points must all be the same size. Got board corners of size "
+                            + outBoardCorners.size()
+                            + ", levels of size "
+                            + outLevels.size()
+                            + ", and object points of size "
+                            + objPts.size());
+            return null;
+        }
+
         return new FindBoardCornersPipeResult(inFrame.size(), objPts, outBoardCorners, outLevels);
     }
 

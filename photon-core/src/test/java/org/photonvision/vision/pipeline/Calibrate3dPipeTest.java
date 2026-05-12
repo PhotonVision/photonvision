@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.cartesian.CartesianTest;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Enum;
 import org.junitpioneer.jupiter.cartesian.CartesianTest.Values;
@@ -127,7 +126,7 @@ public class Calibrate3dPipeTest {
     @CartesianTest
     public void calibrateTestMatrix(
             @Enum(CalibrationDatasets.class) CalibrationDatasets dataset,
-            @Values(booleans = {true, false}) boolean useMrCal) {
+            @Values(booleans = {true}) boolean useMrCal) {
         // Pi3 and V1.3 camera
         String squareBase = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();

@@ -243,17 +243,18 @@ public class Calibrate3dPipe
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
-            List<FindBoardCornersPipe.FindBoardCornersPipeResult> in,
+            List<FindBoardCornersPipe.FindBoardCornersPipeResult> foundBoards,
             double fxGuess,
             double fyGuess,
             Path imageSavePath) {
         List<MatOfPoint2f> corner_locations =
-                in.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).toList();
+                foundBoards.stream().map(it -> it.imagePoints).map(MatOfPoint2f::new).toList();
 
-        List<MatOfFloat> levels = in.stream().map(it -> it.levels).map(MatOfFloat::new).toList();
+        List<MatOfFloat> levels =
+                foundBoards.stream().map(it -> it.levels).map(MatOfFloat::new).toList();
 
-        int imageWidth = (int) in.get(0).size.width;
-        int imageHeight = (int) in.get(0).size.height;
+        int imageWidth = (int) foundBoards.get(0).size.width;
+        int imageHeight = (int) foundBoards.get(0).size.height;
 
         MrCalResult result =
                 MrCalJNI.calibrateCamera(
@@ -296,49 +297,86 @@ public class Calibrate3dPipe
         // ones our code used to produce. To preserve consistency, continue to redo this math
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
-        for (var o : in) {
+        for (var boardObs : foundBoards) {
             var rvec = new Mat();
             var tvec = new Mat();
 
             // If the calibration points contain points that are negative then we need to exclude them,
             // they are considered points that we dont want to use in calibration/solvepnp. These points
             // are required prior to this to allow mrcal to work.
-            Point3[] oPoints = o.objectPoints.toArray();
-            Point[] iPoints = o.imagePoints.toArray();
+            Point3[] oPoints = boardObs.objectPoints.toArray();
+            Point[] iPoints = boardObs.imagePoints.toArray();
 
             List<Point3> outputOPoints = new ArrayList<Point3>();
             List<Point> outputIPoints = new ArrayList<Point>();
 
-            for (int i = 0; i < iPoints.length; i++) {
-                if (iPoints[i].x >= 0 && iPoints[i].y >= 0) {
-                    outputIPoints.add(iPoints[i]);
+            for (int i_imgPoint = 0; i_imgPoint < iPoints.length; i_imgPoint++) {
+                if (iPoints[i_imgPoint].x >= 0 && iPoints[i_imgPoint].y >= 0) {
+                    outputIPoints.add(iPoints[i_imgPoint]);
                 }
             }
-            for (int i = 0; i < oPoints.length; i++) {
-                if (oPoints[i].x >= 0 && oPoints[i].y >= 0 && oPoints[i].z >= 0) {
-                    outputOPoints.add(oPoints[i]);
+            for (int i_objPoint = 0; i_objPoint < oPoints.length; i_objPoint++) {
+                if (oPoints[i_objPoint].x >= 0
+                        && oPoints[i_objPoint].y >= 0
+                        && oPoints[i_objPoint].z >= 0) {
+                    outputOPoints.add(oPoints[i_objPoint]);
                 }
             }
 
-            o.objectPoints.fromList(outputOPoints);
-            o.imagePoints.fromList(outputIPoints);
+            MatOfPoint3f filteredObjectPoints = new MatOfPoint3f();
+            MatOfPoint2f filteredImagePoints = new MatOfPoint2f();
+            filteredObjectPoints.fromList(outputOPoints);
+            filteredImagePoints.fromList(outputIPoints);
 
             Calib3d.solvePnP(
-                    o.objectPoints,
-                    o.imagePoints,
+                    filteredObjectPoints,
+                    filteredImagePoints,
                     cameraMatrixMat.getAsMatOfDouble(),
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
             rvecs.add(rvec);
             tvecs.add(tvec);
+
+            filteredObjectPoints.release();
+            filteredImagePoints.release();
         }
 
-        List<MatOfPoint3f> objPoints = in.stream().map(it -> it.objectPoints).toList();
-        List<MatOfPoint2f> imgPts = in.stream().map(it -> it.imagePoints).toList();
+        List<MatOfPoint3f> objPoints = foundBoards.stream().map(it -> it.objectPoints).toList();
+        List<MatOfPoint2f> imgPts = foundBoards.stream().map(it -> it.imagePoints).toList();
+
+        // make sure length of corners used == number of image points
+        for (int i = 0; i < foundBoards.size(); i++) {
+            var observation = foundBoards.get(i);
+            if (observation.imagePoints.total() != observation.objectPoints.total()
+                    || observation.imagePoints.total() != result.cornersUsed.get(i).length) {
+                // debug -- dump object points, image points, corners used
+                logger.error(
+                        "Length of corners used does not match number of image points! Got "
+                                + result.cornersUsed.get(i).length
+                                + " corners used but "
+                                + observation.imagePoints.total()
+                                + " image points");
+                logger.error("Image points:");
+                for (var pt : observation.imagePoints.toArray()) {
+                    logger.error("  " + pt.x + ", " + pt.y);
+                }
+                logger.error("Object points:");
+                for (var pt : observation.objectPoints.toArray()) {
+                    logger.error("  " + pt.x + ", " + pt.y + ", " + pt.z);
+                }
+                logger.error("Corners used:");
+                for (var used : result.cornersUsed.get(i)) {
+                    logger.error("  " + used);
+                }
+
+                throw new RuntimeException();
+            }
+        }
+
         List<BoardObservation> observations =
                 createObservations(
-                        in,
+                        foundBoards,
                         cameraMatrixMat.getAsMatOfDouble(),
                         distortionCoefficientsMat.getAsMatOfDouble(),
                         rvecs,
@@ -363,7 +401,7 @@ public class Calibrate3dPipe
         tvecs.forEach(Mat::release);
 
         return new CameraCalibrationCoefficients(
-                in.get(0).size,
+                foundBoards.get(0).size,
                 cameraMatrixMat,
                 distortionCoefficientsMat,
                 new double[] {result.warp_x, result.warp_y},
@@ -491,7 +529,13 @@ public class Calibrate3dPipe
 
             // enforce preconditions
             if (i_imgPts.size() != cornersUsed.get(snapshotId).length) {
-                throw new RuntimeException("Length mismatch -- imgpts size: " + i_imgPts.size() + " objpts size = " + i_objPtsNative.toList().size() + " cornersUsed length: " + cornersUsed.get(snapshotId).length);
+                throw new RuntimeException(
+                        "Length mismatch -- imgpts size: "
+                                + i_imgPts.size()
+                                + " objpts size = "
+                                + i_objPtsNative.toList().size()
+                                + " cornersUsed length: "
+                                + cornersUsed.get(snapshotId).length);
             }
 
             observations.add(
