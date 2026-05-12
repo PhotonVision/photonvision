@@ -431,16 +431,17 @@ public class FrameRecorder implements Releasable {
 
             Path camExportDir = Files.createTempDirectory(module.getCameraConfiguration().nickname);
 
-            Files.list(dir)
-                    .forEach(
-                            path -> {
-                                try {
-                                    Path exported = export(path).toPath();
-                                    Files.move(exported, camExportDir.resolve(exported.getFileName()));
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            });
+            try (var recordings = Files.list(dir)) {
+                recordings.forEach(
+                        path -> {
+                            try {
+                                Path exported = export(path).toPath();
+                                Files.move(exported, camExportDir.resolve(exported.getFileName()));
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            }
 
             exportedRecordings.add(camExportDir.toFile());
         }
