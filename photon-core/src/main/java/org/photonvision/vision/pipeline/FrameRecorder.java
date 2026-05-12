@@ -45,6 +45,7 @@ import org.zeroturnaround.zip.ZipUtil;
 
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
+    private static final long MIN_DISK_SPACE_BYTES = 4L * 1024 * 1024 * 1024; // 4 GB
 
     private final BlockingQueue<RecordFrame> frameQueue;
     private final Thread writerThread;
@@ -89,10 +90,10 @@ public class FrameRecorder implements Releasable {
         double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
 
         // Check if we're under 4 GB of available space, if so exit
-        if (availableSpace < 4 * 1024) {
+        if (availableSpace < MIN_DISK_SPACE_BYTES) {
             logger.error(
                     "Low disk space available ("
-                            + availableSpace / 1024
+                            + availableSpace / (1024 * 1024)
                             + " MB). FrameRecorder will not start.");
             throw new IllegalStateException("Insufficient disk space for FrameRecorder");
         }
@@ -169,9 +170,11 @@ public class FrameRecorder implements Releasable {
             double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
 
             // Check if we're under 4 GB of available space, if so stop recording
-            if (availableSpace < 4 * 1024) {
+            if (availableSpace < MIN_DISK_SPACE_BYTES) {
                 logger.error(
-                        "Low disk space available (" + availableSpace / 1024 + " MB). Stopping FrameRecorder.");
+                        "Low disk space available ("
+                                + availableSpace / (1024 * 1024)
+                                + " MB). Stopping FrameRecorder.");
                 stopRecording();
                 return false;
             }
