@@ -43,7 +43,7 @@ const downloadIndividualRecording = (camera: any) => {
   const recording = selectedRecordings.value[camera.uniqueName];
   const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/exportIndividual?recording=${recording}&camera=${camera.uniqueName}`;
-  link.download = `${camera.nickname}_${recording}_recording.mp4`;
+  link.download = `${camera.nickname}_${recording}_recording.zip`;
   link.click();
 };
 

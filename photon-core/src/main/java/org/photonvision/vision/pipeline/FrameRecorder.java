@@ -353,7 +353,7 @@ public class FrameRecorder implements Releasable {
      * trivial and this is on the writer thread's hot path.
      *
      * @return true on success; false on IO failure (after stopping the recording — caller must
-     *     not write the paired frame, or the jsonl-≥-mp4 invariant breaks).
+     *     not write the paired frame, or the {@code jsonl ≥ frame_count} invariant breaks).
      */
     private boolean writeMetadataLine(long sequenceId, long captureTimestampNs) {
         try {

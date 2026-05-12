@@ -32,7 +32,12 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     // time
     public boolean cameraPropertiesCached = false;
 
-    public FrameRecorder frameRecorder = null;
+    // volatile because the NT listener thread mutates this (via concrete-provider setRecording)
+    // while the vision thread reads it from getInputMat. Without volatile, the vision thread can
+    // see a stale non-null reference after the listener thread has nulled the field, or — worse
+    // on weaker memory models — a partially-constructed FrameRecorder. Snapshot to a local
+    // before checking and using; see USBFrameProvider.getInputMat for the pattern.
+    public volatile FrameRecorder frameRecorder = null;
 
     protected void onCameraConnected() {
         cameraPropertiesCached = true;

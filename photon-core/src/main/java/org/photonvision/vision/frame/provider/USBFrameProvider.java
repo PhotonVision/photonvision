@@ -85,8 +85,12 @@ public class USBFrameProvider extends CpuImageProcessor {
                 logger.error("Error grabbing image: " + error);
             }
 
-            if (getRecording()) {
-                frameRecorder.recordFrame(mat, captureTimeNs);
+            // Snapshot the recorder reference once: the NT listener thread can null it out
+            // between the null check and the use otherwise. recordFrame already self-guards on
+            // its internal AtomicBooleans, so late submissions during release() drop cleanly.
+            FrameRecorder rec = frameRecorder;
+            if (rec != null && rec.isRecording()) {
+                rec.recordFrame(mat, captureTimeNs);
             }
 
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
@@ -125,8 +129,10 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat(mat, frame);
             }
 
-            if (getRecording()) {
-                frameRecorder.recordFrame(ret, captureTimeUs * 1000);
+            // See snapshot rationale in the blockForFrames branch above.
+            FrameRecorder rec = frameRecorder;
+            if (rec != null && rec.isRecording()) {
+                rec.recordFrame(ret, captureTimeUs * 1000);
             }
 
             return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
