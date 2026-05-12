@@ -1,17 +1,16 @@
 # NetworkTables API
 
-## About
+## Usage
 
 :::{warning}
-PhotonVision interfaces with PhotonLib, our vendor dependency, using NetworkTables. If you are running PhotonVision on a robot (ie. with a RoboRIO), you should **turn the NetworkTables server switch (in the settings tab) off** in order to get PhotonLib to work. Also ensure that you set your team number. **The NetworkTables server should only be enabled if you know what you're doing!**
+PhotonVision's NetworkTables API is not designed for robot consumption, only internal at-a-glance debugging.**
 :::
 
+**Use PhotonLib instead, as the NetworkTables API is not supported for robot consumption.**
+
+
+
 ## API
-
-:::{warning}
-NetworkTables is not a supported setup/viable option when using PhotonVision as we only send one target at a time (this is problematic when using AprilTags, which will return data from multiple tags at once).
-
-**We strongly recommend using PhotonLib instead, as the NetworkTables API will most likely be removed in 2027.**
 :::
 
 The tables below contain the the name of the key for each entry that PhotonVision sends over the network and a short description of the key. The entries should be extracted from a subtable with your camera's nickname (visible in the PhotonVision UI) under the main `photonvision` table.
@@ -64,9 +63,3 @@ These entries are global, meaning that they should be called on the main `photon
 | Key       | Type  | Description                                              |
 | --------- | ----- | -------------------------------------------------------- |
 | `ledMode` | `int` | Sets the LED Mode (-1: default, 0: off, 1: on, 2: blink) |
-
-:::{warning}
-Setting the LED mode to -1 (default) when `multiple` cameras are connected may result in unexpected behavior. {ref}`This is a known limitation of PhotonVision. <docs/troubleshooting/common-errors:LED Control>`
-
-Single camera operation should work without issue.
-:::
