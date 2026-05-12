@@ -5,6 +5,8 @@ import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
+import PvCard from "@/components/common/pv-card.vue";
+import PvSwitch from "@/components/common/pv-switch.vue";
 
 const value = defineModel<number[]>();
 
@@ -39,8 +41,8 @@ const performanceRecommendation = computed<string>(() => {
 </script>
 
 <template>
-  <v-card color="surface" height="100%" class="d-flex flex-column rounded-12" dark>
-    <v-card-title class="justify-space-between align-center pt-1 pb-1 d-flex">
+  <pv-card class="flex h-full flex-col">
+    <div class="flex items-center justify-between gap-3 pt-1 pb-1">
       <span>Cameras</span>
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
@@ -55,34 +57,34 @@ const performanceRecommendation = computed<string>(() => {
       <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
         <span class="pr-1"> Camera not connected </span>
       </v-chip>
-      <v-switch
+      <pv-switch
         v-model="driverMode"
         :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
         label="Driver Mode"
         color="primary"
         hide-details="auto"
       />
-    </v-card-title>
+    </div>
     <v-divider class="ml-3 mr-3" />
-    <v-row class="stream-viewer-container pa-3 align-center">
-      <v-col v-if="value?.includes(0)" class="stream-view">
+    <div class="stream-viewer-container flex flex-wrap items-center p-3">
+      <div v-if="value?.includes(0)" class="stream-view flex-1">
         <photon-camera-stream
           id="input-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Raw"
           style="width: 100%; height: auto"
         />
-      </v-col>
-      <v-col v-if="value?.includes(1)" class="stream-view">
+      </div>
+      <div v-if="value?.includes(1)" class="stream-view flex-1">
         <photon-camera-stream
           id="output-camera-stream"
           :camera-settings="useCameraSettingsStore().currentCameraSettings"
           stream-type="Processed"
           style="width: 100%; height: auto"
         />
-      </v-col>
-    </v-row>
-  </v-card>
+      </div>
+    </div>
+  </pv-card>
 </template>
 
 <style scoped>

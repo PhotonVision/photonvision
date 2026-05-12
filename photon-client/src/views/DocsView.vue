@@ -1,24 +1,27 @@
 <script setup lang="ts">
+import PvCard from "@/components/common/pv-card.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
 const devMode = process.env.NODE_ENV === "development";
 const docsSrc = import.meta.env.MODE === "demo" ? "https://docs.photonvision.org" : "docs/index.html";
 </script>
 <template>
   <div style="overflow: hidden; height: 100vh; width: 100%">
     <div v-if="devMode" style="width: 60%; height: 100%; margin: auto">
-      <v-card
-        dark
-        flat
-        class="pl-6 pr-6 d-flex flex-column justify-center align-center"
-        style="background-color: transparent; height: 100%"
+      <pv-card
+        variant="transparent"
+        :bordered="false"
+        :elevated="false"
+        padding="none"
+        class="flex h-full flex-col items-center justify-center gap-4 px-6 text-center"
       >
-        <v-card-text class="d-flex flex-column" style="flex: 0">
-          <v-icon size="64" color="primary">mdi-web-off</v-icon>
-        </v-card-text>
-        <v-card-text style="width: 100%; flex-grow: 0; text-align: center">
+        <div class="flex flex-col">
+          <pv-icon size="64" color="primary">mdi-web-off</pv-icon>
+        </div>
+        <div class="text-base">
           PhotonClient is in development mode so the documentation page will not load. Please recompile in production
           mode with the documentation copied over after a full build.
-        </v-card-text>
-      </v-card>
+        </div>
+      </pv-card>
     </div>
     <div v-else style="width: 100%; height: 100%">
       <!--suppress HtmlUnknownTarget -->

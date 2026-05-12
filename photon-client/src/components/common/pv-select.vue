@@ -23,6 +23,11 @@ export interface SelectItem<TValue extends string | number> {
 type SelectItems = SelectItem<T>[] | ReadonlyArray<T>;
 const value = defineModel<T>({ required: true });
 
+const displayValue = computed(() => {
+  const selectedItem = items.value.find((item) => item.value === value.value);
+  return selectedItem ? selectedItem.name : "";
+});
+
 const props = withDefaults(
   defineProps<{
     label?: string;
@@ -68,7 +73,13 @@ const placeholder = computed(() => (props.label ? `Select ${props.label}` : "Sel
         <select-trigger
           class="flex h-10 w-full items-center justify-between gap-3 rounded-xl border border-white/12 bg-black/15 px-3 text-left text-sm text-white shadow-sm outline-none transition data-[placeholder]:text-white/45 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <select-value :placeholder="placeholder" />
+          <!-- This allows us to work around Reka #2160-->
+          <select-value :data-slot="value != null ? 'value' : 'placeholder'">
+            <slot :model-value="modelValue">
+              {{ displayValue ?? placeholder ?? "&nbsp;" }}
+            </slot>
+          </select-value>
+
           <select-icon class="shrink-0 text-white/70">
             <span class="mdi mdi-chevron-down text-lg leading-none" aria-hidden="true"></span>
           </select-icon>

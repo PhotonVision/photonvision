@@ -1,161 +1,223 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { Icon } from "@iconify/vue";
+import { useRoute } from "vue-router";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
-import { useRoute } from "vue-router";
-import { useDisplay, useTheme } from "vuetify";
+import { useTheme } from "vuetify";
 import { toggleTheme } from "@/lib/ThemeManager";
+import { useMediaQuery } from "@vueuse/core";
+import PvIcon from "@/components/common/pv-icon.vue";
+import {
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuRoot
+} from "reka-ui";
 
 const compact = computed<boolean>({
-  get: () => {
-    return useStateStore().sidebarFolded;
-  },
-  set: (val) => {
-    useStateStore().setSidebarFolded(val);
-  }
+  get: () => useStateStore().sidebarFolded,
+  set: (val) => useStateStore().setSidebarFolded(val)
 });
-const { mdAndUp } = useDisplay();
-
+const mdAndUp = useMediaQuery("(width >= 48rem)");
 const theme = useTheme();
+const route = useRoute();
 
 const renderCompact = computed<boolean>(() => compact.value || !mdAndUp.value);
+
+const navItems = [
+  { title: "Dashboard", to: "/dashboard", icon: "mdi-view-dashboard" },
+  { title: "Settings", to: "/settings", icon: "mdi-cog" },
+  { title: "Camera", to: "/cameras", icon: "mdi-camera" },
+  { title: "Documentation", to: "/docs", icon: "mdi-bookshelf" }
+];
+
+const baseItemClass =
+  "sidebar-item group flex items-center gap-3 rounded-12 px-3 py-2 font-medium text-white/80";
+const activeItemClass = "bg-white/5 text-white";
 </script>
 
 <template>
-  <v-navigation-drawer permanent :rail="renderCompact" color="sidebar">
-    <v-list nav color="primary">
-      <v-list-item class="pr-0 pl-0" style="display: flex; justify-content: center">
-        <template #prepend>
-          <img v-if="!renderCompact" class="logo" src="@/assets/images/logoLarge.svg" alt="large logo" />
-          <img v-else class="logo" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
-        </template>
-      </v-list-item>
+  <aside
+    class="flex flex-col text-white transition-[width] duration-200 h-screen sticky top-0"
+    :class="renderCompact ? 'w-20' : 'w-64'"
+  >
+    <div class="flex items-center justify-center px-3 py-4">
+      <img
+        v-if="!renderCompact"
+        class="h-16 w-full object-contain"
+        src="@/assets/images/logoLarge.svg"
+        alt="large logo"
+      />
+      <img
+        v-else
+        class="h-16 w-full object-contain"
+        src="@/assets/images/logoSmallTransparent.svg"
+        alt="small logo"
+      />
+    </div>
 
-      <v-list-item link to="/dashboard" prepend-icon="mdi-view-dashboard">
-        <v-list-item-title>Dashboard</v-list-item-title>
-      </v-list-item>
-      <v-list-item link to="/settings" prepend-icon="mdi-cog">
-        <v-list-item-title>Settings</v-list-item-title>
-      </v-list-item>
-      <v-list-item link to="/cameras" prepend-icon="mdi-camera">
-        <v-list-item-title>Camera</v-list-item-title>
-      </v-list-item>
-      <v-list-item
-        link
-        to="/cameraConfigs"
-        :class="{
-          cameraicon: useCameraSettingsStore().needsCameraConfiguration && useRoute().path !== '/cameraConfigs'
-        }"
+    <NavigationMenuRoot class="flex flex-1 flex-col" orientation="vertical">
+      <NavigationMenuList class="flex flex-1 flex-col gap-1 px-3">
+        <NavigationMenuItem v-for="item in navItems" :key="item.to">
+          <NavigationMenuLink as-child :active="route.path === item.to">
+            <RouterLink
+              :to="item.to"
+              :class="[
+                baseItemClass,
+                renderCompact ? 'justify-center px-2' : '',
+                route.path === item.to ? activeItemClass : ''
+              ]"
+              :active-class="activeItemClass"
+            >
+              <Icon :icon="item.icon" class="text-lg text-white/80 transition group-hover:text-white" />
+              <span
+                class="transition-opacity duration-200"
+                :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
+              >
+                {{ item.title }}
+              </span>
+            </RouterLink>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink as-child :active="route.path === '/cameraConfigs'">
+            <RouterLink
+              to="/cameraConfigs"
+              :class="[
+                baseItemClass,
+                renderCompact ? 'justify-center px-2' : '',
+                route.path === '/cameraConfigs' ? activeItemClass : '',
+                useCameraSettingsStore().needsCameraConfiguration && route.path !== '/cameraConfigs' ? 'pulse' : ''
+              ]"
+            >
+              <Icon
+                icon="mdi-swap-horizontal-bold"
+                class="text-lg text-white/80 transition group-hover:text-white"
+                :class="{ 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }"
+              />
+              <span
+                class="transition-opacity duration-200"
+                :class="[
+                  renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100',
+                  { 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }
+                ]"
+              >
+                Camera Matching
+              </span>
+            </RouterLink>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenuRoot>
+
+    <div class="border-t border-white/10 px-3 py-3">
+      <button
+        v-if="mdAndUp"
+        type="button"
+        class="sidebar-item mb-2 flex w-full items-center gap-3 rounded-12 px-3 py-2  text-white/80 justify-between"
+        :class="renderCompact ? 'justify-center px-2' : ''"
+        @click="() => (compact = !compact)"
       >
-        <template #prepend>
-          <v-icon :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
-            >mdi-swap-horizontal-bold</v-icon
-          >
-        </template>
-        <v-list-item-title :class="{ 'text-red': useCameraSettingsStore().needsCameraConfiguration }"
-          >Camera Matching</v-list-item-title
+        <Icon
+          :icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
+          class="text-lg text-white/80 transition group-hover:text-white"
+        />
+        <span
+          class="transition-opacity duration-200"
+          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
         >
-      </v-list-item>
-      <v-list-item link to="/docs" prepend-icon="mdi-bookshelf">
-        <v-list-item-title>Documentation</v-list-item-title>
-      </v-list-item>
-    </v-list>
-    <template #append>
-      <v-list nav>
-        <v-list-item
-          v-if="mdAndUp"
-          link
-          :prepend-icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
-          @click="() => (compact = !compact)"
+          Compact
+        </span>
+      </button>
+      <button
+        type="button"
+        class="sidebar-item mb-3 flex w-full items-center gap-3 rounded-12 px-3 py-2  text-white/80 justify-between"
+        :class="renderCompact ? 'justify-center px-2' : ''"
+        @click="() => toggleTheme(theme)"
+      >
+        <Icon
+          :icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
+          class="text-lg text-white/80 transition group-hover:text-white"
+        />
+        <span
+          class="transition-opacity duration-200"
+          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
         >
-          <v-list-item-title>Compact</v-list-item-title>
-        </v-list-item>
-        <v-list-item
-          link
-          :prepend-icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
-          @click="() => toggleTheme(theme)"
+          Theme
+        </span>
+      </button>
+
+      <div class="flex items-center gap-3 rounded-12 px-3 py-2  text-white/70" :class="renderCompact ? 'justify-center' : 'justify-between'">
+        <Icon
+          :icon="
+            useSettingsStore().network.runNTServer
+              ? 'mdi-server'
+              : useStateStore().ntConnectionStatus.connected
+                ? 'mdi-robot'
+                : 'mdi-robot-off'
+          "
+          :class="
+            useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
+              ? 'text-green-400'
+              : 'text-red-400'
+          "
+          class="size-5 shrink-0"
+        />
+        <div
+          class="leading-snug text-end transition-opacity duration-200"
+          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute absolute' : 'opacity-100'"
         >
-          <v-list-item-title>Theme</v-list-item-title>
-        </v-list-item>
-        <v-list-item>
-          <template #prepend>
-            <v-icon
-              :icon="
-                useSettingsStore().network.runNTServer
-                  ? 'mdi-server'
-                  : useStateStore().ntConnectionStatus.connected
-                    ? 'mdi-robot'
-                    : 'mdi-robot-off'
-              "
-              :color="
-                useSettingsStore().network.runNTServer || useStateStore().ntConnectionStatus.connected
-                  ? '#00ff00'
-                  : '#ff0000'
-              "
-            />
-          </template>
-          <v-list-item-title v-if="useSettingsStore().network.runNTServer" v-show="!renderCompact" class="text-wrap">
+          <span v-if="useSettingsStore().network.runNTServer">
             NetworkTables server running for
             <span class="text-primary">{{ useStateStore().ntConnectionStatus.clients || 0 }}</span> clients
-          </v-list-item-title>
-          <v-list-item-title
-            v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected"
-            v-show="!renderCompact"
-            class="text-wrap"
-            style="flex-direction: column; display: flex"
-          >
+          </span>
+          <span v-else-if="useStateStore().ntConnectionStatus.connected && useStateStore().backendConnected">
             NetworkTables Server Connected!
-            <span class="text-primary"> {{ useStateStore().ntConnectionStatus.address }} </span>
-          </v-list-item-title>
-          <v-list-item-title
-            v-else
-            v-show="!renderCompact"
-            class="text-wrap"
-            style="flex-direction: column; display: flex"
-          >
-            Not connected to NetworkTables Server!
-          </v-list-item-title>
-        </v-list-item>
-        <v-list-item>
-          <template #prepend>
-            <v-icon
-              :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
-              :color="useStateStore().backendConnected ? '#00ff00' : '#ff0000'"
-            />
-          </template>
-          <v-list-item-title v-show="!renderCompact" class="text-wrap">
-            {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </template>
-  </v-navigation-drawer>
+            <span class="text-primary">{{ useStateStore().ntConnectionStatus.address }}</span>
+          </span>
+          <span v-else>Not connected to NetworkTables Server!</span>
+        </div>
+      </div>
+
+      <div class="mt-2 flex items-start gap-3 rounded-12 px-3 py-2  text-white/70" :class="renderCompact ? 'justify-center' : 'justify-between'">
+        <Icon
+          :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
+          :class="useStateStore().backendConnected ? 'text-green-400' : 'text-red-400'"
+          class="size-5 shrink-0"
+        />
+        <div
+          class="leading-snug transition-opacity duration-200"
+          :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
+        >
+          {{ useStateStore().backendConnected ? "Backend connected" : "Trying to connect to backend..." }}
+        </div>
+      </div>
+    </div>
+  </aside>
 </template>
 
 <style scoped>
-.v-navigation-drawer {
-  border: none;
+.sidebar-item {
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease,
+    transform 150ms ease;
 }
 
-.v-navigation-drawer--rail {
-  border: none;
+.sidebar-item:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
 }
 
-.v-list-item-title {
-  font-size: 1rem !important;
-  line-height: 1.2rem !important;
-}
-
-.logo {
-  width: 100%;
-  height: 70px;
-  object-fit: contain;
-}
-
-.cameraicon {
+.pulse {
   animation: pulse 2s infinite;
 }
+
 
 @keyframes pulse {
   0%,

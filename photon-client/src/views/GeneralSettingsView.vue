@@ -8,7 +8,7 @@ import DeviceCard from "@/components/settings/DeviceCard.vue";
 </script>
 
 <template>
-  <div class="pa-3">
+  <div class="p-3">
     <DeviceCard />
     <GlobalSettingsCard />
     <ObjectDetectionCard v-if="useSettingsStore().general.supportedBackends.length > 0" />

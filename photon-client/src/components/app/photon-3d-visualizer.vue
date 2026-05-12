@@ -226,20 +226,16 @@ watchEffect(() => {
 
 <template>
   <div id="container" style="width: 100%">
-    <div class="d-flex flex-wrap pt-0 pb-2">
-      <v-col cols="12" md="6" class="pl-0">
-        <v-card-title class="pa-0"> Target Visualization </v-card-title>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pl-6 pl-md-3">
-        <pv-button variant="primary" block @click="resetCamFirstPerson">
-          First Person
-        </pv-button>
-      </v-col>
-      <v-col cols="6" md="3" class="d-flex align-center pt-0 pt-md-3 pr-0">
-        <pv-button variant="primary" block @click="resetCamThirdPerson">
-          Third Person
-        </pv-button>
-      </v-col>
+    <div class="flex flex-wrap pt-0 pb-2">
+      <div class="w-full pl-0 md:w-1/2">
+        <div class="p-0 text-base font-semibold">Target Visualization</div>
+      </div>
+      <div class="flex w-1/2 items-center pt-0 pl-6 md:w-1/4 md:pt-3 md:pl-3">
+        <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
+      </div>
+      <div class="flex w-1/2 items-center pt-0 pr-0 md:w-1/4 md:pt-3">
+        <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
+      </div>
     </div>
     <canvas id="view" class="w-100" />
   </div>

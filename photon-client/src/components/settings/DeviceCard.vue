@@ -6,13 +6,11 @@ import PvButton from "@/components/common/pv-button.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import PvCard from "@/components/common/pv-card.vue";
 import MetricsChart from "./MetricsChart.vue";
-import { useTheme } from "vuetify";
 import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import { metricsHistorySnapshot } from "@/stores/settings/GeneralSettingsStore";
-
-const theme = useTheme();
 
 const restartProgram = async () => {
   if (await axiosPost("/utils/restartProgram", "restart PhotonVision")) {
@@ -287,14 +285,14 @@ watch(metricsHistorySnapshot, () => {
 </script>
 
 <template>
-  <v-row no-gutters>
+  <div class="flex flex-wrap">
     <!-- Device control card -->
-    <v-col class="pr-3">
-      <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
-        <v-card-title class="d-flex justify-space-between">
+    <div class="flex-1 pr-3">
+      <pv-card padding="none" class="mb-3 fill-height flex flex-col justify-between">
+        <div class="flex justify-between p-4 pb-2 text-lg font-semibold">
           <span>Device Control</span>
-        </v-card-title>
-        <v-card-text class="flex-0-0">
+        </div>
+        <div class="px-4 pb-4 flex-0-0">
           <v-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
@@ -307,15 +305,15 @@ watch(metricsHistorySnapshot, () => {
               </tr>
             </tbody>
           </v-table>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col>
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex flex-wrap -mx-3">
+            <div class="flex-1 px-3">
               <pv-button variant="passive" icon="mdi-eye" block @click="useStateStore().showLogModal = true">
                 <span class="open-label">View Logs</span>
               </pv-button>
-            </v-col>
-            <v-col>
+            </div>
+            <div class="flex-1 px-3">
               <pv-button variant="passive" icon="mdi-download" block @click="openExportLogsPrompt">
                 <span class="open-label">Download Logs</span>
 
@@ -328,31 +326,31 @@ watch(metricsHistorySnapshot, () => {
                   target="_blank"
                 />
               </pv-button>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex flex-wrap -mx-3">
+            <div class="flex-1 px-3">
               <pv-button variant="passive" icon="mdi-import" block @click="() => (showImportDialog = true)">
                 <span class="open-label">Import Settings</span>
               </pv-button>
-            </v-col>
-            <v-col>
+            </div>
+            <div class="flex-1 px-3">
               <pv-button variant="passive" icon="mdi-export" block @click="openExportSettingsPrompt">
                 <span class="open-label">Export Settings</span>
               </pv-button>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col cols="12" sm="6"
-              ><pv-button variant="primary" icon="mdi-restart" block @click="restartProgram">
+            </div>
+          </div>
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex flex-wrap -mx-3">
+            <div class="w-full px-3 sm:w-1/2">
+              <pv-button variant="primary" icon="mdi-restart" block @click="restartProgram">
                 <span class="open-label">Restart Software</span>
               </pv-button>
-            </v-col>
-            <v-col cols="12" sm="6">
+            </div>
+            <div class="w-full px-3 sm:w-1/2">
               <pv-button variant="passive" icon="mdi-upload" block @click="openOfflineUpdatePrompt">
                 <span class="open-label">Offline Update</span>
               </pv-button>
@@ -363,34 +361,34 @@ watch(metricsHistorySnapshot, () => {
                 style="display: none"
                 @change="handleOfflineUpdateRequest"
               />
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <v-row>
-            <v-col cols="12" sm="6">
+            </div>
+          </div>
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex flex-wrap -mx-3">
+            <div class="w-full px-3 sm:w-1/2">
               <pv-button variant="primary" icon="mdi-restart-alert" block @click="restartDevice">
                 <span class="open-label">Reboot Device</span>
               </pv-button>
-            </v-col>
-            <v-col cols="12" sm="6">
+            </div>
+            <div class="w-full px-3 sm:w-1/2">
               <pv-button variant="danger" icon="mdi-trash-can-outline" block @click="() => (showFactoryReset = true)">
                 <span class="open-icon"> Factory Reset </span>
               </pv-button>
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-card>
-    </v-col>
+            </div>
+          </div>
+        </div>
+      </pv-card>
+    </div>
 
     <!-- Device metrics card -->
-    <v-col>
-      <v-card class="mb-3 rounded-12 fill-height d-flex flex-column justify-space-between" color="surface">
-        <v-card-title class="d-flex justify-space-between">
+    <div class="flex-1">
+      <pv-card padding="none" class="mb-3 fill-height flex flex-col justify-between">
+        <div class="flex justify-between p-4 pb-2 text-lg font-semibold">
           <span>Device Metrics</span>
-        </v-card-title>
-        <v-card-text class="pt-0 flex-0-0 pb-2">
-          <div class="d-flex justify-space-between pb-3">
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex justify-between pb-3">
             <span>CPU Usage</span>
             <span>{{ Math.round(cpuUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
@@ -399,9 +397,9 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="cpuUsageData" type="percentage" :min="0" :max="100" color="blue" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0 pb-2">
-          <div class="d-flex justify-space-between pb-3 pt-3">
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex justify-between pb-3 pt-3">
             <span>CPU Memory Usage</span>
             <span>{{ Math.round(cpuMemoryUsageData.at(-1)?.value ?? 0) }}%</span>
           </div>
@@ -410,9 +408,9 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="cpuMemoryUsageData" type="percentage" :min="0" :max="100" color="purple" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0 pb-2">
-          <div class="d-flex justify-space-between pb-3 pt-3">
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex justify-between pb-3 pt-3">
             <span>CPU Temperature</span>
             <span>{{ cpuTempData.at(-1)?.value === -1 ? "--- " : Math.round(cpuTempData.at(-1)?.value ?? 0) }}°C</span>
           </div>
@@ -421,9 +419,9 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="cpuTempData" type="temperature" color="red" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-        <v-card-text class="pt-0 flex-0-0">
-          <div class="d-flex justify-space-between pb-3 pt-3">
+        </div>
+        <div class="px-4 pb-4 pt-0 flex-0-0">
+          <div class="flex justify-between pb-3 pt-3">
             <tooltipped-label
               label="Network Usage"
               icon="mdi-information"
@@ -442,10 +440,10 @@ watch(metricsHistorySnapshot, () => {
             <MetricsChart id="chart" :data="networkUsageData" type="mb" :min="0" :max="10" color="green" />
             <template #fallback> Loading... </template>
           </Suspense>
-        </v-card-text>
-      </v-card>
-    </v-col>
-  </v-row>
+        </div>
+      </pv-card>
+    </div>
+  </div>
 
   <!-- Factory reset modal -->
   <pv-delete-modal
@@ -469,11 +467,11 @@ watch(metricsHistorySnapshot, () => {
       }
     "
   >
-    <v-card color="surface" dark>
-      <v-card-title class="pb-0">Import Settings</v-card-title>
-      <v-card-text>
+    <pv-card padding="none" class="p-5">
+      <div class="pb-0 text-lg font-semibold">Import Settings</div>
+      <div>
         Upload and apply previously saved or exported PhotonVision settings to this device
-        <div class="pa-5 pb-0">
+        <div class="p-5 pb-0">
           <pv-select
             v-model="importType"
             label="Type"
@@ -496,23 +494,29 @@ watch(metricsHistorySnapshot, () => {
             :error-messages="importType === undefined ? 'Settings type not selected' : ''"
             :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
           />
-          <pv-button variant="primary" icon="mdi-import" block :disabled="importFile === null" @click="handleSettingsImport">
+          <pv-button
+            variant="primary"
+            icon="mdi-import"
+            block
+            :disabled="importFile === null"
+            @click="handleSettingsImport"
+          >
             <span class="open-label">Import Settings</span>
           </pv-button>
         </div>
-      </v-card-text>
-    </v-card>
+      </div>
+    </pv-card>
   </pv-dialog>
 
   <pv-dialog v-model="offlineUpdateDialog.show" :width="700">
-    <v-card color="surface" flat>
-      <v-card-title style="display: flex; justify-content: center"> Offline Update </v-card-title>
-      <v-card-text class="pt-0 pb-10px">
+    <pv-card padding="none" class="p-5">
+      <div class="text-center text-lg font-semibold">Offline Update</div>
+      <div class="pt-0 pb-10px">
         <span> {{ offlineUpdateDialog.confirmString }} </span>
-      </v-card-text>
-      <v-card-text class="pt-10px">
-        <v-row class="align-center text-white">
-          <v-col cols="12">
+      </div>
+      <div class="pt-10px">
+        <div class="flex flex-wrap items-center text-white">
+          <div class="w-full">
             <pv-button
               variant="primary"
               icon="mdi-upload"
@@ -526,10 +530,10 @@ watch(metricsHistorySnapshot, () => {
             >
               <span class="open-label"> Confirm Update </span>
             </pv-button>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+          </div>
+        </div>
+      </div>
+    </pv-card>
   </pv-dialog>
 
   <a

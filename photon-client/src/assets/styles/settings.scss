@@ -1,4 +1,5 @@
 @forward "vuetify/settings" with (
   $button-colored-disabled: false,
-  $button-disabled-opacity: 0.4
+  $button-disabled-opacity: 0.4,
+  $utilities: false
 );

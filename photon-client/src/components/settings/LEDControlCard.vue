@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import PvSlider from "@/components/common/pv-slider.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import PvCard from "@/components/common/pv-card.vue";
 </script>
 
 <template>
-  <v-card class="mb-3 rounded-12" color="surface">
-    <v-card-title class="pb-10px">LED Control</v-card-title>
-    <v-card-text>
+  <pv-card class="mb-3">
+    <div class="pb-2 text-base font-semibold">LED Control</div>
+    <div class="pt-1">
       <pv-slider
         v-model="useSettingsStore().lighting.brightness"
         label="Brightness"
@@ -14,6 +15,6 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
         :max="100"
         @update:modelValue="(args) => useSettingsStore().changeLEDBrightness(args)"
       />
-    </v-card-text>
-  </v-card>
+    </div>
+  </pv-card>
 </template>

@@ -2,15 +2,15 @@
 import PhotonCalibrationVisualizer from "@/components/app/photon-calibration-visualizer.vue";
 import PvButton from "@/components/common/pv-button.vue";
 import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
+import PvAlert from "@/components/common/pv-alert.vue";
 import type { CameraCalibrationResult, VideoFormat } from "@/types/SettingTypes";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
-import { useTheme } from "vuetify";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
+import PvCard from "@/components/common/pv-card.vue";
 
-const theme = useTheme();
 const props = defineProps<{
   videoFormat: VideoFormat;
 }>();
@@ -117,14 +117,16 @@ const tabItems: PvTabItem<string>[] = [
 </script>
 
 <template>
-  <v-card color="surface" dark>
-    <v-card-title class="pb-2">
-      <div class="d-flex flex-wrap">
-        <v-col cols="12" md="6" class="pa-0">
-          <v-card-title class="pa-0"> Calibration Details </v-card-title>
-        </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pl-0">
-          <pv-button variant="passive" icon="mdi-import" block @click="openUploadPhotonCalibJsonPrompt">Import</pv-button>
+  <pv-card padding="none">
+    <div class="p-4 pb-2">
+      <div class="flex flex-wrap">
+        <div class="w-full p-0 md:w-1/2">
+          <div class="text-base font-semibold">Calibration Details</div>
+        </div>
+        <div class="flex w-1/2 items-center pt-0 pb-0 pl-0 md:w-1/4">
+          <pv-button variant="passive" icon="mdi-import" block @click="openUploadPhotonCalibJsonPrompt"
+            >Import</pv-button
+          >
           <input
             ref="importCalibrationFromPhotonJson"
             type="file"
@@ -132,8 +134,8 @@ const tabItems: PvTabItem<string>[] = [
             style="display: none"
             @change="importCalibration"
           />
-        </v-col>
-        <v-col cols="6" md="3" class="d-flex align-center pt-0 pb-0 pr-0">
+        </div>
+        <div class="flex w-1/2 items-center pt-0 pb-0 pr-0 md:w-1/4">
           <pv-button
             variant="passive"
             icon="mdi-export"
@@ -149,13 +151,13 @@ const tabItems: PvTabItem<string>[] = [
             :href="exportCalibrationURL"
             target="_blank"
           />
-        </v-col>
+        </div>
       </div>
-    </v-card-title>
+    </div>
 
-    <v-card-text class="d-flex flex-row pt-0">
-      <v-col cols="4" class="pa-0">
-        <pv-tabs v-model="tab" :items="tabItems" class="mt-2"/>
+    <div class="flex flex-row pt-0 px-4 pb-4">
+      <div class="w-1/3 p-0">
+        <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
         <div class="pt-3">
           <div v-if="tab === 'details'">
             <v-table style="width: 100%" density="compact">
@@ -297,16 +299,15 @@ const tabItems: PvTabItem<string>[] = [
             </v-data-table>
           </div>
         </div>
-      </v-col>
-      <v-col cols="8" class="pa-0 pl-6">
-        <v-card-text class="pa-0 fill-height d-flex justify-center align-center">
+      </div>
+      <div class="w-2/3 p-0 pl-6">
+        <div class="flex h-full justify-center p-0 items-center">
           <div v-if="!currentCalibrationCoeffs">
-            <v-alert
+            <pv-alert
               class="pt-3 pb-3"
               color="primary"
               text="The selected video format has not been calibrated."
               icon="mdi-alert-circle-outline"
-              :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             />
           </div>
           <Suspense v-else-if="tab === 'details'">
@@ -321,10 +322,10 @@ const tabItems: PvTabItem<string>[] = [
           <div v-else style="display: flex; justify-content: center; width: 100%">
             <img :src="calibrationImageURL(viewingImg)" alt="observation image" class="snapshot-preview pt-2 pb-2" />
           </div>
-        </v-card-text>
-      </v-col>
-    </v-card-text>
-  </v-card>
+        </div>
+      </div>
+    </div>
+  </pv-card>
 
   <pv-delete-modal
     v-model="confirmRemoveDialog.show"

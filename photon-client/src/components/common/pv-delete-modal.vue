@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PvButton from "@/components/common/pv-button.vue";
+import PvCard from "@/components/common/pv-card.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
 import { ref } from "vue";
 import pvInput from "./pv-input.vue";
@@ -26,29 +27,32 @@ const confirmationText = ref("");
 
 <template>
   <pv-dialog v-model="value" :width="props.width">
-    <v-card color="surface" flat>
-      <v-card-title style="display: flex; justify-content: center">
+    <pv-card class="flex flex-col gap-4">
+      <div class="flex justify-center text-lg font-semibold">
         {{ title }}
-      </v-card-title>
-      <v-card-text class="pt-0 pb-10px">
+      </div>
+      <div class="pt-0 pb-2.5">
         <span> {{ description }} </span>
-      </v-card-text>
-      <v-card-text v-if="expectedConfirmationText" class="pt-0 pb-0">
+      </div>
+      <div v-if="expectedConfirmationText" class="pt-0 pb-0">
         <pv-input
           v-model="confirmationText"
           :label="'Type &quot;' + expectedConfirmationText + '&quot;:'"
           :label-cols="6"
           :input-cols="6"
         />
-      </v-card-text>
-      <v-card-text class="pt-10px">
-        <v-row class="align-center text-white">
-          <v-col v-if="onBackup" cols="6">
+      </div>
+      <div class="pt-2.5">
+        <div class="flex flex-wrap items-center text-white -mx-3">
+          <div v-if="onBackup" class="w-full sm:w-1/2 px-3">
             <pv-button variant="primary" icon="mdi-export" block @click="onBackup">
               <span class="open-label">Backup Data</span>
             </pv-button>
-          </v-col>
-          <v-col v-if="description" :cols="onBackup ? '6' : '12'">
+          </div>
+          <div
+            v-if="description"
+            :class="['px-3', onBackup ? 'w-full sm:w-1/2' : 'w-full']"
+          >
             <pv-button
               variant="danger"
               icon="mdi-trash-can-outline"
@@ -68,9 +72,9 @@ const confirmationText = ref("");
                 {{ deleteText ?? title }}
               </span>
             </pv-button>
-          </v-col>
-        </v-row>
-      </v-card-text>
-    </v-card>
+          </div>
+        </div>
+      </div>
+    </pv-card>
   </pv-dialog>
 </template>

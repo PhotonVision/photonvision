@@ -3,7 +3,7 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, useTemplateRef } fro
 import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import type { StyleValue } from "vue";
-import PvIcon from "@/components/common/pv-icon.vue";
+import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
 import type { UiCameraConfiguration } from "@/types/SettingTypes";
 import PvLoading from "@/components/common/pv-loading.vue";
 
@@ -498,21 +498,21 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <div class="stream-overlay" :style="overlayStyle">
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
-        class="ma-1 mr-2"
+        class="m-1 mr-2"
         @click="handleCaptureClick"
       />
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
         icon-name="mdi-fullscreen"
         tooltip="Open this stream in fullscreen"
-        class="ma-1 mr-2"
+        class="m-1 mr-2"
         @click="handleFullscreenRequest"
       />
-      <pv-icon
+      <pv-tooltipped-icon
         color="primary"
         icon-name="mdi-open-in-new"
         tooltip="Open this stream in a new window"

@@ -42,15 +42,15 @@ const cameraViewType = computed<number[]>({
 
 <template>
   <div>
-    <v-row no-gutters class="pa-3">
-      <v-col cols="12" md="7">
+    <div class="flex flex-wrap p-3">
+      <div class="w-full md:w-7/12">
         <CamerasCard />
         <CalibrationCard />
         <CameraControlCard />
-      </v-col>
-      <v-col class="pl-md-3 pt-3 pt-md-0" cols="12" md="5">
+      </div>
+      <div class="w-full pt-3 md:w-5/12 md:pl-3 md:pt-0">
         <CamerasView v-model="cameraViewType" />
-      </v-col>
-    </v-row>
+      </div>
+    </div>
   </div>
 </template>
