@@ -435,7 +435,8 @@ public class FrameRecorder implements Releasable {
                     .forEach(
                             path -> {
                                 try {
-                                    Files.move(export(path).toPath(), camExportDir);
+                                    Path exported = export(path).toPath();
+                                    Files.move(exported, camExportDir.resolve(exported.getFileName()));
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }
