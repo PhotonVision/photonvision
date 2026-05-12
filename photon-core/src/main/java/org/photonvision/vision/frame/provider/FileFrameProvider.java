@@ -22,6 +22,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameProvider;
@@ -33,6 +35,8 @@ import org.photonvision.vision.opencv.CVMat;
  * path}.
  */
 public class FileFrameProvider extends CpuImageProcessor {
+    private static final Logger logger = new Logger(FileFrameProvider.class, LogGroup.Camera);
+
     public static final int MAX_FPS = 10;
     private static int count = 0;
 
@@ -143,7 +147,12 @@ public class FileFrameProvider extends CpuImageProcessor {
 
     @Override
     public void setRecording(boolean shouldRecord) {
-        throw new UnsupportedOperationException("FileFrameProvider does not support recording");
+        // Must NOT throw — NTDataPublisher routes recordingRequest writes through
+        // FrameProvider::setRecording on the NT listener thread, with no try/catch around
+        // the consumer. An unchecked exception here propagates into NT4's listener pool.
+        if (shouldRecord) {
+            logger.warn("Ignoring setRecording(true): FileFrameProvider does not support recording.");
+        }
     }
 
     @Override
