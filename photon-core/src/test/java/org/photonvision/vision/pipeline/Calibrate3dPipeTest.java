@@ -174,7 +174,7 @@ public class Calibrate3dPipeTest {
 
         var uncertainty = data.estimateUncertainty();
         assertNotNull(uncertainty);
-        
+
         // print x, y, z
         for (var p : uncertainty) {
             System.out.println(
