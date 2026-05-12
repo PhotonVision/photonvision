@@ -94,7 +94,7 @@ public class HardwareConfig {
         releaseGPIOCommand = "";
         restartHardwareCommand = "";
         vendorFOV = -1;
-        recordingStrategy = RecordingStrategy.SNAPSHOTS;
+        recordingStrategy = RecordingStrategy.VIDEO;
     }
 
     /**

@@ -19,19 +19,18 @@ package org.photonvision.vision.pipeline;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.metrics.SystemMonitor;
@@ -54,7 +53,7 @@ public class FrameRecorder implements Releasable {
     private long sequenceCounter = 0;
 
     public enum RecordingStrategy {
-        SNAPSHOTS
+        VIDEO
     }
 
     public final RecordingStrategy strat;
@@ -62,10 +61,20 @@ public class FrameRecorder implements Releasable {
     private Logger logger;
 
     private final Path outputPath;
+    private final Path outputVideoPath;
+
+    // FFmpeg subprocess that encodes raw BGR frames to H.264. Started lazily on the first
+    // recordFrame call so we have the frame dimensions to pass to ffmpeg's -s argument.
+    private Process ffmpegProcess;
+    private OutputStream ffmpegStdin;
+
+    // Reused per-frame byte buffer for the JNI Mat -> byte[] copy. Allocated once per
+    // recording (assuming constant resolution).
+    private byte[] frameBuffer;
 
     // Per-frame metadata sidecar, one JSON object per line. Encoder-agnostic so it survives
-    // any future change to the on-disk frame format (e.g. PNG -> H.264). Null if the file
-    // couldn't be opened at construction.
+    // the H.264 switch — filenames no longer carry per-frame info, sidecar is the only
+    // source of seq + capture timing for replay.
     private BufferedWriter metadataWriter;
 
     private static class RecordFrame {
@@ -111,6 +120,7 @@ public class FrameRecorder implements Releasable {
 
         logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
         this.outputPath = outputPath;
+        this.outputVideoPath = outputPath.resolve("recording.mp4");
 
         // Write strategy to a file in the output path
         try {
@@ -155,8 +165,8 @@ public class FrameRecorder implements Releasable {
 
         // Start the writer thread
         switch (strat) {
-            case SNAPSHOTS ->
-                    this.writerThread = new Thread(this::snapshotLoop, "FrameRecorder-Snapshot");
+            case VIDEO ->
+                    this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
             default -> throw new IllegalArgumentException("Unsupported Recording Strategy: " + strat);
         }
         this.writerThread.setDaemon(true);
@@ -230,8 +240,8 @@ public class FrameRecorder implements Releasable {
         return added;
     }
 
-    /** Worker thread that writes frames to video file */
-    private void snapshotLoop() {
+    /** Worker thread: pipes raw BGR frames into the ffmpeg subprocess for live H.264 encoding. */
+    private void videoLoop() {
         while (!shutdown.get()) {
             try {
                 RecordFrame frame = frameQueue.take();
@@ -239,24 +249,107 @@ public class FrameRecorder implements Releasable {
                 if (frame.isPoison) {
                     break;
                 }
-                // Filename is <seq>_<captureNs>. Seq-first so a lexicographic sort matches capture
-                // order even if a camera ever reports out-of-order timestamps; captureNs preserves
-                // the actual capture time for replay timing.
-                String framePath =
-                        String.format(
-                                "%s/frame_%d_%d.png",
-                                outputPath, frame.sequenceId, frame.captureTimestampNs);
-                Imgcodecs.imwrite(framePath, frame.mat);
 
-                writeMetadataLine(frame.sequenceId, frame.captureTimestampNs);
+                if (ffmpegProcess == null) {
+                    if (!startFfmpeg(frame.mat.cols(), frame.mat.rows())) {
+                        frame.mat.release();
+                        // Encoder couldn't start; stop recording so we don't busy-drain the queue.
+                        stopRecording();
+                        continue;
+                    }
+                }
 
-                // Release the cloned mat
+                if (writeRawFrame(frame.mat)) {
+                    writeMetadataLine(frame.sequenceId, frame.captureTimestampNs);
+                }
+
                 frame.mat.release();
 
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 break;
             }
+        }
+    }
+
+    /**
+     * Spawn ffmpeg with stdin piped: raw BGR frames in, H.264 mp4 out.
+     *
+     * <p>Encoder is libx264 with preset=ultrafast + tune=zerolatency to keep CPU load low enough
+     * for 30 fps on a Pi-class device. crf 23 is FFmpeg's default quality target.
+     *
+     * @return true on success, false if the subprocess couldn't be started (ffmpeg not on PATH,
+     *     etc.) — caller should stop recording.
+     */
+    private boolean startFfmpeg(int width, int height) {
+        ProcessBuilder pb =
+                new ProcessBuilder(
+                        "ffmpeg",
+                        "-hide_banner",
+                        "-loglevel",
+                        "warning",
+                        "-y",
+                        "-f",
+                        "rawvideo",
+                        "-pix_fmt",
+                        "bgr24",
+                        "-s",
+                        width + "x" + height,
+                        "-r",
+                        "30",
+                        "-i",
+                        "pipe:0",
+                        "-c:v",
+                        "libx264",
+                        "-preset",
+                        "ultrafast",
+                        "-tune",
+                        "zerolatency",
+                        "-crf",
+                        "23",
+                        "-pix_fmt",
+                        "yuv420p",
+                        outputVideoPath.toString());
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+        try {
+            ffmpegProcess = pb.start();
+            ffmpegStdin = ffmpegProcess.getOutputStream();
+            logger.info(
+                    "Started ffmpeg subprocess for " + width + "x" + height + " -> " + outputVideoPath);
+            return true;
+        } catch (IOException e) {
+            logger.error(
+                    "Failed to start ffmpeg subprocess (is ffmpeg installed and on PATH?): "
+                            + e.getMessage());
+            ffmpegProcess = null;
+            ffmpegStdin = null;
+            return false;
+        }
+    }
+
+    /**
+     * Copy the BGR pixel bytes out of the Mat and write them to ffmpeg's stdin.
+     *
+     * @return true on success, false if ffmpeg's pipe is broken (subprocess died) — caller should
+     *     stop recording.
+     */
+    private boolean writeRawFrame(Mat mat) {
+        int needed = (int) (mat.total() * mat.elemSize());
+        if (frameBuffer == null || frameBuffer.length < needed) {
+            frameBuffer = new byte[needed];
+        }
+        mat.get(0, 0, frameBuffer);
+        try {
+            ffmpegStdin.write(frameBuffer, 0, needed);
+            return true;
+        } catch (IOException e) {
+            logger.error(
+                    "ffmpeg pipe broken (subprocess died?): "
+                            + e.getMessage()
+                            + "; stopping recording.");
+            stopRecording();
+            return false;
         }
     }
 
@@ -321,131 +414,52 @@ public class FrameRecorder implements Releasable {
             }
             metadataWriter = null;
         }
+
+        // Close ffmpeg's stdin to signal EOF, wait for it to finalize the .mp4 (write the
+        // moov atom and exit). If it doesn't exit promptly something's wrong; force-kill.
+        if (ffmpegStdin != null) {
+            try {
+                ffmpegStdin.close();
+            } catch (IOException e) {
+                logger.warn("Failed to close ffmpeg stdin: " + e.getMessage());
+            }
+            ffmpegStdin = null;
+        }
+        if (ffmpegProcess != null) {
+            try {
+                if (!ffmpegProcess.waitFor(5, TimeUnit.SECONDS)) {
+                    logger.warn("ffmpeg did not exit within 5s; force-killing.");
+                    ffmpegProcess.destroyForcibly();
+                } else if (ffmpegProcess.exitValue() != 0) {
+                    logger.warn("ffmpeg exited with code " + ffmpegProcess.exitValue());
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                ffmpegProcess.destroyForcibly();
+            }
+            ffmpegProcess = null;
+        }
     }
 
     /**
-     * Export a recording at the given path.
+     * Export a recording.
+     *
+     * <p>Returns a temp copy of {@code <recording>/recording.mp4} so callers (single-recording
+     * export, exportCamera, exportAll) can safely move/zip without disturbing the original.
      *
      * @param recording Path to recording directory
-     * @return Path to exported recording
+     * @return Path to a unique temp file with the exported .mp4
      */
     public static File export(Path recording) throws Exception {
-        // Read the strategy used
-
-        Path strategyFile = recording.resolve("strat");
-        String strategy = Files.readString(strategyFile).trim();
-
-        switch (strategy) {
-            case "SNAPSHOTS":
-                return exportSnapshots(recording);
-            default:
-                throw new IllegalArgumentException("Unsupported Recording Strategy: " + strategy);
+        Path mp4 = recording.resolve("recording.mp4");
+        if (!Files.exists(mp4)) {
+            throw new IllegalStateException("No recording.mp4 found in " + recording);
         }
-    }
-
-    private static File exportSnapshots(Path recording) throws Exception {
-        List<Snapshot> frames = new ArrayList<>();
-        Pattern pattern = Pattern.compile("frame_(\\d+)_(\\d+)\\.png");
-
-        File dir = recording.toFile();
-        File[] files = dir.listFiles((d, name) -> name.matches("frame_\\d+_\\d+\\.png"));
-
-        if (files != null) {
-            for (File file : files) {
-                Matcher matcher = pattern.matcher(file.getName());
-                if (matcher.matches()) {
-                    long sequenceId = Long.parseLong(matcher.group(1));
-                    long captureNs = Long.parseLong(matcher.group(2));
-                    frames.add(new Snapshot(file.getAbsolutePath(), sequenceId, captureNs));
-                }
-            }
-        }
-
-        Collections.sort(frames);
-
-        if (frames.isEmpty()) {
-            System.err.println("No frames found matching pattern frame_*_*.png");
-            throw new IllegalStateException("No frames to export");
-        }
-
-        // Create concat file for FFmpeg
-        Path concatFile = Files.createTempFile("ffmpeg_concat_", ".txt");
-
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(concatFile.toFile()))) {
-            for (int i = 0; i < frames.size(); i++) {
-                Snapshot frame = frames.get(i);
-
-                // Calculate duration based on time to next frame, using the capture timestamp
-                // (recorded at the camera) rather than wall-clock at write time.
-                double duration;
-                if (i < frames.size() - 1) {
-                    long timeDiff = frames.get(i + 1).captureNs - frame.captureNs;
-                    duration = timeDiff / 1e9; // Convert ns to seconds
-                } else {
-                    // Last frame: use average frame duration or target fps
-                    duration = 1.0 / 30.0; // Assume 30 FPS for last frame
-                }
-
-                writer.write("file '" + frame.filename + "'\n");
-                writer.write("duration " + duration + "\n");
-            }
-
-            // FFmpeg concat requires the last file to be listed again without duration
-            writer.write("file '" + frames.get(frames.size() - 1).filename + "'\n");
-
-            File outputVideo = Files.createTempFile(recording.getFileName().toString(), ".mp4").toFile();
-
-            // Build FFmpeg command for lossless encoding
-            List<String> command = new ArrayList<>();
-            command.add("ffmpeg");
-            command.add("-f");
-            command.add("concat");
-            command.add("-safe");
-            command.add("0");
-            command.add("-i");
-            command.add(concatFile.toString());
-            command.add("-c:v");
-            command.add("libx264");
-            command.add("-preset");
-            command.add("veryslow");
-            command.add("-crf");
-            command.add("0"); // Lossless
-            command.add("-pix_fmt");
-            command.add("yuv444p"); // Full chroma resolution
-            command.add("-y");
-            command.add(outputVideo.toString());
-
-            ProcessBuilder pb = new ProcessBuilder(command);
-            pb.inheritIO();
-            Process process = pb.start();
-            int exitCode = process.waitFor();
-
-            if (exitCode == 0) {
-                return outputVideo;
-            } else {
-                throw new RuntimeException("FFmpeg failed with exit code " + exitCode);
-            }
-        } finally {
-            Files.deleteIfExists(concatFile);
-        }
-    }
-
-    private static class Snapshot implements Comparable<Snapshot> {
-        String filename;
-        long sequenceId;
-        long captureNs;
-
-        Snapshot(String filename, long sequenceId, long captureNs) {
-            this.filename = filename;
-            this.sequenceId = sequenceId;
-            this.captureNs = captureNs;
-        }
-
-        @Override
-        public int compareTo(Snapshot other) {
-            // Sort by sequence — capture order even if a camera's timestamps drift backward.
-            return Long.compare(this.sequenceId, other.sequenceId);
-        }
+        // Prefix with the recording's dir name so exportCamera's ZIP entries are unique.
+        File copy =
+                Files.createTempFile(recording.getFileName().toString() + "_", ".mp4").toFile();
+        Files.copy(mp4, copy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return copy;
     }
 
     public static File exportCamera(Path cameraRecordingsDir) throws Exception {
@@ -525,6 +539,6 @@ public class FrameRecorder implements Releasable {
     }
 
     public static List<RecordingStrategy> getSupportedStrategies() {
-        return List.of(RecordingStrategy.SNAPSHOTS);
+        return List.of(RecordingStrategy.VIDEO);
     }
 }
