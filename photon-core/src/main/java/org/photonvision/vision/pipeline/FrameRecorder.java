@@ -63,6 +63,11 @@ public class FrameRecorder implements Releasable {
 
     private final Path outputPath;
 
+    // Per-frame metadata sidecar, one JSON object per line. Encoder-agnostic so it survives
+    // any future change to the on-disk frame format (e.g. PNG -> H.264). Null if the file
+    // couldn't be opened at construction.
+    private BufferedWriter metadataWriter;
+
     private static class RecordFrame {
         final Mat mat;
         final long captureTimestampNs;
@@ -123,6 +128,25 @@ public class FrameRecorder implements Releasable {
         } catch (Exception e) {
             logger.warn(
                     "Failed to write recording strategy file to " + outputPath + ": " + e.getMessage());
+        }
+
+        // Open the metadata sidecar. Best-effort: if this fails we still record frames, just
+        // without sidecar metadata (the filenames already contain seq + capture time as a
+        // fallback for the snapshot strategy).
+        try {
+            this.metadataWriter =
+                    java.nio.file.Files.newBufferedWriter(
+                            outputPath.resolve("metadata.jsonl"),
+                            java.nio.charset.StandardCharsets.UTF_8,
+                            java.nio.file.StandardOpenOption.CREATE,
+                            java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (Exception e) {
+            logger.warn(
+                    "Failed to open metadata sidecar at "
+                            + outputPath
+                            + "/metadata.jsonl: "
+                            + e.getMessage());
+            this.metadataWriter = null;
         }
 
         this.frameQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
@@ -224,6 +248,8 @@ public class FrameRecorder implements Releasable {
                                 outputPath, frame.sequenceId, frame.captureTimestampNs);
                 Imgcodecs.imwrite(framePath, frame.mat);
 
+                writeMetadataLine(frame.sequenceId, frame.captureTimestampNs);
+
                 // Release the cloned mat
                 frame.mat.release();
 
@@ -231,6 +257,22 @@ public class FrameRecorder implements Releasable {
                 Thread.currentThread().interrupt();
                 break;
             }
+        }
+    }
+
+    /**
+     * Write one JSONL line: {"seq":N,"capture_ns":T}. Flushed per-line so a crash doesn't lose
+     * the last few frames of metadata. Manually formatted (no Jackson) because the schema is
+     * trivial and this is on the writer thread's hot path.
+     */
+    private void writeMetadataLine(long sequenceId, long captureTimestampNs) {
+        if (metadataWriter == null) return;
+        try {
+            metadataWriter.write(
+                    "{\"seq\":" + sequenceId + ",\"capture_ns\":" + captureTimestampNs + "}\n");
+            metadataWriter.flush();
+        } catch (java.io.IOException e) {
+            logger.warn("Failed to write metadata sidecar line: " + e.getMessage());
         }
     }
 
@@ -269,6 +311,15 @@ public class FrameRecorder implements Releasable {
             if (frame.mat != null) {
                 frame.mat.release();
             }
+        }
+
+        if (metadataWriter != null) {
+            try {
+                metadataWriter.close();
+            } catch (java.io.IOException e) {
+                logger.warn("Failed to close metadata sidecar: " + e.getMessage());
+            }
+            metadataWriter = null;
         }
     }
 
