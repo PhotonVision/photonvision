@@ -50,6 +50,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
+import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.wpilib.vision.camera.UsbCamera;
 
 /**
@@ -324,8 +325,7 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
-        // FileLog replay sources: scan the recordings directory and surface any sub-sub-directory
-        // that holds both frames/ and metadata.jsonl as a potential camera the user can map.
+        // FileLog replay sources surfaced from the recordings directory tree.
         cameraInfos.addAll(enumerateRecordedSources());
 
         checkMismatches(cameraInfos);
@@ -339,23 +339,12 @@ public class VisionSourceManager {
     }
 
     /**
-     * Walks {@code <recordings>/<camera>/<recording>/} and emits one {@link
-     * PVCameraInfo.PVFileLogCameraInfo} per leaf directory containing both a {@code frames/}
-     * subdirectory and {@code metadata.jsonl}.
+     * Walks {@code <recordings>/<camera>/<recording>/} and emits one
+     * {@link PVCameraInfo.PVFileLogCameraInfo} per leaf that {@link #isCompleteRecording}
+     * accepts.
      *
-     * <p>Race note: this can run while a {@code FrameRecorder} on another camera is writing into
-     * a sibling directory. Mid-recording dirs that don't yet have both are filtered out; dirs
-     * whose metadata.jsonl already exists are surfaced and will replay up to whatever the
-     * frames/ directory currently contains (the provider's EOF logic handles in-progress files
-     * cleanly). Concurrent enumerate-while-recording on the <em>same</em> physical leaf is
-     * unusual but harmless — the user would replay frames captured up to that moment.
-     *
-     * <p>Package-private + static so unit tests can drive it with a {@code @TempDir} without
-     * needing the {@code ConfigManager} singleton or any JNI / HAL initialisation.
-     *
-     * @param recordingsRoot directory containing {@code <camera>/<recording>/} subtrees.
-     * @param warn sink for non-fatal I/O failures (a missing dir is silent, IOException listing
-     *     a present dir is warned). Use {@code Logger::warn} in production, a list in tests.
+     * @param warn sink for non-fatal I/O failures (missing root is silent; listing failure on
+     *     a present dir is warned).
      */
     static List<PVCameraInfo> enumerateRecordedSources(
             Path recordingsRoot, java.util.function.Consumer<String> warn) {
@@ -381,13 +370,10 @@ public class VisionSourceManager {
         try (Stream<Path> recDirs = Files.list(camDir)) {
             recDirs
                     .filter(Files::isDirectory)
-                    .filter(p -> Files.isDirectory(p.resolve("frames")))
-                    .filter(p -> Files.isRegularFile(p.resolve("metadata.jsonl")))
+                    .filter(VisionSourceManager::isCompleteRecording)
                     .forEach(
                             recDir -> {
-                                // name is "<camera>/<recording>" so the UI can distinguish multiple
-                                // recordings of the same camera. path is the absolute leaf dir —
-                                // also doubles as uniquePath for camera-match dedup.
+                                // "<camera>/<recording>" for the UI; absolute path doubles as uniquePath.
                                 String relative =
                                         recordingsRoot.relativize(recDir).toString().replace('\\', '/');
                                 out.add(PVCameraInfo.fromFileLogInfo(recDir.toString(), relative));
@@ -395,6 +381,14 @@ public class VisionSourceManager {
         } catch (IOException e) {
             warn.accept("Failed to list recordings under " + camDir + ": " + e.getMessage());
         }
+    }
+
+    /** Mirrors {@code FileLogFrameProvider}'s constructor probes (frames/000000.jpg + sidecar). */
+    private static boolean isCompleteRecording(Path recordingDir) {
+        Path framesDir = recordingDir.resolve("frames");
+        return Files.isDirectory(framesDir)
+                && Files.isRegularFile(recordingDir.resolve("metadata.jsonl"))
+                && Files.isRegularFile(FrameLogFormat.framePath(framesDir, 0));
     }
 
     /**

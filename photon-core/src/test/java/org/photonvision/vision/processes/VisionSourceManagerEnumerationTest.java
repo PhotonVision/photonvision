@@ -34,12 +34,8 @@ import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.PVCameraInfo;
 
 /**
- * Unit tests for {@link VisionSourceManager#enumerateRecordedSources(Path,
- * java.util.function.Consumer)}. Pure JVM — no JNI, no HAL, no ConfigManager singleton.
- *
- * <p>The full {@link VisionSourceManagerTest} requires {@code photontargetingJNI} and so can't
- * run on dev machines without Visual Studio. This test exercises the recording-enumeration
- * helper in isolation, so it's portable.
+ * Pure-JVM tests for {@link VisionSourceManager#enumerateRecordedSources}. No JNI, no HAL, no
+ * ConfigManager singleton — portable to dev machines without {@code photontargetingJNI}.
  */
 class VisionSourceManagerEnumerationTest {
     @TempDir Path recordingsRoot;
@@ -53,6 +49,7 @@ class VisionSourceManagerEnumerationTest {
         Path dir = recordingsRoot.resolve(camera).resolve(recording);
         Files.createDirectories(dir.resolve("frames"));
         touch(dir.resolve("metadata.jsonl"));
+        touch(dir.resolve("frames").resolve("000000.jpg"));
         return dir;
     }
 
@@ -90,9 +87,7 @@ class VisionSourceManagerEnumerationTest {
 
     @Test
     void skipsRecordingMissingMetadata() throws IOException {
-        // frames/ present but no jsonl — could be a pre-2183 recording, could be mid-init.
-        // Either way the provider would refuse to construct, so don't offer it as a camera.
-        Path dir = recordingsRoot.resolve("camA").resolve("pre-2183");
+        Path dir = recordingsRoot.resolve("camA").resolve("no-sidecar");
         Files.createDirectories(dir.resolve("frames"));
 
         var result = VisionSourceManager.enumerateRecordedSources(recordingsRoot, msg -> {});
@@ -101,10 +96,19 @@ class VisionSourceManagerEnumerationTest {
 
     @Test
     void skipsRecordingMissingFrames() throws IOException {
-        // jsonl present but no frames/ — recorder probably opened metadata then crashed before
-        // writing any frames. Provider refuses construction; don't offer it.
         Path dir = recordingsRoot.resolve("camA").resolve("metadata-only");
         Files.createDirectories(dir);
+        touch(dir.resolve("metadata.jsonl"));
+
+        var result = VisionSourceManager.enumerateRecordedSources(recordingsRoot, msg -> {});
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void skipsRecordingMissingFirstFrame() throws IOException {
+        // Recorder mid-init: frames/ created, sidecar opened, no 000000.jpg yet.
+        Path dir = recordingsRoot.resolve("camA").resolve("racing-recorder");
+        Files.createDirectories(dir.resolve("frames"));
         touch(dir.resolve("metadata.jsonl"));
 
         var result = VisionSourceManager.enumerateRecordedSources(recordingsRoot, msg -> {});
