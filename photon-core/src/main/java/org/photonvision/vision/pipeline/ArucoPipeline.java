@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import org.opencv.core.Mat;
@@ -161,29 +160,10 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                                     false, null, null, null, null, frameStaticProperties)));
         }
 
-        // Pre-compute single-tag poses for ambiguity filtering if multi-tag is enabled
-        HashMap<Integer, AprilTagPoseEstimate> cachedPoseEstimates = new HashMap<>();
         Optional<MultiTargetPNPResult> multiTagResult = Optional.empty();
 
         if (settings.solvePNPEnabled && settings.doMultiTarget) {
-            List<TrackedTarget> multiTagTargetList = targetList;
-
-            // If ambiguity filtering is enabled (threshold < 1.0), pre-compute single-tag poses
-            if (settings.multiTagAmbiguityThreshold < 1.0) {
-                multiTagTargetList = new ArrayList<>();
-                for (int i = 0; i < tagDetectionPipeResult.output.size(); i++) {
-                    ArucoDetectionResult detection = tagDetectionPipeResult.output.get(i);
-                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
-                    sumPipeNanosElapsed += poseResult.nanosElapsed;
-                    cachedPoseEstimates.put(detection.getId(), poseResult.output);
-
-                    if (poseResult.output.getAmbiguity() <= settings.multiTagAmbiguityThreshold) {
-                        multiTagTargetList.add(targetList.get(i));
-                    }
-                }
-            }
-
-            var multiTagOutput = multiTagPNPPipe.run(multiTagTargetList);
+            var multiTagOutput = multiTagPNPPipe.run(targetList);
             sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
             multiTagResult = multiTagOutput.output;
         }
@@ -201,17 +181,12 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 if (settings.doSingleTargetAlways
                         || !(multiTagResult.isPresent()
                                 && multiTagResult.get().fiducialIDsUsed.contains((short) detection.getId()))) {
-                    // Reuse cached pose estimate if available
-                    if (cachedPoseEstimates.containsKey(detection.getId())) {
-                        tagPoseEstimate = cachedPoseEstimates.get(detection.getId());
-                    } else {
-                        var poseResult = singleTagPoseEstimatorPipe.run(detection);
-                        sumPipeNanosElapsed += poseResult.nanosElapsed;
-                        tagPoseEstimate = poseResult.output;
-                    }
+                    var poseResult = singleTagPoseEstimatorPipe.run(detection);
+                    sumPipeNanosElapsed += poseResult.nanosElapsed;
+                    tagPoseEstimate = poseResult.output;
                 }
 
-                // If single-tag estimation was not done, this is a multi-target tag from the layout
+                // If single-tag estimation was not done, this tag was used in multi-tag estimation
                 if (tagPoseEstimate == null && multiTagResult.isPresent()) {
                     // compute this tag's camera-to-tag transform using the multitag result
                     var tagPose = atfl.getTagPose(detection.getId());
