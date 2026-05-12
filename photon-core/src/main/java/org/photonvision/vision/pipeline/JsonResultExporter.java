@@ -70,7 +70,7 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
     private final long offsetUs;
     private final LongSupplier nowMicrosSupplier;
     private BufferedWriter writer;
-    private boolean closed;
+    private volatile boolean closed;
 
     public JsonResultExporter(
             Path outputFile,
@@ -108,7 +108,17 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
                         StandardOpenOption.CREATE,
                         StandardOpenOption.TRUNCATE_EXISTING);
 
-        writeHeader(cameraUniqueName, recordingName, settings);
+        // Close the writer on header failure so a partial-construction error doesn't leak the FD.
+        try {
+            writeHeader(cameraUniqueName, recordingName, settings);
+        } catch (IOException e) {
+            try {
+                writer.close();
+            } catch (IOException suppressed) {
+                e.addSuppressed(suppressed);
+            }
+            throw e;
+        }
     }
 
     private void writeHeader(
