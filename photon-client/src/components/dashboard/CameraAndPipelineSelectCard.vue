@@ -219,10 +219,16 @@ useCameraSettingsStore().$subscribe((mutation, state) => {
   }
 });
 const wrappedCameras = computed<SelectItem<string>[]>(() =>
-  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
-    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
-    value: cameraUniqueName
-  }))
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => {
+    const cam = useCameraSettingsStore().cameras[cameraUniqueName];
+    return {
+      name: cam.nickname,
+      value: cameraUniqueName,
+      ...(cam.matchedCameraInfo?.PVFileLogCameraInfo
+        ? { chip: { text: "Replay", color: "info" } }
+        : {})
+    };
+  })
 );
 </script>
 

@@ -6,6 +6,7 @@ export interface SelectItem<TValue extends string | number> {
   name: string | number;
   value: TValue;
   disabled?: boolean;
+  chip?: { text: string; color?: string };
 }
 
 type SelectItems = SelectItem<T>[] | ReadonlyArray<T>;
@@ -58,7 +59,34 @@ const items = computed<SelectItem<T>[]>(() => {
         hide-details="auto"
         variant="underlined"
         density="compact"
-      />
+      >
+        <template #selection="{ item }">
+          <span>{{ item.raw.name }}</span>
+          <v-chip
+            v-if="item.raw.chip"
+            class="ml-2"
+            size="x-small"
+            :color="item.raw.chip.color ?? 'info'"
+          >
+            {{ item.raw.chip.text }}
+          </v-chip>
+        </template>
+        <template #item="{ item, props: itemProps }">
+          <v-list-item v-bind="itemProps" :title="undefined">
+            <v-list-item-title class="d-flex align-center">
+              <span>{{ item.raw.name }}</span>
+              <v-chip
+                v-if="item.raw.chip"
+                class="ml-2"
+                size="x-small"
+                :color="item.raw.chip.color ?? 'info'"
+              >
+                {{ item.raw.chip.text }}
+              </v-chip>
+            </v-list-item-title>
+          </v-list-item>
+        </template>
+      </v-select>
     </v-col>
   </div>
 </template>
