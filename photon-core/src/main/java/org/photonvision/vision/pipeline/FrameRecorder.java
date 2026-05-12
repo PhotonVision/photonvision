@@ -22,16 +22,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.videoio.VideoWriter;
-import org.opencv.videoio.Videoio;
+import org.opencv.core.MatOfInt;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.metrics.SystemMonitor;
@@ -44,20 +42,35 @@ import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 /**
- * Writes a Motion-JPEG AVI ({@code recording.avi}) plus a {@code metadata.jsonl} sidecar of
- * per-frame {@code (seq, capture_ns)} pairs.
+ * Writes a directory of JPEG frames ({@code frames/000000.jpg, 000001.jpg, …}) plus a
+ * {@code metadata.jsonl} sidecar of per-frame {@code (seq, capture_ns)} pairs.
  *
- * <p><strong>Why MJPEG-AVI and not H.264 mp4:</strong> the on-disk format must be decodable by
- * PhotonVision's bundled OpenCV on every platform we ship (Windows x64, Linux x64/arm64). The
- * WPILib OpenCV 4.10.0-3 build links no ffmpeg / gstreamer plugin on Linux — {@code VideoCapture}
- * cannot decode mp4 there. CV_MJPEG (Motion-JPEG-in-AVI, FourCC {@code MJPG}) is the only video
- * format compiled directly into OpenCV's videoio module on every build, so a recording written
- * with {@code VideoWriter(MJPG)} can be read back via {@code VideoCapture(CAP_ANY)} on any host
- * we support. Trade-off: ~8–10× larger files than H.264 (full intra-frame coding, each frame is
- * an independent JPEG). At 1080p30 expect ~1 GB/min; bring a hard drive.
+ * <p><strong>Why image-sequence and not a video container:</strong>
  *
- * <p><strong>Single-file 2 GB cap:</strong> the classic AVI container limit. At 1080p30 that's
- * ~2 minutes; at 720p30 ~5 minutes. Documented Phase 1 limit — chunking is a follow-up.
+ * <ul>
+ *   <li><em>No container size cap.</em> AVI's classic 2 GB cap silently corrupts long recordings
+ *       (~2 min at 1080p30). MJPEG-AVI / mp4 are container-bound; a frame directory is filesystem-
+ *       bound, which on any modern filesystem is "effectively unlimited" for typical match
+ *       lengths.
+ *   <li><em>Atomic per frame.</em> Each {@code Imgcodecs.imwrite} either produces a complete JPEG
+ *       or fails. A crash mid-recording leaves all already-written frames intact and the last
+ *       (partial) frame either absent or invalid-but-skippable. No container-index corruption.
+ *   <li><em>No codec compatibility risk.</em> JPEG decode via {@code Imgcodecs.imread} is part of
+ *       OpenCV core on every supported platform — never depends on a video backend (ffmpeg,
+ *       gstreamer, Media Foundation) being present or version-matched. WPILib's Linux OpenCV
+ *       ships no video backend, which is what disqualifies H.264 mp4 and made MJPEG-AVI a
+ *       workaround; per-file JPEG sidesteps the whole question.
+ *   <li><em>Random seek.</em> Replay can jump to any frame N by opening {@code N.jpg} directly,
+ *       enabling future Phase 3 batch / out-of-order replay without recoding the format.
+ *   <li><em>Truncatable.</em> Readers handle a partial recording by counting files; no extra
+ *       work to recover from a writer crash.
+ * </ul>
+ *
+ * <p>Trade-off vs. a video container: ~8-10× larger than H.264 (each frame is an intra-frame
+ * JPEG, no temporal compression), plus filesystem inode pressure (~1800 files / minute at 30 fps).
+ * At 1080p30 the per-recording size is ~1 GB/minute. ext4 / NTFS / eMMC handle the file count
+ * fine; FAT32 starts to slow down past ~10k files in one directory. If that becomes a problem,
+ * shard frames into subdirectories ({@code frames/000/}, {@code frames/001/}) — for now, flat.
  *
  * <p><strong>How recordings are triggered:</strong> the web UI's Recordings card and robot code
  * (via {@code PhotonCamera.setRecording(bool)} in photonlib) both write to the per-camera NT
@@ -65,7 +78,7 @@ import org.zeroturnaround.zip.ZipUtil;
  * subscribes to that topic and calls {@code frameProvider.setRecording(bool)} on the matching
  * {@code VisionModule}, which in turn constructs / releases this {@code FrameRecorder}. Robot
  * programmers should drive it on game-event edges rather than continuously — recordings are
- * expensive at MJPEG-AVI sizes.
+ * disk-expensive at 1 GB/minute.
  *
  * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, recorded
  * verbatim. Replay readers must propagate it through {@code Frame.timestampNanos} unchanged —
@@ -73,9 +86,9 @@ import org.zeroturnaround.zip.ZipUtil;
  * as opaque time and rebase if they need to.
  *
  * <p>Metadata is flushed before its paired frame, so under any crash
- * {@code len(metadata.jsonl) >= decoded_frame_count(recording.avi)}. Readers truncate jsonl to
- * the avi's decoded count, and ignore unknown JSON fields so the schema can grow (exposure,
- * gain, calibration version) without breaking older readers.
+ * {@code len(metadata.jsonl) >= frame_file_count(frames/)}. Readers truncate jsonl to the frame
+ * directory's count, and ignore unknown JSON fields so the schema can grow (exposure, gain,
+ * calibration version) without breaking older readers.
  */
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
@@ -96,18 +109,22 @@ public class FrameRecorder implements Releasable {
     private Logger logger;
 
     private final Path outputPath;
-    private final Path outputVideoPath;
+    private final Path framesDir;
 
-    // OpenCV VideoWriter that encodes each BGR frame to JPEG and packs it into a single AVI
-    // container. Opened lazily on the first recordFrame call so we have the frame dimensions
-    // for the writer's Size argument (VideoWriter requires a fixed resolution per-file).
-    private VideoWriter videoWriter;
-
-    // JPEG quality (1-100) applied to each frame inside the MJPEG-AVI. 85 is the visual /
-    // size sweet spot for the kind of content PV's pipelines actually consume (AprilTags,
-    // retro-reflective targets, coloured shapes) and keeps file sizes around 250 KB/frame
-    // at 1080p — well inside the 2 GB single-file AVI cap for typical match-length recordings.
+    // JPEG quality (1-100). 85 is the visual / size sweet spot for the kind of content PV's
+    // pipelines actually consume (AprilTags, retro-reflective targets, coloured shapes). At
+    // 1080p that's ~50-150 KB per frame depending on detail. If a future use case wants
+    // pristine pixels, configure higher; for storage-constrained use, drop to ~70.
     private static final int JPEG_QUALITY = 85;
+
+    // Reused JPEG-quality param vector for Imgcodecs.imwrite. Allocated once per recorder.
+    private final MatOfInt jpegWriteParams =
+            new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, JPEG_QUALITY);
+
+    // 6 digits supports up to 1M frames per recording — ~9 hours @ 30 fps, ~2.3 hours @ 120 fps,
+    // both well beyond any realistic match recording. Zero-padded so lexical sort matches numeric
+    // sort, which is what replay's directory iteration relies on.
+    private static final String FRAME_FILENAME_FORMAT = "%06d.jpg";
 
     // Per-frame metadata sidecar, one JSON object per line. Encoder-agnostic so it survives
     // format switches — filenames no longer carry per-frame info, sidecar is the only
@@ -165,12 +182,12 @@ public class FrameRecorder implements Releasable {
 
         logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
         this.outputPath = outputPath;
-        this.outputVideoPath = outputPath.resolve("recording.avi");
+        this.framesDir = outputPath.resolve("frames");
 
         // Write strategy to a file in the output path
         try {
-            // Ensure output directory exists
-            java.nio.file.Files.createDirectories(outputPath);
+            // Ensure output + frames directory exist. createDirectories is no-op if present.
+            java.nio.file.Files.createDirectories(framesDir);
 
             java.nio.file.Path strategyFile = outputPath.resolve("strat");
             String content = strat.name() + System.lineSeparator();
@@ -186,7 +203,7 @@ public class FrameRecorder implements Releasable {
         }
 
         // Open the metadata sidecar. Required for replay — fatal at construction so we don't
-        // produce a recording.avi missing the seq + capture_ns needed to feed frames back
+        // produce a frame directory missing the seq + capture_ns needed to feed frames back
         // through the pipeline.
         try {
             this.metadataWriter =
@@ -214,7 +231,7 @@ public class FrameRecorder implements Releasable {
         this.writerThread.start();
     }
 
-    /** Start recording. This initializes the VideoWriter. */
+    /** Start recording. Frames offered after this point will be written to {@code frames/}. */
     public boolean startRecording() {
         if (recording.get()) {
             return false;
@@ -224,7 +241,7 @@ public class FrameRecorder implements Releasable {
         return true;
     }
 
-    /** Stop recording. Flushes remaining frames and closes the VideoWriter. */
+    /** Stop recording. Frames already in the queue are still flushed by the writer thread. */
     public void stopRecording() {
         if (!recording.get()) {
             return;
@@ -283,7 +300,7 @@ public class FrameRecorder implements Releasable {
         return added;
     }
 
-    /** Worker thread: encodes each BGR frame as a JPEG inside the MJPEG-AVI container. */
+    /** Worker thread: encodes each BGR frame as a standalone JPEG into the frames directory. */
     private void videoLoop() {
         while (!shutdown.get()) {
             try {
@@ -293,21 +310,12 @@ public class FrameRecorder implements Releasable {
                     break;
                 }
 
-                if (videoWriter == null) {
-                    if (!openVideoWriter(frame.mat.cols(), frame.mat.rows())) {
-                        frame.mat.release();
-                        // Writer couldn't open; stop recording so we don't busy-drain the queue.
-                        stopRecording();
-                        continue;
-                    }
-                }
-
-                // Metadata before frame: keeps len(jsonl) >= avi frame count under any crash,
-                // so replay readers truncate jsonl to the avi's decoded count — never the
-                // other way around. If metadata write fails, skip the frame to preserve the
-                // invariant (writeMetadataLine stops recording on failure).
+                // Metadata before frame: keeps len(jsonl) >= frame_count(frames/) under any
+                // crash, so replay readers truncate jsonl to the file count — never the other
+                // way around. If metadata write fails, skip the frame to preserve the invariant
+                // (writeMetadataLine stops recording on failure).
                 if (writeMetadataLine(frame.sequenceId, frame.captureTimestampNs)) {
-                    videoWriter.write(frame.mat);
+                    writeFrame(frame.sequenceId, frame.mat);
                 }
 
                 frame.mat.release();
@@ -320,47 +328,23 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Open the OpenCV {@link VideoWriter} that encodes each BGR frame as JPEG into an MJPEG
-     * AVI. Lazy because we need the frame's dimensions before opening — the writer requires a
-     * fixed resolution.
+     * Write one BGR frame as a standalone JPEG into {@code frames/<seq>.jpg}.
      *
-     * <p>FourCC {@code MJPG} is the only video format compiled directly into WPILib's bundled
-     * OpenCV on every platform — neither ffmpeg nor gstreamer plugins ship in the Linux build.
-     * Decode on replay therefore needs no runtime deps beyond what we already require.
-     *
-     * @return true on success, false if {@code VideoWriter} couldn't open the file or codec
-     *     (filesystem error, missing parent directory, etc.) — caller should stop recording.
+     * <p>Each call is independent and atomic at the OS layer — a partial write produces an
+     * invalid JPEG that replay skips, not a corrupted container. {@code Imgcodecs.imwrite}
+     * returns false on disk-full / permissions / encoder failure; we log and stop recording so
+     * the writer thread doesn't burn cycles draining the queue past a broken disk.
      */
-    private boolean openVideoWriter(int width, int height) {
-        int fourcc = VideoWriter.fourcc('M', 'J', 'P', 'G');
-        videoWriter =
-                new VideoWriter(outputVideoPath.toString(), fourcc, 30.0, new Size(width, height));
-        if (!videoWriter.isOpened()) {
+    private void writeFrame(long seq, Mat mat) {
+        Path framePath = framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, seq));
+        boolean ok = Imgcodecs.imwrite(framePath.toString(), mat, jpegWriteParams);
+        if (!ok) {
             logger.error(
-                    "VideoWriter could not open "
-                            + outputVideoPath
-                            + " (codec=MJPG, "
-                            + width
-                            + "x"
-                            + height
-                            + "). The OpenCV build may lack CV_MJPEG — this should not happen on a "
-                            + "stock WPILib OpenCV.");
-            videoWriter.release();
-            videoWriter = null;
-            return false;
+                    "Imgcodecs.imwrite failed for "
+                            + framePath
+                            + " (disk full? permission denied? encoder error?); stopping recording.");
+            stopRecording();
         }
-        // q=85: visual sweep spot for our pipeline content; controllable via the VideoWriter prop.
-        videoWriter.set(Videoio.VIDEOWRITER_PROP_QUALITY, JPEG_QUALITY);
-        logger.info(
-                "Opened MJPEG-AVI writer for "
-                        + width
-                        + "x"
-                        + height
-                        + " @ q"
-                        + JPEG_QUALITY
-                        + " -> "
-                        + outputVideoPath);
-        return true;
     }
 
     /**
@@ -428,109 +412,74 @@ public class FrameRecorder implements Releasable {
             logger.warn("Failed to close metadata sidecar: " + e.getMessage());
         }
 
-        // Close the VideoWriter to finalize the AVI (write the index chunk). VideoWriter.release
-        // is synchronous and will block until the file is fully flushed.
-        if (videoWriter != null) {
-            videoWriter.release();
-            videoWriter = null;
-        }
+        // jpegWriteParams is a small MatOfInt allocated once at construction. GC handles it,
+        // but explicit release matches the rest of the class's resource discipline.
+        jpegWriteParams.release();
     }
 
     /**
      * Export a recording.
      *
-     * <p>Returns a temp copy of {@code <recording>/recording.avi} so callers (single-recording
-     * export, exportCamera, exportAll) can safely move/zip without disturbing the original.
+     * <p>Image-sequence recordings are directories ({@code frames/*.jpg} + {@code metadata.jsonl}
+     * + {@code strat}). For download convenience we zip the whole recording into a single
+     * portable file. Users who want a watchable video can run any standard tool against the
+     * zipped frame directory (e.g. ffmpeg can build an mp4 from the JPEGs offline).
      *
      * @param recording Path to recording directory
-     * @return Path to a unique temp file with the exported .avi
+     * @return Path to a unique temp file with the recording's contents zipped
      */
     public static File export(Path recording) throws Exception {
-        Path avi = recording.resolve("recording.avi");
-        if (!Files.exists(avi)) {
-            throw new IllegalStateException("No recording.avi found in " + recording);
+        if (!Files.isDirectory(recording)) {
+            throw new IllegalStateException("Recording directory not found: " + recording);
         }
-        // Prefix with the recording's dir name so exportCamera's ZIP entries are unique.
-        File copy =
-                Files.createTempFile(recording.getFileName().toString() + "_", ".avi").toFile();
-        Files.copy(avi, copy.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        return copy;
+        File zip =
+                Files.createTempFile(recording.getFileName().toString() + "_", ".zip").toFile();
+        ZipUtil.pack(recording.toFile(), zip);
+        return zip;
     }
 
+    /**
+     * Export all recordings under a single camera as a zip. The zip preserves the
+     * {@code <recording>/{frames/*.jpg, metadata.jsonl, strat}} tree, so the user can browse
+     * recordings by name after unzipping.
+     */
     public static File exportCamera(Path cameraRecordingsDir) throws Exception {
-        File[] exportedRecordings;
-        try (var stream = Files.list(cameraRecordingsDir)) {
-            exportedRecordings =
-                    stream
-                            .map(
-                                    path -> {
-                                        try {
-                                            return FrameRecorder.export(path);
-                                        } catch (Exception e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                    })
-                            .toArray(File[]::new);
+        if (!Files.isDirectory(cameraRecordingsDir)) {
+            throw new IllegalStateException(
+                    "Camera recordings directory not found: " + cameraRecordingsDir);
         }
-
-        // Create a zip of all exported recordings
-        File zipPath =
-                Files.createTempFile(
-                                VisionSourceManager.getInstance().getVisionModules().stream()
-                                                .filter(
-                                                        module ->
-                                                                module
-                                                                        .getCameraConfiguration()
-                                                                        .uniqueName
-                                                                        .matches(cameraRecordingsDir.getFileName().toString()))
-                                                .findFirst()
-                                                .get()
+        // Use the camera's nickname for the zip filename if we can find it; fall back to the
+        // directory's own name. The original code threw NPE when the camera config was missing;
+        // tolerating that here means a user can still export recordings from a camera they've
+        // since unassigned.
+        String prefix =
+                VisionSourceManager.getInstance().getVisionModules().stream()
+                        .filter(
+                                module ->
+                                        module
                                                 .getCameraConfiguration()
-                                                .nickname
-                                        + "_recordings",
-                                ".zip")
-                        .toFile();
-
-        ZipUtil.packEntries(exportedRecordings, zipPath);
-
-        return zipPath;
+                                                .uniqueName
+                                                .equals(cameraRecordingsDir.getFileName().toString()))
+                        .findFirst()
+                        .map(module -> module.getCameraConfiguration().nickname)
+                        .orElseGet(() -> cameraRecordingsDir.getFileName().toString());
+        File zip = Files.createTempFile(prefix + "_recordings_", ".zip").toFile();
+        ZipUtil.pack(cameraRecordingsDir.toFile(), zip);
+        return zip;
     }
 
+    /**
+     * Export every recording from every camera as a single zip. Preserves the
+     * {@code <camera>/<recording>/{frames/, metadata.jsonl, strat}} tree so cameras stay
+     * grouped.
+     */
     public static File exportAll() throws Exception {
-        List<File> exportedRecordings = new ArrayList<>();
-        for (VisionModule module : VisionSourceManager.getInstance().getVisionModules()) {
-            Path dir =
-                    ConfigManager.getInstance()
-                            .getRecordingsDirectory()
-                            .toPath()
-                            .resolve(module.getCameraConfiguration().uniqueName);
-
-            if (!Files.exists(dir)) {
-                continue;
-            }
-
-            Path camExportDir = Files.createTempDirectory(module.getCameraConfiguration().nickname);
-
-            try (var recordings = Files.list(dir)) {
-                recordings.forEach(
-                        path -> {
-                            try {
-                                Path exported = export(path).toPath();
-                                Files.move(exported, camExportDir.resolve(exported.getFileName()));
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-            }
-
-            exportedRecordings.add(camExportDir.toFile());
+        Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
+        File zip = Files.createTempFile("photonvision-recordings-export-", ".zip").toFile();
+        if (Files.isDirectory(recordingsRoot)) {
+            ZipUtil.pack(recordingsRoot.toFile(), zip);
         }
-
-        // Create a zip of all exported recordings
-        File zipPath = Files.createTempFile("photonvision-recordings-export", ".zip").toFile();
-        ZipUtil.packEntries(exportedRecordings.toArray(File[]::new), zipPath);
-
-        return zipPath;
+        return zip;
     }
 
     public static List<RecordingStrategy> getSupportedStrategies() {
