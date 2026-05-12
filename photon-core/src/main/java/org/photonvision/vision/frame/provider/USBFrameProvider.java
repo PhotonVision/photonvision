@@ -186,8 +186,8 @@ public class USBFrameProvider extends CpuImageProcessor {
             String camPath = settables.getConfiguration().uniqueName;
 
             String recordingPath = NetworkTablesManager.getInstance().getMatchData();
-            if (recordingPath == null || recordingPath.isEmpty()) {
-                // No match is currently active, use timestamp
+            if (recordingPath == null || recordingPath.isBlank()) {
+                // No match is currently active (or FMS published whitespace), use timestamp.
                 recordingPath =
                         DateTimeFormatter.ofPattern(PathManager.LOG_DATE_TIME_FORMAT)
                                 .format(java.time.LocalDateTime.now());
