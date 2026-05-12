@@ -86,7 +86,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             }
 
             if (getRecording()) {
-                frameRecorder.recordFrame(mat);
+                frameRecorder.recordFrame(mat, captureTimeNs);
             }
 
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
@@ -126,7 +126,7 @@ public class USBFrameProvider extends CpuImageProcessor {
             }
 
             if (getRecording()) {
-                frameRecorder.recordFrame(ret);
+                frameRecorder.recordFrame(ret, captureTimeUs * 1000);
             }
 
             return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);

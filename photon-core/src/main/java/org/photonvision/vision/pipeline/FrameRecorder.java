@@ -51,7 +51,7 @@ public class FrameRecorder implements Releasable {
     private final Thread writerThread;
     private final AtomicBoolean recording;
     private final AtomicBoolean shutdown;
-    private int frameCounter = 0;
+    private long sequenceCounter = 0;
 
     public enum RecordingStrategy {
         SNAPSHOTS
@@ -65,16 +65,22 @@ public class FrameRecorder implements Releasable {
 
     private static class RecordFrame {
         final Mat mat;
+        final long captureTimestampNs;
+        final long sequenceId;
         final boolean isPoison;
 
-        RecordFrame(Mat mat) {
+        RecordFrame(Mat mat, long captureTimestampNs, long sequenceId) {
             this.mat = mat;
+            this.captureTimestampNs = captureTimestampNs;
+            this.sequenceId = sequenceId;
             this.isPoison = false;
         }
 
         // Poison pill to signal shutdown
         private RecordFrame() {
             this.mat = null;
+            this.captureTimestampNs = 0;
+            this.sequenceId = 0;
             this.isPoison = true;
         }
 
@@ -158,15 +164,19 @@ public class FrameRecorder implements Releasable {
      * new frame is dropped (existing queued frames are kept) and the clone is released internally.
      *
      * @param cvmat The frame to record. Not retained or released by this method.
+     * @param captureTimestampNs Wall-clock nanoseconds at which the camera captured this frame
+     *     (typically from cscore's grabFrame, in the wpi::nt::Now epoch). Used for both the on-disk
+     *     filename and any downstream replay timing; the value is preserved verbatim and never
+     *     replaced with a write-time clock read.
      * @return true if frame was queued, false if recording is not active, queue is full, or we've run
      *     out of disk space.
      */
-    public boolean recordFrame(CVMat cvmat) {
+    public boolean recordFrame(CVMat cvmat, long captureTimestampNs) {
         if (!recording.get() || shutdown.get()) {
             return false;
         }
 
-        if (frameCounter % 100 == 0) {
+        if (sequenceCounter % 100 == 0) {
             double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
 
             // Check if we're under 4 GB of available space, if so stop recording
@@ -183,14 +193,15 @@ public class FrameRecorder implements Releasable {
         // Clone so the caller's Mat is independent of ours: the pipeline downstream will release
         // the original after processing, and the writer thread will release this clone after write.
         Mat clone = cvmat.getMat().clone();
-        boolean added = frameQueue.offer(new RecordFrame(clone));
+        long seq = sequenceCounter;
+        boolean added = frameQueue.offer(new RecordFrame(clone, captureTimestampNs, seq));
 
         if (!added) {
             // Queue full; release the clone we made (not the caller's Mat).
             clone.release();
         }
 
-        frameCounter++;
+        sequenceCounter++;
 
         return added;
     }
@@ -204,9 +215,13 @@ public class FrameRecorder implements Releasable {
                 if (frame.isPoison) {
                     break;
                 }
-                // Write frame to a file under the output path
-                // For simplicity, we write each frame as an image file
-                String framePath = String.format("%s/frame_%d.png", outputPath, System.currentTimeMillis());
+                // Filename is <seq>_<captureNs>. Seq-first so a lexicographic sort matches capture
+                // order even if a camera ever reports out-of-order timestamps; captureNs preserves
+                // the actual capture time for replay timing.
+                String framePath =
+                        String.format(
+                                "%s/frame_%d_%d.png",
+                                outputPath, frame.sequenceId, frame.captureTimestampNs);
                 Imgcodecs.imwrite(framePath, frame.mat);
 
                 // Release the cloned mat
@@ -279,17 +294,18 @@ public class FrameRecorder implements Releasable {
 
     private static File exportSnapshots(Path recording) throws Exception {
         List<Snapshot> frames = new ArrayList<>();
-        Pattern pattern = Pattern.compile("frame_(\\d+)\\.png");
+        Pattern pattern = Pattern.compile("frame_(\\d+)_(\\d+)\\.png");
 
         File dir = recording.toFile();
-        File[] files = dir.listFiles((d, name) -> name.matches("frame_\\d+\\.png"));
+        File[] files = dir.listFiles((d, name) -> name.matches("frame_\\d+_\\d+\\.png"));
 
         if (files != null) {
             for (File file : files) {
                 Matcher matcher = pattern.matcher(file.getName());
                 if (matcher.matches()) {
-                    long timestamp = Long.parseLong(matcher.group(1));
-                    frames.add(new Snapshot(file.getAbsolutePath(), timestamp));
+                    long sequenceId = Long.parseLong(matcher.group(1));
+                    long captureNs = Long.parseLong(matcher.group(2));
+                    frames.add(new Snapshot(file.getAbsolutePath(), sequenceId, captureNs));
                 }
             }
         }
@@ -297,7 +313,7 @@ public class FrameRecorder implements Releasable {
         Collections.sort(frames);
 
         if (frames.isEmpty()) {
-            System.err.println("No frames found matching pattern frame_*.png");
+            System.err.println("No frames found matching pattern frame_*_*.png");
             throw new IllegalStateException("No frames to export");
         }
 
@@ -308,11 +324,12 @@ public class FrameRecorder implements Releasable {
             for (int i = 0; i < frames.size(); i++) {
                 Snapshot frame = frames.get(i);
 
-                // Calculate duration based on time to next frame
+                // Calculate duration based on time to next frame, using the capture timestamp
+                // (recorded at the camera) rather than wall-clock at write time.
                 double duration;
                 if (i < frames.size() - 1) {
-                    long timeDiff = frames.get(i + 1).timestamp - frame.timestamp;
-                    duration = timeDiff / 1000.0; // Convert ms to seconds
+                    long timeDiff = frames.get(i + 1).captureNs - frame.captureNs;
+                    duration = timeDiff / 1e9; // Convert ns to seconds
                 } else {
                     // Last frame: use average frame duration or target fps
                     duration = 1.0 / 30.0; // Assume 30 FPS for last frame
@@ -364,16 +381,19 @@ public class FrameRecorder implements Releasable {
 
     private static class Snapshot implements Comparable<Snapshot> {
         String filename;
-        long timestamp;
+        long sequenceId;
+        long captureNs;
 
-        Snapshot(String filename, long timestamp) {
+        Snapshot(String filename, long sequenceId, long captureNs) {
             this.filename = filename;
-            this.timestamp = timestamp;
+            this.sequenceId = sequenceId;
+            this.captureNs = captureNs;
         }
 
         @Override
         public int compareTo(Snapshot other) {
-            return Long.compare(this.timestamp, other.timestamp);
+            // Sort by sequence — capture order even if a camera's timestamps drift backward.
+            return Long.compare(this.sequenceId, other.sequenceId);
         }
     }
 
