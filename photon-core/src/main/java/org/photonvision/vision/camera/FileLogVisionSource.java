@@ -31,7 +31,7 @@ import org.wpilib.vision.camera.VideoMode;
 
 /**
  * VisionSource backed by a {@link FileLogFrameProvider} — replays a recording directory
- * (recording.mp4 + metadata.jsonl) as if it were a live camera. Parallel to {@link
+ * (recording.avi + metadata.jsonl) as if it were a live camera. Parallel to {@link
  * FileVisionSource}; kept separate because the lifecycles diverge (FileVisionSource loops a
  * single image, this one walks through a timed recording and exhausts).
  */

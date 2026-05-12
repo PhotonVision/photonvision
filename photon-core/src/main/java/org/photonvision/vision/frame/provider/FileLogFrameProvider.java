@@ -32,16 +32,17 @@ import org.photonvision.vision.opencv.CVMat;
 
 /**
  * Replay-side counterpart to {@link org.photonvision.vision.pipeline.FrameRecorder}. Reads a
- * recording directory containing {@code recording.mp4} + {@code metadata.jsonl} and emits
+ * recording directory containing {@code recording.avi} + {@code metadata.jsonl} and emits
  * {@link CapturedFrame}s with their original source-machine capture timestamps, so the rest of
  * the vision pipeline (and the NT publisher downstream of it) processes replayed frames
  * identically to live ones.
  *
- * <p>The mp4 is decoded by OpenCV's {@code VideoCapture} (which delegates to ffmpeg / Media
- * Foundation at the native layer). Each decoded frame is paired with the next sidecar entry,
- * giving us {@code (Mat, capture_ns)} tuples in the order they were captured. See
- * {@code FrameRecorder}'s class javadoc for the on-disk format and its invariants — this
- * reader's correctness depends on them.
+ * <p>The AVI (Motion-JPEG, FourCC {@code MJPG}) is decoded by OpenCV's {@code VideoCapture}
+ * via the {@code CV_MJPEG} backend built directly into OpenCV's videoio module — no ffmpeg /
+ * gstreamer plugin needed, so the same decode path works on every platform PV ships. Each
+ * decoded frame is paired with the next sidecar entry, giving us {@code (Mat, capture_ns)}
+ * tuples in the order they were captured. See {@code FrameRecorder}'s class javadoc for the
+ * on-disk format and its invariants — this reader's correctness depends on them.
  *
  * <h2>Timestamp contract</h2>
  *
@@ -64,7 +65,7 @@ import org.photonvision.vision.opencv.CVMat;
  * <h2>Calibration / FOV — manual import required</h2>
  *
  * <p>Recordings carry image data but not the camera intrinsics that captured them. This
- * provider constructs with {@link FrameStaticProperties} populated only from the mp4 header
+ * provider constructs with {@link FrameStaticProperties} populated only from the avi header
  * (width, height) — FOV is 0 and {@code cameraCalibration} is {@code null}. Pipelines that
  * need intrinsics (AprilTag PnP, SolvePNP, coloured-shape distance estimation, anything that
  * reads {@code horizontalFocalLength} off the static properties) will produce nonsense
@@ -92,7 +93,7 @@ import org.photonvision.vision.opencv.CVMat;
  * <h2>EOF policy</h2>
  *
  * <p>The shorter of the two streams ends replay. The writer guarantees
- * {@code len(jsonl) >= decoded_frame_count(mp4)} under any crash, so the mp4 normally
+ * {@code len(jsonl) >= decoded_frame_count(avi)} under any crash, so the avi normally
  * exhausts first; the jsonl-first path defends against externally truncated files. Once
  * exhausted, {@link #isConnected()} reports {@code false} and further
  * {@link #getInputMat()} calls short-circuit to empty {@link CVMat}s — which
@@ -100,7 +101,7 @@ import org.photonvision.vision.opencv.CVMat;
  *
  * <h2>Pre-2183 recordings</h2>
  *
- * <p>A directory containing {@code recording.mp4} but no {@code metadata.jsonl} predates
+ * <p>A directory containing {@code recording.avi} but no {@code metadata.jsonl} predates
  * PhotonVision's per-frame metadata sidecar. Without source-side capture timestamps the
  * replay timing contract cannot be honoured, so construction fails loudly with an
  * {@link IOException} that names the missing file — mirroring the writer-side refusal in
@@ -142,19 +143,19 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private long firstMonoNs;
 
     /**
-     * @param recordingDir directory containing {@code recording.mp4} and {@code metadata.jsonl},
+     * @param recordingDir directory containing {@code recording.avi} and {@code metadata.jsonl},
      *     as written by {@code FrameRecorder}.
-     * @throws IOException if either file is missing, the mp4 cannot be opened, or the sidecar
+     * @throws IOException if either file is missing, the avi cannot be opened, or the sidecar
      *     cannot be read.
      */
     public FileLogFrameProvider(Path recordingDir) throws IOException {
         this.recordingDir = recordingDir;
-        Path videoPath = recordingDir.resolve("recording.mp4");
+        Path videoPath = recordingDir.resolve("recording.avi");
         Path metadataPath = recordingDir.resolve("metadata.jsonl");
 
         if (!Files.isRegularFile(videoPath)) {
             throw new IOException(
-                    "Recording directory " + recordingDir + " is missing recording.mp4");
+                    "Recording directory " + recordingDir + " is missing recording.avi");
         }
         if (!Files.isRegularFile(metadataPath)) {
             throw new IOException(
@@ -171,7 +172,8 @@ public class FileLogFrameProvider extends CpuImageProcessor {
                     "OpenCV VideoCapture could not open "
                             + videoPath
                             + " — verify the file is readable and the OpenCV build includes a"
-                            + " backend (ffmpeg / Media Foundation) capable of decoding it.");
+                            + " backend (CV_MJPEG is built into stock WPILib OpenCV) capable of"
+                            + " decoding it.");
         }
 
         int width = (int) this.videoCapture.get(Videoio.CAP_PROP_FRAME_WIDTH);
@@ -223,7 +225,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         boolean haveFrame = videoCapture.read(mat.getMat());
         if (!haveFrame || mat.getMat().empty()) {
             mat.release();
-            markExhausted("mp4 exhausted after " + emittedFrameCount + " frames");
+            markExhausted("avi exhausted after " + emittedFrameCount + " frames");
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
@@ -242,10 +244,10 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
 
         if (entry.isEmpty()) {
-            // Should not happen given the writer's len(jsonl) >= mp4 invariant; defend anyway.
+            // Should not happen given the writer's len(jsonl) >= avi invariant; defend anyway.
             mat.release();
             markExhausted(
-                    "metadata.jsonl exhausted before mp4 at frame " + emittedFrameCount);
+                    "metadata.jsonl exhausted before avi at frame " + emittedFrameCount);
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
@@ -278,7 +280,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     /**
      * Width / height / FOV / calibration of frames this provider will emit. Known at
-     * construction time from the mp4 header; exposed so the surrounding VisionSource can
+     * construction time from the avi header; exposed so the surrounding VisionSource can
      * wire video-mode metadata into its settables without consuming a frame.
      */
     public FrameStaticProperties getStaticProperties() {

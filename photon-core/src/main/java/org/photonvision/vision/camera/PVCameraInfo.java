@@ -294,7 +294,7 @@ public sealed interface PVCameraInfo {
     public static final class PVFileLogCameraInfo implements PVCameraInfo {
         /**
          * Filesystem path to the recording directory — the parent that contains {@code
-         * recording.mp4} and {@code metadata.jsonl}, as written by {@code FrameRecorder}.
+         * recording.avi} and {@code metadata.jsonl}, as written by {@code FrameRecorder}.
          */
         public final String path;
 

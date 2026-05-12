@@ -29,21 +29,25 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.videoio.VideoWriter;
 import org.photonvision.jni.LibraryLoader;
 
 /**
- * Integration-ish test for {@link FileLogFrameProvider}. Synthesises a tiny H.264 mp4 with
- * ffmpeg, pairs it with a hand-written sidecar, then walks it through the provider and asserts
- * frame count, dimensions, channel order, and timestamp propagation.
+ * Integration-ish test for {@link FileLogFrameProvider}. Synthesises a tiny MJPEG-AVI fixture
+ * with OpenCV's own {@link VideoWriter} — same encoder path {@code FrameRecorder} uses in
+ * production — pairs it with a hand-written sidecar, then walks it through the provider and
+ * asserts frame count, dimensions, channel order, and timestamp propagation.
  *
  * <p>Requires the OpenCV native libraries (loaded in {@code @BeforeAll} via
- * {@link LibraryLoader#loadWpiLibraries()}) and the {@code ffmpeg} binary on {@code PATH}.
- * The latter is gated by {@link Assumptions#assumeTrue} so the test skips gracefully on
- * environments without ffmpeg rather than failing.
+ * {@link LibraryLoader#loadWpiLibraries()}). No ffmpeg / ffprobe dependency, so the test
+ * works on every platform PV builds on.
  *
  * <p>Notably this test does <em>not</em> call {@link LibraryLoader#loadTargeting()} or initialise
  * HAL/NetworkTables — {@code FileLogFrameProvider} touches no PV-specific JNI singletons, so it
@@ -57,72 +61,40 @@ class FileLogFrameProviderTest {
 
     @TempDir static Path sharedTempDir;
     static Path recordingDir;
-    static boolean ffmpegAvailable;
 
     @BeforeAll
-    static void setUp() throws IOException, InterruptedException {
+    static void setUp() throws IOException {
         if (!LibraryLoader.loadWpiLibraries()) {
             fail("Failed to load WPI / OpenCV native libraries");
-        }
-
-        ffmpegAvailable = isFfmpegOnPath();
-        if (!ffmpegAvailable) {
-            return; // each test will skip via assumeTrue
         }
 
         recordingDir = sharedTempDir.resolve("rec");
         Files.createDirectories(recordingDir);
 
-        synthesizeRecordingMp4(recordingDir.resolve("recording.mp4"));
+        synthesizeRecordingAvi(recordingDir.resolve("recording.avi"));
         writeSidecar(recordingDir.resolve("metadata.jsonl"));
     }
 
-    private static boolean isFfmpegOnPath() {
+    /**
+     * Generate a deterministic 3-frame MJPEG-AVI the same way {@code FrameRecorder} does in
+     * production — OpenCV {@code VideoWriter} with FourCC {@code MJPG}. Each frame is a solid
+     * BGR colour that shifts so the JPEG encoder sees real per-frame variation.
+     */
+    private static void synthesizeRecordingAvi(Path out) {
+        int fourcc = VideoWriter.fourcc('M', 'J', 'P', 'G');
+        VideoWriter writer = new VideoWriter(out.toString(), fourcc, 30.0, new Size(WIDTH, HEIGHT));
         try {
-            Process p = new ProcessBuilder("ffmpeg", "-version").redirectErrorStream(true).start();
-            p.getInputStream().readAllBytes();
-            return p.waitFor() == 0;
-        } catch (IOException | InterruptedException e) {
-            return false;
+            assertTrue(writer.isOpened(), "VideoWriter could not open " + out + " for MJPEG-AVI");
+            for (int i = 0; i < CAPTURE_NS.length; i++) {
+                Mat frame =
+                        new Mat(HEIGHT, WIDTH, CvType.CV_8UC3, new Scalar(i * 64 % 255, 64, 128));
+                writer.write(frame);
+                frame.release();
+            }
+        } finally {
+            writer.release();
         }
-    }
-
-    /** Generate a deterministic 3-frame H.264 mp4 the same way FrameRecorder does in production. */
-    private static void synthesizeRecordingMp4(Path out) throws IOException, InterruptedException {
-        // lavfi testsrc2: deterministic synthetic pattern, fast to encode. 3 frames at 30 fps.
-        // libx264 ultrafast+zerolatency mirrors FrameRecorder.java's encoder args so the decode
-        // path we test here matches what production writes.
-        ProcessBuilder pb =
-                new ProcessBuilder(
-                        "ffmpeg",
-                        "-y",
-                        "-f",
-                        "lavfi",
-                        "-i",
-                        "testsrc2=size=" + WIDTH + "x" + HEIGHT + ":rate=30",
-                        "-frames:v",
-                        Integer.toString(CAPTURE_NS.length),
-                        "-c:v",
-                        "libx264",
-                        "-preset",
-                        "ultrafast",
-                        "-tune",
-                        "zerolatency",
-                        "-pix_fmt",
-                        "yuv420p",
-                        out.toString());
-        pb.redirectErrorStream(true);
-        Process p = pb.start();
-        byte[] log = p.getInputStream().readAllBytes();
-        int rc = p.waitFor();
-        if (rc != 0) {
-            fail(
-                    "ffmpeg failed (exit "
-                            + rc
-                            + "). Output:\n"
-                            + new String(log, StandardCharsets.UTF_8));
-        }
-        assertTrue(Files.size(out) > 0, "ffmpeg produced empty mp4");
+        assertTrue(out.toFile().length() > 0, "produced AVI is empty");
     }
 
     private static void writeSidecar(Path out) throws IOException {
@@ -135,8 +107,6 @@ class FileLogFrameProviderTest {
 
     @Test
     void emitsFramesWithCaptureTimestamps() throws IOException {
-        Assumptions.assumeTrue(ffmpegAvailable, "ffmpeg not on PATH; skipping decode round-trip test");
-
         FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
         try {
             assertTrue(provider.isConnected(), "should be connected before any frames emitted");
@@ -189,12 +159,9 @@ class FileLogFrameProviderTest {
 
     @Test
     void refusesPre2183RecordingMissingSidecar(@TempDir Path tmp) throws IOException {
-        Assumptions.assumeTrue(
-                ffmpegAvailable, "ffmpeg not on PATH; can't synthesise mp4 fixture");
-
         Path dir = tmp.resolve("pre-2183");
         Files.createDirectories(dir);
-        Files.copy(recordingDir.resolve("recording.mp4"), dir.resolve("recording.mp4"));
+        Files.copy(recordingDir.resolve("recording.avi"), dir.resolve("recording.avi"));
         // intentionally no metadata.jsonl
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
@@ -204,14 +171,14 @@ class FileLogFrameProviderTest {
     }
 
     @Test
-    void refusesMissingMp4(@TempDir Path tmp) throws IOException {
-        Path dir = tmp.resolve("no-mp4");
+    void refusesMissingAvi(@TempDir Path tmp) throws IOException {
+        Path dir = tmp.resolve("no-avi");
         Files.createDirectories(dir);
         Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
         assertTrue(
-                ex.getMessage().toLowerCase().contains("recording.mp4"),
+                ex.getMessage().toLowerCase().contains("recording.avi"),
                 "error should name the missing file; got: " + ex.getMessage());
     }
 
@@ -220,7 +187,6 @@ class FileLogFrameProviderTest {
         // Defensive: VisionRunner always calls isConnected() before getInputMat, but tests and
         // future callers may not. The first getInputMat must still mark the source as having
         // connected so hasConnected() reports the truth.
-        Assumptions.assumeTrue(ffmpegAvailable, "ffmpeg not on PATH");
         FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
         try {
             assertFalse(provider.hasConnected(), "no calls yet — flag should still be false");
@@ -237,7 +203,6 @@ class FileLogFrameProviderTest {
 
     @Test
     void setRecordingThrows() throws IOException {
-        Assumptions.assumeTrue(ffmpegAvailable, "ffmpeg not on PATH");
         FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
         try {
             assertThrows(UnsupportedOperationException.class, () -> provider.setRecording(true));
