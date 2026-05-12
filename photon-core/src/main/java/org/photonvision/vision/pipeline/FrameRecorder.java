@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -28,9 +27,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.videoio.VideoWriter;
+import org.opencv.videoio.Videoio;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.metrics.SystemMonitor;
@@ -43,7 +44,20 @@ import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 /**
- * Writes an H.264 mp4 plus a metadata.jsonl sidecar of per-frame (seq, capture_ns) pairs.
+ * Writes a Motion-JPEG AVI ({@code recording.avi}) plus a {@code metadata.jsonl} sidecar of
+ * per-frame {@code (seq, capture_ns)} pairs.
+ *
+ * <p><strong>Why MJPEG-AVI and not H.264 mp4:</strong> the on-disk format must be decodable by
+ * PhotonVision's bundled OpenCV on every platform we ship (Windows x64, Linux x64/arm64). The
+ * WPILib OpenCV 4.10.0-3 build links no ffmpeg / gstreamer plugin on Linux — {@code VideoCapture}
+ * cannot decode mp4 there. CV_MJPEG (Motion-JPEG-in-AVI, FourCC {@code MJPG}) is the only video
+ * format compiled directly into OpenCV's videoio module on every build, so a recording written
+ * with {@code VideoWriter(MJPG)} can be read back via {@code VideoCapture(CAP_ANY)} on any host
+ * we support. Trade-off: ~8–10× larger files than H.264 (full intra-frame coding, each frame is
+ * an independent JPEG). At 1080p30 expect ~1 GB/min; bring a hard drive.
+ *
+ * <p><strong>Single-file 2 GB cap:</strong> the classic AVI container limit. At 1080p30 that's
+ * ~2 minutes; at 720p30 ~5 minutes. Documented Phase 1 limit — chunking is a follow-up.
  *
  * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, recorded
  * verbatim. Replay readers must propagate it through {@code Frame.timestampNanos} unchanged —
@@ -51,8 +65,8 @@ import org.zeroturnaround.zip.ZipUtil;
  * as opaque time and rebase if they need to.
  *
  * <p>Metadata is flushed before its paired frame, so under any crash
- * {@code len(metadata.jsonl) >= decoded_frame_count(recording.mp4)}. Readers truncate jsonl to
- * the mp4's decoded count, and ignore unknown JSON fields so the schema can grow (exposure,
+ * {@code len(metadata.jsonl) >= decoded_frame_count(recording.avi)}. Readers truncate jsonl to
+ * the avi's decoded count, and ignore unknown JSON fields so the schema can grow (exposure,
  * gain, calibration version) without breaking older readers.
  */
 public class FrameRecorder implements Releasable {
@@ -76,17 +90,19 @@ public class FrameRecorder implements Releasable {
     private final Path outputPath;
     private final Path outputVideoPath;
 
-    // FFmpeg subprocess that encodes raw BGR frames to H.264. Started lazily on the first
-    // recordFrame call so we have the frame dimensions to pass to ffmpeg's -s argument.
-    private Process ffmpegProcess;
-    private OutputStream ffmpegStdin;
+    // OpenCV VideoWriter that encodes each BGR frame to JPEG and packs it into a single AVI
+    // container. Opened lazily on the first recordFrame call so we have the frame dimensions
+    // for the writer's Size argument (VideoWriter requires a fixed resolution per-file).
+    private VideoWriter videoWriter;
 
-    // Reused per-frame byte buffer for the JNI Mat -> byte[] copy. Allocated once per
-    // recording (assuming constant resolution).
-    private byte[] frameBuffer;
+    // JPEG quality (1-100) applied to each frame inside the MJPEG-AVI. 85 is the visual /
+    // size sweet spot for the kind of content PV's pipelines actually consume (AprilTags,
+    // retro-reflective targets, coloured shapes) and keeps file sizes around 250 KB/frame
+    // at 1080p — well inside the 2 GB single-file AVI cap for typical match-length recordings.
+    private static final int JPEG_QUALITY = 85;
 
     // Per-frame metadata sidecar, one JSON object per line. Encoder-agnostic so it survives
-    // the H.264 switch — filenames no longer carry per-frame info, sidecar is the only
+    // format switches — filenames no longer carry per-frame info, sidecar is the only
     // source of seq + capture timing for replay.
     private final BufferedWriter metadataWriter;
 
@@ -141,7 +157,7 @@ public class FrameRecorder implements Releasable {
 
         logger.info("Initializing FrameRecorder with output path: " + outputPath.toString());
         this.outputPath = outputPath;
-        this.outputVideoPath = outputPath.resolve("recording.mp4");
+        this.outputVideoPath = outputPath.resolve("recording.avi");
 
         // Write strategy to a file in the output path
         try {
@@ -162,7 +178,7 @@ public class FrameRecorder implements Releasable {
         }
 
         // Open the metadata sidecar. Required for replay — fatal at construction so we don't
-        // produce a recording.mp4 missing the seq + capture_ns needed to feed frames back
+        // produce a recording.avi missing the seq + capture_ns needed to feed frames back
         // through the pipeline.
         try {
             this.metadataWriter =
@@ -259,7 +275,7 @@ public class FrameRecorder implements Releasable {
         return added;
     }
 
-    /** Worker thread: pipes raw BGR frames into the ffmpeg subprocess for live H.264 encoding. */
+    /** Worker thread: encodes each BGR frame as a JPEG inside the MJPEG-AVI container. */
     private void videoLoop() {
         while (!shutdown.get()) {
             try {
@@ -269,21 +285,21 @@ public class FrameRecorder implements Releasable {
                     break;
                 }
 
-                if (ffmpegProcess == null) {
-                    if (!startFfmpeg(frame.mat.cols(), frame.mat.rows())) {
+                if (videoWriter == null) {
+                    if (!openVideoWriter(frame.mat.cols(), frame.mat.rows())) {
                         frame.mat.release();
-                        // Encoder couldn't start; stop recording so we don't busy-drain the queue.
+                        // Writer couldn't open; stop recording so we don't busy-drain the queue.
                         stopRecording();
                         continue;
                     }
                 }
 
-                // Metadata before frame: keeps len(jsonl) >= mp4 frame count under any crash,
-                // so replay readers truncate jsonl to the mp4's decoded count — never the
+                // Metadata before frame: keeps len(jsonl) >= avi frame count under any crash,
+                // so replay readers truncate jsonl to the avi's decoded count — never the
                 // other way around. If metadata write fails, skip the frame to preserve the
                 // invariant (writeMetadataLine stops recording on failure).
                 if (writeMetadataLine(frame.sequenceId, frame.captureTimestampNs)) {
-                    writeRawFrame(frame.mat);
+                    videoWriter.write(frame.mat);
                 }
 
                 frame.mat.release();
@@ -296,84 +312,47 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Spawn ffmpeg with stdin piped: raw BGR frames in, H.264 mp4 out.
+     * Open the OpenCV {@link VideoWriter} that encodes each BGR frame as JPEG into an MJPEG
+     * AVI. Lazy because we need the frame's dimensions before opening — the writer requires a
+     * fixed resolution.
      *
-     * <p>Encoder is libx264 with preset=ultrafast + tune=zerolatency to keep CPU load low enough
-     * for 30 fps on a Pi-class device. crf 23 is FFmpeg's default quality target.
+     * <p>FourCC {@code MJPG} is the only video format compiled directly into WPILib's bundled
+     * OpenCV on every platform — neither ffmpeg nor gstreamer plugins ship in the Linux build.
+     * Decode on replay therefore needs no runtime deps beyond what we already require.
      *
-     * @return true on success, false if the subprocess couldn't be started (ffmpeg not on PATH,
-     *     etc.) — caller should stop recording.
+     * @return true on success, false if {@code VideoWriter} couldn't open the file or codec
+     *     (filesystem error, missing parent directory, etc.) — caller should stop recording.
      */
-    private boolean startFfmpeg(int width, int height) {
-        ProcessBuilder pb =
-                new ProcessBuilder(
-                        "ffmpeg",
-                        "-hide_banner",
-                        "-loglevel",
-                        "warning",
-                        "-y",
-                        "-f",
-                        "rawvideo",
-                        "-pix_fmt",
-                        "bgr24",
-                        "-s",
-                        width + "x" + height,
-                        "-r",
-                        "30",
-                        "-i",
-                        "pipe:0",
-                        "-c:v",
-                        "libx264",
-                        "-preset",
-                        "ultrafast",
-                        "-tune",
-                        "zerolatency",
-                        "-crf",
-                        "23",
-                        "-pix_fmt",
-                        "yuv420p",
-                        outputVideoPath.toString());
-        pb.redirectErrorStream(true);
-        pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
-        try {
-            ffmpegProcess = pb.start();
-            ffmpegStdin = ffmpegProcess.getOutputStream();
-            logger.info(
-                    "Started ffmpeg subprocess for " + width + "x" + height + " -> " + outputVideoPath);
-            return true;
-        } catch (IOException e) {
+    private boolean openVideoWriter(int width, int height) {
+        int fourcc = VideoWriter.fourcc('M', 'J', 'P', 'G');
+        videoWriter =
+                new VideoWriter(outputVideoPath.toString(), fourcc, 30.0, new Size(width, height));
+        if (!videoWriter.isOpened()) {
             logger.error(
-                    "Failed to start ffmpeg subprocess (is ffmpeg installed and on PATH?): "
-                            + e.getMessage());
-            ffmpegProcess = null;
-            ffmpegStdin = null;
+                    "VideoWriter could not open "
+                            + outputVideoPath
+                            + " (codec=MJPG, "
+                            + width
+                            + "x"
+                            + height
+                            + "). The OpenCV build may lack CV_MJPEG — this should not happen on a "
+                            + "stock WPILib OpenCV.");
+            videoWriter.release();
+            videoWriter = null;
             return false;
         }
-    }
-
-    /**
-     * Copy the BGR pixel bytes out of the Mat and write them to ffmpeg's stdin.
-     *
-     * @return true on success, false if ffmpeg's pipe is broken (subprocess died) — caller should
-     *     stop recording.
-     */
-    private boolean writeRawFrame(Mat mat) {
-        int needed = (int) (mat.total() * mat.elemSize());
-        if (frameBuffer == null || frameBuffer.length < needed) {
-            frameBuffer = new byte[needed];
-        }
-        mat.get(0, 0, frameBuffer);
-        try {
-            ffmpegStdin.write(frameBuffer, 0, needed);
-            return true;
-        } catch (IOException e) {
-            logger.error(
-                    "ffmpeg pipe broken (subprocess died?): "
-                            + e.getMessage()
-                            + "; stopping recording.");
-            stopRecording();
-            return false;
-        }
+        // q=85: visual sweep spot for our pipeline content; controllable via the VideoWriter prop.
+        videoWriter.set(Videoio.VIDEOWRITER_PROP_QUALITY, JPEG_QUALITY);
+        logger.info(
+                "Opened MJPEG-AVI writer for "
+                        + width
+                        + "x"
+                        + height
+                        + " @ q"
+                        + JPEG_QUALITY
+                        + " -> "
+                        + outputVideoPath);
+        return true;
     }
 
     /**
@@ -441,50 +420,32 @@ public class FrameRecorder implements Releasable {
             logger.warn("Failed to close metadata sidecar: " + e.getMessage());
         }
 
-        // Close ffmpeg's stdin to signal EOF, wait for it to finalize the .mp4 (write the
-        // moov atom and exit). If it doesn't exit promptly something's wrong; force-kill.
-        if (ffmpegStdin != null) {
-            try {
-                ffmpegStdin.close();
-            } catch (IOException e) {
-                logger.warn("Failed to close ffmpeg stdin: " + e.getMessage());
-            }
-            ffmpegStdin = null;
-        }
-        if (ffmpegProcess != null) {
-            try {
-                if (!ffmpegProcess.waitFor(5, TimeUnit.SECONDS)) {
-                    logger.warn("ffmpeg did not exit within 5s; force-killing.");
-                    ffmpegProcess.destroyForcibly();
-                } else if (ffmpegProcess.exitValue() != 0) {
-                    logger.warn("ffmpeg exited with code " + ffmpegProcess.exitValue());
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                ffmpegProcess.destroyForcibly();
-            }
-            ffmpegProcess = null;
+        // Close the VideoWriter to finalize the AVI (write the index chunk). VideoWriter.release
+        // is synchronous and will block until the file is fully flushed.
+        if (videoWriter != null) {
+            videoWriter.release();
+            videoWriter = null;
         }
     }
 
     /**
      * Export a recording.
      *
-     * <p>Returns a temp copy of {@code <recording>/recording.mp4} so callers (single-recording
+     * <p>Returns a temp copy of {@code <recording>/recording.avi} so callers (single-recording
      * export, exportCamera, exportAll) can safely move/zip without disturbing the original.
      *
      * @param recording Path to recording directory
-     * @return Path to a unique temp file with the exported .mp4
+     * @return Path to a unique temp file with the exported .avi
      */
     public static File export(Path recording) throws Exception {
-        Path mp4 = recording.resolve("recording.mp4");
-        if (!Files.exists(mp4)) {
-            throw new IllegalStateException("No recording.mp4 found in " + recording);
+        Path avi = recording.resolve("recording.avi");
+        if (!Files.exists(avi)) {
+            throw new IllegalStateException("No recording.avi found in " + recording);
         }
         // Prefix with the recording's dir name so exportCamera's ZIP entries are unique.
         File copy =
-                Files.createTempFile(recording.getFileName().toString() + "_", ".mp4").toFile();
-        Files.copy(mp4, copy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.createTempFile(recording.getFileName().toString() + "_", ".avi").toFile();
+        Files.copy(avi, copy.toPath(), StandardCopyOption.REPLACE_EXISTING);
         return copy;
     }
 

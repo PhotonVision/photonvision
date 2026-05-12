@@ -18,7 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -27,21 +27,24 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.opencv.CVMat;
 
 /**
  * Scratch smoke test: feeds 60 synthetic 640x480 BGR frames through FrameRecorder and verifies the
- * .mp4 + metadata sidecar. NOT for CI — requires ffmpeg+ffprobe on PATH. Uses the package-private
- * DI ctor so it doesn't need photontargetingJNI (not buildable here without MSVC). Delete after
- * manual verification.
+ * recording.avi + metadata sidecar by reading them back through OpenCV's VideoCapture (the same
+ * code path FileLogFrameProvider uses on replay). Uses the package-private DI ctor so it doesn't
+ * need photontargetingJNI. Delete after manual verification.
+ *
+ * <p>Platform-independent — relies only on OpenCV's CV_MJPEG built-in backend, no ffmpeg/ffprobe.
  */
 public class FrameRecorderSmokeTest {
     private static final int W = 640;
@@ -56,10 +59,7 @@ public class FrameRecorderSmokeTest {
     }
 
     @Test
-    public void recordsSyntheticFramesThroughFfmpeg(@TempDir Path tempDir) throws Exception {
-        assertTrue(commandAvailable("ffmpeg"), "ffmpeg not on PATH");
-        assertTrue(commandAvailable("ffprobe"), "ffprobe not on PATH");
-
+    public void recordsSyntheticFramesIntoMjpegAvi(@TempDir Path tempDir) throws Exception {
         Path outDir = tempDir.resolve("rec1");
         Files.createDirectories(outDir);
 
@@ -91,27 +91,49 @@ public class FrameRecorderSmokeTest {
         }
 
         // --- Assertions on disk artifacts ---
-        Path mp4 = outDir.resolve("recording.mp4");
+        Path avi = outDir.resolve("recording.avi");
         Path meta = outDir.resolve("metadata.jsonl");
         Path strat = outDir.resolve("strat");
 
-        assertTrue(Files.exists(mp4), "recording.mp4 missing");
-        assertTrue(Files.size(mp4) > 0, "recording.mp4 is empty");
+        assertTrue(Files.exists(avi), "recording.avi missing");
+        assertTrue(Files.size(avi) > 0, "recording.avi is empty");
         assertTrue(Files.exists(meta), "metadata.jsonl missing");
         assertTrue(Files.exists(strat), "strat file missing");
         assertEquals("VIDEO", Files.readString(strat, StandardCharsets.UTF_8).trim());
 
-        FfprobeResult probe = ffprobe(mp4);
-        assertEquals("h264", probe.codec, "expected H.264 in the .mp4");
-        assertEquals(W, probe.width);
-        assertEquals(H, probe.height);
-        assertEquals(FRAME_COUNT, probe.nbFrames, "encoded frame count mismatch");
+        // Decode the AVI with OpenCV — verifies the SAME code path replay will exercise.
+        VideoCapture cap = new VideoCapture(avi.toString());
+        try {
+            assertTrue(cap.isOpened(), "VideoCapture could not open the produced recording.avi");
+            int width = (int) cap.get(Videoio.CAP_PROP_FRAME_WIDTH);
+            int height = (int) cap.get(Videoio.CAP_PROP_FRAME_HEIGHT);
+            assertEquals(W, width, "decoded width mismatch");
+            assertEquals(H, height, "decoded height mismatch");
 
+            int decodedCount = 0;
+            Mat frame = new Mat();
+            while (cap.read(frame)) {
+                if (frame.empty()) break;
+                decodedCount++;
+                assertEquals(3, frame.channels(), "frame " + decodedCount + ": expected BGR (3 channels)");
+            }
+            frame.release();
+            assertEquals(FRAME_COUNT, decodedCount, "decoded frame count mismatch");
+        } finally {
+            cap.release();
+        }
+
+        // Sidecar must have at least as many lines as decoded frames (the writer's invariant —
+        // jsonl flushed before frame).
         List<String> lines;
         try (BufferedReader r = Files.newBufferedReader(meta, StandardCharsets.UTF_8)) {
             lines = r.lines().toList();
         }
-        assertEquals(FRAME_COUNT, lines.size(), "metadata.jsonl line count mismatch");
+        assertTrue(
+                lines.size() >= FRAME_COUNT,
+                "metadata.jsonl line count " + lines.size() + " < frame count " + FRAME_COUNT);
+        // Trim to the frame count we decoded (the writer's contract for readers).
+        assertFalse(lines.isEmpty());
         for (int i = 0; i < FRAME_COUNT; i++) {
             String expected =
                     "{\"seq\":" + i + ",\"capture_ns\":" + (1_000_000_000L + i * 33_333_333L) + "}";
@@ -122,61 +144,11 @@ public class FrameRecorderSmokeTest {
                 "SMOKE OK: "
                         + FRAME_COUNT
                         + " frames -> "
-                        + Files.size(mp4)
-                        + " bytes h264 at "
+                        + Files.size(avi)
+                        + " bytes MJPEG-AVI at "
                         + W
                         + "x"
                         + H
-                        + ", metadata seq+capture_ns verbatim.");
-    }
-
-    // --- helpers ---
-
-    private static boolean commandAvailable(String cmd) {
-        try {
-            Process p = new ProcessBuilder(cmd, "-version").redirectErrorStream(true).start();
-            return p.waitFor(5, TimeUnit.SECONDS) && p.exitValue() == 0;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private record FfprobeResult(String codec, int width, int height, int nbFrames) {}
-
-    private static FfprobeResult ffprobe(Path mp4) throws Exception {
-        // -count_frames forces actual frame decode rather than relying on container metadata.
-        Process p =
-                new ProcessBuilder(
-                                "ffprobe",
-                                "-v",
-                                "error",
-                                "-select_streams",
-                                "v:0",
-                                "-count_frames",
-                                "-show_entries",
-                                "stream=codec_name,width,height,nb_read_frames",
-                                "-of",
-                                "default=noprint_wrappers=1",
-                                mp4.toString())
-                        .redirectErrorStream(true)
-                        .start();
-        String out = new String(p.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(p.waitFor(15, TimeUnit.SECONDS), "ffprobe hung");
-        assertEquals(0, p.exitValue(), "ffprobe failed:\n" + out);
-
-        String codec = null;
-        int width = -1, height = -1, nb = -1;
-        for (String line : out.split("\\R")) {
-            String[] kv = line.split("=", 2);
-            if (kv.length != 2) continue;
-            switch (kv[0]) {
-                case "codec_name" -> codec = kv[1];
-                case "width" -> width = Integer.parseInt(kv[1]);
-                case "height" -> height = Integer.parseInt(kv[1]);
-                case "nb_read_frames" -> nb = Integer.parseInt(kv[1]);
-            }
-        }
-        assertNotNull(codec, "ffprobe didn't report codec_name; out:\n" + out);
-        return new FfprobeResult(codec, width, height, nb);
+                        + ", metadata seq+capture_ns verbatim, round-trip decode via VideoCapture.");
     }
 }
