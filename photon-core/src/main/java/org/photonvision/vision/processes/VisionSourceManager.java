@@ -17,6 +17,9 @@
 
 package org.photonvision.vision.processes;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -321,9 +324,77 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
+        // FileLog replay sources: scan the recordings directory and surface any sub-sub-directory
+        // that holds both recording.mp4 and metadata.jsonl as a potential camera the user can map.
+        cameraInfos.addAll(enumerateRecordedSources());
+
         checkMismatches(cameraInfos);
 
         return cameraInfos;
+    }
+
+    private List<PVCameraInfo> enumerateRecordedSources() {
+        Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
+        return enumerateRecordedSources(recordingsRoot, logger::warn);
+    }
+
+    /**
+     * Walks {@code <recordings>/<camera>/<recording>/} and emits one {@link
+     * PVCameraInfo.PVFileLogCameraInfo} per leaf directory containing both {@code recording.mp4}
+     * and {@code metadata.jsonl}.
+     *
+     * <p>Race note: this can run while a {@code FrameRecorder} on another camera is writing into
+     * a sibling directory. Mid-recording dirs that don't yet have both files are filtered out;
+     * dirs whose metadata.jsonl already exists are surfaced and will replay up to whatever the
+     * mp4 currently contains (the provider's EOF logic handles in-progress files cleanly).
+     * Concurrent enumerate-while-recording on the <em>same</em> physical leaf is unusual but
+     * harmless — the user would replay frames captured up to that moment.
+     *
+     * <p>Package-private + static so unit tests can drive it with a {@code @TempDir} without
+     * needing the {@code ConfigManager} singleton or any JNI / HAL initialisation.
+     *
+     * @param recordingsRoot directory containing {@code <camera>/<recording>/} subtrees.
+     * @param warn sink for non-fatal I/O failures (a missing dir is silent, IOException listing
+     *     a present dir is warned). Use {@code Logger::warn} in production, a list in tests.
+     */
+    static List<PVCameraInfo> enumerateRecordedSources(
+            Path recordingsRoot, java.util.function.Consumer<String> warn) {
+        List<PVCameraInfo> result = new ArrayList<>();
+        if (!Files.isDirectory(recordingsRoot)) {
+            return result;
+        }
+        try (Stream<Path> cameraDirs = Files.list(recordingsRoot)) {
+            cameraDirs
+                    .filter(Files::isDirectory)
+                    .forEach(camDir -> collectRecordingsUnder(camDir, recordingsRoot, result, warn));
+        } catch (IOException e) {
+            warn.accept("Failed to enumerate recordings directory " + recordingsRoot + ": " + e.getMessage());
+        }
+        return result;
+    }
+
+    private static void collectRecordingsUnder(
+            Path camDir,
+            Path recordingsRoot,
+            List<PVCameraInfo> out,
+            java.util.function.Consumer<String> warn) {
+        try (Stream<Path> recDirs = Files.list(camDir)) {
+            recDirs
+                    .filter(Files::isDirectory)
+                    .filter(p -> Files.isRegularFile(p.resolve("recording.mp4")))
+                    .filter(p -> Files.isRegularFile(p.resolve("metadata.jsonl")))
+                    .forEach(
+                            recDir -> {
+                                // name is "<camera>/<recording>" so the UI can distinguish multiple
+                                // recordings of the same camera. path is the absolute leaf dir —
+                                // also doubles as uniquePath for camera-match dedup.
+                                String relative =
+                                        recordingsRoot.relativize(recDir).toString().replace('\\', '/');
+                                out.add(PVCameraInfo.fromFileLogInfo(recDir.toString(), relative));
+                            });
+        } catch (IOException e) {
+            warn.accept("Failed to list recordings under " + camDir + ": " + e.getMessage());
+        }
     }
 
     /**
