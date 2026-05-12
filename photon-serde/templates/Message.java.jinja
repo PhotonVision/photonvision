@@ -34,7 +34,7 @@ import org.photonvision.utils.PacketUtils;
 import org.photonvision.targeting.*;
 
 // WPILib imports (if any)
-import edu.wpi.first.util.struct.Struct;
+import org.wpilib.util.struct.Struct;
 {% for type in nested_wpilib_types -%}
 import {{ get_message_by_name(type).java_import }};
 {%- if not loop.last %},{% endif -%}

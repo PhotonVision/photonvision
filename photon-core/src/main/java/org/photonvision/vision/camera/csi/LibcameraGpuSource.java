@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.camera.csi;
 
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.util.PixelFormat;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
@@ -29,6 +27,8 @@ import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.LibcameraGpuFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.VideoMode;
 
 public class LibcameraGpuSource extends VisionSource {
     static final Logger logger = new Logger(LibcameraGpuSource.class, LogGroup.Camera);

@@ -19,11 +19,11 @@ package org.photonvision.common.networktables;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.networktables.RawPublisher;
 import java.util.HashSet;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.dataflow.structures.PacketSerde;
+import org.wpilib.networktables.RawPublisher;
 
 @SuppressWarnings("doclint")
 public class PacketPublisher<T> implements AutoCloseable {

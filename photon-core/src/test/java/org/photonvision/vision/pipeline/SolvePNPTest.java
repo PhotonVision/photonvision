@@ -21,9 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.util.Units;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
@@ -38,6 +35,9 @@ import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.util.Units;
 
 public class SolvePNPTest {
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
@@ -89,7 +89,6 @@ public class SolvePNPTest {
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
         pipeline.getSettings().outputShouldDraw = true;
-        pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
@@ -225,7 +224,6 @@ public class SolvePNPTest {
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(190, 255);
         settings.outputShouldDraw = true;
-        settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 

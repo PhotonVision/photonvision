@@ -17,11 +17,6 @@
 
 package org.photonvision.vision.frame.provider;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.util.PixelFormat;
-import edu.wpi.first.util.RawFrame;
 import java.nio.file.Path;
 import java.time.format.DateTimeFormatter;
 import org.opencv.core.Mat;
@@ -34,6 +29,11 @@ import org.photonvision.jni.CscoreExtras;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.util.RawFrame;
+import org.wpilib.vision.camera.CvSink;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.stream.CameraServer;
 
 public class USBFrameProvider extends CpuImageProcessor {
     private final Logger logger;
@@ -52,7 +52,7 @@ public class USBFrameProvider extends CpuImageProcessor {
     public USBFrameProvider(
             UsbCamera camera, VisionSourceSettables visionSettables, Runnable connectedCallback) {
         this.camera = camera;
-        this.cvSink = CameraServer.getVideo(this.camera, PixelFormat.kUnknown);
+        this.cvSink = CameraServer.getVideo(this.camera);
         this.logger =
                 new Logger(
                         USBFrameProvider.class, visionSettables.getConfiguration().nickname, LogGroup.Camera);
@@ -61,18 +61,6 @@ public class USBFrameProvider extends CpuImageProcessor {
         this.settables = visionSettables;
 
         this.connectedCallback = connectedCallback;
-    }
-
-    @Override
-    public boolean checkCameraConnected() {
-        boolean connected = camera.isConnected();
-
-        if (!cameraPropertiesCached && connected) {
-            logger.info("Camera connected! running callback");
-            onCameraConnected();
-        }
-
-        return connected;
     }
 
     final double CSCORE_DEFAULT_FRAME_TIMEOUT = 1.0 / 4.0;
@@ -85,30 +73,23 @@ public class USBFrameProvider extends CpuImageProcessor {
 
         if (m_blockForFrames) {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
-            var jpegMat = new Mat();
-            // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+            var mat = new CVMat();
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called
             // TODO - under the hood, this incurs an extra copy. We should avoid this, if we
             // can.
-            long captureTimeNs = cvSink.grabFrame(jpegMat, CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
-
-            logger.info("Mat type" + jpegMat.type());
-            logger.info("Mat size" + jpegMat.width() + "x" + jpegMat.height());
-            logger.info("Mat channels" + jpegMat.channels());
-
-            var flatMat = jpegMat.reshape(1, 1);
-
-            var bgrMat =
-                    org.opencv.imgcodecs.Imgcodecs.imdecode(
-                            flatMat, org.opencv.imgcodecs.Imgcodecs.IMREAD_COLOR);
+            long captureTimeNs = cvSink.grabFrame(mat.getMat(), CSCORE_DEFAULT_FRAME_TIMEOUT) * 1000;
 
             if (captureTimeNs == 0) {
                 var error = cvSink.getError();
                 logger.error("Error grabbing image: " + error);
             }
 
-            return new CapturedFrame(
-                    new CVMat(bgrMat), settables.getFrameStaticProperties(), captureTimeNs);
+            if (getRecording()) {
+                frameRecorder.recordFrame(mat);
+            }
+
+            return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
             // TODO - consider a frame pool
@@ -120,9 +101,9 @@ public class USBFrameProvider extends CpuImageProcessor {
                     cameraMode.height,
                     // hard-coded 3 channel
                     cameraMode.width * 3,
-                    PixelFormat.kUnknown);
+                    PixelFormat.kBGR);
 
-            // This is from wpi::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
+            // This is from wpi::nt::Now, or WPIUtilJNI.now(). The epoch from grabFrame is uS since
             // Hal::initialize was called
             long captureTimeUs =
                     CscoreExtras.grabRawSinkFrameTimeoutLastTime(
@@ -139,23 +120,13 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat();
             } else {
                 // No error! yay
+                var mat = new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj()));
 
-                CVMat jpegMat = new CVMat(new Mat(CscoreExtras.wrapRawFrame(frame.getNativeObj())), frame);
+                ret = new CVMat(mat, frame);
+            }
 
-                var flatMat = jpegMat.getMat().reshape(1, 1);
-
-                var bgrMat =
-                        org.opencv.imgcodecs.Imgcodecs.imdecode(
-                                flatMat, org.opencv.imgcodecs.Imgcodecs.IMREAD_COLOR);
-                flatMat.release();
-
-                if (getRecording()) {
-                    frameRecorder.recordFrame(jpegMat);
-                } else {
-                    jpegMat.release();
-                }
-
-                ret = new CVMat(bgrMat);
+            if (getRecording()) {
+                frameRecorder.recordFrame(ret);
             }
 
             return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
@@ -172,19 +143,23 @@ public class USBFrameProvider extends CpuImageProcessor {
         CameraServer.removeServer(cvSink.getName());
         cvSink.close();
         cvSink = null;
-        frameRecorder.release();
-        frameRecorder = null;
+        if (frameRecorder != null) {
+            frameRecorder.release();
+            frameRecorder = null;
+        }
     }
 
     @Override
     public void onCameraConnected() {
+        logger.info("Camera connected! running callback");
+
         super.onCameraConnected();
 
         this.connectedCallback.run();
     }
 
     @Override
-    public boolean isConnected() {
+    public boolean checkCameraConnected() {
         return camera.isConnected();
     }
 

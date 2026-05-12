@@ -4,8 +4,11 @@ apply plugin: 'jacoco'
 apply plugin: 'com.google.protobuf'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 def baseArtifactId = nativeName
@@ -14,6 +17,7 @@ def javaBaseName = "_GROUP_org_photonvision_${baseArtifactId}_ID_${baseArtifactI
 
 def outputsFolder = file("$buildDir/outputs")
 def licenseFile = ext.licenseFile
+def externalLicensesFolder = file("$rootDir/ExternalLicenses")
 
 javadoc {
     options {
@@ -24,18 +28,21 @@ javadoc {
 
 jar {
     from licenseFile
+    from externalLicensesFolder
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
     from licenseFile
+    from externalLicensesFolder
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
     from licenseFile
+    from externalLicensesFolder
 }
 
 task outputJar(type: Jar, dependsOn: classes) {
@@ -43,6 +50,7 @@ task outputJar(type: Jar, dependsOn: classes) {
     destinationDirectory = outputsFolder
     from sourceSets.main.output
     from licenseFile
+    from externalLicensesFolder
 }
 
 task outputSourcesJar(type: Jar, dependsOn: classes) {
@@ -51,6 +59,7 @@ task outputSourcesJar(type: Jar, dependsOn: classes) {
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
     from licenseFile
+    from externalLicensesFolder
 }
 
 task outputJavadocJar(type: Jar, dependsOn: javadoc) {
@@ -59,6 +68,7 @@ task outputJavadocJar(type: Jar, dependsOn: javadoc) {
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
     from licenseFile
+    from externalLicensesFolder
 }
 
 artifacts {
@@ -119,40 +129,42 @@ test {
     finalizedBy jacocoTestReport
 }
 
-wpilibTools.deps.wpilibVersion = wpi.versions.wpilibVersion.get()
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 dependencies {
     if(project.hasProperty('includePhotonTargeting')) {
         implementation project(":photon-targeting")
     }
 
-    implementation wpilibTools.deps.wpilibJava("wpiutil")
-    implementation wpilibTools.deps.wpilibJava("cameraserver")
-    implementation wpilibTools.deps.wpilibJava("cscore")
-    implementation wpilibTools.deps.wpilibJava("wpinet")
-    implementation wpilibTools.deps.wpilibJava("wpimath")
-    implementation wpilibTools.deps.wpilibJava("ntcore")
-    implementation wpilibTools.deps.wpilibJava("hal")
-    implementation wpilibTools.deps.wpilibJava("wpilibj")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
-    implementation wpilibTools.deps.wpilibJava("wpiunits")
-    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, wpi.versions.opencvVersion.get())
+    implementation "org.wpilib.wpiutil:wpiutil-java:$wpilibVersion"
+    implementation "org.wpilib.datalog:datalog-java:$wpilibVersion"
+    implementation "org.wpilib.cameraserver:cameraserver-java:$wpilibVersion"
+    implementation "org.wpilib.cscore:cscore-java:$wpilibVersion"
+    implementation "org.wpilib.wpinet:wpinet-java:$wpilibVersion"
+    implementation "org.wpilib.wpimath:wpimath-java:$wpilibVersion"
+    implementation "org.wpilib.ntcore:ntcore-java:$wpilibVersion"
+    implementation "org.wpilib.hal:hal-java:$wpilibVersion"
+    implementation "org.wpilib.wpilibj:wpilibj-java:$wpilibVersion"
+    implementation "org.wpilib.apriltag:apriltag-java:$wpilibVersion"
+    implementation "org.wpilib.wpiunits:wpiunits-java:$wpilibVersion"
+    implementation wpilibTools.deps.wpilibOpenCvJava("frc" + openCVYear, openCVversion)
 
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: wpi.versions.jacksonVersion.get()
-    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: wpi.versions.jacksonVersion.get()
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-annotations", version: jacksonVersion
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-core", version: jacksonVersion
+    implementation group: "com.fasterxml.jackson.core", name: "jackson-databind", version: jacksonVersion
 
-    implementation group: "org.ejml", name: "ejml-simple", version: wpi.versions.ejmlVersion.get()
-    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: wpi.versions.quickbufVersion.get();
+    implementation group: "org.ejml", name: "ejml-simple", version: ejmlVersion
+    implementation group: "us.hebi.quickbuf", name: "quickbuf-runtime", version: quickbufVersion;
 
     testImplementation(platform('org.junit:junit-bom:5.11.4'))
     testImplementation 'org.junit.jupiter:junit-jupiter-api'
     testImplementation 'org.junit.jupiter:junit-jupiter-params'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 jacoco {
-    toolVersion = "0.8.10"
+    toolVersion = jacocoVersion
 }
 
 jacocoTestReport {

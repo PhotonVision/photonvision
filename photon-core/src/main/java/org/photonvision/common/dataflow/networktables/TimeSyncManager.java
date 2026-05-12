@@ -17,16 +17,16 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.IntegerPublisher;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.jni.TimeSyncClient;
 import org.photonvision.jni.TimeSyncServer;
+import org.wpilib.networktables.IntegerPublisher;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.vision.camera.CameraServerJNI;
 
 public class TimeSyncManager {
     private static final Logger logger = new Logger(TimeSyncManager.class, LogGroup.NetworkTables);
@@ -66,7 +66,7 @@ public class TimeSyncManager {
     public synchronized long getOffset() {
         // if we're a client, return the offset to server time
         if (m_client != null) return m_client.getOffset();
-        // if we're a server, our time (nt::Now) is the same as network time
+        // if we're a server, our time (wpi::nt::Now) is the same as network time
         if (m_server != null) return 0;
 
         // ????? should never hit

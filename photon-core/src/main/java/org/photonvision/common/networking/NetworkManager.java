@@ -223,9 +223,10 @@ public class NetworkManager {
             return;
         }
 
-        // guess at the gateway from the staticIp
+        // Default gateway handed out by the VH-109 DHCP server is 10.TE.AM.4
+        // https://docs.wpilib.org/en/stable/docs/networking/networking-introduction/ip-configurations.html#on-the-field-dhcp-configuration
         String[] parts = config.staticIp.split("\\.");
-        parts[parts.length - 1] = "1";
+        parts[parts.length - 1] = "4";
         String gateway = String.join(".", parts);
 
         var shell = new ShellExec();

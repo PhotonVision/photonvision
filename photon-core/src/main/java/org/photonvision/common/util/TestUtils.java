@@ -18,9 +18,6 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.util.Units;
 import java.awt.HeadlessException;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +28,9 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.math.util.Units;
 
 public class TestUtils {
     @SuppressWarnings("unused")
@@ -228,7 +228,8 @@ public class TestUtils {
         kRobots,
         kTag1_640_480,
         kTag1_16h5_1280,
-        kTag_corner_1280;
+        kTag_corner_1280,
+        k36h11_stress_test;
 
         public final Path path;
 
@@ -237,6 +238,7 @@ public class TestUtils {
             var filename = this.toString().substring(1).toLowerCase();
             var extension = ".jpg";
             if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            if (filename.equals("36h11_stress_test")) extension = ".png";
             return Path.of("apriltag", filename + extension);
         }
 

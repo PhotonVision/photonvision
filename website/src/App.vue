@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Button from "./components/Button.vue";
 import GridSection from "./components/GridSection.vue";
+import PresentationCarousel from "./components/PresentationCarousel.vue";
 
 const navLinks = [
   {
@@ -19,7 +20,7 @@ const navLinks = [
     icon: "fab fa-github",
   },
   {
-    href: "https://www.redbubble.com/people/PhotonVision/shop?asc=u",
+    href: "https://photonvision.printful.me/",
     label: "Merch",
     icon: "fa-solid fa-shirt",
   },
@@ -93,6 +94,26 @@ const socialLinks = [
     label: "Discord",
   },
 ];
+
+const presentations = [
+  {
+    title: "Champs 2026 Talk",
+    description:
+      "Information on the Rubik Pi 3 and how to use Object Detection with PhotonVision.",
+    slidedeckLink:
+      "https://docs.google.com/presentation/d/1eCt9OmOISldCxsxp-aWAvT6YFkfdPzhbeEZn2ihcltA/edit?usp=sharing",
+    videoEmbedUrl: "https://www.youtube-nocookie.com/embed/layhsbOIJx4",
+  },
+  {
+    title: "Champs 2024 Talk",
+    description:
+      "Watch our presentation from the 2024 FIRST Championship and learn how to get the most out of PhotonVision.",
+    slidedeckLink:
+      "https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p",
+    codeLink: "https://github.com/PhotonVision/champs_2024",
+    videoEmbedUrl: "https://www.youtube-nocookie.com/embed/iV2v7F_9GwE",
+  },
+];
 </script>
 
 <template>
@@ -103,7 +124,7 @@ const socialLinks = [
     >
       <a href="#" class="flex items-center gap-3 py-2 group">
         <img
-          src="/public/images/PhotonVision-Icon-BG.png"
+          src="/images/PhotonVision-Icon-BG.png"
           alt="PhotonVision"
           class="w-10 h-10 group-hover:scale-110 transition-transform duration-300"
         />
@@ -177,7 +198,7 @@ const socialLinks = [
       >
         <span class="self-center md:self-initial mb-8 md:mb-0 md:me-12 shrink">
           <img
-            src="/public/images/PhotonVision-Icon-BG.png"
+            src="/images/PhotonVision-Icon-BG.png"
             alt="PhotonVision Logo"
             class="max-w-20 md:max-w-80 drop-shadow-2xl md:p-0 transition-transform duration-500"
           />
@@ -225,7 +246,7 @@ const socialLinks = [
           class="absolute -inset-4 bg-gradient-to-r from-primary via-brand-blue to-brand-yellow rounded-2xl blur-xl opacity-30"
         ></div>
         <img
-          src="/public/images/demo.png"
+          src="/images/demo.png"
           alt="Demo of PhotonVision UI"
           loading="lazy"
           class="relative rounded-xl shadow-2xl border border-zinc-700/50"
@@ -255,7 +276,7 @@ const socialLinks = [
     <section id="video" class="relative">
       <div class="relative">
         <video
-          src="/public/videos/in-action.mp4"
+          src="/videos/in-action.mp4"
           playsinline
           autoplay
           loop
@@ -268,57 +289,7 @@ const socialLinks = [
       </div>
     </section>
 
-    <section
-      id="champs"
-      class="flex flex-col lg:flex-row items-center justify-center relative py-16 px-8 md:px-16 lg:px-28 gap-12 bg-primary"
-    >
-      <header
-        class="flex flex-col gap-6 justify-center items-center lg:items-start text-center lg:text-left"
-      >
-        <h2 class="text-4xl font-bold font-heading">Champs 2024 Talk</h2>
-        <p class="text-zinc-200 text-lg max-w-md">
-          Watch our presentation from the 2024 FIRST Championship and learn how
-          to get the most out of PhotonVision.
-        </p>
-        <div class="flex gap-4">
-          <Button
-            href="https://docs.google.com/presentation/d/1Gh5InslM5p7aDxjzK8DHoEorpATOl-MQWWixY5GjGgs/edit#slide=id.p"
-            variant="secondary"
-          >
-            Slide Deck
-          </Button>
-          <Button
-            href="https://github.com/PhotonVision/champs_2024"
-            variant="outline"
-          >
-            View Code
-          </Button>
-        </div>
-      </header>
-      <div class="flex-1 max-w-3xl w-full">
-        <div
-          class="relative rounded-xl overflow-hidden shadow-2xl border border-white/10"
-        >
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/iV2v7F_9GwE?si=4wgaT1IrZBpA71dF"
-            title="YouTube video player"
-            frameborder="0"
-            allow="
-              accelerometer;
-              autoplay;
-              clipboard-write;
-              encrypted-media;
-              gyroscope;
-              picture-in-picture;
-              web-share;
-            "
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen
-            class="w-full aspect-video"
-          ></iframe>
-        </div>
-      </div>
-    </section>
+    <PresentationCarousel :slides="presentations" />
 
     <GridSection
       id="foss"
@@ -338,7 +309,7 @@ const socialLinks = [
       >
         <div class="flex items-center gap-4">
           <img
-            src="/public/images/PhotonVision-Icon-BG.png"
+            src="/images/PhotonVision-Icon-BG.png"
             class="w-12 h-12 hover:scale-110 transition-transform duration-300"
             alt="PhotonVision logo"
           />

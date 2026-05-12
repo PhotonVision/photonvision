@@ -26,23 +26,22 @@ package frc.robot.subsystems.drivetrain;
 
 import static frc.robot.Constants.Swerve.*;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.numbers.*;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
-import edu.wpi.first.wpilibj.SPI.Port;
-import edu.wpi.first.wpilibj.simulation.ADXRS450_GyroSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import org.wpilib.hardware.imu.OnboardIMU;
+import org.wpilib.hardware.imu.OnboardIMU.MountOrientation;
+import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
+import org.wpilib.math.kinematics.ChassisSpeeds;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.math.kinematics.SwerveModulePosition;
+import org.wpilib.math.kinematics.SwerveModuleState;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.numbers.*;
+import org.wpilib.math.system.plant.DCMotor;
+import org.wpilib.smartdashboard.SmartDashboard;
 
 public class SwerveDrive {
     // Construct the swerve modules with their respective constants.
@@ -62,7 +61,7 @@ public class SwerveDrive {
                     swerveMods[2].getModuleConstants().centerOffset,
                     swerveMods[3].getModuleConstants().centerOffset);
 
-    private final ADXRS450_Gyro gyro = new ADXRS450_Gyro(Port.kOnboardCS0);
+    private final OnboardIMU gyro = new OnboardIMU(MountOrientation.kFlat);
 
     // The robot pose estimator for tracking swerve odometry and applying vision corrections.
     private final SwerveDrivePoseEstimator poseEstimator;
@@ -70,7 +69,8 @@ public class SwerveDrive {
     private ChassisSpeeds targetChassisSpeeds = new ChassisSpeeds();
 
     // ----- Simulation
-    private final ADXRS450_GyroSim gyroSim;
+    // TODO(Jade) WPILib doesn't have onboard IMU sim yet
+    // private final ADXRS450_GyroSim gyroSim;
     private final SwerveDriveSim swerveDriveSim;
     private double totalCurrentDraw = 0;
 
@@ -91,7 +91,7 @@ public class SwerveDrive {
                         visionStdDevs);
 
         // ----- Simulation
-        gyroSim = new ADXRS450_GyroSim(gyro);
+        // gyroSim = new ADXRS450_GyroSim(gyro);
         swerveDriveSim =
                 new SwerveDriveSim(
                         kDriveFF,
@@ -117,13 +117,12 @@ public class SwerveDrive {
      * Basic drive control. A target field-relative ChassisSpeeds (vx, vy, omega) is converted to
      * specific swerve module states.
      *
-     * @param vxMeters X velocity (forwards/backwards)
-     * @param vyMeters Y velocity (strafe left/right)
-     * @param omegaRadians Angular velocity (rotation CCW+)
+     * @param vx X velocity (forwards/backwards)
+     * @param vy Y velocity (strafe left/right)
+     * @param omega Angular velocity (rotation CCW+)
      */
-    public void drive(double vxMeters, double vyMeters, double omegaRadians) {
-        var targetChassisSpeeds =
-                ChassisSpeeds.fromFieldRelativeSpeeds(vxMeters, vyMeters, omegaRadians, getHeading());
+    public void drive(double vx, double vy, double omega) {
+        var targetChassisSpeeds = new ChassisSpeeds(vx, vy, omega).toRobotRelative(getHeading());
         setChassisSpeeds(targetChassisSpeeds, true, false);
     }
 
@@ -189,8 +188,8 @@ public class SwerveDrive {
             for (int i = 0; i < swerveMods.length; i++) {
                 swerveMods[i].simulationUpdate(0, 0, 0, 0, 0, 0);
             }
-            gyroSim.setAngle(-pose.getRotation().getDegrees());
-            gyroSim.setRate(0);
+            // gyroSim.setAngle(-pose.getRotation().getDegrees());
+            // gyroSim.setRate(0);
         }
 
         poseEstimator.resetPosition(getGyroYaw(), getModulePositions(), pose);
@@ -267,14 +266,13 @@ public class SwerveDrive {
         SmartDashboard.putNumber(table + "Y", pose.getY());
         SmartDashboard.putNumber(table + "Heading", pose.getRotation().getDegrees());
         ChassisSpeeds chassisSpeeds = getChassisSpeeds();
-        SmartDashboard.putNumber(table + "VX", chassisSpeeds.vxMetersPerSecond);
-        SmartDashboard.putNumber(table + "VY", chassisSpeeds.vyMetersPerSecond);
+        SmartDashboard.putNumber(table + "VX", chassisSpeeds.vx);
+        SmartDashboard.putNumber(table + "VY", chassisSpeeds.vy);
+        SmartDashboard.putNumber(table + "Omega Degrees", Math.toDegrees(chassisSpeeds.omega));
+        SmartDashboard.putNumber(table + "Target VX", targetChassisSpeeds.vx);
+        SmartDashboard.putNumber(table + "Target VY", targetChassisSpeeds.vy);
         SmartDashboard.putNumber(
-                table + "Omega Degrees", Math.toDegrees(chassisSpeeds.omegaRadiansPerSecond));
-        SmartDashboard.putNumber(table + "Target VX", targetChassisSpeeds.vxMetersPerSecond);
-        SmartDashboard.putNumber(table + "Target VY", targetChassisSpeeds.vyMetersPerSecond);
-        SmartDashboard.putNumber(
-                table + "Target Omega Degrees", Math.toDegrees(targetChassisSpeeds.omegaRadiansPerSecond));
+                table + "Target Omega Degrees", Math.toDegrees(targetChassisSpeeds.omega));
 
         for (SwerveModule module : swerveMods) {
             module.log();
@@ -314,8 +312,8 @@ public class SwerveDrive {
                     drivePos, driveRate, driveCurrents[i], steerPos, steerRate, steerCurrents[i]);
         }
 
-        gyroSim.setRate(-swerveDriveSim.getOmegaRadsPerSec());
-        gyroSim.setAngle(-swerveDriveSim.getPose().getRotation().getDegrees());
+        // gyroSim.setRate(-swerveDriveSim.getOmegaRadsPerSec());
+        // gyroSim.setAngle(-swerveDriveSim.getPose().getRotation().getDegrees());
     }
 
     /**

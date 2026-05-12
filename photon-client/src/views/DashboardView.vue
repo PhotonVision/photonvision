@@ -92,7 +92,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       color="error"
       density="compact"
       icon="mdi-alert-circle-outline"
-      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
     >
       <span>
         Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
@@ -104,7 +104,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       color="error"
       density="compact"
       icon="mdi-alert-circle-outline"
-      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
     >
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
@@ -116,7 +116,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       color="error"
       density="compact"
       icon="mdi-alert-circle-outline"
-      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
     >
       <span
         >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
@@ -129,7 +129,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       color="error"
       density="compact"
       icon="mdi-alert-circle-outline"
-      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+      :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
     >
       <span
         >Conflicting camera name(s) detected! Please change the name(s) of

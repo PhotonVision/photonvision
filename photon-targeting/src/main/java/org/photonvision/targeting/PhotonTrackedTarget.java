@@ -17,13 +17,13 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.util.protobuf.ProtobufSerializable;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.PacketSerde;
 import org.photonvision.struct.PhotonTrackedTargetSerde;
 import org.photonvision.targeting.proto.PhotonTrackedTargetProto;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.util.protobuf.ProtobufSerializable;
 
 /** Information about a detected target. */
 public class PhotonTrackedTarget

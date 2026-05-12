@@ -24,8 +24,6 @@ import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HardwareConfig {
     public final String deviceName;
-    public final String deviceLogoPath;
-    public final String supportURL;
 
     // LED control
     public final ArrayList<Integer> ledPins;
@@ -50,8 +48,6 @@ public class HardwareConfig {
 
     public HardwareConfig(
             String deviceName,
-            String deviceLogoPath,
-            String supportURL,
             ArrayList<Integer> ledPins,
             boolean ledsCanDim,
             ArrayList<Integer> ledBrightnessRange,
@@ -67,8 +63,6 @@ public class HardwareConfig {
             double vendorFOV,
             RecordingStrategy recordingStrategy) {
         this.deviceName = deviceName;
-        this.deviceLogoPath = deviceLogoPath;
-        this.supportURL = supportURL;
         this.ledPins = ledPins;
         this.ledsCanDim = ledsCanDim;
         this.ledBrightnessRange = ledBrightnessRange;
@@ -87,8 +81,6 @@ public class HardwareConfig {
 
     public HardwareConfig() {
         deviceName = "";
-        deviceLogoPath = "";
-        supportURL = "";
         ledPins = new ArrayList<>();
         ledsCanDim = false;
         ledBrightnessRange = new ArrayList<>();
@@ -127,10 +119,6 @@ public class HardwareConfig {
     public String toString() {
         return "HardwareConfig[deviceName="
                 + deviceName
-                + ", deviceLogoPath="
-                + deviceLogoPath
-                + ", supportURL="
-                + supportURL
                 + ", ledPins="
                 + ledPins
                 + ", ledsCanDim="

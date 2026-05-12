@@ -17,20 +17,6 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.LogMessage;
-import edu.wpi.first.networktables.MultiSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.NetworkTableEvent.Kind;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringArraySubscriber;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -52,6 +38,20 @@ import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
+import org.wpilib.driverstation.Alert;
+import org.wpilib.driverstation.Alert.Level;
+import org.wpilib.networktables.IntegerSubscriber;
+import org.wpilib.networktables.LogMessage;
+import org.wpilib.networktables.MultiSubscriber;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.NetworkTableEvent;
+import org.wpilib.networktables.NetworkTableEvent.Kind;
+import org.wpilib.networktables.NetworkTableInstance;
+import org.wpilib.networktables.StringArraySubscriber;
+import org.wpilib.networktables.StringSubscriber;
+import org.wpilib.smartdashboard.SmartDashboard;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
+import org.wpilib.vision.camera.CameraServerJNI;
 
 public class NetworkTablesManager {
     private static final Logger logger =
@@ -71,9 +71,9 @@ public class NetworkTablesManager {
             new MultiSubscriber(ntInstance, new String[] {kRootTableName + "/" + kCoprocTableName + "/"});
 
     // Creating the alert up here since it should be persistent
-    private final Alert conflictAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert conflictAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
 
-    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", AlertType.kWarning);
+    private final Alert mismatchAlert = new Alert("PhotonAlerts", "", Level.MEDIUM);
 
     public boolean conflictingHostname = false;
     public String conflictingCameras = "";
@@ -118,7 +118,6 @@ public class NetworkTablesManager {
 
     public void registerTimedTasks() {
         m_timeSync.start();
-        TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
         TimedTaskManager.getInstance()
                 .addTask("CheckHostnameAndCameraNames", this::checkHostnameAndCameraNames, 10000);
     }
@@ -399,7 +398,7 @@ public class NetworkTablesManager {
         ntInstance.stopClient();
         String hostname = config.shouldManage ? config.hostname : CameraServerJNI.getHostname();
         logger.debug("Starting NT Client with hostname: " + hostname);
-        ntInstance.startClient4(hostname);
+        ntInstance.startClient(hostname);
         try {
             int t = Integer.parseInt(config.ntServerAddress);
             if (!m_isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
@@ -418,23 +417,6 @@ public class NetworkTablesManager {
         ntInstance.stopClient();
         ntInstance.startServer();
         broadcastVersion();
-    }
-
-    // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
-    // it'll never connect. This hack works around it by restarting the client/server while the nt
-    // instance isn't connected, same as clicking the save button in the settings menu (or restarting
-    // the service)
-    private void ntTick() {
-        if (!ntInstance.isConnected()
-                && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
-            setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
-        }
-
-        if (!ntInstance.isConnected() && !m_isRetryingConnection) {
-            m_isRetryingConnection = true;
-            logger.error(
-                    "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
-        }
     }
 
     public long getTimeSinceLastPong() {

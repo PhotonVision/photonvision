@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.Translation3d;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
@@ -30,6 +29,7 @@ import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
+import org.wpilib.math.geometry.Translation3d;
 
 public class AprilTagTest {
     @BeforeEach
@@ -136,5 +136,32 @@ public class AprilTagTest {
         assertEquals(4.14, pose.getTranslation().getX(), 0.2);
         assertEquals(2, pose.getTranslation().getY(), 0.2);
         assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
+    }
+
+    @Test
+    public void testManyDetections() {
+        // Given a 36h11 pipeline
+        var pipeline = new AprilTagPipeline();
+        pipeline.getSettings().inputShouldShow = true;
+        pipeline.getSettings().outputShouldDraw = true;
+        pipeline.getSettings().solvePNPEnabled = true;
+        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
+        pipeline.getSettings().outputMaximumTargets = 3; // bogus
+
+        // when we have a picture with 280 targets
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.k36h11_stress_test, false),
+                        TestUtils.WPI2020Image.FOV,
+                        TestUtils.getCoeffs(TestUtils.LIMELIGHT_480P_CAL_FILE, false));
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+
+        CVPipelineResult pipelineResult;
+        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+
+        // the pipeline will only give us Byte.MAX_VALUE many
+        assertEquals(Byte.MAX_VALUE, pipelineResult.targets.size());
     }
 }

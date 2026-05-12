@@ -1,5 +1,5 @@
 plugins {
-    id "com.diffplug.spotless" version "8.1.0"
+    id "com.diffplug.spotless" version "8.4.0"
 }
 
 allprojects {
@@ -16,7 +16,7 @@ spotless {
         toggleOffOn()
         googleJavaFormat()
         indentWithTabs(2)
-        indentWithSpaces(4)
+        leadingTabsToSpaces(4)
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()

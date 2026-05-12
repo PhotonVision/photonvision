@@ -14,7 +14,7 @@ import { useStateStore } from "@/stores/StateStore";
       {{ useStateStore().snackbarData.message }}
     </p>
     <v-progress-linear
-      v-if="useStateStore().snackbarData.progressBar != -1"
+      v-if="useStateStore().snackbarData.progressBar !== -1"
       v-model="useStateStore().snackbarData.progressBar"
       height="15"
       :color="useStateStore().snackbarData.progressBarColor"

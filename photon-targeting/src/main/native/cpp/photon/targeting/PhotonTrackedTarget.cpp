@@ -17,14 +17,4 @@
 
 #include "photon/targeting/PhotonTrackedTarget.h"
 
-#include <algorithm>
-#include <iostream>
-#include <utility>
-#include <vector>
-
-#include <frc/geometry/Translation2d.h>
-#include <wpi/SmallVector.h>
-
-static constexpr const uint8_t MAX_CORNERS = 8;
-
 namespace photon {}  // namespace photon

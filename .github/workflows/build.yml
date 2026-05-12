@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_VERSION: v2026.1.1
+  IMAGE_VERSION: v2027.0.0
 
 jobs:
 
@@ -21,94 +21,82 @@ jobs:
       - uses: actions/checkout@v6
       - uses: gradle/actions/wrapper-validation@v5
 
-  build-examples:
+  # build-examples:
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-2022
-            artifact-name: Win64
-          - os: macos-14
-            artifact-name: macOS
-          - os: ubuntu-24.04
-            artifact-name: Linux
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - os: windows-2022
+  #           artifact-name: Win64
+  #         - os: macos-14
+  #           artifact-name: macOS
+  #         - os: ubuntu-24.04
+  #           artifact-name: Linux
 
-    name: "Photonlib - Build Examples - ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    needs: [build-photonlib-host, build-photonlib-docker]
+  #   name: "Photonlib - Build Examples - ${{ matrix.os }}"
+  #   runs-on: ${{ matrix.os }}
+  #   needs: [build-photonlib-host, build-photonlib-docker]
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Fetch tags
-        run: git fetch --tags --force
-      - name: Install Java 17
-        uses: actions/setup-java@v5
-        with:
-          java-version: 17
-          distribution: temurin
-      - name: Install RoboRIO Toolchain
-        run: ./gradlew installRoboRioToolchain
-      - name: Delete duplicate toolchains
-        run: |
-          find ~/.gradle/cache/ -name *roborio-academic* -exec rm -rf {} +
-          du -h . | sort -h
-        if: matrix.os == 'ubuntu-24.04'
-      # Download prebuilt photonlib artifacts
-      - uses: actions/download-artifact@v7
-        with:
-          name: maven-${{ matrix.artifact-name }}
-      - uses: actions/download-artifact@v7
-        with:
-          name: maven-Athena
-      - name: Move to maven local
-        run: |
-          mkdir -p ~/.m2/repository/
-          mv maven/org ~/.m2/repository/
-      - name: Copy vendordeps
-        shell: bash
-        run: |
-          for vendordep_folder in photonlib-*-examples/*/; do
-          # Remove trailing slash for cross-platform compatibility
-            vendordep_folder="${vendordep_folder%/}"
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v6
+  #       with:
+  #         fetch-depth: 0
+  #     - name: Fetch tags
+  #       run: git fetch --tags --force
+  #     - uses: actions/setup-java@v5
+  #       with:
+  #         java-version: 25
+  #         distribution: temurin
+  #     - name: Install SystemCore Toolchain
+  #       run: ./gradlew installSystemCoreToolchain
+  #     - name: Delete duplicate toolchains
+  #       run: |
+  #         find ~/.gradle/cache/ -name *bookworm* -exec rm -rf {} +
+  #         du -h . | sort -h
+  #       if: matrix.os == 'ubuntu-24.04'
+  #     # Download prebuilt photonlib artifacts
+  #     - uses: actions/download-artifact@v7
+  #       with:
+  #         name: maven-${{ matrix.artifact-name }}
+  #     - uses: actions/download-artifact@v7
+  #       with:
+  #         name: maven-Athena
+  #     - name: Move to maven local
+  #       run: |
+  #         mkdir -p ~/.m2/repository/
+  #         mv maven/org ~/.m2/repository/
+  #     - name: Copy vendordeps
+  #       shell: bash
+  #       run: |
+  #         for vendordep_folder in photonlib-*-examples/*/; do
+  #         # Remove trailing slash for cross-platform compatibility
+  #           vendordep_folder="${vendordep_folder%/}"
 
-            # Filter for projects only
-            if [ -e "$vendordep_folder/build.gradle" ]; then
-              mkdir -p "$vendordep_folder/vendordeps/"
-              cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
-            fi
-          done
-      - name: Build Java examples
-        working-directory: photonlib-java-examples
-        run: |
-          ./gradlew build
-          ./gradlew clean
-      - name: Build C++ examples
-        working-directory: photonlib-cpp-examples
-        run: |
-          ./gradlew build
-          ./gradlew clean
+  #           # Filter for projects only
+  #           if [ -e "$vendordep_folder/build.gradle" ]; then
+  #             mkdir -p "$vendordep_folder/vendordeps/"
+  #             cp vendordeps/photonlib-json-1.0.json "$vendordep_folder/vendordeps/"
+  #           fi
+  #         done
+  #     - name: Build Java examples
+  #       working-directory: photonlib-java-examples
+  #       run: |
+  #         ./gradlew build
+  #         ./gradlew clean
+  #     - name: Build C++ examples
+  #       working-directory: photonlib-cpp-examples
+  #       run: |
+  #         ./gradlew build
+  #         ./gradlew clean
 
-  playwright-tests:
-    name: "Playwright E2E tests"
+  typecheck-client:
+    name: "Typecheck Client"
     runs-on: ubuntu-24.04
-    needs: [validation]
     steps:
-      # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Fetch tags
-        run: git fetch --tags --force
-      - name: Install Java 17
-        uses: actions/setup-java@v5
-        with:
-          java-version: 17
-          distribution: temurin
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -116,7 +104,33 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
+      - name: Typecheck Client
+        working-directory: photon-client
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm type-check
+  playwright-tests:
+    name: "Playwright E2E tests"
+    runs-on: ubuntu-24.04
+    needs: [validation]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          java-version: 25
+          distribution: temurin
+      - uses: pnpm/action-setup@v5
+        with:
+          version: 10
+      - uses: actions/setup-node@v6
+        with:
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
+          node-version: 24
       - name: Setup tests
         working-directory: photon-client
         run: |
@@ -127,10 +141,10 @@ jobs:
       - name: Run Playwright tests
         working-directory: photon-client
         run: pnpm test
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
-          name: playwright-report
+          archive: false
           path: photon-client/playwright-report/
           retention-days: 30
   build-gradle:
@@ -138,26 +152,24 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [validation]
     steps:
-      # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Fetch tags
         run: git fetch --tags --force
-      - name: Install Java 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: 25
           distribution: temurin
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          cache: pnpm
+          cache-dependency-path: photon-client/pnpm-lock.yaml
+          node-version: 24
       - name: Gradle Build
         run: ./gradlew photon-targeting:build photon-core:build photon-server:build -x check
       - name: Gradle Tests and Coverage
@@ -184,7 +196,7 @@ jobs:
         working-directory: docs
         run: |
           make html
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: built-docs
           path: docs/build/html
@@ -198,10 +210,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Java 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: 25
           distribution: temurin
 
       # grab all tags
@@ -214,9 +225,9 @@ jobs:
           mv photon-lib/build/generated/vendordeps/photonlib.json photon-lib/build/generated/vendordeps/photonlib-$(git describe --tags --match=v*).json
 
       # Upload it here so it shows up in releases
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
-          name: photonlib-vendor-json
+          archive: false
           path: photon-lib/build/generated/vendordeps/photonlib-*.json
 
   build-photonlib-host:
@@ -226,8 +237,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-2022
-            artifact-name: Win64
+#          - os: windows-2022
+#            artifact-name: Win64
           - os: macos-26
             artifact-name: macOS
           - os: ubuntu-24.04
@@ -240,10 +251,9 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Install Java 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: 25
           distribution: temurin
       - run: git fetch --tags --force
       - run: ./gradlew photon-targeting:build photon-lib:build
@@ -252,10 +262,10 @@ jobs:
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && github.ref == 'refs/heads/main'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -265,13 +275,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2025-24.04
-            artifact-name: Athena
-            build-options: "-Ponlylinuxathena"
-          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
+          - container: wpilib/systemcore-cross-ubuntu:2027-24.04
+            artifact-name: SystemCore
+            build-options: "-Ponlylinuxsystemcore"
+          - container: wpilib/raspbian-cross-ubuntu:2027-bookworm-24.04
             artifact-name: Raspbian
             build-options: "-Ponlylinuxarm32"
-          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
+          - container: wpilib/aarch64-cross-ubuntu:2027-bookworm-24.04
             artifact-name: Aarch64
             build-options: "-Ponlylinuxarm64"
 
@@ -293,10 +303,10 @@ jobs:
         run: ./gradlew photon-lib:publish photon-targeting:publish ${{ matrix.build-options }}
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
-        if: github.event_name == 'push' && github.repository_owner == 'photonvision'
+        if: github.event_name == 'push' && github.repository_owner == 'photonvision' && github.ref == 'refs/heads/main'
       # Copy artifacts to build/outputs/maven
       - run: ./gradlew photon-lib:publish photon-targeting:publish -PcopyOfflineArtifacts ${{ matrix.build-options }}
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: maven-${{ matrix.artifact-name }}
           path: build/outputs
@@ -311,7 +321,7 @@ jobs:
           fetch-depth: 0
       - run: git fetch --tags --force
       # download all maven-* artifacts to outputs/
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: output
@@ -321,7 +331,7 @@ jobs:
         name: ZIP stuff up
         working-directory: output
       - run: ls output
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: photonlib-offline
           path: output/*.zip
@@ -347,25 +357,22 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - name: Install Java 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: 25
           distribution: temurin
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           version: 10
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
           cache-dependency-path: photon-client/pnpm-lock.yaml
       - name: Install Arm64 Toolchain
         run: ./gradlew installArm64Toolchain
         if: ${{ (matrix.artifact-name) == 'LinuxArm64' }}
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
@@ -373,11 +380,11 @@ jobs:
         if: ${{ (matrix.arch-override != 'none') }}
       - run: ./gradlew photon-server:shadowJar
         if: ${{ (matrix.arch-override == 'none') }}
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
-          name: jar-${{ matrix.artifact-name }}
+          archive: false
           path: photon-server/build/libs
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: photon-targeting_jar-${{ matrix.artifact-name }}
           path: photon-targeting/build/libs
@@ -425,27 +432,52 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            artifact-name: jar-Linux
+            artifact-name: photonvision-*-linuxx64.jar
             extraOpts: -Djdk.lang.Process.launchMechanism=vfork
           - os: windows-latest
-            artifact-name: jar-Win64
+            artifact-name: photonvision-*-winx64.jar
           - os: macos-latest
-            artifact-name: jar-macOS
+            artifact-name: photonvision-*-macarm64.jar
+          - os: ubuntu-24.04-arm
+            artifact-name: photonvision-*-linuxarm64.jar
+
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Install Java 17
-        uses: actions/setup-java@v5
+      - uses: actions/setup-java@v5
         with:
-          java-version: 17
+          java-version: 25
           distribution: temurin
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
-          name: ${{ matrix.artifact-name }}
-      - run: java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+          pattern: ${{ matrix.artifact-name }}
+      # The jar is run twice to exercise different code paths.
+      - run: |
+          echo "=== First run ==="
+          java -jar ${{ matrix.extraOpts }} *.jar --smoketest
+          echo "=== Checking for files to corrupt ==="
+          find ~ -type f \( -name "*.so" -o -name "*.dylib" \) | head -20
+          if [ -d ~/.wpilib ]; then
+            echo "~/.wpilib directory exists"
+            echo "Contents of ~/.wpilib:"
+            find ~/.wpilib -type f \( -name "*.so" -o -name "*.dylib" \) | head -10
+            RANDOM_FILE=$(find ~/.wpilib -type f \( -name "*.so" -o -name "*.dylib" \) | sort -R | head -n 1)
+            if [ ! -z "$RANDOM_FILE" ]; then
+              echo "Corrupting file: $RANDOM_FILE"
+              echo "corrupted data" > "$RANDOM_FILE"
+            else
+              echo "No .so or .dylib files found in ~/.wpilib"
+            fi
+          else
+            echo "~/.wpilib directory does not exist"
+          fi
+          echo "=== Second run ==="
+          java -jar ${{ matrix.extraOpts }} *.jar --smoketest
         if: ${{ (matrix.os) != 'windows-latest' }}
-      - run: ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
+      - run: |
+          ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
+          ls *.jar | %{ Write-Host "Running $($_.Name)"; Start-Process "java" -ArgumentList "-jar `"$($_.FullName)`" --smoketest" -NoNewWindow -Wait; break }
         if: ${{ (matrix.os) == 'windows-latest' }}
 
   build-image:
@@ -456,79 +488,66 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: RaspberryPi
             plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_raspi.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: limelight2
             plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: limelight3
             plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: limelight3G
             plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight3g.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: limelight4
             plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_limelight4.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: luma_p1
             plat_override: LINUX_RASPBIAN64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_luma_p1.img.xz
             minimum_free_mb: 100
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: orangepi5
             plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: orangepi5b
             plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5b.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: orangepi5plus
             plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5plus.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: orangepi5pro
             plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5pro.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: orangepi5max
             plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_opi5max.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: rock5c
             plat_override: LINUX_RK3588_64
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rock5c.img.xz
             minimum_free_mb: 1024
           - os: ubuntu-24.04-arm
-            artifact-name: LinuxArm64
             image_suffix: rubikpi3
             plat_override: LINUX_QCS6490
             image_url: https://github.com/PhotonVision/photon-image-modifier/releases/download/$IMAGE_VERSION/photonvision_rubikpi3.tar.xz
@@ -544,9 +563,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
-          name: jar-${{ matrix.artifact-name }}
+          pattern: photonvision-*-linuxarm64.jar
       - uses: photonvision/photon-image-runner@HEAD
         name: Generate image
         id: generate_image
@@ -582,10 +601,9 @@ jobs:
           # Point smoketest to the old image
           echo "smoketest_image_loc=${{ steps.generate_image.outputs.image }}" >> $GITHUB_ENV
 
-      - uses: actions/upload-artifact@v6
-        name: Upload image
+      - uses: actions/upload-artifact@v7
         with:
-          name: image-${{ matrix.image_suffix }}
+          archive: false
           path: photonvision*.xz
 
         # This is done after uploading the image to avoid contaminating the image with logs, caches, etc.
@@ -614,25 +632,24 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       # Download all fat JARs
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
-          pattern: jar-*
+          pattern: photonvision-*.jar
       # Download offline photonlib
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           pattern: photonlib-offline
       # Download vendor json
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
-          merge-multiple: true
-          pattern: photonlib-vendor-json
+          pattern: photonlib-*.json
       # Download all images
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
-          pattern: image-*
+          pattern: photonvision-*.xz
 
       - run: find
       # Push to dev release

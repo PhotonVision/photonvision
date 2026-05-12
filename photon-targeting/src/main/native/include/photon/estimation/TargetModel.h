@@ -19,49 +19,50 @@
 
 #include <vector>
 
-#include <frc/geometry/Pose3d.h>
-#include <frc/geometry/Translation3d.h>
+#include <wpi/math/geometry/Pose3d.hpp>
+#include <wpi/math/geometry/Translation3d.hpp>
 
 #include "RotTrlTransform3d.h"
 
 namespace photon {
 class TargetModel {
  public:
-  TargetModel(units::meter_t width, units::meter_t height)
-      : vertices({frc::Translation3d{0_m, -width / 2.0, -height / 2.0},
-                  frc::Translation3d{0_m, width / 2.0, -height / 2.0},
-                  frc::Translation3d{0_m, width / 2.0, height / 2.0},
-                  frc::Translation3d{0_m, -width / 2.0, height / 2.0}}),
+  TargetModel(wpi::units::meter_t width, wpi::units::meter_t height)
+      : vertices({wpi::math::Translation3d{0_m, -width / 2.0, -height / 2.0},
+                  wpi::math::Translation3d{0_m, width / 2.0, -height / 2.0},
+                  wpi::math::Translation3d{0_m, width / 2.0, height / 2.0},
+                  wpi::math::Translation3d{0_m, -width / 2.0, height / 2.0}}),
         isPlanar(true),
         isSpherical(false) {}
 
-  TargetModel(units::meter_t length, units::meter_t width,
-              units::meter_t height)
+  TargetModel(wpi::units::meter_t length, wpi::units::meter_t width,
+              wpi::units::meter_t height)
       : TargetModel({
-            frc::Translation3d{length / 2.0, -width / 2.0, -height / 2.0},
-            frc::Translation3d{length / 2.0, width / 2.0, -height / 2.0},
-            frc::Translation3d{length / 2.0, width / 2.0, height / 2.0},
-            frc::Translation3d{length / 2.0, -width / 2.0, height / 2.0},
-            frc::Translation3d{-length / 2.0, -width / 2.0, height / 2.0},
-            frc::Translation3d{-length / 2.0, width / 2.0, height / 2.0},
-            frc::Translation3d{-length / 2.0, width / 2.0, -height / 2.0},
-            frc::Translation3d{-length / 2.0, -width / 2.0, -height / 2.0},
+            wpi::math::Translation3d{length / 2.0, -width / 2.0, -height / 2.0},
+            wpi::math::Translation3d{length / 2.0, width / 2.0, -height / 2.0},
+            wpi::math::Translation3d{length / 2.0, width / 2.0, height / 2.0},
+            wpi::math::Translation3d{length / 2.0, -width / 2.0, height / 2.0},
+            wpi::math::Translation3d{-length / 2.0, -width / 2.0, height / 2.0},
+            wpi::math::Translation3d{-length / 2.0, width / 2.0, height / 2.0},
+            wpi::math::Translation3d{-length / 2.0, width / 2.0, -height / 2.0},
+            wpi::math::Translation3d{-length / 2.0, -width / 2.0,
+                                     -height / 2.0},
         }) {}
 
-  explicit TargetModel(units::meter_t diameter)
+  explicit TargetModel(wpi::units::meter_t diameter)
       : vertices({
-            frc::Translation3d{0_m, -diameter / 2.0, 0_m},
-            frc::Translation3d{0_m, 0_m, -diameter / 2.0},
-            frc::Translation3d{0_m, diameter / 2.0, 0_m},
-            frc::Translation3d{0_m, 0_m, diameter / 2.0},
+            wpi::math::Translation3d{0_m, -diameter / 2.0, 0_m},
+            wpi::math::Translation3d{0_m, 0_m, -diameter / 2.0},
+            wpi::math::Translation3d{0_m, diameter / 2.0, 0_m},
+            wpi::math::Translation3d{0_m, 0_m, diameter / 2.0},
         }),
         isPlanar(false),
         isSpherical(true) {}
 
-  explicit TargetModel(const std::vector<frc::Translation3d>& verts)
+  explicit TargetModel(const std::vector<wpi::math::Translation3d>& verts)
       : isSpherical(false) {
     if (verts.size() <= 2) {
-      vertices = std::vector<frc::Translation3d>();
+      vertices = std::vector<wpi::math::Translation3d>();
       isPlanar = false;
     } else {
       bool cornersPlanar = true;
@@ -75,11 +76,11 @@ class TargetModel {
     vertices = verts;
   }
 
-  std::vector<frc::Translation3d> GetFieldVertices(
-      const frc::Pose3d& targetPose) const {
+  std::vector<wpi::math::Translation3d> GetFieldVertices(
+      const wpi::math::Pose3d& targetPose) const {
     RotTrlTransform3d basisChange{targetPose.Rotation(),
                                   targetPose.Translation()};
-    std::vector<frc::Translation3d> retVal;
+    std::vector<wpi::math::Translation3d> retVal;
     retVal.reserve(vertices.size());
     for (const auto& vert : vertices) {
       retVal.emplace_back(basisChange.Apply(vert));
@@ -87,25 +88,27 @@ class TargetModel {
     return retVal;
   }
 
-  static frc::Pose3d GetOrientedPose(const frc::Translation3d& tgtTrl,
-                                     const frc::Translation3d& cameraTrl) {
-    frc::Translation3d relCam = cameraTrl - tgtTrl;
-    frc::Rotation3d orientToCam = frc::Rotation3d{
+  static wpi::math::Pose3d GetOrientedPose(
+      const wpi::math::Translation3d& tgtTrl,
+      const wpi::math::Translation3d& cameraTrl) {
+    wpi::math::Translation3d relCam = cameraTrl - tgtTrl;
+    wpi::math::Rotation3d orientToCam = wpi::math::Rotation3d{
         0_rad,
-        frc::Rotation2d{units::math::hypot(relCam.X(), relCam.Y()).to<double>(),
-                        -relCam.Z().to<double>()}
+        wpi::math::Rotation2d{
+            wpi::units::math::hypot(relCam.X(), relCam.Y()).to<double>(),
+            -relCam.Z().to<double>()}
             .Radians(),
-        frc::Rotation2d{relCam.X().to<double>(), relCam.Y().to<double>()}
+        wpi::math::Rotation2d{relCam.X().to<double>(), relCam.Y().to<double>()}
             .Radians()};
-    return frc::Pose3d{tgtTrl, orientToCam};
+    return wpi::math::Pose3d{tgtTrl, orientToCam};
   }
 
-  std::vector<frc::Translation3d> GetVertices() const { return vertices; }
+  std::vector<wpi::math::Translation3d> GetVertices() const { return vertices; }
   bool GetIsPlanar() const { return isPlanar; }
   bool GetIsSpherical() const { return isSpherical; }
 
  private:
-  std::vector<frc::Translation3d> vertices;
+  std::vector<wpi::math::Translation3d> vertices;
   bool isPlanar;
   bool isSpherical;
 };

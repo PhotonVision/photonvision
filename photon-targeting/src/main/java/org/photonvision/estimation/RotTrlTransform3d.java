@@ -17,12 +17,12 @@
 
 package org.photonvision.estimation;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
 
 /**
  * Represents a transformation that first rotates a pose around the origin, and then translates it.
@@ -46,7 +46,7 @@ public class RotTrlTransform3d {
     }
 
     public RotTrlTransform3d(Pose3d initial, Pose3d last) {
-        this.rot = last.getRotation().minus(initial.getRotation());
+        this.rot = last.getRotation().relativeTo(initial.getRotation());
         this.trl = last.getTranslation().minus(initial.getTranslation().rotateBy(rot));
     }
 
@@ -83,7 +83,7 @@ public class RotTrlTransform3d {
      * @return The inverse transformation
      */
     public RotTrlTransform3d inverse() {
-        var inverseRot = rot.unaryMinus();
+        var inverseRot = rot.inverse();
         var inverseTrl = trl.rotateBy(inverseRot).unaryMinus();
         return new RotTrlTransform3d(inverseRot, inverseTrl);
     }
@@ -124,7 +124,7 @@ public class RotTrlTransform3d {
     }
 
     public Rotation3d apply(Rotation3d rot) {
-        return rot.plus(this.rot);
+        return rot.rotateBy(this.rot);
     }
 
     public List<Rotation3d> applyRots(List<Rotation3d> rots) {

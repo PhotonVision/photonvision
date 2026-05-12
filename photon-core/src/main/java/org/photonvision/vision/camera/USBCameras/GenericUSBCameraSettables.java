@@ -17,12 +17,6 @@
 
 package org.photonvision.vision.camera.USBCameras;
 
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.cscore.VideoProperty;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.util.PixelFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +27,11 @@ import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.processes.VisionSourceSettables;
+import org.wpilib.util.PixelFormat;
+import org.wpilib.vision.camera.UsbCamera;
+import org.wpilib.vision.camera.VideoException;
+import org.wpilib.vision.camera.VideoMode;
+import org.wpilib.vision.camera.VideoProperty;
 
 public class GenericUSBCameraSettables extends VisionSourceSettables {
     // We need to remember the last exposure set when exiting
@@ -131,7 +130,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
 
             softSet("white_balance_automatic", 0);
 
-            int propVal = (int) MathUtil.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
+            int propVal = (int) Math.clamp(temp, minWhiteBalanceTemp, maxWhiteBalanceTemp);
 
             logger.debug(
                     "Setting property "
@@ -167,7 +166,30 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
         }
     }
 
+    @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
+        if ((configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV9281Controls)
+                        || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV9782Controls)
+                        || configuration.cameraQuirks.hasQuirk(CameraQuirk.ArduOV2311Controls))
+                && !cameraAutoExposure) {
+            // OV9281, OV9782, and OV2311 on Linux seems to sometimes ignore our exposure requests on
+            // first boot if we're in manual mode. Poking the camera into and out of auto exposure seems
+            // to fix it.
+            try {
+                setAutoExposureImpl(false);
+                Thread.sleep(2000);
+                setAutoExposureImpl(true);
+                Thread.sleep(2000);
+                setAutoExposureImpl(false);
+            } catch (InterruptedException e) {
+                logger.error("Thread interrupted while setting OV9281 or OV9782 exposure!", e);
+            }
+        } else {
+            setAutoExposureImpl(cameraAutoExposure);
+        }
+    }
+
+    public void setAutoExposureImpl(boolean cameraAutoExposure) {
         logger.debug("Setting auto exposure to " + cameraAutoExposure);
 
         if (!cameraAutoExposure) {
@@ -207,7 +229,7 @@ public class GenericUSBCameraSettables extends VisionSourceSettables {
             try {
                 if (autoExposureProp != null) autoExposureProp.set(PROP_AUTO_EXPOSURE_DISABLED);
 
-                int propVal = (int) MathUtil.clamp(exposureRaw, minExposure, maxExposure);
+                int propVal = (int) Math.clamp(exposureRaw, minExposure, maxExposure);
 
                 logger.debug(
                         "Setting property "

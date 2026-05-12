@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +28,7 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.vision.apriltag.AprilTagFieldLayout;
 
 /** Estimate the camera pose given multiple Apriltag observations */
 public class MultiTargetPNPPipe

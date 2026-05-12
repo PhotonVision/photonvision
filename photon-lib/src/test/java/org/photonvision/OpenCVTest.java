@@ -26,14 +26,6 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,8 +35,16 @@ import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.RotTrlTransform3d;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.jni.CombinedRuntimeLoader;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionTargetSim;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation3d;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.networktables.NetworkTableInstance;
 
 public class OpenCVTest {
     private static final double kTrlDelta = 0.005;
@@ -102,7 +102,7 @@ public class OpenCVTest {
         var rvec = OpenCVHelp.rotationToRvec(rot);
         var result = OpenCVHelp.rvecToRotation(rvec);
         rvec.release();
-        var diff = result.minus(rot);
+        var diff = result.relativeTo(rot);
         assertSame(new Rotation3d(), diff);
     }
 

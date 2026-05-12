@@ -21,8 +21,6 @@ import com.diozero.api.DeviceMode;
 import com.diozero.internal.spi.NativeDeviceFactoryInterface;
 import com.diozero.sbc.BoardPinInfo;
 import com.diozero.sbc.DeviceFactoryHelper;
-import edu.wpi.first.networktables.IntegerPublisher;
-import edu.wpi.first.networktables.IntegerSubscriber;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -45,6 +43,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.vision.pipeline.FrameRecorder.RecordingStrategy;
 import org.photonvision.vision.processes.VisionModule;
+import org.wpilib.networktables.IntegerPublisher;
+import org.wpilib.networktables.IntegerSubscriber;
 
 public class HardwareManager {
     private static HardwareManager instance;

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.Pair;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.core.Point;
@@ -32,6 +31,7 @@ import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.math.util.Pair;
 
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
@@ -101,11 +101,7 @@ public class ColoredShapePipeline
 
         sortContoursPipe.setParams(
                 new SortContoursPipe.SortContoursParams(
-                        settings.contourSortMode,
-                        settings.outputShowMultipleTargets
-                                ? MAX_MULTI_TARGET_RESULTS // TODO don't hardcode?
-                                : 1,
-                        frameStaticProperties));
+                        settings.contourSortMode, settings.outputMaximumTargets, frameStaticProperties));
 
         collect2dTargetsPipe.setParams(
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
@@ -131,7 +127,7 @@ public class ColoredShapePipeline
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
                         settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
+                        settings.outputMaximumTargets,
                         settings.streamingFrameDivisor);
         draw2DTargetsParams.showShape = true;
         draw2DTargetsParams.showMaximumBox = false;

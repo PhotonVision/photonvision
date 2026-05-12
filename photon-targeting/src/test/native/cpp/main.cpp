@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <hal/HAL.h>
+#include <wpi/hal/HAL.h>
 
 #include "gtest/gtest.h"
 

@@ -17,9 +17,6 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.ProtobufPublisher;
 import java.io.IOException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
@@ -37,6 +34,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.ProtobufPublisher;
+import org.wpilib.vision.camera.CameraServerJNI;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.PhysicalProcessor;
@@ -449,7 +449,7 @@ public class SystemMonitor {
     /**
      * Returns the total GPU memory in MiB.
      *
-     * @return The total GPU memory in MiB, or -1.0 if not avaialable on this platform.
+     * @return The total GPU memory in MiB, or -1.0 if not available on this platform.
      */
     public double getGpuMem() {
         return -1.0;

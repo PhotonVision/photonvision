@@ -23,7 +23,7 @@ import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPipelineMetadata> {
     // Image capture and NT publish timestamp, in microseconds
-    // The timebase is nt::Now on the time sync server
+    // The timebase is wpi::nt::Now on the time sync server
     public long captureTimestampMicros;
     public long publishTimestampMicros;
 

@@ -17,11 +17,6 @@
 
 package org.photonvision.vision.frame.consumer;
 
-import edu.wpi.first.networktables.IntegerEntry;
-import edu.wpi.first.networktables.IntegerSubscriber;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.StringSubscriber;
-import edu.wpi.first.wpilibj.DriverStation.MatchType;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -34,6 +29,11 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.StaticFrames;
 import org.photonvision.vision.opencv.CVMat;
+import org.wpilib.driverstation.DriverStation.MatchType;
+import org.wpilib.networktables.IntegerEntry;
+import org.wpilib.networktables.IntegerSubscriber;
+import org.wpilib.networktables.NetworkTable;
+import org.wpilib.networktables.StringSubscriber;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private final Logger logger = new Logger(FileSaveFrameConsumer.class, LogGroup.General);

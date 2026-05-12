@@ -14,11 +14,13 @@ import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
 import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInfoCard.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
+import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
 
 const theme = useTheme();
+const MM_PER_INCH = 25.4;
 
 const settingsValid = ref(true);
 
@@ -27,7 +29,7 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
   if (useCameraSettingsStore().currentCameraSettings.validVideoFormats.length === 0) return uniqueResolutions;
   useCameraSettingsStore().currentCameraSettings.validVideoFormats.forEach((format) => {
     const index = uniqueResolutions.findIndex((v) => resolutionsAreEqual(v.resolution, format.resolution));
-    const contains = index != -1;
+    const contains = index !== -1;
     let skip = false;
     if (contains && format.fps > uniqueResolutions[index].fps) {
       uniqueResolutions.splice(index, 1);
@@ -37,6 +39,11 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
 
     if (!skip) {
       const calib = useCameraSettingsStore().getCalibrationCoeffs(format.resolution);
+
+      // minPixelCount is the multiplied area of a 640x480 (the minimum for proper calibration) resolution
+      const minPixelCount = 640 * 480;
+      const resArea = format.resolution.width * format.resolution.height;
+
       if (calib !== undefined) {
         // Mean overall reprojection error
         // Calculated as average of each observation's mean error
@@ -59,7 +66,10 @@ const getUniqueVideoFormatsByResolution = (): VideoFormat[] => {
           ) *
           (180 / Math.PI);
       }
-      uniqueResolutions.push(format);
+
+      if (resArea >= minPixelCount) {
+        uniqueResolutions.push(format);
+      }
     }
   });
   uniqueResolutions.sort(
@@ -80,18 +90,26 @@ const calibrationDivisors = computed(() =>
   })
 );
 
-const uniqueVideoResolutionString = ref("");
+const uniqueVideoResolutionIndex = ref(getUniqueVideoResolutionStrings()?.[0]?.value);
 
 // Use a watchEffect so the value is populated/reacts when the stores become available or update.
 // This avoids trying to index into an array that may be empty during page reload.
 watchEffect(() => {
-  const currentIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
-  useStateStore().calibrationData.videoFormatIndex = currentIndex;
   const names = useCameraSettingsStore().currentCameraSettings.validVideoFormats.map((f) =>
     getResolutionString(f.resolution)
   );
-  uniqueVideoResolutionString.value = names[currentIndex] ?? names[0] ?? "";
+  const currentFormatIndex = useCameraSettingsStore().currentVideoFormat.index ?? 0;
+  // Checks if the current resolution is present in the list of valid formats, if not defaults to the last index (which is usually the highest resolution)
+  const currentIndex =
+    getUniqueVideoResolutionStrings()
+      .map((x) => x.name)
+      .find((n) => n === names[currentFormatIndex]) !== undefined
+      ? currentFormatIndex
+      : names.length - 1;
+  useStateStore().calibrationData.videoFormatIndex = currentIndex;
+  uniqueVideoResolutionIndex.value = currentIndex;
 });
+const dimensionUnit = ref<"in" | "mm">("in");
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -100,6 +118,28 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
+
+const convertInchesToDisplay = (valueInInches: number) =>
+  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
+
+const convertDisplayToInches = (displayValue: number) =>
+  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
+
+const squareSize = computed({
+  get: () => convertInchesToDisplay(squareSizeIn.value),
+  set(value) {
+    squareSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const markerSize = computed({
+  get: () => convertInchesToDisplay(markerSizeIn.value),
+  set(value) {
+    markerSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
 
 // Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
 const tooManyPoints = computed(
@@ -131,7 +171,7 @@ const downloadCalibBoard = async () => {
           const yPos = chessboardStartY + squareY * squareSizeIn.value;
 
           // Only draw the odd squares to create the chessboard pattern
-          if (squareY % 2 != squareX % 2) {
+          if (squareY % 2 !== squareX % 2) {
             doc.rect(xPos, yPos, squareSizeIn.value, squareSizeIn.value, "F");
           }
         }
@@ -175,7 +215,7 @@ const downloadCalibBoard = async () => {
 };
 
 const isCalibrating = computed(
-  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d
+  () => useCameraSettingsStore().currentCameraSettings.currentPipelineIndex === WebsocketPipelineType.Calib3d.valueOf()
 );
 
 const startCalibration = () => {
@@ -243,7 +283,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
     <v-card class="mb-3 rounded-12" color="surface" dark>
       <v-card-title>Camera Calibration</v-card-title>
       <v-card-text v-if="!isCalibrating" class="pb-0">
-        <v-card-subtitle class="pa-0 pb-3 text-white">Current Calibrations</v-card-subtitle>
+        <div class="pb-3">
+          <tooltipped-label
+            label="Curent Calibrations"
+            icon="mdi-information"
+            location="top"
+            tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
+          />
+        </div>
         <v-table fixed-header height="100%" density="compact">
           <thead>
             <tr>
@@ -282,40 +329,28 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
       </v-card-text>
       <v-card-text class="pt-0">
         <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
-          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-3 text-white"
+          <v-card-subtitle v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100"
             >Configure New Calibration</v-card-subtitle
           >
-          <v-form ref="form" v-model="settingsValid">
-            <v-alert
-              closable
-              density="compact"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
-              :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
-              :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
-              :text="
-                useSettingsStore().general.mrCalWorking
-                  ? 'Mrcal was successfully loaded and will be used!'
-                  : 'MrCal failed to load, check journalctl logs for details.'
-              "
-            />
+          <v-form v-model="settingsValid">
             <pv-select
-              v-model="uniqueVideoResolutionString"
+              v-model="uniqueVideoResolutionIndex"
               label="Resolution"
               :select-cols="8"
               :disabled="isCalibrating"
               tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
               :items="getUniqueVideoResolutionStrings()"
-              @update:model-value="
-                useStateStore().calibrationData.videoFormatIndex =
-                  getUniqueVideoResolutionStrings().find((v) => v.value === $event)?.value || 0
-              "
+              @update:model-value="(value) => (useStateStore().calibrationData.videoFormatIndex = value)"
             />
             <pv-select
               v-model="boardType"
               label="Board Type"
               tooltip="Calibration board pattern to use"
               :select-cols="8"
-              :items="['Chessboard', 'ChArUco']"
+              :items="[
+                { value: CalibrationBoardTypes.Charuco, name: 'ChArUco' },
+                { value: CalibrationBoardTypes.Chessboard, name: 'Chessboard' }
+              ]"
               :disabled="isCalibrating"
             />
             <v-alert
@@ -345,25 +380,43 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Tag Family"
               tooltip="Dictionary of ArUco markers on the ChArUco board"
               :select-cols="8"
-              :items="['Dict_4X4_1000', 'Dict_5X5_1000', 'Dict_6X6_1000', 'Dict_7X7_1000']"
+              :items="[
+                { value: CalibrationTagFamilies.Dict_4X4_1000, name: 'Dict_4X4_1000' },
+                { value: CalibrationTagFamilies.Dict_5X5_1000, name: 'Dict_5X5_1000' },
+                { value: CalibrationTagFamilies.Dict_6X6_1000, name: 'Dict_6X6_1000' },
+                { value: CalibrationTagFamilies.Dict_7X7_1000, name: 'Dict_7X7_1000' }
+              ]"
+              :disabled="isCalibrating"
+            />
+            <pv-select
+              v-model="dimensionUnit"
+              label="Dimension Unit"
+              tooltip="Units used for pattern spacing and marker size inputs"
+              :select-cols="8"
+              :items="[
+                { value: 'in', name: 'Inches' },
+                { value: 'mm', name: 'Millimeters' }
+              ]"
               :disabled="isCalibrating"
             />
             <pv-number-input
-              v-model="squareSizeIn"
-              label="Pattern Spacing (in)"
-              tooltip="Spacing between pattern features in inches"
+              v-model="squareSize"
+              :label="`Pattern Spacing (${dimensionUnit})`"
+              :tooltip="`Spacing between pattern features in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}`"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="4"
+              :step="dimensionStep"
             />
             <pv-number-input
               v-if="boardType === CalibrationBoardTypes.Charuco"
-              v-model="markerSizeIn"
-              label="Marker Size (in)"
-              tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
+              v-model="markerSize"
+              :label="`Marker Size (${dimensionUnit})`"
+              :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="4"
+              :step="dimensionStep"
             />
             <pv-number-input
               v-model="patternWidth"
@@ -470,9 +523,22 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             "
           />
         </div>
-        <div v-if="isCalibrating" class="d-flex justify-center align-center pt-10px pb-5">
+        <v-alert
+          closable
+          density="compact"
+          class="mb-5"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
+          :color="useSettingsStore().general.mrCalWorking ? 'buttonPassive' : 'error'"
+          :icon="useSettingsStore().general.mrCalWorking ? 'mdi-check' : 'mdi-close'"
+          :text="
+            useSettingsStore().general.mrCalWorking
+              ? 'Mrcal was successfully loaded and will be used!'
+              : 'MrCal failed to load, check journalctl logs for details.'
+          "
+        />
+        <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
           <v-chip
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+            :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
             label
             :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'"
           >
@@ -485,7 +551,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             color="buttonPassive"
             size="small"
             block
-            :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+            :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
             :disabled="!settingsValid"
             @click="downloadCalibBoard"
           >
@@ -500,7 +566,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           density="compact"
           text="Too many corners. Finish calibration now!"
           icon="mdi-alert-circle-outline"
-          :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'tonal'"
+          :variant="theme.global.current.value.dark ? 'tonal' : 'elevated'"
         />
         <div class="d-flex pt-5">
           <v-col cols="6" class="pa-0 pr-2">
@@ -508,7 +574,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               size="small"
               block
               color="buttonActive"
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               :disabled="!settingsValid || tooManyPoints"
               @click="isCalibrating ? useCameraSettingsStore().takeCalibrationSnapshot() : startCalibration()"
             >
@@ -522,7 +588,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             <v-btn
               size="small"
               block
-              :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+              :variant="theme.global.current.value.dark ? 'outlined' : 'elevated'"
               :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonActive' : 'error'"
               :disabled="!isCalibrating || !settingsValid"
               @click="endCalibration"
