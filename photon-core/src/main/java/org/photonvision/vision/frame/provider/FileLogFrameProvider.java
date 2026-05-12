@@ -235,8 +235,12 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     @Override
     public void setRecording(boolean shouldRecord) {
-        throw new UnsupportedOperationException(
-                "FileLogFrameProvider is a replay source and does not support recording");
+        // Must NOT throw — NTDataPublisher routes recordingRequest writes through
+        // FrameProvider::setRecording on the NT listener thread, with no try/catch around
+        // the consumer. An unchecked exception here propagates into NT4's listener pool.
+        if (shouldRecord) {
+            logger.warn("Ignoring setRecording(true): file-log replay is read-only.");
+        }
     }
 
     @Override

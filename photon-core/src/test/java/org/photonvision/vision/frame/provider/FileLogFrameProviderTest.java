@@ -207,10 +207,15 @@ class FileLogFrameProviderTest {
     }
 
     @Test
-    void setRecordingThrows() throws IOException {
+    void setRecordingIsNoOp() throws IOException {
+        // setRecording is invoked by the NT listener thread (NTDataPublisher routes
+        // recordingRequest writes through FrameProvider::setRecording with no try/catch).
+        // Replay sources must not throw — they silently ignore the request and stay false.
         FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
         try {
-            assertThrows(UnsupportedOperationException.class, () -> provider.setRecording(true));
+            provider.setRecording(true);
+            assertFalse(provider.getRecording());
+            provider.setRecording(false);
             assertFalse(provider.getRecording());
         } finally {
             provider.release();
