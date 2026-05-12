@@ -207,7 +207,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                 return;
             }
 
-            if (getRecording()) {
+            if (frameRecorder != null && frameRecorder.isRecording()) {
                 logger.warn("Frame recorder is already recording!");
                 return;
             }
