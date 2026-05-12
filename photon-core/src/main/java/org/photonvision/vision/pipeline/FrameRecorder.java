@@ -153,11 +153,11 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Record a frame. This is non-blocking - the frame takes the CV mat passed in, and does not clone
-     * it. DO NOT pass in a mat until you're done with it. If the queue is full, the oldest frame is
-     * dropped (this should rarely happen).
+     * Record a frame. Non-blocking: clones the input Mat and queues the clone, so the caller retains
+     * ownership of the passed CVMat and is responsible for releasing it. If the queue is full, the
+     * new frame is dropped (existing queued frames are kept) and the clone is released internally.
      *
-     * @param cvmat The frame to record
+     * @param cvmat The frame to record. Not retained or released by this method.
      * @return true if frame was queued, false if recording is not active, queue is full, or we've run
      *     out of disk space.
      */
@@ -180,12 +180,14 @@ public class FrameRecorder implements Releasable {
             }
         }
 
-        // Try to offer to queue; if full, drop frame (non-blocking)
-        boolean added = frameQueue.offer(new RecordFrame(cvmat.getMat()));
+        // Clone so the caller's Mat is independent of ours: the pipeline downstream will release
+        // the original after processing, and the writer thread will release this clone after write.
+        Mat clone = cvmat.getMat().clone();
+        boolean added = frameQueue.offer(new RecordFrame(clone));
 
         if (!added) {
-            // Queue full, release the passed-in mat
-            cvmat.release();
+            // Queue full; release the clone we made (not the caller's Mat).
+            clone.release();
         }
 
         frameCounter++;
