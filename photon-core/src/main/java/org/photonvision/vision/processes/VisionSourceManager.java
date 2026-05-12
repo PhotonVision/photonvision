@@ -42,6 +42,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.FileLogVisionSource;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
@@ -504,12 +505,7 @@ public class VisionSourceManager {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
-                    case FileLogCamera ->
-                            // Stub. Real construction lands in a later commit alongside
-                            // FileLogVisionSource + FileLogFrameProvider. Keeps the sealed-type
-                            // switch exhaustive without forward-referencing those classes.
-                            throw new UnsupportedOperationException(
-                                    "FileLog replay source not yet implemented");
+                    case FileLogCamera -> new FileLogVisionSource(configuration);
                 };
 
         if (source.getFrameProvider() == null) {

@@ -226,6 +226,15 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
     }
 
+    /**
+     * Width / height / FOV / calibration of frames this provider will emit. Known at
+     * construction time from the mp4 header; exposed so the surrounding VisionSource can
+     * wire video-mode metadata into its settables without consuming a frame.
+     */
+    public FrameStaticProperties getStaticProperties() {
+        return properties;
+    }
+
     private void markExhausted(String reason) {
         if (exhausted.compareAndSet(false, true)) {
             logger.info("Replay source exhausted: " + reason);
