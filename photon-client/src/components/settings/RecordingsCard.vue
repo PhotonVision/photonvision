@@ -42,14 +42,14 @@ const nukeRecordings = () => {
 const downloadIndividualRecording = (camera: any) => {
   const recording = selectedRecordings.value[camera.uniqueName];
   const link = document.createElement("a");
-  link.href = `http://${address}/api/recordings/exportIndividual?recording=${recording}&camera=${camera.uniqueName}`;
+  link.href = `http://${address}/api/recordings/exportIndividual?recording=${encodeURIComponent(recording ?? "")}&camera=${encodeURIComponent(camera.uniqueName)}`;
   link.download = `${camera.nickname}_${recording}_recording.zip`;
   link.click();
 };
 
 const downloadCameraRecordings = (camera: any) => {
   const link = document.createElement("a");
-  link.href = `http://${address}/api/recordings/exportCamera?camera=${camera.uniqueName}`;
+  link.href = `http://${address}/api/recordings/exportCamera?camera=${encodeURIComponent(camera.uniqueName)}`;
   link.download = `${camera.nickname}_recordings.zip`;
   link.click();
 };
