@@ -11,8 +11,11 @@ const theme = useTheme();
 
 const address = inject<string>("backendHost");
 
-// Initialize selected recordings for each camera
-const selectedRecordings = ref<Record<string, string | undefined>>({});
+// Initialize selected recordings for each camera. The computed below seeds an entry for
+// every camera with at least one recording before the table renders, so the lookup at v-model
+// time is always a valid string — declaring undefined-in-value just produced a v-model type
+// mismatch against pv-select's `T extends string | number`.
+const selectedRecordings = ref<Record<string, string>>({});
 
 const camerasWithRecordings = computed(() => {
   const cameras = useCameraSettingsStore().camerasWithRecordings;
