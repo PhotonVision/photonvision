@@ -75,7 +75,7 @@ public class FrameRecorder implements Releasable {
     // Per-frame metadata sidecar, one JSON object per line. Encoder-agnostic so it survives
     // the H.264 switch — filenames no longer carry per-frame info, sidecar is the only
     // source of seq + capture timing for replay.
-    private BufferedWriter metadataWriter;
+    private final BufferedWriter metadataWriter;
 
     private static class RecordFrame {
         final Mat mat;
@@ -140,9 +140,9 @@ public class FrameRecorder implements Releasable {
                     "Failed to write recording strategy file to " + outputPath + ": " + e.getMessage());
         }
 
-        // Open the metadata sidecar. Best-effort: if this fails we still record frames, just
-        // without sidecar metadata (the filenames already contain seq + capture time as a
-        // fallback for the snapshot strategy).
+        // Open the metadata sidecar. Required for replay — fatal at construction so we don't
+        // produce a recording.mp4 missing the seq + capture_ns needed to feed frames back
+        // through the pipeline.
         try {
             this.metadataWriter =
                     java.nio.file.Files.newBufferedWriter(
@@ -150,13 +150,9 @@ public class FrameRecorder implements Releasable {
                             java.nio.charset.StandardCharsets.UTF_8,
                             java.nio.file.StandardOpenOption.CREATE,
                             java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (Exception e) {
-            logger.warn(
-                    "Failed to open metadata sidecar at "
-                            + outputPath
-                            + "/metadata.jsonl: "
-                            + e.getMessage());
-            this.metadataWriter = null;
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Failed to open metadata sidecar at " + outputPath + "/metadata.jsonl", e);
         }
 
         this.frameQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
@@ -359,7 +355,6 @@ public class FrameRecorder implements Releasable {
      * trivial and this is on the writer thread's hot path.
      */
     private void writeMetadataLine(long sequenceId, long captureTimestampNs) {
-        if (metadataWriter == null) return;
         try {
             metadataWriter.write(
                     "{\"seq\":" + sequenceId + ",\"capture_ns\":" + captureTimestampNs + "}\n");
@@ -406,13 +401,10 @@ public class FrameRecorder implements Releasable {
             }
         }
 
-        if (metadataWriter != null) {
-            try {
-                metadataWriter.close();
-            } catch (java.io.IOException e) {
-                logger.warn("Failed to close metadata sidecar: " + e.getMessage());
-            }
-            metadataWriter = null;
+        try {
+            metadataWriter.close();
+        } catch (java.io.IOException e) {
+            logger.warn("Failed to close metadata sidecar: " + e.getMessage());
         }
 
         // Close ffmpeg's stdin to signal EOF, wait for it to finalize the .mp4 (write the
