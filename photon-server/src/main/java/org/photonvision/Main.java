@@ -296,9 +296,7 @@ public class Main {
             logger.warn("Platform does not support Rubik based machine learning!");
         }
 
-        if (Platform.isWindows() || Platform.isLinux()) {
-            tryLoadJNI(JNITypes.MRCAL);
-        }
+        tryLoadJNI(JNITypes.MRCAL);
 
         CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
