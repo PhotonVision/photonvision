@@ -6,6 +6,7 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import type { UiCameraConfiguration } from "@/types/SettingTypes";
 
 const theme = useTheme();
 
@@ -30,8 +31,8 @@ const camerasWithRecordings = computed(() => {
 
 const confirmDeleteDialog = ref({ show: false, recordings: [] as string[], cameraUniqueName: "" });
 
-const deleteRecordings = async (recordingsToDelete: string[], cameraUniqueName: string) => {
-  axiosPost("/recordings/delete", "delete " + recordingsToDelete.join(", "), {
+const deleteRecordings = (recordingsToDelete: string[], cameraUniqueName: string) => {
+  void axiosPost("/recordings/delete", "delete " + recordingsToDelete.join(", "), {
     recordings: recordingsToDelete,
     cameraUniqueName: cameraUniqueName
   });
@@ -39,10 +40,10 @@ const deleteRecordings = async (recordingsToDelete: string[], cameraUniqueName: 
 
 const showNukeDialog = ref(false);
 const nukeRecordings = () => {
-  axiosPost("/recordings/nuke", "clear and reset all recordings");
+  void axiosPost("/recordings/nuke", "clear and reset all recordings");
 };
 
-const downloadIndividualRecording = (camera: any) => {
+const downloadIndividualRecording = (camera: UiCameraConfiguration) => {
   const recording = selectedRecordings.value[camera.uniqueName];
   const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/exportIndividual?recording=${encodeURIComponent(recording ?? "")}&camera=${encodeURIComponent(camera.uniqueName)}`;
@@ -50,7 +51,7 @@ const downloadIndividualRecording = (camera: any) => {
   link.click();
 };
 
-const downloadCameraRecordings = (camera: any) => {
+const downloadCameraRecordings = (camera: UiCameraConfiguration) => {
   const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/exportCamera?camera=${encodeURIComponent(camera.uniqueName)}`;
   link.download = `${camera.nickname}_recordings.zip`;
@@ -191,7 +192,7 @@ const downloadAllRecordings = () => {
   <pv-delete-modal
     v-model="showNukeDialog"
     title="Clear All Recordings"
-    :description="'This will permanently delete all recordings from all cameras. This action cannot be undone.'"
+    description="This will permanently delete all recordings from all cameras. This action cannot be undone."
     delete-text="Delete Recordings"
     :backup="() => downloadAllRecordings()"
     @confirm="nukeRecordings"
