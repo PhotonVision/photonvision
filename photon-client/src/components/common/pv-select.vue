@@ -41,6 +41,10 @@ const items = computed<SelectItem<T>[]>(() => {
 
   return props.items.map((item) => ({ name: item, value: item }));
 });
+
+// Helper kept in script so the generic `<T>` never appears inside the template — Prettier's
+// HTML parser misreads `<T>` as a tag and refuses to format the file.
+const chipFor = (raw: unknown) => (raw as SelectItem<T>).chip;
 </script>
 
 <template>
@@ -63,12 +67,12 @@ const items = computed<SelectItem<T>[]>(() => {
         <template #selection="{ item }">
           <span>{{ item.raw.name }}</span>
           <v-chip
-            v-if="(item.raw as SelectItem<T>).chip"
+            v-if="chipFor(item.raw)"
             class="ml-2"
             size="x-small"
-            :color="(item.raw as SelectItem<T>).chip!.color ?? 'info'"
+            :color="chipFor(item.raw)?.color ?? 'info'"
           >
-            {{ (item.raw as SelectItem<T>).chip!.text }}
+            {{ chipFor(item.raw)?.text }}
           </v-chip>
         </template>
       </v-select>
