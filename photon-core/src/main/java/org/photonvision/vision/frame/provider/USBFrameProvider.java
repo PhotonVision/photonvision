@@ -25,6 +25,7 @@ import org.photonvision.common.configuration.PathManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.PathSafety;
 import org.photonvision.jni.CscoreExtras;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.FrameRecorder;
@@ -186,12 +187,19 @@ public class USBFrameProvider extends CpuImageProcessor {
                                 .format(java.time.LocalDateTime.now());
             }
 
-            Path outputPath =
-                    ConfigManager.getInstance()
-                            .getRecordingsDirectory()
-                            .toPath()
-                            .resolve(camPath)
-                            .resolve(recordingPath);
+            // matchData is FMS-supplied and reaches us via an unauthenticated NT topic; sanitize
+            // before letting it become a path segment.
+            Path outputPath;
+            try {
+                outputPath =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                camPath,
+                                recordingPath);
+            } catch (SecurityException e) {
+                logger.error("Refusing to start recording at unsafe path: " + e.getMessage());
+                return;
+            }
 
             if (!outputPath.toFile().exists()) {
                 outputPath.toFile().mkdirs();
