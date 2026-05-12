@@ -203,10 +203,6 @@ public class USBFrameProvider extends CpuImageProcessor {
                 return;
             }
 
-            if (!outputPath.toFile().exists()) {
-                outputPath.toFile().mkdirs();
-            }
-
             if (getRecording()) {
                 logger.warn("Frame recorder is already recording!");
                 return;
