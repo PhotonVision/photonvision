@@ -26,8 +26,8 @@ public final class PathSafety {
     private PathSafety() {}
 
     /**
-     * Resolve user-supplied segments inside a trusted root, rejecting any input that would escape
-     * the root (e.g. {@code ".."}, absolute paths, embedded {@code "../"} sequences) or that the
+     * Resolve user-supplied segments inside a trusted root, rejecting any input that would escape the
+     * root (e.g. {@code ".."}, absolute paths, embedded {@code "../"} sequences) or that the
      * underlying filesystem refuses to parse.
      *
      * @param root the trusted root directory. The result is guaranteed to be inside this directory.

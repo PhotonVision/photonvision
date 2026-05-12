@@ -171,7 +171,8 @@ public class LibcameraGpuFrameProvider extends FrameProvider {
         // FrameProvider::setRecording on the NT listener thread, with no try/catch around
         // the consumer. An unchecked exception here propagates into NT4's listener pool.
         if (shouldRecord) {
-            logger.warn("Ignoring setRecording(true): LibcameraGpuFrameProvider does not support recording.");
+            logger.warn(
+                    "Ignoring setRecording(true): LibcameraGpuFrameProvider does not support recording.");
         }
     }
 

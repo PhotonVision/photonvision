@@ -339,12 +339,11 @@ public class VisionSourceManager {
     }
 
     /**
-     * Walks {@code <recordings>/<camera>/<recording>/} and emits one
-     * {@link PVCameraInfo.PVFileLogCameraInfo} per leaf that {@link #isCompleteRecording}
-     * accepts.
+     * Walks {@code <recordings>/<camera>/<recording>/} and emits one {@link
+     * PVCameraInfo.PVFileLogCameraInfo} per leaf that {@link #isCompleteRecording} accepts.
      *
-     * @param warn sink for non-fatal I/O failures (missing root is silent; listing failure on
-     *     a present dir is warned).
+     * @param warn sink for non-fatal I/O failures (missing root is silent; listing failure on a
+     *     present dir is warned).
      */
     static List<PVCameraInfo> enumerateRecordedSources(
             Path recordingsRoot, java.util.function.Consumer<String> warn) {
@@ -357,7 +356,8 @@ public class VisionSourceManager {
                     .filter(Files::isDirectory)
                     .forEach(camDir -> collectRecordingsUnder(camDir, recordingsRoot, result, warn));
         } catch (IOException e) {
-            warn.accept("Failed to enumerate recordings directory " + recordingsRoot + ": " + e.getMessage());
+            warn.accept(
+                    "Failed to enumerate recordings directory " + recordingsRoot + ": " + e.getMessage());
         }
         return result;
     }
@@ -374,8 +374,7 @@ public class VisionSourceManager {
                     .forEach(
                             recDir -> {
                                 // "<camera>/<recording>" for the UI; absolute path doubles as uniquePath.
-                                String relative =
-                                        recordingsRoot.relativize(recDir).toString().replace('\\', '/');
+                                String relative = recordingsRoot.relativize(recDir).toString().replace('\\', '/');
                                 out.add(PVCameraInfo.fromFileLogInfo(recDir.toString(), relative));
                             });
         } catch (IOException e) {

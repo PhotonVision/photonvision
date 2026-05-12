@@ -40,9 +40,9 @@ import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.frame.provider.CpuImageProcessor.CapturedFrame;
 
 /**
- * Synthesises a 3-frame image-sequence fixture via {@link Imgcodecs#imwrite} (the same encoder
- * path {@code FrameRecorder} uses) and walks it through {@link FileLogFrameProvider}. Needs
- * OpenCV but not {@code photontargetingJNI}, so runs on any platform.
+ * Synthesises a 3-frame image-sequence fixture via {@link Imgcodecs#imwrite} (the same encoder path
+ * {@code FrameRecorder} uses) and walks it through {@link FileLogFrameProvider}. Needs OpenCV but
+ * not {@code photontargetingJNI}, so runs on any platform.
  */
 class FileLogFrameProviderTest {
     private static final int WIDTH = 64;
@@ -71,9 +71,7 @@ class FileLogFrameProviderTest {
             Mat frame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3, new Scalar(i * 64 % 255, 64, 128));
             try {
                 Path out = FrameLogFormat.framePath(framesDir, i);
-                assertTrue(
-                        Imgcodecs.imwrite(out.toString(), frame),
-                        "Imgcodecs.imwrite failed for " + out);
+                assertTrue(Imgcodecs.imwrite(out.toString(), frame), "Imgcodecs.imwrite failed for " + out);
             } finally {
                 frame.release();
             }
@@ -103,18 +101,11 @@ class FileLogFrameProviderTest {
                 assertFalse(
                         captured.colorImage.getMat().empty(),
                         "frame " + i + ": Mat was empty (decoder failed?)");
+                assertEquals(WIDTH, captured.colorImage.getMat().cols(), "frame " + i + ": width mismatch");
                 assertEquals(
-                        WIDTH,
-                        captured.colorImage.getMat().cols(),
-                        "frame " + i + ": width mismatch");
+                        HEIGHT, captured.colorImage.getMat().rows(), "frame " + i + ": height mismatch");
                 assertEquals(
-                        HEIGHT,
-                        captured.colorImage.getMat().rows(),
-                        "frame " + i + ": height mismatch");
-                assertEquals(
-                        3,
-                        captured.colorImage.getMat().channels(),
-                        "frame " + i + ": expected 3-channel BGR");
+                        3, captured.colorImage.getMat().channels(), "frame " + i + ": expected 3-channel BGR");
                 assertEquals(
                         CAPTURE_NS[i],
                         captured.captureTimestamp,
@@ -240,8 +231,7 @@ class FileLogFrameProviderTest {
             var captured = provider.getInputMat();
             assertFalse(captured.colorImage.getMat().empty());
             assertTrue(
-                    provider.hasConnected(),
-                    "first getInputMat must flip the cameraPropertiesCached flag");
+                    provider.hasConnected(), "first getInputMat must flip the cameraPropertiesCached flag");
             captured.colorImage.release();
         } finally {
             provider.release();

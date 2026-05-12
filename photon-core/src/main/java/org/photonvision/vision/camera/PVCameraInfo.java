@@ -293,8 +293,8 @@ public sealed interface PVCameraInfo {
     @JsonTypeName("PVFileLogCameraInfo")
     public static final class PVFileLogCameraInfo implements PVCameraInfo {
         /**
-         * Filesystem path to the recording directory — the parent that contains {@code frames/}
-         * and {@code metadata.jsonl}, as written by {@code FrameRecorder}.
+         * Filesystem path to the recording directory — the parent that contains {@code frames/} and
+         * {@code metadata.jsonl}, as written by {@code FrameRecorder}.
          */
         public final String path;
 
@@ -348,13 +348,7 @@ public sealed interface PVCameraInfo {
 
         @Override
         public String toString() {
-            return "PVFileLogCameraInfo[type="
-                    + type()
-                    + ", name="
-                    + name
-                    + ", path='"
-                    + path
-                    + "']";
+            return "PVFileLogCameraInfo[type=" + type() + ", name=" + name + ", path='" + path + "']";
         }
     }
 

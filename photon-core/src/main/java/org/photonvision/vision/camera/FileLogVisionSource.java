@@ -26,10 +26,10 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 /**
- * VisionSource backed by a {@link FileLogFrameProvider} — replays a recording directory
- * (frames/ + metadata.jsonl) as if it were a live camera. Parallel to {@link
- * FileVisionSource}; kept separate because the lifecycles diverge (FileVisionSource loops a
- * single image, this one walks through a timed recording and exhausts).
+ * VisionSource backed by a {@link FileLogFrameProvider} — replays a recording directory (frames/ +
+ * metadata.jsonl) as if it were a live camera. Parallel to {@link FileVisionSource}; kept separate
+ * because the lifecycles diverge (FileVisionSource loops a single image, this one walks through a
+ * timed recording and exhausts).
  */
 public class FileLogVisionSource extends VisionSource {
     private final FileLogFrameProvider frameProvider;
@@ -39,8 +39,7 @@ public class FileLogVisionSource extends VisionSource {
         super(cameraConfiguration);
 
         try {
-            this.frameProvider =
-                    new FileLogFrameProvider(Path.of(cameraConfiguration.getDevicePath()));
+            this.frameProvider = new FileLogFrameProvider(Path.of(cameraConfiguration.getDevicePath()));
         } catch (IOException e) {
             // Wrap to match the unchecked-throw shape of the other VisionSource constructors.
             throw new RuntimeException(

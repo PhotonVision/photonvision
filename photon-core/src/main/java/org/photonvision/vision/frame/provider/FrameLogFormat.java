@@ -20,8 +20,8 @@ package org.photonvision.vision.frame.provider;
 import java.nio.file.Path;
 
 /**
- * Single source of truth for the on-disk frame log filename pattern shared by {@code
- * FrameRecorder} and {@code FileLogFrameProvider}. Zero-padded so lexical sort matches numeric.
+ * Single source of truth for the on-disk frame log filename pattern shared by {@code FrameRecorder}
+ * and {@code FileLogFrameProvider}. Zero-padded so lexical sort matches numeric.
  */
 public final class FrameLogFormat {
     private static final String FILENAME_FORMAT = "%06d.jpg";

@@ -39,9 +39,9 @@ import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 
 /**
- * Round-trips 60 synthetic frames through {@link FrameRecorder} and decodes each back with
- * {@link Imgcodecs} — the same decoder path {@code FileLogFrameProvider} uses on replay. Uses
- * the package-private DI ctor so it doesn't need {@code photontargetingJNI}.
+ * Round-trips 60 synthetic frames through {@link FrameRecorder} and decodes each back with {@link
+ * Imgcodecs} — the same decoder path {@code FileLogFrameProvider} uses on replay. Uses the
+ * package-private DI ctor so it doesn't need {@code photontargetingJNI}.
  */
 public class FrameRecorderIntegrationTest {
     private static final int W = 640;

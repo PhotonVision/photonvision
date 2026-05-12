@@ -33,9 +33,9 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Unit tests for {@link MetadataSidecarReader}. Pure JVM — no OpenCV, no JNI, runs anywhere.
  *
- * <p>The fixture format mirrors what {@code FrameRecorder.writeMetadataLine} writes:
- * {@code "{\"seq\":N,\"capture_ns\":T}\n"} — note the trailing newline on every line including
- * the last, so a sane file ends with an empty segment after the final {@code \n}.
+ * <p>The fixture format mirrors what {@code FrameRecorder.writeMetadataLine} writes: {@code
+ * "{\"seq\":N,\"capture_ns\":T}\n"} — note the trailing newline on every line including the last,
+ * so a sane file ends with an empty segment after the final {@code \n}.
  */
 class MetadataSidecarReaderTest {
     @TempDir Path tempDir;
@@ -48,10 +48,7 @@ class MetadataSidecarReaderTest {
 
     @Test
     void readsKnownFields() throws IOException {
-        Path p =
-                write(
-                        "{\"seq\":0,\"capture_ns\":1000}\n"
-                                + "{\"seq\":1,\"capture_ns\":1033333}\n");
+        Path p = write("{\"seq\":0,\"capture_ns\":1000}\n" + "{\"seq\":1,\"capture_ns\":1033333}\n");
         try (var reader = new MetadataSidecarReader(p)) {
             var first = reader.readNext();
             assertTrue(first.isPresent());
@@ -147,10 +144,7 @@ class MetadataSidecarReaderTest {
         // Simulates writer crash mid-line. The lockstep-with-frames pattern in the provider stops
         // before we ever read this line; if a caller does reach it, fail loudly with a line
         // number so they can diagnose.
-        Path p =
-                write(
-                        "{\"seq\":0,\"capture_ns\":1000}\n"
-                                + "{\"seq\":1,\"capture_n");
+        Path p = write("{\"seq\":0,\"capture_ns\":1000}\n" + "{\"seq\":1,\"capture_n");
         try (var reader = new MetadataSidecarReader(p)) {
             assertTrue(reader.readNext().isPresent());
             IOException ex = assertThrows(IOException.class, reader::readNext);

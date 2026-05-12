@@ -1467,11 +1467,7 @@ public class RequestHandler {
                 // <a download> attribute, so the server filename is the one the user sees.
                 ctx.header(
                         "Content-Disposition",
-                        "attachment; filename=\""
-                                + cameraUniqueName
-                                + "_"
-                                + recordingName
-                                + ".zip\"");
+                        "attachment; filename=\"" + cameraUniqueName + "_" + recordingName + ".zip\"");
 
                 ctx.result(stream);
                 ctx.status(200);
@@ -1504,8 +1500,7 @@ public class RequestHandler {
             try {
                 cameraDir =
                         PathSafety.safeResolve(
-                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
-                                cameraUniqueName);
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(), cameraUniqueName);
             } catch (SecurityException e) {
                 ctx.status(400);
                 ctx.result("Invalid camera name");
@@ -1572,8 +1567,7 @@ public class RequestHandler {
             DeleteRecordingRequest request =
                     kObjectMapper.readValue(ctx.body(), DeleteRecordingRequest.class);
 
-            Path recordingsRoot =
-                    ConfigManager.getInstance().getRecordingsDirectory().toPath();
+            Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
             for (String recording : request.recordings) {
                 Path rec;
                 try {

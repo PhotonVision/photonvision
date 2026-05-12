@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -38,7 +37,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
-import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -48,20 +46,19 @@ import org.zeroturnaround.zip.ZipUtil;
  * size caps and codec dependencies (WPILib's Linux OpenCV ships no video backend); trade-off is
  * ~8-10× larger than H.264 (~1 GB/min at 1080p30).
  *
- * <p><strong>Trigger:</strong> the web UI's Recordings card and robot code (via
- * {@code PhotonCamera.setRecording(bool)}) both write the per-camera NT boolean
- * {@code /photonvision/<nickname>/recordingRequest}. {@code NTDataPublisher} subscribes and
- * drives {@link #startRecording} / {@link #stopRecording}.
+ * <p><strong>Trigger:</strong> the web UI's Recordings card and robot code (via {@code
+ * PhotonCamera.setRecording(bool)}) both write the per-camera NT boolean {@code
+ * /photonvision/<nickname>/recordingRequest}. {@code NTDataPublisher} subscribes and drives {@link
+ * #startRecording} / {@link #stopRecording}.
  *
  * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, written
  * verbatim; replay readers propagate it through {@code Frame.timestampNanos} unchanged.
  *
- * <p>Metadata is flushed before its paired frame, so under any process crash
- * {@code len(metadata.jsonl) >= frame_file_count(frames/)} — readers truncate jsonl to the
- * frame directory's count. Unknown JSON fields are ignored so the schema can grow without
- * breaking old readers. Power-loss tearing is accepted: per-frame fsync would blow the 33 ms
- * budget on SD-card-class storage, and FRC's end-of-match power-cut sacrifices ~1 s of frames
- * anyway.
+ * <p>Metadata is flushed before its paired frame, so under any process crash {@code
+ * len(metadata.jsonl) >= frame_file_count(frames/)} — readers truncate jsonl to the frame
+ * directory's count. Unknown JSON fields are ignored so the schema can grow without breaking old
+ * readers. Power-loss tearing is accepted: per-frame fsync would blow the 33 ms budget on
+ * SD-card-class storage, and FRC's end-of-match power-cut sacrifices ~1 s of frames anyway.
  */
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
@@ -183,8 +180,7 @@ public class FrameRecorder implements Releasable {
 
         // Start the writer thread
         switch (strat) {
-            case VIDEO ->
-                    this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
+            case VIDEO -> this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
             default -> throw new IllegalArgumentException("Unsupported Recording Strategy: " + strat);
         }
         this.writerThread.setDaemon(true);
@@ -211,8 +207,8 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Queue a frame for the writer thread. Clones the input Mat — caller retains ownership of
-     * {@code cvmat} and is responsible for releasing it.
+     * Queue a frame for the writer thread. Clones the input Mat — caller retains ownership of {@code
+     * cvmat} and is responsible for releasing it.
      *
      * @param captureTimestampNs source-machine capture time; preserved verbatim into the sidecar.
      * @return false if recording is off, shutting down, the queue is full, or disk is low.
@@ -286,8 +282,8 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Append one {@code {"seq":N,"capture_ns":T}} line, flushed per-line. Returns false on IO
-     * failure (after stopping recording so the invariant isn't broken).
+     * Append one {@code {"seq":N,"capture_ns":T}} line, flushed per-line. Returns false on IO failure
+     * (after stopping recording so the invariant isn't broken).
      */
     private boolean writeMetadataLine(long sequenceId, long captureTimestampNs) {
         try {
@@ -296,8 +292,7 @@ public class FrameRecorder implements Releasable {
             metadataWriter.flush();
             return true;
         } catch (java.io.IOException e) {
-            logger.error(
-                    "Failed to write metadata sidecar line; stopping recording: " + e.getMessage());
+            logger.error("Failed to write metadata sidecar line; stopping recording: " + e.getMessage());
             stopRecording();
             return false;
         }
@@ -348,10 +343,10 @@ public class FrameRecorder implements Releasable {
     /**
      * Export a recording.
      *
-     * <p>Image-sequence recordings are directories ({@code frames/*.jpg} + {@code metadata.jsonl}
-     * + {@code strat}). For download convenience we zip the whole recording into a single
-     * portable file. Users who want a watchable video can run any standard tool against the
-     * zipped frame directory (e.g. ffmpeg can build an mp4 from the JPEGs offline).
+     * <p>Image-sequence recordings are directories ({@code frames/*.jpg} + {@code metadata.jsonl} +
+     * {@code strat}). For download convenience we zip the whole recording into a single portable
+     * file. Users who want a watchable video can run any standard tool against the zipped frame
+     * directory (e.g. ffmpeg can build an mp4 from the JPEGs offline).
      *
      * @param recording Path to recording directory
      * @return Path to a unique temp file with the recording's contents zipped
@@ -360,16 +355,15 @@ public class FrameRecorder implements Releasable {
         if (!Files.isDirectory(recording)) {
             throw new IllegalStateException("Recording directory not found: " + recording);
         }
-        File zip =
-                Files.createTempFile(recording.getFileName().toString() + "_", ".zip").toFile();
+        File zip = Files.createTempFile(recording.getFileName().toString() + "_", ".zip").toFile();
         ZipUtil.pack(recording.toFile(), zip);
         return zip;
     }
 
     /**
-     * Export all recordings under a single camera as a zip. The zip preserves the
-     * {@code <recording>/{frames/*.jpg, metadata.jsonl, strat}} tree, so the user can browse
-     * recordings by name after unzipping.
+     * Export all recordings under a single camera as a zip. The zip preserves the {@code
+     * <recording>/{frames/*.jpg, metadata.jsonl, strat}} tree, so the user can browse recordings by
+     * name after unzipping.
      */
     public static File exportCamera(Path cameraRecordingsDir) throws Exception {
         if (!Files.isDirectory(cameraRecordingsDir)) {
@@ -394,9 +388,8 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Export every recording from every camera as a single zip. Preserves the
-     * {@code <camera>/<recording>/{frames/, metadata.jsonl, strat}} tree so cameras stay
-     * grouped.
+     * Export every recording from every camera as a single zip. Preserves the {@code
+     * <camera>/<recording>/{frames/, metadata.jsonl, strat}} tree so cameras stay grouped.
      */
     public static File exportAll() throws Exception {
         Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();

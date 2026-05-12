@@ -28,15 +28,15 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 /**
- * Streams {@code (seq, capture_ns)} pairs out of a {@code metadata.jsonl} sidecar written by
- * {@code FrameRecorder}.
+ * Streams {@code (seq, capture_ns)} pairs out of a {@code metadata.jsonl} sidecar written by {@code
+ * FrameRecorder}.
  *
  * <p>Schema invariants this reader relies on (mirroring the writer's contract):
  *
  * <ul>
  *   <li>One JSON object per line, e.g. {@code {"seq":N,"capture_ns":T}}.
- *   <li>Unknown fields are silently ignored — the schema is forward-compatible, so future
- *       additions (exposure, gain, calibration version) won't break old readers.
+ *   <li>Unknown fields are silently ignored — the schema is forward-compatible, so future additions
+ *       (exposure, gain, calibration version) won't break old readers.
  *   <li>The writer flushes the metadata line <em>before</em> writing its paired JPEG frame, so
  *       {@code line_count(jsonl) >= frame_count(frames/)} holds under any crash. Callers that
  *       consume from both in lockstep should stop pulling lines once the frame directory is
@@ -64,8 +64,8 @@ public class MetadataSidecarReader implements AutoCloseable {
      * Reads the next entry from the sidecar.
      *
      * @return the parsed entry, or {@link Optional#empty()} at end of file.
-     * @throws IOException on read failure, malformed JSON, or missing required fields. The
-     *     exception message includes the 1-based line number for diagnosis.
+     * @throws IOException on read failure, malformed JSON, or missing required fields. The exception
+     *     message includes the 1-based line number for diagnosis.
      */
     public Optional<Entry> readNext() throws IOException {
         String line = reader.readLine();
@@ -78,8 +78,7 @@ public class MetadataSidecarReader implements AutoCloseable {
         try {
             node = MAPPER.readTree(line);
         } catch (JsonProcessingException e) {
-            throw new IOException(
-                    "metadata.jsonl line " + lineNumber + " is not valid JSON: " + line, e);
+            throw new IOException("metadata.jsonl line " + lineNumber + " is not valid JSON: " + line, e);
         }
 
         JsonNode seqNode = node.get("seq");
@@ -90,10 +89,7 @@ public class MetadataSidecarReader implements AutoCloseable {
         }
         if (captureNode == null || !captureNode.canConvertToLong()) {
             throw new IOException(
-                    "metadata.jsonl line "
-                            + lineNumber
-                            + " missing or non-numeric 'capture_ns': "
-                            + line);
+                    "metadata.jsonl line " + lineNumber + " missing or non-numeric 'capture_ns': " + line);
         }
 
         return Optional.of(new Entry(seqNode.asLong(), captureNode.asLong()));

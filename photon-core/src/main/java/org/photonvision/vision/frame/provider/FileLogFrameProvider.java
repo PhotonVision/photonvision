@@ -32,39 +32,38 @@ import org.photonvision.vision.opencv.CVMat;
 
 /**
  * Replay-side counterpart to {@link org.photonvision.vision.pipeline.FrameRecorder}. Reads a
- * recording directory ({@code frames/<seq>.jpg} + {@code metadata.jsonl}) and emits
- * {@link CapturedFrame}s with their original source-machine capture timestamps so the rest
- * of the vision pipeline processes replayed frames identically to live ones.
+ * recording directory ({@code frames/<seq>.jpg} + {@code metadata.jsonl}) and emits {@link
+ * CapturedFrame}s with their original source-machine capture timestamps so the rest of the vision
+ * pipeline processes replayed frames identically to live ones.
  *
- * <p><strong>Timestamp contract:</strong> {@code capture_ns} is propagated verbatim through
- * {@link CapturedFrame#captureTimestamp} into {@code Frame.timestampNanos}. The value is
- * opaque source-machine time; consumers rebase to replay-machine time if they need to.
+ * <p><strong>Timestamp contract:</strong> {@code capture_ns} is propagated verbatim through {@link
+ * CapturedFrame#captureTimestamp} into {@code Frame.timestampNanos}. The value is opaque
+ * source-machine time; consumers rebase to replay-machine time if they need to.
  *
- * <p><strong>Calibration / FOV:</strong> recordings carry image data but not intrinsics. FOV
- * is 0 and {@code cameraCalibration} is {@code null} until the user imports one via
- * {@code Cameras → Calibration → Import}; pipelines that read {@code horizontalFocalLength}
- * produce nonsense until then.
+ * <p><strong>Calibration / FOV:</strong> recordings carry image data but not intrinsics. FOV is 0
+ * and {@code cameraCalibration} is {@code null} until the user imports one via {@code Cameras →
+ * Calibration → Import}; pipelines that read {@code horizontalFocalLength} produce nonsense until
+ * then.
  *
- * <p><strong>Pacing:</strong> {@link #getInputMat()} blocks the vision thread so wall-clock
- * spacing matches the recording's {@code capture_ns} deltas. Target-based via
- * {@link System#nanoTime} so a slow pipeline doesn't accumulate sleep debt.
+ * <p><strong>Pacing:</strong> {@link #getInputMat()} blocks the vision thread so wall-clock spacing
+ * matches the recording's {@code capture_ns} deltas. Target-based via {@link System#nanoTime} so a
+ * slow pipeline doesn't accumulate sleep debt.
  *
  * <p><strong>EOF:</strong> the shorter of {@code frames/} and {@code metadata.jsonl} ends the
  * linear pass; {@link #getInputMat} then parks the vision thread until interrupted (the
- * deactivation path). No further pipeline runs, no NT updates, no MJPEG frames pushed — the
- * browser holds the last delivered MJPEG part. {@link #isConnected} stays {@code true} so
- * the camera remains Active in the UI; to restart from frame 0 the user deactivates and
- * reactivates.
+ * deactivation path). No further pipeline runs, no NT updates, no MJPEG frames pushed — the browser
+ * holds the last delivered MJPEG part. {@link #isConnected} stays {@code true} so the camera
+ * remains Active in the UI; to restart from frame 0 the user deactivates and reactivates.
  *
- * <p><strong>Settings-during-EOF caveat:</strong> pipeline settings changes submitted while
- * the vision thread is parked do not apply or persist — settings-event processing runs at
- * the top of {@code VisionRunner}'s loop, which is blocked inside {@link #getInputMat}, and
- * queued events are dropped on interrupt. Change settings during the linear pass, or
- * deactivate first, change them, then reactivate.
+ * <p><strong>Settings-during-EOF caveat:</strong> pipeline settings changes submitted while the
+ * vision thread is parked do not apply or persist — settings-event processing runs at the top of
+ * {@code VisionRunner}'s loop, which is blocked inside {@link #getInputMat}, and queued events are
+ * dropped on interrupt. Change settings during the linear pass, or deactivate first, change them,
+ * then reactivate.
  *
- * <p><strong>Required structure:</strong> construction throws {@link IOException} if
- * {@code frames/000000.jpg} or {@code metadata.jsonl} is missing. Re-recording via
- * {@link #setRecording} is unsupported on purpose.
+ * <p><strong>Required structure:</strong> construction throws {@link IOException} if {@code
+ * frames/000000.jpg} or {@code metadata.jsonl} is missing. Re-recording via {@link #setRecording}
+ * is unsupported on purpose.
  */
 public class FileLogFrameProvider extends CpuImageProcessor {
     private final Path recordingDir;
@@ -82,8 +81,8 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private long firstMonoNs;
 
     /**
-     * @param recordingDir directory containing {@code frames/} and {@code metadata.jsonl}, as
-     *     written by {@code FrameRecorder}.
+     * @param recordingDir directory containing {@code frames/} and {@code metadata.jsonl}, as written
+     *     by {@code FrameRecorder}.
      * @throws IOException if either is missing, the first JPEG cannot be decoded, or the sidecar
      *     cannot be read.
      */
@@ -127,11 +126,8 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
             this.logger =
                     new Logger(
-                            FileLogFrameProvider.class,
-                            recordingDir.getFileName().toString(),
-                            LogGroup.Camera);
-            this.logger.info(
-                    "Opened replay source " + recordingDir + " (" + width + "x" + height + ")");
+                            FileLogFrameProvider.class, recordingDir.getFileName().toString(), LogGroup.Camera);
+            this.logger.info("Opened replay source " + recordingDir + " (" + width + "x" + height + ")");
         } finally {
             probe.release();
         }
@@ -160,8 +156,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
 
         if (entry.isEmpty()) {
-            return enterStoppedState(
-                    "metadata.jsonl exhausted after " + emittedFrameCount + " frames");
+            return enterStoppedState("metadata.jsonl exhausted after " + emittedFrameCount + " frames");
         }
 
         long seq = entry.get().seq();

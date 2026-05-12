@@ -65,8 +65,7 @@ class VisionSourceManagerEnumerationTest {
     void missingRootIsSilent() {
         List<String> warns = new ArrayList<>();
         var result =
-                VisionSourceManager.enumerateRecordedSources(
-                        recordingsRoot.resolve("nope"), warns::add);
+                VisionSourceManager.enumerateRecordedSources(recordingsRoot.resolve("nope"), warns::add);
         assertTrue(result.isEmpty());
         assertTrue(warns.isEmpty(), "non-existent recordings root is normal on a fresh install");
     }
