@@ -51,6 +51,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.util.PathSafety;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -1434,12 +1435,19 @@ public class RequestHandler {
                 return;
             }
 
-            Path recordingDir =
-                    ConfigManager.getInstance()
-                            .getRecordingsDirectory()
-                            .toPath()
-                            .resolve(cameraUniqueName)
-                            .resolve(recordingName);
+            Path recordingDir;
+            try {
+                recordingDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                cameraUniqueName,
+                                recordingName);
+            } catch (SecurityException e) {
+                ctx.status(400);
+                ctx.result("Invalid camera or recording name");
+                logger.error("Rejected unsafe export path: " + e.getMessage());
+                return;
+            }
 
             if (!recordingDir.toFile().exists()) {
                 ctx.status(400);
@@ -1485,12 +1493,20 @@ public class RequestHandler {
                 return;
             }
 
-            File cameraRecordingZip =
-                    FrameRecorder.exportCamera(
-                            ConfigManager.getInstance()
-                                    .getRecordingsDirectory()
-                                    .toPath()
-                                    .resolve(cameraUniqueName));
+            Path cameraDir;
+            try {
+                cameraDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                cameraUniqueName);
+            } catch (SecurityException e) {
+                ctx.status(400);
+                ctx.result("Invalid camera name");
+                logger.error("Rejected unsafe export path: " + e.getMessage());
+                return;
+            }
+
+            File cameraRecordingZip = FrameRecorder.exportCamera(cameraDir);
 
             try (FileInputStream stream = new FileInputStream(cameraRecordingZip)) {
                 logger.info("Uploading camera recordings with size " + stream.available());
@@ -1549,16 +1565,18 @@ public class RequestHandler {
             DeleteRecordingRequest request =
                     kObjectMapper.readValue(ctx.body(), DeleteRecordingRequest.class);
 
+            Path recordingsRoot =
+                    ConfigManager.getInstance().getRecordingsDirectory().toPath();
             for (String recording : request.recordings) {
-                File rec =
-                        ConfigManager.getInstance()
-                                .getRecordingsDirectory()
-                                .toPath()
-                                .resolve(request.cameraUniqueName)
-                                .resolve(recording)
-                                .toFile();
-
-                FileUtils.deleteDirectory(rec);
+                Path rec;
+                try {
+                    rec = PathSafety.safeResolve(recordingsRoot, request.cameraUniqueName, recording);
+                } catch (SecurityException e) {
+                    ctx.status(400).result("Invalid camera or recording name");
+                    logger.error("Rejected unsafe delete path: " + e.getMessage());
+                    return;
+                }
+                FileUtils.deleteDirectory(rec.toFile());
             }
 
             ctx.status(200);
