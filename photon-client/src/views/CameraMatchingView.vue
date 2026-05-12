@@ -107,7 +107,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     return {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVFileLogCameraInfo: undefined
     };
   }
   return (
@@ -116,7 +117,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     ) || {
       PVFileCameraInfo: undefined,
       PVCSICameraInfo: undefined,
-      PVUsbCameraInfo: undefined
+      PVUsbCameraInfo: undefined,
+      PVFileLogCameraInfo: undefined
     }
   );
 };
@@ -357,6 +359,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
+            <span v-else-if="camera.PVFileLogCameraInfo">File Log Camera:</span>
             <span v-else>Unknown Camera:</span>
             &nbsp;<span>{{ cameraInfoFor(camera)?.name ?? cameraInfoFor(camera)?.baseName }}</span>
           </v-card-title>
