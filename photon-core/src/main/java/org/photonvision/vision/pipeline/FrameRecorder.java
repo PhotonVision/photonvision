@@ -117,10 +117,18 @@ public class FrameRecorder implements Releasable {
     }
 
     public FrameRecorder(Path outputPath) {
-        this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
-        this.strat = HardwareManager.getInstance().getRecordingStrategy();
+        this(
+                outputPath,
+                HardwareManager.getInstance().getRecordingStrategy(),
+                SystemMonitor.getInstance().getUsableDiskSpace());
+    }
 
-        double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
+    // Package-private DI constructor: lets tests build a recorder without bringing up the
+    // HardwareManager / SystemMonitor singletons (which transitively require photontargetingJNI
+    // via NetworkTablesManager → TimeSyncClient).
+    FrameRecorder(Path outputPath, RecordingStrategy strat, long availableSpace) {
+        this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
+        this.strat = strat;
 
         // Check if we're under 4 GB of available space, if so exit
         if (availableSpace < MIN_DISK_SPACE_BYTES) {
