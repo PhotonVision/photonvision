@@ -42,6 +42,19 @@ import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
+/**
+ * Writes an H.264 mp4 plus a metadata.jsonl sidecar of per-frame (seq, capture_ns) pairs.
+ *
+ * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, recorded
+ * verbatim. Replay readers must propagate it through {@code Frame.timestampNanos} unchanged —
+ * the replay machine's clock is irrelevant; downstream consumers (NT publisher, AKit) treat it
+ * as opaque time and rebase if they need to.
+ *
+ * <p>Metadata is flushed before its paired frame, so under any crash
+ * {@code len(metadata.jsonl) >= decoded_frame_count(recording.mp4)}. Readers truncate jsonl to
+ * the mp4's decoded count, and ignore unknown JSON fields so the schema can grow (exposure,
+ * gain, calibration version) without breaking older readers.
+ */
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
     private static final long MIN_DISK_SPACE_BYTES = 4L * 1024 * 1024 * 1024; // 4 GB
