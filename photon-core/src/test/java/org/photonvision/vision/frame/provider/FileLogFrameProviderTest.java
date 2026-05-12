@@ -35,19 +35,19 @@ import org.junit.jupiter.api.io.TempDir;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.videoio.VideoWriter;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
 
 /**
- * Integration-ish test for {@link FileLogFrameProvider}. Synthesises a tiny MJPEG-AVI fixture
- * with OpenCV's own {@link VideoWriter} — same encoder path {@code FrameRecorder} uses in
- * production — pairs it with a hand-written sidecar, then walks it through the provider and
- * asserts frame count, dimensions, channel order, and timestamp propagation.
+ * Integration-ish test for {@link FileLogFrameProvider}. Synthesises a tiny image-sequence
+ * fixture (3 JPEGs in a frames/ directory) with OpenCV's own {@link Imgcodecs#imwrite} — the
+ * same encoder path {@code FrameRecorder} uses in production — pairs it with a hand-written
+ * sidecar, then walks it through the provider and asserts frame count, dimensions, channel
+ * order, and timestamp propagation.
  *
  * <p>Requires the OpenCV native libraries (loaded in {@code @BeforeAll} via
- * {@link LibraryLoader#loadWpiLibraries()}). No ffmpeg / ffprobe dependency, so the test
- * works on every platform PV builds on.
+ * {@link LibraryLoader#loadWpiLibraries()}). Pure JPEG I/O — works on every platform PV builds
+ * on with no external codec deps.
  *
  * <p>Notably this test does <em>not</em> call {@link LibraryLoader#loadTargeting()} or initialise
  * HAL/NetworkTables — {@code FileLogFrameProvider} touches no PV-specific JNI singletons, so it
@@ -71,30 +71,28 @@ class FileLogFrameProviderTest {
         recordingDir = sharedTempDir.resolve("rec");
         Files.createDirectories(recordingDir);
 
-        synthesizeRecordingAvi(recordingDir.resolve("recording.avi"));
+        synthesizeFrames(recordingDir.resolve("frames"));
         writeSidecar(recordingDir.resolve("metadata.jsonl"));
     }
 
     /**
-     * Generate a deterministic 3-frame MJPEG-AVI the same way {@code FrameRecorder} does in
-     * production — OpenCV {@code VideoWriter} with FourCC {@code MJPG}. Each frame is a solid
+     * Generate a deterministic 3-frame image-sequence the same way {@code FrameRecorder} does in
+     * production — OpenCV {@code Imgcodecs.imwrite} of zero-padded JPEGs. Each frame is a solid
      * BGR colour that shifts so the JPEG encoder sees real per-frame variation.
      */
-    private static void synthesizeRecordingAvi(Path out) {
-        int fourcc = VideoWriter.fourcc('M', 'J', 'P', 'G');
-        VideoWriter writer = new VideoWriter(out.toString(), fourcc, 30.0, new Size(WIDTH, HEIGHT));
-        try {
-            assertTrue(writer.isOpened(), "VideoWriter could not open " + out + " for MJPEG-AVI");
-            for (int i = 0; i < CAPTURE_NS.length; i++) {
-                Mat frame =
-                        new Mat(HEIGHT, WIDTH, CvType.CV_8UC3, new Scalar(i * 64 % 255, 64, 128));
-                writer.write(frame);
+    private static void synthesizeFrames(Path framesDir) throws IOException {
+        Files.createDirectories(framesDir);
+        for (int i = 0; i < CAPTURE_NS.length; i++) {
+            Mat frame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3, new Scalar(i * 64 % 255, 64, 128));
+            try {
+                Path out = framesDir.resolve(String.format("%06d.jpg", i));
+                assertTrue(
+                        Imgcodecs.imwrite(out.toString(), frame),
+                        "Imgcodecs.imwrite failed for " + out);
+            } finally {
                 frame.release();
             }
-        } finally {
-            writer.release();
         }
-        assertTrue(out.toFile().length() > 0, "produced AVI is empty");
     }
 
     private static void writeSidecar(Path out) throws IOException {
@@ -159,9 +157,22 @@ class FileLogFrameProviderTest {
 
     @Test
     void refusesPre2183RecordingMissingSidecar(@TempDir Path tmp) throws IOException {
+        // Copy the synthesized frames/ subtree but not metadata.jsonl. The provider should
+        // refuse because without source-side capture_ns we can't honour the replay timing
+        // contract.
         Path dir = tmp.resolve("pre-2183");
-        Files.createDirectories(dir);
-        Files.copy(recordingDir.resolve("recording.avi"), dir.resolve("recording.avi"));
+        Path framesCopy = dir.resolve("frames");
+        Files.createDirectories(framesCopy);
+        try (var stream = Files.list(recordingDir.resolve("frames"))) {
+            stream.forEach(
+                    src -> {
+                        try {
+                            Files.copy(src, framesCopy.resolve(src.getFileName()));
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+        }
         // intentionally no metadata.jsonl
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
@@ -171,15 +182,32 @@ class FileLogFrameProviderTest {
     }
 
     @Test
-    void refusesMissingAvi(@TempDir Path tmp) throws IOException {
-        Path dir = tmp.resolve("no-avi");
+    void refusesMissingFrames(@TempDir Path tmp) throws IOException {
+        // Sidecar present, frames/ absent. Could be an old MJPEG-AVI / mp4 recording, could be
+        // a writer that crashed before the first frame. Either way the provider refuses.
+        Path dir = tmp.resolve("no-frames");
         Files.createDirectories(dir);
         Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
         assertTrue(
-                ex.getMessage().toLowerCase().contains("recording.avi"),
-                "error should name the missing file; got: " + ex.getMessage());
+                ex.getMessage().toLowerCase().contains("frames"),
+                "error should name the missing dir; got: " + ex.getMessage());
+    }
+
+    @Test
+    void refusesEmptyFramesDir(@TempDir Path tmp) throws IOException {
+        // frames/ exists but contains no 000000.jpg — recorder crashed between mkdir and the
+        // first frame write. Refuse so the user doesn't get silent garbage replay.
+        Path dir = tmp.resolve("empty-frames");
+        Files.createDirectories(dir.resolve("frames"));
+        Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
+
+        IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
+        assertTrue(
+                ex.getMessage().toLowerCase().contains("first frame")
+                        || ex.getMessage().toLowerCase().contains("missing"),
+                "error should indicate the empty frames dir; got: " + ex.getMessage());
     }
 
     @Test

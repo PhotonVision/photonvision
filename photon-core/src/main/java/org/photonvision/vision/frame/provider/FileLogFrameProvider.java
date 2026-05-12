@@ -23,8 +23,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.Videoio;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -32,17 +32,17 @@ import org.photonvision.vision.opencv.CVMat;
 
 /**
  * Replay-side counterpart to {@link org.photonvision.vision.pipeline.FrameRecorder}. Reads a
- * recording directory containing {@code recording.avi} + {@code metadata.jsonl} and emits
- * {@link CapturedFrame}s with their original source-machine capture timestamps, so the rest of
- * the vision pipeline (and the NT publisher downstream of it) processes replayed frames
- * identically to live ones.
+ * recording directory containing a {@code frames/} subdirectory of zero-padded JPEGs plus a
+ * {@code metadata.jsonl} sidecar, and emits {@link CapturedFrame}s with their original
+ * source-machine capture timestamps so the rest of the vision pipeline (and the NT publisher
+ * downstream of it) processes replayed frames identically to live ones.
  *
- * <p>The AVI (Motion-JPEG, FourCC {@code MJPG}) is decoded by OpenCV's {@code VideoCapture}
- * via the {@code CV_MJPEG} backend built directly into OpenCV's videoio module — no ffmpeg /
- * gstreamer plugin needed, so the same decode path works on every platform PV ships. Each
- * decoded frame is paired with the next sidecar entry, giving us {@code (Mat, capture_ns)}
- * tuples in the order they were captured. See {@code FrameRecorder}'s class javadoc for the
- * on-disk format and its invariants — this reader's correctness depends on them.
+ * <p>Each JPEG is decoded independently via {@link Imgcodecs#imread}. No video container, no
+ * codec compatibility risk, no ffmpeg / gstreamer plugin needed — works on every platform PV
+ * ships. The next file to read is determined by the sidecar's {@code seq} field, which doubles
+ * as the zero-padded JPEG filename ({@code frames/<seq:06d>.jpg}). See {@code FrameRecorder}'s
+ * class javadoc for the on-disk format and its invariants — this reader's correctness depends
+ * on them.
  *
  * <h2>Timestamp contract</h2>
  *
@@ -93,15 +93,15 @@ import org.photonvision.vision.opencv.CVMat;
  * <h2>EOF policy</h2>
  *
  * <p>The shorter of the two streams ends replay. The writer guarantees
- * {@code len(jsonl) >= decoded_frame_count(avi)} under any crash, so the avi normally
- * exhausts first; the jsonl-first path defends against externally truncated files. Once
- * exhausted, {@link #isConnected()} reports {@code false} and further
+ * {@code len(jsonl) >= frame_count(frames/)} under any crash, so the frame directory normally
+ * exhausts first (next JPEG missing) and the sidecar-shorter path defends against externally
+ * truncated metadata. Once exhausted, {@link #isConnected()} reports {@code false} and further
  * {@link #getInputMat()} calls short-circuit to empty {@link CVMat}s — which
  * {@link CpuImageProcessor#get()} handles cleanly without dropping or NPE.
  *
  * <h2>Pre-2183 recordings</h2>
  *
- * <p>A directory containing {@code recording.avi} but no {@code metadata.jsonl} predates
+ * <p>A directory containing {@code frames/} but no {@code metadata.jsonl} predates
  * PhotonVision's per-frame metadata sidecar. Without source-side capture timestamps the
  * replay timing contract cannot be honoured, so construction fails loudly with an
  * {@link IOException} that names the missing file — mirroring the writer-side refusal in
@@ -122,8 +122,12 @@ import org.photonvision.vision.opencv.CVMat;
  * {@code VisionRunner} / NT / Javalin; the recording format itself is unchanged.
  */
 public class FileLogFrameProvider extends CpuImageProcessor {
+    // Zero-padded JPEG filename format — must match FrameRecorder.FRAME_FILENAME_FORMAT so
+    // seq 7 → "000007.jpg" on both sides.
+    private static final String FRAME_FILENAME_FORMAT = "%06d.jpg";
+
     private final Path recordingDir;
-    private final VideoCapture videoCapture;
+    private final Path framesDir;
     private final MetadataSidecarReader sidecarReader;
     private final FrameStaticProperties properties;
     private final Logger logger;
@@ -143,19 +147,23 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private long firstMonoNs;
 
     /**
-     * @param recordingDir directory containing {@code recording.avi} and {@code metadata.jsonl},
-     *     as written by {@code FrameRecorder}.
-     * @throws IOException if either file is missing, the avi cannot be opened, or the sidecar
+     * @param recordingDir directory containing {@code frames/} and {@code metadata.jsonl}, as
+     *     written by {@code FrameRecorder}.
+     * @throws IOException if either is missing, the first JPEG cannot be decoded, or the sidecar
      *     cannot be read.
      */
     public FileLogFrameProvider(Path recordingDir) throws IOException {
         this.recordingDir = recordingDir;
-        Path videoPath = recordingDir.resolve("recording.avi");
+        this.framesDir = recordingDir.resolve("frames");
         Path metadataPath = recordingDir.resolve("metadata.jsonl");
 
-        if (!Files.isRegularFile(videoPath)) {
+        if (!Files.isDirectory(framesDir)) {
             throw new IOException(
-                    "Recording directory " + recordingDir + " is missing recording.avi");
+                    "Recording at "
+                            + recordingDir
+                            + " is missing frames/. Recordings from the H.264 mp4 or MJPEG-AVI"
+                            + " predecessors cannot be replayed by this version — re-record under"
+                            + " PV with image-sequence support.");
         }
         if (!Files.isRegularFile(metadataPath)) {
             throw new IOException(
@@ -166,42 +174,46 @@ public class FileLogFrameProvider extends CpuImageProcessor {
                             + " are unrecoverable.");
         }
 
-        this.videoCapture = new VideoCapture(videoPath.toString());
-        if (!this.videoCapture.isOpened()) {
+        // Probe the first frame to get static properties. Doesn't consume a "real" frame from the
+        // provider's perspective — getInputMat() re-reads via the sidecar's seq, and seq=0 is
+        // what's in this probe.
+        Path firstFrame = framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, 0));
+        if (!Files.isRegularFile(firstFrame)) {
             throw new IOException(
-                    "OpenCV VideoCapture could not open "
-                            + videoPath
-                            + " — verify the file is readable and the OpenCV build includes a"
-                            + " backend (CV_MJPEG is built into stock WPILib OpenCV) capable of"
-                            + " decoding it.");
+                    "Recording at "
+                            + recordingDir
+                            + " has frames/ but is missing the first frame ("
+                            + firstFrame.getFileName()
+                            + "). The recording is empty or its file numbering doesn't start at 0.");
         }
-
-        int width = (int) this.videoCapture.get(Videoio.CAP_PROP_FRAME_WIDTH);
-        int height = (int) this.videoCapture.get(Videoio.CAP_PROP_FRAME_HEIGHT);
-        if (width <= 0 || height <= 0) {
-            this.videoCapture.release();
-            throw new IOException(
-                    "Recording " + videoPath + " reports invalid dimensions " + width + "x" + height);
-        }
-
-        // FOV unknown until the user imports calibration for this source. The pipelines tolerate
-        // FOV=0 / null calibration; documented as a Phase 1 caveat in a follow-up commit.
-        this.properties = new FrameStaticProperties(width, height, 0.0, null);
-
+        Mat probe = Imgcodecs.imread(firstFrame.toString());
         try {
-            this.sidecarReader = new MetadataSidecarReader(metadataPath);
-        } catch (IOException e) {
-            // Don't leak the native VideoCapture handle if the sidecar open fails.
-            this.videoCapture.release();
-            throw e;
-        }
+            if (probe.empty()) {
+                throw new IOException(
+                        "First frame " + firstFrame + " could not be decoded by Imgcodecs.imread");
+            }
+            int width = probe.cols();
+            int height = probe.rows();
+            // FOV unknown until the user imports calibration for this source. The pipelines tolerate
+            // FOV=0 / null calibration; documented as a Phase 1 caveat in a follow-up commit.
+            this.properties = new FrameStaticProperties(width, height, 0.0, null);
 
-        this.logger =
-                new Logger(
-                        FileLogFrameProvider.class,
-                        recordingDir.getFileName().toString(),
-                        LogGroup.Camera);
-        this.logger.info("Opened replay source " + recordingDir + " (" + width + "x" + height + ")");
+            try {
+                this.sidecarReader = new MetadataSidecarReader(metadataPath);
+            } catch (IOException e) {
+                throw e;
+            }
+
+            this.logger =
+                    new Logger(
+                            FileLogFrameProvider.class,
+                            recordingDir.getFileName().toString(),
+                            LogGroup.Camera);
+            this.logger.info(
+                    "Opened replay source " + recordingDir + " (" + width + "x" + height + ")");
+        } finally {
+            probe.release();
+        }
     }
 
     @Override
@@ -219,21 +231,13 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
-        // Decode the next frame. VideoCapture.read returns false at EOF or on decode error;
-        // we treat both the same — the stream is over.
-        var mat = new CVMat();
-        boolean haveFrame = videoCapture.read(mat.getMat());
-        if (!haveFrame || mat.getMat().empty()) {
-            mat.release();
-            markExhausted("avi exhausted after " + emittedFrameCount + " frames");
-            return new CapturedFrame(new CVMat(), properties, 0L);
-        }
-
+        // Read sidecar first — the seq field tells us which JPEG to load. Order matters: if the
+        // sidecar is short (rare, writer crash before flush+write completed), we want to fail
+        // before disk I/O on a JPEG.
         Optional<MetadataSidecarReader.Entry> entry;
         try {
             entry = sidecarReader.readNext();
         } catch (IOException e) {
-            mat.release();
             logger.error(
                     "metadata.jsonl read failed at frame "
                             + emittedFrameCount
@@ -244,18 +248,36 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
 
         if (entry.isEmpty()) {
-            // Should not happen given the writer's len(jsonl) >= avi invariant; defend anyway.
-            mat.release();
-            markExhausted(
-                    "metadata.jsonl exhausted before avi at frame " + emittedFrameCount);
+            // Normal end-of-recording: sidecar exhausted. By the writer's invariant the frames/
+            // directory is at most as long, so even if it has extra files we stop here.
+            markExhausted("metadata.jsonl exhausted after " + emittedFrameCount + " frames");
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
+        long seq = entry.get().seq();
         long captureNs = entry.get().captureNs();
+        Path framePath = framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, seq));
+
+        // Decode the JPEG. imread returns an empty Mat on missing or unreadable file — we treat
+        // that as the second EOF path: jsonl had a line for this seq but the frame file isn't
+        // there. The writer's metadata-before-frame invariant means this is exactly the partial-
+        // last-frame case after a crash; readers stop here cleanly.
+        Mat decoded = Imgcodecs.imread(framePath.toString());
+        if (decoded.empty()) {
+            decoded.release();
+            markExhausted(
+                    "frame "
+                            + framePath.getFileName()
+                            + " missing or unreadable (after "
+                            + emittedFrameCount
+                            + " frames emitted)");
+            return new CapturedFrame(new CVMat(), properties, 0L);
+        }
+
         pace(captureNs);
 
         emittedFrameCount++;
-        return new CapturedFrame(mat, properties, captureNs);
+        return new CapturedFrame(new CVMat(decoded), properties, captureNs);
     }
 
     /**
@@ -279,8 +301,8 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     }
 
     /**
-     * Width / height / FOV / calibration of frames this provider will emit. Known at
-     * construction time from the avi header; exposed so the surrounding VisionSource can
+     * Width / height / FOV / calibration of frames this provider will emit. Probed at
+     * construction time from the first JPEG; exposed so the surrounding VisionSource can
      * wire video-mode metadata into its settables without consuming a frame.
      */
     public FrameStaticProperties getStaticProperties() {
@@ -300,7 +322,6 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     @Override
     public void release() {
-        videoCapture.release();
         try {
             sidecarReader.close();
         } catch (IOException e) {

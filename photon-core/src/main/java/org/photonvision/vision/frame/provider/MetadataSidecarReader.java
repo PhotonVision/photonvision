@@ -37,15 +37,15 @@ import java.util.Optional;
  *   <li>One JSON object per line, e.g. {@code {"seq":N,"capture_ns":T}}.
  *   <li>Unknown fields are silently ignored — the schema is forward-compatible, so future
  *       additions (exposure, gain, calibration version) won't break old readers.
- *   <li>The writer flushes the metadata line <em>before</em> piping its paired frame to ffmpeg,
- *       so {@code line_count(jsonl) >= decoded_frame_count(mp4)} holds under any crash. Callers
- *       that consume from both files in lockstep should stop pulling lines once the mp4 is
+ *   <li>The writer flushes the metadata line <em>before</em> writing its paired JPEG frame, so
+ *       {@code line_count(jsonl) >= frame_count(frames/)} holds under any crash. Callers that
+ *       consume from both in lockstep should stop pulling lines once the frame directory is
  *       exhausted — never the other way around.
  * </ul>
  *
  * <p>Missing/malformed fields on a non-empty line are fatal ({@link IOException} naming the line
- * number). Truncated trailing partial lines are likewise fatal; in practice the lockstep-with-mp4
- * pattern above means the partial line is never reached.
+ * number). Truncated trailing partial lines are likewise fatal; in practice the lockstep-with-
+ * frames pattern above means the partial line is never reached.
  */
 public class MetadataSidecarReader implements AutoCloseable {
     private static final ObjectMapper MAPPER = new ObjectMapper();

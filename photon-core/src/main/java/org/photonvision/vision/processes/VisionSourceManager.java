@@ -325,7 +325,7 @@ public class VisionSourceManager {
                 .forEach(cameraInfos::add);
 
         // FileLog replay sources: scan the recordings directory and surface any sub-sub-directory
-        // that holds both recording.avi and metadata.jsonl as a potential camera the user can map.
+        // that holds both frames/ and metadata.jsonl as a potential camera the user can map.
         cameraInfos.addAll(enumerateRecordedSources());
 
         checkMismatches(cameraInfos);
@@ -340,15 +340,15 @@ public class VisionSourceManager {
 
     /**
      * Walks {@code <recordings>/<camera>/<recording>/} and emits one {@link
-     * PVCameraInfo.PVFileLogCameraInfo} per leaf directory containing both {@code recording.avi}
-     * and {@code metadata.jsonl}.
+     * PVCameraInfo.PVFileLogCameraInfo} per leaf directory containing both a {@code frames/}
+     * subdirectory and {@code metadata.jsonl}.
      *
      * <p>Race note: this can run while a {@code FrameRecorder} on another camera is writing into
-     * a sibling directory. Mid-recording dirs that don't yet have both files are filtered out;
-     * dirs whose metadata.jsonl already exists are surfaced and will replay up to whatever the
-     * avi currently contains (the provider's EOF logic handles in-progress files cleanly).
-     * Concurrent enumerate-while-recording on the <em>same</em> physical leaf is unusual but
-     * harmless — the user would replay frames captured up to that moment.
+     * a sibling directory. Mid-recording dirs that don't yet have both are filtered out; dirs
+     * whose metadata.jsonl already exists are surfaced and will replay up to whatever the
+     * frames/ directory currently contains (the provider's EOF logic handles in-progress files
+     * cleanly). Concurrent enumerate-while-recording on the <em>same</em> physical leaf is
+     * unusual but harmless — the user would replay frames captured up to that moment.
      *
      * <p>Package-private + static so unit tests can drive it with a {@code @TempDir} without
      * needing the {@code ConfigManager} singleton or any JNI / HAL initialisation.
@@ -381,7 +381,7 @@ public class VisionSourceManager {
         try (Stream<Path> recDirs = Files.list(camDir)) {
             recDirs
                     .filter(Files::isDirectory)
-                    .filter(p -> Files.isRegularFile(p.resolve("recording.avi")))
+                    .filter(p -> Files.isDirectory(p.resolve("frames")))
                     .filter(p -> Files.isRegularFile(p.resolve("metadata.jsonl")))
                     .forEach(
                             recDir -> {

@@ -51,8 +51,7 @@ class VisionSourceManagerEnumerationTest {
 
     private Path makeValidRecording(String camera, String recording) throws IOException {
         Path dir = recordingsRoot.resolve(camera).resolve(recording);
-        Files.createDirectories(dir);
-        touch(dir.resolve("recording.avi"));
+        Files.createDirectories(dir.resolve("frames"));
         touch(dir.resolve("metadata.jsonl"));
         return dir;
     }
@@ -91,20 +90,19 @@ class VisionSourceManagerEnumerationTest {
 
     @Test
     void skipsRecordingMissingMetadata() throws IOException {
-        // avi present but no jsonl — could be a pre-2183 recording, could be mid-init. Either
-        // way the provider would refuse to construct, so don't offer it as a camera.
+        // frames/ present but no jsonl — could be a pre-2183 recording, could be mid-init.
+        // Either way the provider would refuse to construct, so don't offer it as a camera.
         Path dir = recordingsRoot.resolve("camA").resolve("pre-2183");
-        Files.createDirectories(dir);
-        touch(dir.resolve("recording.avi"));
+        Files.createDirectories(dir.resolve("frames"));
 
         var result = VisionSourceManager.enumerateRecordedSources(recordingsRoot, msg -> {});
         assertTrue(result.isEmpty());
     }
 
     @Test
-    void skipsRecordingMissingVideo() throws IOException {
-        // jsonl present but no avi — recorder probably opened metadata then crashed before
-        // writing frames. Provider refuses construction; don't offer it.
+    void skipsRecordingMissingFrames() throws IOException {
+        // jsonl present but no frames/ — recorder probably opened metadata then crashed before
+        // writing any frames. Provider refuses construction; don't offer it.
         Path dir = recordingsRoot.resolve("camA").resolve("metadata-only");
         Files.createDirectories(dir);
         touch(dir.resolve("metadata.jsonl"));

@@ -19,19 +19,16 @@ package org.photonvision.vision.camera;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileLogFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
-import org.wpilib.util.PixelFormat;
-import org.wpilib.vision.camera.VideoMode;
 
 /**
  * VisionSource backed by a {@link FileLogFrameProvider} — replays a recording directory
- * (recording.avi + metadata.jsonl) as if it were a live camera. Parallel to {@link
+ * (frames/ + metadata.jsonl) as if it were a live camera. Parallel to {@link
  * FileVisionSource}; kept separate because the lifecycles diverge (FileVisionSource loops a
  * single image, this one walks through a timed recording and exhausts).
  */
@@ -93,79 +90,16 @@ public class FileLogVisionSource extends VisionSource {
     }
 
     /**
-     * Mirrors {@code FileVisionSource.FileSourceSettables} — every camera control is a no-op
-     * (exposure / gain / white balance are baked into the recording) and there's exactly one
-     * video mode whose dimensions come from the mp4 header. fps is the rate {@code FrameRecorder}
-     * encodes at; the provider's inline pacing honours the recording's per-frame deltas
-     * regardless.
+     * Settables for a replay source: every camera control is baked into the recording and
+     * therefore a no-op. The shape is identical to {@link FileVisionSource.FileSourceSettables}
+     * (which serves the same purpose for the single-image source), so extend it rather than
+     * duplicating ~80 lines of no-op stubs. Any future drift in either source's settable
+     * semantics should subclass-and-override; identical no-op behaviour stays shared.
      */
-    public static class FileLogSourceSettables extends VisionSourceSettables {
-        private final VideoMode videoMode;
-        private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
-
+    public static class FileLogSourceSettables extends FileVisionSource.FileSourceSettables {
         FileLogSourceSettables(
                 CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
-            super(cameraConfiguration);
-            this.frameStaticProperties = frameStaticProperties;
-            videoMode =
-                    new VideoMode(
-                            PixelFormat.kMJPEG,
-                            frameStaticProperties.imageWidth,
-                            frameStaticProperties.imageHeight,
-                            30);
-            videoModes.put(0, videoMode);
-        }
-
-        @Override
-        public void setExposureRaw(double exposureRaw) {}
-
-        public void setAutoExposure(boolean cameraAutoExposure) {}
-
-        @Override
-        public void setBrightness(int brightness) {}
-
-        @Override
-        public void setGain(int gain) {}
-
-        @Override
-        public VideoMode getCurrentVideoMode() {
-            return videoMode;
-        }
-
-        @Override
-        protected void setVideoModeInternal(VideoMode videoMode) {
-            // Dimensions are baked into the recording; setting a different mode is a no-op.
-        }
-
-        @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
-            return videoModes;
-        }
-
-        @Override
-        public double getMinExposureRaw() {
-            return 1f;
-        }
-
-        @Override
-        public double getMaxExposureRaw() {
-            return 100f;
-        }
-
-        @Override
-        public void setAutoWhiteBalance(boolean autowb) {}
-
-        @Override
-        public void setWhiteBalanceTemp(double temp) {}
-
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return 2;
-        }
-
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return 1;
+            super(cameraConfiguration, frameStaticProperties);
         }
     }
 }

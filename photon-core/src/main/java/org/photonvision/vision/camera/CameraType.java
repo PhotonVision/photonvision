@@ -21,5 +21,5 @@ public enum CameraType {
     UsbCamera,
     ZeroCopyPicam,
     FileCamera, // special case for File-based vision sources
-    FileLogCamera // replay source: recording.avi + metadata.jsonl directory written by FrameRecorder
+    FileLogCamera // replay source: frames/ + metadata.jsonl directory written by FrameRecorder
 }
