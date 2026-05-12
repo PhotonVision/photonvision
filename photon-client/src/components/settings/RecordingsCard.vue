@@ -83,13 +83,6 @@ const downloadAllRecordings = () => {
               <v-icon start class="open-icon"> mdi-export </v-icon>
               <span class="open-label">Export Recordings</span>
             </v-btn>
-            <a
-              ref="exportRecordings"
-              style="color: black; text-decoration: none; display: none"
-              :href="`http://${address}/api/recordings/export`"
-              download="photonvision-recordings-export.zip"
-              target="_blank"
-            />
           </v-col>
           <v-col cols="12" sm="6">
             <v-btn
