@@ -118,17 +118,6 @@ public class Calibrate3dPipeTest {
         }
     }
 
-    @Test
-    public void testFoo() {
-        calibrateCommon(
-                new Size(1280, 720),
-                Path.of("/mnt/c/Users/matth/Documents/camera-cal-images/lifecam_squares_1280x720").toFile(),
-                new Size(11, 11),
-                BoardType.CHESSBOARD,
-                true,
-                false);
-    }
-
     /**
      * Run camera calibration on a given dataset
      *
@@ -241,7 +230,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().useOldPattern = useOldPattern;
 
         for (var file : directoryListing) {
-            if (file.isFile() && file.getName().endsWith("png")) {
+            if (file.isFile()) {
                 calibration3dPipeline.takeSnapshot();
                 var frame =
                         new Frame(
