@@ -125,10 +125,9 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
       textStyle: {
         color: textColor
       },
-      formatter: (value: number) => {
-        console.log("hi");
-        if (typeof value === "number") {
-          return `${value.toFixed(2)} px`;
+      formatter: (min: number | string | Date | null | undefined) => {
+        if (typeof min === "number") {
+          return `${min.toFixed(2)} px`;
         }
         return "";
       },
@@ -185,7 +184,7 @@ const onWindowResize = () => {
 
 onMounted(async () => {
   // Fetch data
-  fetchUncertaintyData();
+  await fetchUncertaintyData();
 
   const container = document.getElementById("container");
   if (!container) return;
@@ -241,7 +240,7 @@ watch(
   ],
   () => {
     console.log("Camera or resolution changed, refetching calibration");
-    fetchUncertaintyData();
+    void fetchUncertaintyData();
   }
 );
 </script>
