@@ -1462,9 +1462,16 @@ public class RequestHandler {
                 logger.info("Uploading individual recording with size " + stream.available());
 
                 ctx.contentType("application/zip");
+                // Include the recording name so multiple downloads from the same camera don't
+                // collide on (1), (2). Browsers honour Content-Disposition over the client-side
+                // <a download> attribute, so the server filename is the one the user sees.
                 ctx.header(
                         "Content-Disposition",
-                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
+                        "attachment; filename=\""
+                                + cameraUniqueName
+                                + "_"
+                                + recordingName
+                                + ".zip\"");
 
                 ctx.result(stream);
                 ctx.status(200);

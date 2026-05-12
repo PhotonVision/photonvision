@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileLogFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -34,7 +33,7 @@ import org.photonvision.vision.processes.VisionSourceSettables;
  */
 public class FileLogVisionSource extends VisionSource {
     private final FileLogFrameProvider frameProvider;
-    private final FileLogSourceSettables settables;
+    private final FileVisionSource.FileSourceSettables settables;
 
     public FileLogVisionSource(CameraConfiguration cameraConfiguration) {
         super(cameraConfiguration);
@@ -43,10 +42,7 @@ public class FileLogVisionSource extends VisionSource {
             this.frameProvider =
                     new FileLogFrameProvider(Path.of(cameraConfiguration.getDevicePath()));
         } catch (IOException e) {
-            // VisionSourceManager.loadVisionSourceFromCamConfig has no throws clause and the
-            // existing switch arms don't propagate checked exceptions either. Wrap so the
-            // failure surfaces in the same shape as other source-construction errors
-            // (e.g. a CSI source whose device is unplugged).
+            // Wrap to match the unchecked-throw shape of the other VisionSource constructors.
             throw new RuntimeException(
                     "Failed to open replay source at " + cameraConfiguration.getDevicePath(), e);
         }
@@ -56,7 +52,8 @@ public class FileLogVisionSource extends VisionSource {
         }
 
         this.settables =
-                new FileLogSourceSettables(cameraConfiguration, frameProvider.getStaticProperties());
+                new FileVisionSource.FileSourceSettables(
+                        cameraConfiguration, frameProvider.getStaticProperties());
     }
 
     @Override
@@ -81,25 +78,11 @@ public class FileLogVisionSource extends VisionSource {
 
     @Override
     public void remakeSettables() {
-        // Dimensions are baked in at construction from the mp4 header; never need to rebuild.
+        // Dimensions are baked in at construction from the first JPEG; never need to rebuild.
     }
 
     @Override
     public void release() {
         frameProvider.release();
-    }
-
-    /**
-     * Settables for a replay source: every camera control is baked into the recording and
-     * therefore a no-op. The shape is identical to {@link FileVisionSource.FileSourceSettables}
-     * (which serves the same purpose for the single-image source), so extend it rather than
-     * duplicating ~80 lines of no-op stubs. Any future drift in either source's settable
-     * semantics should subclass-and-override; identical no-op behaviour stays shared.
-     */
-    public static class FileLogSourceSettables extends FileVisionSource.FileSourceSettables {
-        FileLogSourceSettables(
-                CameraConfiguration cameraConfiguration, FrameStaticProperties frameStaticProperties) {
-            super(cameraConfiguration, frameStaticProperties);
-        }
     }
 }
