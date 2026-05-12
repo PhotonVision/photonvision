@@ -180,9 +180,9 @@ const interactiveCols = computed(() =>
     />
     <div>
       <div class="text-white pt-3">Color Picker</div>
-      <div class="d-flex pt-3">
+      <div class="flex pt-3">
         <template v-if="!useStateStore().colorPickingMode">
-          <v-col cols="4" class="pl-0 pr-2">
+          <div class="w-1/3 pl-0 pr-2">
             <pv-button
               size="sm"
               variant="primary"
@@ -192,19 +192,13 @@ const interactiveCols = computed(() =>
             >
               Shrink Range
             </pv-button>
-          </v-col>
-          <v-col cols="4" class="pl-0 pr-0">
-            <pv-button
-              size="sm"
-              variant="primary"
-              icon="mdi-plus-minus"
-              block
-              @click="enableColorPicking(1)"
-            >
+          </div>
+          <div class="w-1/3 pl-0 pr-0">
+            <pv-button size="sm" variant="primary" icon="mdi-plus-minus" block @click="enableColorPicking(1)">
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
             </pv-button>
-          </v-col>
-          <v-col cols="4" class="pl-2 pr-0">
+          </div>
+          <div class="w-1/3 pl-2 pr-0">
             <pv-button
               size="sm"
               variant="primary"
@@ -214,14 +208,12 @@ const interactiveCols = computed(() =>
             >
               Expand Range
             </pv-button>
-          </v-col>
+          </div>
         </template>
         <template v-else>
-          <v-card-text class="pa-0 pt-3 pb-3">
-            <pv-button size="sm" variant="primary" block @click="disableColorPicking">
-              Cancel
-            </pv-button>
-          </v-card-text>
+          <div class="p-0 pt-3 pb-3">
+            <pv-button size="sm" variant="primary" block @click="disableColorPicking"> Cancel </pv-button>
+          </div>
         </template>
       </div>
     </div>

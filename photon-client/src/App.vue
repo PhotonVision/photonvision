@@ -62,19 +62,20 @@ onBeforeMount(() => {
 
 <template>
   <v-app>
-    <photon-sidebar />
-    <v-main>
-      <v-container class="main-container" fluid fill-height>
-        <v-layout>
-          <v-container class="align-start pa-0 ma-0" fluid>
-            <router-view />
-          </v-container>
-        </v-layout>
-      </v-container>
-    </v-main>
-
-    <photon-log-view />
-    <photon-error-snackbar />
+    <div class="flex h-full w-full bg-background text-white">
+      <photon-sidebar />
+      <main class="flex min-w-0 flex-1 flex-col">
+        <div class="flex-1">
+          <router-view v-slot="{ Component }">
+            <transition name="fade">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </div>
+      </main>
+      <photon-log-view />
+      <photon-error-snackbar />
+    </div>
   </v-app>
 </template>
 
@@ -118,4 +119,16 @@ onBeforeMount(() => {
 div.v-layout {
   overflow: unset !important;
 }
+.fade-enter-active,
+.fade-leave-active {
+  transition-duration: 0.05s;
+  transition-property: opacity;
+  transition-timing-function: ease-in;
+}
+
+.fade-enter,
+.fade-leave-active {
+  opacity: 0;
+}
+
 </style>

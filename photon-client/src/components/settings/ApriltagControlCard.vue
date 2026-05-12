@@ -2,6 +2,7 @@
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
+import PvCard from "@/components/common/pv-card.vue";
 const { Euler, Quaternion: ThreeQuat } = await import("three");
 
 const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
@@ -13,9 +14,9 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
 </script>
 
 <template>
-  <v-card color="surface" class="rounded-12">
-    <v-card-title>AprilTag Field Layout</v-card-title>
-    <v-card-text class="pt-0">
+  <pv-card>
+    <div class="pb-2 text-base font-semibold">AprilTag Field Layout</div>
+    <div class="pt-1">
       <p>Field width: {{ useSettingsStore().currentFieldLayout.field.width.toFixed(2) }} meters</p>
       <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
 
@@ -44,8 +45,8 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
           </tbody>
         </template>
       </v-table>
-    </v-card-text>
-  </v-card>
+    </div>
+  </pv-card>
 </template>
 
 <style scoped lang="scss">

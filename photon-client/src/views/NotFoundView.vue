@@ -1,12 +1,12 @@
 <template>
   <div class="not-found-container">
     <div>
-      <v-card-title style="color: white; padding-bottom: 36px; font-size: 42px">
+      <div class="pb-9 text-[42px] font-semibold text-white">
         The page you are looking for isn't here
-      </v-card-title>
-      <v-card-subtitle style="color: white; font-size: 18px">
+      </div>
+      <div class="text-[18px] text-white">
         Please use the sidebar to find what you are looking for
-      </v-card-subtitle>
+      </div>
     </div>
     <img src="@/assets/images/notfound.webp" alt="missing-page" style="margin-top: 64px" />
   </div>

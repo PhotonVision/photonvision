@@ -12,6 +12,7 @@ export default defineConfig({
     vue(),
     vuetify({
       styles: {
+        
         configFile: "src/assets/styles/settings.scss"
       }
     })

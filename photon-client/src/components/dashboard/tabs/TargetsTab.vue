@@ -34,7 +34,7 @@ const resetCurrentBuffer = () => {
 
 <template>
   <div>
-    <v-row class="pb-4">
+    <div class="flex flex-wrap pb-4">
       <v-table density="compact" class="pt-2 pb-12 pl-3 pr-3">
         <template #default>
           <thead>
@@ -127,8 +127,8 @@ const resetCurrentBuffer = () => {
           </tbody>
         </template>
       </v-table>
-    </v-row>
-    <v-container
+    </div>
+    <div
       v-if="
         (currentPipelineSettings.pipelineType === PipelineType.AprilTag ||
           currentPipelineSettings.pipelineType === PipelineType.Aruco) &&
@@ -136,12 +136,10 @@ const resetCurrentBuffer = () => {
         useCameraSettingsStore().isCurrentVideoFormatCalibrated &&
         useCameraSettingsStore().currentPipelineSettings.solvePNPEnabled
       "
-      class="pl-3 pr-3"
+      class="w-full pl-3 pr-3"
     >
-      <v-row class="pb-4 text-white">
-        <v-card-subtitle class="ma-0 pa-0 pb-4" style="font-size: 16px"
-          >Multi-tag pose, field-to-camera</v-card-subtitle
-        >
+      <div class="flex flex-wrap pb-4 text-white">
+        <div class="ma-0 p-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</div>
         <v-table density="compact">
           <template #default>
             <thead>
@@ -194,12 +192,12 @@ const resetCurrentBuffer = () => {
             </tbody>
           </template>
         </v-table>
-      </v-row>
-      <v-row class="pb-4 text-white" style="display: flex; flex-direction: column">
-        <v-card-subtitle class="ma-0 pa-0 pb-4 pr-4" style="font-size: 16px"
-          >Multi-tag pose standard deviation over the last
+      </div>
+      <div class="flex flex-col pb-4 text-white">
+        <div class="ma-0 p-0 pb-4 pr-4" style="font-size: 16px">
+          Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
-        </v-card-subtitle>
+        </div>
         <pv-button variant="primary" class="mb-4 mt-1 w-fit" @click="resetCurrentBuffer">Reset Samples</pv-button>
         <v-table density="compact">
           <template #default>
@@ -261,8 +259,8 @@ const resetCurrentBuffer = () => {
             </tbody>
           </template>
         </v-table>
-      </v-row>
-    </v-container>
+      </div>
+    </div>
   </div>
 </template>
 

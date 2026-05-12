@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import PvButton from "@/components/common/pv-button.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
+import PvCard from "@/components/common/pv-card.vue";
+import PvIcon from "@/components/common/pv-icon.vue";
+import PvAlert from "@/components/common/pv-alert.vue";
 import { ref } from "vue";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
@@ -93,27 +96,27 @@ const expanded = ref([]);
 </script>
 
 <template>
-  <v-card color="surface" class="rounded-12">
-    <v-card-title>Camera Control</v-card-title>
-    <v-card-text class="pt-0">
+  <pv-card>
+    <div class="pb-2 text-base font-semibold">Camera Control</div>
+    <div class="pt-1">
       <pv-button variant="passive" icon="mdi-folder" block @click="fetchSnapshots">
         <span class="open-label">Show Saved Snapshots</span>
       </pv-button>
-    </v-card-text>
+    </div>
     <pv-dialog v-model="showSnapshotViewerDialog">
-      <v-card color="surface" flat>
-        <v-card-title> Saved Frame Snapshots </v-card-title>
-        <v-card-text v-if="imgData.length === 0" class="pt-0">
-          <v-alert
+      <pv-card padding="none" class="p-5">
+        <div class="pb-2 text-lg font-semibold">Saved Frame Snapshots</div>
+        <div v-if="imgData.length === 0" class="pt-0">
+          <pv-alert
             color="buttonPassive"
             density="compact"
             text="There are currently no saved snapshots."
             icon="mdi-information-outline"
             variant="tonal"
           />
-        </v-card-text>
-        <v-card-text v-else class="pt-0">
-          <v-alert
+        </div>
+        <div v-else class="pt-0">
+          <pv-alert
             closable
             color="buttonPassive"
             density="compact"
@@ -158,15 +161,15 @@ const expanded = ref([]);
             <template #item.actions="{ item }">
               <div style="display: flex; justify-content: center">
                 <a :download="item.snapshotName" :href="item.snapshotSrc">
-                  <v-icon size="small"> mdi-download </v-icon>
+                  <pv-icon size="small"> mdi-download </pv-icon>
                 </a>
               </div>
             </template>
           </v-data-table>
-        </v-card-text>
-      </v-card>
+        </div>
+      </pv-card>
     </pv-dialog>
-  </v-card>
+  </pv-card>
 </template>
 
 <style scoped lang="scss">
