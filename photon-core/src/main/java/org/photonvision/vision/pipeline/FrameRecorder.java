@@ -59,6 +59,14 @@ import org.zeroturnaround.zip.ZipUtil;
  * <p><strong>Single-file 2 GB cap:</strong> the classic AVI container limit. At 1080p30 that's
  * ~2 minutes; at 720p30 ~5 minutes. Documented Phase 1 limit — chunking is a follow-up.
  *
+ * <p><strong>How recordings are triggered:</strong> the web UI's Recordings card and robot code
+ * (via {@code PhotonCamera.setRecording(bool)} in photonlib) both write to the per-camera NT
+ * boolean {@code /photonvision/<nickname>/recordingRequest}. PhotonVision's {@code NTDataPublisher}
+ * subscribes to that topic and calls {@code frameProvider.setRecording(bool)} on the matching
+ * {@code VisionModule}, which in turn constructs / releases this {@code FrameRecorder}. Robot
+ * programmers should drive it on game-event edges rather than continuously — recordings are
+ * expensive at MJPEG-AVI sizes.
+ *
  * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, recorded
  * verbatim. Replay readers must propagate it through {@code Frame.timestampNanos} unchanged —
  * the replay machine's clock is irrelevant; downstream consumers (NT publisher, AKit) treat it
