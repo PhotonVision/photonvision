@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 import org.opencv.videoio.VideoCapture;
 import org.opencv.videoio.Videoio;
 import org.photonvision.common.logging.LogGroup;
@@ -52,11 +53,17 @@ import org.photonvision.vision.opencv.CVMat;
  * timestamps we cannot guarantee the replay timing contract, so construction fails loudly —
  * mirrors the writer-side refusal in {@code FrameRecorder} when the sidecar cannot be opened.
  *
- * <p><strong>What this commit does NOT do</strong> (deliberately deferred to later commits):
+ * <p><strong>Pacing:</strong> {@link #getInputMat()} blocks the vision thread so wall-clock
+ * playback matches the recording's {@code capture_ns} deltas — anchors on the first frame, then
+ * targets {@code firstMono + (captureNs - firstCapture)} for each subsequent frame. This keeps
+ * the UI's MJPEG stream looking like live playback. AKit-style consumers (wpilog NT4 capture)
+ * don't strictly need pacing since each NT event carries {@code capture_ns} in its payload, but
+ * the pacing is cheap and the UI experience matters too. Falling behind doesn't accumulate
+ * sleep debt: if the pipeline runs late, we emit the next frame immediately.
+ *
+ * <p><strong>What this provider does NOT do</strong> (Phase 1 caveats, separate follow-ups):
  *
  * <ul>
- *   <li>Pacing — frames are returned as fast as {@code VideoCapture.read()} produces them.
- *       A {@code PacingStrategy} seam arrives in a follow-up commit.
  *   <li>FOV / calibration — placeholder {@code FrameStaticProperties} with FOV=0.0 and no
  *       calibration. Users import calibration post-assignment via the existing upload UI; a
  *       later commit documents this.
@@ -76,6 +83,13 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private final AtomicBoolean exhausted = new AtomicBoolean(false);
 
     private long emittedFrameCount = 0;
+
+    // Pacing anchor — captured on the first emitted frame. nanoTime is monotonic so NTP jumps
+    // and DST transitions don't disrupt playback. The pacing model is target-based, not
+    // relative-sleep based, so a slow vision pipeline doesn't accumulate sleep debt.
+    private boolean pacingAnchored = false;
+    private long firstCaptureNs;
+    private long firstMonoNs;
 
     /**
      * @param recordingDir directory containing {@code recording.mp4} and {@code metadata.jsonl},
@@ -185,8 +199,31 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
+        long captureNs = entry.get().captureNs();
+        pace(captureNs);
+
         emittedFrameCount++;
-        return new CapturedFrame(mat, properties, entry.get().captureNs());
+        return new CapturedFrame(mat, properties, captureNs);
+    }
+
+    /**
+     * Block the vision thread so wall-clock spacing between emitted frames matches the
+     * recording's {@code capture_ns} deltas. First call anchors; subsequent calls park until
+     * {@code firstMono + (captureNs - firstCapture)} or return immediately if we're already
+     * past target. Interrupts are honoured (flag preserved) so VisionRunner stops cleanly.
+     */
+    private void pace(long captureNs) {
+        if (!pacingAnchored) {
+            firstCaptureNs = captureNs;
+            firstMonoNs = System.nanoTime();
+            pacingAnchored = true;
+            return;
+        }
+        long sleepNs = (firstMonoNs + (captureNs - firstCaptureNs)) - System.nanoTime();
+        if (sleepNs > 0) {
+            LockSupport.parkNanos(sleepNs);
+            if (Thread.interrupted()) Thread.currentThread().interrupt();
+        }
     }
 
     private void markExhausted(String reason) {
