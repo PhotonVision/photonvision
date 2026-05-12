@@ -145,12 +145,13 @@ public class USBFrameProvider extends CpuImageProcessor {
         return "USBFrameProvider - " + cvSink.getName();
     }
 
+    // Synchronized for symmetry with setRecording: a concurrent setRecording(true) mid-
+    // construction would otherwise leave an orphan recorder (created after release saw null).
     @Override
-    public void release() {
+    public synchronized void release() {
         CameraServer.removeServer(cvSink.getName());
         cvSink.close();
         cvSink = null;
-        // Snapshot before use: NT listener can null this field concurrently via setRecording(false).
         FrameRecorder rec = frameRecorder;
         if (rec != null) {
             rec.release();
@@ -176,8 +177,12 @@ public class USBFrameProvider extends CpuImageProcessor {
         this.settables = settables;
     }
 
+    // Synchronized to serialize start/stop transitions: without it, two concurrent
+    // setRecording(true) calls can both pass the getRecording() check while frameRecorder
+    // is null, both construct a FrameRecorder, and the second assignment orphans the first
+    // (writer thread + file handles leaked forever, no path to release).
     @Override
-    public void setRecording(boolean shouldRecord) {
+    public synchronized void setRecording(boolean shouldRecord) {
         if (shouldRecord) {
             String camPath = settables.getConfiguration().uniqueName;
 
