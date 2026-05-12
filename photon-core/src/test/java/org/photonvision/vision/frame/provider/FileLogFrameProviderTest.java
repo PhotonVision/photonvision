@@ -39,20 +39,9 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
 
 /**
- * Integration-ish test for {@link FileLogFrameProvider}. Synthesises a tiny image-sequence
- * fixture (3 JPEGs in a frames/ directory) with OpenCV's own {@link Imgcodecs#imwrite} — the
- * same encoder path {@code FrameRecorder} uses in production — pairs it with a hand-written
- * sidecar, then walks it through the provider and asserts frame count, dimensions, channel
- * order, and timestamp propagation.
- *
- * <p>Requires the OpenCV native libraries (loaded in {@code @BeforeAll} via
- * {@link LibraryLoader#loadWpiLibraries()}). Pure JPEG I/O — works on every platform PV builds
- * on with no external codec deps.
- *
- * <p>Notably this test does <em>not</em> call {@link LibraryLoader#loadTargeting()} or initialise
- * HAL/NetworkTables — {@code FileLogFrameProvider} touches no PV-specific JNI singletons, so it
- * runs on platforms where {@code photontargetingJNI} is unavailable (e.g. a Windows dev box
- * without Visual Studio).
+ * Synthesises a 3-frame image-sequence fixture via {@link Imgcodecs#imwrite} (the same encoder
+ * path {@code FrameRecorder} uses) and walks it through {@link FileLogFrameProvider}. Needs
+ * OpenCV but not {@code photontargetingJNI}, so runs on any platform.
  */
 class FileLogFrameProviderTest {
     private static final int WIDTH = 64;
@@ -75,17 +64,12 @@ class FileLogFrameProviderTest {
         writeSidecar(recordingDir.resolve("metadata.jsonl"));
     }
 
-    /**
-     * Generate a deterministic 3-frame image-sequence the same way {@code FrameRecorder} does in
-     * production — OpenCV {@code Imgcodecs.imwrite} of zero-padded JPEGs. Each frame is a solid
-     * BGR colour that shifts so the JPEG encoder sees real per-frame variation.
-     */
     private static void synthesizeFrames(Path framesDir) throws IOException {
         Files.createDirectories(framesDir);
         for (int i = 0; i < CAPTURE_NS.length; i++) {
             Mat frame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3, new Scalar(i * 64 % 255, 64, 128));
             try {
-                Path out = framesDir.resolve(String.format("%06d.jpg", i));
+                Path out = FrameLogFormat.framePath(framesDir, i);
                 assertTrue(
                         Imgcodecs.imwrite(out.toString(), frame),
                         "Imgcodecs.imwrite failed for " + out);
@@ -156,11 +140,9 @@ class FileLogFrameProviderTest {
     }
 
     @Test
-    void refusesPre2183RecordingMissingSidecar(@TempDir Path tmp) throws IOException {
-        // Copy the synthesized frames/ subtree but not metadata.jsonl. The provider should
-        // refuse because without source-side capture_ns we can't honour the replay timing
-        // contract.
-        Path dir = tmp.resolve("pre-2183");
+    void refusesRecordingMissingSidecar(@TempDir Path tmp) throws IOException {
+        // Frames/ copied, no metadata.jsonl.
+        Path dir = tmp.resolve("no-sidecar");
         Path framesCopy = dir.resolve("frames");
         Files.createDirectories(framesCopy);
         try (var stream = Files.list(recordingDir.resolve("frames"))) {
@@ -183,8 +165,7 @@ class FileLogFrameProviderTest {
 
     @Test
     void refusesMissingFrames(@TempDir Path tmp) throws IOException {
-        // Sidecar present, frames/ absent. Could be an old MJPEG-AVI / mp4 recording, could be
-        // a writer that crashed before the first frame. Either way the provider refuses.
+        // Sidecar present, frames/ absent.
         Path dir = tmp.resolve("no-frames");
         Files.createDirectories(dir);
         Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
@@ -197,8 +178,7 @@ class FileLogFrameProviderTest {
 
     @Test
     void refusesEmptyFramesDir(@TempDir Path tmp) throws IOException {
-        // frames/ exists but contains no 000000.jpg — recorder crashed between mkdir and the
-        // first frame write. Refuse so the user doesn't get silent garbage replay.
+        // frames/ exists, 000000.jpg absent.
         Path dir = tmp.resolve("empty-frames");
         Files.createDirectories(dir.resolve("frames"));
         Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
@@ -212,9 +192,6 @@ class FileLogFrameProviderTest {
 
     @Test
     void getInputMatMarksConnectedEvenIfIsConnectedNeverCalled() throws IOException {
-        // Defensive: VisionRunner always calls isConnected() before getInputMat, but tests and
-        // future callers may not. The first getInputMat must still mark the source as having
-        // connected so hasConnected() reports the truth.
         FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
         try {
             assertFalse(provider.hasConnected(), "no calls yet — flag should still be false");

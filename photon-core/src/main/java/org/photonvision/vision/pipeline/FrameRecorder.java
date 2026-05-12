@@ -35,6 +35,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.processes.VisionModule;
@@ -42,53 +43,25 @@ import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 /**
- * Writes a directory of JPEG frames ({@code frames/000000.jpg, 000001.jpg, …}) plus a
- * {@code metadata.jsonl} sidecar of per-frame {@code (seq, capture_ns)} pairs.
+ * Writes a directory of JPEG frames ({@code frames/000000.jpg, …}) plus a {@code metadata.jsonl}
+ * sidecar of per-frame {@code (seq, capture_ns)} pairs. Per-frame JPEG sidesteps video-container
+ * size caps and codec dependencies (WPILib's Linux OpenCV ships no video backend); trade-off is
+ * ~8-10× larger than H.264 (~1 GB/min at 1080p30).
  *
- * <p><strong>Why image-sequence and not a video container:</strong>
+ * <p><strong>Trigger:</strong> the web UI's Recordings card and robot code (via
+ * {@code PhotonCamera.setRecording(bool)}) both write the per-camera NT boolean
+ * {@code /photonvision/<nickname>/recordingRequest}. {@code NTDataPublisher} subscribes and
+ * drives {@link #startRecording} / {@link #stopRecording}.
  *
- * <ul>
- *   <li><em>No container size cap.</em> AVI's classic 2 GB cap silently corrupts long recordings
- *       (~2 min at 1080p30). MJPEG-AVI / mp4 are container-bound; a frame directory is filesystem-
- *       bound, which on any modern filesystem is "effectively unlimited" for typical match
- *       lengths.
- *   <li><em>Atomic per frame.</em> Each {@code Imgcodecs.imwrite} either produces a complete JPEG
- *       or fails. A crash mid-recording leaves all already-written frames intact and the last
- *       (partial) frame either absent or invalid-but-skippable. No container-index corruption.
- *   <li><em>No codec compatibility risk.</em> JPEG decode via {@code Imgcodecs.imread} is part of
- *       OpenCV core on every supported platform — never depends on a video backend (ffmpeg,
- *       gstreamer, Media Foundation) being present or version-matched. WPILib's Linux OpenCV
- *       ships no video backend, which is what disqualifies H.264 mp4 and made MJPEG-AVI a
- *       workaround; per-file JPEG sidesteps the whole question.
- *   <li><em>Random seek.</em> Replay can jump to any frame N by opening {@code N.jpg} directly,
- *       enabling future Phase 3 batch / out-of-order replay without recoding the format.
- *   <li><em>Truncatable.</em> Readers handle a partial recording by counting files; no extra
- *       work to recover from a writer crash.
- * </ul>
+ * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, written
+ * verbatim; replay readers propagate it through {@code Frame.timestampNanos} unchanged.
  *
- * <p>Trade-off vs. a video container: ~8-10× larger than H.264 (each frame is an intra-frame
- * JPEG, no temporal compression), plus filesystem inode pressure (~1800 files / minute at 30 fps).
- * At 1080p30 the per-recording size is ~1 GB/minute. ext4 / NTFS / eMMC handle the file count
- * fine; FAT32 starts to slow down past ~10k files in one directory. If that becomes a problem,
- * shard frames into subdirectories ({@code frames/000/}, {@code frames/001/}) — for now, flat.
- *
- * <p><strong>How recordings are triggered:</strong> the web UI's Recordings card and robot code
- * (via {@code PhotonCamera.setRecording(bool)} in photonlib) both write to the per-camera NT
- * boolean {@code /photonvision/<nickname>/recordingRequest}. PhotonVision's {@code NTDataPublisher}
- * subscribes to that topic and calls {@code frameProvider.setRecording(bool)} on the matching
- * {@code VisionModule}, which in turn constructs / releases this {@code FrameRecorder}. Robot
- * programmers should drive it on game-event edges rather than continuously — recordings are
- * disk-expensive at 1 GB/minute.
- *
- * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, recorded
- * verbatim. Replay readers must propagate it through {@code Frame.timestampNanos} unchanged —
- * the replay machine's clock is irrelevant; downstream consumers (NT publisher, AKit) treat it
- * as opaque time and rebase if they need to.
- *
- * <p>Metadata is flushed before its paired frame, so under any crash
- * {@code len(metadata.jsonl) >= frame_file_count(frames/)}. Readers truncate jsonl to the frame
- * directory's count, and ignore unknown JSON fields so the schema can grow (exposure, gain,
- * calibration version) without breaking older readers.
+ * <p>Metadata is flushed before its paired frame, so under any process crash
+ * {@code len(metadata.jsonl) >= frame_file_count(frames/)} — readers truncate jsonl to the
+ * frame directory's count. Unknown JSON fields are ignored so the schema can grow without
+ * breaking old readers. Power-loss tearing is accepted: per-frame fsync would blow the 33 ms
+ * budget on SD-card-class storage, and FRC's end-of-match power-cut sacrifices ~1 s of frames
+ * anyway.
  */
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
@@ -111,24 +84,12 @@ public class FrameRecorder implements Releasable {
     private final Path outputPath;
     private final Path framesDir;
 
-    // JPEG quality (1-100). 85 is the visual / size sweet spot for the kind of content PV's
-    // pipelines actually consume (AprilTags, retro-reflective targets, coloured shapes). At
-    // 1080p that's ~50-150 KB per frame depending on detail. If a future use case wants
-    // pristine pixels, configure higher; for storage-constrained use, drop to ~70.
+    // 85: ~50-150 KB/frame at 1080p; sufficient detail for AprilTag / retro / colour pipelines.
     private static final int JPEG_QUALITY = 85;
 
-    // Reused JPEG-quality param vector for Imgcodecs.imwrite. Allocated once per recorder.
-    private final MatOfInt jpegWriteParams =
-            new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, JPEG_QUALITY);
+    // Initialised in ctor body after early-throw checks (see release()).
+    private final MatOfInt jpegWriteParams;
 
-    // 6 digits supports up to 1M frames per recording — ~9 hours @ 30 fps, ~2.3 hours @ 120 fps,
-    // both well beyond any realistic match recording. Zero-padded so lexical sort matches numeric
-    // sort, which is what replay's directory iteration relies on.
-    private static final String FRAME_FILENAME_FORMAT = "%06d.jpg";
-
-    // Per-frame metadata sidecar, one JSON object per line. Encoder-agnostic so it survives
-    // format switches — filenames no longer carry per-frame info, sidecar is the only
-    // source of seq + capture timing for replay.
     private final BufferedWriter metadataWriter;
 
     private static class RecordFrame {
@@ -171,7 +132,6 @@ public class FrameRecorder implements Releasable {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
         this.strat = strat;
 
-        // Check if we're under 4 GB of available space, if so exit
         if (availableSpace < MIN_DISK_SPACE_BYTES) {
             logger.error(
                     "Low disk space available ("
@@ -184,9 +144,8 @@ public class FrameRecorder implements Releasable {
         this.outputPath = outputPath;
         this.framesDir = outputPath.resolve("frames");
 
-        // Write strategy to a file in the output path
+        // strat file: marker for offline tooling; not consumed by replay.
         try {
-            // Ensure output + frames directory exist. createDirectories is no-op if present.
             java.nio.file.Files.createDirectories(framesDir);
 
             java.nio.file.Path strategyFile = outputPath.resolve("strat");
@@ -197,14 +156,12 @@ public class FrameRecorder implements Releasable {
                     content.getBytes(java.nio.charset.StandardCharsets.UTF_8),
                     java.nio.file.StandardOpenOption.CREATE,
                     java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
-        } catch (Exception e) {
+        } catch (IOException e) {
             logger.warn(
                     "Failed to write recording strategy file to " + outputPath + ": " + e.getMessage());
         }
 
-        // Open the metadata sidecar. Required for replay — fatal at construction so we don't
-        // produce a frame directory missing the seq + capture_ns needed to feed frames back
-        // through the pipeline.
+        // Sidecar must open before any frame can be queued — replay needs (seq, capture_ns).
         try {
             this.metadataWriter =
                     java.nio.file.Files.newBufferedWriter(
@@ -216,6 +173,9 @@ public class FrameRecorder implements Releasable {
             throw new IllegalStateException(
                     "Failed to open metadata sidecar at " + outputPath + "/metadata.jsonl", e);
         }
+
+        // Past every early-throw — allocate the native MatOfInt last so release() can reach it.
+        this.jpegWriteParams = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, JPEG_QUALITY);
 
         this.frameQueue = new ArrayBlockingQueue<>(QUEUE_CAPACITY);
         this.recording = new AtomicBoolean(false);
@@ -251,29 +211,20 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Record a frame. Non-blocking: clones the input Mat and queues the clone, so the caller retains
-     * ownership of the passed CVMat and is responsible for releasing it. If the queue is full, the
-     * new frame is dropped (existing queued frames are kept) and the clone is released internally.
+     * Queue a frame for the writer thread. Clones the input Mat — caller retains ownership of
+     * {@code cvmat} and is responsible for releasing it.
      *
-     * @param cvmat The frame to record. Not retained or released by this method.
-     * @param captureTimestampNs Wall-clock nanoseconds at which the camera captured this frame
-     *     (typically from cscore's grabFrame, in the wpi::nt::Now epoch). Used for both the on-disk
-     *     filename and any downstream replay timing; the value is preserved verbatim and never
-     *     replaced with a write-time clock read.
-     * @return true if frame was queued, false if recording is not active, queue is full, or we've run
-     *     out of disk space.
+     * @param captureTimestampNs source-machine capture time; preserved verbatim into the sidecar.
+     * @return false if recording is off, shutting down, the queue is full, or disk is low.
      */
     public boolean recordFrame(CVMat cvmat, long captureTimestampNs) {
         if (!recording.get() || shutdown.get()) {
             return false;
         }
 
-        // Skip seq=0: the constructor already checked initial disk space, so the
-        // redundant check would only burn SystemMonitor latency on the first-frame path.
+        // Re-check disk every 100 frames; constructor already covered seq=0.
         if (sequenceCounter > 0 && sequenceCounter % 100 == 0) {
-            double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
-
-            // Check if we're under 4 GB of available space, if so stop recording
+            long availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
             if (availableSpace < MIN_DISK_SPACE_BYTES) {
                 logger.error(
                         "Low disk space available ("
@@ -284,14 +235,11 @@ public class FrameRecorder implements Releasable {
             }
         }
 
-        // Clone so the caller's Mat is independent of ours: the pipeline downstream will release
-        // the original after processing, and the writer thread will release this clone after write.
         Mat clone = cvmat.getMat().clone();
         long seq = sequenceCounter;
         boolean added = frameQueue.offer(new RecordFrame(clone, captureTimestampNs, seq));
 
         if (!added) {
-            // Queue full; release the clone we made (not the caller's Mat).
             clone.release();
         }
 
@@ -310,10 +258,7 @@ public class FrameRecorder implements Releasable {
                     break;
                 }
 
-                // Metadata before frame: keeps len(jsonl) >= frame_count(frames/) under any
-                // crash, so replay readers truncate jsonl to the file count — never the other
-                // way around. If metadata write fails, skip the frame to preserve the invariant
-                // (writeMetadataLine stops recording on failure).
+                // Metadata before frame keeps the len(jsonl) >= frame_count invariant (class doc).
                 if (writeMetadataLine(frame.sequenceId, frame.captureTimestampNs)) {
                     writeFrame(frame.sequenceId, frame.mat);
                 }
@@ -327,16 +272,9 @@ public class FrameRecorder implements Releasable {
         }
     }
 
-    /**
-     * Write one BGR frame as a standalone JPEG into {@code frames/<seq>.jpg}.
-     *
-     * <p>Each call is independent and atomic at the OS layer — a partial write produces an
-     * invalid JPEG that replay skips, not a corrupted container. {@code Imgcodecs.imwrite}
-     * returns false on disk-full / permissions / encoder failure; we log and stop recording so
-     * the writer thread doesn't burn cycles draining the queue past a broken disk.
-     */
+    /** Stops recording on imwrite failure (disk-full / permissions / encoder error). */
     private void writeFrame(long seq, Mat mat) {
-        Path framePath = framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, seq));
+        Path framePath = FrameLogFormat.framePath(framesDir, seq);
         boolean ok = Imgcodecs.imwrite(framePath.toString(), mat, jpegWriteParams);
         if (!ok) {
             logger.error(
@@ -348,12 +286,8 @@ public class FrameRecorder implements Releasable {
     }
 
     /**
-     * Write one JSONL line: {"seq":N,"capture_ns":T}. Flushed per-line so a crash doesn't lose
-     * the last few frames of metadata. Manually formatted (no Jackson) because the schema is
-     * trivial and this is on the writer thread's hot path.
-     *
-     * @return true on success; false on IO failure (after stopping the recording — caller must
-     *     not write the paired frame, or the {@code jsonl ≥ frame_count} invariant breaks).
+     * Append one {@code {"seq":N,"capture_ns":T}} line, flushed per-line. Returns false on IO
+     * failure (after stopping recording so the invariant isn't broken).
      */
     private boolean writeMetadataLine(long sequenceId, long captureTimestampNs) {
         try {
@@ -371,10 +305,6 @@ public class FrameRecorder implements Releasable {
 
     public boolean isRecording() {
         return recording.get();
-    }
-
-    public int getQueueSize() {
-        return frameQueue.size();
     }
 
     @Override
@@ -412,8 +342,6 @@ public class FrameRecorder implements Releasable {
             logger.warn("Failed to close metadata sidecar: " + e.getMessage());
         }
 
-        // jpegWriteParams is a small MatOfInt allocated once at construction. GC handles it,
-        // but explicit release matches the rest of the class's resource discipline.
         jpegWriteParams.release();
     }
 
@@ -448,10 +376,7 @@ public class FrameRecorder implements Releasable {
             throw new IllegalStateException(
                     "Camera recordings directory not found: " + cameraRecordingsDir);
         }
-        // Use the camera's nickname for the zip filename if we can find it; fall back to the
-        // directory's own name. The original code threw NPE when the camera config was missing;
-        // tolerating that here means a user can still export recordings from a camera they've
-        // since unassigned.
+        // Nickname for active cameras, dir name as fallback for unassigned ones.
         String prefix =
                 VisionSourceManager.getInstance().getVisionModules().stream()
                         .filter(

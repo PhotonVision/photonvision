@@ -144,7 +144,7 @@ class MetadataSidecarReaderTest {
 
     @Test
     void failsOnShortTrailingLine() throws IOException {
-        // Simulates writer crash mid-line. The lockstep-with-mp4 pattern in the provider stops
+        // Simulates writer crash mid-line. The lockstep-with-frames pattern in the provider stops
         // before we ever read this line; if a caller does reach it, fail loudly with a line
         // number so they can diagnose.
         Path p =

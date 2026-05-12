@@ -35,17 +35,15 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
+import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 
 /**
- * Scratch smoke test: feeds 60 synthetic 640x480 BGR frames through FrameRecorder and verifies the
- * frame directory + metadata sidecar by reading each JPEG back through OpenCV's Imgcodecs (the
- * same code path FileLogFrameProvider uses on replay). Uses the package-private DI ctor so it
- * doesn't need photontargetingJNI. Delete after manual verification.
- *
- * <p>Platform-independent — relies only on OpenCV's Imgcodecs (always present), no ffmpeg.
+ * Round-trips 60 synthetic frames through {@link FrameRecorder} and decodes each back with
+ * {@link Imgcodecs} — the same decoder path {@code FileLogFrameProvider} uses on replay. Uses
+ * the package-private DI ctor so it doesn't need {@code photontargetingJNI}.
  */
-public class FrameRecorderSmokeTest {
+public class FrameRecorderIntegrationTest {
     private static final int W = 640;
     private static final int H = 480;
     private static final int FRAME_COUNT = 60;
@@ -99,13 +97,10 @@ public class FrameRecorderSmokeTest {
         assertTrue(Files.exists(strat), "strat file missing");
         assertEquals("VIDEO", Files.readString(strat, StandardCharsets.UTF_8).trim());
 
-        // Decode each JPEG with OpenCV — verifies the SAME code path replay will exercise.
-        long totalBytes = 0;
         for (int i = 0; i < FRAME_COUNT; i++) {
-            Path framePath = framesDir.resolve(String.format("%06d.jpg", i));
+            Path framePath = FrameLogFormat.framePath(framesDir, i);
             assertTrue(Files.exists(framePath), "frame " + i + " missing: " + framePath);
             assertTrue(Files.size(framePath) > 0, "frame " + i + " is empty");
-            totalBytes += Files.size(framePath);
 
             Mat decoded = Imgcodecs.imread(framePath.toString());
             try {
@@ -118,8 +113,6 @@ public class FrameRecorderSmokeTest {
             }
         }
 
-        // Sidecar must have at least as many lines as written frames (the writer's invariant —
-        // jsonl flushed before frame).
         List<String> lines;
         try (BufferedReader r = Files.newBufferedReader(meta, StandardCharsets.UTF_8)) {
             lines = r.lines().toList();
@@ -132,18 +125,5 @@ public class FrameRecorderSmokeTest {
                     "{\"seq\":" + i + ",\"capture_ns\":" + (1_000_000_000L + i * 33_333_333L) + "}";
             assertEquals(expected, lines.get(i), "metadata line " + i + " mismatch");
         }
-
-        System.out.println(
-                "SMOKE OK: "
-                        + FRAME_COUNT
-                        + " frames -> "
-                        + totalBytes
-                        + " bytes total ("
-                        + (totalBytes / FRAME_COUNT)
-                        + " bytes/frame avg) at "
-                        + W
-                        + "x"
-                        + H
-                        + ", metadata seq+capture_ns verbatim, round-trip decode via Imgcodecs.imread.");
     }
 }

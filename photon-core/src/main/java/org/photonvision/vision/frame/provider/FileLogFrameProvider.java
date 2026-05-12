@@ -32,116 +32,45 @@ import org.photonvision.vision.opencv.CVMat;
 
 /**
  * Replay-side counterpart to {@link org.photonvision.vision.pipeline.FrameRecorder}. Reads a
- * recording directory containing a {@code frames/} subdirectory of zero-padded JPEGs plus a
- * {@code metadata.jsonl} sidecar, and emits {@link CapturedFrame}s with their original
- * source-machine capture timestamps so the rest of the vision pipeline (and the NT publisher
- * downstream of it) processes replayed frames identically to live ones.
+ * recording directory ({@code frames/<seq>.jpg} + {@code metadata.jsonl}) and emits
+ * {@link CapturedFrame}s with their original source-machine capture timestamps, so the rest of
+ * the vision pipeline processes replayed frames identically to live ones.
  *
- * <p>Each JPEG is decoded independently via {@link Imgcodecs#imread}. No video container, no
- * codec compatibility risk, no ffmpeg / gstreamer plugin needed — works on every platform PV
- * ships. The next file to read is determined by the sidecar's {@code seq} field, which doubles
- * as the zero-padded JPEG filename ({@code frames/<seq:06d>.jpg}). See {@code FrameRecorder}'s
- * class javadoc for the on-disk format and its invariants — this reader's correctness depends
- * on them.
+ * <p><strong>Timestamp contract:</strong> {@code capture_ns} is propagated verbatim through
+ * {@link CapturedFrame#captureTimestamp} into {@code Frame.timestampNanos}. The value is
+ * opaque source-machine time; consumers (NT publisher, AKit) rebase to replay-machine time if
+ * they need to.
  *
- * <h2>Timestamp contract</h2>
+ * <p><strong>Calibration / FOV:</strong> recordings carry image data but not intrinsics. FOV
+ * is 0 and {@code cameraCalibration} is {@code null} until a calibration is imported via
+ * {@code Cameras → Calibration → Import}; pipelines that read {@code horizontalFocalLength}
+ * produce nonsense until then.
  *
- * <p>{@code capture_ns} is the <em>source</em> machine's {@code wpi::nt::Now} epoch at the
- * moment of capture, written verbatim by the recorder. We propagate it unchanged through
- * {@link CapturedFrame#captureTimestamp} into {@link org.photonvision.vision.frame.Frame#timestampNanos};
- * we do not substitute a replay-machine clock read. The value is therefore <em>opaque</em> to
- * everything downstream of the recorder — it represents source-machine time, and any consumer
- * that needs replay-machine wall-clock alignment is responsible for rebasing it. The two
- * Phase 1 consumers behave as follows:
+ * <p><strong>Pacing:</strong> {@link #getInputMat()} blocks the vision thread so wall-clock
+ * spacing matches the recording's {@code capture_ns} deltas. Anchored on the first frame and
+ * target-based (via {@link System#nanoTime}) so a slow pipeline doesn't accumulate sleep debt.
  *
- * <ul>
- *   <li>{@code NTDataPublisher.accept} translates {@code capture_ns} through the Time Sync
- *       Server's offset (same as for a live source) before stamping NT updates.
- *   <li>An AKit-style wpilog NT4 capture on the replay machine records each NT event with
- *       its embedded {@code capture_ns} in the payload; AKit downstream reconstructs the
- *       timeline from those payload values regardless of when wpilog actually received them.
- * </ul>
+ * <p><strong>EOF:</strong> the shorter of {@code frames/} and {@code metadata.jsonl} ends
+ * replay. Once exhausted, {@link #isConnected()} reports {@code false} and further
+ * {@link #getInputMat()} calls return empty {@link CVMat}s.
  *
- * <h2>Calibration / FOV — manual import required</h2>
- *
- * <p>Recordings carry image data but not the camera intrinsics that captured them. This
- * provider constructs with {@link FrameStaticProperties} populated only from the avi header
- * (width, height) — FOV is 0 and {@code cameraCalibration} is {@code null}. Pipelines that
- * need intrinsics (AprilTag PnP, SolvePNP, coloured-shape distance estimation, anything that
- * reads {@code horizontalFocalLength} off the static properties) will produce nonsense
- * numbers until a calibration is associated with this source.
- *
- * <p><strong>Recommended workflow:</strong> after assigning a recording as a vision module
- * via the camera-matching UI, use the existing calibration upload UI
- * ({@code Cameras → Calibration → Import}) to attach the calibration that was active on the
- * source machine when the recording was captured. A future PR may add a {@code calibration_id}
- * field to the metadata sidecar (the writer's schema is already forward-compatible — see
- * {@link MetadataSidecarReader}) and auto-link on assignment; Phase 1 ships without that.
- *
- * <h2>Pacing</h2>
- *
- * <p>{@link #getInputMat()} <strong>blocks the vision thread</strong> so wall-clock playback
- * matches the recording's {@code capture_ns} deltas — anchors on the first frame, then targets
- * {@code firstMono + (captureNs - firstCapture)} for each subsequent frame. Uses
- * {@link System#nanoTime()} (monotonic; NTP / DST jumps don't disrupt playback) and
- * {@link java.util.concurrent.locks.LockSupport#parkNanos}. This keeps the UI's MJPEG stream
- * looking like a live source. AKit-style consumers don't strictly need pacing (they read
- * {@code capture_ns} from the payload regardless of receipt time) but the cost is negligible.
- * Pacing is target-based, not relative-sleep based, so a slow vision pipeline doesn't
- * accumulate sleep debt — if we're behind target, the next frame emits immediately.
- *
- * <h2>EOF policy</h2>
- *
- * <p>The shorter of the two streams ends replay. The writer guarantees
- * {@code len(jsonl) >= frame_count(frames/)} under any crash, so the frame directory normally
- * exhausts first (next JPEG missing) and the sidecar-shorter path defends against externally
- * truncated metadata. Once exhausted, {@link #isConnected()} reports {@code false} and further
- * {@link #getInputMat()} calls short-circuit to empty {@link CVMat}s — which
- * {@link CpuImageProcessor#get()} handles cleanly without dropping or NPE.
- *
- * <h2>Pre-2183 recordings</h2>
- *
- * <p>A directory containing {@code frames/} but no {@code metadata.jsonl} predates
- * PhotonVision's per-frame metadata sidecar. Without source-side capture timestamps the
- * replay timing contract cannot be honoured, so construction fails loudly with an
- * {@link IOException} that names the missing file — mirroring the writer-side refusal in
- * {@code FrameRecorder} when its sidecar cannot be opened.
- *
- * <h2>Recording-while-replaying</h2>
- *
- * <p>Unsupported on purpose. {@link #setRecording} throws
- * {@link UnsupportedOperationException}; {@link #getRecording()} is permanently {@code false}.
- * Re-encoding a recording into another recording would lose the original capture timestamps
- * and double the storage cost for no benefit.
- *
- * <h2>Beyond Phase 1</h2>
- *
- * <p>Phase 2 (AKit replay) is documented as "run wpilog NT4 capture against the replay
- * machine" — no PV-internal bridge code is needed. Phase 3 (headless batch replay,
- * faster-than-realtime) is a separate RFC about decoupling {@code CVPipeline} from
- * {@code VisionRunner} / NT / Javalin; the recording format itself is unchanged.
+ * <p><strong>Required structure:</strong> construction throws {@link IOException} if
+ * {@code frames/000000.jpg} or {@code metadata.jsonl} is missing. Re-recording via
+ * {@link #setRecording} is unsupported on purpose.
  */
 public class FileLogFrameProvider extends CpuImageProcessor {
-    // Zero-padded JPEG filename format — must match FrameRecorder.FRAME_FILENAME_FORMAT so
-    // seq 7 → "000007.jpg" on both sides.
-    private static final String FRAME_FILENAME_FORMAT = "%06d.jpg";
-
     private final Path recordingDir;
     private final Path framesDir;
     private final MetadataSidecarReader sidecarReader;
     private final FrameStaticProperties properties;
     private final Logger logger;
 
-    // Once true, all subsequent getInputMat() calls short-circuit to empty frames and
-    // isConnected() returns false. Single-threaded use is the norm (VisionRunner calls
-    // getInputMat from one thread) but AtomicBoolean documents the intent clearly.
+    // CAS in markExhausted dedupes the "exhausted" log line; a plain volatile would not.
     private final AtomicBoolean exhausted = new AtomicBoolean(false);
 
     private long emittedFrameCount = 0;
 
-    // Pacing anchor — captured on the first emitted frame. nanoTime is monotonic so NTP jumps
-    // and DST transitions don't disrupt playback. The pacing model is target-based, not
-    // relative-sleep based, so a slow vision pipeline doesn't accumulate sleep debt.
+    // Pacing anchor — set on the first emitted frame (see pace()).
     private boolean pacingAnchored = false;
     private long firstCaptureNs;
     private long firstMonoNs;
@@ -159,25 +88,18 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
         if (!Files.isDirectory(framesDir)) {
             throw new IOException(
-                    "Recording at "
-                            + recordingDir
-                            + " is missing frames/. Recordings from the H.264 mp4 or MJPEG-AVI"
-                            + " predecessors cannot be replayed by this version — re-record under"
-                            + " PV with image-sequence support.");
+                    "Recording at " + recordingDir + " is missing the required frames/ directory.");
         }
         if (!Files.isRegularFile(metadataPath)) {
             throw new IOException(
                     "Recording at "
                             + recordingDir
-                            + " is missing metadata.jsonl. Recordings made before the per-frame"
-                            + " metadata PR cannot be replayed — their source-side capture timestamps"
-                            + " are unrecoverable.");
+                            + " is missing the required metadata.jsonl sidecar; without source-side"
+                            + " capture timestamps the replay timing contract cannot be honoured.");
         }
 
-        // Probe the first frame to get static properties. Doesn't consume a "real" frame from the
-        // provider's perspective — getInputMat() re-reads via the sidecar's seq, and seq=0 is
-        // what's in this probe.
-        Path firstFrame = framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, 0));
+        // Probe the first frame for static properties; getInputMat re-reads via the sidecar.
+        Path firstFrame = FrameLogFormat.framePath(framesDir, 0);
         if (!Files.isRegularFile(firstFrame)) {
             throw new IOException(
                     "Recording at "
@@ -194,15 +116,10 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             }
             int width = probe.cols();
             int height = probe.rows();
-            // FOV unknown until the user imports calibration for this source. The pipelines tolerate
-            // FOV=0 / null calibration; documented as a Phase 1 caveat in a follow-up commit.
+            // FOV / calibration come from a later user-driven import; see class doc.
             this.properties = new FrameStaticProperties(width, height, 0.0, null);
 
-            try {
-                this.sidecarReader = new MetadataSidecarReader(metadataPath);
-            } catch (IOException e) {
-                throw e;
-            }
+            this.sidecarReader = new MetadataSidecarReader(metadataPath);
 
             this.logger =
                     new Logger(
@@ -218,11 +135,8 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
     @Override
     public CapturedFrame getInputMat() {
-        // Mirror USBFrameProvider's defensive fire-once pattern: if nobody called isConnected()
-        // between construction and the first getInputMat (the VisionRunner startup loop normally
-        // does, but tests and future callers may not), make sure onCameraConnected runs so
-        // hasConnected() reports the truth. For a file source we know we're alive the moment
-        // construction succeeds — the file is right there.
+        // Tests / future callers may skip isConnected; fire onCameraConnected defensively so
+        // hasConnected() reports the truth.
         if (!cameraPropertiesCached) {
             onCameraConnected();
         }
@@ -231,9 +145,6 @@ public class FileLogFrameProvider extends CpuImageProcessor {
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
-        // Read sidecar first — the seq field tells us which JPEG to load. Order matters: if the
-        // sidecar is short (rare, writer crash before flush+write completed), we want to fail
-        // before disk I/O on a JPEG.
         Optional<MetadataSidecarReader.Entry> entry;
         try {
             entry = sidecarReader.readNext();
@@ -248,20 +159,16 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
 
         if (entry.isEmpty()) {
-            // Normal end-of-recording: sidecar exhausted. By the writer's invariant the frames/
-            // directory is at most as long, so even if it has extra files we stop here.
             markExhausted("metadata.jsonl exhausted after " + emittedFrameCount + " frames");
             return new CapturedFrame(new CVMat(), properties, 0L);
         }
 
         long seq = entry.get().seq();
         long captureNs = entry.get().captureNs();
-        Path framePath = framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, seq));
+        Path framePath = FrameLogFormat.framePath(framesDir, seq);
 
-        // Decode the JPEG. imread returns an empty Mat on missing or unreadable file — we treat
-        // that as the second EOF path: jsonl had a line for this seq but the frame file isn't
-        // there. The writer's metadata-before-frame invariant means this is exactly the partial-
-        // last-frame case after a crash; readers stop here cleanly.
+        // imread returns empty Mat on missing/unreadable — covers the partial-last-frame case
+        // (writer flushed jsonl line then crashed mid-imwrite).
         Mat decoded = Imgcodecs.imread(framePath.toString());
         if (decoded.empty()) {
             decoded.release();
@@ -280,12 +187,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         return new CapturedFrame(new CVMat(decoded), properties, captureNs);
     }
 
-    /**
-     * Block the vision thread so wall-clock spacing between emitted frames matches the
-     * recording's {@code capture_ns} deltas. First call anchors; subsequent calls park until
-     * {@code firstMono + (captureNs - firstCapture)} or return immediately if we're already
-     * past target. Interrupts are honoured (flag preserved) so VisionRunner stops cleanly.
-     */
+    /** First call anchors; subsequent calls park until target. See class doc for the model. */
     private void pace(long captureNs) {
         if (!pacingAnchored) {
             firstCaptureNs = captureNs;
@@ -295,16 +197,13 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
         long sleepNs = (firstMonoNs + (captureNs - firstCaptureNs)) - System.nanoTime();
         if (sleepNs > 0) {
+            // parkNanos doesn't throw or clear the interrupt flag; the surrounding interrupt
+            // handling lives in VisionRunner. Returning early just shortens the park.
             LockSupport.parkNanos(sleepNs);
-            if (Thread.interrupted()) Thread.currentThread().interrupt();
         }
     }
 
-    /**
-     * Width / height / FOV / calibration of frames this provider will emit. Probed at
-     * construction time from the first JPEG; exposed so the surrounding VisionSource can
-     * wire video-mode metadata into its settables without consuming a frame.
-     */
+    /** Static properties probed at construction from the first JPEG (see class doc). */
     public FrameStaticProperties getStaticProperties() {
         return properties;
     }
