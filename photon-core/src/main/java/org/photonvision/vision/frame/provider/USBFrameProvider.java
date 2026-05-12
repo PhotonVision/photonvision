@@ -152,9 +152,8 @@ public class USBFrameProvider extends CpuImageProcessor {
         CameraServer.removeServer(cvSink.getName());
         cvSink.close();
         cvSink = null;
-        FrameRecorder rec = frameRecorder;
-        if (rec != null) {
-            rec.release();
+        if (frameRecorder != null) {
+            frameRecorder.release();
             frameRecorder = null;
         }
     }
@@ -221,12 +220,9 @@ public class USBFrameProvider extends CpuImageProcessor {
                 return;
             }
         } else {
-            // Snapshot before use: a concurrent release() can null this field between the check
-            // and any subsequent call.
-            FrameRecorder rec = frameRecorder;
-            if (rec != null) {
-                rec.stopRecording();
-                rec.release();
+            if (frameRecorder != null) {
+                frameRecorder.stopRecording();
+                frameRecorder.release();
                 frameRecorder = null;
             }
         }
