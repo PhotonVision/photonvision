@@ -219,7 +219,9 @@ public class FrameRecorder implements Releasable {
             return false;
         }
 
-        if (sequenceCounter % 100 == 0) {
+        // Skip seq=0: the constructor already checked initial disk space, so the
+        // redundant check would only burn SystemMonitor latency on the first-frame path.
+        if (sequenceCounter > 0 && sequenceCounter % 100 == 0) {
             double availableSpace = SystemMonitor.getInstance().getUsableDiskSpace();
 
             // Check if we're under 4 GB of available space, if so stop recording
