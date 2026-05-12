@@ -31,44 +31,94 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 
 /**
- * Replay-side counterpart to {@code FrameRecorder}. Reads a recording directory containing
- * {@code recording.mp4} + {@code metadata.jsonl} and emits {@link CapturedFrame}s with their
- * original source-machine capture timestamps.
+ * Replay-side counterpart to {@link org.photonvision.vision.pipeline.FrameRecorder}. Reads a
+ * recording directory containing {@code recording.mp4} + {@code metadata.jsonl} and emits
+ * {@link CapturedFrame}s with their original source-machine capture timestamps, so the rest of
+ * the vision pipeline (and the NT publisher downstream of it) processes replayed frames
+ * identically to live ones.
  *
- * <p>The mp4 is decoded by OpenCV's {@code VideoCapture} (which delegates to ffmpeg/Media
+ * <p>The mp4 is decoded by OpenCV's {@code VideoCapture} (which delegates to ffmpeg / Media
  * Foundation at the native layer). Each decoded frame is paired with the next sidecar entry,
- * giving us {@code (Mat, capture_ns)} tuples in the order they were captured.
+ * giving us {@code (Mat, capture_ns)} tuples in the order they were captured. See
+ * {@code FrameRecorder}'s class javadoc for the on-disk format and its invariants — this
+ * reader's correctness depends on them.
  *
- * <p><strong>Timestamp contract:</strong> {@code capture_ns} is the <em>source</em> machine's
- * {@code wpi::nt::Now} epoch as written by the recorder. We propagate it verbatim through
- * {@code Frame.timestampNanos}; we do not substitute a replay-machine clock read. Downstream
- * (the NT publisher, AKit log capture) treats it as opaque time and rebases if it needs to.
+ * <h2>Timestamp contract</h2>
  *
- * <p><strong>EOF policy:</strong> the shorter of the two streams ends replay. The writer
- * guarantees {@code len(jsonl) >= decoded_frame_count(mp4)} under any crash, so in practice the
- * mp4 always exhausts first. The jsonl-first path defends against externally truncated files.
- *
- * <p><strong>Pre-2183 recordings:</strong> a directory containing {@code recording.mp4} but no
- * {@code metadata.jsonl} predates this PR's per-frame metadata. Without source-side capture
- * timestamps we cannot guarantee the replay timing contract, so construction fails loudly —
- * mirrors the writer-side refusal in {@code FrameRecorder} when the sidecar cannot be opened.
- *
- * <p><strong>Pacing:</strong> {@link #getInputMat()} blocks the vision thread so wall-clock
- * playback matches the recording's {@code capture_ns} deltas — anchors on the first frame, then
- * targets {@code firstMono + (captureNs - firstCapture)} for each subsequent frame. This keeps
- * the UI's MJPEG stream looking like live playback. AKit-style consumers (wpilog NT4 capture)
- * don't strictly need pacing since each NT event carries {@code capture_ns} in its payload, but
- * the pacing is cheap and the UI experience matters too. Falling behind doesn't accumulate
- * sleep debt: if the pipeline runs late, we emit the next frame immediately.
- *
- * <p><strong>What this provider does NOT do</strong> (Phase 1 caveats, separate follow-ups):
+ * <p>{@code capture_ns} is the <em>source</em> machine's {@code wpi::nt::Now} epoch at the
+ * moment of capture, written verbatim by the recorder. We propagate it unchanged through
+ * {@link CapturedFrame#captureTimestamp} into {@link org.photonvision.vision.frame.Frame#timestampNanos};
+ * we do not substitute a replay-machine clock read. The value is therefore <em>opaque</em> to
+ * everything downstream of the recorder — it represents source-machine time, and any consumer
+ * that needs replay-machine wall-clock alignment is responsible for rebasing it. The two
+ * Phase 1 consumers behave as follows:
  *
  * <ul>
- *   <li>FOV / calibration — placeholder {@code FrameStaticProperties} with FOV=0.0 and no
- *       calibration. Users import calibration post-assignment via the existing upload UI; a
- *       later commit documents this.
- *   <li>Recording-while-replaying — unsupported on purpose; {@link #setRecording} throws.
+ *   <li>{@code NTDataPublisher.accept} translates {@code capture_ns} through the Time Sync
+ *       Server's offset (same as for a live source) before stamping NT updates.
+ *   <li>An AKit-style wpilog NT4 capture on the replay machine records each NT event with
+ *       its embedded {@code capture_ns} in the payload; AKit downstream reconstructs the
+ *       timeline from those payload values regardless of when wpilog actually received them.
  * </ul>
+ *
+ * <h2>Calibration / FOV — manual import required</h2>
+ *
+ * <p>Recordings carry image data but not the camera intrinsics that captured them. This
+ * provider constructs with {@link FrameStaticProperties} populated only from the mp4 header
+ * (width, height) — FOV is 0 and {@code cameraCalibration} is {@code null}. Pipelines that
+ * need intrinsics (AprilTag PnP, SolvePNP, coloured-shape distance estimation, anything that
+ * reads {@code horizontalFocalLength} off the static properties) will produce nonsense
+ * numbers until a calibration is associated with this source.
+ *
+ * <p><strong>Recommended workflow:</strong> after assigning a recording as a vision module
+ * via the camera-matching UI, use the existing calibration upload UI
+ * ({@code Cameras → Calibration → Import}) to attach the calibration that was active on the
+ * source machine when the recording was captured. A future PR may add a {@code calibration_id}
+ * field to the metadata sidecar (the writer's schema is already forward-compatible — see
+ * {@link MetadataSidecarReader}) and auto-link on assignment; Phase 1 ships without that.
+ *
+ * <h2>Pacing</h2>
+ *
+ * <p>{@link #getInputMat()} <strong>blocks the vision thread</strong> so wall-clock playback
+ * matches the recording's {@code capture_ns} deltas — anchors on the first frame, then targets
+ * {@code firstMono + (captureNs - firstCapture)} for each subsequent frame. Uses
+ * {@link System#nanoTime()} (monotonic; NTP / DST jumps don't disrupt playback) and
+ * {@link java.util.concurrent.locks.LockSupport#parkNanos}. This keeps the UI's MJPEG stream
+ * looking like a live source. AKit-style consumers don't strictly need pacing (they read
+ * {@code capture_ns} from the payload regardless of receipt time) but the cost is negligible.
+ * Pacing is target-based, not relative-sleep based, so a slow vision pipeline doesn't
+ * accumulate sleep debt — if we're behind target, the next frame emits immediately.
+ *
+ * <h2>EOF policy</h2>
+ *
+ * <p>The shorter of the two streams ends replay. The writer guarantees
+ * {@code len(jsonl) >= decoded_frame_count(mp4)} under any crash, so the mp4 normally
+ * exhausts first; the jsonl-first path defends against externally truncated files. Once
+ * exhausted, {@link #isConnected()} reports {@code false} and further
+ * {@link #getInputMat()} calls short-circuit to empty {@link CVMat}s — which
+ * {@link CpuImageProcessor#get()} handles cleanly without dropping or NPE.
+ *
+ * <h2>Pre-2183 recordings</h2>
+ *
+ * <p>A directory containing {@code recording.mp4} but no {@code metadata.jsonl} predates
+ * PhotonVision's per-frame metadata sidecar. Without source-side capture timestamps the
+ * replay timing contract cannot be honoured, so construction fails loudly with an
+ * {@link IOException} that names the missing file — mirroring the writer-side refusal in
+ * {@code FrameRecorder} when its sidecar cannot be opened.
+ *
+ * <h2>Recording-while-replaying</h2>
+ *
+ * <p>Unsupported on purpose. {@link #setRecording} throws
+ * {@link UnsupportedOperationException}; {@link #getRecording()} is permanently {@code false}.
+ * Re-encoding a recording into another recording would lose the original capture timestamps
+ * and double the storage cost for no benefit.
+ *
+ * <h2>Beyond Phase 1</h2>
+ *
+ * <p>Phase 2 (AKit replay) is documented as "run wpilog NT4 capture against the replay
+ * machine" — no PV-internal bridge code is needed. Phase 3 (headless batch replay,
+ * faster-than-realtime) is a separate RFC about decoupling {@code CVPipeline} from
+ * {@code VisionRunner} / NT / Javalin; the recording format itself is unchanged.
  */
 public class FileLogFrameProvider extends CpuImageProcessor {
     private final Path recordingDir;
