@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
 import CalibrationCard from "@/components/cameras/CameraCalibrationCard.vue";
-import ReplayPanel from "@/components/cameras/ReplayPanel.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed } from "vue";
 import CamerasView from "@/components/cameras/CamerasView.vue";
@@ -47,7 +46,6 @@ const cameraViewType = computed<number[]>({
       <v-col cols="12" md="7">
         <CamerasCard />
         <CalibrationCard />
-        <ReplayPanel />
         <CameraControlCard />
       </v-col>
       <v-col class="pl-md-3 pt-3 pt-md-0" cols="12" md="5">
