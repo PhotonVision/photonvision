@@ -1604,4 +1604,101 @@ public class RequestHandler {
             logger.error("Unexpected error while attempting to delete all recordings", e);
         }
     }
+
+    private record StartReplayRequest(String cameraUniqueName, String recording) {}
+
+    private record CancelReplayRequest(String cameraUniqueName) {}
+
+    /**
+     * Start a file-log replay on the live camera identified by {@code cameraUniqueName}. The
+     * recording lives at {@code <recordingsDir>/<cameraUniqueName>/<recording>}; the live frame
+     * provider is swapped for a FileLogFrameProvider for the duration of the replay (see
+     * VisionModule.startReplay). Returns 202 immediately — the swap and pipeline run asynchronously,
+     * and progress is published over NT and the websocket.
+     */
+    public static void onStartReplayRequest(Context ctx) {
+        try {
+            StartReplayRequest request = kObjectMapper.readValue(ctx.body(), StartReplayRequest.class);
+            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                return;
+            }
+            if (request.recording == null || request.recording.isEmpty()) {
+                ctx.status(400).result("recording is required");
+                return;
+            }
+
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404).result("No camera with uniqueName=" + request.cameraUniqueName);
+                return;
+            }
+
+            Path recordingDir;
+            try {
+                recordingDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                request.cameraUniqueName,
+                                request.recording);
+            } catch (SecurityException e) {
+                ctx.status(400).result("Invalid camera or recording name");
+                logger.error("Rejected unsafe replay path: " + e.getMessage());
+                return;
+            }
+            if (!recordingDir.toFile().isDirectory()) {
+                ctx.status(404).result("Recording not found at " + recordingDir);
+                return;
+            }
+
+            try {
+                module.startReplay(recordingDir);
+            } catch (IllegalStateException alreadyReplaying) {
+                ctx.status(409).result(alreadyReplaying.getMessage());
+                return;
+            } catch (IOException badRecording) {
+                ctx.status(400).result("Recording is malformed: " + badRecording.getMessage());
+                logger.warn("Replay rejected (malformed recording): " + badRecording.getMessage());
+                return;
+            }
+
+            ctx.status(202).result("Replay started: " + request.recording);
+            logger.info("Started replay on " + request.cameraUniqueName + " from " + request.recording);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+        } catch (Exception e) {
+            logger.error("Unexpected error starting replay", e);
+            ctx.status(500).result("Unexpected error starting replay");
+        }
+    }
+
+    /**
+     * Force-end the active replay on the given camera. Idempotent: 200 if there was no replay to
+     * cancel. Async cleanup still runs on VisionModule's replay worker thread; isReplaying flips
+     * false once the swap-back completes.
+     */
+    public static void onCancelReplayRequest(Context ctx) {
+        try {
+            CancelReplayRequest request = kObjectMapper.readValue(ctx.body(), CancelReplayRequest.class);
+            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                return;
+            }
+
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404).result("No camera with uniqueName=" + request.cameraUniqueName);
+                return;
+            }
+
+            module.cancelReplay();
+            ctx.status(200).result("Replay cancel requested");
+            logger.info("Cancel replay requested on " + request.cameraUniqueName);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+        } catch (Exception e) {
+            logger.error("Unexpected error cancelling replay", e);
+            ctx.status(500).result("Unexpected error cancelling replay");
+        }
+    }
 }
