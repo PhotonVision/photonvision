@@ -39,6 +39,7 @@ import org.photonvision.jni.LibraryLoader;
 import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PnpResult;
+import org.photonvision.vision.pipeline.JsonResultExporter.FrameWindow;
 import org.photonvision.vision.pipeline.JsonResultExporter.OffsetSnapshot;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.wpilib.math.geometry.Rotation3d;
@@ -82,7 +83,13 @@ public class JsonResultExporterTest {
         var settings = new AprilTagPipelineSettings();
 
         new JsonResultExporter(
-                        out, "test-cam", "rec-1", settings, Optional.<OffsetSnapshot>empty(), () -> FIXED_NOW_MICROS)
+                        out,
+                        "test-cam",
+                        "rec-1",
+                        settings,
+                        Optional.<OffsetSnapshot>empty(),
+                        Optional.<FrameWindow>empty(),
+                        () -> FIXED_NOW_MICROS)
                 .close();
 
         List<String> lines = Files.readAllLines(out);
@@ -104,7 +111,13 @@ public class JsonResultExporterTest {
         var snap = Optional.of(new OffsetSnapshot(true, 5_000_000L));
 
         new JsonResultExporter(
-                        out, "cam", "rec", new AprilTagPipelineSettings(), snap, () -> FIXED_NOW_MICROS)
+                        out,
+                        "cam",
+                        "rec",
+                        new AprilTagPipelineSettings(),
+                        snap,
+                        Optional.<FrameWindow>empty(),
+                        () -> FIXED_NOW_MICROS)
                 .close();
 
         JsonNode header = JSON.readTree(Files.readAllLines(out).get(0));
@@ -125,6 +138,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
+                        Optional.<FrameWindow>empty(),
                         () -> FIXED_NOW_MICROS)) {
             exporter.accept(cvResult(seq, captureNs));
         }
@@ -162,6 +176,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
+                        Optional.<FrameWindow>empty(),
                         () -> FIXED_NOW_MICROS)) {
             exporter.accept(cvResult(7L, 50_000_000_000L, multitag));
         }
@@ -181,7 +196,13 @@ public class JsonResultExporterTest {
 
         try (var exporter =
                 new JsonResultExporter(
-                        out, "cam", "rec", new AprilTagPipelineSettings(), snap, () -> FIXED_NOW_MICROS)) {
+                        out,
+                        "cam",
+                        "rec",
+                        new AprilTagPipelineSettings(),
+                        snap,
+                        Optional.<FrameWindow>empty(),
+                        () -> FIXED_NOW_MICROS)) {
             exporter.accept(cvResult(1L, captureNs));
         }
 
@@ -209,21 +230,31 @@ public class JsonResultExporterTest {
 
         try (var a =
                         new JsonResultExporter(
-                                fileA, "cam", "rec", settingsA, Optional.<OffsetSnapshot>empty(), () -> FIXED_NOW_MICROS);
+                                fileA,
+                                "cam",
+                                "rec",
+                                settingsA,
+                                Optional.<OffsetSnapshot>empty(),
+                                Optional.<FrameWindow>empty(),
+                                () -> FIXED_NOW_MICROS);
                 var b =
                         new JsonResultExporter(
-                                fileB, "cam", "rec", settingsB, Optional.<OffsetSnapshot>empty(), () -> FIXED_NOW_MICROS)) {
+                                fileB,
+                                "cam",
+                                "rec",
+                                settingsB,
+                                Optional.<OffsetSnapshot>empty(),
+                                Optional.<FrameWindow>empty(),
+                                () -> FIXED_NOW_MICROS)) {
             a.accept(cvResult(0L, 1_000_000L));
             b.accept(cvResult(0L, 2_000_000L));
         }
 
         // Each file got exactly the result it received (no cross-contamination).
         assertEquals(
-                1_000_000L,
-                JSON.readTree(Files.readAllLines(fileA).get(1)).get("capture_ns").asLong());
+                1_000_000L, JSON.readTree(Files.readAllLines(fileA).get(1)).get("capture_ns").asLong());
         assertEquals(
-                2_000_000L,
-                JSON.readTree(Files.readAllLines(fileB).get(1)).get("capture_ns").asLong());
+                2_000_000L, JSON.readTree(Files.readAllLines(fileB).get(1)).get("capture_ns").asLong());
     }
 
     @Test
@@ -236,6 +267,7 @@ public class JsonResultExporterTest {
                         "rec",
                         new AprilTagPipelineSettings(),
                         Optional.<OffsetSnapshot>empty(),
+                        Optional.<FrameWindow>empty(),
                         () -> FIXED_NOW_MICROS);
         for (int i = 0; i < 10; i++) {
             exporter.accept(cvResult(i, 1_000_000L + i));
@@ -253,5 +285,33 @@ public class JsonResultExporterTest {
         // accept() after close is a no-op (no IOException, no new line).
         exporter.accept(cvResult(99, 9_000_000L));
         assertEquals(11, Files.readAllLines(out).size());
+    }
+
+    @Test
+    public void dropsResultsOutsideFrameWindow(@TempDir Path tempDir) throws Exception {
+        Path out = tempDir.resolve("results").resolve("filtered.jsonl");
+        var window = Optional.of(new FrameWindow(100_000_000_000L, 200_000_000_000L));
+
+        try (var exporter =
+                new JsonResultExporter(
+                        out,
+                        "cam",
+                        "rec",
+                        new AprilTagPipelineSettings(),
+                        Optional.<OffsetSnapshot>empty(),
+                        window,
+                        () -> FIXED_NOW_MICROS)) {
+            exporter.accept(cvResult(0L, 50_000_000_000L)); // pre-window — dropped (NT4 snapshot case)
+            exporter.accept(cvResult(1L, 100_000_000_000L)); // boundary low — kept
+            exporter.accept(cvResult(2L, 150_000_000_000L)); // inside — kept
+            exporter.accept(cvResult(3L, 200_000_000_000L)); // boundary high — kept
+            exporter.accept(cvResult(4L, 250_000_000_000L)); // post-window — dropped (swap-back case)
+        }
+
+        List<String> lines = Files.readAllLines(out);
+        assertEquals(4, lines.size(), "header + 3 in-window results");
+        assertEquals(1L, JSON.readTree(lines.get(1)).get("seq").asLong());
+        assertEquals(2L, JSON.readTree(lines.get(2)).get("seq").asLong());
+        assertEquals(3L, JSON.readTree(lines.get(3)).get("seq").asLong());
     }
 }

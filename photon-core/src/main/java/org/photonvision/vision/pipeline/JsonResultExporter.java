@@ -35,6 +35,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.vision.frame.provider.MetadataSidecarReader;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.networktables.NetworkTablesJNI;
@@ -48,28 +49,65 @@ import org.wpilib.networktables.NetworkTablesJNI;
  *
  * <p>Timestamps inside the embedded packet are shifted by {@code tssOffsetAtRecordNs} so the
  * deserialized result matches what {@code NTDataPublisher} would have published live during the
- * original recording. The header records the same offset so consumers that prefer the raw
- * {@code capture_ns} field can apply it themselves.
+ * original recording. The header records the same offset so consumers that prefer the raw {@code
+ * capture_ns} field can apply it themselves.
  *
- * <p>Not thread-safe. Exactly one VisionRunner thread should call {@link #accept(CVPipelineResult)}.
+ * <p>Not thread-safe. Exactly one VisionRunner thread should call {@link
+ * #accept(CVPipelineResult)}.
  */
 public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseable {
     private static final int SCHEMA_VERSION = 1;
     private static final int INITIAL_PACKET_BYTES = 1024;
-    private static final Logger logger =
-            new Logger(JsonResultExporter.class, LogGroup.VisionModule);
+    private static final Logger logger = new Logger(JsonResultExporter.class, LogGroup.VisionModule);
 
     /**
-     * TSS state sampled at recording-start. Absent ({@code Optional.empty()}) when no snapshot
-     * was written — the exporter then writes nulls in the header and skips the offset shift on
-     * the embedded packet.
+     * TSS state sampled at recording-start. Absent ({@code Optional.empty()}) when no snapshot was
+     * written — the exporter then writes nulls in the header and skips the offset shift on the
+     * embedded packet.
      */
     public record OffsetSnapshot(boolean tssActiveAtRecord, long tssOffsetAtRecordNs) {}
 
     /**
+     * Inclusive capture-timestamp bounds of the recording being replayed, taken from {@code
+     * metadata.jsonl}. Used to drop result entries whose {@code capture_ns} falls outside the
+     * recording window — namely the NT4 last-published-value snapshot delivered to the subscriber at
+     * replay start, and any swap-back frame the live source emits after the replay provider EOFs.
+     */
+    public record FrameWindow(long firstCaptureNs, long lastCaptureNs) {}
+
+    /**
+     * Scan the recording's {@code metadata.jsonl} for the first and last {@code capture_ns} values.
+     * {@code FrameRecorder} writes the sidecar in capture order, so the first line is the min and the
+     * last line is the max — but we walk the whole file rather than seeking because the sidecar is
+     * small (tens of KB for hundreds of frames) and walking is robust to a hypothetical reordering.
+     *
+     * @return the bounds, or {@link Optional#empty()} when the sidecar is missing, empty, or
+     *     unreadable. A missing window degrades the exporter to its pre-fix behavior (writes every
+     *     result, including boundary noise).
+     */
+    public static Optional<FrameWindow> readFrameWindow(Path recordingDir) {
+        Path metadataPath = recordingDir.resolve("metadata.jsonl");
+        if (!Files.isRegularFile(metadataPath)) return Optional.empty();
+        try (var reader = new MetadataSidecarReader(metadataPath)) {
+            var firstOpt = reader.readNext();
+            if (firstOpt.isEmpty()) return Optional.empty();
+            long firstNs = firstOpt.get().captureNs();
+            long lastNs = firstNs;
+            Optional<MetadataSidecarReader.Entry> next;
+            while ((next = reader.readNext()).isPresent()) {
+                lastNs = next.get().captureNs();
+            }
+            return Optional.of(new FrameWindow(firstNs, lastNs));
+        } catch (IOException e) {
+            logger.error("readFrameWindow: failed to read " + metadataPath + ": " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Read the {@code tss.json} snapshot written by {@code FrameRecorder} from a recording dir.
-     * Returns {@link Optional#empty()} if the file is missing or malformed — the latter is
-     * logged but never thrown so a corrupt snapshot doesn't block replay.
+     * Returns {@link Optional#empty()} if the file is missing or malformed — the latter is logged but
+     * never thrown so a corrupt snapshot doesn't block replay.
      */
     public static Optional<OffsetSnapshot> readSnapshot(Path recordingDir) {
         Path tssPath = recordingDir.resolve("tss.json");
@@ -88,19 +126,29 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final Optional<OffsetSnapshot> offsetSnapshot;
+    private final Optional<FrameWindow> frameWindow;
     private final long offsetUs;
     private final LongSupplier nowMicrosSupplier;
     private BufferedWriter writer;
     private volatile boolean closed;
+    private long droppedOutOfWindow;
 
     public JsonResultExporter(
             Path outputFile,
             String cameraUniqueName,
             String recordingName,
             CVPipelineSettings settings,
-            Optional<OffsetSnapshot> offsetSnapshot)
+            Optional<OffsetSnapshot> offsetSnapshot,
+            Optional<FrameWindow> frameWindow)
             throws IOException {
-        this(outputFile, cameraUniqueName, recordingName, settings, offsetSnapshot, NetworkTablesJNI::now);
+        this(
+                outputFile,
+                cameraUniqueName,
+                recordingName,
+                settings,
+                offsetSnapshot,
+                frameWindow,
+                NetworkTablesJNI::now);
     }
 
     JsonResultExporter(
@@ -109,9 +157,11 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             String recordingName,
             CVPipelineSettings settings,
             Optional<OffsetSnapshot> offsetSnapshot,
+            Optional<FrameWindow> frameWindow,
             LongSupplier nowMicrosSupplier)
             throws IOException {
         this.offsetSnapshot = offsetSnapshot;
+        this.frameWindow = frameWindow;
         this.nowMicrosSupplier = nowMicrosSupplier;
         this.offsetUs = offsetSnapshot.map(s -> s.tssOffsetAtRecordNs() / 1000L).orElse(0L);
 
@@ -163,13 +213,25 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
     @Override
     public void accept(CVPipelineResult result) {
         if (closed) return;
+        long captureNs = result.getImageCaptureTimestampNanos();
+        // Drop results whose capture timestamp falls outside the recording's frame window —
+        // those are the NT4 last-published snapshot the subscriber receives on first attach
+        // and any post-EOF swap-back frame from the live source, neither of which belong in
+        // a replay-of-this-recording artifact.
+        if (frameWindow.isPresent()) {
+            var window = frameWindow.get();
+            if (captureNs < window.firstCaptureNs() || captureNs > window.lastCaptureNs()) {
+                droppedOutOfWindow++;
+                return;
+            }
+        }
         try {
             // Mirror NTDataPublisher.accept (NTDataPublisher.java:200-215): build a wire-format
             // PhotonPipelineResult by adding the TSS offset to the local capture / publish
             // timestamps. We use the *record-time* offset so the deserialized result matches what
             // AKit captured live during the original match. timeSinceLastPong is not preserved
             // per-frame; emit 0.
-            long captureMicros = MathUtils.nanosToMicros(result.getImageCaptureTimestampNanos());
+            long captureMicros = MathUtils.nanosToMicros(captureNs);
             long nowMicros = nowMicrosSupplier.getAsLong();
 
             var photonResult =
@@ -201,6 +263,9 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
     public void close() {
         if (closed) return;
         closed = true;
+        if (droppedOutOfWindow > 0) {
+            logger.debug("Dropped " + droppedOutOfWindow + " out-of-window result(s) from json export");
+        }
         try {
             if (writer != null) {
                 writer.flush();

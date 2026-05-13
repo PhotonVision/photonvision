@@ -983,11 +983,11 @@ public class VisionModule {
     }
 
     /**
-     * Tee pipeline results to a {@link JsonResultExporter} while this module's source is backed by
-     * a {@link FileLogFrameProvider} (the swap installed by {@link #startReplay}). Built lazily on
-     * the first replayed result and closed by {@code finishReplay} on swap-back; gating on the
-     * current frame provider rather than matchedCameraInfo lets the live camera's identity stay
-     * intact for the entire replay.
+     * Tee pipeline results to a {@link JsonResultExporter} while this module's source is backed by a
+     * {@link FileLogFrameProvider} (the swap installed by {@link #startReplay}). Built lazily on the
+     * first replayed result and closed by {@code finishReplay} on swap-back; gating on the current
+     * frame provider rather than matchedCameraInfo lets the live camera's identity stay intact for
+     * the entire replay.
      */
     private void teeToJsonResultExporter(CVPipelineResult result) {
         if (jsonExporterDisabled) return;
@@ -1012,6 +1012,11 @@ public class VisionModule {
                                 + " — embedded packet timestamps will not be TSS-aligned");
             }
 
+            // Frame-window bounds drop the NT4 last-published snapshot at replay start and the
+            // swap-back frame at replay end. Falls back to no-filter when metadata.jsonl is
+            // missing/unreadable; that case is logged inside readFrameWindow.
+            var frameWindow = JsonResultExporter.readFrameWindow(recordingDir);
+
             try {
                 jsonResultExporter =
                         new JsonResultExporter(
@@ -1019,7 +1024,8 @@ public class VisionModule {
                                 visionSource.getSettables().getConfiguration().uniqueName,
                                 recordingDir.getFileName().toString(),
                                 settings,
-                                snapshot);
+                                snapshot,
+                                frameWindow);
             } catch (IOException e) {
                 logger.error("Failed to open JsonResultExporter at " + outputFile + ": " + e.getMessage());
                 jsonExporterDisabled = true; // latch: don't spam-retry on every subsequent frame.

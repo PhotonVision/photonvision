@@ -61,9 +61,9 @@ import org.wpilib.math.geometry.Translation3d;
  *       different output filename (per-pipeline-hash isolation).
  * </ol>
  *
- * <p>FileLogFrameProvider's metadata round-trip is verified separately by
- * {@code FileLogFrameProviderTest.emitsFramesWithCaptureTimestamps}; here we read
- * {@code metadata.jsonl} directly to keep the test in the {@code vision.pipeline} package.
+ * <p>FileLogFrameProvider's metadata round-trip is verified separately by {@code
+ * FileLogFrameProviderTest.emitsFramesWithCaptureTimestamps}; here we read {@code metadata.jsonl}
+ * directly to keep the test in the {@code vision.pipeline} package.
  */
 public class JsonResultEndToEndTest {
     private static final int W = 64;
@@ -120,11 +120,19 @@ public class JsonResultEndToEndTest {
         assertTrue(snapshot.isPresent());
         assertEquals(TSS_OFFSET_NS, snapshot.get().tssOffsetAtRecordNs(), "snapshot must round-trip");
 
+        // Frame window read from the recording's metadata.jsonl. All CAPTURE_NS values are
+        // inside this window by construction, so no result should be filtered by the bounds
+        // guard — but exercising the real readFrameWindow path keeps this test honest end-to-end.
+        var frameWindow = JsonResultExporter.readFrameWindow(recordingDir);
+        assertTrue(frameWindow.isPresent());
+        assertEquals(CAPTURE_NS[0], frameWindow.get().firstCaptureNs());
+        assertEquals(CAPTURE_NS[CAPTURE_NS.length - 1], frameWindow.get().lastCaptureNs());
+
         var settingsX = new AprilTagPipelineSettings();
         Path fileX = recordingDir.resolve("results").resolve("X.jsonl");
         try (var exporter =
                 new JsonResultExporter(
-                        fileX, "cam", "rec", settingsX, snapshot, () -> FIXED_PUBLISH_MICROS)) {
+                        fileX, "cam", "rec", settingsX, snapshot, frameWindow, () -> FIXED_PUBLISH_MICROS)) {
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 exporter.accept(buildResult(i, replayedCaptureNs.get(i), Optional.empty()));
             }
@@ -144,7 +152,7 @@ public class JsonResultEndToEndTest {
         Path fileY = recordingDir.resolve("results").resolve("Y.jsonl");
         try (var exporter =
                 new JsonResultExporter(
-                        fileY, "cam", "rec", settingsY, snapshot, () -> FIXED_PUBLISH_MICROS)) {
+                        fileY, "cam", "rec", settingsY, snapshot, frameWindow, () -> FIXED_PUBLISH_MICROS)) {
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 exporter.accept(buildResult(i, replayedCaptureNs.get(i), multitag));
             }
@@ -183,12 +191,8 @@ public class JsonResultEndToEndTest {
 
             PhotonPipelineResult resultX = decodePacket(lineX);
             PhotonPipelineResult resultY = decodePacket(lineY);
-            assertFalse(
-                    resultX.getMultiTagResult().isPresent(),
-                    "pass X carried no multitag payload");
-            assertTrue(
-                    resultY.getMultiTagResult().isPresent(),
-                    "pass Y carried a multitag payload");
+            assertFalse(resultX.getMultiTagResult().isPresent(), "pass X carried no multitag payload");
+            assertTrue(resultY.getMultiTagResult().isPresent(), "pass Y carried a multitag payload");
 
             // Embedded packet capture timestamp is TSS-shifted: captureNs/1000 + offsetUs.
             long expectedCaptureMicros = CAPTURE_NS[i - 1] / 1_000L + TSS_OFFSET_NS / 1_000L;
@@ -201,7 +205,13 @@ public class JsonResultEndToEndTest {
         Path fileXReplay = tempDir.resolve("X-replay.jsonl");
         try (var exporter =
                 new JsonResultExporter(
-                        fileXReplay, "cam", "rec", settingsX, snapshot, () -> FIXED_PUBLISH_MICROS)) {
+                        fileXReplay,
+                        "cam",
+                        "rec",
+                        settingsX,
+                        snapshot,
+                        frameWindow,
+                        () -> FIXED_PUBLISH_MICROS)) {
             for (int i = 0; i < CAPTURE_NS.length; i++) {
                 exporter.accept(buildResult(i, replayedCaptureNs.get(i), Optional.empty()));
             }
