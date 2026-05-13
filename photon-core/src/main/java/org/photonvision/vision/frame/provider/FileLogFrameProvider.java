@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.LockSupport;
+import java.util.function.LongConsumer;
+import java.util.stream.Stream;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.logging.LogGroup;
@@ -80,6 +82,16 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     private long firstCaptureNs;
     private long firstMonoNs;
 
+    // Discovered at construction by listing frames/*.jpg. Used by replay UIs to render a
+    // progress bar without having to walk the directory themselves. -1 if discovery failed
+    // (logged once, treated as unknown).
+    private final long totalFrames;
+
+    // Optional hooks for replay orchestration on the consumer side. Volatile so a controller
+    // thread that wires them after construction is visible to the vision thread on next read.
+    private volatile LongConsumer onProgress;
+    private volatile Runnable onEof;
+
     /**
      * @param recordingDir directory containing {@code frames/} and {@code metadata.jsonl}, as written
      *     by {@code FrameRecorder}.
@@ -128,8 +140,19 @@ public class FileLogFrameProvider extends CpuImageProcessor {
                     new Logger(
                             FileLogFrameProvider.class, recordingDir.getFileName().toString(), LogGroup.Camera);
             this.logger.info("Opened replay source " + recordingDir + " (" + width + "x" + height + ")");
+
+            this.totalFrames = countFrames(framesDir, this.logger);
         } finally {
             probe.release();
+        }
+    }
+
+    private static long countFrames(Path framesDir, Logger logger) {
+        try (Stream<Path> entries = Files.list(framesDir)) {
+            return entries.filter(p -> p.getFileName().toString().endsWith(".jpg")).count();
+        } catch (IOException e) {
+            logger.warn("Failed to count frames in " + framesDir + ": " + e.getMessage());
+            return -1;
         }
     }
 
@@ -140,7 +163,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         }
 
         if (stoppedAtEof.get()) {
-            return parkUntilInterrupted();
+            return emptyOrPark();
         }
 
         Optional<MetadataSidecarReader.Entry> entry;
@@ -179,6 +202,15 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         pace(captureNs);
 
         emittedFrameCount++;
+        LongConsumer progress = onProgress;
+        if (progress != null) {
+            try {
+                progress.accept(emittedFrameCount);
+            } catch (Throwable t) {
+                // Never let a misbehaving consumer break the vision thread.
+                logger.error("onProgress callback threw", t);
+            }
+        }
         return new CapturedFrame(new CVMat(decoded), properties, captureNs);
     }
 
@@ -208,9 +240,65 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         return recordingDir;
     }
 
+    /**
+     * @return total frame count discovered at construction (count of {@code frames/*.jpg}), or {@code
+     *     -1} if discovery failed.
+     */
+    public long getTotalFrames() {
+        return totalFrames;
+    }
+
+    /** Fired on the vision thread after each successfully-emitted frame with the running count. */
+    public void setOnProgress(LongConsumer onProgress) {
+        this.onProgress = onProgress;
+    }
+
+    /**
+     * Fired once when the provider transitions to its stopped state — either because the recording
+     * was exhausted naturally or because {@link #requestStop()} was called. Runs on whichever thread
+     * tripped the transition; the implementation should not block.
+     */
+    public void setOnEof(Runnable onEof) {
+        this.onEof = onEof;
+    }
+
+    /**
+     * Trigger an early end-of-replay from any thread. Idempotent. Once called, the next call to
+     * {@link #getInputMat()} returns an empty frame without parking (assuming {@link #setOnEof} has
+     * been wired) or parks (standalone use). Fires the EOF callback exactly once via the same CAS the
+     * natural-EOF path uses.
+     */
+    public void requestStop() {
+        enterStoppedFiringEofOnce("explicit cancel");
+    }
+
     private CapturedFrame enterStoppedState(String reason) {
+        enterStoppedFiringEofOnce(reason);
+        return emptyOrPark();
+    }
+
+    private void enterStoppedFiringEofOnce(String reason) {
         if (stoppedAtEof.compareAndSet(false, true)) {
             logger.info("Replay reached end of recording: " + reason);
+            Runnable cb = onEof;
+            if (cb != null) {
+                try {
+                    cb.run();
+                } catch (Throwable t) {
+                    logger.error("onEof callback threw", t);
+                }
+            }
+        }
+    }
+
+    /**
+     * If a consumer is observing the stop event via {@link #setOnEof}, return an empty frame so the
+     * runner can pick up the swap-back on its next tick. Otherwise (standalone use) park — preserving
+     * the original "deactivate to restart" semantics for non-swap-aware consumers.
+     */
+    private CapturedFrame emptyOrPark() {
+        if (onEof != null) {
+            return new CapturedFrame(new CVMat(), properties, 0L);
         }
         return parkUntilInterrupted();
     }

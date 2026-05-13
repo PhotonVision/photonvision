@@ -239,6 +239,122 @@ class FileLogFrameProviderTest {
     }
 
     @Test
+    void getTotalFramesMatchesFixture() throws IOException {
+        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+        try {
+            assertEquals(
+                    CAPTURE_NS.length,
+                    provider.getTotalFrames(),
+                    "totalFrames must reflect the on-disk frames/*.jpg count");
+        } finally {
+            provider.release();
+        }
+    }
+
+    @Test
+    void onProgressFiresOncePerEmittedFrame() throws IOException {
+        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+        try {
+            java.util.List<Long> seen = new java.util.concurrent.CopyOnWriteArrayList<>();
+            provider.setOnProgress(seen::add);
+
+            for (int i = 0; i < CAPTURE_NS.length; i++) {
+                provider.getInputMat().colorImage.release();
+            }
+
+            assertEquals(CAPTURE_NS.length, seen.size(), "one callback per emitted frame");
+            for (int i = 0; i < seen.size(); i++) {
+                assertEquals(
+                        (long) (i + 1),
+                        (long) seen.get(i),
+                        "callback arg should be the running 1-based emitted-frame count");
+            }
+        } finally {
+            provider.release();
+        }
+    }
+
+    @Test
+    void onEofFiresOnceOnNaturalExhaustion() throws IOException {
+        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+        try {
+            java.util.concurrent.atomic.AtomicInteger fired =
+                    new java.util.concurrent.atomic.AtomicInteger();
+            provider.setOnEof(fired::incrementAndGet);
+
+            // Burn through all frames.
+            for (int i = 0; i < CAPTURE_NS.length; i++) {
+                provider.getInputMat().colorImage.release();
+            }
+            assertEquals(0, fired.get(), "onEof must not fire while frames remain");
+
+            // Next read exhausts metadata.jsonl → enters stopped state, fires callback exactly once.
+            provider.getInputMat().colorImage.release();
+            assertEquals(1, fired.get(), "onEof must fire on natural exhaustion");
+
+            // Subsequent reads must not fire it again.
+            provider.getInputMat().colorImage.release();
+            provider.getInputMat().colorImage.release();
+            assertEquals(1, fired.get(), "onEof must be one-shot");
+        } finally {
+            provider.release();
+        }
+    }
+
+    @Test
+    void requestStopShortCircuitsAndFiresEofOnce() throws IOException {
+        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+        try {
+            java.util.concurrent.atomic.AtomicInteger fired =
+                    new java.util.concurrent.atomic.AtomicInteger();
+            provider.setOnEof(fired::incrementAndGet);
+
+            provider.requestStop();
+            assertEquals(1, fired.get(), "requestStop must fire onEof synchronously");
+
+            // Next getInputMat should return an empty frame (callback wired ⇒ no parking).
+            var captured = provider.getInputMat();
+            assertTrue(
+                    captured.colorImage.getMat().empty(),
+                    "after requestStop, getInputMat must return empty for swap-aware consumers");
+            captured.colorImage.release();
+
+            // Second requestStop is a no-op via the CAS.
+            provider.requestStop();
+            assertEquals(1, fired.get(), "requestStop must be idempotent");
+        } finally {
+            provider.release();
+        }
+    }
+
+    @Test
+    void eofWithoutCallbackPreservesParkingBehaviour() throws Exception {
+        // Standalone use (no setOnEof): the original "park on EOF, deactivate to restart" semantics
+        // must be preserved so non-swap-aware consumers don't busy-loop on empties.
+        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
+        try {
+            for (int i = 0; i < CAPTURE_NS.length; i++) {
+                provider.getInputMat().colorImage.release();
+            }
+
+            Thread t =
+                    new Thread(
+                            () -> {
+                                provider.getInputMat().colorImage.release();
+                            });
+            t.setName("eofWithoutCallback-runner");
+            t.start();
+            Thread.sleep(150);
+            assertTrue(t.isAlive(), "no callback wired ⇒ should park at EOF, not return");
+            t.interrupt();
+            t.join(2_000);
+            assertFalse(t.isAlive(), "interrupt must wake the parked thread");
+        } finally {
+            provider.release();
+        }
+    }
+
+    @Test
     void setRecordingIsNoOp() throws IOException {
         // setRecording is invoked by the NT listener thread (NTDataPublisher routes
         // recordingRequest writes through FrameProvider::setRecording with no try/catch).

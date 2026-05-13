@@ -32,9 +32,12 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.CalibrationPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.networktables.BooleanPublisher;
+import org.wpilib.networktables.IntegerPublisher;
 import org.wpilib.networktables.NetworkTable;
 import org.wpilib.networktables.NetworkTableEvent;
 import org.wpilib.networktables.NetworkTablesJNI;
+import org.wpilib.networktables.StringPublisher;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
@@ -57,6 +60,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     NTDataChangeListener fpsLimitListener;
     private final Consumer<Integer> fpsLimitConsumer;
     private final Supplier<Integer> fpsLimitSupplier;
+
+    // Replay-state publishers — created in updateEntries(), closed in removeEntries(). Driven by
+    // explicit publishReplayState / publishReplayProgress calls from VisionModule rather than
+    // re-published every frame like the rest of the per-result topics, because the values change
+    // only on replay start / progress tick / end.
+    private BooleanPublisher isReplayingPublisher;
+    private IntegerPublisher replayProgressCurrentFramePublisher;
+    private IntegerPublisher replayProgressTotalFramesPublisher;
+    private StringPublisher replayProgressRecordingNamePublisher;
 
     public NTDataPublisher(
             String cameraNickname,
@@ -148,6 +160,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
         if (recordingListener != null) recordingListener.remove();
+        if (isReplayingPublisher != null) isReplayingPublisher.close();
+        if (replayProgressCurrentFramePublisher != null) replayProgressCurrentFramePublisher.close();
+        if (replayProgressTotalFramesPublisher != null) replayProgressTotalFramesPublisher.close();
+        if (replayProgressRecordingNamePublisher != null) replayProgressRecordingNamePublisher.close();
         ts.removeEntries();
     }
 
@@ -173,6 +189,41 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         fpsLimitListener =
                 new NTDataChangeListener(
                         ts.subTable.getInstance(), ts.fpsLimitSubscriber, this::onFPSLimitChange);
+
+        // Replay-state topics live in the same per-camera subtable as the existing recording /
+        // driverMode topics. updateCameraNickname() calls remove + update so these migrate when
+        // the camera is renamed.
+        isReplayingPublisher = ts.subTable.getBooleanTopic("isReplaying").publish();
+        isReplayingPublisher.setDefault(false);
+        replayProgressCurrentFramePublisher =
+                ts.subTable.getIntegerTopic("replayProgressCurrentFrame").publish();
+        replayProgressTotalFramesPublisher =
+                ts.subTable.getIntegerTopic("replayProgressTotalFrames").publish();
+        replayProgressRecordingNamePublisher =
+                ts.subTable.getStringTopic("replayProgressRecordingName").publish();
+    }
+
+    /** Set the {@code isReplaying} topic. Called from {@code VisionModule.startReplay/cancel}. */
+    public void publishReplayState(boolean isReplaying) {
+        if (isReplayingPublisher != null) isReplayingPublisher.set(isReplaying);
+    }
+
+    /**
+     * Set the three {@code replayProgress*} topics. Called from the {@link
+     * org.photonvision.vision.frame.provider.FileLogFrameProvider} progress callback on the vision
+     * thread (once per emitted frame) and from {@code startReplay} to zero things out at the start of
+     * a replay.
+     */
+    public void publishReplayProgress(long currentFrame, long totalFrames, String recordingName) {
+        if (replayProgressCurrentFramePublisher != null) {
+            replayProgressCurrentFramePublisher.set(currentFrame);
+        }
+        if (replayProgressTotalFramesPublisher != null) {
+            replayProgressTotalFramesPublisher.set(totalFrames);
+        }
+        if (replayProgressRecordingNamePublisher != null) {
+            replayProgressRecordingNamePublisher.set(recordingName == null ? "" : recordingName);
+        }
     }
 
     public void updateCameraNickname(String newCameraNickname) {
