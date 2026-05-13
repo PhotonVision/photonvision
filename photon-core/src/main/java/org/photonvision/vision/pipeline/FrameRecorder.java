@@ -37,7 +37,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
-import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
 /**
@@ -418,26 +417,15 @@ public class FrameRecorder implements Releasable {
 
     /**
      * Export all recordings under a single camera as a zip. The zip preserves the {@code
-     * <recording>/{frames/*.jpg, metadata.jsonl, strat}} tree, so the user can browse recordings by
-     * name after unzipping.
+     * <recording>/{frames/*.jpg, metadata.jsonl}} tree, so the user can browse recordings by name
+     * after unzipping.
      */
     public static File exportCamera(Path cameraRecordingsDir) throws Exception {
         if (!Files.isDirectory(cameraRecordingsDir)) {
             throw new IllegalStateException(
                     "Camera recordings directory not found: " + cameraRecordingsDir);
         }
-        // Nickname for active cameras, dir name as fallback for unassigned ones.
-        String prefix =
-                VisionSourceManager.getInstance().getVisionModules().stream()
-                        .filter(
-                                module ->
-                                        module
-                                                .getCameraConfiguration()
-                                                .uniqueName
-                                                .equals(cameraRecordingsDir.getFileName().toString()))
-                        .findFirst()
-                        .map(module -> module.getCameraConfiguration().nickname)
-                        .orElseGet(() -> cameraRecordingsDir.getFileName().toString());
+        String prefix = cameraRecordingsDir.getFileName().toString();
         File zip = Files.createTempFile(prefix + "_recordings_", ".zip").toFile();
         ZipUtil.pack(cameraRecordingsDir.toFile(), zip);
         return zip;
