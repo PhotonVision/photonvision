@@ -51,6 +51,15 @@ const downloadIndividualRecording = (camera: UiCameraConfiguration) => {
   link.click();
 };
 
+const replayRecording = (camera: UiCameraConfiguration) => {
+  const recording = selectedRecordings.value[camera.uniqueName];
+  if (!recording) return;
+  void axiosPost("/recordings/replay", "replay " + recording + " on " + camera.nickname, {
+    cameraUniqueName: camera.uniqueName,
+    recording
+  });
+};
+
 const downloadCameraRecordings = (camera: UiCameraConfiguration) => {
   const link = document.createElement("a");
   link.href = `http://${address}/api/recordings/exportCamera?camera=${encodeURIComponent(camera.uniqueName)}`;
@@ -106,6 +115,7 @@ const downloadAllRecordings = () => {
                 <tr>
                   <th>Camera</th>
                   <th>Selected Recording</th>
+                  <th>Replay Selected</th>
                   <th>Delete Selected</th>
                   <th>Export Selected</th>
                   <th>Delete All</th>
@@ -117,6 +127,18 @@ const downloadAllRecordings = () => {
                   <td>{{ camera.nickname }}</td>
                   <td>
                     <pv-select v-model="selectedRecordings[camera.uniqueName]" :items="camera.recordings" />
+                  </td>
+                  <td class="text-right">
+                    <v-btn
+                      icon
+                      small
+                      color="buttonPassive"
+                      title="Replay selected recording through this camera's pipeline"
+                      :variant="theme.global.name.value === 'LightTheme' ? 'elevated' : 'outlined'"
+                      @click="replayRecording(camera)"
+                    >
+                      <v-icon size="large">mdi-play</v-icon>
+                    </v-btn>
                   </td>
                   <td class="text-right">
                     <v-btn
