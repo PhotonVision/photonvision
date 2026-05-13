@@ -7,6 +7,7 @@ import PvDialog from "@/components/common/pv-dialog.vue";
 import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCard from "@/components/common/pv-card.vue";
+import PvTable from "@/components/common/pv-table.vue";
 import MetricsChart from "./MetricsChart.vue";
 import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
@@ -293,7 +294,7 @@ watch(metricsHistorySnapshot, () => {
           <span>Device Control</span>
         </div>
         <div class="px-4 pb-4 flex-0-0">
-          <v-table>
+          <pv-table>
             <tbody>
               <tr v-for="(item, itemIndex) in generalMetrics.concat(platformMetrics)" :key="itemIndex">
                 <td :key="itemIndex">
@@ -304,7 +305,7 @@ watch(metricsHistorySnapshot, () => {
                 </td>
               </tr>
             </tbody>
-          </v-table>
+          </pv-table>
         </div>
         <div class="px-4 pb-4 pt-0 flex-0-0">
           <div class="flex flex-wrap -mx-3">

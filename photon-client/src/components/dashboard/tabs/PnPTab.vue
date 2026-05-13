@@ -5,8 +5,9 @@ import { TargetModel } from "@/types/PipelineTypes";
 import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
-import { useDisplay } from "vuetify";
-const { mdAndDown } = useDisplay();
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8

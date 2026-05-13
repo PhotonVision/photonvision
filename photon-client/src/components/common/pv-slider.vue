@@ -90,11 +90,11 @@ const updateFromInput = (rawValue: string) => {
         :step="step"
         :disabled="disabled"
       >
-        <slider-track class="relative h-2 w-full rounded-full bg-white/12">
+        <slider-track class="relative h-2 w-full rounded-full bg-white/12 data-disabled:opacity-50">
           <slider-range class="absolute h-full rounded-full bg-pv-primary" />
         </slider-track>
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50"
+          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none data-disabled:opacity-50"
         />
       </slider-root>
       <pv-button
@@ -109,7 +109,7 @@ const updateFromInput = (rawValue: string) => {
         :max="max"
         :min="min"
         :disabled="disabled"
-        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 px-3 text-right text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45 text-left"
         type="number"
         :step="step"
         @keyup.enter="updateFromInput(($event.target as HTMLInputElement).value)"

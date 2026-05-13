@@ -42,17 +42,17 @@ const performanceRecommendation = computed<string>(() => {
 
 <template>
   <pv-card class="flex h-full flex-col">
-    <div class="flex items-center justify-between gap-3 pt-1 pb-1">
-      <span>Cameras</span>
+    <div class="flex items-center justify-between gap-3  pb-2">
+      <span class="text-lg">Cameras</span>
       <v-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
         :color="fpsTooLow ? 'error' : 'primary'"
-        style="font-size: 1.1rem; padding: 0; margin: 0"
+        class="p-0 m-0 text-lg"
         variant="text"
       >
-        <span class="pr-1">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &ndash;</span
-        ><span>{{ performanceRecommendation }}</span>
+        <span class="pr-1 tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &middot;</span
+        ><span class="tabular-nums">{{ performanceRecommendation }}</span>
       </v-chip>
       <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
         <span class="pr-1"> Camera not connected </span>
@@ -63,10 +63,11 @@ const performanceRecommendation = computed<string>(() => {
         label="Driver Mode"
         color="primary"
         hide-details="auto"
+        class="!py-0"
       />
     </div>
     <v-divider class="ml-3 mr-3" />
-    <div class="stream-viewer-container flex flex-wrap items-center p-3">
+    <div class="stream-viewer-container flex flex-wrap items-center p-2 flex-1 justify-between gap-2">
       <div v-if="value?.includes(0)" class="stream-view flex-1">
         <photon-camera-stream
           id="input-camera-stream"

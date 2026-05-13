@@ -23,10 +23,13 @@
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.8",
     "@fontsource/prompt": "^5.2.6",
+    "@fontsource/public-sans": "^5.2.7",
     "@iconify/vue": "^5.0.1",
     "@mdi/font": "^7.4.47",
     "@msgpack/msgpack": "^3.1.2",
     "@vueuse/core": "^14.3.0",
+    "ag-grid-community": "^35.2.1",
+    "ag-grid-vue3": "^35.3.0",
     "axios": "^1.11.0",
     "echarts": "^6.0.0",
     "jspdf": "^3.0.1",

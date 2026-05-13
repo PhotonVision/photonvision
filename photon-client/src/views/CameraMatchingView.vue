@@ -13,6 +13,7 @@ import PvAlert from "@/components/common/pv-alert.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvIcon from "@/components/common/pv-icon.vue";
+import PvTable from "@/components/common/pv-table.vue";
 
 const backendHostname = inject<string>("backendHostname");
 const formatUrl = (port: number) => `http://${backendHostname}:${port}/stream.mjpg`;
@@ -148,7 +149,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           </div>
           <div v-else class="text-sm">Status: <span class="mismatch-status">Mismatch</span></div>
           <div class="pt-3">
-            <v-table density="compact">
+            <pv-table density="compact">
               <tbody>
                 <tr
                   v-if="
@@ -192,7 +193,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   </td>
                 </tr>
               </tbody>
-            </v-table>
+            </pv-table>
             <div
               v-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
@@ -267,7 +268,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           </div>
           <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
           <div class="pt-3">
-            <v-table density="compact">
+            <pv-table density="compact">
               <tbody>
                 <tr>
                   <td>Name</td>
@@ -293,7 +294,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   <td>{{ cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath) }}</td>
                 </tr>
               </tbody>
-            </v-table>
+            </pv-table>
           </div>
           <div class="pt-0">
             <div class="flex flex-wrap -mx-2">

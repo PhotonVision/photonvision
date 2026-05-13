@@ -76,7 +76,7 @@ const sliderModel = computed<number[]>({
         :min="min"
         :disabled="disabled"
         :step="step"
-        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 px-3 text-right text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
         type="number"
         @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 0)"
       />
@@ -105,7 +105,7 @@ const sliderModel = computed<number[]>({
         :min="min"
         :disabled="disabled"
         :step="step"
-        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 px-3 text-right text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
         type="number"
         @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 1)"
       />

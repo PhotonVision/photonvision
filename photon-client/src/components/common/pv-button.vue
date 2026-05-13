@@ -30,20 +30,20 @@ const props = withDefaults(
 const attrs = useAttrs();
 
 const baseClass =
-  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold shadow-sm outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:cursor-not-allowed disabled:opacity-45";
+  "inline-flex items-center justify-center gap-2 rounded-xl font-semibold  outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:cursor-not-allowed disabled:opacity-45";
 
 const variantClass = computed(() => {
   switch (props.variant) {
     case "primary":
-      return "bg-pv-button-active text-slate-950 hover:brightness-105";
+      return "shadow-sm bg-pv-button-active text-slate-950 hover:brightness-105";
     case "danger":
-      return "border border-pv-error/45 bg-pv-error/25 text-white hover:bg-pv-error/20";
+      return "shadow-sm border border-pv-error/45 bg-pv-error/25 text-white hover:bg-pv-error/20";
     case "ghost":
-      return "border border-white/12 bg-transparent text-white hover:bg-white/6 shadow-none";
+      return "border border-white/12 bg-transparent text-white hover:bg-white/6 ";
     case "text":
-      return "bg-transparent text-white hover:bg-white/6 shadow-none";
+      return "bg-transparent text-white hover:bg-white/6 ";
     default:
-      return "border border-white/12 bg-black/15 text-white hover:bg-white/8";
+      return "shadow-sm border border-white/12 bg-black/15 text-white hover:bg-white/8";
   }
 });
 

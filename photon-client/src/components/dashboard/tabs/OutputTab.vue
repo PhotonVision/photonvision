@@ -14,7 +14,7 @@ import PvSlider from "@/components/common/pv-slider.vue";
 import { computed } from "vue";
 import { RobotOffsetType } from "@/types/SettingTypes";
 import { useStateStore } from "@/stores/StateStore";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 const isTagPipeline = computed(
   () =>
     useCameraSettingsStore().currentPipelineType === PipelineType.AprilTag ||
@@ -53,7 +53,8 @@ const offsetPoints = computed<MetricItem[]>(() => {
 const currentPipelineSettings = computed<ActivePipelineSettings>(
   () => useCameraSettingsStore().currentPipelineSettings
 );
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7
