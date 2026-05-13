@@ -40,23 +40,13 @@ import org.zeroturnaround.zip.ZipUtil;
 
 /**
  * Writes a directory of JPEG frames ({@code frames/000000.jpg, …}) plus a {@code metadata.jsonl}
- * sidecar of per-frame {@code (seq, capture_ns)} pairs. Per-frame JPEG sidesteps video-container
- * size caps and codec dependencies (WPILib's Linux OpenCV ships no video backend); trade-off is
- * ~8-10× larger than H.264 (~1 GB/min at 1080p30).
+ * sidecar of per-frame {@code (seq, capture_ns)} pairs. {@code capture_ns} is the source machine's
+ * {@code wpi::nt::Now} epoch at capture, propagated verbatim through replay.
  *
- * <p><strong>Trigger:</strong> the web UI's Recordings card and robot code (via {@code
- * PhotonCamera.setRecording(bool)}) both write the per-camera NT boolean {@code
- * /photonvision/<nickname>/recordingRequest}. {@code NTDataPublisher} subscribes and drives {@link
- * #startRecording} / {@link #stopRecording}.
- *
- * <p>{@code capture_ns} is the source machine's {@code wpi::nt::Now} epoch at capture, written
- * verbatim; replay readers propagate it through {@code Frame.timestampNanos} unchanged.
- *
- * <p>Metadata is flushed before its paired frame, so under any process crash {@code
- * len(metadata.jsonl) >= frame_file_count(frames/)} — readers truncate jsonl to the frame
- * directory's count. Unknown JSON fields are ignored so the schema can grow without breaking old
- * readers. Power-loss tearing is accepted: per-frame fsync would blow the 33 ms budget on
- * SD-card-class storage, and FRC's end-of-match power-cut sacrifices ~1 s of frames anyway.
+ * <p>Metadata is flushed before its paired frame, so {@code len(metadata.jsonl) >=
+ * frame_file_count(frames/)} holds under any process crash; readers truncate jsonl to the frame
+ * directory's count. Per-frame fsync is intentionally skipped: it would blow the 33 ms budget on
+ * SD-card-class storage.
  */
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames

@@ -29,23 +29,9 @@ import java.util.Optional;
 
 /**
  * Streams {@code (seq, capture_ns)} pairs out of a {@code metadata.jsonl} sidecar written by {@code
- * FrameRecorder}.
- *
- * <p>Schema invariants this reader relies on (mirroring the writer's contract):
- *
- * <ul>
- *   <li>One JSON object per line, e.g. {@code {"seq":N,"capture_ns":T}}.
- *   <li>Unknown fields are silently ignored — the schema is forward-compatible, so future additions
- *       (exposure, gain, calibration version) won't break old readers.
- *   <li>The writer flushes the metadata line <em>before</em> writing its paired JPEG frame, so
- *       {@code line_count(jsonl) >= frame_count(frames/)} holds under any crash. Callers that
- *       consume from both in lockstep should stop pulling lines once the frame directory is
- *       exhausted — never the other way around.
- * </ul>
- *
- * <p>Missing/malformed fields on a non-empty line are fatal ({@link IOException} naming the line
- * number). Truncated trailing partial lines are likewise fatal; in practice the lockstep-with-
- * frames pattern above means the partial line is never reached.
+ * FrameRecorder}. One JSON object per line, e.g. {@code {"seq":N,"capture_ns":T}}. Unknown fields
+ * are ignored so the schema can grow. Malformed lines throw {@link IOException} naming the
+ * 1-based line number.
  */
 public class MetadataSidecarReader implements AutoCloseable {
     private static final ObjectMapper MAPPER = new ObjectMapper();
