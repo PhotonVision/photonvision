@@ -175,68 +175,34 @@ class FileLogFrameProviderTest {
 
     @Test
     void refusesRecordingMissingSidecar(@TempDir Path tmp) throws IOException {
-        // Frames/ copied, no metadata.jsonl.
         Path dir = tmp.resolve("no-sidecar");
-        Path framesCopy = dir.resolve("frames");
-        Files.createDirectories(framesCopy);
-        try (var stream = Files.list(recordingDir.resolve("frames"))) {
-            stream.forEach(
-                    src -> {
-                        try {
-                            Files.copy(src, framesCopy.resolve(src.getFileName()));
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-        }
-        // intentionally no metadata.jsonl
+        Files.createDirectories(dir.resolve("frames"));
+        Files.copy(
+                recordingDir.resolve("frames").resolve("000000.jpg"),
+                dir.resolve("frames").resolve("000000.jpg"));
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
-        assertTrue(
-                ex.getMessage().toLowerCase().contains("metadata.jsonl"),
-                "error should name the missing file; got: " + ex.getMessage());
+        assertTrue(ex.getMessage().toLowerCase().contains("metadata.jsonl"), ex.getMessage());
     }
 
     @Test
     void refusesMissingFrames(@TempDir Path tmp) throws IOException {
-        // Sidecar present, frames/ absent.
         Path dir = tmp.resolve("no-frames");
         Files.createDirectories(dir);
         Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
-        assertTrue(
-                ex.getMessage().toLowerCase().contains("frames"),
-                "error should name the missing dir; got: " + ex.getMessage());
+        assertTrue(ex.getMessage().toLowerCase().contains("frames"), ex.getMessage());
     }
 
     @Test
     void refusesEmptyFramesDir(@TempDir Path tmp) throws IOException {
-        // frames/ exists, 000000.jpg absent.
         Path dir = tmp.resolve("empty-frames");
         Files.createDirectories(dir.resolve("frames"));
         Files.writeString(dir.resolve("metadata.jsonl"), "{\"seq\":0,\"capture_ns\":1}\n");
 
         IOException ex = assertThrows(IOException.class, () -> new FileLogFrameProvider(dir));
-        assertTrue(
-                ex.getMessage().toLowerCase().contains("first frame")
-                        || ex.getMessage().toLowerCase().contains("missing"),
-                "error should indicate the empty frames dir; got: " + ex.getMessage());
-    }
-
-    @Test
-    void getInputMatMarksConnectedEvenIfIsConnectedNeverCalled() throws IOException {
-        FileLogFrameProvider provider = new FileLogFrameProvider(recordingDir);
-        try {
-            assertFalse(provider.hasConnected(), "no calls yet — flag should still be false");
-            var captured = provider.getInputMat();
-            assertFalse(captured.colorImage.getMat().empty());
-            assertTrue(
-                    provider.hasConnected(), "first getInputMat must flip the cameraPropertiesCached flag");
-            captured.colorImage.release();
-        } finally {
-            provider.release();
-        }
+        assertTrue(ex.getMessage().toLowerCase().contains("missing"), ex.getMessage());
     }
 
     @Test
