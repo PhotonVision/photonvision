@@ -121,15 +121,15 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
       "
     />
 
-    <!-- ML-Assisted Detection Section -->
+    <!-- ML-Tag (ML AprilTag Acceleration) Section -->
     <v-divider v-if="mlDetectionAvailable" class="mt-3 mb-2" />
     <div v-if="mlDetectionAvailable" class="ml-settings-section">
-      <p class="text-subtitle-2 mb-2">AI-Assisted Detection (NPU)</p>
+      <p class="text-subtitle-2 mb-2">ML-Tag (ML AprilTag Acceleration)</p>
       <pv-switch
         v-model="currentPipelineSettings.useMLDetection"
         :switch-cols="interactiveCols"
-        label="Enable AI Detection"
-        tooltip="Use NPU-accelerated ML model for faster AprilTag detection. Requires compatible hardware (RK3588 or QCS6490)"
+        label="Enable ML-Tag"
+        tooltip="ML-Tag uses an NPU-accelerated ML model for faster AprilTag detection. Requires compatible hardware (RK3588 or QCS6490)."
         @update:modelValue="
           (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ useMLDetection: value }, false)
         "
@@ -138,7 +138,7 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
         <pv-select
           v-model="selectedModel"
           label="Model"
-          tooltip="The model used for AI-assisted AprilTag detection"
+          tooltip="The model used for ML-Tag AprilTag detection"
           :select-cols="interactiveCols"
           :items="modelWrapper"
         />

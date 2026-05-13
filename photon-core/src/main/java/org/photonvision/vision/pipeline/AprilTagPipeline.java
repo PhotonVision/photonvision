@@ -162,9 +162,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     decodeParams.tagFamily = settings.tagFamily;
                     decodeParams.maxHammingDistance = settings.hammingDist;
                     decodeParams.minDecisionMargin = settings.decisionMargin;
-                    decodeParams.detectorConfig.numThreads = 1;
+                    decodeParams.detectorConfig.numThreads = settings.threads;
                     decodeParams.detectorConfig.refineEdges = settings.refineEdges;
-                    decodeParams.detectorConfig.quadDecimate = 1; // No decimation for ROI - maximize accuracy
+                    decodeParams.detectorConfig.quadDecimate = settings.decimate;
+                    decodeParams.detectorConfig.quadSigma = (float) settings.blur;
 
                     // ATR (Adaptive Tag Resizing) settings
                     decodeParams.atrEnabled = settings.atrEnabled;
