@@ -1,11 +1,14 @@
 @layer theme, base, vuetify-core, vuetify-components, vuetify-overrides,vuetify-utilities, utilities, components, vuetify-final;
 /*@import 'vuetify/styles' layer(vuetify);*/
-@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/public-sans/600.css";
+@import "@fontsource/public-sans/700.css";
+@import "@fontsource/public-sans/800.css";
+
+
 
 @import "tailwindcss";
 @theme {
   --font-sans: "DM Sans", sans-serif;
-  --font-long-text: sans-serif;
   --color-pv-background: rgb(var(--v-theme-background));
   --color-pv-surface: rgb(var(--v-theme-surface));
   --color-pv-surface-variant: rgb(var(--v-theme-surface-variant));
@@ -18,6 +21,15 @@
   --color-pv-warning: rgb(var(--v-theme-warning));
   --color-pv-button-active: rgb(var(--v-theme-buttonActive));
   --color-pv-button-passive: rgb(var(--v-theme-buttonPassive));
+
+  @keyframes progress {
+    from { background-position: 0 0; }
+    to { background-position: 30px 30px; }
+  }
+
+  /* Link them to an animation name */
+  --animate-progress: progress 1s infinite linear;
+
 }
 @custom-variant data-on (&[data-state~="on"]);
 
@@ -28,6 +40,7 @@
     background-color: rgb(var(--v-theme-background));
     color: white;
     overscroll-behavior: none;
+    scrollbar-gutter: stable;
   }
 
   body {

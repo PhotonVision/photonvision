@@ -197,7 +197,7 @@ watchEffect(() => {
           :disabled="tempSettingsStruct.runNTServer"
           :rules="[
             (v) =>
-              isValidNetworkTablesIP(v) ||
+              (typeof v === 'string' && isValidNetworkTablesIP(v)) ||
               'The NetworkTables Server Address must be a valid Team Number, IP address, or Hostname'
           ]"
         />
@@ -228,7 +228,7 @@ watchEffect(() => {
           v-model="tempSettingsStruct.staticIp"
           :input-cols="12 - 4"
           label="Static IP"
-          :rules="[(v) => isValidIPv4(v) || 'Invalid IPv4 address']"
+          :rules="[(v) => (typeof v === 'string' && isValidIPv4(v)) || 'Invalid IPv4 address']"
           :disabled="
             !tempSettingsStruct.shouldManage ||
             !useSettingsStore().network.canManage ||
@@ -240,7 +240,7 @@ watchEffect(() => {
           v-model="tempSettingsStruct.hostname"
           label="Hostname"
           :input-cols="12 - 4"
-          :rules="[(v) => isValidHostname(v) || 'Invalid hostname']"
+          :rules="[(v) => (typeof v === 'string' && isValidHostname(v)) || 'Invalid hostname']"
           :disabled="
             !tempSettingsStruct.shouldManage ||
             !useSettingsStore().network.canManage ||

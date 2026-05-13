@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import PvIcon from "@/components/common/pv-icon.vue";
+import { TooltipArrow, TooltipContent, TooltipPortal, TooltipProvider, TooltipRoot, TooltipTrigger } from "reka-ui";
 
 withDefaults(
   defineProps<{
@@ -24,19 +25,30 @@ defineEmits<{
 
 <template>
   <div>
-    <v-tooltip :right="right" :location="!right ? 'bottom' : undefined" offset="10" :disabled="tooltip === undefined">
-      <template #activator="{ props }">
-        <pv-icon
-          :class="hover ? 'hover' : ''"
-          :icon="iconName"
-          :color="color"
-          v-bind="props"
-          :disabled="disabled"
-          @click="$emit('click')"
-        />
-      </template>
-      <span>{{ tooltip }}</span>
-    </v-tooltip>
+    <tooltip-provider :delay-duration="300">
+      <tooltip-root>
+        <tooltip-trigger as-child>
+          <pv-icon
+            :class="hover ? 'hover' : ''"
+            :icon="iconName"
+            :color="color"
+            :disabled="disabled"
+            @click="$emit('click')"
+          />
+        </tooltip-trigger>
+        <tooltip-portal>
+          <tooltip-content
+            :side="right ? 'right' : 'left'"
+            :side-offset="8"
+            class="z-[2500] max-w-xs rounded-lg bg-pv-background px-3 py-2 text-xs leading-relaxed text-white shadow-xl shadow-black/35 ring-1 ring-white/8"
+          >
+            {{ tooltip }}
+            <tooltip-arrow class="fill-pv-background stroke-white/8 stroke-2" :width="10" :height="5" />
+          </tooltip-content>
+        </tooltip-portal>
+      </tooltip-root>
+    </tooltip-provider>
+
   </div>
 </template>
 

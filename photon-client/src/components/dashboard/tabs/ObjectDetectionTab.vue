@@ -12,7 +12,7 @@ import PvRangeSlider from "@/components/common/pv-range-slider.vue";
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 import type { ObjectDetectionModelProperties } from "@/types/SettingTypes";
 
 // TODO fix pipeline typing in order to fix this, the store settings call should be able to infer that only valid pipeline type settings are exposed based on pre-checks for the entire config section
@@ -31,7 +31,8 @@ const contourRatio = computed<[number, number]>({
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.contourRatio = v)
 });
 
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 9 : 8

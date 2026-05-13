@@ -11,7 +11,7 @@ const props = withDefaults(
     tooltip?: string;
     disabled?: boolean;
     labelCols?: number;
-    rules?: ((v: number) => boolean | string)[];
+    rules?: ((v: string | number | null) => boolean | string)[];
     step?: number;
   }>(),
   {
@@ -45,7 +45,7 @@ const localValue = computed({
 </script>
 
 <template>
-  <div class="flex">
+  <div class="flex gap-2 sm:gap-3">
     <div :class="labelWidthClass" class="flex items-center pl-0 pt-10px pb-10px">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
@@ -55,7 +55,7 @@ const localValue = computed({
         density="compact"
         hide-details
         type="number"
-        variant="underlined"
+        variant="outline"
         :step="step"
         :disabled="disabled"
         :rules="rules"

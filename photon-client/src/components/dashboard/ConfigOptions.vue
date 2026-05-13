@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, ref } from "vue";
+import { computed, ref, watchEffect } from "vue";
 import PvTabs, { type PvTabItem } from "@/components/common/pv-tabs.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvAlert from "@/components/common/pv-alert.vue";
@@ -18,7 +18,7 @@ import PnPTab from "@/components/dashboard/tabs/PnPTab.vue";
 import Map3DTab from "@/components/dashboard/tabs/Map3DTab.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 interface ConfigOption {
   tabName: string;
@@ -38,8 +38,12 @@ const allTabs = Object.freeze({
   map3dTab: { tabName: "3D", component: Map3DTab }
 });
 
-const selectedTabs = ref(["Input", "Threshold", "Contours", "Targets"]);
-const { smAndDown, mdAndDown, lgAndDown, xl } = useDisplay();
+const selectedTabs = ref([0, 0, 0, 0]);
+const breakpoints = useCustomBreakpoints();
+const smAndDown = breakpoints.smallerOrEqual("sm");
+const mdAndDown = breakpoints.smallerOrEqual("md");
+const lgAndDown = breakpoints.smallerOrEqual("lg");
+const xl = breakpoints.greaterOrEqual("xl");
 
 const getTabGroups = (): ConfigOption[][] => {
   if (smAndDown.value || useCameraSettingsStore().isDriverMode) {
@@ -121,18 +125,17 @@ const shouldUseWideSecondTabGroup = computed(() => {
 const onBeforeTabUpdate = () => {
   // Force the current tab to the input tab on driver mode change
   if (useCameraSettingsStore().isDriverMode) {
-    selectedTabs.value[0] = "Input";
+    selectedTabs.value[0] = 0;
   }
 };
 
-const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: string): Component => {
-  return (
-    tabGroupData.find((tabConfig) => tabConfig.tabName === selectedTabName)?.component ?? tabGroupData[0].component
-  );
+const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: number): Component => {
+  return tabGroupData[selectedTabName].component;
 };
 
 const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
   tabGroupData.map((tabConfig) => ({ label: tabConfig.tabName, value: tabConfig.tabName }));
+
 </script>
 
 <template>

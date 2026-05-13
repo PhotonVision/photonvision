@@ -10,6 +10,7 @@ import { computed, inject, ref, useTemplateRef } from "vue";
 import { axiosPost, getResolutionString, parseJsonFile } from "@/lib/PhotonUtils";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCard from "@/components/common/pv-card.vue";
+import PvTable from "@/components/common/pv-table.vue";
 
 const props = defineProps<{
   videoFormat: VideoFormat;
@@ -108,7 +109,7 @@ const exportCalibrationURL = computed<string>(() =>
 const calibrationImageURL = (index: number) =>
   useCameraSettingsStore().getCalImageUrl(inject<string>("backendHost") as string, props.videoFormat.resolution, index);
 
-const tab = ref("details");
+const tab = ref(0);
 const viewingImg = ref(0);
 const tabItems: PvTabItem<string>[] = [
   { label: "Details", value: "details" },
@@ -159,8 +160,8 @@ const tabItems: PvTabItem<string>[] = [
       <div class="w-1/3 p-0">
         <pv-tabs v-model="tab" :items="tabItems" class="mt-2" />
         <div class="pt-3">
-          <div v-if="tab === 'details'">
-            <v-table style="width: 100%" density="compact">
+          <div v-if="tab === 0">
+            <pv-table style="width: 100%" density="compact">
               <template #default>
                 <tbody>
                   <tr>
@@ -270,9 +271,9 @@ const tabItems: PvTabItem<string>[] = [
                   </tr>
                 </tbody>
               </template>
-            </v-table>
+            </pv-table>
           </div>
-          <div v-else-if="tab === 'observations'">
+          <div v-else-if="tab === 1">
             <v-data-table
               id="observations-table"
               items-per-page-text="Page size:"
@@ -310,7 +311,7 @@ const tabItems: PvTabItem<string>[] = [
               icon="mdi-alert-circle-outline"
             />
           </div>
-          <Suspense v-else-if="tab === 'details'">
+          <Suspense v-else-if="tab === 0">
             <!-- Allows us to import three js when it's actually needed  -->
             <PhotonCalibrationVisualizer
               :camera-unique-name="useCameraSettingsStore().currentCameraSettings.uniqueName"

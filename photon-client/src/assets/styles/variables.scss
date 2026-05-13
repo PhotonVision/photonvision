@@ -1,8 +1,8 @@
 @use "@fontsource/prompt";
-@use "@fontsource/dm-sans";
+@use "@fontsource/public-sans";
 
 
-$default-font: "DM Sans", sans-serif !default;
+$default-font: "Public Sans", sans-serif !default;
 $body-font-family: $default-font;
 $heading-font-family: $default-font;
 $body-background: rgb(var(--v-theme-background));

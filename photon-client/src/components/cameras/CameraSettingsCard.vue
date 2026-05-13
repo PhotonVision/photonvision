@@ -4,6 +4,7 @@ import PvSelect, { type SelectItem } from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvNumberInput from "@/components/common/pv-number-input.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
+import PvCard from "@/components/common/pv-card.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { computed, ref, watchEffect } from "vue";
@@ -133,9 +134,9 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
 </script>
 
 <template>
-  <section class="mb-3 rounded-[12px] bg-pv-surface text-white shadow-lg shadow-black/10">
-    <div class="px-5 pt-5 pb-2 text-xl font-semibold">Camera Settings</div>
-    <div class="px-5 pt-1 pb-4">
+  <pv-card class="mb-2">
+    <div class=" pb-2 text-xl font-semibold">Camera Settings</div>
+    <div class=" pt-1 pb-4">
       <pv-select
         v-model="useStateStore().currentCameraUniqueName"
         label="Camera"
@@ -171,7 +172,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         label="Focus Mode"
       />
     </div>
-    <div class="grid gap-3 px-5 pb-5 sm:grid-cols-2">
+    <div class="grid gap-3  sm:grid-cols-2">
       <pv-button
         variant="primary"
         icon="mdi-content-save"
@@ -197,5 +198,5 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
       :expected-confirmation-text="useCameraSettingsStore().currentCameraSettings.nickname"
       :on-confirm="deleteThisCamera"
     />
-  </section>
+  </pv-card>
 </template>

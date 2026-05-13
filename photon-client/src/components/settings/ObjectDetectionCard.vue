@@ -8,6 +8,7 @@ import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvTextField from "@/components/common/pv-text-field.vue";
+import PvTable from "@/components/common/pv-table.vue";
 import { axiosPost } from "@/lib/PhotonUtils";
 
 const showImportDialog = ref(false);
@@ -307,7 +308,7 @@ const handleBulkImport = async () => {
       </div>
       <div class="flex flex-wrap">
         <div class="flex-1">
-          <v-table fixed-header height="100%" density="compact" dark>
+          <pv-table fixed-header height="100%" density="compact" dark>
             <thead style="font-size: 1.25rem">
               <tr>
                 <th>Model Nicknames</th>
@@ -348,7 +349,7 @@ const handleBulkImport = async () => {
                 </td>
               </tr>
             </tbody>
-          </v-table>
+          </pv-table>
 
           <pv-delete-modal
             v-model="confirmDeleteDialog.show"

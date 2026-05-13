@@ -7,6 +7,7 @@ const value = defineModel<string>({ required: true });
 
 const props = withDefaults(
   defineProps<{
+    type?: HTMLInputElement["type"];
     label?: string;
     tooltip?: string;
     disabled?: boolean;
@@ -14,11 +15,14 @@ const props = withDefaults(
     placeholder?: string;
     labelCols?: number;
     inputCols?: number;
-    rules?: ((v: string) => boolean | string)[];
+    rules?: ((v: string | number | null) => boolean | string)[];
+    clearable?: boolean;
   }>(),
   {
     disabled: false,
-    inputCols: 8
+    inputCols: 8,
+    clearable: false,
+    type: "text"
   }
 );
 
@@ -63,7 +67,7 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
 // TODO: fix error text theming
 </script>
 <template>
-  <div class="flex">
+  <div class="flex gap-2 sm:gap-3">
     <div :class="labelWidthClass" class="flex items-center pl-0 pt-10px pb-10px">
       <tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
@@ -73,11 +77,14 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
         v-model="value"
         density="compact"
         :placeholder="placeholder"
+        :type="type"
         :disabled="disabled"
         :error-message="errorMessage"
         :rules="rules"
-        variant="underlined"
+        variant="outline"
+        :clearable="clearable"
         @keydown="handleKeydown"
+        v-bind="$attrs"
       />
     </div>
   </div>

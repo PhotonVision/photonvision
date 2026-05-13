@@ -237,13 +237,13 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           label="Camera"
           :items="wrappedCameras"
           @update:modelValue="pipelineType = useCameraSettingsStore().currentWebsocketPipelineType"
+          class="pt-0 pb-1"
         />
         <pv-input
           v-else
           v-model="currentCameraName"
-          class="pt-2"
           :input-cols="12 - 3"
-          :rules="[(v) => checkCameraName(v)]"
+          :rules="[(v) => (typeof v === 'string' && checkCameraName(v))]"
           label="Camera"
           @onEnter="saveCameraNameEdit"
           @onEscape="cancelCameraNameEdit"
@@ -283,12 +283,13 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           "
           :items="pipelineNamesWrapper"
           @update:modelValue="(args) => useCameraSettingsStore().changeCurrentPipelineIndex(args, true)"
+          class="pb-1 pt-0"
         />
         <pv-input
           v-else
           v-model="currentPipelineName"
           :input-cols="12 - 3"
-          :rules="[(v) => checkPipelineName(v)]"
+          :rules="[(v) => (typeof v === 'string' && checkPipelineName(v))]"
           label="Pipeline"
           @onEnter="(v) => savePipelineNameEdit(v)"
           @onEscape="cancelPipelineNameEdit"
@@ -351,7 +352,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         />
       </div>
     </div>
-    <div class="flex flex-wrap  pt-0 pb-4">
+    <div class="flex flex-wrap  pt-0">
       <div class="w-5/6 p-0">
         <pv-select
           v-model="currentPipelineType"
@@ -365,6 +366,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           "
           :items="pipelineTypesWrapper"
           @update:modelValue="showPipelineTypeChangeDialog = true"
+          class="pt-0 pb-1"
         />
       </div>
     </div>
@@ -378,7 +380,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
             :label-cols="4"
             :input-cols="12 - 4"
             label="Pipeline Name"
-            :rules="[(v) => checkPipelineName(v)]"
+            :rules="[(v) => (typeof v === 'string' && checkPipelineName(v))]"
           />
           <pv-select
             v-model="newPipelineType"
@@ -417,7 +419,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
         </div>
         <div class="flex justify-end gap-3 pt-2">
           <pv-button variant="passive" @click="cancelChangePipelineType"> Cancel </pv-button>
-          <pv-button variant="primary" @click="confirmChangePipelineType"> Confirm </pv-button>
+          <pv-button variant="danger" @click="confirmChangePipelineType"> Confirm </pv-button>
         </div>
       </pv-card>
     </pv-dialog>

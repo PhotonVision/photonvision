@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import PvButton from "@/components/common/pv-button.vue";
+import PvTable from "@/components/common/pv-table.vue";
+
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -35,7 +37,7 @@ const resetCurrentBuffer = () => {
 <template>
   <div>
     <div class="flex flex-wrap pb-4">
-      <v-table density="compact" class="pt-2 pb-12 pl-3 pr-3">
+      <pv-table density="compact" class="pt-2 pb-12 pl-3 pr-3">
         <template #default>
           <thead>
             <tr>
@@ -126,7 +128,7 @@ const resetCurrentBuffer = () => {
             </tr>
           </tbody>
         </template>
-      </v-table>
+      </pv-table>
     </div>
     <div
       v-if="
@@ -140,7 +142,7 @@ const resetCurrentBuffer = () => {
     >
       <div class="flex flex-wrap pb-4 text-white">
         <div class="ma-0 p-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</div>
-        <v-table density="compact">
+        <pv-table density="compact">
           <template #default>
             <thead>
               <tr class="text-white">
@@ -191,7 +193,7 @@ const resetCurrentBuffer = () => {
               </tr>
             </tbody>
           </template>
-        </v-table>
+        </pv-table>
       </div>
       <div class="flex flex-col pb-4 text-white">
         <div class="ma-0 p-0 pb-4 pr-4" style="font-size: 16px">
@@ -199,7 +201,7 @@ const resetCurrentBuffer = () => {
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </div>
         <pv-button variant="primary" class="mb-4 mt-1 w-fit" @click="resetCurrentBuffer">Reset Samples</pv-button>
-        <v-table density="compact">
+        <pv-table density="compact">
           <template #default>
             <thead>
               <tr>
@@ -258,7 +260,7 @@ const resetCurrentBuffer = () => {
               </tr>
             </tbody>
           </template>
-        </v-table>
+        </pv-table>
       </div>
     </div>
   </div>

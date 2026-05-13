@@ -7,13 +7,13 @@ import PvButton from "@/components/common/pv-button.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
-import PvTextField from "@/components/common/pv-text-field.vue";
+import PvInput from "@/components/common/pv-input.vue";
 import VirtualList from "vue3-virtual-scroll-list";
 
 const backendHost = inject<string>("backendHost");
 
 const searchQuery = ref("");
-const timeInput = ref<string>();
+const timeInput = ref<string>("");
 const autoScroll = ref(true);
 const logList = useTemplateRef<InstanceType<typeof VirtualList>>("logList"); // this needs to be typed in the definition since vue has trouble inferring it
 const logKeeps = ref(40);
@@ -31,7 +31,7 @@ const logs = computed<LogMessage[]>(() =>
       (message) =>
         selectedLogLevels.value[message.level] &&
         message.message.toLowerCase().includes(searchQuery.value?.toLowerCase() || "") &&
-        (timeInput.value === undefined ||
+        (timeInput.value === undefined || !timeInput.value ||
           message.timestamp.getTime() >=
             new Date().setHours(
               parseInt(timeInput.value.substring(0, 2)),
@@ -57,7 +57,7 @@ watch(logs, () => {
 });
 
 const getLogLevelFromIndex = (index: number): string => {
-  return LogLevel[index];
+  return LogLevel[index].charAt(0).toUpperCase() + LogLevel[index].slice(1).toLowerCase();
 };
 
 const handleLogExport = () => {
@@ -112,28 +112,36 @@ document.addEventListener("keydown", (e) => {
       <div class="dialog-data">
         <!-- Log view options -->
         <div class="flex flex-wrap justify-between pt-4 md:pt-0">
-          <div class="flex w-full items-center pr-3 md:w-7/12">
-            <pv-text-field
+          <div class="flex flex-1 items-center gap-4 pr-3 justify-start">
+            <pv-input
               v-model="searchQuery"
-              density="compact"
               clearable
               hide-details
               prepend-icon="mdi-magnify"
               label="Search"
-              variant="underlined"
+              :input-cols="9"
             />
-            <input v-model="timeInput" type="time" step="1" class="text-white pl-3" />
-            <pv-button size="icon" variant="text" icon="mdi-close" @click="timeInput = undefined" />
+            <pv-input
+              label="Minimum Time"
+              v-model="timeInput"
+              type="time"
+              step="1"
+              class="text-white pl-3"
+              :clearable="true"
+              :input-cols="7"
+            />
           </div>
-          <div v-for="level in [0, 1, 2, 3]" :key="level" class="flex-1 pr-3">
-            <div class="pb-0 pt-0" style="display: flex; align-items: center; flex: min-content">
-              {{ getLogLevelFromIndex(level)
-              }}<pv-switch
-                v-model="selectedLogLevels[level]"
-                class="pl-2"
-                hide-details
-                color="rgb(var(--v-theme-primary))"
-              ></pv-switch>
+          <div class="flex gap-1">
+            <div v-for="level in [0, 1, 2, 3]" :key="level" class="flex-1 pr-1 flex items-center justify-center">
+              <div class="pb-0 pt-0 flex items-center basis-[min-content]">
+                <pv-switch
+                  v-model="selectedLogLevels[level]"
+                  class="pl-2"
+                  hide-details
+                  color="primary"
+                  :label="getLogLevelFromIndex(level)"
+                ></pv-switch>
+              </div>
             </div>
           </div>
         </div>

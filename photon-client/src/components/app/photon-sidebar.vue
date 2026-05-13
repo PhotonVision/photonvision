@@ -7,20 +7,16 @@ import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useTheme } from "vuetify";
 import { toggleTheme } from "@/lib/ThemeManager";
-import { useMediaQuery } from "@vueuse/core";
 import PvIcon from "@/components/common/pv-icon.vue";
-import {
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuRoot
-} from "reka-ui";
+import { NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuRoot } from "reka-ui";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 const compact = computed<boolean>({
   get: () => useStateStore().sidebarFolded,
   set: (val) => useStateStore().setSidebarFolded(val)
 });
-const mdAndUp = useMediaQuery("(width >= 48rem)");
+const breakpoints = useCustomBreakpoints();
+const mdAndUp = breakpoints.greaterOrEqual("md");
 const theme = useTheme();
 const route = useRoute();
 
@@ -33,9 +29,8 @@ const navItems = [
   { title: "Documentation", to: "/docs", icon: "mdi-bookshelf" }
 ];
 
-const baseItemClass =
-  "sidebar-item group flex items-center gap-3 rounded-12 px-3 py-2 font-medium text-white/80";
-const activeItemClass = "bg-white/5 text-white";
+const baseItemClass = "sidebar-item group flex items-center gap-3 rounded-12 px-3 py-2  text-white/80";
+const activeItemClass = "bg-white/5 text-white font-semibold";
 </script>
 
 <template>
@@ -50,12 +45,7 @@ const activeItemClass = "bg-white/5 text-white";
         src="@/assets/images/logoLarge.svg"
         alt="large logo"
       />
-      <img
-        v-else
-        class="h-16 w-full object-contain"
-        src="@/assets/images/logoSmallTransparent.svg"
-        alt="small logo"
-      />
+      <img v-else class="h-16 w-full object-contain" src="@/assets/images/logoSmallTransparent.svg" alt="small logo" />
     </div>
 
     <NavigationMenuRoot class="flex flex-1 flex-col" orientation="vertical">
@@ -67,11 +57,10 @@ const activeItemClass = "bg-white/5 text-white";
               :class="[
                 baseItemClass,
                 renderCompact ? 'justify-center px-2' : '',
-                route.path === item.to ? activeItemClass : ''
               ]"
               :active-class="activeItemClass"
             >
-              <Icon :icon="item.icon" class="text-lg text-white/80 transition group-hover:text-white" />
+              <Icon :icon="item.icon" class="text-lg text-white/80 transition group-hover:text-white size-6" />
               <span
                 class="transition-opacity duration-200"
                 :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
@@ -95,7 +84,7 @@ const activeItemClass = "bg-white/5 text-white";
             >
               <Icon
                 icon="mdi-swap-horizontal-bold"
-                class="text-lg text-white/80 transition group-hover:text-white"
+                class="text-lg text-white/80 transition group-hover:text-white size-6"
                 :class="{ 'text-red-400': useCameraSettingsStore().needsCameraConfiguration }"
               />
               <span
@@ -117,13 +106,13 @@ const activeItemClass = "bg-white/5 text-white";
       <button
         v-if="mdAndUp"
         type="button"
-        class="sidebar-item mb-2 flex w-full items-center gap-3 rounded-12 px-3 py-2  text-white/80 justify-between"
+        class="sidebar-item mb-2 flex w-full items-center gap-3 rounded-12 px-3 py-2 text-white/80 justify-between"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => (compact = !compact)"
       >
         <Icon
           :icon="`mdi-chevron-${compact || !mdAndUp ? 'right' : 'left'}`"
-          class="text-lg text-white/80 transition group-hover:text-white"
+          class="text-lg text-white/80 transition group-hover:text-white size-6"
         />
         <span
           class="transition-opacity duration-200"
@@ -134,13 +123,13 @@ const activeItemClass = "bg-white/5 text-white";
       </button>
       <button
         type="button"
-        class="sidebar-item mb-3 flex w-full items-center gap-3 rounded-12 px-3 py-2  text-white/80 justify-between"
+        class="sidebar-item mb-3 flex w-full items-center gap-3 rounded-12 px-3 py-2 text-white/80 justify-between"
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => toggleTheme(theme)"
       >
         <Icon
           :icon="theme.global.current.value.dark ? 'mdi-weather-night' : 'mdi-white-balance-sunny'"
-          class="text-lg text-white/80 transition group-hover:text-white"
+          class="text-lg text-white/80 transition group-hover:text-white size-6"
         />
         <span
           class="transition-opacity duration-200"
@@ -150,7 +139,10 @@ const activeItemClass = "bg-white/5 text-white";
         </span>
       </button>
 
-      <div class="flex items-center gap-3 rounded-12 px-3 py-2  text-white/70" :class="renderCompact ? 'justify-center' : 'justify-between'">
+      <div
+        class="flex items-center gap-3 rounded-12 px-3 py-2 text-white/70"
+        :class="renderCompact ? 'justify-center' : 'justify-between'"
+      >
         <Icon
           :icon="
             useSettingsStore().network.runNTServer
@@ -164,7 +156,7 @@ const activeItemClass = "bg-white/5 text-white";
               ? 'text-green-400'
               : 'text-red-400'
           "
-          class="size-5 shrink-0"
+          class="size-6 shrink-0"
         />
         <div
           class="leading-snug text-end transition-opacity duration-200"
@@ -182,11 +174,14 @@ const activeItemClass = "bg-white/5 text-white";
         </div>
       </div>
 
-      <div class="mt-2 flex items-start gap-3 rounded-12 px-3 py-2  text-white/70" :class="renderCompact ? 'justify-center' : 'justify-between'">
+      <div
+        class="mt-2 flex items-start gap-3 rounded-12 px-3 py-2 text-white/70"
+        :class="renderCompact ? 'justify-center' : 'justify-between'"
+      >
         <Icon
           :icon="useStateStore().backendConnected ? 'mdi-server-network' : 'mdi-server-network-off'"
           :class="useStateStore().backendConnected ? 'text-green-400' : 'text-red-400'"
-          class="size-5 shrink-0"
+          class="size-6 shrink-0"
         />
         <div
           class="leading-snug transition-opacity duration-200"
@@ -217,7 +212,6 @@ const activeItemClass = "bg-white/5 text-white";
 .pulse {
   animation: pulse 2s infinite;
 }
-
 
 @keyframes pulse {
   0%,
