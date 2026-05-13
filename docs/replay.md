@@ -82,20 +82,131 @@ wpilog.
 
 ## Replay side
 
-Replay assigns a recording dir to a vision source via the camera-matching UI.
-A `FileLogFrameProvider` reads frames out of `frames/`, paces them by the
-deltas in `metadata.jsonl`, and emits `CapturedFrame`s whose
-`captureTimestamp` is set to the recorded `capture_ns` verbatim.
+Replay is an **action on a live camera**, not a sibling assignment. The user
+picks a recording on the Cameras tab (or the Recordings card), hits **Replay
+with current pipeline**, and the live `VisionModule`'s `FrameProvider` is
+swapped in place — `USBFrameProvider` / `LibcameraGpuFrameProvider` →
+`FileLogFrameProvider` — for the duration of the replay. The pipeline,
+calibration, and `NTDataPublisher` stay the same; only the frame source
+changes. On EOF or cancel, the live provider is restored automatically.
 
-The pipeline runs end-to-end as normal — same `NTDataPublisher`, same UI feed,
-same target processing. When the recording hits EOF the provider parks the
-vision thread; deactivate-and-reactivate the camera to restart.
+The swap is owned by `VisionModule.startReplay(Path)` / `cancelReplay()`:
+
+1. Open a `FileLogFrameProvider` against the recording dir. The provider
+   pre-counts `frames/*.jpg` for progress reporting and lazily reads the
+   metadata sidecar.
+2. Wire `onProgress` (publishes `/photonvision/<cam>/replayProgress*` after
+   every emitted frame) and `onEof` (dispatches the swap-back) **before**
+   installing the provider on the source — a zero-frame recording fires EOF
+   on the very first `getInputMat` call.
+3. Save the live provider, atomically swap the source's volatile
+   `FrameProvider` reference, set `isReplaying = true`, publish
+   `/photonvision/<cam>/isReplaying`.
+4. `VisionRunner` re-reads `frameSupplier.get()` once per loop tick, so it
+   picks up the new provider on the next frame grab without restarting the
+   thread.
+
+On EOF or `cancelReplay`:
+
+1. `FileLogFrameProvider.requestStop()` (or the natural-EOF path) fires
+   `onEof` exactly once via a CAS on the stopped-state flag, then returns an
+   empty `CapturedFrame` so the vision thread can pick up the swap-back on
+   its next tick (instead of parking — that's the standalone-use semantics
+   from before the swap).
+2. The EOF callback dispatches `finishReplay` onto a dedicated
+   single-thread executor (`ReplayWorker - <camera>`), never the vision
+   thread.
+3. `finishReplay` restores the live provider, then fences via
+   `VisionRunner.runSynchronously(() -> {})` — the task drains on the
+   vision thread at the top of its loop, *after* the supplier re-read, so
+   when the future resolves the vision thread is no longer inside the old
+   provider's `getInputMat`. The file-log provider is then released and the
+   `JsonResultExporter` closed.
+4. `isReplaying` flips false and `/photonvision/<cam>/isReplaying` is set
+   to `false`.
+
+`stop()` on the `VisionModule` waits up to 3s for an in-flight swap-back
+before tearing the runner down, so a parallel stop-during-cancel can't race
+teardown against the worker.
+
+### REST endpoints
+
+Two endpoints under `/api/recordings/` drive the state machine from the UI:
+
+```http
+POST /api/recordings/replay
+Content-Type: application/json
+
+{"cameraUniqueName": "<uniqueName>", "recording": "<recordingName>"}
+```
+
+Resolves `<recordingsDir>/<cameraUniqueName>/<recording>` via
+`PathSafety.safeResolve`, validates the dir, calls `module.startReplay`.
+Returns:
+
+| Status | Meaning |
+|---|---|
+| 202 | replay accepted, running asynchronously |
+| 400 | missing fields, malformed recording, unsafe path |
+| 404 | no camera with that uniqueName, or recording not found |
+| 409 | a replay is already active on that camera |
+
+```http
+POST /api/recordings/replay/cancel
+Content-Type: application/json
+
+{"cameraUniqueName": "<uniqueName>"}
+```
+
+Idempotent — 200 even if there was no replay to cancel.
+
+### NT signals during replay
+
+Per-camera under `/photonvision/<cameraNickname>/`:
+
+| Topic | Type | Notes |
+|---|---|---|
+| `isReplaying` | boolean | flips true on startReplay, false on swap-back complete |
+| `replayProgressCurrentFrame` | int64 | running 1-based emit count |
+| `replayProgressTotalFrames` | int64 | discovered at construction; -1 if listing failed |
+| `replayProgressRecordingName` | string | recording dir name |
+
+Per-result topics (`result`, `targetPose`, `latencyMillis`, …) keep
+publishing during replay — values reflect the replayed frames. Acceptable
+because replay is a post-match / off-line analysis tool; no robot is
+consuming NT then, and the JSON file is the canonical output.
+
+### UI surfaces
+
+- **Cameras tab → ReplayPanel** ([CameraSettingsView.vue](../photon-client/src/views/CameraSettingsView.vue)): per-camera recording dropdown (filtered to the current camera, newest-first default), Replay / Cancel / Download buttons. Sits between `CalibrationCard` and `CameraControlCard` so the iteration loop is tune → pick recording → Replay → Download.
+- **Settings → Recordings card** ([RecordingsCard.vue](../photon-client/src/components/settings/RecordingsCard.vue)): per-row "▶ Replay Selected" button alongside Export / Delete. Same endpoint, target camera inferred from the row.
+
+The cross-camera "replay in progress" banner and the results-list summary
+(parsed `<recording>/results/*.jsonl` headers) are intentional follow-ups —
+they need an NT→websocket bridge and a new server endpoint respectively.
+
+### Live camera goes offline during replay — by design
+
+Replay is exclusive: while it's running, `VisionRunner` is pulling from the
+file-log provider, not the live camera. The live `CvSink` (or libcamera
+pipe) stays open, so the swap-back is instant — but no live frames flow.
+That's acceptable because replay is post-match / off-line; a competition
+robot consuming NT during a match should never see `isReplaying = true`.
+If a separate process *does* need to keep the live camera up during
+replay, the fallback design is an "ephemeral parallel VisionModule"
+that reuses the live module's pipeline + calibration *by reference* — not
+done here because the user explicitly opted for the simpler in-place swap.
 
 ## JSON export
 
-For File Log Camera sources only, `VisionModule` tees every
-`CVPipelineResult` to a `JsonResultExporter`. The exporter is built lazily on
-the first result so non-File-Log cameras pay no cost.
+During replay, `VisionModule` tees every `CVPipelineResult` to a
+`JsonResultExporter`. The tee gates on
+`visionSource.getReplayRecordingDir().isPresent()` — non-empty iff the
+current `FrameProvider` is a `FileLogFrameProvider`. The exporter is built
+lazily on the first replayed result and closed by `finishReplay` on
+swap-back, so live USB / CSI cameras never touch the disk for this path
+and the next replay (potentially with a different pipeline hash) lands in a
+fresh file.
 
 ### Where the file goes
 
@@ -236,10 +347,18 @@ timestamps). Two reasons we didn't:
 
 ### How do I download a tuning's JSON?
 
-Click **Export Selected Recording** on the Recordings card. The existing
-`/api/recordings/exportIndividual` endpoint already zips the whole
-recording dir, so `results/*.jsonl` (every tuning you've tried) and `tss.json`
-ride along automatically. There is no separate export endpoint.
+Click **Download recording zip** on the Cameras-tab ReplayPanel, or
+**Export Selected Recording** on the Recordings card. Both hit
+`/api/recordings/exportIndividual`, which zips the whole recording dir, so
+`results/*.jsonl` (every tuning you've tried) and `tss.json` ride along
+automatically. There is no separate export endpoint.
+
+### How do I cancel a running replay?
+
+Hit **Cancel replay** on the ReplayPanel or POST
+`/api/recordings/replay/cancel`. Idempotent. The actual swap-back runs
+asynchronously on the replay worker thread; `isReplaying` flips false on
+NT once it completes.
 
 ### Why is my `pipeline_hash` value 0?
 
@@ -258,11 +377,17 @@ warn and writes nulls in both TSS fields; on the robot side,
 | Concern | File |
 |---|---|
 | Per-frame recorder | `photon-core/.../vision/pipeline/FrameRecorder.java` |
-| Recording replay | `photon-core/.../vision/frame/provider/FileLogFrameProvider.java` |
+| Replay frame provider + callbacks | `photon-core/.../vision/frame/provider/FileLogFrameProvider.java` |
+| Swap state machine (startReplay / cancelReplay / finishReplay) | `photon-core/.../vision/processes/VisionModule.java` |
+| Source-level provider swap (`setFrameProvider`, `getReplayRecordingDir`) | `photon-core/.../vision/processes/VisionSource.java` |
+| Per-tick supplier indirection | `photon-core/.../vision/processes/VisionRunner.java` |
 | JSON exporter | `photon-core/.../vision/pipeline/JsonResultExporter.java` |
-| Tee wiring + close | `photon-core/.../vision/processes/VisionModule.java` (`teeToJsonResultExporter`) |
+| Tee wiring + close on swap-back | `VisionModule.teeToJsonResultExporter` + `finishReplay` |
 | TSS snapshot read | `JsonResultExporter.readSnapshot` |
-| Camera-info gate | `photon-core/.../vision/camera/PVCameraInfo.PVFileLogCameraInfo` |
+| NT replay topics (`isReplaying`, `replayProgress*`) | `photon-core/.../common/dataflow/networktables/NTDataPublisher.java` |
+| REST endpoints | `photon-server/.../RequestHandler.onStartReplayRequest` / `onCancelReplayRequest` |
+| Cameras-tab UI | `photon-client/src/components/cameras/ReplayPanel.vue` |
+| Per-row Replay button | `photon-client/src/components/settings/RecordingsCard.vue` |
 | Zip download | `photon-server/.../RequestHandler.onExportIndividualRecordingRequest` |
 
 ## Test coverage
@@ -271,7 +396,20 @@ warn and writes nulls in both TSS fields; on the robot side,
 |---|---|
 | Recorder writes correct frames + sidecar | `FrameRecorderIntegrationTest` |
 | Replay echoes `metadata.jsonl` verbatim | `FileLogFrameProviderTest.emitsFramesWithCaptureTimestamps` |
-| Replay parks on EOF | `FileLogFrameProviderTest.parksTheVisionThreadAtEof` |
+| Provider parks on EOF when no callback is wired (standalone use) | `FileLogFrameProviderTest.eofWithoutCallbackPreservesParkingBehaviour` |
+| `setOnProgress` fires once per emitted frame with monotonic count | `FileLogFrameProviderTest.onProgressFiresOncePerEmittedFrame` |
+| `setOnEof` is one-shot, fires only on natural exhaustion | `FileLogFrameProviderTest.onEofFiresOnceOnNaturalExhaustion` |
+| `requestStop()` is synchronous, idempotent, short-circuits next read | `FileLogFrameProviderTest.requestStopShortCircuitsAndFiresEofOnce` |
+| Total frame count discovered at construction | `FileLogFrameProviderTest.getTotalFramesMatchesFixture` |
+| Provider swap visible through `getFrameProvider()` + bound `Supplier` | `VisionSourceFrameProviderSwapTest` (7 cases) |
+| `getReplayRecordingDir()` flips on FileLog ↔ live swap | `VisionSourceFrameProviderSwapTest.replayRecordingDir*` |
 | `tss.json` write/read round-trip | `FrameRecorderTssSnapshotTest` |
 | Exporter line format + offset shift | `JsonResultExporterTest` |
 | Record→export end-to-end determinism + tuning sensitivity | `JsonResultEndToEndTest` |
+
+End-to-end `startReplay` → tee → swap-back integration is not unit-tested
+here: instantiating `VisionModule` requires `photontargetingJNI`, which
+isn't bundled into photon-core's resources on Linux (the WSL test host).
+The contract is covered by the manual smoke against a real PV server plus
+the seven swap-mechanism unit tests above, and will be retested via the
+REST round-trip on a JNI-capable host before merging back to upstream.
