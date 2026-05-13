@@ -242,7 +242,10 @@ public class USBCameraSource extends VisionSource {
         camera.close();
         usbFrameProvider.release();
         usbFrameProvider = null;
-        setFrameProvider(null);
+        // Intentionally don't setFrameProvider(null): VisionRunner re-reads the provider
+        // every tick and would NPE if a release ran while the runner thread is still alive.
+        // VisionModule.stop() already joins the runner before release(), so the volatile
+        // can keep its stale reference; no live consumer remains.
     }
 
     @Override

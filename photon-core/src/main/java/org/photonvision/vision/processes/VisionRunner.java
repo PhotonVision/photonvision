@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -78,7 +79,10 @@ public class VisionRunner {
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
 
-        var initialProvider = frameSupplier.get();
+        var initialProvider =
+                Objects.requireNonNull(
+                        frameSupplier.get(),
+                        "frame provider must be registered on the VisionSource before VisionRunner construction");
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + initialProvider.getName());
         logger = new Logger(VisionRunner.class, initialProvider.getName(), LogGroup.VisionModule);

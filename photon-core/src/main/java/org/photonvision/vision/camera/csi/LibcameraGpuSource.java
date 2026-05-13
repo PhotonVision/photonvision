@@ -102,6 +102,8 @@ public class LibcameraGpuSource extends VisionSource {
     public void release() {
         frameProvider.release();
         frameProvider = null;
-        setFrameProvider(null);
+        // Intentionally don't setFrameProvider(null): see USBCameraSource.release() for the
+        // same reasoning — VisionRunner reads the provider every tick and joins on stop()
+        // before this runs, so the stale volatile reference has no live consumer.
     }
 }
