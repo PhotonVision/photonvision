@@ -38,6 +38,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.frame.provider.CpuImageProcessor.CapturedFrame;
+import org.photonvision.vision.pipeline.FrameRecorder;
 
 /**
  * Synthesises a 3-frame image-sequence fixture via {@link Imgcodecs#imwrite} (the same encoder path
@@ -70,7 +71,7 @@ class FileLogFrameProviderTest {
         for (int i = 0; i < CAPTURE_NS.length; i++) {
             Mat frame = new Mat(HEIGHT, WIDTH, CvType.CV_8UC3, new Scalar(i * 64 % 255, 64, 128));
             try {
-                Path out = FrameLogFormat.framePath(framesDir, i);
+                Path out = FrameRecorder.framePath(framesDir, i);
                 assertTrue(Imgcodecs.imwrite(out.toString(), frame), "Imgcodecs.imwrite failed for " + out);
             } finally {
                 frame.release();

@@ -35,7 +35,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.jni.LibraryLoader;
-import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 
 /**
@@ -95,7 +94,7 @@ public class FrameRecorderIntegrationTest {
         assertTrue(Files.exists(meta), "metadata.jsonl missing");
 
         for (int i = 0; i < FRAME_COUNT; i++) {
-            Path framePath = FrameLogFormat.framePath(framesDir, i);
+            Path framePath = FrameRecorder.framePath(framesDir, i);
             assertTrue(Files.exists(framePath), "frame " + i + " missing: " + framePath);
             assertTrue(Files.size(framePath) > 0, "frame " + i + " is empty");
 

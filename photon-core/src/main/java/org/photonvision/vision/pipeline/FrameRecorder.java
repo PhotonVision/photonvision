@@ -34,7 +34,6 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.metrics.SystemMonitor;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 import org.zeroturnaround.zip.ZipUtil;
@@ -62,6 +61,12 @@ import org.zeroturnaround.zip.ZipUtil;
 public class FrameRecorder implements Releasable {
     private static final int QUEUE_CAPACITY = 30; // Buffer up to 30 frames
     private static final long MIN_DISK_SPACE_BYTES = 4L * 1024 * 1024 * 1024; // 4 GB
+    private static final String FRAME_FILENAME_FORMAT = "%06d.jpg";
+
+    /** On-disk path of the JPEG at a given sequence number under a recording's frames dir. */
+    public static Path framePath(Path framesDir, long seq) {
+        return framesDir.resolve(String.format(FRAME_FILENAME_FORMAT, seq));
+    }
 
     private final BlockingQueue<RecordFrame> frameQueue;
     private final Thread writerThread;
@@ -325,7 +330,7 @@ public class FrameRecorder implements Releasable {
 
     /** Stops recording on imwrite failure (disk-full / permissions / encoder error). */
     private void writeFrame(long seq, Mat mat) {
-        Path framePath = FrameLogFormat.framePath(framesDir, seq);
+        Path framePath = framePath(framesDir, seq);
         boolean ok = Imgcodecs.imwrite(framePath.toString(), mat, jpegWriteParams);
         if (!ok) {
             logger.error(

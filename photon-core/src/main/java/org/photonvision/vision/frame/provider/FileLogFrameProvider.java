@@ -31,6 +31,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipeline.FrameRecorder;
 
 /**
  * Replay-side counterpart to {@link org.photonvision.vision.pipeline.FrameRecorder}. Reads a
@@ -115,7 +116,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
                             + " capture timestamps the replay timing contract cannot be honoured.");
         }
 
-        Path firstFrame = FrameLogFormat.framePath(framesDir, 0);
+        Path firstFrame = FrameRecorder.framePath(framesDir, 0);
         if (!Files.isRegularFile(firstFrame)) {
             throw new IOException(
                     "Recording at "
@@ -184,7 +185,7 @@ public class FileLogFrameProvider extends CpuImageProcessor {
 
         long seq = entry.get().seq();
         long captureNs = entry.get().captureNs();
-        Path framePath = FrameLogFormat.framePath(framesDir, seq);
+        Path framePath = FrameRecorder.framePath(framesDir, seq);
 
         // imread returns empty Mat on missing/unreadable — covers the partial-last-frame case
         // where the writer flushed a jsonl line then crashed mid-imwrite.
