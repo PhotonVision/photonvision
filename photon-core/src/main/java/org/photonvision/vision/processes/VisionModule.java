@@ -768,19 +768,18 @@ public class VisionModule {
 
             var snapshot = JsonResultExporter.readSnapshot(recordingDir);
             // Warn once per module whenever the JSON's embedded packet timestamps won't be
-            // TSS-aligned: either because the recording predates tss.json (UNKNOWN snapshot) or
+            // TSS-aligned: either because the recording predates tss.json (empty snapshot) or
             // because TSS was demonstrably down at record time. Both produce the same downstream
             // failure on the AKit consumer side. This block only runs once because successful
             // construction assigns jsonResultExporter and any failure latches jsonExporterDisabled.
-            if (snapshot.tssActiveAtRecord() == null || !snapshot.tssActiveAtRecord()) {
-                String why =
-                        snapshot.tssActiveAtRecord() == null
-                                ? "no tss snapshot present"
-                                : "tss was inactive at record time";
+            if (snapshot.isEmpty()) {
                 logger.warn(
-                        "JsonResultExporter: "
-                                + why
-                                + " in "
+                        "JsonResultExporter: no tss snapshot present in "
+                                + recordingDir
+                                + " — embedded packet timestamps will not be TSS-aligned");
+            } else if (!snapshot.get().tssActiveAtRecord()) {
+                logger.warn(
+                        "JsonResultExporter: tss was inactive at record time in "
                                 + recordingDir
                                 + " — embedded packet timestamps will not be TSS-aligned");
             }

@@ -43,7 +43,6 @@ import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PnpResult;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipeline.JsonResultExporter.OffsetSnapshot;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
@@ -118,7 +117,8 @@ public class JsonResultEndToEndTest {
 
         // --- 3. Export pass A: settings X, no targets in results. ---
         var snapshot = JsonResultExporter.readSnapshot(recordingDir);
-        assertEquals(TSS_OFFSET_NS, snapshot.tssOffsetAtRecordNs(), "snapshot must round-trip");
+        assertTrue(snapshot.isPresent());
+        assertEquals(TSS_OFFSET_NS, snapshot.get().tssOffsetAtRecordNs(), "snapshot must round-trip");
 
         var settingsX = new AprilTagPipelineSettings();
         Path fileX = recordingDir.resolve("results").resolve("X.jsonl");

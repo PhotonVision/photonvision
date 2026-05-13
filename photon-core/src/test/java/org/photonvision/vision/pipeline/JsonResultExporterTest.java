@@ -82,7 +82,7 @@ public class JsonResultExporterTest {
         var settings = new AprilTagPipelineSettings();
 
         new JsonResultExporter(
-                        out, "test-cam", "rec-1", settings, OffsetSnapshot.UNKNOWN, () -> FIXED_NOW_MICROS)
+                        out, "test-cam", "rec-1", settings, Optional.<OffsetSnapshot>empty(), () -> FIXED_NOW_MICROS)
                 .close();
 
         List<String> lines = Files.readAllLines(out);
@@ -101,7 +101,7 @@ public class JsonResultExporterTest {
     @Test
     public void headerEncodesTssOffsetWhenKnown(@TempDir Path tempDir) throws Exception {
         Path out = tempDir.resolve("results").resolve("a.jsonl");
-        var snap = new OffsetSnapshot(true, 5_000_000L);
+        var snap = Optional.of(new OffsetSnapshot(true, 5_000_000L));
 
         new JsonResultExporter(
                         out, "cam", "rec", new AprilTagPipelineSettings(), snap, () -> FIXED_NOW_MICROS)
@@ -124,7 +124,7 @@ public class JsonResultExporterTest {
                         "cam",
                         "rec",
                         new AprilTagPipelineSettings(),
-                        OffsetSnapshot.UNKNOWN,
+                        Optional.<OffsetSnapshot>empty(),
                         () -> FIXED_NOW_MICROS)) {
             exporter.accept(cvResult(seq, captureNs));
         }
@@ -161,7 +161,7 @@ public class JsonResultExporterTest {
                         "cam",
                         "rec",
                         new AprilTagPipelineSettings(),
-                        OffsetSnapshot.UNKNOWN,
+                        Optional.<OffsetSnapshot>empty(),
                         () -> FIXED_NOW_MICROS)) {
             exporter.accept(cvResult(7L, 50_000_000_000L, multitag));
         }
@@ -177,7 +177,7 @@ public class JsonResultExporterTest {
         Path out = tempDir.resolve("results").resolve("a.jsonl");
         long captureNs = 200_000_000_000L; // 200_000_000 µs
         long offsetNs = 4_000_000L; //   4_000 µs offset
-        var snap = new OffsetSnapshot(true, offsetNs);
+        var snap = Optional.of(new OffsetSnapshot(true, offsetNs));
 
         try (var exporter =
                 new JsonResultExporter(
@@ -209,10 +209,10 @@ public class JsonResultExporterTest {
 
         try (var a =
                         new JsonResultExporter(
-                                fileA, "cam", "rec", settingsA, OffsetSnapshot.UNKNOWN, () -> FIXED_NOW_MICROS);
+                                fileA, "cam", "rec", settingsA, Optional.<OffsetSnapshot>empty(), () -> FIXED_NOW_MICROS);
                 var b =
                         new JsonResultExporter(
-                                fileB, "cam", "rec", settingsB, OffsetSnapshot.UNKNOWN, () -> FIXED_NOW_MICROS)) {
+                                fileB, "cam", "rec", settingsB, Optional.<OffsetSnapshot>empty(), () -> FIXED_NOW_MICROS)) {
             a.accept(cvResult(0L, 1_000_000L));
             b.accept(cvResult(0L, 2_000_000L));
         }
@@ -235,7 +235,7 @@ public class JsonResultExporterTest {
                         "cam",
                         "rec",
                         new AprilTagPipelineSettings(),
-                        OffsetSnapshot.UNKNOWN,
+                        Optional.<OffsetSnapshot>empty(),
                         () -> FIXED_NOW_MICROS);
         for (int i = 0; i < 10; i++) {
             exporter.accept(cvResult(i, 1_000_000L + i));

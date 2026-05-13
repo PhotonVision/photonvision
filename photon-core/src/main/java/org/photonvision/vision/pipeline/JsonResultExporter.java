@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.function.LongSupplier;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -59,36 +60,34 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             new Logger(JsonResultExporter.class, LogGroup.VisionModule);
 
     /**
-     * TSS state sampled at recording-start. Null fields mean "unknown" (pre-snapshot recording);
-     * the exporter then writes nulls in the header and skips the offset shift on the embedded
-     * packet.
+     * TSS state sampled at recording-start. Absent ({@code Optional.empty()}) when no snapshot
+     * was written — the exporter then writes nulls in the header and skips the offset shift on
+     * the embedded packet.
      */
-    public record OffsetSnapshot(Boolean tssActiveAtRecord, Long tssOffsetAtRecordNs) {
-        public static final OffsetSnapshot UNKNOWN = new OffsetSnapshot(null, null);
-    }
+    public record OffsetSnapshot(boolean tssActiveAtRecord, long tssOffsetAtRecordNs) {}
 
     /**
      * Read the {@code tss.json} snapshot written by {@code FrameRecorder} from a recording dir.
-     * Returns {@link OffsetSnapshot#UNKNOWN} if the file is missing or malformed — the latter is
+     * Returns {@link Optional#empty()} if the file is missing or malformed — the latter is
      * logged but never thrown so a corrupt snapshot doesn't block replay.
      */
-    public static OffsetSnapshot readSnapshot(Path recordingDir) {
+    public static Optional<OffsetSnapshot> readSnapshot(Path recordingDir) {
         Path tssPath = recordingDir.resolve("tss.json");
-        if (!Files.isRegularFile(tssPath)) return OffsetSnapshot.UNKNOWN;
+        if (!Files.isRegularFile(tssPath)) return Optional.empty();
         try {
             JsonNode node = new ObjectMapper().readTree(tssPath.toFile());
             JsonNode active = node.get("tss_active_at_record");
             JsonNode offset = node.get("tss_offset_at_record_ns");
-            if (active == null || offset == null) return OffsetSnapshot.UNKNOWN;
-            return new OffsetSnapshot(active.asBoolean(), offset.asLong());
+            if (active == null || offset == null) return Optional.empty();
+            return Optional.of(new OffsetSnapshot(active.asBoolean(), offset.asLong()));
         } catch (IOException e) {
             logger.error("readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
-            return OffsetSnapshot.UNKNOWN;
+            return Optional.empty();
         }
     }
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final OffsetSnapshot offsetSnapshot;
+    private final Optional<OffsetSnapshot> offsetSnapshot;
     private final long offsetUs;
     private final LongSupplier nowMicrosSupplier;
     private BufferedWriter writer;
@@ -99,7 +98,7 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             String cameraUniqueName,
             String recordingName,
             CVPipelineSettings settings,
-            OffsetSnapshot offsetSnapshot)
+            Optional<OffsetSnapshot> offsetSnapshot)
             throws IOException {
         this(outputFile, cameraUniqueName, recordingName, settings, offsetSnapshot, NetworkTablesJNI::now);
     }
@@ -109,15 +108,12 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             String cameraUniqueName,
             String recordingName,
             CVPipelineSettings settings,
-            OffsetSnapshot offsetSnapshot,
+            Optional<OffsetSnapshot> offsetSnapshot,
             LongSupplier nowMicrosSupplier)
             throws IOException {
         this.offsetSnapshot = offsetSnapshot;
         this.nowMicrosSupplier = nowMicrosSupplier;
-        this.offsetUs =
-                offsetSnapshot.tssOffsetAtRecordNs() == null
-                        ? 0L
-                        : offsetSnapshot.tssOffsetAtRecordNs() / 1000L;
+        this.offsetUs = offsetSnapshot.map(s -> s.tssOffsetAtRecordNs() / 1000L).orElse(0L);
 
         Files.createDirectories(outputFile.getParent());
         // TRUNCATE_EXISTING + flush-per-line mirrors FrameRecorder's metadata.jsonl: each replay
@@ -151,15 +147,13 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
         header.put("recording_name", recordingName);
         header.put("pipeline_type", settings.pipelineType.name());
         header.put("pipeline_hash", Integer.toHexString(settings.hashCode()));
-        if (offsetSnapshot.tssActiveAtRecord() == null) {
+        if (offsetSnapshot.isPresent()) {
+            var snap = offsetSnapshot.get();
+            header.put("tss_active_at_record", snap.tssActiveAtRecord());
+            header.put("tss_offset_at_record_ns", snap.tssOffsetAtRecordNs());
+        } else {
             header.putNull("tss_active_at_record");
-        } else {
-            header.put("tss_active_at_record", offsetSnapshot.tssActiveAtRecord());
-        }
-        if (offsetSnapshot.tssOffsetAtRecordNs() == null) {
             header.putNull("tss_offset_at_record_ns");
-        } else {
-            header.put("tss_offset_at_record_ns", offsetSnapshot.tssOffsetAtRecordNs());
         }
         writer.write(mapper.writeValueAsString(header));
         writer.newLine();

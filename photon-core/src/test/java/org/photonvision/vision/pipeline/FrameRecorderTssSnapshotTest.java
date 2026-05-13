@@ -19,8 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -34,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.pipeline.FrameRecorder.TssSample;
-import org.photonvision.vision.pipeline.JsonResultExporter.OffsetSnapshot;
 
 /**
  * Verifies the tss.json hand-off between FrameRecorder (writer) and JsonResultExporter
@@ -99,18 +96,16 @@ public class FrameRecorderTssSnapshotTest {
                 new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.VIDEO, Long.MAX_VALUE, sample);
         recorder.release();
 
-        OffsetSnapshot snap = JsonResultExporter.readSnapshot(outDir);
-        assertNotNull(snap.tssActiveAtRecord());
-        assertTrue(snap.tssActiveAtRecord());
-        assertEquals(7_200_000L, snap.tssOffsetAtRecordNs());
+        var snap = JsonResultExporter.readSnapshot(outDir);
+        assertTrue(snap.isPresent());
+        assertTrue(snap.get().tssActiveAtRecord());
+        assertEquals(7_200_000L, snap.get().tssOffsetAtRecordNs());
     }
 
     @Test
     public void readSnapshotReturnsUnknownWhenFileMissing(@TempDir Path tempDir) {
         // tempDir has no tss.json.
-        OffsetSnapshot snap = JsonResultExporter.readSnapshot(tempDir);
-        assertNull(snap.tssActiveAtRecord());
-        assertNull(snap.tssOffsetAtRecordNs());
+        assertTrue(JsonResultExporter.readSnapshot(tempDir).isEmpty());
     }
 
     @Test
@@ -119,8 +114,7 @@ public class FrameRecorderTssSnapshotTest {
                 tempDir.resolve("tss.json"),
                 "{not valid json".getBytes(StandardCharsets.UTF_8));
 
-        OffsetSnapshot snap = JsonResultExporter.readSnapshot(tempDir);
-        assertNull(snap.tssActiveAtRecord());
+        assertTrue(JsonResultExporter.readSnapshot(tempDir).isEmpty());
     }
 
     @Test
@@ -129,7 +123,6 @@ public class FrameRecorderTssSnapshotTest {
                 tempDir.resolve("tss.json"),
                 "{\"some_other_field\":42}".getBytes(StandardCharsets.UTF_8));
 
-        OffsetSnapshot snap = JsonResultExporter.readSnapshot(tempDir);
-        assertNull(snap.tssActiveAtRecord());
+        assertTrue(JsonResultExporter.readSnapshot(tempDir).isEmpty());
     }
 }
