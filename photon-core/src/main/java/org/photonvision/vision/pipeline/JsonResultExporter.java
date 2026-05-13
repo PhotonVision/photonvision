@@ -80,13 +80,14 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             if (active == null || offset == null) return OffsetSnapshot.UNKNOWN;
             return new OffsetSnapshot(active.asBoolean(), offset.asLong());
         } catch (IOException e) {
-            // Log via System.err — caller may not have a Logger handy, and Logger here would
-            // be a static singleton dance for a once-per-replay path.
-            System.err.println(
-                    "JsonResultExporter.readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
+            STATIC_LOGGER.error(
+                    "readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
             return OffsetSnapshot.UNKNOWN;
         }
     }
+
+    private static final Logger STATIC_LOGGER =
+            new Logger(JsonResultExporter.class, LogGroup.VisionModule);
 
     private final Logger logger;
     private final ObjectMapper mapper = new ObjectMapper();

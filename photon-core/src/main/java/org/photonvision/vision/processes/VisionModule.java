@@ -767,12 +767,20 @@ public class VisionModule {
                             .resolve(Integer.toHexString(settings.hashCode()) + ".jsonl");
 
             var snapshot = JsonResultExporter.readSnapshot(recordingDir);
-            // Recordings made before FrameRecorder started emitting tss.json carry no snapshot;
-            // warn once per module so the operator knows packet timestamps fall back to local
-            // time base instead of TSS-aligned.
-            if (snapshot.tssActiveAtRecord() == null && !tssSnapshotWarned) {
+            // Warn once per module whenever the JSON's embedded packet timestamps won't be
+            // TSS-aligned: either because the recording predates tss.json (snapshot == UNKNOWN)
+            // or because TSS was demonstrably down at record time (active flag is false). Both
+            // produce the same operator-visible failure mode on the AKit consumer side.
+            if (!tssSnapshotWarned
+                    && (snapshot.tssActiveAtRecord() == null || !snapshot.tssActiveAtRecord())) {
+                String why =
+                        snapshot.tssActiveAtRecord() == null
+                                ? "no tss snapshot present"
+                                : "tss was inactive at record time";
                 logger.warn(
-                        "JsonResultExporter: no tss snapshot in "
+                        "JsonResultExporter: "
+                                + why
+                                + " in "
                                 + recordingDir
                                 + " — embedded packet timestamps will not be TSS-aligned");
                 tssSnapshotWarned = true;
