@@ -171,6 +171,8 @@ public class Server {
         app.post("/api/recordings/nuke", RequestHandler::onNukeRecordingsRequest);
         app.post("/api/recordings/replay", RequestHandler::onStartReplayRequest);
         app.post("/api/recordings/replay/cancel", RequestHandler::onCancelReplayRequest);
+        app.get("/api/recordings/results", RequestHandler::onListResultsRequest);
+        app.get("/api/recordings/result", RequestHandler::onDownloadResultRequest);
 
         /* Testing API Events */
         app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);

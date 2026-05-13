@@ -1692,6 +1692,120 @@ public class RequestHandler {
         }
     }
 
+    public static void onListResultsRequest(Context ctx) {
+        try {
+            String camera = ctx.queryParam("camera");
+            String recording = ctx.queryParam("recording");
+            if (camera == null || camera.isEmpty() || recording == null || recording.isEmpty()) {
+                ctx.status(400).result("camera and recording query params required");
+                return;
+            }
+            Path resultsDir;
+            try {
+                resultsDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                camera,
+                                recording,
+                                "results");
+            } catch (SecurityException e) {
+                ctx.status(400).result("Invalid camera or recording name");
+                return;
+            }
+            if (!resultsDir.toFile().isDirectory()) {
+                ctx.json(java.util.List.of());
+                return;
+            }
+            var out = new java.util.ArrayList<java.util.Map<String, Object>>();
+            try (var stream = java.nio.file.Files.list(resultsDir)) {
+                for (Path jsonl :
+                        stream.filter(p -> p.getFileName().toString().endsWith(".jsonl"))
+                                .toList()) {
+                    var lines = java.nio.file.Files.readAllLines(jsonl);
+                    if (lines.isEmpty()) continue;
+                    var header = kObjectMapper.readTree(lines.get(0));
+                    String hash = jsonl.getFileName().toString();
+                    hash = hash.substring(0, hash.length() - ".jsonl".length());
+                    var row = new java.util.LinkedHashMap<String, Object>();
+                    row.put("hash", hash);
+                    row.put("sizeBytes", java.nio.file.Files.size(jsonl));
+                    row.put("resultCount", lines.size() - 1);
+                    row.put(
+                            "pipelineType",
+                            header.path("pipeline_type").asText("unknown"));
+                    row.put(
+                            "tssActiveAtRecord",
+                            header.has("tss_active_at_record")
+                                    && header.get("tss_active_at_record").asBoolean(false));
+                    row.put("mtimeMillis", jsonl.toFile().lastModified());
+                    out.add(row);
+                }
+            }
+            ctx.json(out);
+        } catch (Exception e) {
+            logger.error("Failed to list recording results", e);
+            ctx.status(500).result("Failed to list results");
+        }
+    }
+
+    public static void onDownloadResultRequest(Context ctx) {
+        try {
+            String camera = ctx.queryParam("camera");
+            String recording = ctx.queryParam("recording");
+            String hash = ctx.queryParam("hash");
+            if (camera == null
+                    || camera.isEmpty()
+                    || recording == null
+                    || recording.isEmpty()
+                    || hash == null
+                    || hash.isEmpty()) {
+                ctx.status(400).result("camera, recording, and hash query params required");
+                return;
+            }
+            Path jsonl;
+            try {
+                jsonl =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                camera,
+                                recording,
+                                "results",
+                                hash + ".jsonl");
+            } catch (SecurityException e) {
+                ctx.status(400).result("Invalid camera/recording/hash");
+                return;
+            }
+            if (!jsonl.toFile().isFile()) {
+                ctx.status(404).result("Result not found");
+                return;
+            }
+            byte[] bytes = java.nio.file.Files.readAllBytes(jsonl);
+            String nickname =
+                    java.util.Optional.ofNullable(
+                                    ConfigManager.getInstance()
+                                            .getConfig()
+                                            .getCameraConfigurations()
+                                            .get(camera))
+                            .map(c -> c.nickname)
+                            .filter(s -> s != null && !s.isBlank())
+                            .orElse(camera);
+            ctx.contentType("application/json");
+            ctx.header(
+                    "Content-Disposition",
+                    "attachment; filename=\""
+                            + sanitizeForFilename(nickname)
+                            + "_"
+                            + recording
+                            + "_"
+                            + hash
+                            + ".jsonl\"");
+            ctx.result(bytes);
+        } catch (Exception e) {
+            logger.error("Failed to download recording result", e);
+            ctx.status(500).result("Failed to download result");
+        }
+    }
+
     public static void onCancelReplayRequest(Context ctx) {
         try {
             CommonCameraUniqueName request =
