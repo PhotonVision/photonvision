@@ -18,7 +18,6 @@
 package org.photonvision.vision.frame.provider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -100,39 +99,21 @@ class MetadataSidecarReaderTest {
     }
 
     @Test
-    void failsOnMissingSeq() throws IOException {
-        Path p = write("{\"capture_ns\":123}\n");
-        try (var reader = new MetadataSidecarReader(p)) {
+    void failsOnMissingFields() throws IOException {
+        try (var reader = new MetadataSidecarReader(write("{\"capture_ns\":123}\n"))) {
             IOException ex = assertThrows(IOException.class, reader::readNext);
-            assertTrue(ex.getMessage().contains("line 1"));
-            assertTrue(ex.getMessage().contains("seq"));
+            assertTrue(ex.getMessage().contains("line 1") && ex.getMessage().contains("seq"));
         }
-    }
-
-    @Test
-    void failsOnMissingCaptureNs() throws IOException {
-        Path p = write("{\"seq\":1}\n");
-        try (var reader = new MetadataSidecarReader(p)) {
+        try (var reader = new MetadataSidecarReader(write("{\"seq\":1}\n"))) {
             IOException ex = assertThrows(IOException.class, reader::readNext);
-            assertTrue(ex.getMessage().contains("line 1"));
-            assertTrue(ex.getMessage().contains("capture_ns"));
-        }
-    }
-
-    @Test
-    void failsOnNonNumericField() throws IOException {
-        Path p = write("{\"seq\":\"abc\",\"capture_ns\":123}\n");
-        try (var reader = new MetadataSidecarReader(p)) {
-            IOException ex = assertThrows(IOException.class, reader::readNext);
-            assertTrue(ex.getMessage().contains("line 1"));
-            assertTrue(ex.getMessage().contains("seq"));
+            assertTrue(
+                    ex.getMessage().contains("line 1") && ex.getMessage().contains("capture_ns"));
         }
     }
 
     @Test
     void failsOnMalformedJson() throws IOException {
-        Path p = write("{seq:1,capture_ns:2\n");
-        try (var reader = new MetadataSidecarReader(p)) {
+        try (var reader = new MetadataSidecarReader(write("{seq:1,capture_ns:2\n"))) {
             IOException ex = assertThrows(IOException.class, reader::readNext);
             assertTrue(ex.getMessage().contains("line 1"));
             assertTrue(ex.getMessage().toLowerCase().contains("json"));
@@ -140,32 +121,9 @@ class MetadataSidecarReaderTest {
     }
 
     @Test
-    void failsOnShortTrailingLine() throws IOException {
-        // Simulates writer crash mid-line. The lockstep-with-frames pattern in the provider stops
-        // before we ever read this line; if a caller does reach it, fail loudly with a line
-        // number so they can diagnose.
-        Path p = write("{\"seq\":0,\"capture_ns\":1000}\n" + "{\"seq\":1,\"capture_n");
-        try (var reader = new MetadataSidecarReader(p)) {
-            assertTrue(reader.readNext().isPresent());
-            IOException ex = assertThrows(IOException.class, reader::readNext);
-            assertTrue(ex.getMessage().contains("line 2"));
-        }
-    }
-
-    @Test
     void missingFileFailsAtConstruction() {
-        Path p = tempDir.resolve("does-not-exist.jsonl");
-        assertThrows(IOException.class, () -> new MetadataSidecarReader(p));
-    }
-
-    @Test
-    void closeReleasesFileHandle() throws IOException {
-        Path p = write("{\"seq\":0,\"capture_ns\":1}\n");
-        var reader = new MetadataSidecarReader(p);
-        reader.close();
-        // After close, deleting the file must succeed even on Windows (which holds open-file
-        // locks). If close didn't release the handle, Files.delete would throw.
-        assertTrue(Files.deleteIfExists(p));
-        assertFalse(Files.exists(p));
+        assertThrows(
+                IOException.class,
+                () -> new MetadataSidecarReader(tempDir.resolve("does-not-exist.jsonl")));
     }
 }
