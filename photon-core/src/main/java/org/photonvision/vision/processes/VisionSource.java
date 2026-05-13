@@ -40,7 +40,7 @@ public abstract class VisionSource implements Releasable {
         return cameraConfiguration;
     }
 
-    public final FrameProvider getFrameProvider() {
+    public FrameProvider getFrameProvider() {
         return frameProvider;
     }
 
@@ -49,7 +49,7 @@ public abstract class VisionSource implements Releasable {
      * outgoing provider (release / pause / restore). The vision thread reads through this getter on
      * every loop tick, so the new provider takes effect on the next frame grab.
      */
-    public final void setFrameProvider(FrameProvider provider) {
+    public void setFrameProvider(FrameProvider provider) {
         this.frameProvider = provider;
     }
 
