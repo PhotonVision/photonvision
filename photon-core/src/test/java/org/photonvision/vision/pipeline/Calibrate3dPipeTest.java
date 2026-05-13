@@ -50,6 +50,10 @@ import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 import org.wpilib.math.util.Units;
 
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Calibrate3dPipeTest {
     @BeforeAll
     public static void init() throws IOException {
@@ -159,7 +163,7 @@ public class Calibrate3dPipeTest {
      * angels, etc)
      */
     @Test
-    public void testCalibrationUncertaintyWithGoodData() {
+    public void testCalibrationUncertaintyWithGoodData() throws IOException {
         var dataset = CalibrationDatasets.CHARUCO_LIFECAM_1280;
         String charucoBase = TestUtils.getCharucoBoardImagesPath().toAbsolutePath().toString();
         File charucoDir = Path.of(charucoBase, dataset.path).toFile();
@@ -171,6 +175,10 @@ public class Calibrate3dPipeTest {
                         dataset.boardType,
                         true,
                         dataset.useOldPattern);
+
+        // write data to file
+        var file = new File("C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test-resources\\calibrationCharucoImg\\lifecam\\2024-05-07_lifecam_1280\\calibration_data.json");
+        new ObjectMapper().writeValue(file, data);
 
         var uncertainty = data.estimateUncertainty();
         assertNotNull(uncertainty);
