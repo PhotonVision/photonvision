@@ -966,24 +966,17 @@ public class VisionModule {
     }
 
     /**
-     * Tee pipeline results to a {@link JsonResultExporter} (for AKit replay consumption) whenever
-     * this module's source is currently backed by a {@link FileLogFrameProvider} — i.e. during the
-     * in-place replay swap installed by {@link #startReplay}. No-op when the live provider is active.
-     * The exporter is built lazily on the first replayed result and closed by {@code finishReplay} on
-     * swap-back, so the next replay (potentially with a different pipeline hash) lands in a fresh
-     * file.
-     *
-     * <p>Gating on {@link VisionSource#getReplayRecordingDir} rather than {@code matchedCameraInfo}
-     * is what lets a live USB / CSI camera tee results during replay without us having to mutate
-     * matchedCameraInfo back and forth. {@code matchedCameraInfo} stays as the live camera's info for
-     * the entire replay; only the frame provider changes.
+     * Tee pipeline results to a {@link JsonResultExporter} while this module's source is backed by
+     * a {@link FileLogFrameProvider} (the swap installed by {@link #startReplay}). Built lazily on
+     * the first replayed result and closed by {@code finishReplay} on swap-back; gating on the
+     * current frame provider rather than matchedCameraInfo lets the live camera's identity stay
+     * intact for the entire replay.
      */
     private void teeToJsonResultExporter(CVPipelineResult result) {
         if (jsonExporterDisabled) return;
         var replayDirOpt = visionSource.getReplayRecordingDir();
         if (replayDirOpt.isEmpty()) return;
         Path recordingDir = replayDirOpt.get();
-        String recordingName = recordingDir.getFileName().toString();
 
         if (jsonResultExporter == null) {
             var settings = pipelineManager.getCurrentPipelineSettings();
@@ -995,19 +988,9 @@ public class VisionModule {
                             .resolve(Integer.toHexString(settings.hashCode()) + ".jsonl");
 
             var snapshot = JsonResultExporter.readSnapshot(recordingDir);
-            // Warn once per module whenever the JSON's embedded packet timestamps won't be
-            // TSS-aligned: either because the recording predates tss.json (empty snapshot) or
-            // because TSS was demonstrably down at record time. Both produce the same downstream
-            // failure on the AKit consumer side. This block only runs once because successful
-            // construction assigns jsonResultExporter and any failure latches jsonExporterDisabled.
-            if (snapshot.isEmpty()) {
+            if (snapshot.isEmpty() || !snapshot.get().tssActiveAtRecord()) {
                 logger.warn(
-                        "JsonResultExporter: no tss snapshot present in "
-                                + recordingDir
-                                + " — embedded packet timestamps will not be TSS-aligned");
-            } else if (!snapshot.get().tssActiveAtRecord()) {
-                logger.warn(
-                        "JsonResultExporter: tss was inactive at record time in "
+                        "JsonResultExporter: tss snapshot missing or inactive in "
                                 + recordingDir
                                 + " — embedded packet timestamps will not be TSS-aligned");
             }
@@ -1017,7 +1000,7 @@ public class VisionModule {
                         new JsonResultExporter(
                                 outputFile,
                                 visionSource.getSettables().getConfiguration().uniqueName,
-                                recordingName,
+                                recordingDir.getFileName().toString(),
                                 settings,
                                 snapshot);
             } catch (IOException e) {
