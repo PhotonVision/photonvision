@@ -263,34 +263,24 @@ public class FileLogFrameProvider extends CpuImageProcessor {
     }
 
     private void enterStoppedFiringEofOnce(String reason) {
-        if (stoppedAtEof.compareAndSet(false, true)) {
-            logger.info("Replay reached end of recording: " + reason);
-            Runnable cb = onEof;
-            if (cb != null) {
-                try {
-                    cb.run();
-                } catch (Throwable t) {
-                    logger.error("onEof callback threw", t);
-                }
-            }
+        if (!stoppedAtEof.compareAndSet(false, true)) return;
+        logger.info("Replay reached end of recording: " + reason);
+        Runnable cb = onEof;
+        if (cb == null) return;
+        try {
+            cb.run();
+        } catch (Throwable t) {
+            logger.error("onEof callback threw", t);
         }
     }
 
-    /**
-     * If a consumer is observing the stop event via {@link #setOnEof}, return an empty frame so the
-     * runner can pick up the swap-back on its next tick. Otherwise (standalone use) park — preserving
-     * the original "deactivate to restart" semantics for non-swap-aware consumers.
-     */
+    // Swap-aware consumers (setOnEof wired): return an empty frame so the runner moves on.
+    // Standalone: park until interrupted, matching the legacy "deactivate to restart" semantics.
     private CapturedFrame emptyOrPark() {
-        if (onEof != null) {
-            return new CapturedFrame(new CVMat(), properties, 0L);
-        }
-        return parkUntilInterrupted();
-    }
-
-    private CapturedFrame parkUntilInterrupted() {
-        while (!Thread.currentThread().isInterrupted()) {
-            LockSupport.parkNanos(Long.MAX_VALUE);
+        if (onEof == null) {
+            while (!Thread.currentThread().isInterrupted()) {
+                LockSupport.parkNanos(Long.MAX_VALUE);
+            }
         }
         return new CapturedFrame(new CVMat(), properties, 0L);
     }
