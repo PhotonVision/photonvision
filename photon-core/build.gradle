@@ -41,10 +41,16 @@ dependencies {
         wpilibNatives("org.photonvision:rknn_jni-jni:$rknnVersion:$jniPlatform") {
             transitive = false
         }
-        wpilibNatives("org.photonvision:rubik_jni-jni:$rubikVersion:$jniPlatform") {
+        wpilibNatives("org.photonvision:tflite_jni-jni:$tfliteVersion:$jniPlatform") {
             transitive = false
         }
         wpilibNatives("org.photonvision:photon-libcamera-gl-driver-jni:$libcameraDriverVersion:$jniPlatform") {
+            transitive = false
+        }
+    }
+
+    if (jniPlatform == "linuxx86-64") {
+        wpilibNatives("org.photonvision:tflite_jni-jni:$tfliteVersion:$jniPlatform") {
             transitive = false
         }
     }
@@ -53,7 +59,7 @@ dependencies {
         transitive = false
     }
 
-    implementation("org.photonvision:rubik_jni-java:$rubikVersion") {
+    implementation("org.photonvision:tflite_jni-java:$tfliteVersion") {
         transitive = false
     }
 
