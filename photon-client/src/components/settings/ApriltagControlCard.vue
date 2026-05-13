@@ -3,6 +3,8 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import type { Quaternion } from "@/types/PhotonTrackingTypes";
 import { toDeg } from "@/lib/MathUtils";
 import PvCard from "@/components/common/pv-card.vue";
+import PvTable from "@/components/common/pv-table.vue";
+
 const { Euler, Quaternion: ThreeQuat } = await import("three");
 
 const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: number } => {
@@ -21,7 +23,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
       <p>Field length: {{ useSettingsStore().currentFieldLayout.field.length.toFixed(2) }} meters</p>
 
       <!-- Simple table height must be set here and in the CSS for the fixed-header to work -->
-      <v-table fixed-header height="100%" density="compact">
+      <pv-table fixed-header height="100%" density="compact">
         <template #default>
           <thead style="font-size: 1.25rem">
             <tr>
@@ -44,7 +46,7 @@ const quaternionToEuler = (rot_quat: Quaternion): { x: number; y: number; z: num
             </tr>
           </tbody>
         </template>
-      </v-table>
+      </pv-table>
     </div>
   </pv-card>
 </template>

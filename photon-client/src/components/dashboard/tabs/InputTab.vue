@@ -7,7 +7,7 @@ import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { getResolutionString } from "@/lib/PhotonUtils";
-import { useDisplay } from "vuetify";
+import { useCustomBreakpoints } from "@/lib/Breakpoints";
 
 // Due to something with libcamera or something else IDK much about, the 90° rotations need to be disabled if the libcamera drivers are being used.
 const cameraRotations = computed(() =>
@@ -66,7 +66,8 @@ const currentStreamResolutionIndex = computed<number>({
     });
   }
 });
-const { mdAndDown } = useDisplay();
+const breakpoints = useCustomBreakpoints();
+const mdAndDown = breakpoints.smallerOrEqual("md");
 
 const interactiveCols = computed(() =>
   mdAndDown.value && (!useStateStore().sidebarFolded || useCameraSettingsStore().isDriverMode) ? 8 : 7

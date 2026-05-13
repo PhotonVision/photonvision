@@ -1,12 +1,15 @@
 <script setup lang="ts">
-import type { PVCameraInfo } from "@/types/SettingTypes";
+import PvTable from "@/components/common/pv-table.vue";
+
+import { PVCameraInfo } from "@/types/SettingTypes";
+import { cameraInfoFor } from "@/lib/PhotonUtils";
 
 const { camera } = defineProps<{ camera: PVCameraInfo }>();
 </script>
 
 <template>
   <div>
-    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr v-if="'dev' in camera && camera.dev !== null">
           <td>Device Number:</td>
@@ -48,6 +51,6 @@ const { camera } = defineProps<{ camera: PVCameraInfo }>();
           <td>{{ camera.otherPaths }}</td>
         </tr>
       </tbody>
-    </v-table>
+    </pv-table>
   </div>
 </template>

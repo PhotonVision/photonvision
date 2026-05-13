@@ -13,6 +13,7 @@ import PvButton from "@/components/common/pv-button.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
 import PvIcon from "@/components/common/pv-icon.vue";
 import PvAlert from "@/components/common/pv-alert.vue";
+import PvTable from "@/components/common/pv-table.vue";
 
 import { WebsocketPipelineType } from "@/types/WebsocketDataTypes";
 import { getResolutionString, resolutionsAreEqual } from "@/lib/PhotonUtils";
@@ -291,7 +292,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               tooltip="Click on a resolution to view detailed calibration information and import/export a calibration."
             />
           </div>
-          <v-table fixed-header height="100%" density="compact">
+          <pv-table fixed-header height="100%" density="compact">
             <thead>
               <tr>
                 <th>Resolution</th>
@@ -325,7 +326,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 <span>View calibration information</span>
               </v-tooltip>
             </tbody>
-          </v-table>
+          </pv-table>
         </div>
         <div class="pt-0">
           <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
@@ -404,7 +405,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :label="`Pattern Spacing (${dimensionUnit})`"
                 :tooltip="`Spacing between pattern features in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}`"
                 :disabled="isCalibrating"
-                :rules="[(v) => v > 0 || 'Size must be positive']"
+                :rules="[(v) => (typeof v === 'number') && v > 0 || 'Size must be positive']"
                 :label-cols="4"
                 :step="dimensionStep"
               />
@@ -414,7 +415,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :label="`Marker Size (${dimensionUnit})`"
                 :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
                 :disabled="isCalibrating"
-                :rules="[(v) => v > 0 || 'Size must be positive']"
+                :rules="[(v) => (typeof v === 'number') && v > 0 || 'Size must be positive']"
                 :label-cols="4"
                 :step="dimensionStep"
               />
@@ -423,7 +424,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 label="Board Width (squares)"
                 tooltip="Width of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
-                :rules="[(v) => v >= 4 || 'Width must be at least 4']"
+                :rules="[(v) => (typeof v === 'number') && v >= 4 || 'Width must be at least 4']"
                 :label-cols="4"
               />
               <pv-number-input
@@ -431,7 +432,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 label="Board Height (squares)"
                 tooltip="Height of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
-                :rules="[(v) => v >= 4 || 'Height must be at least 4']"
+                :rules="[(v) => (typeof v === 'number') && v >= 4 || 'Height must be at least 4']"
                 :label-cols="4"
               />
               <pv-switch

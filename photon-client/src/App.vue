@@ -4,12 +4,13 @@ import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import { inject, onBeforeMount } from "vue";
+import { breakpointsVuetifyV3 } from "@vueuse/core";
 import PhotonSidebar from "@/components/app/photon-sidebar.vue";
 import PhotonLogView from "@/components/app/photon-log-view.vue";
 import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
 import { useTheme } from "vuetify";
 import { restoreThemeConfig } from "@/lib/ThemeManager";
-
+import { ConfigProvider } from "reka-ui";
 const is_demo = import.meta.env.MODE === "demo";
 const backendHost = inject<string>("backendHost");
 if (!is_demo) {
@@ -58,33 +59,32 @@ const theme = useTheme();
 onBeforeMount(() => {
   restoreThemeConfig(theme);
 });
+
+const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
 </script>
 
 <template>
+    <ConfigProvider     :scroll-body="false">
+
   <v-app>
     <div class="flex h-full w-full bg-background text-white">
       <photon-sidebar />
       <main class="flex min-w-0 flex-1 flex-col">
         <div class="flex-1">
-          <router-view v-slot="{ Component }">
-            <transition name="fade">
-              <component :is="Component" />
-            </transition>
-          </router-view>
+          <router-view />
         </div>
       </main>
       <photon-log-view />
       <photon-error-snackbar />
     </div>
   </v-app>
+  </ConfigProvider>
 </template>
 
 <style lang="scss">
-@use "@/assets/styles/settings";
 @use "@/assets/styles/variables";
-@use "sass:map";
 
-@media #{map.get(settings.$display-breakpoints, 'md-and-down')} {
+@media (max-width: v-bind(mdAndDown)) {
   html {
     font-size: 14px !important;
   }
@@ -119,16 +119,4 @@ onBeforeMount(() => {
 div.v-layout {
   overflow: unset !important;
 }
-.fade-enter-active,
-.fade-leave-active {
-  transition-duration: 0.05s;
-  transition-property: opacity;
-  transition-timing-function: ease-in;
-}
-
-.fade-enter,
-.fade-leave-active {
-  opacity: 0;
-}
-
 </style>

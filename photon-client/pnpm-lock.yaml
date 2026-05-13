@@ -14,6 +14,9 @@ importers:
       '@fontsource/prompt':
         specifier: ^5.2.6
         version: 5.2.6
+      '@fontsource/public-sans':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@iconify/vue':
         specifier: ^5.0.1
         version: 5.0.1(vue@3.5.13(typescript@5.8.3))
@@ -26,6 +29,12 @@ importers:
       '@vueuse/core':
         specifier: ^14.3.0
         version: 14.3.0(vue@3.5.13(typescript@5.8.3))
+      ag-grid-community:
+        specifier: ^35.2.1
+        version: 35.2.1
+      ag-grid-vue3:
+        specifier: ^35.3.0
+        version: 35.3.0(vue@3.5.13(typescript@5.8.3))
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -209,6 +218,9 @@ packages:
 
   '@fontsource/prompt@5.2.6':
     resolution: {integrity: sha512-GsGEdD7SP7D3JDWWdw0YdLbG6LSIOf6EFvqoETs2TrRQqbzqT3kDaNPa5ET50yzjmX2TVbFXf+7WuwR7PWf3Uw==}
+
+  '@fontsource/public-sans@5.2.7':
+    resolution: {integrity: sha512-pVttDr3HvhVIt2x6sZJfZKksNEpq23C1JCHTQwT9KWJdmFRdNeRM8gQftq8uP72sPW+p3Ku9x8HPk2E392DFvg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -801,6 +813,23 @@ packages:
     resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
+
+  ag-charts-types@13.2.1:
+    resolution: {integrity: sha512-r7veb3QqJtIKlXmeUsLR4/oDPwmHxFI2tmbZra/203mdaz3uwQUrrgYNg628nrK+7L2YxXnwGc6L05tWjLLjNQ==}
+
+  ag-charts-types@13.3.0:
+    resolution: {integrity: sha512-UMoAn908LC4ZIJSNfUckSBEFa79Mi1vFRA8qIRx+NusEuuFgXDioCZx4MxM7O3rDXlxTWH9DvQmcDjh7vyd89w==}
+
+  ag-grid-community@35.2.1:
+    resolution: {integrity: sha512-ycmGI+1EbUT7i3eg/Kgi1owwnkdHXRufo10Xm6cfSsVPM3TMpvlbLgi28KIPt9DGHZWHq9fOBn7nxMNdv1Yaow==}
+
+  ag-grid-community@35.3.0:
+    resolution: {integrity: sha512-c9WQWB88J965IjBC/GPUX30aAZix10o6oYT86DWipcxgLZTIQlLSilJJEr1bno/245rPEAIMjhoU1gp9VIfURg==}
+
+  ag-grid-vue3@35.3.0:
+    resolution: {integrity: sha512-7UnAt/xMosY3WX6Lg7t8YF6QyLkWQL/fvsYzY5hyPvBGtX84VrikfiO4zBesiJECkhj+AzfNlD2E89sBSVMTgQ==}
+    peerDependencies:
+      vue: ^3.5.32
 
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
@@ -1894,6 +1923,8 @@ snapshots:
 
   '@fontsource/prompt@5.2.6': {}
 
+  '@fontsource/public-sans@5.2.7': {}
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.6':
@@ -2446,6 +2477,23 @@ snapshots:
   acorn@8.14.1: {}
 
   acorn@8.15.0: {}
+
+  ag-charts-types@13.2.1: {}
+
+  ag-charts-types@13.3.0: {}
+
+  ag-grid-community@35.2.1:
+    dependencies:
+      ag-charts-types: 13.2.1
+
+  ag-grid-community@35.3.0:
+    dependencies:
+      ag-charts-types: 13.3.0
+
+  ag-grid-vue3@35.3.0(vue@3.5.13(typescript@5.8.3)):
+    dependencies:
+      ag-grid-community: 35.3.0
+      vue: 3.5.13(typescript@5.8.3)
 
   ajv@6.12.6:
     dependencies:

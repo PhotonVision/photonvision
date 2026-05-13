@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { PVCameraInfo } from "@/types/SettingTypes";
+import PvTable from "@/components/common/pv-table.vue";
+
+import { PVCameraInfo } from "@/types/SettingTypes";
+import { cameraInfoFor } from "@/lib/PhotonUtils";
 
 function isEqual<T>(a: T, b: T): boolean {
   if (a === b) {
@@ -20,7 +23,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
 
 <template>
   <div>
-    <v-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
       <tbody>
         <tr>
           <th></th>
@@ -94,7 +97,7 @@ const { saved, current } = defineProps<{ saved: PVCameraInfo; current: PVCameraI
           <td>{{ current.otherPaths }}</td>
         </tr>
       </tbody>
-    </v-table>
+    </pv-table>
   </div>
 </template>
 

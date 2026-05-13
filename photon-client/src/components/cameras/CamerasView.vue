@@ -54,7 +54,7 @@ const streamToggleModel = computed<string[]>({
 <template>
   <section
     id="camera-settings-camera-view-card"
-    class="rounded-[12px] bg-pv-surface text-white shadow-lg shadow-black/10 min-[960px]:sticky min-[960px]:top-3"
+    class="rounded-xl bg-pv-surface text-white shadow-lg shadow-black/10 min-[960px]:sticky min-[960px]:top-3"
   >
     <div class="flex flex-wrap items-center gap-3 px-5 py-4 justify-between">
       <span class="mr-1 whitespace-nowrap text-xl font-semibold">Cameras</span>
