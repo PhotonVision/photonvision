@@ -63,12 +63,7 @@ const cancelReplay = (cameraUniqueName: string) => {
             Cancel
           </v-btn>
         </div>
-        <v-progress-linear
-          :model-value="row.progress"
-          color="white"
-          bg-color="rgba(255, 255, 255, 0.2)"
-          height="3"
-        />
+        <v-progress-linear :model-value="row.progress" color="white" bg-color="rgba(255, 255, 255, 0.2)" height="3" />
       </div>
     </div>
   </v-app-bar>
