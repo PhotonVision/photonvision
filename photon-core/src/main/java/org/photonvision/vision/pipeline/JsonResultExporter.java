@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.BufferedWriter;
@@ -62,6 +63,29 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
      */
     public record OffsetSnapshot(Boolean tssActiveAtRecord, Long tssOffsetAtRecordNs) {
         public static final OffsetSnapshot UNKNOWN = new OffsetSnapshot(null, null);
+    }
+
+    /**
+     * Read the {@code tss.json} snapshot written by {@code FrameRecorder} from a recording dir.
+     * Returns {@link OffsetSnapshot#UNKNOWN} if the file is missing or malformed — the latter is
+     * logged but never thrown so a corrupt snapshot doesn't block replay.
+     */
+    public static OffsetSnapshot readSnapshot(Path recordingDir) {
+        Path tssPath = recordingDir.resolve("tss.json");
+        if (!Files.isRegularFile(tssPath)) return OffsetSnapshot.UNKNOWN;
+        try {
+            JsonNode node = new ObjectMapper().readTree(tssPath.toFile());
+            JsonNode active = node.get("tss_active_at_record");
+            JsonNode offset = node.get("tss_offset_at_record_ns");
+            if (active == null || offset == null) return OffsetSnapshot.UNKNOWN;
+            return new OffsetSnapshot(active.asBoolean(), offset.asLong());
+        } catch (IOException e) {
+            // Log via System.err — caller may not have a Logger handy, and Logger here would
+            // be a static singleton dance for a once-per-replay path.
+            System.err.println(
+                    "JsonResultExporter.readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
+            return OffsetSnapshot.UNKNOWN;
+        }
     }
 
     private final Logger logger;

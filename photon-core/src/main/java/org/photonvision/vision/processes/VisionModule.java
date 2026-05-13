@@ -766,10 +766,11 @@ public class VisionModule {
                             .resolve("results")
                             .resolve(Integer.toHexString(settings.hashCode()) + ".jsonl");
 
-            // Pre-record-fixups commit-3 recordings carry no TSS snapshot. Warn once per module
-            // so the operator knows the JSON's embedded packet timestamps will be in local-time
-            // base instead of TSS-aligned.
-            if (!tssSnapshotWarned) {
+            var snapshot = JsonResultExporter.readSnapshot(recordingDir);
+            // Recordings made before FrameRecorder started emitting tss.json carry no snapshot;
+            // warn once per module so the operator knows packet timestamps fall back to local
+            // time base instead of TSS-aligned.
+            if (snapshot.tssActiveAtRecord() == null && !tssSnapshotWarned) {
                 logger.warn(
                         "JsonResultExporter: no tss snapshot in "
                                 + recordingDir
@@ -784,7 +785,7 @@ public class VisionModule {
                                 visionSource.getSettables().getConfiguration().uniqueName,
                                 info.name,
                                 settings,
-                                JsonResultExporter.OffsetSnapshot.UNKNOWN);
+                                snapshot);
             } catch (java.io.IOException e) {
                 logger.error("Failed to open JsonResultExporter at " + outputFile + ": " + e.getMessage());
                 jsonExporterDisabled = true; // latch: don't spam-retry on every subsequent frame.

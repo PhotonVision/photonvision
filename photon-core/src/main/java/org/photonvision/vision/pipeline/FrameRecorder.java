@@ -115,17 +115,33 @@ public class FrameRecorder implements Releasable {
         }
     }
 
+    /**
+     * Snapshot of TSS state captured at recording-start. Persisted as {@code tss.json} so the JSON
+     * exporter can later place {@code metadata.jsonl}'s local-time-base {@code capture_ns} into the
+     * TSS time base.
+     */
+    public record TssSample(
+            boolean tssActiveAtRecord, long tssOffsetAtRecordNs, long sampledAtWpiNtNowNs) {
+        /** Sentinel meaning "no TSS info available" — used in tests and when JNI is unavailable. */
+        public static final TssSample INACTIVE = new TssSample(false, 0L, 0L);
+    }
+
     public FrameRecorder(Path outputPath) {
         this(
                 outputPath,
                 HardwareManager.getInstance().getRecordingStrategy(),
-                SystemMonitor.getInstance().getUsableDiskSpace());
+                SystemMonitor.getInstance().getUsableDiskSpace(),
+                sampleTssNow());
     }
 
     // Package-private DI constructor: lets tests build a recorder without bringing up the
     // HardwareManager / SystemMonitor singletons (which transitively require photontargetingJNI
     // via NetworkTablesManager → TimeSyncClient).
     FrameRecorder(Path outputPath, RecordingStrategy strat, long availableSpace) {
+        this(outputPath, strat, availableSpace, TssSample.INACTIVE);
+    }
+
+    FrameRecorder(Path outputPath, RecordingStrategy strat, long availableSpace, TssSample tss) {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
         this.strat = strat;
 
@@ -171,6 +187,8 @@ public class FrameRecorder implements Releasable {
                     "Failed to open metadata sidecar at " + outputPath + "/metadata.jsonl", e);
         }
 
+        writeTssSnapshot(tss);
+
         // Past every early-throw — allocate the native MatOfInt last so release() can reach it.
         this.jpegWriteParams = new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, JPEG_QUALITY);
 
@@ -185,6 +203,55 @@ public class FrameRecorder implements Releasable {
         }
         this.writerThread.setDaemon(true);
         this.writerThread.start();
+    }
+
+    /**
+     * Sample TSS state via the live NetworkTablesManager singleton. Returns {@link
+     * TssSample#INACTIVE} if photontargetingJNI isn't loaded (tests) or TSS has never seen a pong
+     * (no robot up). The 5-second threshold is conservative: NT pings every 1s, so any value over
+     * a few seconds means a stale or never-connected client.
+     */
+    private static TssSample sampleTssNow() {
+        try {
+            var mgr =
+                    org.photonvision.common.dataflow.networktables.NetworkTablesManager.getInstance();
+            long timeSinceLastPongUs = mgr.getTimeSinceLastPong();
+            boolean active = timeSinceLastPongUs != Long.MAX_VALUE && timeSinceLastPongUs < 5_000_000L;
+            long offsetNs = mgr.getOffset() * 1_000L;
+            long nowNs = org.wpilib.networktables.NetworkTablesJNI.now() * 1_000L;
+            return new TssSample(active, offsetNs, nowNs);
+        } catch (Throwable t) {
+            // JNI not loaded, NetworkTablesManager not constructed, or TimeSyncClient handle was
+            // freed — anything in the stack throws, we treat as inactive.
+            return TssSample.INACTIVE;
+        }
+    }
+
+    /**
+     * Write {@code tss.json} alongside {@code metadata.jsonl}. Consumed by {@code
+     * JsonResultExporter.readSnapshot} to shift {@code capture_ns} into the TSS time base during
+     * AKit replay. Failure is logged-and-swallowed: the recording itself still works, the exporter
+     * just falls back to UNKNOWN.
+     */
+    private void writeTssSnapshot(TssSample tss) {
+        Path tssPath = outputPath.resolve("tss.json");
+        String json =
+                "{\"tss_active_at_record\":"
+                        + tss.tssActiveAtRecord()
+                        + ",\"tss_offset_at_record_ns\":"
+                        + tss.tssOffsetAtRecordNs()
+                        + ",\"sampled_at_wpi_nt_now_ns\":"
+                        + tss.sampledAtWpiNtNowNs()
+                        + "}\n";
+        try {
+            java.nio.file.Files.write(
+                    tssPath,
+                    json.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                    java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+        } catch (IOException e) {
+            logger.warn("Failed to write tss snapshot to " + tssPath + ": " + e.getMessage());
+        }
     }
 
     /** Start recording. Frames offered after this point will be written to {@code frames/}. */
