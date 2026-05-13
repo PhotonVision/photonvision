@@ -43,12 +43,14 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.JsonResultExporter;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -96,6 +98,10 @@ public class VisionModule {
 
     MJPGFrameConsumer inputVideoStreamer;
     MJPGFrameConsumer outputVideoStreamer;
+
+    // Lazy: built on the first pipeline result for File Log Camera sources; null otherwise.
+    private JsonResultExporter jsonResultExporter;
+    private boolean tssSnapshotWarned;
 
     boolean mismatch;
 
@@ -167,6 +173,7 @@ public class VisionModule {
         addResultConsumer(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        addResultConsumer(this::teeToJsonResultExporter);
 
         // Sync VisionModule state with the first pipeline index
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
@@ -374,6 +381,7 @@ public class VisionModule {
         outputVideoStreamer.close();
         inputFrameSaver.close();
         outputFrameSaver.close();
+        if (jsonResultExporter != null) jsonResultExporter.close();
         changeSubscriberHandle.stop();
         setVisionLEDs(false);
     }
@@ -730,6 +738,56 @@ public class VisionModule {
         for (var c : streamResultConsumers) {
             c.accept(frame, targets);
         }
+    }
+
+    /**
+     * Tee File Log Camera pipeline results to a {@link JsonResultExporter} (for AKit replay
+     * consumption). No-op for any other camera type. The exporter is built lazily on the first
+     * result so live USB / CSI cameras never touch the disk for this path. Until the recorder
+     * starts emitting a TSS snapshot, the embedded packet timestamps remain in local-time-base;
+     * we warn once so the operator notices.
+     */
+    private void teeToJsonResultExporter(
+            org.photonvision.vision.pipeline.result.CVPipelineResult result) {
+        var matched = visionSource.getSettables().getConfiguration().matchedCameraInfo;
+        if (!(matched instanceof PVCameraInfo.PVFileLogCameraInfo info)) return;
+
+        if (jsonResultExporter == null) {
+            var settings = pipelineManager.getCurrentPipelineSettings();
+            if (settings == null) return; // pre-init: skip and try again on the next frame.
+
+            Path recordingDir = Path.of(info.path);
+            Path outputFile =
+                    recordingDir
+                            .resolve("results")
+                            .resolve(Integer.toHexString(settings.hashCode()) + ".jsonl");
+
+            // Pre-record-fixups commit-3 recordings carry no TSS snapshot. Warn once per module
+            // so the operator knows the JSON's embedded packet timestamps will be in local-time
+            // base instead of TSS-aligned.
+            if (!tssSnapshotWarned) {
+                logger.warn(
+                        "JsonResultExporter: no tss snapshot in "
+                                + recordingDir
+                                + " — embedded packet timestamps will not be TSS-aligned");
+                tssSnapshotWarned = true;
+            }
+
+            try {
+                jsonResultExporter =
+                        new JsonResultExporter(
+                                outputFile,
+                                visionSource.getSettables().getConfiguration().uniqueName,
+                                info.name,
+                                settings,
+                                JsonResultExporter.OffsetSnapshot.UNKNOWN);
+            } catch (java.io.IOException e) {
+                logger.error("Failed to open JsonResultExporter at " + outputFile + ": " + e.getMessage());
+                return;
+            }
+        }
+
+        jsonResultExporter.accept(result);
     }
 
     public void setTargetModel(TargetModel targetModel) {
