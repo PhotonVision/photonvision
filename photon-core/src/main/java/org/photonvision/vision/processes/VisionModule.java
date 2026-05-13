@@ -100,8 +100,12 @@ public class VisionModule {
     MJPGFrameConsumer outputVideoStreamer;
 
     // Lazy: built on the first pipeline result for File Log Camera sources; null otherwise.
-    private JsonResultExporter jsonResultExporter;
+    // Volatile so stop() (caller thread) sees writes made by the vision thread on first frame.
+    private volatile JsonResultExporter jsonResultExporter;
     private boolean tssSnapshotWarned;
+    // Latches true on first open failure so we log + skip silently rather than spamming on
+    // every subsequent frame.
+    private boolean jsonExporterDisabled;
 
     boolean mismatch;
 
@@ -747,8 +751,8 @@ public class VisionModule {
      * starts emitting a TSS snapshot, the embedded packet timestamps remain in local-time-base;
      * we warn once so the operator notices.
      */
-    private void teeToJsonResultExporter(
-            org.photonvision.vision.pipeline.result.CVPipelineResult result) {
+    private void teeToJsonResultExporter(CVPipelineResult result) {
+        if (jsonExporterDisabled) return;
         var matched = visionSource.getSettables().getConfiguration().matchedCameraInfo;
         if (!(matched instanceof PVCameraInfo.PVFileLogCameraInfo info)) return;
 
@@ -783,6 +787,7 @@ public class VisionModule {
                                 JsonResultExporter.OffsetSnapshot.UNKNOWN);
             } catch (java.io.IOException e) {
                 logger.error("Failed to open JsonResultExporter at " + outputFile + ": " + e.getMessage());
+                jsonExporterDisabled = true; // latch: don't spam-retry on every subsequent frame.
                 return;
             }
         }
