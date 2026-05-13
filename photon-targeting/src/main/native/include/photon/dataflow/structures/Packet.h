@@ -26,8 +26,8 @@
 #include <string>
 #include <vector>
 
-#include <wpi/Demangle.h>
-#include <wpi/ct_string.h>
+#include <wpi/util/Demangle.hpp>
+#include <wpi/util/ct_string.hpp>
 #include <wpi/util/struct/Struct.hpp>
 
 namespace photon {
@@ -56,7 +56,7 @@ concept Optional = is_optional<std::remove_cvref_t<T>>::value;
 
 template <typename Opt, typename... I>
 concept OptionalWPIStructSerializable =
-    Optional<Opt> && wpi::StructSerializable<optional_inner_t<Opt>, I...>;
+    Optional<Opt> && wpi::util::StructSerializable<optional_inner_t<Opt>, I...>;
 
 template <typename T>
 struct vector_inner;
@@ -80,7 +80,7 @@ concept Vector = is_vector<std::remove_cvref_t<T>>::value;
 
 template <typename Vec, typename... I>
 concept VectorWPIStructSerializable =
-    Vector<Vec> && wpi::StructSerializable<vector_inner_t<Vec>, I...>;
+    Vector<Vec> && wpi::util::StructSerializable<vector_inner_t<Vec>, I...>;
 
 // Struct is where all our actual ser/de methods are implemented
 template <typename T>
@@ -217,33 +217,7 @@ class Packet {
     std::vector<T> ret;
     ret.reserve(len);
     for (size_t i = 0; i < len; i++) {
-      ret.push_back(Unpack<T>());
-    }
-    return ret;
-  }
-
-  // Support decoding optional wpi structs
-  template <typename Opt, typename... I>
-    requires OptionalWPIStructSerializable<Opt, I...>
-  inline std::optional<optional_inner_t<Opt>> Unpack() {
-    using T = optional_inner_t<Opt>;
-    if (Unpack<uint8_t>() == 0u) {
-      return std::nullopt;
-    } else {
-      return std::make_optional<T>(Unpack<T, I...>());
-    }
-  }
-
-  // Support decoding wpi struct vectors
-  template <typename Vec, typename... I>
-    requires VectorWPIStructSerializable<Vec, I...>
-  inline std::vector<vector_inner_t<Vec>> Unpack() {
-    using T = vector_inner_t<Vec>;
-    uint8_t len = Unpack<uint8_t>();
-    std::vector<T> ret;
-    ret.reserve(len);
-    for (size_t i = 0; i < len; i++) {
-      ret.push_back(Unpack<T>());
+      ret.push_back(Unpack<T, I...>());
     }
     return ret;
   }
@@ -264,9 +238,6 @@ class Packet {
   size_t readPos = 0;
   size_t writePos = 0;
 };
-
-template <typename T>
-concept arithmetic = std::integral<T> || std::floating_point<T>;
 
 // support encoding vectors
 template <typename T>
