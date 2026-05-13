@@ -1691,4 +1691,28 @@ public class RequestHandler {
             ctx.status(500).result("Unexpected error starting replay");
         }
     }
+
+    public static void onCancelReplayRequest(Context ctx) {
+        try {
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                return;
+            }
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404).result("No camera with uniqueName=" + request.cameraUniqueName);
+                return;
+            }
+            module.cancelReplay();
+            ctx.status(200).result("Replay cancel requested");
+            logger.info("Cancelled replay on " + request.cameraUniqueName);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+        } catch (Exception e) {
+            logger.error("Unexpected error cancelling replay", e);
+            ctx.status(500).result("Unexpected error cancelling replay");
+        }
+    }
 }
