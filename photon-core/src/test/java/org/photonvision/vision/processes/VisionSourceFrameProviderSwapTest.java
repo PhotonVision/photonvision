@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -43,12 +42,10 @@ import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.frame.provider.FileLogFrameProvider;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
-import org.wpilib.vision.camera.VideoMode;
 
 /**
  * Exercises {@link VisionSource#setFrameProvider}, {@link VisionSource#getFrameProvider}, and
@@ -182,7 +179,7 @@ class VisionSourceFrameProviderSwapTest {
 
         @Override
         public VisionSourceSettables getSettables() {
-            return new TestSettables(getCameraConfiguration());
+            throw new UnsupportedOperationException("not exercised by this test");
         }
 
         @Override
@@ -200,67 +197,6 @@ class VisionSourceFrameProviderSwapTest {
 
         @Override
         public void release() {}
-    }
-
-    private static final class TestSettables extends VisionSourceSettables {
-        TestSettables(CameraConfiguration configuration) {
-            super(configuration);
-        }
-
-        @Override
-        public void setExposureRaw(double exposure) {}
-
-        @Override
-        public void setAutoExposure(boolean cameraAutoExposure) {}
-
-        @Override
-        public void setBrightness(int brightness) {}
-
-        @Override
-        public void setGain(int gain) {}
-
-        @Override
-        public VideoMode getCurrentVideoMode() {
-            return new VideoMode(0, 8, 8, 30);
-        }
-
-        @Override
-        protected void setVideoModeInternal(VideoMode videoMode) {
-            this.frameStaticProperties = new FrameStaticProperties(8, 8, 0.0, null);
-        }
-
-        @Override
-        public HashMap<Integer, VideoMode> getAllVideoModes() {
-            var modes = new HashMap<Integer, VideoMode>();
-            modes.put(0, getCurrentVideoMode());
-            return modes;
-        }
-
-        @Override
-        public void setAutoWhiteBalance(boolean autowb) {}
-
-        @Override
-        public void setWhiteBalanceTemp(double temp) {}
-
-        @Override
-        public double getMinExposureRaw() {
-            return 0;
-        }
-
-        @Override
-        public double getMaxExposureRaw() {
-            return 1;
-        }
-
-        @Override
-        public double getMinWhiteBalanceTemp() {
-            return 0;
-        }
-
-        @Override
-        public double getMaxWhiteBalanceTemp() {
-            return 1;
-        }
     }
 
     private static final class NamedNoopProvider extends FrameProvider {
