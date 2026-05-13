@@ -114,10 +114,9 @@ public class FrameRecorder implements Releasable {
      * exporter can later place {@code metadata.jsonl}'s local-time-base {@code capture_ns} into the
      * TSS time base.
      */
-    public record TssSample(
-            boolean tssActiveAtRecord, long tssOffsetAtRecordNs, long sampledAtWpiNtNowNs) {
+    public record TssSample(boolean tssActiveAtRecord, long tssOffsetAtRecordNs) {
         /** Sentinel meaning "no TSS info available" — used in tests and when JNI is unavailable. */
-        public static final TssSample INACTIVE = new TssSample(false, 0L, 0L);
+        public static final TssSample INACTIVE = new TssSample(false, 0L);
     }
 
     public FrameRecorder(Path outputPath) {
@@ -198,8 +197,7 @@ public class FrameRecorder implements Releasable {
             long timeSinceLastPongUs = mgr.getTimeSinceLastPong();
             boolean active = timeSinceLastPongUs != Long.MAX_VALUE && timeSinceLastPongUs < 5_000_000L;
             long offsetNs = mgr.getOffset() * 1_000L;
-            long nowNs = org.wpilib.networktables.NetworkTablesJNI.now() * 1_000L;
-            return new TssSample(active, offsetNs, nowNs);
+            return new TssSample(active, offsetNs);
         } catch (Throwable t) {
             // JNI not loaded, NetworkTablesManager not constructed, or TimeSyncClient handle was
             // freed — anything in the stack throws, we treat as inactive.
@@ -220,8 +218,6 @@ public class FrameRecorder implements Releasable {
                         + tss.tssActiveAtRecord()
                         + ",\"tss_offset_at_record_ns\":"
                         + tss.tssOffsetAtRecordNs()
-                        + ",\"sampled_at_wpi_nt_now_ns\":"
-                        + tss.sampledAtWpiNtNowNs()
                         + "}\n";
         try {
             java.nio.file.Files.write(

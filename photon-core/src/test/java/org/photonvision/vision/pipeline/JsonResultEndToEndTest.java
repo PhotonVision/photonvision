@@ -86,7 +86,7 @@ public class JsonResultEndToEndTest {
         // --- 1. Record a synthetic recording with a known TSS snapshot. ---
         Path recordingDir = tempDir.resolve("rec");
         Files.createDirectories(recordingDir);
-        var tss = new FrameRecorder.TssSample(true, TSS_OFFSET_NS, 1_000_000L);
+        var tss = new FrameRecorder.TssSample(true, TSS_OFFSET_NS);
 
         FrameRecorder recorder =
                 new FrameRecorder(

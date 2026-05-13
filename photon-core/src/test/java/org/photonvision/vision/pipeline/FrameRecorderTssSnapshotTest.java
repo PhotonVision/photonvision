@@ -50,7 +50,7 @@ public class FrameRecorderTssSnapshotTest {
     public void writesActiveSnapshot(@TempDir Path tempDir) throws Exception {
         Path outDir = tempDir.resolve("rec");
         Files.createDirectories(outDir);
-        var sample = new TssSample(true, 4_500_000L, 123_456_789_000L);
+        var sample = new TssSample(true, 4_500_000L);
 
         var recorder =
                 new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
@@ -65,7 +65,6 @@ public class FrameRecorderTssSnapshotTest {
         JsonNode node = new ObjectMapper().readTree(tssPath.toFile());
         assertTrue(node.get("tss_active_at_record").asBoolean());
         assertEquals(4_500_000L, node.get("tss_offset_at_record_ns").asLong());
-        assertEquals(123_456_789_000L, node.get("sampled_at_wpi_nt_now_ns").asLong());
     }
 
     @Test
@@ -94,7 +93,7 @@ public class FrameRecorderTssSnapshotTest {
     public void readSnapshotReturnsPopulatedFromWrittenFile(@TempDir Path tempDir) throws Exception {
         Path outDir = tempDir.resolve("rec");
         Files.createDirectories(outDir);
-        var sample = new TssSample(true, 7_200_000L, 999_999L);
+        var sample = new TssSample(true, 7_200_000L);
 
         var recorder =
                 new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
