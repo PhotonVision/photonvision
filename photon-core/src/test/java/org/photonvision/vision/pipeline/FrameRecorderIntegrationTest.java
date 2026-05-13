@@ -90,12 +90,9 @@ public class FrameRecorderIntegrationTest {
         // --- Assertions on disk artifacts ---
         Path framesDir = outDir.resolve("frames");
         Path meta = outDir.resolve("metadata.jsonl");
-        Path strat = outDir.resolve("strat");
 
         assertTrue(Files.isDirectory(framesDir), "frames/ directory missing");
         assertTrue(Files.exists(meta), "metadata.jsonl missing");
-        assertTrue(Files.exists(strat), "strat file missing");
-        assertEquals("VIDEO", Files.readString(strat, StandardCharsets.UTF_8).trim());
 
         for (int i = 0; i < FRAME_COUNT; i++) {
             Path framePath = FrameLogFormat.framePath(framesDir, i);

@@ -157,21 +157,10 @@ public class FrameRecorder implements Releasable {
         this.outputPath = outputPath;
         this.framesDir = outputPath.resolve("frames");
 
-        // strat file: marker for offline tooling; not consumed by replay.
         try {
             java.nio.file.Files.createDirectories(framesDir);
-
-            java.nio.file.Path strategyFile = outputPath.resolve("strat");
-            String content = strat.name() + System.lineSeparator();
-
-            java.nio.file.Files.write(
-                    strategyFile,
-                    content.getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                    java.nio.file.StandardOpenOption.CREATE,
-                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
-            logger.warn(
-                    "Failed to write recording strategy file to " + outputPath + ": " + e.getMessage());
+            throw new IllegalStateException("Failed to create frames directory at " + framesDir, e);
         }
 
         // Sidecar must open before any frame can be queued — replay needs (seq, capture_ns).
