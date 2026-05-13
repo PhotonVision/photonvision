@@ -33,6 +33,77 @@ public class TestSource extends VisionSource {
 
         // Disable camera quirk detection using this fun hack
         getCameraConfiguration().cameraQuirks = QuirkyCamera.getQuirkyCamera(-1, -1, "");
+
+        setFrameProvider(
+                new FrameProvider() {
+                    @Override
+                    public Frame get() {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'get'");
+                    }
+
+                    @Override
+                    public String getName() {
+                        return cameraConfiguration.uniqueName;
+                    }
+
+                    @Override
+                    public void requestFrameThresholdType(FrameThresholdType type) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException(
+                                "Unimplemented method 'requestFrameThresholdType'");
+                    }
+
+                    @Override
+                    public void requestFrameRotation(ImageRotationMode rotationMode) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");
+                    }
+
+                    @Override
+                    public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'requestFrameCopies'");
+                    }
+
+                    @Override
+                    public void requestHsvSettings(HSVParams params) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
+                    }
+
+                    @Override
+                    public void requestBlockForFrames(boolean blockForFrames) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'requestBlockForFrames'");
+                    }
+
+                    @Override
+                    public void release() {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'release'");
+                    }
+
+                    @Override
+                    public boolean checkCameraConnected() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isConnected() {
+                        return true;
+                    }
+
+                    @Override
+                    public void setRecording(boolean shouldRecord) {
+                        throw new UnsupportedOperationException("Unimplemented method 'setRecording'");
+                    }
+
+                    @Override
+                    public boolean getRecording() {
+                        return false;
+                    }
+                });
     }
 
     @Override
@@ -40,78 +111,6 @@ public class TestSource extends VisionSource {
         // Nothing to do, settables for this type of VisionSource should never be
         // remade.
         return;
-    }
-
-    @Override
-    public FrameProvider getFrameProvider() {
-        return new FrameProvider() {
-            @Override
-            public Frame get() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'get'");
-            }
-
-            @Override
-            public String getName() {
-                return cameraConfiguration.uniqueName;
-            }
-
-            @Override
-            public void requestFrameThresholdType(FrameThresholdType type) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameThresholdType'");
-            }
-
-            @Override
-            public void requestFrameRotation(ImageRotationMode rotationMode) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameRotation'");
-            }
-
-            @Override
-            public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestFrameCopies'");
-            }
-
-            @Override
-            public void requestHsvSettings(HSVParams params) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestHsvSettings'");
-            }
-
-            @Override
-            public void requestBlockForFrames(boolean blockForFrames) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'requestBlockForFrames'");
-            }
-
-            @Override
-            public void release() {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'release'");
-            }
-
-            @Override
-            public boolean checkCameraConnected() {
-                return true;
-            }
-
-            @Override
-            public boolean isConnected() {
-                return true;
-            }
-
-            @Override
-            public void setRecording(boolean shouldRecord) {
-                throw new UnsupportedOperationException("Unimplemented method 'setRecording'");
-            }
-
-            @Override
-            public boolean getRecording() {
-                return false;
-            }
-        };
     }
 
     @Override

@@ -20,7 +20,6 @@ package org.photonvision.vision.camera;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileLogFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -53,11 +52,7 @@ public class FileLogVisionSource extends VisionSource {
         this.settables =
                 new FileVisionSource.FileSourceSettables(
                         cameraConfiguration, frameProvider.getStaticProperties());
-    }
-
-    @Override
-    public FrameProvider getFrameProvider() {
-        return frameProvider;
+        setFrameProvider(frameProvider);
     }
 
     @Override

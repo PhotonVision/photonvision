@@ -199,6 +199,15 @@ public class FileLogFrameProvider extends CpuImageProcessor {
         return properties;
     }
 
+    /**
+     * @return the recording directory this provider was constructed against (the parent of {@code
+     *     frames/} and {@code metadata.jsonl}). Used by {@code VisionSource.getReplayRecordingDir()}
+     *     to surface the current replay target without exposing the field directly.
+     */
+    public Path getRecordingDir() {
+        return recordingDir;
+    }
+
     private CapturedFrame enterStoppedState(String reason) {
         if (stoppedAtEof.compareAndSet(false, true)) {
             logger.info("Replay reached end of recording: " + reason);

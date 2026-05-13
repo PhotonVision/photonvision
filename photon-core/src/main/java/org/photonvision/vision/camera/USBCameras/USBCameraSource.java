@@ -106,6 +106,7 @@ public class USBCameraSource extends VisionSource {
 
             usbFrameProvider = new USBFrameProvider(camera, settables, this::onCameraConnected);
         }
+        setFrameProvider(usbFrameProvider);
     }
 
     /**
@@ -221,11 +222,6 @@ public class USBCameraSource extends VisionSource {
     }
 
     @Override
-    public FrameProvider getFrameProvider() {
-        return usbFrameProvider;
-    }
-
-    @Override
     public VisionSourceSettables getSettables() {
         return this.settables;
     }
@@ -246,6 +242,7 @@ public class USBCameraSource extends VisionSource {
         camera.close();
         usbFrameProvider.release();
         usbFrameProvider = null;
+        setFrameProvider(null);
     }
 
     @Override

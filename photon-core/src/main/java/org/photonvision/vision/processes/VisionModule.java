@@ -144,7 +144,7 @@ public class VisionModule {
         changeSubscriber = new VisionModuleChangeSubscriber(this);
         this.visionRunner =
                 new VisionRunner(
-                        this.visionSource.getFrameProvider(),
+                        this.visionSource::getFrameProvider,
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks,
