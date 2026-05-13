@@ -43,7 +43,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public double mlConfidenceThreshold = 0.5;
     public double mlNmsThreshold = 0.45;
     public int mlRoiPaddingPixels = 40;
-    public boolean mlFallbackToTraditional = true;
     public ModelProperties model =
             NeuralNetworkModelManager.getInstance()
                     .getDefaultModel()
@@ -96,7 +95,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         temp = Double.doubleToLongBits(mlNmsThreshold);
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + mlRoiPaddingPixels;
-        result = prime * result + (mlFallbackToTraditional ? 1231 : 1237);
         result = prime * result + ((model.modelPath() == null) ? 0 : model.modelPath().hashCode());
         result = prime * result + (showDetectionBoxes ? 1231 : 1237);
         // ATR fields
@@ -131,7 +129,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (Double.doubleToLongBits(mlNmsThreshold) != Double.doubleToLongBits(other.mlNmsThreshold))
             return false;
         if (mlRoiPaddingPixels != other.mlRoiPaddingPixels) return false;
-        if (mlFallbackToTraditional != other.mlFallbackToTraditional) return false;
         if (model == null) {
             if (other.model != null) return false;
         } else if (!model.equals(other.model)) return false;

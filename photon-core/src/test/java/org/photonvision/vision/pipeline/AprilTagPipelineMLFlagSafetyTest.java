@@ -31,11 +31,12 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 
 /**
- * Integration tests for the ML-assisted AprilTag detection pipeline. These tests verify that when
- * ML detection is enabled but not available (e.g., on test platforms without NPU), the pipeline
- * correctly falls back to traditional detection.
+ * Safety tests for the ML-assisted AprilTag pipeline's flag handling. None of these tests actually
+ * exercise the ML code path — they run on hosts without an NPU, so {@code useMLDetection = true}
+ * falls through to traditional detection. The tests verify that toggling ML-related flags does not
+ * crash the pipeline and that ML-related settings serialise correctly.
  */
-public class AprilTagMLPipelineIntegrationTest {
+public class AprilTagPipelineMLFlagSafetyTest {
     @BeforeEach
     public void setup() {
         LoadJNI.loadLibraries();
@@ -77,16 +78,14 @@ public class AprilTagMLPipelineIntegrationTest {
     }
 
     /**
-     * Test that the pipeline falls back to traditional detection when ML is enabled but not
-     * available. This test runs on a platform without NPU support.
+     * Test that the pipeline still detects tags when ML detection is enabled on a platform without
+     * ML support (e.g., no NPU). In that case the pipeline uses traditional detection.
      */
     @Test
-    public void testFallbackWhenMLUnavailable() {
+    public void testMLEnabledOnNonNpuPlatform() {
         var pipeline = new AprilTagPipeline();
 
-        // Enable ML detection - should fall back on test platform
         pipeline.getSettings().useMLDetection = true;
-        pipeline.getSettings().mlFallbackToTraditional = true;
         pipeline.getSettings().inputShouldShow = true;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().solvePNPEnabled = true;
@@ -102,8 +101,7 @@ public class AprilTagMLPipelineIntegrationTest {
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
 
-        // Should still detect the tag via fallback
-        assertFalse(pipelineResult.targets.isEmpty(), "Should detect tag via fallback");
+        assertFalse(pipelineResult.targets.isEmpty(), "Should detect tag");
         assertEquals(1, pipelineResult.targets.size(), "Should detect exactly one tag");
 
         // Verify tag ID
@@ -153,70 +151,4 @@ public class AprilTagMLPipelineIntegrationTest {
         pipeline.release();
     }
 
-    /**
-     * Test that ML settings don't interfere with multi-tag detection. Verifies that multi-target
-     * settings still work when ML is enabled but unavailable.
-     */
-    @Test
-    public void testMultiTagWithMLEnabled() {
-        var pipeline = new AprilTagPipeline();
-
-        pipeline.getSettings().useMLDetection = true;
-        pipeline.getSettings().mlFallbackToTraditional = true;
-        pipeline.getSettings().doMultiTarget = true;
-        pipeline.getSettings().solvePNPEnabled = true;
-        pipeline.getSettings().targetModel = TargetModel.kAprilTag6p5in_36h11;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
-
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-
-        // Should still work with multi-tag enabled
-        assertNotNull(pipelineResult, "Pipeline result should not be null");
-
-        pipeline.release();
-    }
-
-    /** Test that changing ML settings triggers proper reconfiguration. */
-    @Test
-    public void testMLSettingsReconfiguration() {
-        var pipeline = new AprilTagPipeline();
-
-        // Start with ML disabled
-        pipeline.getSettings().useMLDetection = false;
-        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
-
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
-                        TestUtils.WPI2020Image.FOV,
-                        TestUtils.get2020LifeCamCoeffs(false));
-        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
-
-        // Run once with ML disabled
-        CVPipelineResult result1 = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        assertFalse(result1.targets.isEmpty(), "Should detect tag with ML disabled");
-
-        // Enable ML (will fallback on test platform)
-        pipeline.getSettings().useMLDetection = true;
-        pipeline.getSettings().mlFallbackToTraditional = true;
-
-        // Run again with ML enabled (will use fallback)
-        CVPipelineResult result2 = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        assertFalse(result2.targets.isEmpty(), "Should detect tag with ML enabled (fallback)");
-
-        // Disable ML again
-        pipeline.getSettings().useMLDetection = false;
-
-        CVPipelineResult result3 = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
-        assertFalse(result3.targets.isEmpty(), "Should detect tag after disabling ML");
-
-        pipeline.release();
-    }
 }

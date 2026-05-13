@@ -58,7 +58,7 @@ public class AprilTagROIDetectionPipe
         List<RotatedRect> rois = new ArrayList<>();
 
         if (detector == null || detector instanceof NullModel) {
-            return rois; // Empty list - fallback to traditional detection
+            return rois;
         }
 
         if (in.getMat().empty()) {

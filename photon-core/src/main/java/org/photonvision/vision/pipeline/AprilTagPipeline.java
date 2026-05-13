@@ -215,14 +215,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
             // Preserve ROIs for visualization in the output stream
             frame.mlDetectionRois = mlDetectionResult.rois();
-
-            // Fallback to traditional detection if ML found nothing
-            if (detections.isEmpty() && settings.mlFallbackToTraditional) {
-                CVPipeResult<List<AprilTagDetection>> fallbackResult =
-                        aprilTagDetectionPipe.run(frame.processedImage);
-                detections = fallbackResult.output;
-                detectionNanos += fallbackResult.nanosElapsed;
-            }
         } else {
             // Use traditional detection
             CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =

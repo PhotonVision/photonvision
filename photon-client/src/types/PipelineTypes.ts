@@ -281,7 +281,6 @@ export interface AprilTagPipelineSettings extends PipelineSettings {
   mlConfidenceThreshold: number;
   mlNmsThreshold: number;
   mlRoiPaddingPixels: number;
-  mlFallbackToTraditional: boolean;
   model: ObjectDetectionModelProperties;
   showDetectionBoxes: boolean;
 }
@@ -313,7 +312,6 @@ export const DefaultAprilTagPipelineSettings: AprilTagPipelineSettings = {
   mlConfidenceThreshold: 0.5,
   mlNmsThreshold: 0.45,
   mlRoiPaddingPixels: 40,
-  mlFallbackToTraditional: true,
   model: {} as ObjectDetectionModelProperties,
   showDetectionBoxes: true
 };

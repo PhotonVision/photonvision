@@ -179,15 +179,6 @@ const supportedModels = computed<ObjectDetectionModelProperties[]>(() => {
           "
         />
         <pv-switch
-          v-model="currentPipelineSettings.mlFallbackToTraditional"
-          :switch-cols="interactiveCols"
-          label="Fallback to Traditional"
-          tooltip="If ML detection finds no tags, fall back to traditional full-frame detection"
-          @update:modelValue="
-            (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ mlFallbackToTraditional: value }, false)
-          "
-        />
-        <pv-switch
           v-model="currentPipelineSettings.showDetectionBoxes"
           :switch-cols="interactiveCols"
           label="Show ROI Boxes"
