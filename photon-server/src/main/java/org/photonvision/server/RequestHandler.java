@@ -1806,6 +1806,31 @@ public class RequestHandler {
         }
     }
 
+    /**
+     * Lists active replays across all cameras so the UI can poll for a banner / preview /
+     * auto-download trigger without taking a dependency on PV's NT websocket bridge.
+     */
+    public static void onReplayStatusRequest(Context ctx) {
+        try {
+            var modules = VisionSourceManager.getInstance().vmm.getModules();
+            var rows = new java.util.ArrayList<java.util.Map<String, Object>>();
+            for (var module : modules) {
+                var status = module.getReplayStatus();
+                if (!status.isReplaying()) continue;
+                var row = new java.util.LinkedHashMap<String, Object>();
+                row.put("cameraUniqueName", module.uniqueName());
+                row.put("recordingName", status.recordingName());
+                row.put("currentFrame", status.currentFrame());
+                row.put("totalFrames", status.totalFrames());
+                rows.add(row);
+            }
+            ctx.json(rows);
+        } catch (Exception e) {
+            logger.error("Failed to read replay status", e);
+            ctx.status(500).result("Failed to read replay status");
+        }
+    }
+
     public static void onCancelReplayRequest(Context ctx) {
         try {
             CommonCameraUniqueName request =

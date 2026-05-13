@@ -117,6 +117,9 @@ public class VisionModule {
     // the vision thread mid-getInputMat.
     private final Object replayLock = new Object();
     private volatile boolean isReplaying;
+    private volatile long replayCurrentFrame;
+    private volatile long replayTotalFrames;
+    private volatile String replayRecordingName = "";
     private FrameProvider savedFrameProvider;
     private FileLogFrameProvider activeReplayProvider;
     private java.util.concurrent.ExecutorService replayWorker;
@@ -438,6 +441,15 @@ public class VisionModule {
         return isReplaying;
     }
 
+    /** Snapshot of replay progress for polling-based UIs. Zeroed when not replaying. */
+    public ReplayStatus getReplayStatus() {
+        return new ReplayStatus(
+                isReplaying, replayRecordingName, replayCurrentFrame, replayTotalFrames);
+    }
+
+    public record ReplayStatus(
+            boolean isReplaying, String recordingName, long currentFrame, long totalFrames) {}
+
     /**
      * Swap this module's frame provider for a {@link FileLogFrameProvider} pointed at the given
      * recording directory. The live provider is parked (its CvSink / GPU pipe keeps its connection,
@@ -463,14 +475,19 @@ public class VisionModule {
             var newProvider = new FileLogFrameProvider(recordingDir);
             try {
                 String recordingName = recordingDir.getFileName().toString();
+                this.replayCurrentFrame = 0L;
+                this.replayTotalFrames = newProvider.getTotalFrames();
+                this.replayRecordingName = recordingName;
                 // Zero-out progress topics up front so an old replay's last-frame numbers don't
                 // linger visible in NT between this call and the first frame.
                 ntConsumer.publishReplayProgress(0L, newProvider.getTotalFrames(), recordingName);
 
                 newProvider.setOnProgress(
-                        current ->
-                                ntConsumer.publishReplayProgress(
-                                        current, newProvider.getTotalFrames(), recordingName));
+                        current -> {
+                            this.replayCurrentFrame = current;
+                            ntConsumer.publishReplayProgress(
+                                    current, newProvider.getTotalFrames(), recordingName);
+                        });
                 // EOF fires on the vision thread inside getInputMat. Dispatch the swap-back to a
                 // dedicated worker so the vision thread can return its empty frame and pick up the
                 // restored provider on its next tick without us holding it inside cleanup.
