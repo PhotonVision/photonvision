@@ -457,38 +457,60 @@ public class VisionModule {
                         "Replay already active on " + uniqueName() + "; cancel it before starting another");
             }
 
+            // Open the provider first — IOExceptions surface to the caller, and we release on any
+            // later failure so the sidecar reader / frame count don't leak. setOnProgress / setOnEof
+            // MUST run before setFrameProvider; otherwise a natural EOF on the very first vision-tick
+            // could fire through an unwired callback and skip the swap-back.
             var newProvider = new FileLogFrameProvider(recordingDir);
-            // Zero-out progress topics up front so an old replay's last-frame numbers don't linger
-            // visible in NT between this call and the first frame.
-            String recordingName = recordingDir.getFileName().toString();
-            ntConsumer.publishReplayProgress(0L, newProvider.getTotalFrames(), recordingName);
+            try {
+                String recordingName = recordingDir.getFileName().toString();
+                // Zero-out progress topics up front so an old replay's last-frame numbers don't
+                // linger visible in NT between this call and the first frame.
+                ntConsumer.publishReplayProgress(0L, newProvider.getTotalFrames(), recordingName);
 
-            newProvider.setOnProgress(
-                    current ->
-                            ntConsumer.publishReplayProgress(
-                                    current, newProvider.getTotalFrames(), recordingName));
-            // EOF fires on the vision thread inside getInputMat. Dispatch the swap-back to a
-            // dedicated worker so the vision thread can return its empty frame and pick up the
-            // restored provider on its next tick without us holding it inside cleanup.
-            newProvider.setOnEof(() -> dispatchReplayEnded("eof"));
+                newProvider.setOnProgress(
+                        current ->
+                                ntConsumer.publishReplayProgress(
+                                        current, newProvider.getTotalFrames(), recordingName));
+                // EOF fires on the vision thread inside getInputMat. Dispatch the swap-back to a
+                // dedicated worker so the vision thread can return its empty frame and pick up the
+                // restored provider on its next tick without us holding it inside cleanup.
+                newProvider.setOnEof(() -> dispatchReplayEnded("eof"));
 
-            this.savedFrameProvider = visionSource.getFrameProvider();
-            this.activeReplayProvider = newProvider;
-            if (this.replayWorker == null) {
-                this.replayWorker =
-                        Executors.newSingleThreadExecutor(
-                                r -> {
-                                    Thread t = new Thread(r, "ReplayWorker - " + uniqueName());
-                                    t.setDaemon(true);
-                                    return t;
-                                });
+                this.savedFrameProvider = visionSource.getFrameProvider();
+                this.activeReplayProvider = newProvider;
+                if (this.replayWorker == null) {
+                    this.replayWorker =
+                            Executors.newSingleThreadExecutor(
+                                    r -> {
+                                        Thread t = new Thread(r, "ReplayWorker - " + uniqueName());
+                                        t.setDaemon(true);
+                                        return t;
+                                    });
+                }
+
+                visionSource.setFrameProvider(newProvider);
+                this.isReplaying = true;
+                ntConsumer.publishReplayState(true);
+                logger.info(
+                        "Started replay from "
+                                + recordingDir
+                                + " ("
+                                + newProvider.getTotalFrames()
+                                + " frames)");
+            } catch (RuntimeException e) {
+                // Roll back any partial state and release the now-orphaned sidecar reader.
+                this.savedFrameProvider = null;
+                this.activeReplayProvider = null;
+                try {
+                    newProvider.release();
+                } catch (Exception releaseEx) {
+                    logger.warn(
+                            "Failed to release file-log provider after startReplay failure: "
+                                    + releaseEx.getMessage());
+                }
+                throw e;
             }
-
-            visionSource.setFrameProvider(newProvider);
-            this.isReplaying = true;
-            ntConsumer.publishReplayState(true);
-            logger.info(
-                    "Started replay from " + recordingDir + " (" + newProvider.getTotalFrames() + " frames)");
         }
     }
 
@@ -514,7 +536,19 @@ public class VisionModule {
             worker = replayWorker;
             if (worker == null) return;
         }
-        worker.submit(() -> finishReplay(reason));
+        try {
+            worker.submit(() -> finishReplay(reason));
+        } catch (java.util.concurrent.RejectedExecutionException ex) {
+            // The worker was shut down between snapshot and submit (e.g. stop() racing
+            // cancelReplay() from another thread). Run the cleanup inline so isReplaying still
+            // flips false and the live provider is restored.
+            logger.warn(
+                    "Replay worker rejected swap-back submit ("
+                            + reason
+                            + "); running inline: "
+                            + ex.getMessage());
+            finishReplay(reason);
+        }
     }
 
     private void finishReplay(String reason) {
@@ -776,6 +810,22 @@ public class VisionModule {
         ntConsumer.updateCameraNickname(newName);
         inputFrameSaver.updateCameraNickname(newName);
         outputFrameSaver.updateCameraNickname(newName);
+
+        // updateCameraNickname() closes + recreates every per-camera NT publisher under the new
+        // subtable, including the replay-state publishers. Re-publish current replay state so a
+        // dashboard observing /photonvision/<newName>/* doesn't see false / 0 / "" while a replay
+        // is still in flight.
+        synchronized (replayLock) {
+            if (isReplaying) {
+                ntConsumer.publishReplayState(true);
+                if (activeReplayProvider != null) {
+                    ntConsumer.publishReplayProgress(
+                            0L,
+                            activeReplayProvider.getTotalFrames(),
+                            activeReplayProvider.getRecordingDir().getFileName().toString());
+                }
+            }
+        }
 
         // Push new data to the UI
         saveAndBroadcastAll();
