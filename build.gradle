@@ -45,7 +45,7 @@ ext {
     javalinVersion = "6.7.0"
     libcameraDriverVersion = "v2027.0.0-alpha-1"
     rknnVersion = "dev-v2026.0.1-1-g89b2888"
-    rubikVersion = "dev-v2026.0.1-4-g13d6279"
+    tfliteVersion = "v2027.0.2-alpha-1"
     frcYear = "2027_alpha5"
     mrcalVersion = "v2027.0.2";
 
