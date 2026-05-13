@@ -55,6 +55,8 @@ import org.wpilib.networktables.NetworkTablesJNI;
 public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseable {
     private static final int SCHEMA_VERSION = 1;
     private static final int INITIAL_PACKET_BYTES = 1024;
+    private static final Logger logger =
+            new Logger(JsonResultExporter.class, LogGroup.VisionModule);
 
     /**
      * TSS state sampled at recording-start. Null fields mean "unknown" (pre-snapshot recording);
@@ -80,16 +82,11 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             if (active == null || offset == null) return OffsetSnapshot.UNKNOWN;
             return new OffsetSnapshot(active.asBoolean(), offset.asLong());
         } catch (IOException e) {
-            STATIC_LOGGER.error(
-                    "readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
+            logger.error("readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
             return OffsetSnapshot.UNKNOWN;
         }
     }
 
-    private static final Logger STATIC_LOGGER =
-            new Logger(JsonResultExporter.class, LogGroup.VisionModule);
-
-    private final Logger logger;
     private final ObjectMapper mapper = new ObjectMapper();
     private final OffsetSnapshot offsetSnapshot;
     private final long offsetUs;
@@ -115,7 +112,6 @@ public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseab
             OffsetSnapshot offsetSnapshot,
             LongSupplier nowMicrosSupplier)
             throws IOException {
-        this.logger = new Logger(JsonResultExporter.class, LogGroup.VisionModule);
         this.offsetSnapshot = offsetSnapshot;
         this.nowMicrosSupplier = nowMicrosSupplier;
         this.offsetUs =
