@@ -130,11 +130,8 @@ public class FrameRecorder implements Releasable {
 
     // Package-private DI constructor: lets tests build a recorder without bringing up the
     // HardwareManager / SystemMonitor singletons (which transitively require photontargetingJNI
-    // via NetworkTablesManager → TimeSyncClient).
-    FrameRecorder(Path outputPath, RecordingStrategy strat, long availableSpace) {
-        this(outputPath, strat, availableSpace, TssSample.INACTIVE);
-    }
-
+    // via NetworkTablesManager → TimeSyncClient). Pass TssSample.INACTIVE when not exercising the
+    // tss.json hand-off.
     FrameRecorder(Path outputPath, RecordingStrategy strat, long availableSpace, TssSample tss) {
         this.logger = new Logger(FrameRecorder.class, LogGroup.VisionModule);
         this.strat = strat;

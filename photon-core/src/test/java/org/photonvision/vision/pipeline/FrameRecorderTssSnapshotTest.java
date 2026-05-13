@@ -74,9 +74,13 @@ public class FrameRecorderTssSnapshotTest {
         Files.createDirectories(outDir);
 
         var recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE);
+                new FrameRecorder(
+                        outDir,
+                        FrameRecorder.RecordingStrategy.SNAPSHOTS,
+                        Long.MAX_VALUE,
+                        TssSample.INACTIVE);
         try {
-            // 3-arg ctor defaults to INACTIVE (test contract).
+            // No frames needed: writeTssSnapshot runs in the constructor.
         } finally {
             recorder.release();
         }
