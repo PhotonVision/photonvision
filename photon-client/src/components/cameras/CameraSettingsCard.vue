@@ -127,13 +127,10 @@ const deleteThisCamera = async () => {
   });
 };
 const wrappedCameras = computed<SelectItem<string>[]>(() =>
-  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => {
-    const cam = useCameraSettingsStore().cameras[cameraUniqueName];
-    return {
-      name: cam.nickname,
-      value: cameraUniqueName
-    };
-  })
+  Object.keys(useCameraSettingsStore().cameras).map((cameraUniqueName) => ({
+    name: useCameraSettingsStore().cameras[cameraUniqueName].nickname,
+    value: cameraUniqueName
+  }))
 );
 </script>
 

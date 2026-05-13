@@ -110,6 +110,7 @@ export interface PVFileCameraInfo {
   // In Java, PVCameraInfo provides a uniquePath property so we can have one Source of Truth here
   uniquePath: string;
 }
+
 // This camera info will only ever hold one of its members - the others should be undefined.
 export class PVCameraInfo {
   PVUsbCameraInfo: PVUsbCameraInfo | undefined;
