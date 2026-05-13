@@ -1607,8 +1607,6 @@ public class RequestHandler {
 
     private record StartReplayRequest(String cameraUniqueName, String recording) {}
 
-    private record CancelReplayRequest(String cameraUniqueName) {}
-
     /**
      * Start a file-log replay on the live camera identified by {@code cameraUniqueName}. The
      * recording lives at {@code <recordingsDir>/<cameraUniqueName>/<recording>}; the live frame
@@ -1669,36 +1667,6 @@ public class RequestHandler {
         } catch (Exception e) {
             logger.error("Unexpected error starting replay", e);
             ctx.status(500).result("Unexpected error starting replay");
-        }
-    }
-
-    /**
-     * Force-end the active replay on the given camera. Idempotent: 200 if there was no replay to
-     * cancel. Async cleanup still runs on VisionModule's replay worker thread; isReplaying flips
-     * false once the swap-back completes.
-     */
-    public static void onCancelReplayRequest(Context ctx) {
-        try {
-            CancelReplayRequest request = kObjectMapper.readValue(ctx.body(), CancelReplayRequest.class);
-            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
-                ctx.status(400).result("cameraUniqueName is required");
-                return;
-            }
-
-            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
-            if (module == null) {
-                ctx.status(404).result("No camera with uniqueName=" + request.cameraUniqueName);
-                return;
-            }
-
-            module.cancelReplay();
-            ctx.status(200).result("Replay cancel requested");
-            logger.info("Cancel replay requested on " + request.cameraUniqueName);
-        } catch (JsonProcessingException e) {
-            ctx.status(400).result("Invalid JSON format");
-        } catch (Exception e) {
-            logger.error("Unexpected error cancelling replay", e);
-            ctx.status(500).result("Unexpected error cancelling replay");
         }
     }
 }
