@@ -86,14 +86,7 @@ public class USBFrameProvider extends CpuImageProcessor {
                 logger.error("Error grabbing image: " + error);
             }
 
-            // Snapshot the recorder reference once: the NT listener thread can null it out
-            // between the null check and the use otherwise. recordFrame already self-guards on
-            // its internal AtomicBooleans, so late submissions during release() drop cleanly.
-            FrameRecorder rec = frameRecorder;
-            if (rec != null && rec.isRecording()) {
-                rec.recordFrame(mat, captureTimeNs);
-            }
-
+            offerToRecorder(mat, captureTimeNs);
             return new CapturedFrame(mat, settables.getFrameStaticProperties(), captureTimeNs);
         } else {
             // We allocate memory so we don't fill a Mat in use by another thread (memory model is easier)
@@ -130,13 +123,18 @@ public class USBFrameProvider extends CpuImageProcessor {
                 ret = new CVMat(mat, frame);
             }
 
-            // See snapshot rationale in the blockForFrames branch above.
-            FrameRecorder rec = frameRecorder;
-            if (rec != null && rec.isRecording()) {
-                rec.recordFrame(ret, captureTimeUs * 1000);
-            }
-
+            offerToRecorder(ret, captureTimeUs * 1000);
             return new CapturedFrame(ret, settables.getFrameStaticProperties(), captureTimeUs * 1000);
+        }
+    }
+
+    // Snapshot the volatile recorder once: the NT listener thread can null it between the read
+    // and the use. recordFrame self-guards on its AtomicBooleans, so late submissions during
+    // release() drop cleanly.
+    private void offerToRecorder(CVMat mat, long captureNs) {
+        FrameRecorder rec = frameRecorder;
+        if (rec != null && rec.isRecording()) {
+            rec.recordFrame(mat, captureNs);
         }
     }
 
