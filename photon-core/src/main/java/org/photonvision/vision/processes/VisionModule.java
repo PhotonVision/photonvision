@@ -48,7 +48,6 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
-import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
 import org.photonvision.vision.frame.Frame;
@@ -967,22 +966,29 @@ public class VisionModule {
     }
 
     /**
-     * Tee File Log Camera pipeline results to a {@link JsonResultExporter} (for AKit replay
-     * consumption). No-op for any other camera type. The exporter is built lazily on the first result
-     * so live USB / CSI cameras never touch the disk for this path. Until the recorder starts
-     * emitting a TSS snapshot, the embedded packet timestamps remain in local-time-base; we warn once
-     * so the operator notices.
+     * Tee pipeline results to a {@link JsonResultExporter} (for AKit replay consumption) whenever
+     * this module's source is currently backed by a {@link FileLogFrameProvider} — i.e. during the
+     * in-place replay swap installed by {@link #startReplay}. No-op when the live provider is active.
+     * The exporter is built lazily on the first replayed result and closed by {@code finishReplay} on
+     * swap-back, so the next replay (potentially with a different pipeline hash) lands in a fresh
+     * file.
+     *
+     * <p>Gating on {@link VisionSource#getReplayRecordingDir} rather than {@code matchedCameraInfo}
+     * is what lets a live USB / CSI camera tee results during replay without us having to mutate
+     * matchedCameraInfo back and forth. {@code matchedCameraInfo} stays as the live camera's info for
+     * the entire replay; only the frame provider changes.
      */
     private void teeToJsonResultExporter(CVPipelineResult result) {
         if (jsonExporterDisabled) return;
-        var matched = visionSource.getSettables().getConfiguration().matchedCameraInfo;
-        if (!(matched instanceof PVCameraInfo.PVFileLogCameraInfo info)) return;
+        var replayDirOpt = visionSource.getReplayRecordingDir();
+        if (replayDirOpt.isEmpty()) return;
+        Path recordingDir = replayDirOpt.get();
+        String recordingName = recordingDir.getFileName().toString();
 
         if (jsonResultExporter == null) {
             var settings = pipelineManager.getCurrentPipelineSettings();
             if (settings == null) return; // pre-init: skip and try again on the next frame.
 
-            Path recordingDir = Path.of(info.path);
             Path outputFile =
                     recordingDir
                             .resolve("results")
@@ -1011,7 +1017,7 @@ public class VisionModule {
                         new JsonResultExporter(
                                 outputFile,
                                 visionSource.getSettables().getConfiguration().uniqueName,
-                                info.name,
+                                recordingName,
                                 settings,
                                 snapshot);
             } catch (IOException e) {
