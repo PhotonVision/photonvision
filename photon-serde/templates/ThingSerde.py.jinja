@@ -55,7 +55,11 @@ class {{ name }}Serde:
         ret = Packet()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
+        {%- if field.optional == True %}
+        ret.encodeOptionalShimmed(value.{{ field.name }}, ret.{{ get_message_by_name(field.type).python_encode_shim }})
+        {%- else %}
         ret.{{ get_message_by_name(field.type).python_encode_shim}}(value.{{ field.name }})
+        {%- endif %}
 {%- elif field.optional == True %}
         # {{ field.name }} is optional! it better not be a VLA too
         ret.encodeOptional(value.{{ field.name }}, {{ field.type }}.photonStruct)
@@ -82,7 +86,12 @@ class {{ name }}Serde:
         ret = {{ name }}()
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
+{%- if field.optional == True %}
+        # {{ field.name }} is optional and shimmed!
+        ret.{{ field.name }} = packet.decodeOptionalShimmed(packet.{{ get_message_by_name(field.type).python_decode_shim }})
+{%- else %}
         ret.{{ field.name }} = packet.{{ get_message_by_name(field.type).python_decode_shim }}()
+{%- endif %}
 {%- elif field.optional == True %}
         # {{ field.name }} is optional! it better not be a VLA too
         ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct)

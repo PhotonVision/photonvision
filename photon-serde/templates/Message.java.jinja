@@ -33,6 +33,10 @@ import org.photonvision.utils.PacketUtils;
 // Assume that the base class lives here and we can import it
 import org.photonvision.targeting.*;
 
+// Needed for optional shims
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
 // WPILib imports (if any)
 import org.wpilib.util.struct.Struct;
 {% for type in nested_wpilib_types -%}
@@ -57,12 +61,22 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
-
+{% for field in fields -%}
+{%- if field.type | is_shimmed and field.optional == True %}
+    private static BiConsumer<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALencode_shim_callable = (packet, value) -> {{ get_message_by_name(field.type).java_encode_shim }}(packet, value);
+    private static Function<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALdecode_shim_callable = (packet) -> {{ get_message_by_name(field.type).java_decode_shim }}(packet);
+{% endif -%}
+{% endfor%}
     @Override
     public void pack(Packet packet, {{ name }} value) {
 {%- for field in fields -%}
 {%- if field.type | is_shimmed %}
+        {%- if field.optional == True %}
+        // {{ field.name }} is optional and shimmed!
+        PacketUtils.packOptional(packet, value.{{ field.name }}, {{ field.name }}_PSINTERNALencode_shim_callable);
+        {%- else %}
         {{ get_message_by_name(field.type).java_encode_shim }}(packet, value.{{ field.name }});
+        {%- endif %}
 {%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
         packet.encodeOptional(value.{{ field.name }});
@@ -89,7 +103,12 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
         var ret = new {{ name }}();
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
+        {%- if field.optional == True %}
+        // {{ field.name }} is optional and shimmed!
+        ret.{{ field.name }} = PacketUtils.unpackOptional(packet, {{ field.name }}_PSINTERNALdecode_shim_callable);
+        {%- else %}
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
+        {%- endif %}
 {%- elif field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
         ret.{{ field.name }} = packet.decodeOptional({{ field.type }}.photonStruct);
