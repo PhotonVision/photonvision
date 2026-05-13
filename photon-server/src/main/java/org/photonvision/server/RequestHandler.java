@@ -75,6 +75,14 @@ public class RequestHandler {
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
 
+    /**
+     * Replace characters that browsers / OSes reject in download filenames with underscores so the
+     * Content-Disposition value is portable across Windows, macOS, and Linux.
+     */
+    private static String sanitizeForFilename(String s) {
+        return s.replaceAll("[\\\\/:*?\"<>|\\s]", "_");
+    }
+
     private static boolean testMode = false;
 
     public static void onStatusRequest(Context ctx) {
@@ -1457,19 +1465,33 @@ public class RequestHandler {
             }
 
             File recordingZip = FrameRecorder.export(recordingDir);
-
-            try (FileInputStream stream = new FileInputStream(recordingZip)) {
-                logger.info("Uploading individual recording with size " + stream.available());
+            try {
+                // Read the zip bytes upfront. ctx.result(InputStream) is async — using
+                // try-with-resources on the FileInputStream closes it before Jetty finishes
+                // writing the response body, surfacing as "Stream Closed" client-side.
+                byte[] bytes = java.nio.file.Files.readAllBytes(recordingZip.toPath());
+                logger.info("Uploading individual recording with size " + bytes.length);
 
                 ctx.contentType("application/zip");
-                // Include the recording name so multiple downloads from the same camera don't
-                // collide on (1), (2). Browsers honour Content-Disposition over the client-side
-                // <a download> attribute, so the server filename is the one the user sees.
+                // Browsers honour Content-Disposition over the client-side <a download>
+                // attribute, so the server filename wins. Use the camera's user-set nickname
+                // (falling back to the uniqueName UUID for orphaned recordings whose source
+                // camera has been deleted).
+                String nickname =
+                        java.util.Optional.ofNullable(
+                                        ConfigManager.getInstance()
+                                                .getConfig()
+                                                .getCameraConfigurations()
+                                                .get(cameraUniqueName))
+                                .map(c -> c.nickname)
+                                .filter(s -> s != null && !s.isBlank())
+                                .orElse(cameraUniqueName);
                 ctx.header(
                         "Content-Disposition",
-                        "attachment; filename=\"" + cameraUniqueName + "_" + recordingName + ".zip\"");
+                        "attachment; filename=\"" + sanitizeForFilename(nickname) + "_"
+                                + recordingName + ".zip\"");
 
-                ctx.result(stream);
+                ctx.result(bytes);
                 ctx.status(200);
             } finally {
                 if (recordingZip.exists()) {
