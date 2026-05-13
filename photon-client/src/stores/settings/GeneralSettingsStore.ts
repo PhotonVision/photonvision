@@ -79,8 +79,8 @@ export const useSettingsStore = defineStore("settings", {
       supportedBackends: [],
       conflictingHostname: false,
       conflictingCameras: "",
-      recordingStrategy: "VIDEO",
-      supportedRecordingStrategies: ["VIDEO"]
+      recordingStrategy: "SNAPSHOTS",
+      supportedRecordingStrategies: ["SNAPSHOTS"]
     },
     network: {
       ntServerAddress: "",

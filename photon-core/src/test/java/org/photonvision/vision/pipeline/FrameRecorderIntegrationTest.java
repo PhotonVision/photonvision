@@ -61,7 +61,7 @@ public class FrameRecorderIntegrationTest {
         Files.createDirectories(outDir);
 
         FrameRecorder recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.VIDEO, Long.MAX_VALUE);
+                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE);
         try {
             assertTrue(recorder.startRecording(), "startRecording() should succeed first call");
 

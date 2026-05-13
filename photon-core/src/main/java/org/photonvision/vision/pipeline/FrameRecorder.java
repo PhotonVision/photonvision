@@ -71,7 +71,7 @@ public class FrameRecorder implements Releasable {
     private long sequenceCounter = 0;
 
     public enum RecordingStrategy {
-        VIDEO
+        SNAPSHOTS
     }
 
     public final RecordingStrategy strat;
@@ -187,7 +187,7 @@ public class FrameRecorder implements Releasable {
 
         // Start the writer thread
         switch (strat) {
-            case VIDEO -> this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
+            case SNAPSHOTS -> this.writerThread = new Thread(this::videoLoop, "FrameRecorder-Video");
             default -> throw new IllegalArgumentException("Unsupported Recording Strategy: " + strat);
         }
         this.writerThread.setDaemon(true);
@@ -457,6 +457,6 @@ public class FrameRecorder implements Releasable {
     }
 
     public static List<RecordingStrategy> getSupportedStrategies() {
-        return List.of(RecordingStrategy.VIDEO);
+        return List.of(RecordingStrategy.SNAPSHOTS);
     }
 }

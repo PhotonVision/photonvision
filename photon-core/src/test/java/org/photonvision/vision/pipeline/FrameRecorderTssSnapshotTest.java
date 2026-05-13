@@ -53,7 +53,7 @@ public class FrameRecorderTssSnapshotTest {
         var sample = new TssSample(true, 4_500_000L, 123_456_789_000L);
 
         var recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.VIDEO, Long.MAX_VALUE, sample);
+                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
         try {
             // Snapshot is written in the constructor — no need to startRecording / record frames.
         } finally {
@@ -74,7 +74,7 @@ public class FrameRecorderTssSnapshotTest {
         Files.createDirectories(outDir);
 
         var recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.VIDEO, Long.MAX_VALUE);
+                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE);
         try {
             // 3-arg ctor defaults to INACTIVE (test contract).
         } finally {
@@ -93,7 +93,7 @@ public class FrameRecorderTssSnapshotTest {
         var sample = new TssSample(true, 7_200_000L, 999_999L);
 
         var recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.VIDEO, Long.MAX_VALUE, sample);
+                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
         recorder.release();
 
         var snap = JsonResultExporter.readSnapshot(outDir);

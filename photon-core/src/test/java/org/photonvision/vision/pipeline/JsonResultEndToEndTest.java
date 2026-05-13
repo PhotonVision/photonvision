@@ -90,7 +90,7 @@ public class JsonResultEndToEndTest {
 
         FrameRecorder recorder =
                 new FrameRecorder(
-                        recordingDir, FrameRecorder.RecordingStrategy.VIDEO, Long.MAX_VALUE, tss);
+                        recordingDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, tss);
         try {
             assertTrue(recorder.startRecording());
             for (int i = 0; i < CAPTURE_NS.length; i++) {
