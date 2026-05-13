@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import io.javalin.websocket.WsContext;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -102,7 +103,6 @@ public class VisionModule {
     // Lazy: built on the first pipeline result for File Log Camera sources; null otherwise.
     // Volatile so stop() (caller thread) sees writes made by the vision thread on first frame.
     private volatile JsonResultExporter jsonResultExporter;
-    private boolean tssSnapshotWarned;
     // Latches true on first open failure so we log + skip silently rather than spamming on
     // every subsequent frame.
     private boolean jsonExporterDisabled;
@@ -768,11 +768,11 @@ public class VisionModule {
 
             var snapshot = JsonResultExporter.readSnapshot(recordingDir);
             // Warn once per module whenever the JSON's embedded packet timestamps won't be
-            // TSS-aligned: either because the recording predates tss.json (snapshot == UNKNOWN)
-            // or because TSS was demonstrably down at record time (active flag is false). Both
-            // produce the same operator-visible failure mode on the AKit consumer side.
-            if (!tssSnapshotWarned
-                    && (snapshot.tssActiveAtRecord() == null || !snapshot.tssActiveAtRecord())) {
+            // TSS-aligned: either because the recording predates tss.json (UNKNOWN snapshot) or
+            // because TSS was demonstrably down at record time. Both produce the same downstream
+            // failure on the AKit consumer side. This block only runs once because successful
+            // construction assigns jsonResultExporter and any failure latches jsonExporterDisabled.
+            if (snapshot.tssActiveAtRecord() == null || !snapshot.tssActiveAtRecord()) {
                 String why =
                         snapshot.tssActiveAtRecord() == null
                                 ? "no tss snapshot present"
@@ -783,7 +783,6 @@ public class VisionModule {
                                 + " in "
                                 + recordingDir
                                 + " — embedded packet timestamps will not be TSS-aligned");
-                tssSnapshotWarned = true;
             }
 
             try {
@@ -794,7 +793,7 @@ public class VisionModule {
                                 info.name,
                                 settings,
                                 snapshot);
-            } catch (java.io.IOException e) {
+            } catch (IOException e) {
                 logger.error("Failed to open JsonResultExporter at " + outputFile + ": " + e.getMessage());
                 jsonExporterDisabled = true; // latch: don't spam-retry on every subsequent frame.
                 return;
