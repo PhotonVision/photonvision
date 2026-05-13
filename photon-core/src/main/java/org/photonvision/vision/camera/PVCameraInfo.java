@@ -33,8 +33,7 @@ import org.wpilib.vision.camera.UsbCameraInfo;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = PVCameraInfo.PVUsbCameraInfo.class),
     @JsonSubTypes.Type(value = PVCameraInfo.PVCSICameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class),
-    @JsonSubTypes.Type(value = PVCameraInfo.PVFileLogCameraInfo.class)
+    @JsonSubTypes.Type(value = PVCameraInfo.PVFileCameraInfo.class)
 })
 public sealed interface PVCameraInfo {
     /**
@@ -290,68 +289,6 @@ public sealed interface PVCameraInfo {
         }
     }
 
-    @JsonTypeName("PVFileLogCameraInfo")
-    public static final class PVFileLogCameraInfo implements PVCameraInfo {
-        /**
-         * Filesystem path to the recording directory — the parent that contains {@code frames/} and
-         * {@code metadata.jsonl}, as written by {@code FrameRecorder}.
-         */
-        public final String path;
-
-        public final String name;
-
-        @JsonCreator
-        public PVFileLogCameraInfo(
-                @JsonProperty("path") String path, @JsonProperty("name") String name) {
-            this.path = path;
-            this.name = name;
-        }
-
-        @Override
-        public String path() {
-            return path;
-        }
-
-        @Override
-        public String name() {
-            return name;
-        }
-
-        @Override
-        public String uniquePath() {
-            return path();
-        }
-
-        @Override
-        public String[] otherPaths() {
-            return new String[0];
-        }
-
-        @Override
-        public CameraType type() {
-            return CameraType.FileLogCamera;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (!(obj instanceof PVFileLogCameraInfo info)) return false;
-
-            return name.equals(info.name) && path.equals(info.path);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(name, path);
-        }
-
-        @Override
-        public String toString() {
-            return "PVFileLogCameraInfo[type=" + type() + ", name=" + name + ", path='" + path + "']";
-        }
-    }
-
     public static PVCameraInfo fromUsbCameraInfo(UsbCameraInfo info) {
         return new PVUsbCameraInfo(info);
     }
@@ -362,9 +299,5 @@ public sealed interface PVCameraInfo {
 
     public static PVCameraInfo fromFileInfo(String path, String baseName) {
         return new PVFileCameraInfo(path, baseName);
-    }
-
-    public static PVCameraInfo fromFileLogInfo(String path, String name) {
-        return new PVFileLogCameraInfo(path, name);
     }
 }

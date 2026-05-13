@@ -66,12 +66,10 @@ const { saved, current } = defineProps({
           <td v-if="saved.PVUsbCameraInfo" class="mb-3">USB Camera</td>
           <td v-else-if="saved.PVCSICameraInfo" class="mb-3">CSI Camera</td>
           <td v-else-if="saved.PVFileCameraInfo" class="mb-3">File Camera</td>
-          <td v-else-if="saved.PVFileLogCameraInfo" class="mb-3">File Log Camera</td>
           <td v-else>Unidentified Camera Type</td>
           <td v-if="current.PVUsbCameraInfo" class="mb-3">USB Camera</td>
           <td v-else-if="current.PVCSICameraInfo" class="mb-3">CSI Camera</td>
           <td v-else-if="current.PVFileCameraInfo" class="mb-3">File Camera</td>
-          <td v-else-if="current.PVFileLogCameraInfo" class="mb-3">File Log Camera</td>
           <td v-else>Unidentified Camera Type</td>
         </tr>
         <tr

@@ -223,10 +223,7 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
     const cam = useCameraSettingsStore().cameras[cameraUniqueName];
     return {
       name: cam.nickname,
-      value: cameraUniqueName,
-      ...(cam.matchedCameraInfo?.PVFileLogCameraInfo
-        ? { chip: { text: "Replay", color: "info" } }
-        : {})
+      value: cameraUniqueName
     };
   })
 );

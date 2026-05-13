@@ -17,9 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,12 +42,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.CameraType;
-import org.photonvision.vision.camera.FileLogVisionSource;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.camera.USBCameras.USBCameraSource;
 import org.photonvision.vision.camera.csi.LibcameraGpuSource;
-import org.photonvision.vision.frame.provider.FrameLogFormat;
 import org.wpilib.vision.camera.UsbCamera;
 
 /**
@@ -325,69 +320,9 @@ public class VisionSourceManager {
                 .filter(info -> info instanceof PVCameraInfo.PVFileCameraInfo)
                 .forEach(cameraInfos::add);
 
-        // FileLog replay sources surfaced from the recordings directory tree.
-        cameraInfos.addAll(enumerateRecordedSources());
-
         checkMismatches(cameraInfos);
 
         return cameraInfos;
-    }
-
-    private List<PVCameraInfo> enumerateRecordedSources() {
-        Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
-        return enumerateRecordedSources(recordingsRoot, logger::warn);
-    }
-
-    /**
-     * Walks {@code <recordings>/<camera>/<recording>/} and emits one {@link
-     * PVCameraInfo.PVFileLogCameraInfo} per leaf that {@link #isCompleteRecording} accepts.
-     *
-     * @param warn sink for non-fatal I/O failures (missing root is silent; listing failure on a
-     *     present dir is warned).
-     */
-    static List<PVCameraInfo> enumerateRecordedSources(
-            Path recordingsRoot, java.util.function.Consumer<String> warn) {
-        List<PVCameraInfo> result = new ArrayList<>();
-        if (!Files.isDirectory(recordingsRoot)) {
-            return result;
-        }
-        try (Stream<Path> cameraDirs = Files.list(recordingsRoot)) {
-            cameraDirs
-                    .filter(Files::isDirectory)
-                    .forEach(camDir -> collectRecordingsUnder(camDir, recordingsRoot, result, warn));
-        } catch (IOException e) {
-            warn.accept(
-                    "Failed to enumerate recordings directory " + recordingsRoot + ": " + e.getMessage());
-        }
-        return result;
-    }
-
-    private static void collectRecordingsUnder(
-            Path camDir,
-            Path recordingsRoot,
-            List<PVCameraInfo> out,
-            java.util.function.Consumer<String> warn) {
-        try (Stream<Path> recDirs = Files.list(camDir)) {
-            recDirs
-                    .filter(Files::isDirectory)
-                    .filter(VisionSourceManager::isCompleteRecording)
-                    .forEach(
-                            recDir -> {
-                                // "<camera>/<recording>" for the UI; absolute path doubles as uniquePath.
-                                String relative = recordingsRoot.relativize(recDir).toString().replace('\\', '/');
-                                out.add(PVCameraInfo.fromFileLogInfo(recDir.toString(), relative));
-                            });
-        } catch (IOException e) {
-            warn.accept("Failed to list recordings under " + camDir + ": " + e.getMessage());
-        }
-    }
-
-    /** Mirrors {@code FileLogFrameProvider}'s constructor probes (frames/000000.jpg + sidecar). */
-    private static boolean isCompleteRecording(Path recordingDir) {
-        Path framesDir = recordingDir.resolve("frames");
-        return Files.isDirectory(framesDir)
-                && Files.isRegularFile(recordingDir.resolve("metadata.jsonl"))
-                && Files.isRegularFile(FrameLogFormat.framePath(framesDir, 0));
     }
 
     /**
@@ -569,7 +504,6 @@ public class VisionSourceManager {
                     case UsbCamera -> new USBCameraSource(configuration);
                     case ZeroCopyPicam -> new LibcameraGpuSource(configuration);
                     case FileCamera -> new FileVisionSource(configuration);
-                    case FileLogCamera -> new FileLogVisionSource(configuration);
                 };
 
         if (source.getFrameProvider() == null) {

@@ -6,7 +6,6 @@ export interface SelectItem<TValue extends string | number> {
   name: string | number;
   value: TValue;
   disabled?: boolean;
-  chip?: { text: string; color?: string };
 }
 
 type SelectItems = SelectItem<T>[] | ReadonlyArray<T>;
@@ -41,10 +40,6 @@ const items = computed<SelectItem<T>[]>(() => {
 
   return props.items.map((item) => ({ name: item, value: item }));
 });
-
-// Helper kept in script so the generic `<T>` never appears inside the template — Prettier's
-// HTML parser misreads `<T>` as a tag and refuses to format the file.
-const chipFor = (raw: unknown) => (raw as SelectItem<T>).chip;
 </script>
 
 <template>
@@ -63,19 +58,7 @@ const chipFor = (raw: unknown) => (raw as SelectItem<T>).chip;
         hide-details="auto"
         variant="underlined"
         density="compact"
-      >
-        <template #selection="{ item }">
-          <span>{{ item.raw.name }}</span>
-          <v-chip
-            v-if="chipFor(item.raw)"
-            class="ml-2"
-            size="x-small"
-            :color="chipFor(item.raw)?.color ?? 'info'"
-          >
-            {{ chipFor(item.raw)?.text }}
-          </v-chip>
-        </template>
-      </v-select>
+      />
     </v-col>
   </div>
 </template>
