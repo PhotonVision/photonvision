@@ -135,7 +135,6 @@ const getSelectedComponent = (tabGroupData: ConfigOption[], selectedTabName: num
 
 const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
   tabGroupData.map((tabConfig) => ({ label: tabConfig.tabName, value: tabConfig.tabName }));
-
 </script>
 
 <template>

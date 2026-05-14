@@ -78,7 +78,7 @@ document.addEventListener("keydown", (e) => {
 </script>
 
 <template>
-  <pv-dialog v-model="useStateStore().showLogModal" width="1500">
+  <pv-dialog v-model="useStateStore().showLogModal" :width="1500">
     <pv-card class="dialog-container p-5">
       <!-- Logs header -->
       <div class="flex flex-wrap pb-3">
@@ -107,7 +107,7 @@ document.addEventListener("keydown", (e) => {
         </div>
       </div>
 
-      <v-divider />
+      <hr class="w-full border-t border-white/10" />
 
       <div class="dialog-data">
         <!-- Log view options -->

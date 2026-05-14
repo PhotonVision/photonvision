@@ -109,21 +109,21 @@ onBeforeUnmount(() => {
         color="primary"
         icon-name="mdi-camera-image"
         tooltip="Capture and save a frame of this stream"
-        class="m-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handleCaptureClick"
       />
       <pv-tooltipped-icon
         color="primary"
         icon-name="mdi-fullscreen"
         tooltip="Open this stream in fullscreen"
-        class="m-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handleFullscreenRequest"
       />
       <pv-tooltipped-icon
         color="primary"
         icon-name="mdi-open-in-new"
         tooltip="Open this stream in a new window"
-        class="ma-1 mr-2"
+        class="m-1 mr-2 cursor-pointer"
         @click="handlePopoutClick"
       />
     </div>

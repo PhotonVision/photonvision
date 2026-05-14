@@ -10,6 +10,7 @@ import PvTooltippedIcon from "@/components/common/pv-tooltipped-icon.vue";
 import PvIcon from "@/components/common/pv-icon.vue";
 import PvInput from "@/components/common/pv-input.vue";
 import PvCard from "@/components/common/pv-card.vue";
+import PvDropdownMenu from "@/components/common/pv-dropdown-menu.vue";
 import { PipelineType } from "@/types/PipelineTypes";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
@@ -305,43 +306,37 @@ const wrappedCameras = computed<SelectItem<string>[]>(() =>
           />
           <pv-tooltipped-icon icon-name="mdi-cancel" color="red-darken-2" @click="cancelPipelineNameEdit" />
         </div>
-        <v-menu v-else-if="!useCameraSettingsStore().isDriverMode" offset="7">
-          <template #activator="{ props }">
-            <pv-icon color="#c5c5c5" v-bind="props" @click="cancelPipelineNameEdit"> mdi-menu </pv-icon>
+        <pv-dropdown-menu
+          v-else-if="!useCameraSettingsStore().isDriverMode"
+          :items="[
+            { icon: 'mdi-pencil', label: 'Rename', color: '#c5c5c5' },
+            { icon: 'mdi-content-copy', label: 'Duplicate', color: '#c5c5c5' },
+            { icon: 'mdi-plus', label: 'New Pipeline', color: 'green' },
+            { icon: 'mdi-trash-can-outline', label: 'Delete', color: 'red-darken-2' }
+          ]"
+          @select="
+            (i) => {
+              switch (i) {
+                case 0:
+                  startPipelineNameEdit();
+                  break;
+                case 1:
+                  duplicateCurrentPipeline();
+                  break;
+                case 2:
+                  showCreatePipelineDialog();
+                  break;
+                case 3:
+                  showPipelineDeletionConfirmationDialog = true;
+                  break;
+              }
+            }
+          "
+        >
+          <template #trigger>
+            <pv-icon color="#c5c5c5" @click="cancelPipelineNameEdit"> mdi-menu </pv-icon>
           </template>
-          <v-list density="compact" color="primary">
-            <v-list-item @click="startPipelineNameEdit">
-              <v-list-item-title>
-                <pv-tooltipped-icon color="#c5c5c5" :right="true" icon-name="mdi-pencil" tooltip="Edit pipeline name" />
-              </v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="duplicateCurrentPipeline">
-              <v-list-item-title>
-                <pv-tooltipped-icon
-                  color="#c5c5c5"
-                  :right="true"
-                  icon-name="mdi-content-copy"
-                  tooltip="Duplicate pipeline"
-                />
-              </v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="showCreatePipelineDialog">
-              <v-list-item-title>
-                <pv-tooltipped-icon color="green" :right="true" icon-name="mdi-plus" tooltip="Add new pipeline" />
-              </v-list-item-title>
-            </v-list-item>
-            <v-list-item @click="showPipelineDeletionConfirmationDialog = true">
-              <v-list-item-title>
-                <pv-tooltipped-icon
-                  color="red-darken-2"
-                  :right="true"
-                  icon-name="mdi-trash-can-outline"
-                  tooltip="Delete pipeline"
-                />
-              </v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
+        </pv-dropdown-menu>
         <pv-tooltipped-icon
           v-else-if="useCameraSettingsStore().isDriverMode && useCameraSettingsStore().pipelineNames.length === 0"
           color="#c5c5c5"

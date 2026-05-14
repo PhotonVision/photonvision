@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
-import { computed, ref, watchEffect } from "vue";
+import { computed, reactive, ref, watchEffect } from "vue";
 import PvButton from "@/components/common/pv-button.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvDialog from "@/components/common/pv-dialog.vue";
@@ -14,6 +14,20 @@ import { useStateStore } from "@/stores/StateStore";
 import { useTheme } from "vuetify";
 import { getThemeColor, setThemeColor, resetTheme } from "@/lib/ThemeManager";
 import { statusCheck } from "@/lib/PhotonUtils";
+import type { Color } from "reka-ui";
+import {
+  ColorAreaArea,
+  ColorAreaRoot,
+  ColorAreaThumb,
+  ColorFieldInput,
+  ColorFieldRoot,
+  ColorSliderRoot,
+  ColorSliderThumb,
+  ColorSliderTrack,
+  ColorSwatch,
+  colorToString,
+  normalizeColor
+} from "reka-ui";
 
 const theme = useTheme();
 
@@ -26,17 +40,35 @@ const resetTempSettingsStruct = () => {
 const settingsValid = ref(true);
 
 const showThemeConfig = ref(false);
-const backgroundColor = ref("");
-const primaryColor = ref("");
-const secondaryColor = ref("");
-const surfaceColor = ref("");
+
+const themeColors = [
+  { label: "Background", key: "background" },
+  { label: "Surface", key: "surface" },
+  { label: "Primary", key: "primary" },
+  { label: "Secondary", key: "secondary" }
+] as const;
+
+const colorObjects = reactive<Record<string, Color>>({});
 
 const loadCurrentColors = () => {
-  backgroundColor.value = getThemeColor(theme, "background");
-  primaryColor.value = getThemeColor(theme, "primary");
-  secondaryColor.value = getThemeColor(theme, "secondary");
-  surfaceColor.value = getThemeColor(theme, "surface");
+  for (const { key } of themeColors) {
+    colorObjects[key] = normalizeColor(getThemeColor(theme, key));
+  }
 };
+
+function handleColorUpdate(key: string, newColor: Color) {
+  colorObjects[key] = newColor;
+  setThemeColor(theme, key, colorToString(newColor, "hex"));
+}
+
+function handleHexUpdate(key: string, hex: string) {
+  colorObjects[key] = normalizeColor(hex);
+  setThemeColor(theme, key, hex);
+}
+
+function getHexColor(key: string): string {
+  return colorObjects[key] ? colorToString(colorObjects[key], "hex") : "#000000";
+}
 
 const isValidNetworkTablesIP = (v: string | undefined): boolean => {
   // Check if it is a valid team number between 1-99999 (5 digits)
@@ -324,52 +356,60 @@ watchEffect(() => {
       <pv-card padding="none" class="p-5">
         <div class="text-center text-lg font-semibold pb-3">Theme Configuration</div>
         <div class="pt-0 pb-10px">
-          <div class="flex flex-wrap -mx-3">
-            <div class="flex-1 px-3 text-center">
-              Background
-              <v-color-picker
-                v-model:model-value="backgroundColor"
-                class="m-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'background', hex)"
-              ></v-color-picker>
-            </div>
-            <div class="flex-1 px-3 text-center">
-              Surface
-              <v-color-picker
-                v-model:model-value="surfaceColor"
-                class="m-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'surface', hex)"
-              ></v-color-picker>
-            </div>
-          </div>
-          <div class="flex flex-wrap -mx-3">
-            <div class="flex-1 px-3 text-center">
-              Primary
-              <v-color-picker
-                v-model:model-value="primaryColor"
-                class="m-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'primary', hex)"
-              ></v-color-picker>
-            </div>
-            <div class="flex-1 px-3 text-center">
-              Secondary
-              <v-color-picker
-                v-model:model-value="secondaryColor"
-                class="m-auto pt-3"
-                elevation="0"
-                mode="hex"
-                :modes="['hex']"
-                @update:model-value="(hex) => setThemeColor(theme, 'secondary', hex)"
-              ></v-color-picker>
+          <div class="flex flex-wrap gap-4 justify-center">
+            <div v-for="{ label, key } in themeColors" :key="key" class="flex flex-col items-center gap-2 w-[180px]">
+              <div class="flex items-center gap-2">
+                <ColorSwatch
+                  :color="getHexColor(key)"
+                  class="w-5 h-5 rounded-sm border border-white/10"
+                  :style="{ backgroundColor: 'var(--reka-color-swatch-color)' }"
+                />
+                <span class="text-sm font-medium">{{ label }}</span>
+              </div>
+
+              <!-- 2D Color Area (Saturation/Lightness) -->
+              <ColorAreaRoot
+                v-slot="{ style }"
+                :model-value="colorObjects[key]"
+                color-space="hsl"
+                x-channel="saturation"
+                y-channel="lightness"
+                class="relative w-full"
+                @update:color="(c: Color) => handleColorUpdate(key, c)"
+              >
+                <ColorAreaArea
+                  class="relative w-full h-[120px] rounded-md overflow-hidden"
+                  :style="style"
+                >
+                  <ColorAreaThumb class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer" />
+                </ColorAreaArea>
+              </ColorAreaRoot>
+
+              <!-- Hue Slider -->
+              <ColorSliderRoot
+                :model-value="colorObjects[key]"
+                channel="hue"
+                color-space="hsl"
+                class="relative flex items-center w-full h-4"
+                @update:color="(c: Color) => handleColorUpdate(key, c)"
+              >
+                <ColorSliderTrack class="relative flex-1 rounded-full h-2">
+                  <div class="absolute inset-0 rounded-full hue-gradient" />
+                </ColorSliderTrack>
+                <ColorSliderThumb class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer" />
+              </ColorSliderRoot>
+
+              <!-- Hex Input -->
+              <ColorFieldRoot
+                :model-value="getHexColor(key)"
+                class="w-full"
+                @update:model-value="(hex: string) => handleHexUpdate(key, hex)"
+              >
+                <ColorFieldInput
+                  class="w-full px-2 py-1 text-sm border border-gray-600 bg-transparent rounded-md text-center font-mono"
+                  placeholder="#000000"
+                />
+              </ColorFieldRoot>
             </div>
           </div>
         </div>
@@ -392,8 +432,21 @@ watchEffect(() => {
   </pv-card>
 </template>
 
-<style>
+<style scoped>
 .mt-10px {
   margin-top: 10px !important;
+}
+
+.hue-gradient {
+  background: linear-gradient(
+    to right,
+    #ff0000 0%,
+    #ffff00 17%,
+    #00ff00 33%,
+    #00ffff 50%,
+    #0000ff 67%,
+    #ff00ff 83%,
+    #ff0000 100%
+  );
 }
 </style>

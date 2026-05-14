@@ -64,20 +64,19 @@ const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
 </script>
 
 <template>
-    <ConfigProvider     :scroll-body="false">
-
-  <v-app>
-    <div class="flex h-full w-full bg-background text-white">
-      <photon-sidebar />
-      <main class="flex min-w-0 flex-1 flex-col">
-        <div class="flex-1">
-          <router-view />
-        </div>
-      </main>
-      <photon-log-view />
-      <photon-error-snackbar />
-    </div>
-  </v-app>
+  <ConfigProvider :scroll-body="false">
+    <v-app>
+      <div class="flex h-full w-full bg-background text-white">
+        <photon-sidebar />
+        <main class="flex min-w-0 flex-1 flex-col">
+          <div class="flex-1">
+            <router-view />
+          </div>
+        </main>
+        <photon-log-view />
+        <photon-error-snackbar />
+      </div>
+    </v-app>
   </ConfigProvider>
 </template>
 

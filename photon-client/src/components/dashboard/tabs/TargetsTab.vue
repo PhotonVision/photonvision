@@ -141,7 +141,7 @@ const resetCurrentBuffer = () => {
       class="w-full pl-3 pr-3"
     >
       <div class="flex flex-wrap pb-4 text-white">
-        <div class="ma-0 p-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</div>
+        <div class="m-0 p-0 pb-4" style="font-size: 16px">Multi-tag pose, field-to-camera</div>
         <pv-table density="compact">
           <template #default>
             <thead>
@@ -196,7 +196,7 @@ const resetCurrentBuffer = () => {
         </pv-table>
       </div>
       <div class="flex flex-col pb-4 text-white">
-        <div class="ma-0 p-0 pb-4 pr-4" style="font-size: 16px">
+        <div class="m-0 p-0 pb-4 pr-4 text-sm" >
           Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </div>
