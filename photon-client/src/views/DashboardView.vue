@@ -149,7 +149,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
     <!-- TODO - not sure this belongs here -->
     <!-- Need v-model to allow the dialog to be dismissed and v-if to only display when cameras need configuration -->
-    <pv-dialog v-if="useCameraSettingsStore().needsCameraConfiguration" v-model="showCameraSetupDialog" max-width="800">
+    <pv-dialog v-if="useCameraSettingsStore().needsCameraConfiguration" v-model="showCameraSetupDialog" :max-width="800">
       <pv-card class="flex flex-col gap-2">
         <div class="text-lg font-semibold">Set up some cameras to get started!</div>
         <div class="pt-0">

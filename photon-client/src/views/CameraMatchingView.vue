@@ -394,7 +394,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     </div>
 
     <!-- Camera details modal -->
-    <pv-dialog v-model="viewingDetails" max-width="800">
+    <pv-dialog v-model="viewingDetails" :max-width="800">
       <pv-card v-if="viewingCamera[0] !== null" class="flex flex-col gap-3">
         <div class="flex items-center justify-between text-lg font-semibold">
           <span class="break-words">

@@ -208,14 +208,15 @@ onMounted(async () => {
 
   const canvas = document.getElementById("view");
   if (!canvas) return;
-  renderer = new WebGLRenderer({ canvas: canvas });
+  renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
 
   // Add lights
   const ambientLight = new AmbientLight(0xffffff, 0.6);
   scene.add(ambientLight);
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x000000);
-  else scene.background = new Color(0xa9a9a9);
+  if (theme.global.current.value.dark) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232C37);
 
   // Initialize a stable aspect ratio so subsequent resize events derive
   // height from width, avoiding layout feedback during continuous resizing
@@ -347,21 +348,23 @@ watch(
 
 <template>
   <div style="width: 100%; height: 100%" class="flex flex-col">
-    <div class="flex flex-wrap pt-0 pb-2">
+    <div class="flex flex-wrap pt-0 pb-2 items-center">
       <div class="w-full pl-0 md:w-1/2">
         <div class="p-0 text-base font-semibold">
           {{ props.title }}
         </div>
       </div>
-      <div class="flex w-1/2 items-center pt-0 pl-6 md:w-1/4 md:pt-3 md:pl-3">
+      <div class="flex gap-2">
+      <div class="flex items-center pt-0 pl-6  md:pt-3 md:pl-3">
         <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
       </div>
-      <div class="flex w-1/2 items-center pt-0 pr-0 md:w-1/4 md:pt-3">
+      <div class="flex items-center pt-0 pr-0 md:pt-3">
         <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
+      </div>
       </div>
     </div>
     <div id="container" style="flex: 1 1 auto">
-      <canvas id="view" class="w-100 h-100" />
+      <canvas id="view" class="max-w-full h-auto" />
     </div>
   </div>
 </template>

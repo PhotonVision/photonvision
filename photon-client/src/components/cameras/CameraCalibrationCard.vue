@@ -21,6 +21,10 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
 import PvCard from "@/components/common/pv-card.vue";
+import PvChip from "@/components/common/pv-chip.vue";
+import PvTooltip from "@/components/common/pv-tooltip.vue";
+import PvProgress from "@/components/common/pv-progress.vue";
+
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
@@ -308,28 +312,25 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               </tr>
             </thead>
             <tbody style="cursor: pointer">
-              <v-tooltip
+              <pv-tooltip
                 v-for="(value, index) in getUniqueVideoFormatsByResolution()"
                 :key="index"
-                transition=""
                 location="bottom"
-                :open-delay="100"
+                :delay="100"
+                text="View calibration information"
               >
-                <template #activator="{ props }">
-                  <tr :key="index" v-bind="props" @click="setSelectedVideoFormat(value)">
-                    <td>{{ getResolutionString(value.resolution) }}</td>
-                    <td>
-                      {{
-                        value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-"
-                      }}
-                    </td>
-                    <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
-                    <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
-                    <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
-                  </tr>
-                </template>
-                <span>View calibration information</span>
-              </v-tooltip>
+                <tr @click="setSelectedVideoFormat(value)">
+                  <td>{{ getResolutionString(value.resolution) }}</td>
+                  <td>
+                    {{
+                      value.mean !== undefined ? (isNaN(value.mean) ? "Unknown" : value.mean.toFixed(2) + "px") : "-"
+                    }}
+                  </td>
+                  <td>{{ value.horizontalFOV !== undefined ? value.horizontalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.verticalFOV !== undefined ? value.verticalFOV.toFixed(2) + "°" : "-" }}</td>
+                  <td>{{ value.diagonalFOV !== undefined ? value.diagonalFOV.toFixed(2) + "°" : "-" }}</td>
+                </tr>
+              </pv-tooltip>
             </tbody>
           </pv-table>
         </div>
@@ -542,10 +543,10 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
             "
           />
           <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
-            <v-chip label :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'">
+            <pv-chip label :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'">
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
               {{ useStateStore().calibrationData.minimumImageCount }}
-            </v-chip>
+            </pv-chip>
           </div>
           <div>
             <pv-button
@@ -610,7 +611,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
           </template>
           <!-- No result reported yet -->
           <template v-else-if="calibSuccess === undefined">
-            <v-progress-circular indeterminate :size="70" :width="8" color="primary" />
+            <pv-progress :show-percentage="false" color="primary" />
             <div>Camera is being calibrated. This process may take several minutes...</div>
           </template>
           <!-- Got positive result -->

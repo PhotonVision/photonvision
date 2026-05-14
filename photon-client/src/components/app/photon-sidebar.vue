@@ -54,10 +54,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
           <NavigationMenuLink as-child :active="route.path === item.to">
             <RouterLink
               :to="item.to"
-              :class="[
-                baseItemClass,
-                renderCompact ? 'justify-center px-2' : '',
-              ]"
+              :class="[baseItemClass, renderCompact ? 'justify-center px-2' : '']"
               :active-class="activeItemClass"
             >
               <Icon :icon="item.icon" class="text-lg text-white/80 transition group-hover:text-white size-6" />

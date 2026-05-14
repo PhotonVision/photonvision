@@ -9,6 +9,7 @@ import PvDialog from "@/components/common/pv-dialog.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvTextField from "@/components/common/pv-text-field.vue";
 import PvTable from "@/components/common/pv-table.vue";
+import PvFileInput from "@/components/common/pv-file-input.vue";
 import { axiosPost } from "@/lib/PhotonUtils";
 
 const showImportDialog = ref(false);
@@ -176,7 +177,7 @@ const handleBulkImport = async () => {
           </pv-button>
           <pv-dialog
             v-model="showImportDialog"
-            width="600"
+            :width="600"
             @update:modelValue="
               () => {
                 importModelFile = null;
@@ -205,9 +206,8 @@ const handleBulkImport = async () => {
                   situation.</span
                 >
                 <div class="p-5 pb-0">
-                  <v-file-input
+                  <pv-file-input
                     v-model="importModelFile"
-                    variant="underlined"
                     label="Model File"
                     :accept="
                       useSettingsStore().general.supportedBackends?.includes('RKNN')
@@ -273,7 +273,7 @@ const handleBulkImport = async () => {
                 Upload a zip file containing multiple object detection models to this device. Note this zip file should
                 only come from a previous export of object detection models.
                 <div class="p-5 pb-0">
-                  <v-file-input v-model="importFile" variant="underlined" label="Zip File" accept=".zip" />
+                  <pv-file-input v-model="importFile" label="Zip File" accept=".zip" />
                   <pv-button
                     variant="primary"
                     icon="mdi-import"
@@ -360,7 +360,7 @@ const handleBulkImport = async () => {
             delete-text="Delete model"
           />
 
-          <pv-dialog v-model="showRenameDialog.show" width="600">
+          <pv-dialog v-model="showRenameDialog.show" :width="600">
             <pv-card padding="none" class="p-5">
               <div class="pb-2 text-lg font-semibold">Rename Object Detection Model</div>
               <div class="pt-0">
