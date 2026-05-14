@@ -8,6 +8,7 @@ import PvSelect from "@/components/common/pv-select.vue";
 import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvTable from "@/components/common/pv-table.vue";
+import PvFileInput from "@/components/common/pv-file-input.vue";
 import MetricsChart from "./MetricsChart.vue";
 import { axiosPost, forceReloadPage } from "@/lib/PhotonUtils";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
@@ -460,7 +461,7 @@ watch(metricsHistorySnapshot, () => {
   <!-- Import settings modal -->
   <pv-dialog
     v-model="showImportDialog"
-    width="600"
+    :width="600"
     @update:modelValue="
       () => {
         importType = ImportType.AllSettings;
@@ -487,12 +488,12 @@ watch(metricsHistorySnapshot, () => {
             :select-cols="10"
             style="width: 100%"
           />
-          <v-file-input
+          <pv-file-input
             v-model="importFile"
             class="pb-5"
-            variant="underlined"
+            label="File"
             :disabled="importType === undefined"
-            :error-messages="importType === undefined ? 'Settings type not selected' : ''"
+            :error-message="importType === undefined ? 'Settings type not selected' : ''"
             :accept="importType === ImportType.AllSettings ? '.zip' : '.json'"
           />
           <pv-button

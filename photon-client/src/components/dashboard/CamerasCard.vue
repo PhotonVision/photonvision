@@ -7,6 +7,7 @@ import { PipelineType } from "@/types/PipelineTypes";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 import PvCard from "@/components/common/pv-card.vue";
 import PvSwitch from "@/components/common/pv-switch.vue";
+import PvChip from "@/components/common/pv-chip.vue";
 
 const value = defineModel<number[]>();
 
@@ -44,7 +45,7 @@ const performanceRecommendation = computed<string>(() => {
   <pv-card class="flex h-full flex-col">
     <div class="flex items-center justify-between gap-3  pb-2">
       <span class="text-lg">Cameras</span>
-      <v-chip
+      <pv-chip
         v-if="useCameraSettingsStore().currentCameraSettings.isConnected"
         label
         :color="fpsTooLow ? 'error' : 'primary'"
@@ -53,10 +54,10 @@ const performanceRecommendation = computed<string>(() => {
       >
         <span class="pr-1 tabular-nums">{{ Math.round(useStateStore().currentPipelineResults?.fps || 0) }}&nbsp;FPS &middot;</span
         ><span class="tabular-nums">{{ performanceRecommendation }}</span>
-      </v-chip>
-      <v-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
+      </pv-chip>
+      <pv-chip v-else label variant="text" color="red" style="font-size: 1rem; padding: 0; margin: 0">
         <span class="pr-1"> Camera not connected </span>
-      </v-chip>
+      </pv-chip>
       <pv-switch
         v-model="driverMode"
         :disabled="useCameraSettingsStore().isCalibrationMode || useCameraSettingsStore().pipelineNames.length === 0"
@@ -66,7 +67,7 @@ const performanceRecommendation = computed<string>(() => {
         class="!py-0"
       />
     </div>
-    <v-divider class="ml-3 mr-3" />
+    <hr class="w-full border-t border-white/10" />
     <div class="stream-viewer-container flex flex-wrap items-center p-2 flex-1 justify-between gap-2">
       <div v-if="value?.includes(0)" class="stream-view flex-1">
         <photon-camera-stream

@@ -89,14 +89,14 @@ const sliderModel = computed<number[]>({
         :disabled="disabled"
         :min-steps-between-thumbs="0"
       >
-        <slider-track class="relative h-2 w-full rounded-full" :class="inverted ? 'bg-pv-primary' : 'bg-white/12'">
-          <slider-range class="absolute h-full rounded-full" :class="inverted ? 'bg-white/12' : 'bg-pv-primary'" />
+        <slider-track class="relative h-2 w-full rounded-full pv-slider-track" :class="inverted ? 'bg-pv-primary' : 'bg-white/12'">
+          <slider-range class="absolute h-full rounded-full pv-slider-range" :class="inverted ? 'bg-white/12' : 'bg-pv-primary'" />
         </slider-track>
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50"
+          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50 pv-slider-thumb"
         />
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50"
+          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50 pv-slider-thumb"
         />
       </slider-root>
       <input

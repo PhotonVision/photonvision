@@ -90,11 +90,11 @@ const updateFromInput = (rawValue: string) => {
         :step="step"
         :disabled="disabled"
       >
-        <slider-track class="relative h-2 w-full rounded-full bg-white/12 data-disabled:opacity-50">
-          <slider-range class="absolute h-full rounded-full bg-pv-primary" />
+        <slider-track class="relative h-2 w-full rounded-full bg-white/12 data-disabled:opacity-50 pv-slider-track">
+          <slider-range class="absolute h-full rounded-full bg-pv-primary pv-slider-range" />
         </slider-track>
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none data-disabled:opacity-50"
+          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none data-disabled:opacity-50 pv-slider-thumb"
         />
       </slider-root>
       <pv-button
