@@ -33,38 +33,43 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult  # noqa
-    from ..targeting import PnpResult  # noqa
+    from ..targeting import Float64TestMessage  # noqa
 
 
-class MultiTargetPNPResultSerde:
+class Float64TestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "541096947e9f3ca2d3f425ff7b04aa7b"
-    MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
+    MESSAGE_VERSION = "bc96c1f7d9db9371269d0e4f4d4b4cb2"
+    MESSAGE_FORMAT = "float64 test;float64 vlaTest[?];optional float64 optTest;"
 
     @staticmethod
-    def pack(value: "MultiTargetPNPResult") -> "Packet":
+    def pack(value: "Float64TestMessage") -> "Packet":
         ret = Packet()
 
-        # estimatedPose is of non-intrinsic type PnpResult
-        ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
+        # test is of intrinsic type float64
+        ret.encodeDouble(value.test)
 
-        # fiducialIDsUsed is a custom VLA!
-        ret.encodeListShimmed(value.fiducialIDsUsed, ret.encode16)
+        # vlaTest is a custom VLA!
+        ret.encodeListShimmed(value.vlaTest, ret.encodeDouble)
+
+        # optTest is optional! it better not be a VLA too
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeDouble)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "MultiTargetPNPResult":
-        ret = MultiTargetPNPResult()
+    def unpack(packet: "Packet") -> "Float64TestMessage":
+        ret = Float64TestMessage()
 
-        # estimatedPose is of non-intrinsic type PnpResult
-        ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
+        # test is of intrinsic type float64
+        ret.test = packet.decodeDouble()
 
-        # fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decode16)
+        # vlaTest is a custom VLA!
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeDouble)
+
+        # optTest is optional! it better not be a VLA too
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeDouble)
 
         return ret
 
 
 # Hack ourselves into the base class
-MultiTargetPNPResult.photonStruct = MultiTargetPNPResultSerde()
+Float64TestMessage.photonStruct = Float64TestMessageSerde()

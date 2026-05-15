@@ -33,38 +33,42 @@ from ..packet import Packet
 from ..targeting import *  # noqa
 
 if TYPE_CHECKING:
-    from ..targeting import MultiTargetPNPResult  # noqa
-    from ..targeting import PnpResult  # noqa
+    from ..targeting import Transform3dTestMessage  # noqa
 
 
-class MultiTargetPNPResultSerde:
+class Transform3dTestMessageSerde:
     # Message definition md5sum. See photon_packet.adoc for details
-    MESSAGE_VERSION = "541096947e9f3ca2d3f425ff7b04aa7b"
-    MESSAGE_FORMAT = "PnpResult:ae4d655c0a3104d88df4f5db144c1e86 estimatedPose;int16 fiducialIDsUsed[?];"
+    MESSAGE_VERSION = "37188f532d61c3b549080489012b4d07"
+    MESSAGE_FORMAT = "Transform3d test;Transform3d vlaTest[?];optional Transform3d optTest;"
 
     @staticmethod
-    def pack(value: "MultiTargetPNPResult") -> "Packet":
+    def pack(value: "Transform3dTestMessage") -> "Packet":
         ret = Packet()
 
-        # estimatedPose is of non-intrinsic type PnpResult
-        ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
+        # test is of shimmed type Transform3d
+        ret.encodeTransform(value.test)
 
-        # fiducialIDsUsed is a custom VLA!
-        ret.encodeListShimmed(value.fiducialIDsUsed, ret.encode16)
+        # vlaTest is a custom VLA!
+        ret.encodeListShimmed(value.vlaTest, ret.encodeTransform)
+
+        # optTest is optional! it better not be a VLA too
+        ret.encodeOptionalShimmed(value.optTest, ret.encodeTransform)
         return ret
 
     @staticmethod
-    def unpack(packet: "Packet") -> "MultiTargetPNPResult":
-        ret = MultiTargetPNPResult()
+    def unpack(packet: "Packet") -> "Transform3dTestMessage":
+        ret = Transform3dTestMessage()
 
-        # estimatedPose is of non-intrinsic type PnpResult
-        ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
+        ret.test = packet.decodeTransform()
 
-        # fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decode16)
+        # vlaTest is a custom VLA!
+        ret.vlaTest = packet.decodeListShimmed(packet.decodeTransform)
+
+        # optTest is optional! it better not be a VLA too
+        ret.optTest = packet.decodeOptionalShimmed(packet.decodeTransform)
 
         return ret
 
 
 # Hack ourselves into the base class
-MultiTargetPNPResult.photonStruct = MultiTargetPNPResultSerde()
+Transform3dTestMessage.photonStruct = Transform3dTestMessageSerde()

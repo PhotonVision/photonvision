@@ -84,7 +84,7 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {%- elif field.type | is_intrinsic %}
         {%- if field.optional == True %}
         // {{ field.name }} is optional! it better not be a VLA too
-        packet.{{ type_map[field.type].java_optipnal_encode_method }}(value.{{ field.name }});
+        packet.{{ type_map[field.type].java_optional_encode_method }}(value.{{ field.name }});
         {%- elif field.vla == True %}
         // {{ field.name }} is a custom VLA!
         packet.{{ type_map[field.type].java_list_encode_method }}(value.{{ field.name }});

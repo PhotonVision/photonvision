@@ -424,7 +424,7 @@ public class Packet {
      *
      * @param src The VLA of booleans to encode
      */
-    public void encodeBooleanList(List<Short> src) {
+    public void encodeBooleanList(List<Boolean> src) {
         byte size = (byte) src.size();
         if (src.size() > Byte.MAX_VALUE) {
             throw new RuntimeException("Array too long! Got " + size);
@@ -433,7 +433,7 @@ public class Packet {
         encodeByte(size);
 
         for (var f : src) {
-            encodeShort(f);
+            encodeBoolean(f);
         }
     }
 
@@ -594,14 +594,14 @@ public class Packet {
      *
      * @return A decoded list of ints from the packet
      */
-    public List<Short> decodeIntList() {
+    public List<Integer> decodeIntList() {
         byte length = decodeByte();
 
-        var ret = new ArrayList<Short>();
+        var ret = new ArrayList<Integer>();
         ret.ensureCapacity(length);
 
         for (int i = 0; i < length; i++) {
-            ret.add(decodeShort());
+            ret.add(decodeInt());
         }
 
         return ret;
