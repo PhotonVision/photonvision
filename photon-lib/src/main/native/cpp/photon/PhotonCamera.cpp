@@ -46,51 +46,6 @@
 static constexpr wpi::units::second_t WARN_DEBOUNCE_SEC = 5_s;
 static constexpr wpi::units::second_t HEARTBEAT_DEBOUNCE_SEC = 500_ms;
 
-inline void verifyDependencies() {
-  if (!(std::string_view{cv::getVersionString()} ==
-        std::string_view{photon::PhotonVersion::opencvTargetVersion})) {
-    std::string bfw =
-        "\n\n\n\n\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>                                          \n"
-        ">>> You are running an incompatible version  \n"
-        ">>> of PhotonVision !                        \n"
-        ">>>                                          \n"
-        ">>> PhotonLib ";
-    bfw += photon::PhotonVersion::versionString;
-    bfw += " is built for OpenCV ";
-    bfw += photon::PhotonVersion::opencvTargetVersion;
-    bfw +=
-        "\n"
-        ">>> but you are using OpenCV ";
-    bfw += cv::getVersionString();
-    bfw +=
-        "\n>>>                                          \n"
-        ">>> This is neither tested nor supported.    \n"
-        ">>> You MUST update WPILib, PhotonLib, or both.\n"
-        ">>> Check `./gradlew dependencies` and ensure\n"
-        ">>> all mentions of OpenCV match the version \n"
-        ">>> that PhotonLib was built for. If you find a"
-        ">>> a mismatched version in a dependency, you\n"
-        ">>> must take steps to update the version of \n"
-        ">>> OpenCV used in that dependency. If you do\n"
-        ">>> not control that dependency and an updated\n"
-        ">>> version is not available, contact the    \n"
-        ">>> developers of that dependency.           \n"
-        ">>>                                          \n"
-        ">>> Your code will now crash.                \n"
-        ">>> We hope your day gets better.            \n"
-        ">>>                                          \n"
-        ">>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n"
-        ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n";
-
-    WPILIB_ReportWarning(bfw);
-    WPILIB_ReportError(wpi::err::Error, bfw);
-    throw new std::runtime_error(std::string{bfw});
-  }
-}
-
 // bit of a hack -- start a TimeSync server on port 5810 (hard-coded). We want
 // to avoid calling this from static initialization
 static void InitTspServer() {
@@ -169,7 +124,6 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
                           "' is disconnected.",
                       wpi::Alert::Level::MEDIUM),
       timesyncAlert(PHOTON_ALERT_GROUP, "", wpi::Alert::Level::MEDIUM) {
-  verifyDependencies();
   InstanceCount++;
   HAL_ReportUsage("PhotonVision/PhotonCamera", InstanceCount, "");
 

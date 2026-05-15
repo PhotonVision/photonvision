@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import org.opencv.core.Core;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.common.networktables.PacketSubscriber;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -184,58 +183,6 @@ public class PhotonCamera implements AutoCloseable {
 
         // HACK - start a TimeSyncServer, if we haven't yet.
         TimeSyncSingleton.load();
-
-        // HACK - check if things are compatible
-        verifyDependencies();
-    }
-
-    static void verifyDependencies() {
-        // spotless:off
-        if (!Core.VERSION.equals(PhotonVersion.opencvTargetVersion)) {
-            String bfw = """
-
-
-
-
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>                                          \s
-                    >>> You are running an incompatible version  \s
-                    >>> of PhotonVision !                        \s
-                    >>>                                          \s
-                    >>> PhotonLib """
-                    + PhotonVersion.versionString
-                    + " is built for OpenCV "
-                    + PhotonVersion.opencvTargetVersion
-                    + "\n"
-                    + ">>> but you are using OpenCV "
-                    + Core.VERSION
-                    + """
-                    \n>>>                                          \s
-                    >>> This is neither tested nor supported.    \s
-                    >>> You MUST update WPILib, PhotonLib, or both.
-                    >>> Check `./gradlew dependencies` and ensure\s
-                    >>> all mentions of OpenCV match the version \s
-                    >>> that PhotonLib was built for. If you find a
-                    >>> a mismatched version in a dependency, you\s
-                    >>> must take steps to update the version of \s
-                    >>> OpenCV used in that dependency. If you do\s
-                    >>> not control that dependency and an updated\s
-                    >>> version is not available, contact the    \s
-                    >>> developers of that dependency.           \s
-                    >>>                                          \s
-                    >>> Your code will now crash.                \s
-                    >>> We hope your day gets better.            \s
-                    >>>                                          \s
-                    >>> !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\s
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\s
-                    """;
-            // spotless:on
-
-            DriverStationErrors.reportWarning(bfw, false);
-            DriverStationErrors.reportError(bfw, false);
-            throw new UnsupportedOperationException(bfw);
-        }
     }
 
     /**
