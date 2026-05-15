@@ -62,16 +62,16 @@ public class PhotonPipelineMetadataSerde implements PacketSerde<PhotonPipelineMe
     @Override
     public void pack(Packet packet, PhotonPipelineMetadata value) {
         // field sequenceID is of intrinsic type int64
-        packet.encode((long) value.sequenceID);
+        packet.encodeLong(value.sequenceID);
 
         // field captureTimestampMicros is of intrinsic type int64
-        packet.encode((long) value.captureTimestampMicros);
+        packet.encodeLong(value.captureTimestampMicros);
 
         // field publishTimestampMicros is of intrinsic type int64
-        packet.encode((long) value.publishTimestampMicros);
+        packet.encodeLong(value.publishTimestampMicros);
 
         // field timeSinceLastPong is of intrinsic type int64
-        packet.encode((long) value.timeSinceLastPong);
+        packet.encodeLong(value.timeSinceLastPong);
     }
 
     @Override

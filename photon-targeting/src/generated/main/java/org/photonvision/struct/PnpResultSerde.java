@@ -59,28 +59,38 @@ public class PnpResultSerde implements PacketSerde<PnpResult> {
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
 
+    private static BiConsumer<Packet, Transform3d> best_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
+    private static Function<Packet, Transform3d> best_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
+
+    private static BiConsumer<Packet, Transform3d> alt_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
+    private static Function<Packet, Transform3d> alt_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
+
     @Override
     public void pack(Packet packet, PnpResult value) {
+        // best is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.best);
 
+        // alt is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.alt);
 
         // field bestReprojErr is of intrinsic type float64
-        packet.encode((double) value.bestReprojErr);
+        packet.encodeDouble(value.bestReprojErr);
 
         // field altReprojErr is of intrinsic type float64
-        packet.encode((double) value.altReprojErr);
+        packet.encodeDouble(value.altReprojErr);
 
         // field ambiguity is of intrinsic type float64
-        packet.encode((double) value.ambiguity);
+        packet.encodeDouble(value.ambiguity);
     }
 
     @Override
     public PnpResult unpack(Packet packet) {
         var ret = new PnpResult();
 
+        // best is of shimmed type Transform3d
         ret.best = PacketUtils.unpackTransform3d(packet);
 
+        // alt is of shimmed type Transform3d
         ret.alt = PacketUtils.unpackTransform3d(packet);
 
         // bestReprojErr is of intrinsic type float64

@@ -59,35 +59,43 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
 
+    private static BiConsumer<Packet, Transform3d> bestCameraToTarget_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
+    private static Function<Packet, Transform3d> bestCameraToTarget_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
+
+    private static BiConsumer<Packet, Transform3d> altCameraToTarget_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
+    private static Function<Packet, Transform3d> altCameraToTarget_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
+
     @Override
     public void pack(Packet packet, PhotonTrackedTarget value) {
         // field yaw is of intrinsic type float64
-        packet.encode((double) value.yaw);
+        packet.encodeDouble(value.yaw);
 
         // field pitch is of intrinsic type float64
-        packet.encode((double) value.pitch);
+        packet.encodeDouble(value.pitch);
 
         // field area is of intrinsic type float64
-        packet.encode((double) value.area);
+        packet.encodeDouble(value.area);
 
         // field skew is of intrinsic type float64
-        packet.encode((double) value.skew);
+        packet.encodeDouble(value.skew);
 
         // field fiducialId is of intrinsic type int32
-        packet.encode((int) value.fiducialId);
+        packet.encodeInt(value.fiducialId);
 
         // field objDetectId is of intrinsic type int32
-        packet.encode((int) value.objDetectId);
+        packet.encodeInt(value.objDetectId);
 
         // field objDetectConf is of intrinsic type float32
-        packet.encode((float) value.objDetectConf);
+        packet.encodeFloat(value.objDetectConf);
 
+        // bestCameraToTarget is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.bestCameraToTarget);
 
+        // altCameraToTarget is of shimmed type Transform3d
         PacketUtils.packTransform3d(packet, value.altCameraToTarget);
 
         // field poseAmbiguity is of intrinsic type float64
-        packet.encode((double) value.poseAmbiguity);
+        packet.encodeDouble(value.poseAmbiguity);
 
         // minAreaRectCorners is a custom VLA!
         packet.encodeList(value.minAreaRectCorners);
@@ -121,8 +129,10 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         // objDetectConf is of intrinsic type float32
         ret.objDetectConf = packet.decodeFloat();
 
+        // bestCameraToTarget is of shimmed type Transform3d
         ret.bestCameraToTarget = PacketUtils.unpackTransform3d(packet);
 
+        // altCameraToTarget is of shimmed type Transform3d
         ret.altCameraToTarget = PacketUtils.unpackTransform3d(packet);
 
         // poseAmbiguity is of intrinsic type float64

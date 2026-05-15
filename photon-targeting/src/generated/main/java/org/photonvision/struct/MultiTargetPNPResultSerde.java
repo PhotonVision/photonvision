@@ -64,8 +64,8 @@ public class MultiTargetPNPResultSerde implements PacketSerde<MultiTargetPNPResu
         // field estimatedPose is of non-intrinsic type PnpResult
         PnpResult.photonStruct.pack(packet, value.estimatedPose);
 
-        // fiducialIDsUsed is a intrinsic VLA!
-        packet.encode(value.fiducialIDsUsed);
+        // fiducialIDsUsed is a custom VLA!
+        packet.encodeShortList(value.fiducialIDsUsed);
     }
 
     @Override

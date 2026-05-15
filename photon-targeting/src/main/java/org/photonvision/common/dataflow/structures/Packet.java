@@ -21,8 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import org.photonvision.targeting.serde.PhotonStructSerializable;
 
 /** A packet that holds byte-packed data to be sent over NetworkTables. */
@@ -160,7 +158,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of bytes into the packet
-     * 
+     *
      * @param src The VLA of bytes to encode
      */
     public void encodeByteList(List<Byte> src) {
@@ -178,7 +176,7 @@ public class Packet {
 
     /**
      * Encodes an optional byte into the packet
-     * 
+     *
      * @param src the optional byte to encode
      */
     public void encodeByteOptional(Optional<Byte> src) {
@@ -201,7 +199,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of shorts into the packet
-     * 
+     *
      * @param src The VLA of shorts to encode
      */
     public void encodeShortList(List<Short> src) {
@@ -219,7 +217,7 @@ public class Packet {
 
     /**
      * Encodes an optional short into the packet
-     * 
+     *
      * @param src the optional short to encode
      */
     public void encodeShortOptional(Optional<Short> src) {
@@ -244,7 +242,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of ints into the packet
-     * 
+     *
      * @param src The VLA of intsto encode
      */
     public void encodeIntList(List<Integer> src) {
@@ -262,7 +260,7 @@ public class Packet {
 
     /**
      * Encodes an optional int into the packet
-     * 
+     *
      * @param src the optional int to encode
      */
     public void encodeIntOptional(Optional<Integer> src) {
@@ -291,7 +289,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of longs into the packet
-     * 
+     *
      * @param src The VLA of longs to encode
      */
     public void encodeLongList(List<Long> src) {
@@ -309,7 +307,7 @@ public class Packet {
 
     /**
      * Encodes an optional long into the packet
-     * 
+     *
      * @param src the optional long to encode
      */
     public void encodeLongOptional(Optional<Long> src) {
@@ -335,7 +333,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of floats into the packet
-     * 
+     *
      * @param src The VLA of floats to encode
      */
     public void encodeFloatList(List<Float> src) {
@@ -353,7 +351,7 @@ public class Packet {
 
     /**
      * Encodes an optional float into the packet
-     * 
+     *
      * @param src the optional float to encode
      */
     public void encodeFloatOptional(Optional<Float> src) {
@@ -383,7 +381,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of doubles into the packet
-     * 
+     *
      * @param src The VLA of doubles to encode
      */
     public void encodeDoubleList(List<Double> src) {
@@ -401,7 +399,7 @@ public class Packet {
 
     /**
      * Encodes an optional double into the packet
-     * 
+     *
      * @param src the optional double to encode
      */
     public void encodeDoubleOptional(Optional<Double> src) {
@@ -423,7 +421,7 @@ public class Packet {
 
     /**
      * Encodes a VLA of booleans into the packet
-     * 
+     *
      * @param src The VLA of booleans to encode
      */
     public void encodeBooleanList(List<Short> src) {
@@ -441,7 +439,7 @@ public class Packet {
 
     /**
      * Encodes an optional boolean into the packet
-     * 
+     *
      * @param src the optional boolean to encode
      */
     public void encodeBooleanOptional(Optional<Boolean> src) {
@@ -504,7 +502,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded byte from the packet
-     * 
+     *
      * @return A decoded list of byte from the packet
      */
     public List<Byte> decodeByteList() {
@@ -522,7 +520,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded byte from the packet
-     * 
+     *
      * @return A decoded optional byte from the packet
      */
     public Optional<Byte> decodeByteOptional() {
@@ -530,12 +528,12 @@ public class Packet {
         if (present) {
             return Optional.of(decodeByte());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     /**
      * Returns a decoded short from the packet
-     * 
+     *
      * @return A decoded short from the packet
      */
     public short decodeShort() {
@@ -547,7 +545,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded shorts from the packet
-     * 
+     *
      * @return A decoded list of shorts from the packet
      */
     public List<Short> decodeShortList() {
@@ -565,7 +563,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded short from the packet
-     * 
+     *
      * @return A decoded optional short from the packet
      */
     public Optional<Short> decodeShortOptional() {
@@ -573,7 +571,7 @@ public class Packet {
         if (present) {
             return Optional.of(decodeShort());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     /**
@@ -593,7 +591,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded ints from the packet
-     * 
+     *
      * @return A decoded list of ints from the packet
      */
     public List<Short> decodeIntList() {
@@ -611,7 +609,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded int from the packet
-     * 
+     *
      * @return A decoded optional int from the packet
      */
     public Optional<Integer> decodeIntOptional() {
@@ -619,7 +617,7 @@ public class Packet {
         if (present) {
             return Optional.of(decodeInt());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     public long decodeLong() {
@@ -641,7 +639,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded longs from the packet
-     * 
+     *
      * @return A decoded list of longs from the packet
      */
     public List<Long> decodeLongList() {
@@ -659,7 +657,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded long from the packet
-     * 
+     *
      * @return A decoded optional long from the packet
      */
     public Optional<Long> decodeLongOptional() {
@@ -667,7 +665,7 @@ public class Packet {
         if (present) {
             return Optional.of(decodeLong());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     /**
@@ -690,7 +688,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded floats from the packet
-     * 
+     *
      * @return A decoded list of floats from the packet
      */
     public List<Float> decodeFloatList() {
@@ -708,7 +706,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded float from the packet
-     * 
+     *
      * @return A decoded optional float from the packet
      */
     public Optional<Float> decodeFloatOptional() {
@@ -716,7 +714,7 @@ public class Packet {
         if (present) {
             return Optional.of(decodeFloat());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     /**
@@ -743,7 +741,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded doubles from the packet
-     * 
+     *
      * @return A decoded list of doubles from the packet
      */
     public List<Double> decodeDoubleList() {
@@ -761,7 +759,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded double from the packet
-     * 
+     *
      * @return A decoded optional double from the packet
      */
     public Optional<Double> decodeDoubleOptional() {
@@ -769,7 +767,7 @@ public class Packet {
         if (present) {
             return Optional.of(decodeDouble());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     /**
@@ -786,7 +784,7 @@ public class Packet {
 
     /**
      * Returns a list of decoded booleans from the packet
-     * 
+     *
      * @return A decoded list of booleans from the packet
      */
     public List<Boolean> decodeBooleanList() {
@@ -804,7 +802,7 @@ public class Packet {
 
     /**
      * Returns an optional decoded boolean from the packet
-     * 
+     *
      * @return A decoded optional boolean from the packet
      */
     public Optional<Boolean> decodeBooleanOptional() {
@@ -812,7 +810,7 @@ public class Packet {
         if (present) {
             return Optional.of(decodeBoolean());
         }
-        return Optional.empty(); 
+        return Optional.empty();
     }
 
     public <T extends PhotonStructSerializable<T>> T decode(PhotonStructSerializable<T> t) {
