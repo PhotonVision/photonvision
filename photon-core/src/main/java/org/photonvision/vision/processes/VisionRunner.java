@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -43,7 +44,9 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class VisionRunner {
     private final Logger logger;
     private final Thread visionProcessThread;
-    private final FrameProvider frameSupplier;
+    // Re-read every loop iteration so an in-place provider swap on VisionSource (live → file-log
+    // replay and back) takes effect on the next frame grab without restarting the runner.
+    private final Supplier<FrameProvider> frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
     private final VisionModuleChangeSubscriber changeSubscriber;
@@ -57,12 +60,13 @@ public class VisionRunner {
      * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
      * the consumer.
      *
-     * @param frameSupplier The supplier of the latest frame.
+     * @param frameSupplier Supplier of the active frame provider; called every loop tick so the
+     *     runner picks up provider swaps (e.g. for replay) atomically.
      * @param pipelineSupplier The supplier of the current pipeline.
      * @param pipelineResultConsumer The consumer of the latest result.
      */
     public VisionRunner(
-            FrameProvider frameSupplier,
+            Supplier<FrameProvider> frameSupplier,
             Supplier<CVPipeline> pipelineSupplier,
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
@@ -75,9 +79,13 @@ public class VisionRunner {
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
 
+        var initialProvider =
+                Objects.requireNonNull(
+                        frameSupplier.get(),
+                        "frame provider must be registered on the VisionSource before VisionRunner construction");
         visionProcessThread = new Thread(this::update);
-        visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
-        logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionModule);
+        visionProcessThread.setName("VisionRunner - " + initialProvider.getName());
+        logger = new Logger(VisionRunner.class, initialProvider.getName(), LogGroup.VisionModule);
         changeSubscriber.processSettingChanges();
     }
 
@@ -132,7 +140,7 @@ public class VisionRunner {
 
     private void update() {
         // wait for the camera to connect
-        while (!frameSupplier.isConnected() && !Thread.interrupted()) {
+        while (!frameSupplier.get().isConnected() && !Thread.interrupted()) {
             // yield
             pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             try {
@@ -170,21 +178,25 @@ public class VisionRunner {
             // TODO would a callback object be a better fit?
             var wantedProcessType = pipeline.getThresholdType();
 
-            frameSupplier.requestFrameThresholdType(wantedProcessType);
+            // Snapshot the active provider once per tick so all per-tick requests and the frame grab
+            // target the same provider — protects against a mid-tick swap splitting setup calls
+            // across two providers.
+            var provider = frameSupplier.get();
+            provider.requestFrameThresholdType(wantedProcessType);
             var settings = pipeline.getSettings();
             if (settings instanceof AdvancedPipelineSettings advanced) {
                 var hsvParams =
                         new HSVPipe.HSVParams(
                                 advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
                 // TODO who should deal with preventing this from happening _every single loop_?
-                frameSupplier.requestHsvSettings(hsvParams);
+                provider.requestHsvSettings(hsvParams);
             }
-            frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
-            frameSupplier.requestBlockForFrames(settings.blockForFrames);
+            provider.requestFrameRotation(settings.inputImageRotationMode);
+            provider.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
+            provider.requestBlockForFrames(settings.blockForFrames);
 
             // Grab the new camera frame
-            var frame = frameSupplier.get();
+            var frame = provider.get();
 
             // Frame empty -- no point in trying to do anything more?
             if (frame.processedImage.getMat().empty() && frame.colorImage.getMat().empty()) {

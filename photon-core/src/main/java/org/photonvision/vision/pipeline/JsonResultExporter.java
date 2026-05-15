@@ -1,0 +1,278 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.photonvision.vision.pipeline;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Base64;
+import java.util.Optional;
+import java.util.function.LongSupplier;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.vision.frame.provider.MetadataSidecarReader;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
+import org.wpilib.networktables.NetworkTablesJNI;
+
+/**
+ * Streams pipeline results to an ND-JSON file for offline consumption (e.g. AdvantageKit replay).
+ *
+ * <p>File shape: one header line, then one line per pipeline result. Each result line carries the
+ * raw recorded capture_ns (verbatim from {@code metadata.jsonl}) plus a base64-encoded PhotonLib
+ * {@link Packet} for lossless round-trip via {@code PhotonPipelineResult.photonStruct.unpack()}.
+ *
+ * <p>Timestamps inside the embedded packet are shifted by {@code tssOffsetAtRecordNs} so the
+ * deserialized result matches what {@code NTDataPublisher} would have published live during the
+ * original recording. The header records the same offset so consumers that prefer the raw {@code
+ * capture_ns} field can apply it themselves.
+ *
+ * <p>Not thread-safe. Exactly one VisionRunner thread should call {@link
+ * #accept(CVPipelineResult)}.
+ */
+public class JsonResultExporter implements CVPipelineResultConsumer, AutoCloseable {
+    private static final int SCHEMA_VERSION = 1;
+    private static final int INITIAL_PACKET_BYTES = 1024;
+    private static final Logger logger = new Logger(JsonResultExporter.class, LogGroup.VisionModule);
+
+    /**
+     * TSS state sampled at recording-start. Absent ({@code Optional.empty()}) when no snapshot was
+     * written — the exporter then writes nulls in the header and skips the offset shift on the
+     * embedded packet.
+     */
+    public record OffsetSnapshot(boolean tssActiveAtRecord, long tssOffsetAtRecordNs) {}
+
+    /**
+     * Inclusive capture-timestamp bounds of the recording being replayed, taken from {@code
+     * metadata.jsonl}. Used to drop result entries whose {@code capture_ns} falls outside the
+     * recording window — namely the NT4 last-published-value snapshot delivered to the subscriber at
+     * replay start, and any swap-back frame the live source emits after the replay provider EOFs.
+     */
+    public record FrameWindow(long firstCaptureNs, long lastCaptureNs) {}
+
+    /**
+     * Scan the recording's {@code metadata.jsonl} for the first and last {@code capture_ns} values.
+     * {@code FrameRecorder} writes the sidecar in capture order, so the first line is the min and the
+     * last line is the max — but we walk the whole file rather than seeking because the sidecar is
+     * small (tens of KB for hundreds of frames) and walking is robust to a hypothetical reordering.
+     *
+     * @return the bounds, or {@link Optional#empty()} when the sidecar is missing, empty, or
+     *     unreadable. A missing window degrades the exporter to its pre-fix behavior (writes every
+     *     result, including boundary noise).
+     */
+    public static Optional<FrameWindow> readFrameWindow(Path recordingDir) {
+        Path metadataPath = recordingDir.resolve("metadata.jsonl");
+        if (!Files.isRegularFile(metadataPath)) return Optional.empty();
+        try (var reader = new MetadataSidecarReader(metadataPath)) {
+            var firstOpt = reader.readNext();
+            if (firstOpt.isEmpty()) return Optional.empty();
+            long firstNs = firstOpt.get().captureNs();
+            long lastNs = firstNs;
+            Optional<MetadataSidecarReader.Entry> next;
+            while ((next = reader.readNext()).isPresent()) {
+                lastNs = next.get().captureNs();
+            }
+            return Optional.of(new FrameWindow(firstNs, lastNs));
+        } catch (IOException e) {
+            logger.error("readFrameWindow: failed to read " + metadataPath + ": " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Read the {@code tss.json} snapshot written by {@code FrameRecorder} from a recording dir.
+     * Returns {@link Optional#empty()} if the file is missing or malformed — the latter is logged but
+     * never thrown so a corrupt snapshot doesn't block replay.
+     */
+    public static Optional<OffsetSnapshot> readSnapshot(Path recordingDir) {
+        Path tssPath = recordingDir.resolve("tss.json");
+        if (!Files.isRegularFile(tssPath)) return Optional.empty();
+        try {
+            JsonNode node = new ObjectMapper().readTree(tssPath.toFile());
+            JsonNode active = node.get("tss_active_at_record");
+            JsonNode offset = node.get("tss_offset_at_record_ns");
+            if (active == null || offset == null) return Optional.empty();
+            return Optional.of(new OffsetSnapshot(active.asBoolean(), offset.asLong()));
+        } catch (IOException e) {
+            logger.error("readSnapshot: failed to parse " + tssPath + ": " + e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final Optional<OffsetSnapshot> offsetSnapshot;
+    private final Optional<FrameWindow> frameWindow;
+    private final long offsetUs;
+    private final LongSupplier nowMicrosSupplier;
+    private BufferedWriter writer;
+    private volatile boolean closed;
+    private long droppedOutOfWindow;
+
+    public JsonResultExporter(
+            Path outputFile,
+            String cameraUniqueName,
+            String recordingName,
+            CVPipelineSettings settings,
+            Optional<OffsetSnapshot> offsetSnapshot,
+            Optional<FrameWindow> frameWindow)
+            throws IOException {
+        this(
+                outputFile,
+                cameraUniqueName,
+                recordingName,
+                settings,
+                offsetSnapshot,
+                frameWindow,
+                NetworkTablesJNI::now);
+    }
+
+    JsonResultExporter(
+            Path outputFile,
+            String cameraUniqueName,
+            String recordingName,
+            CVPipelineSettings settings,
+            Optional<OffsetSnapshot> offsetSnapshot,
+            Optional<FrameWindow> frameWindow,
+            LongSupplier nowMicrosSupplier)
+            throws IOException {
+        this.offsetSnapshot = offsetSnapshot;
+        this.frameWindow = frameWindow;
+        this.nowMicrosSupplier = nowMicrosSupplier;
+        this.offsetUs = offsetSnapshot.map(s -> s.tssOffsetAtRecordNs() / 1000L).orElse(0L);
+
+        Files.createDirectories(outputFile.getParent());
+        // TRUNCATE_EXISTING + flush-per-line mirrors FrameRecorder's metadata.jsonl: each replay
+        // session overwrites a stale file rather than appending malformed multi-header content.
+        this.writer =
+                Files.newBufferedWriter(
+                        outputFile,
+                        StandardCharsets.UTF_8,
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING);
+
+        // Close the writer on header failure so a partial-construction error doesn't leak the FD.
+        try {
+            writeHeader(cameraUniqueName, recordingName, settings);
+        } catch (IOException e) {
+            try {
+                writer.close();
+            } catch (IOException suppressed) {
+                e.addSuppressed(suppressed);
+            }
+            throw e;
+        }
+    }
+
+    private void writeHeader(
+            String cameraUniqueName, String recordingName, CVPipelineSettings settings)
+            throws IOException {
+        ObjectNode header = mapper.createObjectNode();
+        header.put("schema_version", SCHEMA_VERSION);
+        header.put("camera_unique_name", cameraUniqueName);
+        header.put("recording_name", recordingName);
+        header.put("pipeline_type", settings.pipelineType.name());
+        header.put("pipeline_hash", Integer.toHexString(settings.hashCode()));
+        if (offsetSnapshot.isPresent()) {
+            var snap = offsetSnapshot.get();
+            header.put("tss_active_at_record", snap.tssActiveAtRecord());
+            header.put("tss_offset_at_record_ns", snap.tssOffsetAtRecordNs());
+        } else {
+            header.putNull("tss_active_at_record");
+            header.putNull("tss_offset_at_record_ns");
+        }
+        writer.write(mapper.writeValueAsString(header));
+        writer.newLine();
+        writer.flush();
+    }
+
+    @Override
+    public void accept(CVPipelineResult result) {
+        if (closed) return;
+        long captureNs = result.getImageCaptureTimestampNanos();
+        // Drop results whose capture timestamp falls outside the recording's frame window —
+        // those are the NT4 last-published snapshot the subscriber receives on first attach
+        // and any post-EOF swap-back frame from the live source, neither of which belong in
+        // a replay-of-this-recording artifact.
+        if (frameWindow.isPresent()) {
+            var window = frameWindow.get();
+            if (captureNs < window.firstCaptureNs() || captureNs > window.lastCaptureNs()) {
+                droppedOutOfWindow++;
+                return;
+            }
+        }
+        try {
+            // Mirror NTDataPublisher.accept (NTDataPublisher.java:200-215): build a wire-format
+            // PhotonPipelineResult by adding the TSS offset to the local capture / publish
+            // timestamps. We use the *record-time* offset so the deserialized result matches what
+            // AKit captured live during the original match. timeSinceLastPong is not preserved
+            // per-frame; emit 0.
+            long captureMicros = MathUtils.nanosToMicros(captureNs);
+            long nowMicros = nowMicrosSupplier.getAsLong();
+
+            var photonResult =
+                    new PhotonPipelineResult(
+                            result.sequenceID,
+                            captureMicros + offsetUs,
+                            nowMicros + offsetUs,
+                            0L,
+                            TrackedTarget.simpleFromTrackedTargets(result.targets),
+                            result.multiTagResult);
+
+            Packet packet = new Packet(INITIAL_PACKET_BYTES);
+            PhotonPipelineResult.photonStruct.pack(packet, photonResult);
+            String b64 = Base64.getEncoder().encodeToString(packet.getWrittenDataCopy());
+
+            ObjectNode line = mapper.createObjectNode();
+            line.put("capture_ns", result.getImageCaptureTimestampNanos());
+            line.put("seq", result.sequenceID);
+            line.put("packet_b64", b64);
+            writer.write(mapper.writeValueAsString(line));
+            writer.newLine();
+            writer.flush();
+        } catch (IOException e) {
+            logger.error("Failed to write json result line: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void close() {
+        if (closed) return;
+        closed = true;
+        if (droppedOutOfWindow > 0) {
+            logger.debug("Dropped " + droppedOutOfWindow + " out-of-window result(s) from json export");
+        }
+        try {
+            if (writer != null) {
+                writer.flush();
+                writer.close();
+            }
+        } catch (IOException e) {
+            logger.error("Failed to close JsonResultExporter: " + e.getMessage());
+        }
+    }
+}

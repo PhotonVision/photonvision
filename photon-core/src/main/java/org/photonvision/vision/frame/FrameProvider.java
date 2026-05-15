@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.photonvision.vision.pipeline.FrameRecorder;
 
 public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     protected int sequenceID = 0;
@@ -30,6 +31,10 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
     // setup/callbacks once cscore connects to our underlying device for the first
     // time
     public boolean cameraPropertiesCached = false;
+
+    // volatile so the vision thread's unsynchronised read in USBFrameProvider.getInputMat sees
+    // writes from the NT-listener-thread-driven setRecording / release without tearing.
+    public volatile FrameRecorder frameRecorder = null;
 
     protected void onCameraConnected() {
         cameraPropertiesCached = true;
@@ -72,4 +77,8 @@ public abstract class FrameProvider implements Supplier<Frame>, Releasable {
 
     /** Ask the camera to block for new frames (true) or use latest available (false) */
     public abstract void requestBlockForFrames(boolean blockForFrames);
+
+    public abstract void setRecording(boolean shouldRecord);
+
+    public abstract boolean getRecording();
 }

@@ -51,6 +51,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.util.PathSafety;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -61,6 +62,7 @@ import org.photonvision.vision.camera.PVCameraInfo;
 import org.photonvision.vision.objects.ObjectDetector;
 import org.photonvision.vision.objects.RknnModel;
 import org.photonvision.vision.objects.RubikModel;
+import org.photonvision.vision.pipeline.FrameRecorder;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -72,6 +74,14 @@ public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
 
     private static final ObjectMapper kObjectMapper = new ObjectMapper();
+
+    /**
+     * Replace characters that browsers / OSes reject in download filenames with underscores so the
+     * Content-Disposition value is portable across Windows, macOS, and Linux.
+     */
+    private static String sanitizeForFilename(String s) {
+        return s.replaceAll("[\\\\/:*?\"<>|\\s]", "_");
+    }
 
     private static boolean testMode = false;
 
@@ -1409,6 +1419,436 @@ public class RequestHandler {
             logger.error("Failed to process unassign camera request", e);
             ctx.result("Failed to process unassign camera request");
             return;
+        }
+    }
+
+    public static void onExportIndividualRecordingRequest(Context ctx) {
+        logger.info("Exporting Individual Recording");
+
+        try {
+            String recordingName = ctx.queryParam("recording");
+            String cameraUniqueName = ctx.queryParam("camera");
+
+            if (recordingName == null || recordingName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided recording path was malformed");
+                logger.error("The provided recording path was malformed");
+                return;
+            }
+
+            if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided camera unique name was malformed");
+                logger.error("The provided camera unique name was malformed");
+                return;
+            }
+
+            Path recordingDir;
+            try {
+                recordingDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                cameraUniqueName,
+                                recordingName);
+            } catch (SecurityException e) {
+                ctx.status(400);
+                ctx.result("Invalid camera or recording name");
+                logger.error("Rejected unsafe export path: " + e.getMessage());
+                return;
+            }
+
+            if (!recordingDir.toFile().exists()) {
+                ctx.status(400);
+                ctx.result("The provided recording path does not exist");
+                logger.error("The provided recording path does not exist");
+                return;
+            }
+
+            File recordingZip = FrameRecorder.export(recordingDir);
+            try {
+                // Read the zip bytes upfront. ctx.result(InputStream) is async — using
+                // try-with-resources on the FileInputStream closes it before Jetty finishes
+                // writing the response body, surfacing as "Stream Closed" client-side.
+                byte[] bytes = java.nio.file.Files.readAllBytes(recordingZip.toPath());
+                logger.info("Uploading individual recording with size " + bytes.length);
+
+                ctx.contentType("application/zip");
+                // Browsers honour Content-Disposition over the client-side <a download>
+                // attribute, so the server filename wins. Use the camera's user-set nickname
+                // (falling back to the uniqueName UUID for orphaned recordings whose source
+                // camera has been deleted).
+                String nickname =
+                        java.util.Optional.ofNullable(
+                                        ConfigManager.getInstance()
+                                                .getConfig()
+                                                .getCameraConfigurations()
+                                                .get(cameraUniqueName))
+                                .map(c -> c.nickname)
+                                .filter(s -> s != null && !s.isBlank())
+                                .orElse(cameraUniqueName);
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\""
+                                + sanitizeForFilename(nickname)
+                                + "_"
+                                + recordingName
+                                + ".zip\"");
+
+                ctx.result(bytes);
+                ctx.status(200);
+            } finally {
+                if (recordingZip.exists()) {
+                    recordingZip.delete();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to export individual recording archive", e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the individual recording archive");
+        }
+    }
+
+    public static void onExportCameraRecordingsRequest(Context ctx) {
+        logger.info("Exporting camera recordings to a ZIP file");
+
+        try {
+            String cameraUniqueName = ctx.queryParam("camera");
+
+            if (cameraUniqueName == null || cameraUniqueName.isEmpty()) {
+                ctx.status(400);
+                ctx.result("The provided camera unique name was malformed");
+                logger.error("The provided camera unique name was malformed");
+                return;
+            }
+
+            Path cameraDir;
+            try {
+                cameraDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(), cameraUniqueName);
+            } catch (SecurityException e) {
+                ctx.status(400);
+                ctx.result("Invalid camera name");
+                logger.error("Rejected unsafe export path: " + e.getMessage());
+                return;
+            }
+
+            File cameraRecordingZip = FrameRecorder.exportCamera(cameraDir);
+
+            try (FileInputStream stream = new FileInputStream(cameraRecordingZip)) {
+                logger.info("Uploading camera recordings with size " + stream.available());
+
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + cameraUniqueName + "_recordings.zip\"");
+
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (cameraRecordingZip.exists()) {
+                    cameraRecordingZip.delete();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to export camera recordings archive", e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the camera recordings archive");
+        }
+    }
+
+    public static void onExportAllRecordingsRequest(Context ctx) {
+        logger.info("Exporting all recordings to a ZIP file");
+
+        try {
+            File allRecordingsZip = FrameRecorder.exportAll();
+
+            try (FileInputStream stream = new FileInputStream(allRecordingsZip)) {
+                logger.info("Uploading all recordings with size " + stream.available());
+
+                ctx.contentType("application/zip");
+                ctx.header(
+                        "Content-Disposition",
+                        "attachment; filename=\"" + "photonvision-recordings-export.zip\"");
+
+                ctx.result(stream);
+                ctx.status(200);
+            } finally {
+                if (allRecordingsZip.exists()) {
+                    allRecordingsZip.delete();
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Unable to export archive of all recordings", e);
+            ctx.status(500);
+            ctx.result("There was an error while exporting the archive of all recordings");
+        }
+    }
+
+    private record DeleteRecordingRequest(String[] recordings, String cameraUniqueName) {}
+
+    public static void onDeleteRecordingRequest(Context ctx) {
+        try {
+            DeleteRecordingRequest request =
+                    kObjectMapper.readValue(ctx.body(), DeleteRecordingRequest.class);
+
+            Path recordingsRoot = ConfigManager.getInstance().getRecordingsDirectory().toPath();
+            for (String recording : request.recordings) {
+                Path rec;
+                try {
+                    rec = PathSafety.safeResolve(recordingsRoot, request.cameraUniqueName, recording);
+                } catch (SecurityException e) {
+                    ctx.status(400).result("Invalid camera or recording name");
+                    logger.error("Rejected unsafe delete path: " + e.getMessage());
+                    return;
+                }
+                FileUtils.deleteDirectory(rec.toFile());
+            }
+
+            ctx.status(200);
+            ctx.result("Successfully deleted recording(s): " + request.recordings.toString());
+            logger.info("Successfully deleted recording(s): " + request.recordings.toString());
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+            logger.error("Failed to delete recording(s)", e);
+        } catch (Exception e) {
+            ctx.status(500).result("Failed to delete recording(s)");
+            logger.error("Unexpected error while attempting to delete recording(s)", e);
+        }
+    }
+
+    public static void onNukeRecordingsRequest(Context ctx) {
+        try {
+            FileUtils.deleteDirectory(ConfigManager.getInstance().getRecordingsDirectory());
+
+            ctx.status(200);
+            ctx.result("Successfully deleted all recordings");
+            logger.info("Successfully deleted all recordings");
+        } catch (Exception e) {
+            ctx.status(500).result("Failed to delete all recordings");
+            logger.error("Unexpected error while attempting to delete all recordings", e);
+        }
+    }
+
+    private record StartReplayRequest(String cameraUniqueName, String recording) {}
+
+    /**
+     * Start a file-log replay on the live camera identified by {@code cameraUniqueName}. The
+     * recording lives at {@code <recordingsDir>/<cameraUniqueName>/<recording>}; the live frame
+     * provider is swapped for a FileLogFrameProvider for the duration of the replay (see
+     * VisionModule.startReplay). Returns 202 immediately — the swap and pipeline run asynchronously,
+     * and progress is published over NT and the websocket.
+     */
+    public static void onStartReplayRequest(Context ctx) {
+        try {
+            StartReplayRequest request = kObjectMapper.readValue(ctx.body(), StartReplayRequest.class);
+            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                return;
+            }
+            if (request.recording == null || request.recording.isEmpty()) {
+                ctx.status(400).result("recording is required");
+                return;
+            }
+
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404).result("No camera with uniqueName=" + request.cameraUniqueName);
+                return;
+            }
+
+            Path recordingDir;
+            try {
+                recordingDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                request.cameraUniqueName,
+                                request.recording);
+            } catch (SecurityException e) {
+                ctx.status(400).result("Invalid camera or recording name");
+                logger.error("Rejected unsafe replay path: " + e.getMessage());
+                return;
+            }
+            if (!recordingDir.toFile().isDirectory()) {
+                ctx.status(404).result("Recording not found at " + recordingDir);
+                return;
+            }
+
+            try {
+                module.startReplay(recordingDir);
+            } catch (IllegalStateException alreadyReplaying) {
+                ctx.status(409).result(alreadyReplaying.getMessage());
+                return;
+            } catch (IOException badRecording) {
+                ctx.status(400).result("Recording is malformed: " + badRecording.getMessage());
+                logger.warn("Replay rejected (malformed recording): " + badRecording.getMessage());
+                return;
+            }
+
+            ctx.status(202).result("Replay started: " + request.recording);
+            logger.info("Started replay on " + request.cameraUniqueName + " from " + request.recording);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+        } catch (Exception e) {
+            logger.error("Unexpected error starting replay", e);
+            ctx.status(500).result("Unexpected error starting replay");
+        }
+    }
+
+    public static void onListResultsRequest(Context ctx) {
+        try {
+            String camera = ctx.queryParam("camera");
+            String recording = ctx.queryParam("recording");
+            if (camera == null || camera.isEmpty() || recording == null || recording.isEmpty()) {
+                ctx.status(400).result("camera and recording query params required");
+                return;
+            }
+            Path resultsDir;
+            try {
+                resultsDir =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                camera,
+                                recording,
+                                "results");
+            } catch (SecurityException e) {
+                ctx.status(400).result("Invalid camera or recording name");
+                return;
+            }
+            if (!resultsDir.toFile().isDirectory()) {
+                ctx.json(java.util.List.of());
+                return;
+            }
+            var out = new java.util.ArrayList<java.util.Map<String, Object>>();
+            try (var stream = java.nio.file.Files.list(resultsDir)) {
+                for (Path jsonl :
+                        stream.filter(p -> p.getFileName().toString().endsWith(".jsonl")).toList()) {
+                    var lines = java.nio.file.Files.readAllLines(jsonl);
+                    if (lines.isEmpty()) continue;
+                    var header = kObjectMapper.readTree(lines.get(0));
+                    String hash = jsonl.getFileName().toString();
+                    hash = hash.substring(0, hash.length() - ".jsonl".length());
+                    var row = new java.util.LinkedHashMap<String, Object>();
+                    row.put("hash", hash);
+                    row.put("sizeBytes", java.nio.file.Files.size(jsonl));
+                    row.put("resultCount", lines.size() - 1);
+                    row.put("pipelineType", header.path("pipeline_type").asText("unknown"));
+                    row.put(
+                            "tssActiveAtRecord",
+                            header.has("tss_active_at_record")
+                                    && header.get("tss_active_at_record").asBoolean(false));
+                    row.put("mtimeMillis", jsonl.toFile().lastModified());
+                    out.add(row);
+                }
+            }
+            ctx.json(out);
+        } catch (Exception e) {
+            logger.error("Failed to list recording results", e);
+            ctx.status(500).result("Failed to list results");
+        }
+    }
+
+    public static void onDownloadResultRequest(Context ctx) {
+        try {
+            String camera = ctx.queryParam("camera");
+            String recording = ctx.queryParam("recording");
+            String hash = ctx.queryParam("hash");
+            if (camera == null
+                    || camera.isEmpty()
+                    || recording == null
+                    || recording.isEmpty()
+                    || hash == null
+                    || hash.isEmpty()) {
+                ctx.status(400).result("camera, recording, and hash query params required");
+                return;
+            }
+            Path jsonl;
+            try {
+                jsonl =
+                        PathSafety.safeResolve(
+                                ConfigManager.getInstance().getRecordingsDirectory().toPath(),
+                                camera,
+                                recording,
+                                "results",
+                                hash + ".jsonl");
+            } catch (SecurityException e) {
+                ctx.status(400).result("Invalid camera/recording/hash");
+                return;
+            }
+            if (!jsonl.toFile().isFile()) {
+                ctx.status(404).result("Result not found");
+                return;
+            }
+            byte[] bytes = java.nio.file.Files.readAllBytes(jsonl);
+            String nickname =
+                    java.util.Optional.ofNullable(
+                                    ConfigManager.getInstance().getConfig().getCameraConfigurations().get(camera))
+                            .map(c -> c.nickname)
+                            .filter(s -> s != null && !s.isBlank())
+                            .orElse(camera);
+            ctx.contentType("application/json");
+            ctx.header(
+                    "Content-Disposition",
+                    "attachment; filename=\""
+                            + sanitizeForFilename(nickname)
+                            + "_"
+                            + recording
+                            + "_"
+                            + hash
+                            + ".jsonl\"");
+            ctx.result(bytes);
+        } catch (Exception e) {
+            logger.error("Failed to download recording result", e);
+            ctx.status(500).result("Failed to download result");
+        }
+    }
+
+    /**
+     * Lists active replays across all cameras so the UI can poll for a banner / preview /
+     * auto-download trigger without taking a dependency on PV's NT websocket bridge.
+     */
+    public static void onReplayStatusRequest(Context ctx) {
+        try {
+            var modules = VisionSourceManager.getInstance().vmm.getModules();
+            var rows = new java.util.ArrayList<java.util.Map<String, Object>>();
+            for (var module : modules) {
+                var status = module.getReplayStatus();
+                if (!status.isReplaying()) continue;
+                var row = new java.util.LinkedHashMap<String, Object>();
+                row.put("cameraUniqueName", module.uniqueName());
+                row.put("recordingName", status.recordingName());
+                row.put("currentFrame", status.currentFrame());
+                row.put("totalFrames", status.totalFrames());
+                rows.add(row);
+            }
+            ctx.json(rows);
+        } catch (Exception e) {
+            logger.error("Failed to read replay status", e);
+            ctx.status(500).result("Failed to read replay status");
+        }
+    }
+
+    public static void onCancelReplayRequest(Context ctx) {
+        try {
+            CommonCameraUniqueName request =
+                    kObjectMapper.readValue(ctx.body(), CommonCameraUniqueName.class);
+            if (request.cameraUniqueName == null || request.cameraUniqueName.isEmpty()) {
+                ctx.status(400).result("cameraUniqueName is required");
+                return;
+            }
+            var module = VisionSourceManager.getInstance().vmm.getModule(request.cameraUniqueName);
+            if (module == null) {
+                ctx.status(404).result("No camera with uniqueName=" + request.cameraUniqueName);
+                return;
+            }
+            module.cancelReplay();
+            ctx.status(200).result("Replay cancel requested");
+            logger.info("Cancelled replay on " + request.cameraUniqueName);
+        } catch (JsonProcessingException e) {
+            ctx.status(400).result("Invalid JSON format");
+        } catch (Exception e) {
+            logger.error("Unexpected error cancelling replay", e);
+            ctx.status(500).result("Unexpected error cancelling replay");
         }
     }
 }

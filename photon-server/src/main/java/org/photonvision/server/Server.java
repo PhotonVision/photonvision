@@ -163,8 +163,19 @@ public class Server {
         app.post("/api/objectdetection/rename", RequestHandler::onRenameObjectDetectionModelRequest);
         app.post("/api/objectdetection/nuke", RequestHandler::onNukeObjectDetectionModelsRequest);
 
-        /* Testing API Events */
+        // Recordings
+        app.get("/api/recordings/exportIndividual", RequestHandler::onExportIndividualRecordingRequest);
+        app.get("/api/recordings/exportCamera", RequestHandler::onExportCameraRecordingsRequest);
+        app.get("/api/recordings/export", RequestHandler::onExportAllRecordingsRequest);
+        app.post("/api/recordings/delete", RequestHandler::onDeleteRecordingRequest);
+        app.post("/api/recordings/nuke", RequestHandler::onNukeRecordingsRequest);
+        app.post("/api/recordings/replay", RequestHandler::onStartReplayRequest);
+        app.post("/api/recordings/replay/cancel", RequestHandler::onCancelReplayRequest);
+        app.get("/api/recordings/replay/status", RequestHandler::onReplayStatusRequest);
+        app.get("/api/recordings/results", RequestHandler::onListResultsRequest);
+        app.get("/api/recordings/result", RequestHandler::onDownloadResultRequest);
 
+        /* Testing API Events */
         app.post("/api/test/resetBackend", TestRequestHandler::handleResetRequest);
 
         app.post("/api/test/activateTestMode", TestRequestHandler::testMode);

@@ -78,7 +78,9 @@ export const useSettingsStore = defineStore("settings", {
       availableModels: [],
       supportedBackends: [],
       conflictingHostname: false,
-      conflictingCameras: ""
+      conflictingCameras: "",
+      recordingStrategy: "SNAPSHOTS",
+      supportedRecordingStrategies: ["SNAPSHOTS"]
     },
     network: {
       ntServerAddress: "",
@@ -167,7 +169,9 @@ export const useSettingsStore = defineStore("settings", {
         availableModels: data.general.availableModels || undefined,
         supportedBackends: data.general.supportedBackends || [],
         conflictingHostname: data.general.conflictingHostname || false,
-        conflictingCameras: data.general.conflictingCameras || ""
+        conflictingCameras: data.general.conflictingCameras || "",
+        recordingStrategy: data.general.recordingStrategy,
+        supportedRecordingStrategies: data.general.supportedRecordingStrategies
       };
       this.lighting = data.lighting;
       this.network = data.networkSettings;
@@ -184,6 +188,12 @@ export const useSettingsStore = defineStore("settings", {
     changeLEDBrightness(brightness: number) {
       const payload = {
         enabledLEDPercentage: brightness
+      };
+      useStateStore().websocket?.send(payload);
+    },
+    setRecordingStrategy(strategy: string) {
+      const payload = {
+        recordingStrategy: strategy
       };
       useStateStore().websocket?.send(payload);
     }
