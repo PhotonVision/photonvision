@@ -270,7 +270,9 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
     java_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/struct"
     java_output_dir.mkdir(parents=True, exist_ok=True)
 
-    java_test_class_output_dir = Path(cpp_java_root) / "main/java/org/photonvision/targeting"
+    java_test_class_output_dir = (
+        Path(cpp_java_root) / "main/java/org/photonvision/targeting"
+    )
     java_test_class_output_dir.mkdir(parents=True, exist_ok=True)
 
     cpp_serde_header_dir = Path(cpp_java_root) / "main/native/include/photon/serde/"
@@ -281,7 +283,9 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
     cpp_struct_header_dir = Path(cpp_java_root) / "main/native/include/photon/struct/"
     cpp_struct_header_dir.mkdir(parents=True, exist_ok=True)
 
-    cpp_test_struct_output_dir = Path(cpp_java_root) / "main/native/include/photon/targeting/"
+    cpp_test_struct_output_dir = (
+        Path(cpp_java_root) / "main/native/include/photon/targeting/"
+    )
     cpp_test_struct_output_dir.mkdir(parents=True, exist_ok=True)
 
     py_serde_source_dir = Path(py_root)
@@ -360,20 +364,28 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                 ),
                 encoding="utf-8",
             )
-        
-        if 'test' in message.keys() and message['test']:
+
+        if "test" in message.keys() and message["test"]:
             java_test_class_name = f"{message['name']}.java"
             java_test_class_template = env.get_template("ThingTestClass.java.jinja")
-            
+
             cpp_test_struct_name = f"{message['name']}.h"
             cpp_test_struct_template = env.get_template("ThingTestStruct.h.jinja")
             for output_name, template, output_folder in [
-                [java_test_class_name, java_test_class_template, java_test_class_output_dir],
-                [cpp_test_struct_name, cpp_test_struct_template, cpp_test_struct_output_dir]
+                [
+                    java_test_class_name,
+                    java_test_class_template,
+                    java_test_class_output_dir,
+                ],
+                [
+                    cpp_test_struct_name,
+                    cpp_test_struct_template,
+                    cpp_test_struct_output_dir,
+                ],
             ]:
                 # Hack in our message getter
-                template.globals["get_message_by_name"] = lambda name: get_message_by_name(
-                    messages, name
+                template.globals["get_message_by_name"] = (
+                    lambda name: get_message_by_name(messages, name)
                 )
 
                 # TODO: Are the nested types really necessary for ts?
@@ -411,7 +423,6 @@ def generate_photon_messages(cpp_java_root, py_root, template_root):
                     ),
                     encoding="utf-8",
                 )
-
 
 
 def main(argv):

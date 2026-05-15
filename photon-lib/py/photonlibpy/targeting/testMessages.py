@@ -1,10 +1,10 @@
-from dataclasses import dataclass, field
-
+from dataclasses import dataclass
 from typing import Optional
 
 from wpimath.geometry import Transform3d
 
 # TODO: Autogenerate python test classes?
+
 
 @dataclass
 class Int8TestMessage:
@@ -12,11 +12,13 @@ class Int8TestMessage:
     vlaTest: list[int]
     optTest: Optional[int]
 
+
 @dataclass
 class Int16TestMessage:
     test: int
     vlaTest: list[int]
     optTest: Optional[int]
+
 
 @dataclass
 class Int32TestMessage:
@@ -24,11 +26,13 @@ class Int32TestMessage:
     vlaTest: list[int]
     optTest: Optional[int]
 
+
 @dataclass
 class Int64TestMessage:
     test: int
     vlaTest: list[int]
     optTest: Optional[int]
+
 
 @dataclass
 class Float32TestMessage:
@@ -36,17 +40,20 @@ class Float32TestMessage:
     vlaTest: list[float]
     optTest: Optional[float]
 
+
 @dataclass
 class Float64TestMessage:
     test: float
     vlaTest: list[float]
     optTest: Optional[float]
 
+
 @dataclass
 class BoolTestMessage:
     test: bool
     vlaTest: list[bool]
     optTest: Optional[bool]
+
 
 @dataclass
 class Transform3dTestMessage:

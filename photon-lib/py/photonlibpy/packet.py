@@ -200,7 +200,7 @@ class Packet:
         for _ in range(arr_len):
             retList.append(serde.unpack(self))
         return retList
-    
+
     def decodeListShimmed(self, shim: Callable[[], T]) -> list[T]:
         retList = []
         arr_len = self.decode8()
@@ -213,7 +213,7 @@ class Packet:
             return serde.unpack(self)
         else:
             return None
-    
+
     def decodeOptionalShimmed(self, shim: Callable[[], T]) -> Optional[T]:
         if self.decodeBoolean():
             return shim()
@@ -294,7 +294,7 @@ class Packet:
             packed = serde.pack(item)
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
-    
+
     def encodeListShimmed(self, values: list[T], shim: Callable[[T], None]):
         """
         Encodes a list of items using a specific serializer and appends it to the packet.
@@ -314,7 +314,7 @@ class Packet:
             packed = serde.pack(value)
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
-    
+
     def encodeOptionalShimmed(self, value: Optional[T], shim: Callable[[T], None]):
         """
         Encodes an optional value using a specific shimmed serializer.
