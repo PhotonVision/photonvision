@@ -18,7 +18,23 @@
 package org.photonvision.utils;
 
 import org.photonvision.common.dataflow.structures.Packet;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import org.wpilib.math.geometry.*;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 @SuppressWarnings("doclint")
 public class PacketUtils {
@@ -33,7 +49,7 @@ public class PacketUtils {
     public static final int POSE3D_BYTE_SIZE = TRANSLATION3D_BYTE_SIZE + ROTATION3D_BYTE_SIZE;
 
     public static void packRotation2d(Packet packet, Rotation2d rotation) {
-        packet.encode(rotation.getRadians());
+        packet.encodeDouble(rotation.getRadians());
     }
 
     public static Rotation2d unpackRotation2d(Packet packet) {
@@ -41,10 +57,10 @@ public class PacketUtils {
     }
 
     public static void packQuaternion(Packet packet, Quaternion quaternion) {
-        packet.encode(quaternion.getW());
-        packet.encode(quaternion.getX());
-        packet.encode(quaternion.getY());
-        packet.encode(quaternion.getZ());
+        packet.encodeDouble(quaternion.getW());
+        packet.encodeDouble(quaternion.getX());
+        packet.encodeDouble(quaternion.getY());
+        packet.encodeDouble(quaternion.getZ());
     }
 
     public static Quaternion unpackQuaternion(Packet packet) {
@@ -61,8 +77,8 @@ public class PacketUtils {
     }
 
     public static void packTranslation2d(Packet packet, Translation2d translation) {
-        packet.encode(translation.getX());
-        packet.encode(translation.getY());
+        packet.encodeDouble(translation.getX());
+        packet.encodeDouble(translation.getY());
     }
 
     public static Translation2d unpackTranslation2d(Packet packet) {
@@ -70,9 +86,9 @@ public class PacketUtils {
     }
 
     public static void packTranslation3d(Packet packet, Translation3d translation) {
-        packet.encode(translation.getX());
-        packet.encode(translation.getY());
-        packet.encode(translation.getZ());
+        packet.encodeDouble(translation.getX());
+        packet.encodeDouble(translation.getY());
+        packet.encodeDouble(translation.getZ());
     }
 
     public static Translation3d unpackTranslation3d(Packet packet) {
@@ -113,5 +129,52 @@ public class PacketUtils {
 
     public static Pose3d unpackPose3d(Packet packet) {
         return new Pose3d(unpackTranslation3d(packet), unpackRotation3d(packet));
+    }
+
+    public static <T> void packList(
+            Packet packet, List<T> data, BiConsumer<Packet, T> packer) {
+        byte size = (byte) data.size();
+        if (data.size() > Byte.MAX_VALUE) {
+            throw new RuntimeException("Array too long! Got " + size);
+        }
+
+        // length byte
+        packet.encodeByte(size);
+
+        for (var f : data) {
+            packer.accept(packet,f);
+        }
+    }
+
+    public static <T> List<T> unpackList(Packet packet, Function<Packet, T> unpacker) {
+        byte length = packet.decodeByte();
+
+        var ret = new ArrayList<T>();
+        ret.ensureCapacity(length);
+
+        for (int i = 0; i < length; i++) {
+            ret.add(unpacker.apply(packet));
+        }
+
+        return ret;
+    }
+
+    public static <T> void packOptional(
+            Packet packet, Optional<T> optional, BiConsumer<Packet, T> packer) {
+        if (optional.isPresent()) {
+            packet.encodeBoolean(true);
+            packer.accept(packet, optional.get());
+        } else {
+            packet.encodeBoolean(false);
+        }
+    }
+
+    public static <T> Optional<T> unpackOptional(Packet packet, Function<Packet, T> unpacker) {
+        boolean isPresent = packet.decodeBoolean();
+        if (isPresent) {
+            return Optional.of(unpacker.apply(packet));
+        } else {
+            return Optional.empty();
+        }
     }
 }

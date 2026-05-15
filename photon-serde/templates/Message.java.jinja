@@ -63,8 +63,8 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     }
 {% for field in fields -%}
 {%- if field.type | is_shimmed and field.optional == True %}
-    private static BiConsumer<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALencode_shim_callable = (packet, value) -> {{ get_message_by_name(field.type).java_encode_shim }}(packet, value);
-    private static Function<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALdecode_shim_callable = (packet) -> {{ get_message_by_name(field.type).java_decode_shim }}(packet);
+    private static BiConsumer<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALopt_encode_shim_callable = (packet, value) -> {{ get_message_by_name(field.type).java_encode_shim }}(packet, value);
+    private static Function<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALopt_decode_shim_callable = (packet) -> {{ get_message_by_name(field.type).java_decode_shim }}(packet);
 {% endif -%}
 {% endfor%}
     @Override
@@ -104,8 +104,8 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
         {%- if field.optional == True %}
-        // {{ field.name }} is optional and shimmed!
-        ret.{{ field.name }} = PacketUtils.unpackOptional(packet, {{ field.name }}_PSINTERNALdecode_shim_callable);
+        // {{ field.name }} is optional! it better not be a VLA too
+        ret.{{ field.name }} = PacketUtils.unpackOptional(packet, {{ field.name }}_PSINTERNALopt_decode_shim_callable);
         {%- else %}
         ret.{{ field.name }} = {{ get_message_by_name(field.type).java_decode_shim }}(packet);
         {%- endif %}

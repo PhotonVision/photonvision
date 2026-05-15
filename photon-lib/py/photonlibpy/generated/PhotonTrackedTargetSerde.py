@@ -67,8 +67,10 @@ class PhotonTrackedTargetSerde:
         # objDetectConf is of intrinsic type float32
         ret.encodeFloat(value.objDetectConf)
 
+        # bestCameraToTarget is of shimmed type Transform3d
         ret.encodeTransform(value.bestCameraToTarget)
 
+        # altCameraToTarget is of shimmed type Transform3d
         ret.encodeTransform(value.altCameraToTarget)
 
         # poseAmbiguity is of intrinsic type float64

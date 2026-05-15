@@ -50,7 +50,7 @@ class MultiTargetPNPResultSerde:
         ret.encodeBytes(PnpResult.photonStruct.pack(value.estimatedPose).getData())
 
         # fiducialIDsUsed is a custom VLA!
-        ret.encodeShortList(value.fiducialIDsUsed)
+        ret.encodeListShimmed(value.fiducialIDsUsed, ret.encodeShort)
         return ret
 
     @staticmethod
@@ -61,7 +61,7 @@ class MultiTargetPNPResultSerde:
         ret.estimatedPose = PnpResult.photonStruct.unpack(packet)
 
         # fiducialIDsUsed is a custom VLA!
-        ret.fiducialIDsUsed = packet.decodeShortList()
+        ret.fiducialIDsUsed = packet.decodeListShimmed(packet.decodeShort)
 
         return ret
 

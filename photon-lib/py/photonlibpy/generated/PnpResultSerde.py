@@ -45,8 +45,10 @@ class PnpResultSerde:
     def pack(value: "PnpResult") -> "Packet":
         ret = Packet()
 
+        # best is of shimmed type Transform3d
         ret.encodeTransform(value.best)
 
+        # alt is of shimmed type Transform3d
         ret.encodeTransform(value.alt)
 
         # bestReprojErr is of intrinsic type float64

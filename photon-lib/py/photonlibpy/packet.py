@@ -16,7 +16,7 @@
 ###############################################################################
 
 import struct
-from typing import Generic, Optional, Protocol, TypeVar
+from typing import Callable, Generic, Optional, Protocol, TypeVar
 
 import wpilib
 from wpimath.geometry import Quaternion, Rotation3d, Transform3d, Translation3d
@@ -200,10 +200,23 @@ class Packet:
         for _ in range(arr_len):
             retList.append(serde.unpack(self))
         return retList
+    
+    def decodeListShimmed(self, shim: Callable[[], T]) -> list[T]:
+        retList = []
+        arr_len = self.decode8()
+        for _ in range(arr_len):
+            retList.append(shim())
+        return retList
 
     def decodeOptional(self, serde: Serde[T]) -> Optional[T]:
         if self.decodeBoolean():
             return serde.unpack(self)
+        else:
+            return None
+    
+    def decodeOptionalShimmed(self, shim: Callable[[], T]) -> Optional[T]:
+        if self.decodeBoolean():
+            return shim()
         else:
             return None
 
@@ -297,6 +310,14 @@ class Packet:
             packed = serde.pack(item)
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
+    
+    def encodeListShimmed(self, values: list[T], shim: Callable[[T], None]):
+        """
+        Encodes a list of items using a specific serializer and appends it to the packet.
+        """
+        self.encode8(len(values))
+        for item in values:
+            shim(item)
 
     def encodeOptional(self, value: Optional[T], serde: Serde[T]):
         """
@@ -309,6 +330,16 @@ class Packet:
             packed = serde.pack(value)
             self.packetData = self.packetData + packed.getData()
             self.size = len(self.packetData)
+    
+    def encodeOptionalShimmed(self, value: Optional[T], shim: Callable[[T], None]):
+        """
+        Encodes an optional value using a specific shimmed serializer.
+        """
+        if value is None:
+            self.encodeBoolean(False)
+        else:
+            self.encodeBoolean(True)
+            shim(value)
 
     def encodeBytes(self, value: bytes):
         self.packetData = self.packetData + value
