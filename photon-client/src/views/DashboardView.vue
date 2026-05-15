@@ -86,7 +86,7 @@ const fpsLimitedCameras = computed<string>(() => {
 
 const disabledCameras = computed<string>(() => {
   return Object.values(useCameraSettingsStore().cameras)
-    .filter((c) => c.fpsLimit === 0)
+    .filter((c) => !c.isEnabled)
     .map((c) => c.nickname)
     .join(", ");
 });

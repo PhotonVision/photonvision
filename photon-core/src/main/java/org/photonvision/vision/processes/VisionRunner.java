@@ -50,6 +50,7 @@ public class VisionRunner {
     private final List<Runnable> runnableList = new ArrayList<Runnable>();
     private final QuirkyCamera cameraQuirks;
     private final Supplier<Integer> fpsLimitSupplier;
+    private final Supplier<Boolean> enabledSupplier;
 
     private long loopCount;
 
@@ -57,9 +58,14 @@ public class VisionRunner {
      * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
      * the consumer.
      *
-     * @param frameSupplier The supplier of the latest frame.
-     * @param pipelineSupplier The supplier of the current pipeline.
-     * @param pipelineResultConsumer The consumer of the latest result.
+     * @param frameSupplier
+     * @param pipelineSupplier
+     * @param pipelineResultConsumer
+     * @param cameraQuirks
+     * @param changeSubscriber The subscriber to setting changes for this VisionRunner, so it can
+     *     update its settings when they change.
+     * @param fpsLimitSupplier
+     * @param enabledSupplier
      */
     public VisionRunner(
             FrameProvider frameSupplier,
@@ -67,13 +73,15 @@ public class VisionRunner {
             Consumer<CVPipelineResult> pipelineResultConsumer,
             QuirkyCamera cameraQuirks,
             VisionModuleChangeSubscriber changeSubscriber,
-            Supplier<Integer> fpsLimitSupplier) {
+            Supplier<Integer> fpsLimitSupplier,
+            Supplier<Boolean> enabledSupplier) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
         this.cameraQuirks = cameraQuirks;
         this.changeSubscriber = changeSubscriber;
         this.fpsLimitSupplier = fpsLimitSupplier;
+        this.enabledSupplier = enabledSupplier;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -132,11 +140,8 @@ public class VisionRunner {
 
     /**
      * Waits until the next time this VisionRunner should run its pipeline, based on current FPS limit
-     *
-     * @return boolean indicating whether the VisionRunner should skip processing and just send a
-     *     blank frame (true if FPS limit is 0, false otherwise)
      */
-    private boolean waitUntilNextTick(long start) {
+    private void waitUntilNextTick(long start) {
         int fpsLimit = fpsLimitSupplier.get();
 
         if (fpsLimit > 0) {
@@ -148,13 +153,10 @@ public class VisionRunner {
                 } catch (InterruptedException e) {
                 }
             }
-            return false;
-        } else if (fpsLimit == 0) {
-            // If the FPS limit is 0, we return true and the VisionRunner will send a null frame
-            return true;
+            return;
         } else {
             // Fall through to no limit
-            return false;
+            return;
         }
     }
 
@@ -222,6 +224,14 @@ public class VisionRunner {
                 frame.release();
                 pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
             } else if (pipeline == pipelineSupplier.get()) {
+                if (!enabledSupplier.get()) {
+                    // If we are skipping processing due to the camera being disabled, we still want to send a
+                    // result with the new frame and settings, just with a null pipeline result
+                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
+                    frame.release();
+                    continue;
+                }
+
                 // If the pipeline has changed while we are getting our frame we should scrap
                 // that frame it may result in incorrect frame settings like hsv values
 
@@ -230,13 +240,7 @@ public class VisionRunner {
 
                 // If we have an FPS limit, check if it's 0, in which case we skip processing and just send
                 // a blank frame, otherwise we sleep until the next tick
-                if (waitUntilNextTick(start)) {
-                    // If we are skipping processing due to FPS limit, we still want to send a result with the
-                    // new frame and settings, just with a null pipeline result
-                    pipelineResultConsumer.accept(new CVPipelineResult(0l, 0, 0, null, new Frame()));
-                    frame.release();
-                    continue;
-                }
+                waitUntilNextTick(start);
                 try {
                     var pipelineResult = pipeline.run(frame, cameraQuirks);
                     pipelineResultConsumer.accept(pipelineResult);
