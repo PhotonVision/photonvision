@@ -65,6 +65,8 @@ public class PhotonCamera implements AutoCloseable {
     BooleanSubscriber driverModeSubscriber;
     IntegerPublisher fpsLimitPublisher;
     IntegerSubscriber fpsLimitSubscriber;
+    BooleanSubscriber enabledSubscriber;
+    BooleanPublisher enabledPublisher;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
@@ -82,6 +84,8 @@ public class PhotonCamera implements AutoCloseable {
         driverModeSubscriber.close();
         fpsLimitPublisher.close();
         fpsLimitSubscriber.close();
+        enabledPublisher.close();
+        enabledSubscriber.close();
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
@@ -155,6 +159,8 @@ public class PhotonCamera implements AutoCloseable {
         driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         fpsLimitPublisher = cameraTable.getIntegerTopic("fpsLimitRequest").publish();
         fpsLimitSubscriber = cameraTable.getIntegerTopic("fpsLimit").subscribe(-1);
+        enabledPublisher = cameraTable.getBooleanTopic("enabledRequest").publish();
+        enabledSubscriber = cameraTable.getBooleanTopic("enabled").subscribe(true);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
@@ -344,8 +350,6 @@ public class PhotonCamera implements AutoCloseable {
     }
 
     /**
-     * Gets the FPS limit set on the camera.
-     *
      * @return The current FPS limit.
      */
     public int getFPSLimit() {
@@ -355,8 +359,6 @@ public class PhotonCamera implements AutoCloseable {
     /**
      * Sets the FPS limit on the camera.
      *
-     * <p>An FPS of 0 means to pause processing until a FPS limit greater than 0 is set.
-     *
      * <p>A negative FPS limit is treated as no FPS limit, and will run as fast as possible.
      *
      * <p>Otherwise, will limit processing to at most the provided FPS limit
@@ -365,6 +367,22 @@ public class PhotonCamera implements AutoCloseable {
      */
     public void setFPSLimit(int fps) {
         fpsLimitPublisher.set(fps);
+    }
+
+    /**
+     * Sets whether the camera is enabled, default is true.
+     *
+     * @param enabled Whether to enable the camera.
+     */
+    public void setEnabled(boolean enabled) {
+        enabledPublisher.set(enabled);
+    }
+
+    /**
+     * @return Whether the camera is enabled.
+     */
+    public boolean getEnabled() {
+        return enabledSubscriber.get();
     }
 
     /**

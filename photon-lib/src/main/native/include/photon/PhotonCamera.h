@@ -124,6 +124,17 @@ class PhotonCamera {
   int GetFPSLimit() const;
 
   /**
+   * Sets whether the camera is enabled, default is true.
+   * @param enabled Whether to enable the camera.
+   */
+  void SetEnabled(bool enabled);
+
+  /**
+   * @return Whether the camera is enabled.
+   */
+  bool GetEnabled() const;
+
+  /**
    * Request the camera to save a new image file from the input
    * camera stream with overlays.
    * Images take up space in the filesystem of the PhotonCamera.
@@ -243,6 +254,8 @@ class PhotonCamera {
   wpi::nt::BooleanPublisher driverModePublisher;
   wpi::nt::IntegerSubscriber fpsLimitSubscriber;
   wpi::nt::IntegerPublisher fpsLimitPublisher;
+  wpi::nt::BooleanSubscriber enabledSubscriber;
+  wpi::nt::BooleanPublisher enabledPublisher;
 
   wpi::nt::IntegerSubscriber ledModeSubscriber;
 

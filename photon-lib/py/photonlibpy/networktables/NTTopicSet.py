@@ -54,6 +54,13 @@ class NTTopicSet:
 
         self.fpsLimitSubscriber.getTopic().publish().setDefault(-1)
 
+        self.enabledPublisher = self.subTable.getBooleanTopic("enabled").publish()
+        self.enabledSubscriber = self.subTable.getBooleanTopic(
+            "enabledRequest"
+        ).subscribe(True)
+
+        self.enabledSubscriber.getTopic().publish().setDefault(True)
+
         self.latencyMillisEntry = self.subTable.getDoubleTopic(
             "latencyMillis"
         ).publish()
