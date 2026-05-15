@@ -1488,8 +1488,11 @@ public class RequestHandler {
                                 .orElse(cameraUniqueName);
                 ctx.header(
                         "Content-Disposition",
-                        "attachment; filename=\"" + sanitizeForFilename(nickname) + "_"
-                                + recordingName + ".zip\"");
+                        "attachment; filename=\""
+                                + sanitizeForFilename(nickname)
+                                + "_"
+                                + recordingName
+                                + ".zip\"");
 
                 ctx.result(bytes);
                 ctx.status(200);
@@ -1719,8 +1722,7 @@ public class RequestHandler {
             var out = new java.util.ArrayList<java.util.Map<String, Object>>();
             try (var stream = java.nio.file.Files.list(resultsDir)) {
                 for (Path jsonl :
-                        stream.filter(p -> p.getFileName().toString().endsWith(".jsonl"))
-                                .toList()) {
+                        stream.filter(p -> p.getFileName().toString().endsWith(".jsonl")).toList()) {
                     var lines = java.nio.file.Files.readAllLines(jsonl);
                     if (lines.isEmpty()) continue;
                     var header = kObjectMapper.readTree(lines.get(0));
@@ -1730,9 +1732,7 @@ public class RequestHandler {
                     row.put("hash", hash);
                     row.put("sizeBytes", java.nio.file.Files.size(jsonl));
                     row.put("resultCount", lines.size() - 1);
-                    row.put(
-                            "pipelineType",
-                            header.path("pipeline_type").asText("unknown"));
+                    row.put("pipelineType", header.path("pipeline_type").asText("unknown"));
                     row.put(
                             "tssActiveAtRecord",
                             header.has("tss_active_at_record")
@@ -1782,10 +1782,7 @@ public class RequestHandler {
             byte[] bytes = java.nio.file.Files.readAllBytes(jsonl);
             String nickname =
                     java.util.Optional.ofNullable(
-                                    ConfigManager.getInstance()
-                                            .getConfig()
-                                            .getCameraConfigurations()
-                                            .get(camera))
+                                    ConfigManager.getInstance().getConfig().getCameraConfigurations().get(camera))
                             .map(c -> c.nickname)
                             .filter(s -> s != null && !s.isBlank())
                             .orElse(camera);

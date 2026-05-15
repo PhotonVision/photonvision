@@ -106,8 +106,7 @@ class MetadataSidecarReaderTest {
         }
         try (var reader = new MetadataSidecarReader(write("{\"seq\":1}\n"))) {
             IOException ex = assertThrows(IOException.class, reader::readNext);
-            assertTrue(
-                    ex.getMessage().contains("line 1") && ex.getMessage().contains("capture_ns"));
+            assertTrue(ex.getMessage().contains("line 1") && ex.getMessage().contains("capture_ns"));
         }
     }
 

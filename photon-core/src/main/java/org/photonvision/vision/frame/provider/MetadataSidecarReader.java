@@ -30,8 +30,8 @@ import java.util.Optional;
 /**
  * Streams {@code (seq, capture_ns)} pairs out of a {@code metadata.jsonl} sidecar written by {@code
  * FrameRecorder}. One JSON object per line, e.g. {@code {"seq":N,"capture_ns":T}}. Unknown fields
- * are ignored so the schema can grow. Malformed lines throw {@link IOException} naming the
- * 1-based line number.
+ * are ignored so the schema can grow. Malformed lines throw {@link IOException} naming the 1-based
+ * line number.
  */
 public class MetadataSidecarReader implements AutoCloseable {
     private static final ObjectMapper MAPPER = new ObjectMapper();

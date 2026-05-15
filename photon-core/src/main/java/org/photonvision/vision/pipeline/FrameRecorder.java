@@ -186,14 +186,13 @@ public class FrameRecorder implements Releasable {
 
     /**
      * Sample TSS state via the live NetworkTablesManager singleton. Returns {@link
-     * TssSample#INACTIVE} if photontargetingJNI isn't loaded (tests) or TSS has never seen a pong
-     * (no robot up). The 5-second threshold is conservative: NT pings every 1s, so any value over
-     * a few seconds means a stale or never-connected client.
+     * TssSample#INACTIVE} if photontargetingJNI isn't loaded (tests) or TSS has never seen a pong (no
+     * robot up). The 5-second threshold is conservative: NT pings every 1s, so any value over a few
+     * seconds means a stale or never-connected client.
      */
     private static TssSample sampleTssNow() {
         try {
-            var mgr =
-                    org.photonvision.common.dataflow.networktables.NetworkTablesManager.getInstance();
+            var mgr = org.photonvision.common.dataflow.networktables.NetworkTablesManager.getInstance();
             long timeSinceLastPongUs = mgr.getTimeSinceLastPong();
             boolean active = timeSinceLastPongUs != Long.MAX_VALUE && timeSinceLastPongUs < 5_000_000L;
             long offsetNs = mgr.getOffset() * 1_000L;
@@ -207,9 +206,9 @@ public class FrameRecorder implements Releasable {
 
     /**
      * Write {@code tss.json} alongside {@code metadata.jsonl}. Consumed by {@code
-     * JsonResultExporter.readSnapshot} to shift {@code capture_ns} into the TSS time base during
-     * AKit replay. Failure is logged-and-swallowed: the recording itself still works, the exporter
-     * just falls back to UNKNOWN.
+     * JsonResultExporter.readSnapshot} to shift {@code capture_ns} into the TSS time base during AKit
+     * replay. Failure is logged-and-swallowed: the recording itself still works, the exporter just
+     * falls back to UNKNOWN.
      */
     private void writeTssSnapshot(TssSample tss) {
         Path tssPath = outputPath.resolve("tss.json");

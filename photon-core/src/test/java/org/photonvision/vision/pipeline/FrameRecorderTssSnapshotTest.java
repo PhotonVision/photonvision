@@ -34,9 +34,9 @@ import org.photonvision.jni.LibraryLoader;
 import org.photonvision.vision.pipeline.FrameRecorder.TssSample;
 
 /**
- * Verifies the tss.json hand-off between FrameRecorder (writer) and JsonResultExporter
- * (reader). The two sides only share a JSON key contract — no shared Java type — so this test
- * validates both ends round-trip cleanly.
+ * Verifies the tss.json hand-off between FrameRecorder (writer) and JsonResultExporter (reader).
+ * The two sides only share a JSON key contract — no shared Java type — so this test validates both
+ * ends round-trip cleanly.
  */
 public class FrameRecorderTssSnapshotTest {
     @BeforeAll
@@ -53,7 +53,8 @@ public class FrameRecorderTssSnapshotTest {
         var sample = new TssSample(true, 4_500_000L);
 
         var recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
+                new FrameRecorder(
+                        outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
         try {
             // Snapshot is written in the constructor — no need to startRecording / record frames.
         } finally {
@@ -74,10 +75,7 @@ public class FrameRecorderTssSnapshotTest {
 
         var recorder =
                 new FrameRecorder(
-                        outDir,
-                        FrameRecorder.RecordingStrategy.SNAPSHOTS,
-                        Long.MAX_VALUE,
-                        TssSample.INACTIVE);
+                        outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, TssSample.INACTIVE);
         try {
             // No frames needed: writeTssSnapshot runs in the constructor.
         } finally {
@@ -96,7 +94,8 @@ public class FrameRecorderTssSnapshotTest {
         var sample = new TssSample(true, 7_200_000L);
 
         var recorder =
-                new FrameRecorder(outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
+                new FrameRecorder(
+                        outDir, FrameRecorder.RecordingStrategy.SNAPSHOTS, Long.MAX_VALUE, sample);
         recorder.release();
 
         var snap = JsonResultExporter.readSnapshot(outDir);
@@ -113,9 +112,7 @@ public class FrameRecorderTssSnapshotTest {
 
     @Test
     public void readSnapshotReturnsUnknownOnMalformedJson(@TempDir Path tempDir) throws Exception {
-        Files.write(
-                tempDir.resolve("tss.json"),
-                "{not valid json".getBytes(StandardCharsets.UTF_8));
+        Files.write(tempDir.resolve("tss.json"), "{not valid json".getBytes(StandardCharsets.UTF_8));
 
         assertTrue(JsonResultExporter.readSnapshot(tempDir).isEmpty());
     }
@@ -123,8 +120,7 @@ public class FrameRecorderTssSnapshotTest {
     @Test
     public void readSnapshotReturnsUnknownOnMissingKeys(@TempDir Path tempDir) throws Exception {
         Files.write(
-                tempDir.resolve("tss.json"),
-                "{\"some_other_field\":42}".getBytes(StandardCharsets.UTF_8));
+                tempDir.resolve("tss.json"), "{\"some_other_field\":42}".getBytes(StandardCharsets.UTF_8));
 
         assertTrue(JsonResultExporter.readSnapshot(tempDir).isEmpty());
     }

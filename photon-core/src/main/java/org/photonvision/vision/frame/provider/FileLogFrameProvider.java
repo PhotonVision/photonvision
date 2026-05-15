@@ -239,9 +239,9 @@ public class FileLogFrameProvider extends CpuImageProcessor {
      *
      * <p><strong>Wire BEFORE installing this provider on a VisionSource.</strong> The natural-EOF
      * path fires from inside the very first {@link #getInputMat()} call on a zero-frame (or
-     * already-corrupt) recording, so a callback wired after the runner has begun pulling frames
-     * could be skipped silently — the swap-back would never run. {@code VisionModule.startReplay}
-     * preserves this ordering; future callers must do the same.
+     * already-corrupt) recording, so a callback wired after the runner has begun pulling frames could
+     * be skipped silently — the swap-back would never run. {@code VisionModule.startReplay} preserves
+     * this ordering; future callers must do the same.
      */
     public void setOnEof(Runnable onEof) {
         this.onEof = onEof;
