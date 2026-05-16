@@ -20,6 +20,7 @@ let chart: echarts.ECharts | undefined;
 const uncertaintyData: Ref<CvPoint3[] | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
+const containerRef = ref<HTMLDivElement | null>(null);
 
 const drawUncertainty = (data: CvPoint3[] | null) => {
   if (!chart || !data || data.length === 0) return;
@@ -175,7 +176,7 @@ const fetchUncertaintyData = async () => {
 };
 
 const onWindowResize = () => {
-  const container = document.getElementById("container");
+  const container = containerRef.value;
   if (!container || !chart) return;
 
   // Update container height based on aspect ratio of camera resolution
@@ -192,7 +193,7 @@ onMounted(async () => {
   // Fetch data
   await fetchUncertaintyData();
 
-  const container = document.getElementById("container");
+  const container = containerRef.value;
   if (!container) return;
 
   // Set container height based on aspect ratio of camera resolution
@@ -260,7 +261,10 @@ watch(
       <v-icon color="red" size="70">mdi-close</v-icon>
       <v-card-text>{{ error }}</v-card-text>
     </div>
-    <div v-else id="container" style="width: 100%; min-height: 400px; flex: 1 1 auto;"></div>
-    <template v-if="isLoading"> Loading.... </template>
+    <div v-else-if="isLoading" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1rem; width: 100%;">
+      <v-progress-circular indeterminate size="70" width="8" color="primary" />
+      <v-card-text class="pt-3">Loading uncertainty data...</v-card-text>
+    </div>
+    <div v-else ref="containerRef" style="width: 100%; min-height: 400px; flex: 1 1 auto;"></div>
   </div>
 </template>

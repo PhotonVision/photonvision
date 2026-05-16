@@ -21,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -157,7 +156,7 @@ public class Calibrate3dPipeTest {
     /**
      * Check that the uncertainty works and returns reasonable looking numbers for a good calibration
      * dataset. Our other datasets are of questionable quality (not enough pictures, not enough
-     * angels, etc)
+     * angles, etc)
      */
     @Test
     public void testCalibrationUncertaintyWithGoodData() throws IOException {
