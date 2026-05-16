@@ -311,14 +311,14 @@ const viewingImg = ref(0);
             </v-data-table>
           </v-tabs-window-item>
           <v-tabs-window-item key="uncertainty" value="uncertainty">
-            <p>Calibration unceratinty, in pixels, looking out to infinity. Lower numbers are better.</p>
+            <p>Calibration uncertainty, in pixels, looking out to infinity. Lower numbers are better.</p>
             <p>
               Uncertainty measures how sure we are about the pixel location that a ray entering our camera would fall
               onto. Lower numbers imply higher certainty. To decrease uncertainty, capture more varied pictures across
               the full field of view of your camera.
             </p>
             <p>
-              A lower unceratinty doesn't necesarrily mean that the calibration is more accurate -- just that our solver
+              A lower uncertainty doesn't necesarrily mean that the calibration is more accurate -- just that our solver
               had more information that seemed to correspond. Confounding factors (like incorrect square size) can still
               lead to inaccurate results.
             </p>

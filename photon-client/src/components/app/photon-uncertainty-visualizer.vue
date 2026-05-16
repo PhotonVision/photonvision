@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
-import * as echarts from "echarts";
+import Plotly from "plotly.js-dist-min";
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
-import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useTheme } from "vuetify";
 
 const theme = useTheme();
@@ -15,141 +14,153 @@ const props = defineProps<{
   title: string;
 }>();
 
-let chart: echarts.ECharts | undefined;
-
 const uncertaintyData: Ref<CvPoint3[] | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
 const containerRef = ref<HTMLDivElement | null>(null);
 
+const getThemeTextColor = (): string => {
+  const styles = getComputedStyle(document.documentElement);
+  const onBackground = styles.getPropertyValue("--v-theme-on-background").trim();
+  const onSurface = styles.getPropertyValue("--v-theme-on-surface").trim();
+  const onSurfaceVariant = styles.getPropertyValue("--v-theme-on-surface-variant").trim();
+  const raw = onBackground || onSurface || onSurfaceVariant;
+
+  if (!raw) {
+    return theme.global.current.value.dark ? "#ffffff" : "#000000";
+  }
+
+  if (raw.startsWith("#") || raw.startsWith("rgb") || raw.startsWith("hsl")) {
+    return raw;
+  }
+
+  return `rgb(${raw})`;
+};
+
+const getThemeSurfaceColor = (): string => {
+  const styles = getComputedStyle(document.documentElement);
+  const surface = styles.getPropertyValue("--v-theme-surface").trim();
+
+  if (!surface) {
+    return theme.global.current.value.colors.surface ?? (theme.global.current.value.dark ? "#1e1e1e" : "#ffffff");
+  }
+
+  if (surface.startsWith("#") || surface.startsWith("rgb") || surface.startsWith("hsl")) {
+    return surface;
+  }
+
+  return `rgb(${surface})`;
+};
+
 const drawUncertainty = (data: CvPoint3[] | null) => {
-  if (!chart || !data || data.length === 0) return;
+  const container = containerRef.value;
+  if (!container || !data || data.length === 0) return;
 
-  // Get theme colors
-  const themeName = theme.global.name.value;
-  const themeColors = theme.themes.value[themeName].colors;
-  const textColor = themeColors.onBackground;
+  const textColor = getThemeTextColor();
+  const backgroundColor = getThemeSurfaceColor();
 
-  // Get unique X and Y values as category axes
   const xValues = Array.from(new Set(data.map((p) => p.x))).sort((a, b) => a - b);
   const yValues = Array.from(new Set(data.map((p) => p.y))).sort((a, b) => a - b);
-
-  // Create a map for quick point lookup
   const pointMap = new Map<string, number>();
+
   data.forEach((point) => {
     pointMap.set(`${point.x},${point.y}`, point.z);
   });
 
-  // Prepare heatmap data: convert to [xIndex, yIndex, value] format
-  const heatmapData: [number, number, number][] = [];
-  xValues.forEach((x, xi) => {
-    yValues.forEach((y, yi) => {
+  const zMatrix = yValues.map((y) =>
+    xValues.map((x) => {
       const value = pointMap.get(`${x},${y}`);
-      if (value !== undefined) {
-        heatmapData.push([xi, yi, value]);
-      }
-    });
-  });
+      return value !== undefined ? value : NaN;
+    })
+  );
 
-  // Get the range of values for normalization
   const zValues = data.map((p) => p.z);
   const zMin = 0;
   const zMax = Math.ceil(Math.max(...zValues));
 
-  const option: echarts.EChartsOption = {
-    title: {
-      text: props.title,
-      left: "center",
-      textStyle: {
-        color: textColor
-      }
+  const trace = {
+    type: "contour",
+    x: xValues,
+    y: yValues,
+    z: zMatrix,
+    colorscale: [
+      [0, "blue"],
+      [0.25, "cyan"],
+      [0.5, "green"],
+      [0.75, "yellow"],
+      [1, "red"]
+    ],
+    contours: {
+      coloring: "heatmap",
+      showlabels: false,
+      labelfont: { color: textColor }
     },
-    tooltip: {
-      position: "top",
-      backgroundColor: themeColors.background,
-      textStyle: {
-        color: textColor
+    colorbar: {
+      title: {
+        text: "px",
+        font: { color: textColor }
       },
-      formatter: function (params) {
-        if (!Array.isArray(params) && params.value) {
-          const [xi, yi, value] = params.value as [number, number, number];
-          const x = xValues[xi];
-          const y = yValues[yi];
-          return `X: ${x}<br/>Y: ${y}<br/>Uncertainty: ${value.toFixed(4)}`;
-        }
-        return "";
-      }
+      tickfont: { color: textColor },
+      outlinecolor: textColor,
+      bordercolor: textColor
     },
-    grid: {
-      top: 40,
-      bottom: 60,
-      left: 60,
-      right: 120,
-      containLabel: true
-    },
-    xAxis: {
-      type: "category",
-      name: "X (pixels)",
-      nameTextStyle: {
-        color: textColor
-      },
-      axisLabel: {
-        color: textColor
-      },
-      axisLine: {
-        lineStyle: {
-          color: textColor
-        }
-      },
-      data: xValues.map((v) => v.toString())
-    },
-    yAxis: {
-      type: "category",
-      name: "Y (pixels)",
-      nameTextStyle: {
-        color: textColor
-      },
-      axisLabel: {
-        color: textColor
-      },
-      axisLine: {
-        lineStyle: {
-          color: textColor
-        }
-      },
-      data: yValues.map((v) => v.toString())
-    },
-    visualMap: {
-      min: zMin,
-      max: zMax,
-      text: [`${zMax} px`, `${zMin} px`],
-      realtime: true,
-      textStyle: {
-        color: textColor
-      },
-      formatter: (min, max) => {
-        if (typeof min === "number") {
-          if (typeof max === "number") {
-            return `${min.toFixed(2)} - ${max.toFixed(2)} px`;
-          }
-          return `${min.toFixed(2)} px`;
-        }
-        return "";
-      },
-      inRange: {
-        color: ["blue", "cyan", "green", "yellow", "red"]
-      }
-    },
-    series: [
-      {
-        name: "Uncertainty",
-        type: "heatmap",
-        data: heatmapData
-      }
-    ]
+    hovertemplate: "X: %{x}<br>Y: %{y}<br>Uncertainty: %{z:.4f}<extra></extra>",
+    zmin: zMin,
+    zmax: zMax,
+    line: {
+      smoothing: 0.7,
+      width: 1,
+      color: textColor
+    }
   };
 
-  chart.setOption(option);
+  const layout = {
+    title: {
+      text: props.title,
+      x: 0.5,
+      font: { color: textColor }
+    },
+    margin: { t: 60, b: 60, l: 60, r: 120 },
+    paper_bgcolor: backgroundColor,
+    plot_bgcolor: backgroundColor,
+    xaxis: {
+      title: {
+        text: "X (pixels)",
+        font: { color: textColor }
+      },
+      showticklabels: false,
+      showgrid: false,
+      zeroline: false,
+      color: textColor
+    },
+    yaxis: {
+      title: {
+        text: "Y (pixels)",
+        font: { color: textColor }
+      },
+      showticklabels: false,
+      showgrid: false,
+      zeroline: false,
+      color: textColor
+    },
+    font: {
+      color: textColor
+    },
+    hoverlabel: {
+      font: {
+        color: textColor
+      },
+      bgcolor: backgroundColor
+    }
+  };
+
+  const config = {
+    responsive: true,
+    displaylogo: false,
+    modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d", "select2d", "lasso2d", "autoScale2d", "resetScale2d"]
+  };
+
+  Plotly.react(container, [trace], layout, config);
 };
 
 const fetchUncertaintyData = async () => {
@@ -166,10 +177,28 @@ const fetchUncertaintyData = async () => {
     });
     uncertaintyData.value = response.data;
   } catch (err) {
-    const errorMsg = "Failed to load uncertainty data -- calibration may be too old, please recalibrate the camera. " + err.message;
+    let errorMsg = "Failed to load uncertainty data";
+
+    if (axios.isAxiosError(err)) {
+      if (err.response) {
+        const statusText = err.response.statusText ? ` ${err.response.statusText}` : "";
+        errorMsg += `: HTTP ${err.response.status}${statusText}.`;
+      } else if (err.request) {
+        errorMsg += ": network error. Please check your connection and try again.";
+      } else {
+        errorMsg += `: ${err.message}`;
+      }
+    } else if (err instanceof Error) {
+      errorMsg += `: ${err.message}`;
+    }
+
+    error.value = `${errorMsg} Calibration may be too old, please recalibrate the camera.`;
     console.error("Failed to fetch uncertainty data:", err);
-    error.value = errorMsg;
-    chart?.clear();
+
+    const container = containerRef.value;
+    if (container) {
+      Plotly.purge(container);
+    }
   } finally {
     isLoading.value = false;
   }
@@ -177,94 +206,94 @@ const fetchUncertaintyData = async () => {
 
 const onWindowResize = () => {
   const container = containerRef.value;
-  if (!container || !chart) return;
+  if (!container) return;
 
-  // Update container height based on aspect ratio of camera resolution
   const aspectRatio = props.resolution.width / props.resolution.height;
   const containerWidth = container.clientWidth;
   const containerHeight = containerWidth / aspectRatio;
   container.style.height = `${containerHeight}px`;
 
-  // Resize the chart
-  chart.resize();
+  Plotly.Plots.resize(container);
 };
 
 onMounted(async () => {
-  // Fetch data
+  if (!useStateStore().backendConnected) {
+    isLoading.value = false;
+    return;
+  }
+
   await fetchUncertaintyData();
 
   const container = containerRef.value;
   if (!container) return;
 
-  // Set container height based on aspect ratio of camera resolution
   const aspectRatio = props.resolution.width / props.resolution.height;
   const containerWidth = container.clientWidth;
   const containerHeight = containerWidth / aspectRatio;
   container.style.height = `${containerHeight}px`;
 
-  // Initialize ECharts instance
-  chart = echarts.init(container);
-
-  // Draw initial data
   drawUncertainty(uncertaintyData.value);
 
-  // Handle window resize
   window.addEventListener("resize", onWindowResize);
 });
 
 const cleanup = () => {
   window.removeEventListener("resize", onWindowResize);
 
-  if (chart) {
-    chart.dispose();
-    chart = undefined;
+  const container = containerRef.value;
+  if (container) {
+    Plotly.purge(container);
   }
 };
 
 onBeforeUnmount(cleanup);
 
-// If hot-reloading, cleanup on hot reload
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
     cleanup();
   });
 }
 
-// Update chart when data changes
 watch(
   () => uncertaintyData.value,
   () => {
     void drawUncertainty(uncertaintyData.value);
   }
 );
-
-watch(
-  () => [
-    props.cameraUniqueName,
-    props.resolution.width,
-    props.resolution.height,
-    useCameraSettingsStore().getCalibrationCoeffs(props.resolution)
-  ],
-  () => {
-    console.log("Camera or resolution changed, refetching calibration");
-    void fetchUncertaintyData();
-  }
-);
 </script>
 
 <template>
-  <div style="width: 100%; min-height: 400px; display: flex; justify-content: center; align-items: center;">
+  <div style="width: 100%; min-height: 400px; display: flex; justify-content: center; align-items: center">
     <div
       v-if="error"
-      style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1rem; max-width: 85%;"
+      style="
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 1rem;
+        max-width: 85%;
+      "
     >
       <v-icon color="red" size="70">mdi-close</v-icon>
       <v-card-text>{{ error }}</v-card-text>
     </div>
-    <div v-else-if="isLoading" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1rem; width: 100%;">
+    <div
+      v-else-if="isLoading"
+      style="
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 1rem;
+        width: 100%;
+      "
+    >
       <v-progress-circular indeterminate size="70" width="8" color="primary" />
       <v-card-text class="pt-3">Loading uncertainty data...</v-card-text>
     </div>
-    <div v-else ref="containerRef" style="width: 100%; min-height: 400px; flex: 1 1 auto;"></div>
+    <div v-else ref="containerRef" style="width: 100%; min-height: 400px; flex: 1 1 auto"></div>
   </div>
 </template>

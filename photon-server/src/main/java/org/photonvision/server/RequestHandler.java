@@ -1077,8 +1077,23 @@ public class RequestHandler {
             return;
         }
 
-        ctx.json(calList.estimateUncertainty());
-        ctx.status(200);
+        try {
+            ctx.json(calList.estimateUncertainty());
+            ctx.status(200);
+        } catch (Exception e) {
+            ctx.status(422)
+                    .result("Unable to estimate uncertainty for this calibration: " + e.getMessage());
+            logger.error(
+                    "Unable to estimate uncertainty for camera "
+                            + cameraUniqueName
+                            + " at "
+                            + width
+                            + "x"
+                            + height
+                            + ": "
+                            + e.getMessage(),
+                    e);
+        }
     }
 
     private record CalibrationRemoveRequest(int width, int height, String cameraUniqueName) {}
