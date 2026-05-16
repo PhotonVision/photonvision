@@ -186,7 +186,7 @@ public class Main {
                             List.of(),
                             new Size(),
                             1,
-                            CameraLensModel.LENSMODEL_OPENCV));
+                            CameraLensModel.LENSMODEL_OPENCV, null));
 
             logger.info("Added test camera calibration for WPI2026 " + camConf2026.calibrations);
 
