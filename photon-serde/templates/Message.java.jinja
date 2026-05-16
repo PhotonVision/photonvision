@@ -63,6 +63,7 @@ public class {{ name }}Serde implements PacketSerde<{{name}}> {
     }
 {% for field in fields -%}
 {%- if field.type | is_shimmed %}
+    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
     private static BiConsumer<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALencode_shim_callable = (packet, value) -> {{ get_message_by_name(field.type).java_encode_shim }}(packet, value);
     private static Function<Packet, {{ field.type }}> {{ field.name }}_PSINTERNALdecode_shim_callable = (packet) -> {{ get_message_by_name(field.type).java_decode_shim }}(packet);
 {% endif -%}

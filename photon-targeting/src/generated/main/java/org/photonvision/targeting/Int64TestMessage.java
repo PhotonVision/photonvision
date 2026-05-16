@@ -44,10 +44,26 @@ public class Int64TestMessage implements PhotonStructSerializable<Int64TestMessa
 
     public long test;
 
-    public List<Long> vlaTest;
+    public List<Long> vlaTest = List.of();
 
-    public Optional<Long> optTest;
+    public Optional<Long> optTest = Optional.empty();
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Int64TestMessage other = (Int64TestMessage) obj;
+
+        if (this.test != other.test) return false;
+
+        if (!this.vlaTest.equals(other.vlaTest)) return false;
+
+        if (!this.optTest.equals(other.optTest)) return false;
+
+        return true;
+    }
 
     /** Int64TestMessage PhotonStruct for serialization. */
     public static final Int64TestMessageSerde photonStruct = new Int64TestMessageSerde();

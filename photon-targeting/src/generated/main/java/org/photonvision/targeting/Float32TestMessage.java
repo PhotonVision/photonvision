@@ -44,10 +44,26 @@ public class Float32TestMessage implements PhotonStructSerializable<Float32TestM
 
     public float test;
 
-    public List<Float> vlaTest;
+    public List<Float> vlaTest = List.of();
 
-    public Optional<Float> optTest;
+    public Optional<Float> optTest = Optional.empty();
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Float32TestMessage other = (Float32TestMessage) obj;
+
+        if (this.test != other.test) return false;
+
+        if (!this.vlaTest.equals(other.vlaTest)) return false;
+
+        if (!this.optTest.equals(other.optTest)) return false;
+
+        return true;
+    }
 
     /** Float32TestMessage PhotonStruct for serialization. */
     public static final Float32TestMessageSerde photonStruct = new Float32TestMessageSerde();

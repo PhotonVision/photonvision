@@ -41,7 +41,7 @@ class PacketTest {
     }
 
     @Test
-    void pipelineResultSerde() {
+    public void pipelineResultSerde() {
         var ret1 = new PhotonPipelineResult(1, 2, 3, 1024, List.of());
         var p1 = new Packet(10);
         PhotonPipelineResult.photonStruct.pack(p1, ret1);

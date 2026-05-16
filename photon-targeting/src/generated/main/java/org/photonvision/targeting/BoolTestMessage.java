@@ -44,10 +44,26 @@ public class BoolTestMessage implements PhotonStructSerializable<BoolTestMessage
 
     public boolean test;
 
-    public List<Boolean> vlaTest;
+    public List<Boolean> vlaTest = List.of();
 
-    public Optional<Boolean> optTest;
+    public Optional<Boolean> optTest = Optional.empty();
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        BoolTestMessage other = (BoolTestMessage) obj;
+
+        if (this.test != other.test) return false;
+
+        if (!this.vlaTest.equals(other.vlaTest)) return false;
+
+        if (!this.optTest.equals(other.optTest)) return false;
+
+        return true;
+    }
 
     /** BoolTestMessage PhotonStruct for serialization. */
     public static final BoolTestMessageSerde photonStruct = new BoolTestMessageSerde();

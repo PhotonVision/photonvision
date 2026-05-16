@@ -59,12 +59,15 @@ public class Transform3dTestMessageSerde implements PacketSerde<Transform3dTestM
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
 
+    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
     private static BiConsumer<Packet, Transform3d> test_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
     private static Function<Packet, Transform3d> test_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
 
+    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
     private static BiConsumer<Packet, Transform3d> vlaTest_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
     private static Function<Packet, Transform3d> vlaTest_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
 
+    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
     private static BiConsumer<Packet, Transform3d> optTest_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
     private static Function<Packet, Transform3d> optTest_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
 

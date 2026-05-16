@@ -44,10 +44,26 @@ public class Int32TestMessage implements PhotonStructSerializable<Int32TestMessa
 
     public int test;
 
-    public List<Integer> vlaTest;
+    public List<Integer> vlaTest = List.of();
 
-    public Optional<Integer> optTest;
+    public Optional<Integer> optTest = Optional.empty();
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Int32TestMessage other = (Int32TestMessage) obj;
+
+        if (this.test != other.test) return false;
+
+        if (!this.vlaTest.equals(other.vlaTest)) return false;
+
+        if (!this.optTest.equals(other.optTest)) return false;
+
+        return true;
+    }
 
     /** Int32TestMessage PhotonStruct for serialization. */
     public static final Int32TestMessageSerde photonStruct = new Int32TestMessageSerde();

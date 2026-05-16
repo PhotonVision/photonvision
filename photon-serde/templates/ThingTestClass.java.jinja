@@ -47,22 +47,44 @@ public class {{ name }} implements PhotonStructSerializable<{{ name }}> {
 {% for field in fields -%}
 {%- if field.type | is_intrinsic %}
     {%- if field.optional == True %}
-    public Optional<{{ type_map[field.type].java_boxed_type }}> {{ field.name }};
+    public Optional<{{ type_map[field.type].java_boxed_type }}> {{ field.name }} = Optional.empty();
     {%- elif field.vla == True %}
-    public List<{{ type_map[field.type].java_boxed_type }}> {{ field.name }};
+    public List<{{ type_map[field.type].java_boxed_type }}> {{ field.name }} = List.of();
     {%- else %}
     public {{ type_map[field.type].java_type }} {{ field.name }};
     {%- endif %}
 {%- else %}
     {%- if field.optional == True %}
-    public Optional<{{ field.type }}> {{ field.name }};
+    public Optional<{{ field.type }}> {{ field.name }} = Optional.empty();
     {%- elif field.vla == True %}
-    public List<{{ field.type }}> {{ field.name }};
+    public List<{{ field.type }}> {{ field.name }} = List.of();
     {%- else %}
-    public {{ field.type }} {{ field.name }};
+    public {{ field.type }} {{ field.name }} = new {{ field.type }}();
     {%- endif %}
 {%- endif %}
 {% endfor%}
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        {{ name }} other = ({{ name }}) obj;
+{% for field in fields -%}
+{%- if field.type | is_intrinsic %}
+    {%- if field.optional == True %}
+        if (!this.{{ field.name }}.equals(other.{{ field.name }})) return false;
+    {%- elif field.vla == True %}
+        if (!this.{{ field.name }}.equals(other.{{ field.name }})) return false;
+    {%- else %}
+        if (this.{{ field.name }} != other.{{ field.name }}) return false;
+    {%- endif %}
+{%- else %}
+        if (!this.{{ field.name }}.equals(other.{{ field.name }})) return false;
+{%- endif %}
+{% endfor%}
+        return true;
+    }
 
     /** {{ name }} PhotonStruct for serialization. */
     public static final {{ name }}Serde photonStruct = new {{ name }}Serde();

@@ -59,9 +59,11 @@ public class PhotonTrackedTargetSerde implements PacketSerde<PhotonTrackedTarget
         throw new UnsupportedOperationException("Unimplemented method 'getMaxByteSize'");
     }
 
+    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
     private static BiConsumer<Packet, Transform3d> bestCameraToTarget_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
     private static Function<Packet, Transform3d> bestCameraToTarget_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
 
+    // Hack because the shim is PacketUtil.[shim] not PacketUtil::[shim]
     private static BiConsumer<Packet, Transform3d> altCameraToTarget_PSINTERNALencode_shim_callable = (packet, value) -> PacketUtils.packTransform3d(packet, value);
     private static Function<Packet, Transform3d> altCameraToTarget_PSINTERNALdecode_shim_callable = (packet) -> PacketUtils.unpackTransform3d(packet);
 

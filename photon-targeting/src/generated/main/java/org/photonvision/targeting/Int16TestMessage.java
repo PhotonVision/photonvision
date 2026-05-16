@@ -44,10 +44,26 @@ public class Int16TestMessage implements PhotonStructSerializable<Int16TestMessa
 
     public short test;
 
-    public List<Short> vlaTest;
+    public List<Short> vlaTest = List.of();
 
-    public Optional<Short> optTest;
+    public Optional<Short> optTest = Optional.empty();
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Int16TestMessage other = (Int16TestMessage) obj;
+
+        if (this.test != other.test) return false;
+
+        if (!this.vlaTest.equals(other.vlaTest)) return false;
+
+        if (!this.optTest.equals(other.optTest)) return false;
+
+        return true;
+    }
 
     /** Int16TestMessage PhotonStruct for serialization. */
     public static final Int16TestMessageSerde photonStruct = new Int16TestMessageSerde();

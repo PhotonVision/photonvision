@@ -44,10 +44,26 @@ public class Int8TestMessage implements PhotonStructSerializable<Int8TestMessage
 
     public byte test;
 
-    public List<Byte> vlaTest;
+    public List<Byte> vlaTest = List.of();
 
-    public Optional<Byte> optTest;
+    public Optional<Byte> optTest = Optional.empty();
 
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Int8TestMessage other = (Int8TestMessage) obj;
+
+        if (this.test != other.test) return false;
+
+        if (!this.vlaTest.equals(other.vlaTest)) return false;
+
+        if (!this.optTest.equals(other.optTest)) return false;
+
+        return true;
+    }
 
     /** Int8TestMessage PhotonStruct for serialization. */
     public static final Int8TestMessageSerde photonStruct = new Int8TestMessageSerde();
