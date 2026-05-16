@@ -157,6 +157,8 @@ PhotonCamera::PhotonCamera(wpi::nt::NetworkTableInstance instance,
       fpsLimitSubscriber(rootTable->GetIntegerTopic("fpsLimit").Subscribe(-1)),
       fpsLimitPublisher(
           rootTable->GetIntegerTopic("fpsLimitRequest").Publish()),
+      enabledSubscriber(rootTable->GetBooleanTopic("enabled").Subscribe(true)),
+      enabledPublisher(rootTable->GetBooleanTopic("enabledRequest").Publish()),
       heartbeatSubscriber(
           rootTable->GetIntegerTopic("heartbeat").Subscribe(-1)),
       topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
@@ -290,6 +292,10 @@ int PhotonCamera::GetFPSLimit() const { return fpsLimitSubscriber.Get(); }
 void PhotonCamera::SetFPSLimit(int fpsLimit) {
   fpsLimitPublisher.Set(fpsLimit);
 }
+
+bool PhotonCamera::GetEnabled() const { return enabledSubscriber.Get(); }
+
+void PhotonCamera::SetEnabled(bool enabled) { enabledPublisher.Set(enabled); }
 
 void PhotonCamera::TakeInputSnapshot() {
   inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
