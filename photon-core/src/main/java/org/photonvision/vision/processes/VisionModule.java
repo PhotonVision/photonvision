@@ -390,8 +390,8 @@ public class VisionModule {
                         + data.videoModeIndex
                         + " and settings "
                         + data);
-        settings.gridSize = data.squareSizeMm / 1000;
-        settings.markerSize = data.markerSizeMm / 1000;
+        settings.gridSize = data.squareSizeMeters;
+        settings.markerSize = data.markerSizeMeters;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;

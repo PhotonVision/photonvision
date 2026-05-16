@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref, watch, watchEffect } from "vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { CalibrationBoardTypes, CalibrationTagFamilies, type VideoFormat } from "@/types/SettingTypes";
 import MonoLogo from "@/assets/images/logoMono.png";
@@ -15,12 +15,12 @@ import CameraCalibrationInfoCard from "@/components/cameras/CameraCalibrationInf
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { useTheme } from "vuetify";
 import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import { unit } from "mathjs";
 
 const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
 
 const theme = useTheme();
-const MM_PER_INCH = 25.4;
 
 const settingsValid = ref(true);
 
@@ -110,8 +110,8 @@ watchEffect(() => {
   uniqueVideoResolutionIndex.value = currentIndex;
 });
 const dimensionUnit = ref<"in" | "mm">("in");
-const squareSizeMm = ref(30);
-const markerSizeMm = ref(22);
+const squareSize = ref(30);
+const markerSize = ref(22);
 const patternWidth = ref(8);
 const patternHeight = ref(8);
 const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
@@ -119,24 +119,23 @@ const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
 
-const convertMetricToDisplay = (valueInMm: number) =>
-  dimensionUnit.value === "in" ? valueInMm / MM_PER_INCH : valueInMm;
-
-const convertDisplayToMetric = (displayValue: number) =>
-  dimensionUnit.value === "in" ? displayValue * MM_PER_INCH : displayValue;
-
-const squareSize = computed({
-  get: () => convertMetricToDisplay(squareSizeMm.value),
+const squareSizeMeters = computed({
+  get: () => unit(squareSize.value, dimensionUnit.value).to("m").value,
   set(value) {
-    squareSizeMm.value = convertDisplayToMetric(value);
+    squareSize.value = unit(value, "m").to(dimensionUnit.value).value;
   }
 });
 
-const markerSize = computed({
-  get: () => convertMetricToDisplay(markerSizeMm.value),
+const markerSizeMeters = computed({
+  get: () => unit(markerSize.value, dimensionUnit.value).to("m").value,
   set(value) {
-    markerSizeMm.value = convertDisplayToMetric(value);
+    markerSize.value = unit(value, "m").to(dimensionUnit.value).value;
   }
+});
+
+watch(dimensionUnit, (value, oldValue) => {
+  squareSize.value = unit(squareSize.value, oldValue).to(value).value;
+  markerSize.value = unit(markerSize.value, oldValue).to(value).value;
 });
 
 const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
@@ -150,6 +149,7 @@ const downloadCalibBoard = async () => {
   const { jsPDF } = await jspdf;
   const { font } = await PromptRegular;
   const doc = new jsPDF({ unit: "mm", format: "letter" });
+  // TODO: Convert dimensioned constants
 
   doc.addFileToVFS("Prompt-Regular.tff", font);
   doc.addFont("Prompt-Regular.tff", "Prompt-Regular", "normal");
@@ -161,18 +161,18 @@ const downloadCalibBoard = async () => {
 
   switch (boardType.value) {
     case CalibrationBoardTypes.Chessboard:
-      const chessboardStartX = (paperWidth - patternWidth.value * squareSizeMm.value) / 2;
+      const chessboardStartX = (paperWidth - (patternWidth.value * squareSizeMeters.value) / 1000) / 2;
 
-      const chessboardStartY = (paperHeight - patternWidth.value * squareSizeMm.value) / 2;
+      const chessboardStartY = (paperHeight - (patternWidth.value * squareSizeMeters.value) / 1000) / 2;
 
       for (let squareY = 0; squareY < patternHeight.value; squareY++) {
         for (let squareX = 0; squareX < patternWidth.value; squareX++) {
-          const xPos = chessboardStartX + squareX * squareSizeMm.value;
-          const yPos = chessboardStartY + squareY * squareSizeMm.value;
+          const xPos = chessboardStartX + (squareX * squareSizeMeters.value) / 1000;
+          const yPos = chessboardStartY + (squareY * squareSizeMeters.value) / 1000;
 
           // Only draw the odd squares to create the chessboard pattern
           if (squareY % 2 !== squareX % 2) {
-            doc.rect(xPos, yPos, squareSizeMm.value, squareSizeMm.value, "F");
+            doc.rect(xPos, yPos, squareSizeMeters.value / 1000, squareSizeMeters.value / 1000, "F");
           }
         }
       }
@@ -188,7 +188,6 @@ const downloadCalibBoard = async () => {
       break;
 
     case CalibrationBoardTypes.Charuco:
-      // TODO: Dynamically generate ChArUco using opencv
       // Add pregenerated ChArUco
       const charucoImage = new Image();
       charucoImage.src = CharucoImage;
@@ -226,8 +225,8 @@ const isCalibrating = computed(
 
 const startCalibration = () => {
   useCameraSettingsStore().startPnPCalibration({
-    squareSizeMm: squareSizeMm.value,
-    markerSizeMm: markerSizeMm.value,
+    squareSizeMm: squareSizeMeters.value,
+    markerSizeMm: markerSizeMeters.value,
     patternHeight: patternHeight.value,
     patternWidth: patternWidth.value,
     boardType: boardType.value,
