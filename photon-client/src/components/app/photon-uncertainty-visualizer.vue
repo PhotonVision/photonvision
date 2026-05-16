@@ -165,13 +165,9 @@ const fetchUncertaintyData = async () => {
     });
     uncertaintyData.value = response.data;
   } catch (err) {
+    const errorMsg = "Failed to load uncertainty data -- calibration may be too old, please recalibrate the camera. " + err.message;
     console.error("Failed to fetch uncertainty data:", err);
-    error.value = "Failed to load uncertainty data";
-    useStateStore().showSnackbarMessage({
-      message: "Failed to load uncertainty data -- calibration may be too old",
-      color: "error",
-      timeout: 5000
-    });
+    error.value = errorMsg;
     chart?.clear();
   } finally {
     isLoading.value = false;
