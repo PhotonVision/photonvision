@@ -104,7 +104,17 @@ class PhotonCamera {
   bool GetDriverMode() const;
 
   /**
-   * @param fpsLimit The FPS limit to set. Use -1 for unlimited FPS.
+   *  Sets the FPS limit on the camera.
+   *
+   * <p>An FPS of 0 means to pause processing until a FPS limit greater than 0
+   * is set.
+   *
+   * <p>A negative FPS limit is treated as no FPS limit, and will run as fast as
+   * possible.
+   *
+   * <p>Otherwise, will limit processing to at most the provided FPS limit
+   *
+   * @param fps The FPS limit to set.
    */
   void SetFPSLimit(int fpsLimit);
 
@@ -112,6 +122,17 @@ class PhotonCamera {
    * @return The FPS limit set on the camera, or -1 if no limit is set.
    */
   int GetFPSLimit() const;
+
+  /**
+   * Sets whether the camera is enabled, default is true.
+   * @param enabled Whether to enable the camera.
+   */
+  void SetEnabled(bool enabled);
+
+  /**
+   * @return Whether the camera is enabled.
+   */
+  bool GetEnabled() const;
 
   /**
    * Request the camera to save a new image file from the input
@@ -233,6 +254,8 @@ class PhotonCamera {
   wpi::nt::BooleanPublisher driverModePublisher;
   wpi::nt::IntegerSubscriber fpsLimitSubscriber;
   wpi::nt::IntegerPublisher fpsLimitPublisher;
+  wpi::nt::BooleanSubscriber enabledSubscriber;
+  wpi::nt::BooleanPublisher enabledPublisher;
 
   wpi::nt::IntegerSubscriber ledModeSubscriber;
 

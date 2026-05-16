@@ -151,6 +151,9 @@ def test_lowestAmbiguityStrategy():
     assertEquals(1, pose.x, 0.01)
     assertEquals(3, pose.y, 0.01)
     assertEquals(2, pose.z, 0.01)
+    # Only the chosen (lowest-ambiguity) target should be reported as used.
+    assert len(estimatedPose.targetsUsed) == 1
+    assert estimatedPose.targetsUsed[0].fiducialId == 1
 
 
 def test_pnpDistanceTrigSolve():
@@ -203,6 +206,9 @@ def test_pnpDistanceTrigSolve():
     assertEquals(realPose.x, pose.x, 0.01)
     assertEquals(realPose.y, pose.y, 0.01)
     assertEquals(0.0, pose.z, 0.01)
+    # PNP_DISTANCE_TRIG_SOLVE uses only the best target.
+    assert len(estimatedRobotPose.targetsUsed) == 1
+    assert estimatedRobotPose.targetsUsed[0].fiducialId == bestTarget.fiducialId
 
     # Straight on
     fakeTimestampSecs += 60
@@ -229,6 +235,9 @@ def test_pnpDistanceTrigSolve():
     assertEquals(realPose.x, pose.x, 0.01)
     assertEquals(realPose.y, pose.y, 0.01)
     assertEquals(0.0, pose.z, 0.01)
+    # PNP_DISTANCE_TRIG_SOLVE uses only the best target.
+    assert len(estimatedRobotPose.targetsUsed) == 1
+    assert estimatedRobotPose.targetsUsed[0].fiducialId == bestTarget.fiducialId
 
 
 def test_multiTagOnCoprocStrategy():
