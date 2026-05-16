@@ -29,7 +29,6 @@ import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 
 public class SerdeTest {
-
     private <T extends PhotonStructSerializable<T>> boolean testSerde(T data) {
         var p = new Packet(10);
         p.encode(data);
