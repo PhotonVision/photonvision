@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
-import Plotly from "plotly.js-dist-min";
+import type PlotlyType from "plotly.js-dist-min";
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
@@ -18,6 +18,8 @@ const uncertaintyData: Ref<CvPoint3[] | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
 const containerRef = ref<HTMLDivElement | null>(null);
+
+let plotly: typeof PlotlyType | null = null;
 
 const getThemeTextColor = (): string => {
   const styles = getComputedStyle(document.documentElement);
@@ -54,7 +56,7 @@ const getThemeSurfaceColor = (): string => {
 
 const drawUncertainty = (data: CvPoint3[] | null) => {
   const container = containerRef.value;
-  if (!container || !data || data.length === 0) return;
+  if (!container || !data || data.length === 0 || !plotly) return;
 
   const textColor = getThemeTextColor();
   const backgroundColor = getThemeSurfaceColor();
@@ -79,7 +81,7 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
   const zMax = Math.ceil(Math.max(...zValues));
 
   const trace = {
-    type: "contour",
+    type: "contour" as const,
     x: xValues,
     y: yValues,
     z: zMatrix,
@@ -89,9 +91,9 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
       [0.5, "green"],
       [0.75, "yellow"],
       [1, "red"]
-    ],
+    ] as [number, string][],
     contours: {
-      coloring: "heatmap",
+      coloring: "heatmap" as const,
       showlabels: false,
       labelfont: { color: textColor }
     },
@@ -160,7 +162,7 @@ const drawUncertainty = (data: CvPoint3[] | null) => {
     modeBarButtonsToRemove: ["zoomIn2d", "zoomOut2d", "select2d", "lasso2d", "autoScale2d", "resetScale2d"]
   };
 
-  Plotly.react(container, [trace], layout, config);
+  plotly.react(container, [trace], layout, config);
 };
 
 const fetchUncertaintyData = async () => {
@@ -196,8 +198,8 @@ const fetchUncertaintyData = async () => {
     console.error("Failed to fetch uncertainty data:", err);
 
     const container = containerRef.value;
-    if (container) {
-      Plotly.purge(container);
+    if (container && plotly) {
+      plotly.purge(container);
     }
   } finally {
     isLoading.value = false;
@@ -206,14 +208,14 @@ const fetchUncertaintyData = async () => {
 
 const onWindowResize = () => {
   const container = containerRef.value;
-  if (!container) return;
+  if (!container || !plotly) return;
 
   const aspectRatio = props.resolution.width / props.resolution.height;
   const containerWidth = container.clientWidth;
   const containerHeight = containerWidth / aspectRatio;
   container.style.height = `${containerHeight}px`;
 
-  Plotly.Plots.resize(container);
+  plotly.Plots.resize(container);
 };
 
 onMounted(async () => {
@@ -221,6 +223,8 @@ onMounted(async () => {
     isLoading.value = false;
     return;
   }
+
+  plotly = await import("plotly.js-dist-min");
 
   await fetchUncertaintyData();
 
@@ -241,8 +245,8 @@ const cleanup = () => {
   window.removeEventListener("resize", onWindowResize);
 
   const container = containerRef.value;
-  if (container) {
-    Plotly.purge(container);
+  if (container && plotly) {
+    plotly.purge(container);
   }
 };
 
