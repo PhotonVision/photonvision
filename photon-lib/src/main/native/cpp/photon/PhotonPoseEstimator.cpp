@@ -24,6 +24,7 @@
 
 #include "photon/PhotonPoseEstimator.h"
 
+#include <array>
 #include <limits>
 #include <optional>
 #include <utility>
@@ -121,10 +122,11 @@ PhotonPoseEstimator::EstimateLowestAmbiguityPose(
     return std::nullopt;
   }
 
+  std::array<PhotonTrackedTarget, 1> usedTargets{bestTarget};
   return EstimatedRobotPose{
       fiducialPose->TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(m_robotToCamera.Inverse()),
-      cameraResult.GetTimestamp(), cameraResult.GetTargets(), LOWEST_AMBIGUITY};
+      cameraResult.GetTimestamp(), usedTargets, LOWEST_AMBIGUITY};
 }
 
 std::optional<EstimatedRobotPose>
@@ -136,7 +138,8 @@ PhotonPoseEstimator::EstimateClosestToCameraHeightPose(
   wpi::units::meter_t smallestHeightDifference =
       wpi::units::meter_t(std::numeric_limits<double>::infinity());
 
-  std::optional<EstimatedRobotPose> pose = std::nullopt;
+  std::optional<wpi::math::Pose3d> bestPose = std::nullopt;
+  std::optional<PhotonTrackedTarget> bestTarget = std::nullopt;
 
   for (auto& target : cameraResult.GetTargets()) {
     std::optional<wpi::math::Pose3d> fiducialPose =
@@ -160,23 +163,26 @@ PhotonPoseEstimator::EstimateClosestToCameraHeightPose(
 
     if (alternativeDifference < smallestHeightDifference) {
       smallestHeightDifference = alternativeDifference;
-      pose = EstimatedRobotPose{
+      bestPose =
           targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
-          cameraResult.GetTimestamp(), cameraResult.GetTargets(),
-          CLOSEST_TO_CAMERA_HEIGHT};
+              .TransformBy(m_robotToCamera.Inverse());
+      bestTarget = target;
     }
     if (bestDifference < smallestHeightDifference) {
       smallestHeightDifference = bestDifference;
-      pose = EstimatedRobotPose{
+      bestPose =
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
-              .TransformBy(m_robotToCamera.Inverse()),
-          cameraResult.GetTimestamp(), cameraResult.GetTargets(),
-          CLOSEST_TO_CAMERA_HEIGHT};
+              .TransformBy(m_robotToCamera.Inverse());
+      bestTarget = target;
     }
   }
 
-  return pose;
+  if (!bestTarget) {
+    return std::nullopt;
+  }
+  std::array<PhotonTrackedTarget, 1> usedTargets{*bestTarget};
+  return EstimatedRobotPose{*bestPose, cameraResult.GetTimestamp(), usedTargets,
+                            CLOSEST_TO_CAMERA_HEIGHT};
 }
 
 std::optional<EstimatedRobotPose>
@@ -189,6 +195,7 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
       wpi::units::meter_t(std::numeric_limits<double>::infinity());
   wpi::units::second_t stateTimestamp = wpi::units::second_t(0);
   wpi::math::Pose3d pose;
+  std::optional<PhotonTrackedTarget> bestTarget = std::nullopt;
 
   auto targets = cameraResult.GetTargets();
   for (auto& target : targets) {
@@ -217,16 +224,22 @@ PhotonPoseEstimator::EstimateClosestToReferencePose(
       smallestDifference = alternativeDifference;
       pose = altPose;
       stateTimestamp = cameraResult.GetTimestamp();
+      bestTarget = target;
     }
 
     if (bestDifference < smallestDifference) {
       smallestDifference = bestDifference;
       pose = bestPose;
       stateTimestamp = cameraResult.GetTimestamp();
+      bestTarget = target;
     }
   }
 
-  return EstimatedRobotPose{pose, stateTimestamp, cameraResult.GetTargets(),
+  if (!bestTarget) {
+    return std::nullopt;
+  }
+  std::array<PhotonTrackedTarget, 1> usedTargets{*bestTarget};
+  return EstimatedRobotPose{pose, stateTimestamp, usedTargets,
                             CLOSEST_TO_REFERENCE_POSE};
 }
 
@@ -399,9 +412,10 @@ PhotonPoseEstimator::EstimatePnpDistanceTrigSolvePose(
   wpi::math::Pose2d robotPose = wpi::math::Pose2d(
       fieldToCameraTranslation + camToRobotTranslation, headingSample);
 
+  std::array<PhotonTrackedTarget, 1> usedTargets{bestTarget};
   return EstimatedRobotPose{wpi::math::Pose3d(robotPose),
-                            cameraResult.GetTimestamp(),
-                            cameraResult.GetTargets(), PNP_DISTANCE_TRIG_SOLVE};
+                            cameraResult.GetTimestamp(), usedTargets,
+                            PNP_DISTANCE_TRIG_SOLVE};
 }
 
 std::optional<EstimatedRobotPose>
@@ -411,7 +425,7 @@ PhotonPoseEstimator::EstimateAverageBestTargetsPose(
     return std::nullopt;
   }
   std::vector<
-      std::pair<wpi::math::Pose3d, std::pair<double, wpi::units::second_t>>>
+      std::pair<wpi::math::Pose3d, std::pair<double, PhotonTrackedTarget>>>
       tempPoses;
   double totalAmbiguity = 0;
 
@@ -429,33 +443,35 @@ PhotonPoseEstimator::EstimateAverageBestTargetsPose(
     wpi::math::Pose3d targetPose = fiducialPose.value();
     // Ambiguity = 0, use that pose
     if (target.GetPoseAmbiguity() == 0) {
+      std::array<PhotonTrackedTarget, 1> usedTargets{target};
       return EstimatedRobotPose{
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
               .TransformBy(m_robotToCamera.Inverse()),
-          cameraResult.GetTimestamp(), cameraResult.GetTargets(),
-          AVERAGE_BEST_TARGETS};
+          cameraResult.GetTimestamp(), usedTargets, AVERAGE_BEST_TARGETS};
     }
     totalAmbiguity += 1. / target.GetPoseAmbiguity();
 
     tempPoses.push_back(std::make_pair(
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
-        std::make_pair(target.GetPoseAmbiguity(),
-                       cameraResult.GetTimestamp())));
+        std::make_pair(target.GetPoseAmbiguity(), target)));
   }
 
   wpi::math::Translation3d transform = wpi::math::Translation3d();
   wpi::math::Rotation3d rotation = wpi::math::Rotation3d();
 
-  for (std::pair<wpi::math::Pose3d, std::pair<double, wpi::units::second_t>>&
+  std::vector<PhotonTrackedTarget> usedTargets;
+  usedTargets.reserve(tempPoses.size());
+  for (std::pair<wpi::math::Pose3d, std::pair<double, PhotonTrackedTarget>>&
            pair : tempPoses) {
     double const weight = (1. / pair.second.first) / totalAmbiguity;
     transform = transform + pair.first.Translation() * weight;
     rotation = rotation.RotateBy(pair.first.Rotation() * weight);
+    usedTargets.push_back(pair.second.second);
   }
 
   return EstimatedRobotPose{wpi::math::Pose3d(transform, rotation),
-                            cameraResult.GetTimestamp(),
-                            cameraResult.GetTargets(), AVERAGE_BEST_TARGETS};
+                            cameraResult.GetTimestamp(), usedTargets,
+                            AVERAGE_BEST_TARGETS};
 }
 
 std::optional<EstimatedRobotPose>
