@@ -38,6 +38,7 @@ public class SerdeTest {
 
     @Test
     public void int8Test() {
+        System.out.println("Running int8 Test");
         // Default test
         var test1 = new Int8TestMessage();
         assertTrue(testSerde(test1));
@@ -59,6 +60,7 @@ public class SerdeTest {
 
     @Test
     public void int16Test() {
+        System.out.println("Running int16 Test");
         // Default test
         var test1 = new Int16TestMessage();
         assertTrue(testSerde(test1));
@@ -80,6 +82,7 @@ public class SerdeTest {
 
     @Test
     public void int32Test() {
+        System.out.println("Running int32 Test");
         // Default test
         var test1 = new Int32TestMessage();
         assertTrue(testSerde(test1));
@@ -101,6 +104,7 @@ public class SerdeTest {
 
     @Test
     public void int64Test() {
+        System.out.println("Running int64 Test");
         // Default test
         var test1 = new Int64TestMessage();
         assertTrue(testSerde(test1));
@@ -122,6 +126,7 @@ public class SerdeTest {
 
     @Test
     public void float32Test() {
+        System.out.println("Running float32 Test");
         // Default test
         var test1 = new Float32TestMessage();
         assertTrue(testSerde(test1));
@@ -143,6 +148,7 @@ public class SerdeTest {
 
     @Test
     public void float64Test() {
+        System.out.println("Running float64 Test");
         // Default test
         var test1 = new Float64TestMessage();
         assertTrue(testSerde(test1));
@@ -164,6 +170,7 @@ public class SerdeTest {
 
     @Test
     public void boolTest() {
+        System.out.println("Running bool Test");
         // Default test
         var test1 = new BoolTestMessage();
         assertTrue(testSerde(test1));
@@ -185,6 +192,7 @@ public class SerdeTest {
 
     @Test
     public void Transform3dTest() {
+        System.out.println("Running Transform3d Test");
         // Default test
         var test1 = new Transform3dTestMessage();
         assertTrue(testSerde(test1));
