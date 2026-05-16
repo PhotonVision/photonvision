@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -49,10 +50,6 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipeline.UICalibrationData.BoardType;
 import org.photonvision.vision.pipeline.UICalibrationData.TagFamily;
 import org.wpilib.math.util.Units;
-
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.databind.DatabindException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Calibrate3dPipeTest {
     @BeforeAll
@@ -177,23 +174,16 @@ public class Calibrate3dPipeTest {
                         dataset.useOldPattern);
 
         // write data to file
-        var file = new File("C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test-resources\\calibrationCharucoImg\\lifecam\\2024-05-07_lifecam_1280\\calibration_data.json");
+        var file =
+                new File(
+                        "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test-resources\\calibrationCharucoImg\\lifecam\\2024-05-07_lifecam_1280\\calibration_data.json");
         new ObjectMapper().writeValue(file, data);
 
         var uncertainty = data.estimateUncertainty();
         assertNotNull(uncertainty);
 
-        // print x, y, z
-        for (var p : uncertainty) {
-            System.out.println(
-                    String.format(
-                            "Uncertainty (x, y, z): (%.2f, %.2f, %.2f) px",
-                            p.x, p.y, p.z));
-        }
-
         // sanity check that minimum is low
-        var minUncertainty =
-                uncertainty.stream().mapToDouble(p -> p.z).min();
+        var minUncertainty = uncertainty.stream().mapToDouble(p -> p.z).min();
         assertTrue(minUncertainty.isPresent());
         assertEquals(1.5, minUncertainty.getAsDouble(), 1.5);
     }

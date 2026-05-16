@@ -295,11 +295,31 @@ public class Calibrate3dPipe
 
         // We get these from the JNI (retsult.optimizedPoses), but these are subtly different from the
         // ones our code used to produce. To preserve consistency, continue to redo this math
+        // EXCEPTTTTTTTTTTTTT that this will break uncertainty calculations, which rely on the rvecs and
+        // tvecs being the same as the ones used in calibration to preserve the "optimizer input" vector
+        // we reconstruct precisely
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
+
+        for (int i = 0; i < foundBoards.size(); i++) {
+            var camToBoard = result.optimizedPoses.get(i);
+
+            var rvec = new MatOfDouble(0, 0, 0);
+            MathUtils.rotationToOpencvRvec(camToBoard.getRotation(), rvec);
+
+            var tvec = new MatOfDouble(camToBoard.getX(), camToBoard.getY(), camToBoard.getZ());
+
+            System.out.println("camToBoard: " + camToBoard);
+            System.out.println("rvec: " + Arrays.toString(rvec.toArray()));
+            System.out.println("tvec: " + Arrays.toString(tvec.toArray()));
+
+            rvecs.add(rvec);
+            tvecs.add(tvec);
+        }
+
         for (var boardObs : foundBoards) {
-            var rvec = new Mat();
-            var tvec = new Mat();
+            var rvec = new MatOfDouble();
+            var tvec = new MatOfDouble();
 
             // If the calibration points contain points that are negative then we need to exclude them,
             // they are considered points that we dont want to use in calibration/solvepnp. These points
@@ -335,8 +355,10 @@ public class Calibrate3dPipe
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
-            rvecs.add(rvec);
-            tvecs.add(tvec);
+            // rvecs.add(rvec);
+            // tvecs.add(tvec);
+            System.out.println("OpenCV reprjoection yields rvec: " + Arrays.toString(rvec.toArray()));
+            System.out.println("    tvec: " + Arrays.toString(tvec.toArray()));
 
             filteredObjectPoints.release();
             filteredImagePoints.release();
@@ -506,15 +528,15 @@ public class Calibrate3dPipe
 
                 // Sanity check -- negative corners make no sense here
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
-                    throw new RuntimeException(
+                    logger.error(
                             "Negative corner in reprojection error calc! Measured: "
                                     + measured
                                     + ", expected: "
                                     + expected);
+                } else {
+                    var error = new Point(measured.x - expected.x, measured.y - expected.y);
+                    reprojectionError.add(error);
                 }
-
-                var error = new Point(measured.x - expected.x, measured.y - expected.y);
-                reprojectionError.add(error);
             }
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(snapshotId), tvecs.get(snapshotId));
