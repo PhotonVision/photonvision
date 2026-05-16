@@ -108,6 +108,45 @@ TEST(PhotonPoseEstimatorTest, LowestAmbiguityStrategy) {
   EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
 }
 
+TEST(PhotonPoseEstimatorTest, LowestAmbiguityIgnoresNonFiducialTargets) {
+  photon::PhotonCamera cameraOne = photon::PhotonCamera("test");
+
+  // A non-fiducial target reports poseAmbiguity = -1. Without the guard the
+  // -1 score beats every fiducial target's score, the loop selects the
+  // non-fiducial target, GetTagPose(-1) returns nullopt, and the whole
+  // estimate is thrown away. The valid fiducial target (fid=1) must win.
+  std::vector<photon::PhotonTrackedTarget> targets{
+      photon::PhotonTrackedTarget{
+          3.0, -4.0, 9.1, 6.7, 1, -1, -1.f,
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          wpi::math::Transform3d(wpi::math::Translation3d(4_m, 2_m, 3_m),
+                                 wpi::math::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.3, corners, detectedCorners},
+      photon::PhotonTrackedTarget{
+          0.0, 0.0, 0.0, 0.0, -1, -1, -1.f, wpi::math::Transform3d(),
+          wpi::math::Transform3d(), -1.0, corners, detectedCorners}};
+
+  cameraOne.test = true;
+  cameraOne.testResult = {photon::PhotonPipelineResult{
+      photon::PhotonPipelineMetadata{0, 0, 2000, 1000}, targets, std::nullopt}};
+  cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(11));
+
+  photon::PhotonPoseEstimator estimator(aprilTags, wpi::math::Transform3d{});
+
+  std::optional<photon::EstimatedRobotPose> estimatedPose;
+  for (const auto& result : cameraOne.GetAllUnreadResults()) {
+    estimatedPose = estimator.EstimateLowestAmbiguityPose(result);
+  }
+  ASSERT_TRUE(estimatedPose);
+  // Tag 1 is at (5,5,5), bestCameraToTarget = (4,2,3), so the estimated
+  // robot pose lands at (1,3,2) in the field frame.
+  wpi::math::Pose3d pose = estimatedPose.value().estimatedPose;
+  EXPECT_NEAR(1, wpi::units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(3, wpi::units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2, wpi::units::unit_cast<double>(pose.Z()), .01);
+}
+
 TEST(PhotonPoseEstimatorTest, ClosestToCameraHeightStrategy) {
   std::vector<wpi::apriltag::AprilTag> tags = {
       {0, wpi::math::Pose3d(wpi::units::meter_t(3), wpi::units::meter_t(3),

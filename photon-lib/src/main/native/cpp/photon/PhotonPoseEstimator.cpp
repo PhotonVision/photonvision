@@ -95,9 +95,14 @@ PhotonPoseEstimator::EstimateLowestAmbiguityPose(
   auto targets = cameraResult.GetTargets();
   auto foundIt = targets.end();
   for (auto it = targets.begin(); it != targets.end(); ++it) {
-    if (it->GetPoseAmbiguity() < lowestAmbiguityScore) {
+    double targetPoseAmbiguity = it->GetPoseAmbiguity();
+    // Skip non-fiducial targets (ambiguity == -1), otherwise they win over
+    // every fiducial target and the whole estimate is thrown away when
+    // GetTagPose(-1) returns nullopt.
+    if (targetPoseAmbiguity != -1 &&
+        targetPoseAmbiguity < lowestAmbiguityScore) {
       foundIt = it;
-      lowestAmbiguityScore = it->GetPoseAmbiguity();
+      lowestAmbiguityScore = targetPoseAmbiguity;
     }
   }
 
