@@ -124,7 +124,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         FrameStaticProperties frameProps =
                 new FrameStaticProperties(
@@ -201,7 +202,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         // WHEN the camera calibration is rotated 180 degrees
         var coeffs2 = coeffs.rotateCoefficients(rot);
@@ -248,7 +250,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
         // WHEN A camera calibration is rotated 4 times
         for (int i = 0; i < 4; i++) {
             coeffs = coeffs.rotateCoefficients(rot);
@@ -289,7 +292,8 @@ public class CalibrationRotationPipeTest {
                         List.of(),
                         new Size(),
                         1,
-                        CameraLensModel.LENSMODEL_OPENCV);
+                        CameraLensModel.LENSMODEL_OPENCV,
+                        null);
 
         // Matt's lifecam pointing at a wall
         var distortedCorners =

@@ -173,12 +173,6 @@ public class Calibrate3dPipeTest {
                         true,
                         dataset.useOldPattern);
 
-        // write data to file
-        var file =
-                new File(
-                        "C:\\Users\\matth\\Documents\\GitHub\\photonvision\\test-resources\\calibrationCharucoImg\\lifecam\\2024-05-07_lifecam_1280\\calibration_data.json");
-        new ObjectMapper().writeValue(file, data);
-
         var uncertainty = data.estimateUncertainty();
         assertNotNull(uncertainty);
 
@@ -186,6 +180,10 @@ public class Calibrate3dPipeTest {
         var minUncertainty = uncertainty.stream().mapToDouble(p -> p.z).min();
         assertTrue(minUncertainty.isPresent());
         assertEquals(1.5, minUncertainty.getAsDouble(), 1.5);
+
+        // print mean uncertainty
+        var meanUncertainty = uncertainty.stream().mapToDouble(p -> p.z).average().orElse(Double.NaN);
+        System.out.println("Mean uncertainty: " + meanUncertainty);
     }
 
     public static CameraCalibrationCoefficients calibrateCommon(

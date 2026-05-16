@@ -41,7 +41,7 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
             Size calobjectSize,
             double calobjectSpacing,
             CameraLensModel lensmodel) {
-        // yeet observations, keep all else
+        // yeet observations + optimization inputs, keep all else
         super(
                 resolution,
                 cameraIntrinsics,
@@ -50,7 +50,8 @@ public class UICameraCalibrationCoefficients extends CameraCalibrationCoefficien
                 List.of(),
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel,
+                null);
 
         this.numSnapshots = observations.size();
         this.meanErrors = observations.stream().map(BoardObservation::meanReprojectionError).toList();

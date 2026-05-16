@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Point3;
@@ -34,11 +35,20 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.opencv.Releasable;
+import org.wpilib.math.geometry.Pose3d;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CameraCalibrationCoefficients implements Releasable {
     private static final Logger logger =
             new Logger(CameraCalibrationCoefficients.class, LogGroup.Data);
+
+    // Mirror of
+    // https://github.com/dkogan/mrcal/blob/c311b0acdb29d3f6c1a5abeaf17dc6a7e2ab10d9/mrcal/cameramodel.py#L377
+    // We must pass the exact optimization state vector back to mrcal when computing uncertainty, but
+    // we re-estimate the camera to object pose using SolvePNP
+    // So we need to keep this + the observation camera to object around. This input shall not change
+    // with "calibration rotation"
+    public static record OptimizationInputs(List<Pose3d> rt_cam_ref) {}
 
     @JsonProperty("resolution")
     public final Size unrotatedImageSize;
@@ -64,6 +74,10 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonProperty("lensmodel")
     public final CameraLensModel lensmodel;
+
+    @JsonProperty("optimizationInputs")
+    @Nullable
+    public final OptimizationInputs optimizationInputs;
 
     /**
      * Contains all camera calibration data for a particular resolution of a camera. Designed for use
@@ -92,7 +106,8 @@ public class CameraCalibrationCoefficients implements Releasable {
             @JsonProperty("observations") List<BoardObservation> observations,
             @JsonProperty("calobjectSize") Size calobjectSize,
             @JsonProperty("calobjectSpacing") double calobjectSpacing,
-            @JsonProperty("lensmodel") CameraLensModel lensmodel) {
+            @JsonProperty("lensmodel") CameraLensModel lensmodel,
+            @JsonProperty("optimizationInputs") OptimizationInputs optimizationInputs) {
         this.unrotatedImageSize = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
@@ -100,6 +115,7 @@ public class CameraCalibrationCoefficients implements Releasable {
         this.calobjectSize = calobjectSize;
         this.calobjectSpacing = calobjectSpacing;
         this.lensmodel = lensmodel;
+        this.optimizationInputs = optimizationInputs;
 
         // Legacy migration just to make sure that observations is at worst empty and never null
         if (observations == null) {
@@ -201,7 +217,8 @@ public class CameraCalibrationCoefficients implements Releasable {
                 observations,
                 calobjectSize,
                 calobjectSpacing,
-                lensmodel);
+                lensmodel,
+                optimizationInputs);
     }
 
     @JsonIgnore
@@ -264,11 +281,11 @@ public class CameraCalibrationCoefficients implements Releasable {
 
     @JsonIgnore
     public double[] framePosesToRtToref() {
-        double[] ret = new double[observations.size() * 6];
+        int numObs = optimizationInputs.rt_cam_ref.size();
+        double[] ret = new double[numObs * 6];
 
-        for (int i = 0; i < observations.size(); i++) {
-            var o = observations.get(i);
-            var pose = o.optimisedCameraToObject;
+        for (int i = 0; i < numObs; i++) {
+            var pose = optimizationInputs.rt_cam_ref.get(i);
             var r = pose.getRotation().toVector();
             var t = pose.getTranslation().toVector();
             ret[i * 6 + 0] = r.get(0);
@@ -288,6 +305,11 @@ public class CameraCalibrationCoefficients implements Releasable {
      */
     @JsonIgnore
     public List<Point3> estimateUncertainty() {
+        if (this.optimizationInputs == null) {
+            logger.error("Cannot compute uncertainty without optimization inputs");
+            throw new RuntimeException("Cannot compute uncertainty without optimization inputs");
+        }
+
         // number of intersections
         int boardWidth = (int) calobjectSize.width;
         int boardHeight = (int) calobjectSize.height;

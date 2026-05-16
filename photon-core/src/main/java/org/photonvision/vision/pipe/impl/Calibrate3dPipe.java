@@ -35,6 +35,7 @@ import org.photonvision.mrcal.MrCalJNI;
 import org.photonvision.mrcal.MrCalJNI.MrCalResult;
 import org.photonvision.vision.calibration.BoardObservation;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients.OptimizationInputs;
 import org.photonvision.vision.calibration.CameraLensModel;
 import org.photonvision.vision.calibration.JsonMatOfDouble;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -239,7 +240,8 @@ public class Calibrate3dPipe
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                null);
     }
 
     protected CameraCalibrationCoefficients calibrateMrcal(
@@ -293,30 +295,10 @@ public class Calibrate3dPipe
         JsonMatOfDouble distortionCoefficientsMat =
                 new JsonMatOfDouble(1, 8, CvType.CV_64FC1, Arrays.copyOfRange(result.intrinsics, 4, 12));
 
-        // We get these from the JNI (retsult.optimizedPoses), but these are subtly different from the
-        // ones our code used to produce. To preserve consistency, continue to redo this math
-        // EXCEPTTTTTTTTTTTTT that this will break uncertainty calculations, which rely on the rvecs and
-        // tvecs being the same as the ones used in calibration to preserve the "optimizer input" vector
-        // we reconstruct precisely
+        // If we use these rvecs/tvecs, it will break mrcal uncertainty calculation because mrcal needs
+        // the optimization state vector at the solution
         List<Mat> rvecs = new ArrayList<>();
         List<Mat> tvecs = new ArrayList<>();
-
-        for (int i = 0; i < foundBoards.size(); i++) {
-            var camToBoard = result.optimizedPoses.get(i);
-
-            var rvec = new MatOfDouble(0, 0, 0);
-            MathUtils.rotationToOpencvRvec(camToBoard.getRotation(), rvec);
-
-            var tvec = new MatOfDouble(camToBoard.getX(), camToBoard.getY(), camToBoard.getZ());
-
-            System.out.println("camToBoard: " + camToBoard);
-            System.out.println("rvec: " + Arrays.toString(rvec.toArray()));
-            System.out.println("tvec: " + Arrays.toString(tvec.toArray()));
-
-            rvecs.add(rvec);
-            tvecs.add(tvec);
-        }
-
         for (var boardObs : foundBoards) {
             var rvec = new MatOfDouble();
             var tvec = new MatOfDouble();
@@ -355,10 +337,8 @@ public class Calibrate3dPipe
                     distortionCoefficientsMat.getAsMatOfDouble(),
                     rvec,
                     tvec);
-            // rvecs.add(rvec);
-            // tvecs.add(tvec);
-            System.out.println("OpenCV reprjoection yields rvec: " + Arrays.toString(rvec.toArray()));
-            System.out.println("    tvec: " + Arrays.toString(tvec.toArray()));
+            rvecs.add(rvec);
+            tvecs.add(tvec);
 
             filteredObjectPoints.release();
             filteredImagePoints.release();
@@ -430,7 +410,8 @@ public class Calibrate3dPipe
                 observations,
                 new Size(params.boardWidth, params.boardHeight),
                 params.squareSize,
-                CameraLensModel.LENSMODEL_OPENCV);
+                CameraLensModel.LENSMODEL_OPENCV,
+                new OptimizationInputs(result.optimizedPoses));
     }
 
     private List<BoardObservation> createObservations(
