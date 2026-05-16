@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
 import * as echarts from "echarts";
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
+import { useStateStore } from "@/stores/StateStore";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useTheme } from "vuetify";
 
@@ -166,6 +167,12 @@ const fetchUncertaintyData = async () => {
   } catch (err) {
     console.error("Failed to fetch uncertainty data:", err);
     error.value = "Failed to load uncertainty data";
+    useStateStore().showSnackbarMessage({
+      message: "Failed to load uncertainty data -- calibration may be too old",
+      color: "error",
+      timeout: 5000
+    });
+    chart?.clear();
   } finally {
     isLoading.value = false;
   }
@@ -249,8 +256,15 @@ watch(
 </script>
 
 <template>
-  <div style="width: 100%">
-    <div id="container" style="width: 100%; min-height: 400px" />
+  <div style="width: 100%; min-height: 400px; display: flex; justify-content: center; align-items: center;">
+    <div
+      v-if="error"
+      style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 1rem; max-width: 85%;"
+    >
+      <v-icon color="red" size="70">mdi-close</v-icon>
+      <v-card-text>{{ error }}</v-card-text>
+    </div>
+    <div v-else id="container" style="width: 100%; min-height: 400px; flex: 1 1 auto;"></div>
     <template v-if="isLoading"> Loading.... </template>
   </div>
 </template>
