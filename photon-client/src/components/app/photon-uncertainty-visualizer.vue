@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, type Ref } from "vue";
-import type PlotlyType from "plotly.js-dist-min";
+import { onBeforeUnmount, onMounted, ref, useTemplateRef, watch, type Ref } from "vue";
 import type { CvPoint3 } from "@/types/SettingTypes";
 import axios from "axios";
 import { useStateStore } from "@/stores/StateStore";
@@ -17,9 +16,10 @@ const props = defineProps<{
 const uncertaintyData: Ref<CvPoint3[] | null> = ref(null);
 const isLoading: Ref<boolean> = ref(true);
 const error: Ref<string | null> = ref(null);
-const containerRef = ref<HTMLDivElement | null>(null);
+const containerRef = useTemplateRef<HTMLDivElement | null>("container");
 
-let plotly: typeof PlotlyType | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let plotly: any = null;
 
 const getThemeTextColor = (): string => {
   const styles = getComputedStyle(document.documentElement);
