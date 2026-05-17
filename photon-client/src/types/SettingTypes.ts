@@ -276,6 +276,7 @@ export interface UiCameraConfiguration {
   maxWhiteBalanceTemp: number;
 
   fpsLimit: number;
+  isEnabled: boolean;
 
   matchedCameraInfo: PVCameraInfo;
   isConnected: boolean;
@@ -447,6 +448,7 @@ export const PlaceholderCameraSettings: UiCameraConfiguration = reactive({
     PVUsbCameraInfo: undefined
   },
   fpsLimit: -1,
+  isEnabled: true,
   isConnected: true,
   hasConnected: true,
   mismatch: false

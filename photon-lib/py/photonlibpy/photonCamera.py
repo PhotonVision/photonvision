@@ -80,6 +80,12 @@ class PhotonCamera:
         self._fpsLimitSubscriber = self._cameraTable.getIntegerTopic(
             "fpsLimit"
         ).subscribe(-1)
+        self._enabledPublisher = self._cameraTable.getBooleanTopic(
+            "enabledRequest"
+        ).publish()
+        self._enabledSubscriber = self._cameraTable.getBooleanTopic(
+            "enabled"
+        ).subscribe(True)
         self._inputSaveImgEntry = self._cameraTable.getIntegerTopic(
             "inputSaveImgCmd"
         ).getEntry(0)
@@ -204,10 +210,27 @@ class PhotonCamera:
     def setFPSLimit(self, fpsLimit: int) -> None:
         """Sets the FPS limit on the camera.
 
-        :param fpsLimit: The FPS limit to set. Set to -1 for unlimited FPS.
+        <p>A negative FPS limit is treated as no FPS limit, and will run as fast as possible.
+
+        <p>Otherwise, will limit processing to at most the provided FPS limit
+
+        :param fpsLimit: The FPS limit to set.
         """
 
         self._fpsLimitPublisher.set(fpsLimit)
+
+    def getEnabled(self) -> bool:
+        """:returns: Whether the camera is enabled."""
+
+        return self._enabledSubscriber.get()
+
+    def setEnabled(self, enabled: bool) -> None:
+        """Sets whether the camera is enabled, default is true.
+
+        :param enabled: Whether to enable the camera.
+        """
+
+        self._enabledPublisher.set(enabled)
 
     def takeInputSnapshot(self) -> None:
         """Request the camera to save a new image file from the input camera stream with overlays. Images

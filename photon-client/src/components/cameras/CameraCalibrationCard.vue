@@ -20,6 +20,7 @@ const PromptRegular = import("@/assets/fonts/PromptRegular");
 const jspdf = import("jspdf");
 
 const theme = useTheme();
+const MM_PER_INCH = 25.4;
 
 const settingsValid = ref(true);
 
@@ -108,6 +109,7 @@ watchEffect(() => {
   useStateStore().calibrationData.videoFormatIndex = currentIndex;
   uniqueVideoResolutionIndex.value = currentIndex;
 });
+const dimensionUnit = ref<"in" | "mm">("in");
 const squareSizeIn = ref(1);
 const markerSizeIn = ref(0.75);
 const patternWidth = ref(8);
@@ -116,6 +118,28 @@ const boardType = ref<CalibrationBoardTypes>(CalibrationBoardTypes.Charuco);
 const useOldPattern = ref(false);
 const tagFamily = ref<CalibrationTagFamilies>(CalibrationTagFamilies.Dict_4X4_1000);
 const requestedVideoFormatIndex = ref(0);
+
+const convertInchesToDisplay = (valueInInches: number) =>
+  dimensionUnit.value === "mm" ? valueInInches * MM_PER_INCH : valueInInches;
+
+const convertDisplayToInches = (displayValue: number) =>
+  dimensionUnit.value === "mm" ? displayValue / MM_PER_INCH : displayValue;
+
+const squareSize = computed({
+  get: () => convertInchesToDisplay(squareSizeIn.value),
+  set(value) {
+    squareSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const markerSize = computed({
+  get: () => convertInchesToDisplay(markerSizeIn.value),
+  set(value) {
+    markerSizeIn.value = convertDisplayToInches(value);
+  }
+});
+
+const dimensionStep = computed(() => (dimensionUnit.value === "mm" ? 0.1 : 0.01));
 
 // Emperical testing - with stack size limit of 1MB, we can handle at -least- 700k points
 const tooManyPoints = computed(
@@ -364,22 +388,35 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               ]"
               :disabled="isCalibrating"
             />
+            <pv-select
+              v-model="dimensionUnit"
+              label="Dimension Unit"
+              tooltip="Units used for pattern spacing and marker size inputs"
+              :select-cols="8"
+              :items="[
+                { value: 'in', name: 'Inches' },
+                { value: 'mm', name: 'Millimeters' }
+              ]"
+              :disabled="isCalibrating"
+            />
             <pv-number-input
-              v-model="squareSizeIn"
-              label="Pattern Spacing (in)"
-              tooltip="Spacing between pattern features in inches"
+              v-model="squareSize"
+              :label="`Pattern Spacing (${dimensionUnit})`"
+              :tooltip="`Spacing between pattern features in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}`"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="4"
+              :step="dimensionStep"
             />
             <pv-number-input
               v-if="boardType === CalibrationBoardTypes.Charuco"
-              v-model="markerSizeIn"
-              label="Marker Size (in)"
-              tooltip="Size of the tag markers in inches must be smaller than pattern spacing"
+              v-model="markerSize"
+              :label="`Marker Size (${dimensionUnit})`"
+              :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
               :disabled="isCalibrating"
               :rules="[(v) => v > 0 || 'Size must be positive']"
               :label-cols="4"
+              :step="dimensionStep"
             />
             <pv-number-input
               v-model="patternWidth"
