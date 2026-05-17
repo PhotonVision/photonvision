@@ -65,7 +65,10 @@ public class ArucoPipelineTest {
         var outputPipe = new OutputStreamPipeline();
         var ret =
                 outputPipe.process(
-                        pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
+                        pipelineResult.inputAndOutputFrame,
+                        pipeline.getSettings(),
+                        pipelineResult.targets,
+                        pipelineResult.mlDetectionRois);
 
         TestUtils.showImage(ret.inputAndOutputFrame.processedImage.getMat(), "Pipeline output", 999999);
 

@@ -206,15 +206,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // Perform AprilTag detection (traditional or ML-assisted)
         List<AprilTagDetection> detections;
         long detectionNanos;
+        List<RotatedRect> mlDetectionRois = List.of();
 
         if (settings.useMLDetection && mlAvailable) {
             // Use ML-assisted hybrid detection
             var mlDetectionResult = processMLHybrid(frame);
             detections = mlDetectionResult.detections();
             detectionNanos = mlDetectionResult.nanosElapsed();
-
-            // Preserve ROIs for visualization in the output stream
-            frame.mlDetectionRois = mlDetectionResult.rois();
+            mlDetectionRois = mlDetectionResult.rois();
         } else {
             // Use traditional detection
             CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
@@ -327,7 +326,14 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                frame.sequenceID, sumPipeNanosElapsed, fps, targetList, multiTagResult, frame);
+                frame.sequenceID,
+                sumPipeNanosElapsed,
+                fps,
+                targetList,
+                multiTagResult,
+                frame,
+                List.of(),
+                mlDetectionRois);
     }
 
     /**
