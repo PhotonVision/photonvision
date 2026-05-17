@@ -517,8 +517,8 @@ TEST(PhotonPoseEstimatorTest,
 
   cameraOne.test = true;
   cameraOne.testResult = {photon::PhotonPipelineResult{
-      photon::PhotonPipelineMetadata{4'000'000, 4'000'000, 2000, 1000},
-      targets, std::nullopt}};
+      photon::PhotonPipelineMetadata{4'000'000, 4'000'000, 2000, 1000}, targets,
+      std::nullopt}};
   cameraOne.testResult[0].SetReceiveTimestamp(wpi::units::second_t(4));
 
   photon::PhotonPoseEstimator estimator(aprilTags, {{0_m, 0_m, 4_m}, {}});
@@ -663,8 +663,8 @@ TEST(PhotonPoseEstimatorTest, ConstrainedPnpOneTag) {
       std::vector<int16_t>{8});
 
   photon::PhotonPipelineResult result{
-      photon::PhotonPipelineMetadata{15'000'000, 15'009'999, 2000, 100}, targets,
-      multiTagResult};
+      photon::PhotonPipelineMetadata{15'000'000, 15'009'999, 2000, 100},
+      targets, multiTagResult};
 
   cameraOne.test = true;
   cameraOne.testResult = {result};
