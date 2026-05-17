@@ -352,27 +352,7 @@ public class Calibrate3dPipe
             var observation = foundBoards.get(i);
             if (observation.imagePoints.total() != observation.objectPoints.total()
                     || observation.imagePoints.total() != result.cornersUsed.get(i).length) {
-                // debug -- dump object points, image points, corners used
-                logger.error(
-                        "Length of corners used does not match number of image points! Got "
-                                + result.cornersUsed.get(i).length
-                                + " corners used but "
-                                + observation.imagePoints.total()
-                                + " image points");
-                logger.error("Image points:");
-                for (var pt : observation.imagePoints.toArray()) {
-                    logger.error("  " + pt.x + ", " + pt.y);
-                }
-                logger.error("Object points:");
-                for (var pt : observation.objectPoints.toArray()) {
-                    logger.error("  " + pt.x + ", " + pt.y + ", " + pt.z);
-                }
-                logger.error("Corners used:");
-                for (var used : result.cornersUsed.get(i)) {
-                    logger.error("  " + used);
-                }
-
-                throw new RuntimeException();
+                throw new RuntimeException("Length mismatch");
             }
         }
 
@@ -507,17 +487,17 @@ public class Calibrate3dPipe
                 var measured = img_pts_reprojected_list.get(j);
                 var expected = i_imgPts.get(j);
 
-                // Sanity check -- negative corners make no sense here
+                // Sanity check -- negative corners might indicate bad calibration data
                 if (!(measured.x >= 0 && measured.y >= 0 && expected.x >= 0 && expected.y >= 0)) {
                     logger.error(
                             "Negative corner in reprojection error calc! Measured: "
                                     + measured
                                     + ", expected: "
                                     + expected);
-                } else {
-                    var error = new Point(measured.x - expected.x, measured.y - expected.y);
-                    reprojectionError.add(error);
                 }
+
+                var error = new Point(measured.x - expected.x, measured.y - expected.y);
+                reprojectionError.add(error);
             }
 
             var camToBoard = MathUtils.opencvRTtoPose3d(rvecs.get(snapshotId), tvecs.get(snapshotId));
