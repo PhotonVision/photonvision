@@ -27,13 +27,12 @@ import org.wpilib.vision.apriltag.AprilTagDetection;
 
 /**
  * Composite pipe for ML-assisted AprilTag detection: runs YOLO ROI detection on the input frame,
- * pads each detected ROI, then runs the traditional WPILib AprilTag decoder on the matching
- * regions of the processed (single-channel) frame.
+ * pads each detected ROI, then runs the traditional WPILib AprilTag decoder on the matching regions
+ * of the processed (single-channel) frame.
  *
  * <p>Each stage receives a different frame because each has different input requirements: the YOLO
- * model expects the full-fidelity source image matching its training distribution, while the
- * WPILib decoder requires a single-channel mat and performs its own adaptive thresholding
- * internally.
+ * model expects the full-fidelity source image matching its training distribution, while the WPILib
+ * decoder requires a single-channel mat and performs its own adaptive thresholding internally.
  */
 public class AprilTagMLHybridPipe
         extends CVPipe<Frame, MLDetectionResult, AprilTagMLHybridPipe.Params> implements Releasable {
@@ -77,8 +76,7 @@ public class AprilTagMLHybridPipe
         List<RotatedRect> expandedRois = new ArrayList<>(rawRois.size());
         for (RotatedRect roi : rawRois) {
             expandedRois.add(
-                    AprilTagROIDecodePipe.expandBbox(
-                            roi, params.roiPaddingPixels, frameWidth, frameHeight));
+                    AprilTagROIDecodePipe.expandBbox(roi, params.roiPaddingPixels, frameWidth, frameHeight));
         }
 
         AprilTagROIDecodePipe.ROIDecodeInput decodeInput =
@@ -89,7 +87,9 @@ public class AprilTagMLHybridPipe
         return new MLDetectionResult(decodeResult.output, expandedRois);
     }
 
-    /** @return true when the ROI detection stage has a loaded model (not {@code NullModel}). */
+    /**
+     * @return true when the ROI detection stage has a loaded model (not {@code NullModel}).
+     */
     public boolean isAvailable() {
         return roiDetectionPipe.isAvailable();
     }

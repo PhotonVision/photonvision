@@ -100,8 +100,8 @@ public class AprilTagPipelineMLFlagSafetyTest {
     }
 
     /**
-     * Test that the pipeline still detects tags when ML detection is enabled on a platform without
-     * ML support (e.g., no NPU). In that case the pipeline uses traditional detection.
+     * Test that the pipeline still detects tags when ML detection is enabled on a platform without ML
+     * support (e.g., no NPU). In that case the pipeline uses traditional detection.
      */
     @Test
     public void testMLEnabledOnNonNpuPlatform() {
@@ -172,5 +172,4 @@ public class AprilTagPipelineMLFlagSafetyTest {
 
         pipeline.release();
     }
-
 }
