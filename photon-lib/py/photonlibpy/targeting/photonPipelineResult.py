@@ -11,8 +11,9 @@ if TYPE_CHECKING:
 
 @dataclass
 class PhotonPipelineMetadata:
-    # Image capture and NT publish timestamp, in microseconds and in the coprocessor timebase. As
-    # reported by WPIUtilJNI::now.
+    # Image capture and NT publish timestamp, in microseconds and in the Time Sync Server's
+    # timebase (wpi::nt::Now). The robot shall run a server, so this is FPGA-relative on a real
+    # robot. NTDataPublisher applies the time-sync offset before publishing.
     captureTimestampMicros: int = -1
     publishTimestampMicros: int = -1
 
