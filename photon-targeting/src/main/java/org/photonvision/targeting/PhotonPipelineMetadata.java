@@ -58,9 +58,9 @@ public class PhotonPipelineMetadata implements PhotonStructSerializable<PhotonPi
     }
 
     /**
-     * The time that this image was captured, in microseconds and in the Time Sync Server's time
-     * base ({@code wpi::nt::Now}). The robot shall run a server, so this is FPGA-relative on a real
-     * robot. NTDataPublisher applies the time-sync offset before publishing.
+     * The time that this image was captured, in microseconds and in the Time Sync Server's time base
+     * ({@code wpi::nt::Now}). The robot shall run a server, so this is FPGA-relative on a real robot.
+     * NTDataPublisher applies the time-sync offset before publishing.
      *
      * @return The time in microseconds
      */
