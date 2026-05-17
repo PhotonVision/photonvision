@@ -22,5 +22,4 @@ import org.opencv.core.RotatedRect;
 import org.wpilib.vision.apriltag.AprilTagDetection;
 
 /** Result container for ML hybrid detection */
-public record MLDetectionResult(
-        List<AprilTagDetection> detections, List<RotatedRect> rois, long nanosElapsed) {}
+public record MLDetectionResult(List<AprilTagDetection> detections, List<RotatedRect> rois) {}

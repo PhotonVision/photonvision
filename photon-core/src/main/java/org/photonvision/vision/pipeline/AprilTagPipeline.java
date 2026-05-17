@@ -37,12 +37,12 @@ import org.photonvision.vision.objects.Model;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.AprilTagDetectionPipeParams;
+import org.photonvision.vision.pipe.impl.AprilTagMLHybridPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipe.impl.AprilTagROIDecodePipe;
 import org.photonvision.vision.pipe.impl.AprilTagROIDetectionPipe;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
-import org.photonvision.vision.pipe.impl.MLDetectionResult;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe;
 import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -67,9 +67,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    // ML-assisted detection pipes
-    private final AprilTagROIDetectionPipe mlDetectionPipe = new AprilTagROIDetectionPipe();
-    private final AprilTagROIDecodePipe mlDecodePipe = new AprilTagROIDecodePipe();
+    // ML-assisted detection (composite ROI detect + ROI decode)
+    private final AprilTagMLHybridPipe mlHybridPipe = new AprilTagMLHybridPipe();
     private boolean mlAvailable = false;
     private boolean mlWasAvailable = false;
 
@@ -144,49 +143,50 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         // ML-assisted detection configuration
         if (settings.useMLDetection) {
-            mlAvailable = checkMLAvailability();
-
-            if (mlAvailable) {
-                Model apriltagModel =
+            boolean platformOk = checkMLAvailability();
+            Model apriltagModel = null;
+            if (platformOk) {
+                apriltagModel =
                         NeuralNetworkModelManager.getInstance()
                                 .getModel(settings.model.modelPath().toString())
                                 .orElse(null);
+            }
 
-                if (apriltagModel != null) {
-                    mlDetectionPipe.setParams(
-                            new AprilTagROIDetectionPipe.AprilTagROIDetectionParams(
-                                    apriltagModel, settings.mlConfidenceThreshold, settings.mlNmsThreshold));
+            if (platformOk && apriltagModel != null) {
+                AprilTagROIDetectionPipe.AprilTagROIDetectionParams detectionParams =
+                        new AprilTagROIDetectionPipe.AprilTagROIDetectionParams(
+                                apriltagModel, settings.mlConfidenceThreshold, settings.mlNmsThreshold);
 
-                    AprilTagROIDecodePipe.ROIDecodeParams decodeParams =
-                            new AprilTagROIDecodePipe.ROIDecodeParams();
-                    decodeParams.tagFamily = settings.tagFamily;
-                    decodeParams.maxHammingDistance = settings.hammingDist;
-                    decodeParams.minDecisionMargin = settings.decisionMargin;
-                    decodeParams.detectorConfig.numThreads = settings.threads;
-                    decodeParams.detectorConfig.refineEdges = settings.refineEdges;
-                    decodeParams.detectorConfig.quadDecimate = settings.decimate;
-                    decodeParams.detectorConfig.quadSigma = (float) settings.blur;
+                AprilTagROIDecodePipe.ROIDecodeParams decodeParams =
+                        new AprilTagROIDecodePipe.ROIDecodeParams();
+                decodeParams.tagFamily = settings.tagFamily;
+                decodeParams.maxHammingDistance = settings.hammingDist;
+                decodeParams.minDecisionMargin = settings.decisionMargin;
+                decodeParams.detectorConfig.numThreads = settings.threads;
+                decodeParams.detectorConfig.refineEdges = settings.refineEdges;
+                decodeParams.detectorConfig.quadDecimate = settings.decimate;
+                decodeParams.detectorConfig.quadSigma = (float) settings.blur;
 
-                    // ATR (Adaptive Tag Resizing) settings
-                    decodeParams.atrEnabled = settings.atrEnabled;
-                    decodeParams.atrTargetDimension = settings.atrTargetDimension;
-                    decodeParams.atrMinScaleFactor = settings.atrMinScaleFactor;
+                // ATR (Adaptive Tag Resizing) settings
+                decodeParams.atrEnabled = settings.atrEnabled;
+                decodeParams.atrTargetDimension = settings.atrTargetDimension;
+                decodeParams.atrMinScaleFactor = settings.atrMinScaleFactor;
 
-                    mlDecodePipe.setParams(decodeParams);
+                mlHybridPipe.setParams(
+                        new AprilTagMLHybridPipe.Params(
+                                detectionParams, decodeParams, settings.mlRoiPaddingPixels));
+            }
 
-                    if (!mlWasAvailable) {
-                        logger.info("ML-assisted AprilTag detection enabled");
-                    }
-                } else {
-                    mlAvailable = false;
-                    if (mlWasAvailable) {
-                        logger.warn("ML-assisted detection enabled but no AprilTag model found");
-                    }
-                }
-            } else {
-                if (mlWasAvailable) {
-                    logger.debug("ML-assisted detection not available on this platform");
-                }
+            mlAvailable = platformOk && apriltagModel != null && mlHybridPipe.isAvailable();
+
+            if (!mlWasAvailable && mlAvailable) {
+                logger.info("ML-assisted AprilTag detection enabled");
+            }
+            if (platformOk && apriltagModel == null && mlWasAvailable) {
+                logger.warn("ML-assisted detection enabled but no AprilTag model found");
+            }
+            if (!platformOk && mlWasAvailable) {
+                logger.debug("ML-assisted detection not available on this platform");
             }
         } else {
             mlAvailable = false;
@@ -210,10 +210,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         if (settings.useMLDetection && mlAvailable) {
             // Use ML-assisted hybrid detection
-            var mlDetectionResult = processMLHybrid(frame);
-            detections = mlDetectionResult.detections();
-            detectionNanos = mlDetectionResult.nanosElapsed();
-            mlDetectionRois = mlDetectionResult.rois();
+            var hybridResult = mlHybridPipe.run(frame);
+            detections = hybridResult.output.detections();
+            detectionNanos = hybridResult.nanosElapsed;
+            mlDetectionRois = hybridResult.output.rois();
         } else {
             // Use traditional detection
             CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult =
@@ -337,42 +337,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     }
 
     /**
-     * Performs ML-assisted hybrid AprilTag detection. Stage 1: ML model detects ROIs Stage 2:
-     * Traditional detector decodes tags within ROIs
-     */
-    private MLDetectionResult processMLHybrid(Frame frame) {
-        long totalNanos = 0;
-
-        // Stage 1: ML detection to find ROIs
-        CVPipeResult<List<RotatedRect>> mlResult = mlDetectionPipe.run(frame.colorImage);
-        totalNanos += mlResult.nanosElapsed;
-        List<RotatedRect> rawRois = mlResult.output;
-
-        if (rawRois.isEmpty()) {
-            return new MLDetectionResult(new ArrayList<>(), List.of(), totalNanos);
-        }
-
-        // Expand ROIs before passing to decode pipe and visualization
-        int frameWidth = frame.colorImage.getMat().cols();
-        int frameHeight = frame.colorImage.getMat().rows();
-        List<RotatedRect> expandedRois = new ArrayList<>(rawRois.size());
-        for (RotatedRect roi : rawRois) {
-            expandedRois.add(
-                    AprilTagROIDecodePipe.expandBbox(
-                            roi, settings.mlRoiPaddingPixels, frameWidth, frameHeight));
-        }
-
-        // Stage 2: Decode tags within expanded ROIs using traditional detector
-        AprilTagROIDecodePipe.ROIDecodeInput decodeInput =
-                new AprilTagROIDecodePipe.ROIDecodeInput(frame.processedImage, expandedRois);
-
-        CVPipeResult<List<AprilTagDetection>> decodeResult = mlDecodePipe.run(decodeInput);
-        totalNanos += decodeResult.nanosElapsed;
-
-        return new MLDetectionResult(decodeResult.output, expandedRois, totalNanos);
-    }
-
-    /**
      * Checks if ML detection is available on the current platform. Currently supported: RK3588
      * (Orange Pi 5, Rock 5C, CoolPi 4B) and QCS6490 (Rubik Pi 3).
      */
@@ -381,28 +345,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         return platform == Platform.LINUX_QCS6490 || platform == Platform.LINUX_RK3588_64;
     }
 
-    /**
-     * Gets the AprilTag detection model, either by name or the default model.
-     *
-     * @param modelName Optional model name to look up, or null for default
-     * @return The model, or null if no suitable model is found
-     */
-    private Model getAprilTagModel(String modelName) {
-        NeuralNetworkModelManager manager = NeuralNetworkModelManager.getInstance();
-
-        if (modelName != null && !modelName.isEmpty()) {
-            return manager.getModelByName(modelName).orElse(null);
-        }
-
-        return manager.getDefaultAprilTagModel().orElse(null);
-    }
-
     @Override
     public void release() {
         aprilTagDetectionPipe.release();
         singleTagPoseEstimatorPipe.release();
-        mlDetectionPipe.release();
-        mlDecodePipe.release();
+        mlHybridPipe.release();
         super.release();
     }
 }

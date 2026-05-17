@@ -133,7 +133,7 @@ public class AprilTagROIDecodePipe
         int frameHeight = fullFrame.rows();
 
         for (RotatedRect roi : input.rois) {
-            // ROIs are already expanded by the caller (AprilTagPipeline.processMLHybrid)
+            // ROIs are already expanded by the caller (AprilTagMLHybridPipe)
             Rect roiRect = toIntRect(roi);
 
             if (roiRect.width <= 0 || roiRect.height <= 0) {

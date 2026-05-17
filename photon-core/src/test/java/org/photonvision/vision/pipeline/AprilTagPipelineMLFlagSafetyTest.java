@@ -19,10 +19,15 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.LoadJNI;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Family;
+import org.photonvision.common.configuration.NeuralNetworkModelManager.Version;
+import org.photonvision.common.configuration.NeuralNetworkModelsSettings.ModelProperties;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -69,11 +74,28 @@ public class AprilTagPipelineMLFlagSafetyTest {
         settings2.mlConfidenceThreshold = 0.7;
         assertEquals(settings1, settings2);
 
-        // Change model name
-        settings1.mlModelName = "custom-model";
+        // Change model.
+        var customModel =
+                new ModelProperties(
+                        Path.of("test", "custom-model.rknn").toAbsolutePath(),
+                        "custom-model",
+                        List.of(),
+                        640,
+                        640,
+                        Family.RKNN,
+                        Version.YOLOV11);
+        settings1.model = customModel;
         assertNotEquals(settings1, settings2);
 
-        settings2.mlModelName = "custom-model";
+        settings2.model =
+                new ModelProperties(
+                        Path.of("test", "custom-model.rknn").toAbsolutePath(),
+                        "custom-model",
+                        List.of(),
+                        640,
+                        640,
+                        Family.RKNN,
+                        Version.YOLOV11);
         assertEquals(settings1, settings2);
     }
 
