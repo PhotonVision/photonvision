@@ -36,7 +36,6 @@ import org.wpilib.vision.apriltag.AprilTagDetection;
  */
 public class AprilTagMLHybridPipe
         extends CVPipe<Frame, MLDetectionResult, AprilTagMLHybridPipe.Params> implements Releasable {
-
     private final AprilTagROIDetectionPipe roiDetectionPipe = new AprilTagROIDetectionPipe();
     private final AprilTagROIDecodePipe roiDecodePipe = new AprilTagROIDecodePipe();
 

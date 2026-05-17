@@ -30,7 +30,6 @@ import org.photonvision.vision.pipe.impl.AprilTagMLHybridPipe;
 
 /** Unit tests for {@link AprilTagMLHybridPipe} host-only behavior (no loaded NPU model). */
 public class AprilTagMLHybridPipeTest {
-
     @BeforeAll
     public static void init() {
         LoadJNI.loadLibraries();
