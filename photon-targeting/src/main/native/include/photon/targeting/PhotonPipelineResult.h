@@ -92,15 +92,14 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
 
   /**
    * Returns the estimated time the frame was taken, in the Time Sync Server's
-   * time base (nt::Now). This is calculated using the estimated offset between
-   * Time Sync Server time and local time. The robot shall run a server, so the
-   * offset shall be 0.
-   * This is much more accurate than using GetLatency()
-   * @return The timestamp in seconds or -1 if this result was not initiated
-   * with a timestamp.
+   * time base (nt::Now). The robot shall run a server, so this is FPGA-relative
+   * on a real robot. Reads metadata.captureTimestampMicros directly — latency
+   * compensation is already baked in by the coprocessor.
+   * @return The timestamp in seconds.
    */
   wpi::units::second_t GetTimestamp() const {
-    return ntReceiveTimestamp - GetLatency();
+    return wpi::units::microsecond_t{
+        static_cast<double>(metadata.captureTimestampMicros)};
   }
 
   /**

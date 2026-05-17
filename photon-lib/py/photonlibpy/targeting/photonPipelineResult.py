@@ -42,15 +42,11 @@ class PhotonPipelineResult:
 
     def getTimestampSeconds(self) -> float:
         """
-        Returns the estimated time the frame was taken, in the Received system's time base. This is
-        calculated as (NT Receive time (robot base) - (publish timestamp, coproc timebase - capture
-        timestamp, coproc timebase))
+        Returns the estimated time the frame was taken, in the Time Sync Server's time base
+        (wpi::nt::Now). Reads metadata.captureTimestampMicros directly — latency compensation
+        is already baked in by the coprocessor.
         """
-        # TODO - we don't trust NT4 to correctly latency-compensate ntReceiveTimestampMicros
-        latency = (
-            self.metadata.publishTimestampMicros - self.metadata.captureTimestampMicros
-        )
-        return (self.ntReceiveTimestampMicros - latency) / 1e6
+        return self.metadata.captureTimestampMicros / 1e6
 
     def getTargets(self) -> list[PhotonTrackedTarget]:
         return self.targets

@@ -239,10 +239,10 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
 
     CheckTimeSyncOrWarn(result);
 
-    // TODO: NT4 timestamps are still not to be trusted. But it's the best we
-    // can do until we can make time sync more reliable.
-    result.SetReceiveTimestamp(wpi::units::microsecond_t(value.time) -
-                               result.GetLatency());
+    // ntReceiveTimestamp records when the bytes arrived at robot code,
+    // independent of capture time. GetTimestamp() reads capture time
+    // directly from metadata.
+    result.SetReceiveTimestamp(wpi::units::microsecond_t(value.time));
 
     ret.push_back(result);
   }
