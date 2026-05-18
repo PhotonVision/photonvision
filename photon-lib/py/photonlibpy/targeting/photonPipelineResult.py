@@ -26,9 +26,6 @@ class PhotonPipelineMetadata:
 
 @dataclass
 class PhotonPipelineResult:
-    # Since we don't trust NT time sync, keep track of when we got this packet into robot code
-    ntReceiveTimestampMicros: int = -1
-
     targets: list[PhotonTrackedTarget] = field(default_factory=list)
     # Python users beware! We don't currently run a Time Sync Server, so these timestamps are in
     # an arbitrary timebase. This is not true in C++ or Java.

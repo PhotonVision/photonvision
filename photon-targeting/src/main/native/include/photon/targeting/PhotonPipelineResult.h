@@ -38,25 +38,6 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
   PhotonPipelineResult() : Base() {}
   explicit PhotonPipelineResult(Base&& data) : Base(data) {}
 
-  // Don't forget to deal with our ntReceiveTimestamp
-  PhotonPipelineResult(const PhotonPipelineResult& other)
-      : Base(other), ntReceiveTimestamp(other.ntReceiveTimestamp) {}
-  PhotonPipelineResult(PhotonPipelineResult& other)
-      : Base(other), ntReceiveTimestamp(other.ntReceiveTimestamp) {}
-  PhotonPipelineResult(PhotonPipelineResult&& other)
-      : Base(std::move(other)),
-        ntReceiveTimestamp(std::move(other.ntReceiveTimestamp)) {}
-  auto& operator=(const PhotonPipelineResult& other) {
-    Base::operator=(other);
-    ntReceiveTimestamp = other.ntReceiveTimestamp;
-    return *this;
-  }
-  auto& operator=(PhotonPipelineResult&& other) {
-    ntReceiveTimestamp = other.ntReceiveTimestamp;
-    Base::operator=(std::move(other));
-    return *this;
-  }
-
   template <typename... Args>
   explicit PhotonPipelineResult(Args&&... args)
       : Base{std::forward<Args>(args)...} {}
@@ -120,11 +101,6 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
    */
   int64_t SequenceID() const { return metadata.sequenceID; }
 
-  /** Sets the FPGA timestamp this result was Received by robot code */
-  void SetReceiveTimestamp(const wpi::units::second_t timestamp) {
-    this->ntReceiveTimestamp = timestamp;
-  }
-
   /**
    * Returns whether the pipeline has targets.
    * @return Whether the pipeline has targets.
@@ -142,10 +118,6 @@ class PhotonPipelineResult : public PhotonPipelineResult_PhotonStruct {
 
   friend bool operator==(PhotonPipelineResult const&,
                          PhotonPipelineResult const&) = default;
-
-  // Since we don't trust NT time sync, keep track of when we got this packet
-  // into robot code
-  wpi::units::microsecond_t ntReceiveTimestamp = -1_s;
 
   inline static bool HAS_WARNED = false;
 };

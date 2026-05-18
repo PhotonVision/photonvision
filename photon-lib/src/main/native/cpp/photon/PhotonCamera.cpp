@@ -34,7 +34,6 @@
 #include <opencv2/core/utility.hpp>
 #include <wpi/hal/UsageReporting.hpp>
 #include <wpi/system/Errors.hpp>
-#include <wpi/system/RobotController.hpp>
 #include <wpi/system/Timer.hpp>
 #include <wpi/system/WPILibVersion.hpp>
 #include <wpi/util/json.hpp>
@@ -193,9 +192,6 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Prints warning if not connected
   VerifyVersion();
 
-  // Fill the packet with latest data and populate result.
-  wpi::units::microsecond_t now =
-      wpi::units::microsecond_t(wpi::RobotController::GetFPGATime());
   const auto value = rawBytesEntry.Get();
   if (!value.size()) return PhotonPipelineResult{};
 
@@ -205,8 +201,6 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   PhotonPipelineResult result = packet.Unpack<PhotonPipelineResult>();
 
   CheckTimeSyncOrWarn(result);
-
-  result.SetReceiveTimestamp(now);
 
   return result;
 }
@@ -238,11 +232,6 @@ std::vector<PhotonPipelineResult> PhotonCamera::GetAllUnreadResults() {
     auto result = packet.Unpack<PhotonPipelineResult>();
 
     CheckTimeSyncOrWarn(result);
-
-    // ntReceiveTimestamp records when the bytes arrived at robot code,
-    // independent of capture time. GetTimestamp() reads capture time
-    // directly from metadata.
-    result.SetReceiveTimestamp(wpi::units::microsecond_t(value.time));
 
     ret.push_back(result);
   }

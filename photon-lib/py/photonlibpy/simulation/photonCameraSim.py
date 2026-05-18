@@ -436,7 +436,6 @@ class PhotonCameraSim:
         self.heartbeatCounter += 1
         publishTimestampMicros = wpilib.Timer.getFPGATimestamp() * 1e6
         return PhotonPipelineResult(
-            ntReceiveTimestampMicros=int(publishTimestampMicros + 10),
             metadata=PhotonPipelineMetadata(
                 captureTimestampMicros=int(publishTimestampMicros - latency * 1e6),
                 publishTimestampMicros=int(publishTimestampMicros),
