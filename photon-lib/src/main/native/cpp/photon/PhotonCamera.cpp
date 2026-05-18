@@ -254,7 +254,7 @@ void PhotonCamera::CheckTimeSyncOrWarn(photon::PhotonPipelineResult& result) {
     timesyncAlert.SetText(warningText);
     timesyncAlert.Set(true);
 
-    if (wpi::Timer::GetFPGATimestamp() <
+    if (wpi::Timer::GetFPGATimestamp() >
         (prevTimeSyncWarnTime + WARN_DEBOUNCE_SEC)) {
       prevTimeSyncWarnTime = wpi::Timer::GetFPGATimestamp();
 
