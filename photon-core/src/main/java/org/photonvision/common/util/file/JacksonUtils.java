@@ -80,13 +80,17 @@ public class JacksonUtils {
         pathModule.addDeserializer(Path.class, new NioPathDeserializer());
         pathModule.addKeyDeserializer(Path.class, new PathKeyDeserializer());
 
-        return JsonMapper.builder()
-                .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
-                .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                .addModule(pathModule)
-                .build();
+        var mapper =
+                JsonMapper.builder()
+                        .enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION)
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .addModule(pathModule)
+                        .build();
+        mapper.configOverride(org.wpilib.units.Unit.class).setIsIgnoredType(true);
+
+        return mapper;
     }
 
     public static <T> void serialize(Path path, T object) throws IOException {
