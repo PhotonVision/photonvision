@@ -30,8 +30,8 @@ const borderThemeColor = computed(() => `color-mix(in srgb, ${themeColor.value} 
       <ToastDescription as-child>
         <div class="w-full flex [grid-area:description]">
           <pv-progress
-            v-model="useStateStore().snackbarData.progressBar"
             v-if="useStateStore().snackbarData.progressBar !== -1"
+            v-model="useStateStore().snackbarData.progressBar"
             :color="useStateStore().snackbarData.progressBarColor"
           ></pv-progress>
         </div>

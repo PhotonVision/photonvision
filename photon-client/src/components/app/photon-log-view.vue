@@ -123,8 +123,8 @@ document.addEventListener("keydown", (e) => {
               :input-cols="9"
             />
             <pv-input
-              label="Minimum Time"
               v-model="timeInput"
+              label="Minimum Time"
               type="time"
               step="1"
               class="text-white pl-3"

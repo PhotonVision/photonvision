@@ -66,8 +66,8 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
         :rules="rules"
         variant="outline"
         :clearable="clearable"
-        @keydown="handleKeydown"
         v-bind="$attrs"
+        @keydown="handleKeydown"
       />
     </div>
   </div>

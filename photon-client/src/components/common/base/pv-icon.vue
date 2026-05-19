@@ -102,7 +102,7 @@ const handleClick = (event: MouseEvent) => {
     :aria-hidden="$attrs['aria-label'] === undefined"
     @click="handleClick"
   >
-    <component v-if="IconComponent" :is="IconComponent" :width="iconSize" :height="iconSize" />
+    <component :is="IconComponent" v-if="IconComponent" :width="iconSize" :height="iconSize" />
     <slot v-else />
   </span>
 </template>

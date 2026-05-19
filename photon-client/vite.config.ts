@@ -25,7 +25,7 @@ export default defineConfig({
     Icons({
       compiler: "vue3"
     }),
-    vue(),
+    vue()
   ],
 
   resolve: {

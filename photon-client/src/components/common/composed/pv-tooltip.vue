@@ -9,7 +9,7 @@ withDefaults(
   }>(),
   {
     location: "right",
-    delay: 300,
+    delay: 300
   }
 );
 </script>

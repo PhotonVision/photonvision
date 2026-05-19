@@ -23,7 +23,7 @@ const normalizeSize = (value?: number | string) => {
 };
 
 const contentStyle = computed(() => ({
-  '--dialog-width': normalizeSize(props.width),
+  "--dialog-width": normalizeSize(props.width),
   maxWidth: normalizeSize(props.maxWidth)
 }));
 
