@@ -43,11 +43,8 @@ import org.wpilib.util.struct.Struct;
 public class Float32TestMessage implements PhotonStructSerializable<Float32TestMessage> {
 
     public float test;
-
     public List<Float> vlaTest = List.of();
-
     public Optional<Float> optTest = Optional.empty();
-
 
     @Override
     public boolean equals(Object obj) {
@@ -55,13 +52,9 @@ public class Float32TestMessage implements PhotonStructSerializable<Float32TestM
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Float32TestMessage other = (Float32TestMessage) obj;
-
         if (this.test != other.test) return false;
-
         if (!this.vlaTest.equals(other.vlaTest)) return false;
-
         if (!this.optTest.equals(other.optTest)) return false;
-
         return true;
     }
 
@@ -71,5 +64,17 @@ public class Float32TestMessage implements PhotonStructSerializable<Float32TestM
     @Override
     public PacketSerde<Float32TestMessage> getSerde() {
         return photonStruct;
+    }
+
+    @Override
+    public String toString() {
+        return "Float32TestMessage ["
+        + "test="
+        + test
+        + ", vlaTest="
+        + vlaTest
+        + ", optTest="
+        + optTest
+        + "]";
     }
 }

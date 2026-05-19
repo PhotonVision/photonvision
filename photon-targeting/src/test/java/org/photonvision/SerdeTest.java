@@ -33,6 +33,7 @@ public class SerdeTest {
         var p = new Packet(10);
         p.encode(data);
         var unpackedData = p.decode(data); // kinda scuffed lowkey
+        System.out.println("IN: " + data.toString() + "\nOUT: " + unpackedData.toString());
         return data.equals(unpackedData);
     }
 

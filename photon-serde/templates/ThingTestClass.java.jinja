@@ -62,7 +62,7 @@ public class {{ name }} implements PhotonStructSerializable<{{ name }}> {
     public {{ field.type }} {{ field.name }} = new {{ field.type }}();
     {%- endif %}
 {%- endif %}
-{% endfor%}
+{%- endfor%}
 
     @Override
     public boolean equals(Object obj) {
@@ -70,7 +70,7 @@ public class {{ name }} implements PhotonStructSerializable<{{ name }}> {
         if (obj == null || getClass() != obj.getClass()) return false;
 
         {{ name }} other = ({{ name }}) obj;
-{% for field in fields -%}
+{%- for field in fields -%}
 {%- if field.type | is_intrinsic %}
     {%- if field.optional == True %}
         if (!this.{{ field.name }}.equals(other.{{ field.name }})) return false;
@@ -82,7 +82,7 @@ public class {{ name }} implements PhotonStructSerializable<{{ name }}> {
 {%- else %}
         if (!this.{{ field.name }}.equals(other.{{ field.name }})) return false;
 {%- endif %}
-{% endfor%}
+{%- endfor %}
         return true;
     }
 
@@ -92,5 +92,23 @@ public class {{ name }} implements PhotonStructSerializable<{{ name }}> {
     @Override
     public PacketSerde<{{ name }}> getSerde() {
         return photonStruct;
+    }
+
+    @Override
+    public String toString() {
+        return "{{ name }} ["
+        {%- for field in fields -%}
+        {%- if loop.first %}
+        + "{{ field.name }}="
+        {%- else %}
+        + ", {{ field.name }}="
+        {%- endif -%}
+        {%- if field.type | is_intrinsic %}
+        + {{ field.name }}
+        {%- else %}
+        + {{ field.name }}.toString()
+        {%- endif -%}
+        {%- endfor %}
+        + "]";
     }
 }

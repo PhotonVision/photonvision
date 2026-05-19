@@ -43,11 +43,8 @@ import org.wpilib.util.struct.Struct;
 public class BoolTestMessage implements PhotonStructSerializable<BoolTestMessage> {
 
     public boolean test;
-
     public List<Boolean> vlaTest = List.of();
-
     public Optional<Boolean> optTest = Optional.empty();
-
 
     @Override
     public boolean equals(Object obj) {
@@ -55,13 +52,9 @@ public class BoolTestMessage implements PhotonStructSerializable<BoolTestMessage
         if (obj == null || getClass() != obj.getClass()) return false;
 
         BoolTestMessage other = (BoolTestMessage) obj;
-
         if (this.test != other.test) return false;
-
         if (!this.vlaTest.equals(other.vlaTest)) return false;
-
         if (!this.optTest.equals(other.optTest)) return false;
-
         return true;
     }
 
@@ -71,5 +64,17 @@ public class BoolTestMessage implements PhotonStructSerializable<BoolTestMessage
     @Override
     public PacketSerde<BoolTestMessage> getSerde() {
         return photonStruct;
+    }
+
+    @Override
+    public String toString() {
+        return "BoolTestMessage ["
+        + "test="
+        + test
+        + ", vlaTest="
+        + vlaTest
+        + ", optTest="
+        + optTest
+        + "]";
     }
 }

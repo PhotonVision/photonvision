@@ -43,11 +43,8 @@ import org.wpilib.util.struct.Struct;
 public class Int64TestMessage implements PhotonStructSerializable<Int64TestMessage> {
 
     public long test;
-
     public List<Long> vlaTest = List.of();
-
     public Optional<Long> optTest = Optional.empty();
-
 
     @Override
     public boolean equals(Object obj) {
@@ -55,13 +52,9 @@ public class Int64TestMessage implements PhotonStructSerializable<Int64TestMessa
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Int64TestMessage other = (Int64TestMessage) obj;
-
         if (this.test != other.test) return false;
-
         if (!this.vlaTest.equals(other.vlaTest)) return false;
-
         if (!this.optTest.equals(other.optTest)) return false;
-
         return true;
     }
 
@@ -71,5 +64,17 @@ public class Int64TestMessage implements PhotonStructSerializable<Int64TestMessa
     @Override
     public PacketSerde<Int64TestMessage> getSerde() {
         return photonStruct;
+    }
+
+    @Override
+    public String toString() {
+        return "Int64TestMessage ["
+        + "test="
+        + test
+        + ", vlaTest="
+        + vlaTest
+        + ", optTest="
+        + optTest
+        + "]";
     }
 }

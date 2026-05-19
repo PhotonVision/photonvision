@@ -43,11 +43,8 @@ import org.wpilib.util.struct.Struct;
 public class Int16TestMessage implements PhotonStructSerializable<Int16TestMessage> {
 
     public short test;
-
     public List<Short> vlaTest = List.of();
-
     public Optional<Short> optTest = Optional.empty();
-
 
     @Override
     public boolean equals(Object obj) {
@@ -55,13 +52,9 @@ public class Int16TestMessage implements PhotonStructSerializable<Int16TestMessa
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Int16TestMessage other = (Int16TestMessage) obj;
-
         if (this.test != other.test) return false;
-
         if (!this.vlaTest.equals(other.vlaTest)) return false;
-
         if (!this.optTest.equals(other.optTest)) return false;
-
         return true;
     }
 
@@ -71,5 +64,17 @@ public class Int16TestMessage implements PhotonStructSerializable<Int16TestMessa
     @Override
     public PacketSerde<Int16TestMessage> getSerde() {
         return photonStruct;
+    }
+
+    @Override
+    public String toString() {
+        return "Int16TestMessage ["
+        + "test="
+        + test
+        + ", vlaTest="
+        + vlaTest
+        + ", optTest="
+        + optTest
+        + "]";
     }
 }

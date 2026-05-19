@@ -43,11 +43,8 @@ import org.wpilib.math.geometry.Transform3d;
 public class Transform3dTestMessage implements PhotonStructSerializable<Transform3dTestMessage> {
 
     public Transform3d test = new Transform3d();
-
     public List<Transform3d> vlaTest = List.of();
-
     public Optional<Transform3d> optTest = Optional.empty();
-
 
     @Override
     public boolean equals(Object obj) {
@@ -55,13 +52,9 @@ public class Transform3dTestMessage implements PhotonStructSerializable<Transfor
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Transform3dTestMessage other = (Transform3dTestMessage) obj;
-
         if (!this.test.equals(other.test)) return false;
-
         if (!this.vlaTest.equals(other.vlaTest)) return false;
-
         if (!this.optTest.equals(other.optTest)) return false;
-
         return true;
     }
 
@@ -71,5 +64,17 @@ public class Transform3dTestMessage implements PhotonStructSerializable<Transfor
     @Override
     public PacketSerde<Transform3dTestMessage> getSerde() {
         return photonStruct;
+    }
+
+    @Override
+    public String toString() {
+        return "Transform3dTestMessage ["
+        + "test="
+        + test.toString()
+        + ", vlaTest="
+        + vlaTest.toString()
+        + ", optTest="
+        + optTest.toString()
+        + "]";
     }
 }
