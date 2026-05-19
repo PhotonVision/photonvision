@@ -1,11 +1,9 @@
-
 @import "@fontsource/public-sans/latin-400.css";
 @import "@fontsource/public-sans/latin-500.css";
 @import "@fontsource/public-sans/latin-600.css";
 @import "@fontsource/public-sans/latin-700.css";
 
 @import "tailwindcss";
-
 
 @theme {
   --font-sans: "DM Sans", sans-serif;
@@ -28,16 +26,18 @@
   --color-pv-surface-text: contrast-color(var(--pv-surface));
 
   @keyframes progress {
-    from { background-position: 0 0; }
-    to { background-position: 30px 30px; }
+    from {
+      background-position: 0 0;
+    }
+    to {
+      background-position: 30px 30px;
+    }
   }
 
   /* Link them to an animation name */
   --animate-progress: progress 1s infinite linear;
-
 }
 @custom-variant data-on (&[data-state~="on"]);
-
 
 @layer base {
   html {
@@ -52,7 +52,6 @@
     min-height: 100vh;
     background-color: var(--color-pv-background);
     color: var(--color-pv-on-background);
-    
   }
 
   button:not(:disabled) {

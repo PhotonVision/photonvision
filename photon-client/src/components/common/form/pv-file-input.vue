@@ -83,7 +83,10 @@ const displayValue = computed(() => {
     <div :class="inputWidthClass" class="flex items-center pr-0 pt-10px pb-10px">
       <div class="flex flex-col gap-1 w-full">
         <div :class="fieldClass">
-          <label class="flex-1 min-w-0 cursor-pointer flex items-center" :class="[{'text-white': value, 'text-white/40': !value}, props.variant === 'outline' ? 'py-2' : 'py-1']">
+          <label
+            class="flex-1 min-w-0 cursor-pointer flex items-center"
+            :class="[{ 'text-white': value, 'text-white/40': !value }, props.variant === 'outline' ? 'py-2' : 'py-1']"
+          >
             <input
               ref="fileInput"
               type="file"

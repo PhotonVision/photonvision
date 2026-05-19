@@ -67,7 +67,9 @@ export function fieldWrapperClasses(opts: {
     densityMap[opts.density ?? "compact"] ?? "min-h-9 text-sm",
     "transition",
     opts.disabled ? "cursor-not-allowed opacity-50" : "",
-    opts.variant === "underlined" ? "border-b border-white/20 bg-transparent" : "rounded-xl border border-white/12 bg-black/15 px-3"
+    opts.variant === "underlined"
+      ? "border-b border-white/20 bg-transparent"
+      : "rounded-xl border border-white/12 bg-black/15 px-3"
   ];
 
   if (opts.variant === "underlined") {

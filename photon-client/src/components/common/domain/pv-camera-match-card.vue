@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { PVCameraInfo } from "@/types/SettingTypes";
 import { cameraInfoFor } from "@/lib/PhotonUtils";
 

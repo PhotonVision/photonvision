@@ -102,12 +102,7 @@ document.addEventListener("keydown", (e) => {
           <pv-button variant="text" size="sm" :icon="IconTrashCanOutline" @click="handleLogClear">
             <span class="menu-label">Clear Client Logs</span>
           </pv-button>
-          <pv-button
-            variant="text"
-            size="sm"
-            :icon="IconClose"
-            @click="() => (useStateStore().showLogModal = false)"
-          >
+          <pv-button variant="text" size="sm" :icon="IconClose" @click="() => (useStateStore().showLogModal = false)">
             <span class="menu-label">Close</span>
           </pv-button>
         </div>
@@ -177,7 +172,7 @@ document.addEventListener("keydown", (e) => {
   </pv-dialog>
 </template>
 
-<style scoped >
+<style scoped>
 .dialog-container {
   height: 90vh;
   min-height: 300px !important;

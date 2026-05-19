@@ -376,12 +376,7 @@ watch(metricsHistorySnapshot, () => {
               </pv-button>
             </div>
             <div class="w-full px-3 sm:w-1/2">
-              <pv-button
-                variant="danger"
-                :icon="IconTrashCanOutline"
-                block
-                @click="() => (showFactoryReset = true)"
-              >
+              <pv-button variant="danger" :icon="IconTrashCanOutline" block @click="() => (showFactoryReset = true)">
                 <span class="open-icon"> Factory Reset </span>
               </pv-button>
             </div>
@@ -554,7 +549,7 @@ watch(metricsHistorySnapshot, () => {
   />
 </template>
 
-<style scoped >
+<style scoped>
 .fill-height {
   height: calc(100% - 12px) !important;
 }

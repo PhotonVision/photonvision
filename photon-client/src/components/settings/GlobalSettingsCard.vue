@@ -383,11 +383,10 @@ watchEffect(() => {
                 class="relative w-full"
                 @update:color="(c: Color) => handleColorUpdate(key, c)"
               >
-                <ColorAreaArea
-                  class="relative w-full h-30 rounded-md overflow-hidden"
-                  :style="style"
-                >
-                  <ColorAreaThumb class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer" />
+                <ColorAreaArea class="relative w-full h-30 rounded-md overflow-hidden" :style="style">
+                  <ColorAreaThumb
+                    class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer"
+                  />
                 </ColorAreaArea>
               </ColorAreaRoot>
 
@@ -402,7 +401,9 @@ watchEffect(() => {
                 <ColorSliderTrack class="relative flex-1 rounded-full h-2">
                   <div class="absolute inset-0 rounded-full hue-gradient" />
                 </ColorSliderTrack>
-                <ColorSliderThumb class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer" />
+                <ColorSliderThumb
+                  class="block w-4 h-4 rounded-full bg-white border-2 border-white shadow-md cursor-pointer"
+                />
               </ColorSliderRoot>
 
               <!-- Hex Input -->

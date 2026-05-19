@@ -47,10 +47,7 @@ const confirmationText = ref("");
               <span class="open-label">Backup Data</span>
             </pv-button>
           </div>
-          <div
-            v-if="description"
-            :class="['px-3', onBackup ? 'w-full sm:w-1/2' : 'w-full']"
-          >
+          <div v-if="description" :class="['px-3', onBackup ? 'w-full sm:w-1/2' : 'w-full']">
             <pv-button
               variant="danger"
               :icon="IconTrashCanOutline"

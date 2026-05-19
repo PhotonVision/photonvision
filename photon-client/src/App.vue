@@ -86,8 +86,7 @@ html {
 }
 </style>
 
-<style >
-
+<style>
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
   width: 12px;

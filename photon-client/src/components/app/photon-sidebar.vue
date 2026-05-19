@@ -44,9 +44,7 @@ const ntStatusIcon = computed(() =>
       ? IconRobot
       : IconRobotOff
 );
-const backendStatusIcon = computed(() =>
-  useStateStore().backendConnected ? IconServerNetwork : IconServerNetworkOff
-);
+const backendStatusIcon = computed(() => (useStateStore().backendConnected ? IconServerNetwork : IconServerNetworkOff));
 
 const navItems = [
   { title: "Dashboard", to: "/dashboard", icon: IconDashboard },
@@ -132,11 +130,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => (compact = !compact)"
       >
-        <pv-icon
-          :icon="compactIcon"
-          class="text-white/80 transition group-hover:text-white"
-          size="24"
-        />
+        <pv-icon :icon="compactIcon" class="text-white/80 transition group-hover:text-white" size="24" />
         <span
           class="transition-opacity duration-200"
           :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"
@@ -150,11 +144,7 @@ const activeItemClass = "bg-white/5 text-white font-semibold";
         :class="renderCompact ? 'justify-center px-2' : ''"
         @click="() => toggleTheme()"
       >
-        <pv-icon
-          :icon="themeIcon"
-          class="text-white/80 transition group-hover:text-white"
-          size="24"
-        />
+        <pv-icon :icon="themeIcon" class="text-white/80 transition group-hover:text-white" size="24" />
         <span
           class="transition-opacity duration-200"
           :class="renderCompact ? 'opacity-0 w-0 h-0 overflow-hidden absolute' : 'opacity-100'"

@@ -44,11 +44,7 @@ const alertStyle = computed(() => {
   return {
     "--pv-alert-color": solid.value,
     backgroundColor:
-      props.variant === "tonal"
-        ? translucent.value
-        : props.variant === "outlined"
-          ? "transparent"
-          : solid.value,
+      props.variant === "tonal" ? translucent.value : props.variant === "outlined" ? "transparent" : solid.value,
     borderColor: borderColor.value
   };
 });

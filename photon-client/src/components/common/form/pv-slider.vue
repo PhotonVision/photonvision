@@ -76,13 +76,7 @@ const updateFromInput = (rawValue: string) => {
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
-      <pv-button
-        size="icon"
-        variant="passive"
-        :icon="IconMenuLeft"
-        :disabled="disabled"
-        @click="stepValue(-1)"
-      />
+      <pv-button size="icon" variant="passive" :icon="IconMenuLeft" :disabled="disabled" @click="stepValue(-1)" />
       <slider-root
         v-model="sliderModel"
         class="relative flex h-10 w-full touch-none select-none items-center"
@@ -94,17 +88,9 @@ const updateFromInput = (rawValue: string) => {
         <slider-track class="relative h-2 w-full rounded-full bg-white/12 data-disabled:opacity-50 pv-slider-track">
           <slider-range class="absolute h-full rounded-full bg-pv-primary pv-slider-range" />
         </slider-track>
-        <slider-thumb
-          :class="sliderThumbClass"
-        />
+        <slider-thumb :class="sliderThumbClass" />
       </slider-root>
-      <pv-button
-        size="icon"
-        variant="passive"
-        :icon="IconMenuRight"
-        :disabled="disabled"
-        @click="stepValue(1)"
-      />
+      <pv-button size="icon" variant="passive" :icon="IconMenuRight" :disabled="disabled" @click="stepValue(1)" />
       <input
         :value="localValue"
         :max="max"
