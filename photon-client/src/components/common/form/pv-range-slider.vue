@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
+import { useColFlexBasis, sliderNumberInputClass, sliderThumbClass } from "../lib";
 import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 import { SliderRange, SliderRoot, SliderThumb, SliderTrack } from "reka-ui";
 
@@ -25,7 +25,7 @@ const props = withDefaults(
     sliderCols: 10
   }
 );
-const labelWidth = computed(() => `${((12 - props.sliderCols) / 12) * 100}%`);
+const { labelWidth } = useColFlexBasis(() => props.sliderCols);
 
 const localValue = computed<[number, number]>({
   get: (): [number, number] => {
@@ -67,7 +67,7 @@ const sliderModel = computed<number[]>({
 <template>
   <div class="flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
     <div class="flex min-w-0 items-center gap-3 sm:flex-1">
       <input
@@ -76,7 +76,7 @@ const sliderModel = computed<number[]>({
         :min="min"
         :disabled="disabled"
         :step="step"
-        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        :class="sliderNumberInputClass"
         type="number"
         @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 0)"
       />
@@ -93,10 +93,10 @@ const sliderModel = computed<number[]>({
           <slider-range class="absolute h-full rounded-full pv-slider-range" :class="inverted ? 'bg-white/12' : 'bg-pv-primary'" />
         </slider-track>
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50 pv-slider-thumb"
+          :class="sliderThumbClass"
         />
         <slider-thumb
-          class="block size-5 rounded-full border-2 border-pv-primary bg-white shadow-md outline-none transition focus-visible:ring-2 focus-visible:ring-pv-primary/50 disabled:pointer-events-none disabled:opacity-50 pv-slider-thumb"
+          :class="sliderThumbClass"
         />
       </slider-root>
       <input
@@ -105,7 +105,7 @@ const sliderModel = computed<number[]>({
         :min="min"
         :disabled="disabled"
         :step="step"
-        class="h-10 w-20 shrink-0 rounded-xl border border-white/12 bg-black/15 pl-3 pr-1 text-left text-sm text-white outline-none transition focus:border-pv-primary disabled:cursor-not-allowed disabled:opacity-45"
+        :class="sliderNumberInputClass"
         type="number"
         @input="(event) => changeFromSlot((event.target as HTMLInputElement).value, 1)"
       />

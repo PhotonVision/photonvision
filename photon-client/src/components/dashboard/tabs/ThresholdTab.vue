@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import IconMinus from "~icons/mdi/minus";
+import IconPlusMinus from "~icons/mdi/plus-minus";
+import IconPlus from "~icons/mdi/plus";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed, onBeforeUnmount, onMounted } from "vue";
-import PvButton from "@/components/common/pv-button.vue";
-import PvRangeSlider from "@/components/common/pv-range-slider.vue";
-import PvSwitch from "@/components/common/pv-switch.vue";
+
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
@@ -36,7 +37,7 @@ const handleStreamClick = (event: MouseEvent) => {
   if (!useStateStore().colorPickingMode || selectedEventMode === 0) return;
 
   const cameraStream = document.getElementById("input-camera-stream");
-  console.log(cameraStream)
+  console.log(cameraStream);
   if (cameraStream === null) return;
 
   const canvas = document.createElement("canvas");
@@ -115,7 +116,7 @@ const disableColorPicking = () => {
 
 onMounted(() => {
   const cameraStream = document.getElementById("input-camera-stream");
-  console.log(cameraStream); 
+  console.log(cameraStream);
   if (cameraStream === null) return;
   //
   cameraStream.addEventListener("click", handleStreamClick);
@@ -189,7 +190,7 @@ const interactiveCols = computed(() =>
             <pv-button
               size="sm"
               variant="primary"
-              icon="mdi-minus"
+              :icon="IconMinus"
               block
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 2 : 3)"
             >
@@ -197,7 +198,7 @@ const interactiveCols = computed(() =>
             </pv-button>
           </div>
           <div class="w-1/3 pl-0 pr-0">
-            <pv-button size="sm" variant="primary" icon="mdi-plus-minus" block @click="enableColorPicking(1)">
+            <pv-button size="sm" variant="primary" :icon="IconPlusMinus" block @click="enableColorPicking(1)">
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
             </pv-button>
           </div>
@@ -205,7 +206,7 @@ const interactiveCols = computed(() =>
             <pv-button
               size="sm"
               variant="primary"
-              icon="mdi-plus"
+              :icon="IconPlus"
               block
               @click="enableColorPicking(useCameraSettingsStore().currentPipelineSettings.hueInverted ? 3 : 2)"
             >

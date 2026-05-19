@@ -1,15 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
-import CamerasCard from "@/components/dashboard/CamerasCard.vue";
-import CameraAndPipelineSelectCard from "@/components/dashboard/CameraAndPipelineSelectCard.vue";
-import StreamConfigCard from "@/components/dashboard/StreamConfigCard.vue";
-import PipelineConfigCard from "@/components/dashboard/ConfigOptions.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
+import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
 
 import { PlaceholderCameraSettings } from "@/types/SettingTypes";
 
@@ -87,7 +81,13 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <template>
   <div class="w-full p-3">
-    <pv-alert v-if="arducamWarningShown" class="mb-3" color="error" density="compact" icon="mdi-alert-circle-outline">
+    <pv-alert
+      v-if="arducamWarningShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      :icon="IconAlertCircleOutline"
+    >
       <span>
         Arducam camera detected! Please configure the camera model in the <a href="#/cameras">Camera tab</a>!
       </span>
@@ -97,13 +97,19 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       class="mb-3"
       color="error"
       density="compact"
-      icon="mdi-alert-circle-outline"
+      :icon="IconAlertCircleOutline"
     >
       <span>
         Conflicting hostname detected! Please change the hostname in the <a href="#/settings">Settings tab</a>!
       </span>
     </pv-alert>
-    <pv-alert v-if="fpsLimitWarningShown" class="mb-3" color="error" density="compact" icon="mdi-alert-circle-outline">
+    <pv-alert
+      v-if="fpsLimitWarningShown"
+      class="mb-3"
+      color="error"
+      density="compact"
+      :icon="IconAlertCircleOutline"
+    >
       <span
         >One or more cameras have an FPS limit set! This may cause performance issues. Check your logs for more
         information.
@@ -114,28 +120,26 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
       class="mb-3"
       color="error"
       density="compact"
-      icon="mdi-alert-circle-outline"
+      :icon="IconAlertCircleOutline"
     >
       <span
         >Conflicting camera name(s) detected! Please change the name(s) of
         {{ useSettingsStore().general.conflictingCameras }}!
       </span>
     </pv-alert>
-    <v-banner
+    <pv-alert
       v-if="cameraMismatchWarningShown"
       v-model="cameraMismatchWarningShown"
-      rounded
       color="error"
-      dark
       class="mb-3"
-      icon="mdi-alert-circle-outline"
+      :icon="IconAlertCircleOutline"
     >
       <span
         >Camera Mismatch Detected! Visit the <a href="#/cameraConfigs">Camera Matching</a> page for more information.
         Note: Camera matching is done by USB port. Ensure cameras are plugged into the same USB ports as when they were
         activated.
       </span>
-    </v-banner>
+    </pv-alert>
     <div class="flex flex-wrap">
       <div class="w-full lg:w-2/3 pb-3 lg:pr-3 self-stretch">
         <CamerasCard v-model="cameraViewType" />
@@ -145,7 +149,7 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
         <StreamConfigCard v-model="cameraViewType" />
       </div>
     </div>
-    <PipelineConfigCard />
+    <ConfigOptions />
 
     <!-- TODO - not sure this belongs here -->
     <!-- Need v-model to allow the dialog to be dismissed and v-if to only display when cameras need configuration -->
@@ -163,12 +167,12 @@ const showCameraSetupDialog = ref(useCameraSettingsStore().needsCameraConfigurat
 
 <style scoped>
 a:link {
-  color: rgb(var(--v-theme-buttonActive));
+  color: var(--color-pv-button-active);
   background-color: transparent;
   text-decoration: none;
 }
 a:visited {
-  color: rgb(var(--v-theme-buttonActive));
+  color: var(--color-pv-button-active);
   background-color: transparent;
   text-decoration: none;
 }

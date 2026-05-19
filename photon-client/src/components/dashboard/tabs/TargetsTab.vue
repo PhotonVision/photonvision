@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import PvTable from "@/components/common/pv-table.vue";
-
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { type ActivePipelineSettings, PipelineType } from "@/types/PipelineTypes";
 import { useStateStore } from "@/stores/StateStore";
@@ -196,7 +193,7 @@ const resetCurrentBuffer = () => {
         </pv-table>
       </div>
       <div class="flex flex-col pb-4 text-white">
-        <div class="m-0 p-0 pb-4 pr-4 text-sm" >
+        <div class="m-0 p-0 pb-4 pr-4 text-sm">
           Multi-tag pose standard deviation over the last
           {{ useStateStore().currentMultitagBuffer?.length || "NaN" }}/100 samples
         </div>
@@ -266,12 +263,12 @@ const resetCurrentBuffer = () => {
   </div>
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 th {
   padding-left: 8px !important;
   padding-right: 8px !important;
 }
-.v-table {
+.pv-table {
   width: 100%;
   font-size: 1rem !important;
 
@@ -305,7 +302,7 @@ th {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }

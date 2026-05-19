@@ -5,10 +5,6 @@ import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { AutoReconnectingWebsocket } from "@/lib/AutoReconnectingWebsocket";
 import { inject, onBeforeMount } from "vue";
 import { breakpointsVuetifyV3 } from "@vueuse/core";
-import PhotonSidebar from "@/components/app/photon-sidebar.vue";
-import PhotonLogView from "@/components/app/photon-log-view.vue";
-import PhotonErrorSnackbar from "@/components/app/photon-error-snackbar.vue";
-import { useTheme } from "vuetify";
 import { restoreThemeConfig } from "@/lib/ThemeManager";
 import { ConfigProvider } from "reka-ui";
 const is_demo = import.meta.env.MODE === "demo";
@@ -55,9 +51,8 @@ if (!is_demo) {
   useStateStore().$patch({ websocket: websocket });
 }
 
-const theme = useTheme();
 onBeforeMount(() => {
-  restoreThemeConfig(theme);
+  restoreThemeConfig();
 });
 
 const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
@@ -66,7 +61,7 @@ const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
 <template>
   <ConfigProvider :scroll-body="false">
     <v-app>
-      <div class="flex h-full w-full bg-background text-white">
+      <div class="flex h-full w-full bg-pv-background text-white">
         <photon-sidebar />
         <main class="flex min-w-0 flex-1 flex-col">
           <div class="flex-1">
@@ -79,15 +74,14 @@ const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
     </v-app>
   </ConfigProvider>
 </template>
-
-<style lang="scss">
-@use "@/assets/styles/variables";
-
-@media (max-width: v-bind(mdAndDown)) {
-  html {
-    font-size: 14px !important;
-  }
+<style>
+@reference "./assets/styles/main.css";
+html {
+  @apply text-sm md:text-base;
 }
+</style>
+
+<style >
 
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
@@ -95,16 +89,16 @@ const mdAndDown = `calc(${breakpointsVuetifyV3.md} - 0.02px)`;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(var(--v-theme-background));
+  background: var(--color-pv-background);
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgb(var(--v-theme-accent));
+  background-color: var(--color-pv-accent);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: rgb(var(--v-theme-primary));
+  background-color: var(--color-pv-primary);
 }
 
 .main-container {

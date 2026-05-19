@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PvTable from "@/components/common/pv-table.vue";
 
 import { PVCameraInfo } from "@/types/SettingTypes";
 import { cameraInfoFor } from "@/lib/PhotonUtils";
@@ -32,7 +31,7 @@ const { saved, current } = defineProps({
 
 <template>
   <div>
-    <pv-table density="compact" :style="{ backgroundColor: 'var(--v-primary-base)' }">
+    <pv-table density="compact" :style="{ backgroundColor: 'var(--color-pv-primary)' }">
       <tbody>
         <tr>
           <th></th>

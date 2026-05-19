@@ -3,13 +3,13 @@ import { ref, computed, inject, useTemplateRef } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useSettingsStore } from "@/stores/settings/GeneralSettingsStore";
 import { type ObjectDetectionModelProperties } from "@/types/SettingTypes";
-import PvButton from "@/components/common/pv-button.vue";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvTextField from "@/components/common/pv-text-field.vue";
-import PvTable from "@/components/common/pv-table.vue";
-import PvFileInput from "@/components/common/pv-file-input.vue";
+import IconImport from "~icons/mdi/import";
+import IconExport from "~icons/mdi/export";
+import IconTrash from "~icons/mdi/trash";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconPencil from "~icons/mdi/pencil";
+import IconInformation from "~icons/mdi/information";
+
 import { axiosPost } from "@/lib/PhotonUtils";
 
 const showImportDialog = ref(false);
@@ -169,7 +169,7 @@ const handleBulkImport = async () => {
         <div class="w-full px-3 sm:w-1/2">
           <pv-button
             variant="primary"
-            icon="mdi-import"
+            :icon="IconImport"
             class="justify-center"
             @click="() => (showImportDialog = true)"
           >
@@ -239,7 +239,7 @@ const handleBulkImport = async () => {
                   />
                   <pv-button
                     variant="primary"
-                    icon="mdi-import"
+                    :icon="IconImport"
                     block
                     :disabled="
                       importModelFile === null ||
@@ -260,7 +260,7 @@ const handleBulkImport = async () => {
         <div class="w-full px-3 sm:w-1/2">
           <pv-button
             variant="primary"
-            icon="mdi-import"
+            :icon="IconImport"
             class="justify-center"
             @click="() => (showBulkImportDialog = true)"
           >
@@ -276,7 +276,7 @@ const handleBulkImport = async () => {
                   <pv-file-input v-model="importFile" label="Zip File" accept=".zip" />
                   <pv-button
                     variant="primary"
-                    icon="mdi-import"
+                    :icon="IconImport"
                     block
                     :disabled="importFile === null"
                     @click="handleBulkImport()"
@@ -289,7 +289,7 @@ const handleBulkImport = async () => {
           </pv-dialog>
         </div>
         <div class="w-full px-3 sm:w-1/2">
-          <pv-button variant="passive" icon="mdi-export" @click="openExportPrompt">
+          <pv-button variant="passive" :icon="IconExport" @click="openExportPrompt">
             <span class="open-label">Export Models</span>
           </pv-button>
           <a
@@ -301,7 +301,7 @@ const handleBulkImport = async () => {
           />
         </div>
         <div class="w-full px-3 sm:w-1/2">
-          <pv-button variant="danger" icon="mdi-trash" @click="() => (showNukeDialog = true)">
+          <pv-button variant="danger" :icon="IconTrash" @click="() => (showNukeDialog = true)">
             <span class="open-label">Clear and reset models</span>
           </pv-button>
         </div>
@@ -329,7 +329,7 @@ const handleBulkImport = async () => {
                     title="Delete Model"
                     @click="() => (confirmDeleteDialog = { show: true, model })"
                   >
-                    <span class="mdi mdi-trash-can-outline text-lg leading-none" aria-hidden="true"></span>
+                    <IconTrashCanOutline class="size-5" aria-hidden="true" />
                   </pv-button>
                 </td>
                 <td class="text-right">
@@ -339,12 +339,12 @@ const handleBulkImport = async () => {
                     title="Rename Model"
                     @click="() => (showRenameDialog = { show: true, model, newName: '' })"
                   >
-                    <span class="mdi mdi-pencil text-lg leading-none" aria-hidden="true"></span>
+                    <IconPencil class="size-5" aria-hidden="true" />
                   </pv-button>
                 </td>
                 <td class="text-right">
                   <pv-button size="icon" variant="passive" @click="() => (showInfo = { show: true, model })">
-                    <span class="mdi mdi-information text-lg leading-none" aria-hidden="true"></span>
+                    <IconInformation class="size-5" aria-hidden="true" />
                   </pv-button>
                 </td>
               </tr>
@@ -386,7 +386,7 @@ const handleBulkImport = async () => {
             <pv-card padding="none" class="p-5">
               <div class="pb-2 text-lg font-semibold">Object Detection Model Info</div>
               <div class="pt-0">
-                <pv-button variant="passive" icon="mdi-export" block @click="openExportIndividualModelPrompt">
+                <pv-button variant="passive" :icon="IconExport" block @click="openExportIndividualModelPrompt">
                   <span class="open-label">Export Model</span>
                 </pv-button>
                 <a
@@ -423,7 +423,7 @@ const handleBulkImport = async () => {
   </pv-card>
 </template>
 
-<style scoped lang="scss">
+<style scoped >
 .v-col-12 > .v-btn {
   width: 100%;
 }
@@ -440,7 +440,7 @@ const handleBulkImport = async () => {
     display: none;
   }
 }
-.v-table {
+.pv-table {
   width: 100%;
   height: 100%;
   text-align: center;
@@ -468,7 +468,7 @@ const handleBulkImport = async () => {
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: rgb(var(--v-theme-accent));
+    background-color: var(--color-pv-accent);
     border-radius: 10px;
   }
 }

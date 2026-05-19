@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import PvSelect from "@/components/common/pv-select.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { TargetModel } from "@/types/PipelineTypes";
-import PvSlider from "@/components/common/pv-slider.vue";
+
 import { computed } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";

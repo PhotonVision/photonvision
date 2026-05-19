@@ -1,10 +1,18 @@
 <script setup lang="ts">
 import { useStateStore } from "@/stores/StateStore";
 import { ToastProvider, ToastRoot, ToastTitle, ToastDescription, ToastViewport } from "reka-ui";
-import PvProgress from "@/components/common/pv-progress.vue";
+
 import { computed } from "vue";
-const themeColor = computed(() => `rgb(var(--v-theme-${useStateStore().snackbarData.color}))`);
-const borderThemeColor = computed(() => `rgba(var(--v-theme-${useStateStore().snackbarData.color}), 0.45)`);
+
+const toThemeVar = (color: string) => {
+  const normalized = color.includes("-")
+    ? color
+    : color.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
+  return `--color-pv-${normalized}`;
+};
+
+const themeColor = computed(() => `var(${toThemeVar(useStateStore().snackbarData.color)})`);
+const borderThemeColor = computed(() => `color-mix(in srgb, ${themeColor.value} 45%, transparent)`);
 </script>
 
 <template>
@@ -15,7 +23,10 @@ const borderThemeColor = computed(() => `rgba(var(--v-theme-${useStateStore().sn
       class="rounded-lg shadow-sm border p-4 grid [grid-template-areas:'title_action'_'description_action'] grid-cols-[auto_max-content] gap-x-4 items-center data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=move]:translate-x-(--reka-toast-swipe-move-x) data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=end]:animate-swipeOut"
       :duration="useStateStore().snackbarData.timeout"
     >
-      <ToastTitle class="[grid-area:title] mb-1.25 font-medium text-sm" :style="{ color: `contrast-color(${themeColor})` }">
+      <ToastTitle
+        class="[grid-area:title] mb-1.25 font-medium text-sm"
+        :style="{ color: `contrast-color(${themeColor})` }"
+      >
         {{ useStateStore().snackbarData.message }}
       </ToastTitle>
       <ToastDescription as-child>

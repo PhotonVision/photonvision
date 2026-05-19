@@ -4,10 +4,8 @@ import type { PhotonTarget } from "@/types/PhotonTrackingTypes";
 import type { Mesh, Object3D, PerspectiveCamera, Scene, WebGLRenderer } from "three";
 // @ts-expect-error Intellisense says these conflict with the dynamic imports below
 import type { TrackballControls } from "three/examples/jsm/controls/TrackballControls.js";
-import { onMounted, ref, watchEffect } from "vue";
-import { useResizeObserver, useWindowSize } from "@vueuse/core";
-import PvButton from "@/components/common/pv-button.vue";
-import { useTheme } from "vuetify";
+import { onMounted, ref, watch, watchEffect } from "vue";
+import { useTheme } from "@/composables/useTheme";
 const {
   ArrowHelper,
   BoxGeometry,
@@ -51,8 +49,8 @@ const drawTargets = async (targets: PhotonTarget[]) => {
     return;
   }
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x151515);
-  else scene.background = new Color(0x232C37);
+  if (theme.isDark.value) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232c37);
 
   scene.remove(...previousTargets);
   previousTargets = [];
@@ -164,8 +162,8 @@ onMounted(async () => {
   renderer = new WebGLRenderer({ canvas: canvas, antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
 
-  if (theme.global.current.value.dark) scene.background = new Color(0x151515);
-  else scene.background = new Color(0x232C37);
+  if (theme.isDark.value) scene.background = new Color(0x151515);
+  else scene.background = new Color(0x232c37);
 
   onResize();
   window.addEventListener("resize", onResize);
@@ -226,6 +224,14 @@ onMounted(async () => {
 watchEffect(() => {
   void drawTargets(props.targets);
 });
+
+watch(
+  () => theme.isDark.value,
+  () => {
+    if (!scene) return;
+    scene.background = theme.isDark.value ? new Color(0x151515) : new Color(0x232c37);
+  }
+);
 </script>
 
 <template>
@@ -234,13 +240,13 @@ watchEffect(() => {
       <div class="w-full pl-0 md:w-1/2">
         <div class="p-0 text-base font-semibold">Target Visualization</div>
       </div>
-      <div class="flex gap-2 flex-1" > 
-      <div class="flex w-full items-center pt-0 pl-6  md:pt-3 md:pl-3">
-        <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
-      </div>
-      <div class="flex w-full items-center pt-0 pr-0 md:pt-3">
-        <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
-      </div>
+      <div class="flex gap-2 flex-1">
+        <div class="flex w-full items-center pt-0 pl-6 md:pt-3 md:pl-3">
+          <pv-button variant="primary" block @click="resetCamFirstPerson"> First Person </pv-button>
+        </div>
+        <div class="flex w-full items-center pt-0 pr-0 md:pt-3">
+          <pv-button variant="primary" block @click="resetCamThirdPerson"> Third Person </pv-button>
+        </div>
       </div>
     </div>
     <canvas ref="canvasRef" class="w-100" />

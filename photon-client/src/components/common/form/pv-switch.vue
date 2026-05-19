@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import TooltippedLabel from "@/components/common/pv-tooltipped-label.vue";
-import { computed } from "vue";
+import { useColFlexBasis } from "../lib";
 import { SwitchRoot, SwitchThumb } from "reka-ui";
 
 const value = defineModel<boolean>();
@@ -9,14 +8,13 @@ const props = withDefaults(
   { disabled: false, labelCols: 2, switchCols: 8 }
 );
 
-const labelWidth = computed(() => `${((12 - props.switchCols) / 12) * 100}%`);
-const switchWidth = computed(() => `${(props.switchCols / 12) * 100}%`);
+const { labelWidth, contentWidth: switchWidth } = useColFlexBasis(() => props.switchCols);
 </script>
 
 <template>
   <div class="flex flex-col gap-2 py-1.5 sm:flex-row sm:items-center sm:gap-3">
     <div class="sm:shrink-0" :style="{ flexBasis: labelWidth }">
-      <tooltipped-label :tooltip="tooltip" :label="label" />
+      <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
     <div class="flex sm:flex-1 sm:justify-start" :style="{ flexBasis: switchWidth }">
       <switch-root

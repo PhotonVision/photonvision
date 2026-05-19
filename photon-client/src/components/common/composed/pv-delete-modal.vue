@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import PvButton from "@/components/common/pv-button.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
 import { ref } from "vue";
-import pvInput from "./pv-input.vue";
+import IconExport from "~icons/mdi/export";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
 
 const value = defineModel<boolean | undefined>({ required: true });
 
@@ -45,7 +43,7 @@ const confirmationText = ref("");
       <div class="pt-2.5">
         <div class="flex flex-wrap items-center text-white -mx-3">
           <div v-if="onBackup" class="w-full sm:w-1/2 px-3">
-            <pv-button variant="primary" icon="mdi-export" block @click="onBackup">
+            <pv-button variant="primary" :icon="IconExport" block @click="onBackup">
               <span class="open-label">Backup Data</span>
             </pv-button>
           </div>
@@ -55,7 +53,7 @@ const confirmationText = ref("");
           >
             <pv-button
               variant="danger"
-              icon="mdi-trash-can-outline"
+              :icon="IconTrashCanOutline"
               block
               :disabled="
                 expectedConfirmationText

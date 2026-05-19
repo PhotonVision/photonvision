@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, useAttrs } from "vue";
+import type { Component } from "vue";
+import IconClose from "~icons/mdi/close";
+import { useThemeColor } from "../lib";
 
 defineOptions({
   inheritAttrs: false
@@ -9,7 +12,7 @@ const props = withDefaults(
   defineProps<{
     color?: string;
     density?: "default" | "compact" | "comfortable";
-    icon?: string;
+    icon?: Component;
     text?: string;
     variant?: "tonal" | "elevated" | "flat" | "outlined";
     closable?: boolean;
@@ -25,32 +28,28 @@ const props = withDefaults(
 const attrs = useAttrs();
 const shown = ref(true);
 
-const themeColor = computed(() => `rgb(var(--v-theme-${props.color}))`);
-const translucentThemeColor = computed(() => `rgba(var(--v-theme-${props.color}),  0.65)`);
-const borderThemeColor = computed(() => `rgba(var(--v-theme-${props.color}), 0.45)`);
-
-const isLightTone = computed(() =>
-  ["buttonActive", "primary", "secondary", "warning", "success"].includes(props.color)
-);
+const { solid, translucent, border: borderColor, isRaw, isLightTone } = useThemeColor(() => props.color);
 
 const alertStyle = computed(() => {
-  if (props.color.startsWith("#") || props.color.startsWith("rgb") || props.color.startsWith("var(")) {
+  const isTonalOrOutlined = props.variant === "tonal" || props.variant === "outlined";
+
+  if (isRaw.value) {
     return {
-      "--pv-alert-color": props.color,
-      backgroundColor: props.variant === "tonal" || props.variant === "outlined" ? "transparent" : props.color,
-      borderColor: props.color
+      "--pv-alert-color": solid.value,
+      backgroundColor: isTonalOrOutlined ? "transparent" : solid.value,
+      borderColor: solid.value
     };
   }
 
   return {
-    "--pv-alert-color": themeColor.value,
+    "--pv-alert-color": solid.value,
     backgroundColor:
       props.variant === "tonal"
-        ? translucentThemeColor.value
+        ? translucent.value
         : props.variant === "outlined"
           ? "transparent"
-          : themeColor.value,
-    borderColor: borderThemeColor.value
+          : solid.value,
+    borderColor: borderColor.value
   };
 });
 
@@ -84,7 +83,7 @@ const textClass = computed(() => {
       attrs.class
     ]"
   >
-    <span v-if="icon" :class="['mdi mt-0.5 shrink-0 text-lg leading-none', icon]" aria-hidden="true"></span>
+    <component v-if="icon" :is="icon" class="mt-0.5 size-5 shrink-0" aria-hidden="true" />
     <div class="min-w-0 flex-1">
       <slot>{{ text }}</slot>
     </div>
@@ -95,7 +94,7 @@ const textClass = computed(() => {
       aria-label="Close alert"
       @click="shown = false"
     >
-      <span class="mdi mdi-close text-base leading-none" aria-hidden="true"></span>
+      <IconClose class="size-4" aria-hidden="true" />
     </button>
   </div>
 </template>

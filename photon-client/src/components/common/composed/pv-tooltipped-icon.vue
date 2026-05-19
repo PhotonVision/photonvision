@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import PvIcon from "@/components/common/pv-icon.vue";
-import PvTooltip from "@/components/common/pv-tooltip.vue";
+import type { Component } from "vue";
 
 withDefaults(
   defineProps<{
-    iconName: string;
+    icon: Component;
     disabled?: boolean;
     color?: string;
     tooltip?: string;
@@ -28,7 +27,7 @@ defineEmits<{
     <pv-tooltip :text="tooltip" :location="right ? 'right' : 'left'">
       <pv-icon
         :class="hover ? 'hover' : ''"
-        :icon="iconName"
+        :icon="icon"
         :color="color"
         :disabled="disabled"
         @click="$emit('click')"

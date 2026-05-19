@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import CamerasCard from "@/components/cameras/CameraSettingsCard.vue";
-import CalibrationCard from "@/components/cameras/CameraCalibrationCard.vue";
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { computed } from "vue";
-import CamerasView from "@/components/cameras/CamerasView.vue";
 import { useStateStore } from "@/stores/StateStore";
-import CameraControlCard from "@/components/cameras/CameraControlCard.vue";
 
 const cameraViewType = computed<number[]>({
   get: (): number[] => {
@@ -44,8 +40,8 @@ const cameraViewType = computed<number[]>({
   <div>
     <div class="flex flex-wrap p-3">
       <div class="w-full md:w-7/12">
-        <CamerasCard />
-        <CalibrationCard />
+        <CameraSettingsCard />
+        <CameraCalibrationCard />
         <CameraControlCard />
       </div>
       <div class="w-full pt-3 md:w-5/12 md:pl-3 md:pt-0">

@@ -4,16 +4,14 @@ import { computed, inject, ref } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
-import PvButton from "@/components/common/pv-button.vue";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
-import PvDeleteModal from "@/components/common/pv-delete-modal.vue";
-import PvCameraInfoCard from "@/components/common/pv-camera-info-card.vue";
-import PvCameraMatchCard from "@/components/common/pv-camera-match-card.vue";
-import PvAlert from "@/components/common/pv-alert.vue";
-import PvDialog from "@/components/common/pv-dialog.vue";
-import PvCard from "@/components/common/pv-card.vue";
-import PvIcon from "@/components/common/pv-icon.vue";
-import PvTable from "@/components/common/pv-table.vue";
+
+import IconCameraOff from "~icons/mdi/camera-off";
+import IconCameraPlus from "~icons/mdi/camera-plus";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconClose from "~icons/mdi/close";
+import IconInformationOutline from "~icons/mdi/information-outline";
+import IconPlus from "~icons/mdi/plus";
 
 const backendHostname = inject<string>("backendHostname");
 const formatUrl = (port: number) => `http://${backendHostname}:${port}/stream.mjpg`;
@@ -248,7 +246,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       })
                   "
                 >
-                  <span class="mdi mdi-trash-can-outline text-xl leading-none" aria-hidden="true"></span>
+                  <IconTrashCanOutline class="size-6" aria-hidden="true" />
                 </pv-button>
               </div>
             </div>
@@ -337,7 +335,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                       })
                   "
                 >
-                  <span class="mdi mdi-trash-can-outline text-xl leading-none" aria-hidden="true"></span>
+                  <IconTrashCanOutline class="size-6" aria-hidden="true" />
                 </pv-button>
               </div>
             </div>
@@ -386,7 +384,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           class="flex h-full flex-col justify-center px-6"
         >
           <div class="flex flex-col items-center justify-center">
-            <pv-icon size="64" color="primary">mdi-plus</pv-icon>
+            <pv-icon size="64" color="primary" :icon="IconPlus" />
           </div>
           <div class="pt-3 text-lg font-semibold">Additional plugged in cameras will display here!</div>
         </pv-card>
@@ -400,7 +398,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
           <span class="break-words">
             {{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}
           </span>
-          <pv-button variant="text" size="icon" icon="mdi-close" @click="setCameraView(null, null)" />
+          <pv-button variant="text" size="icon" :icon="IconClose" @click="setCameraView(null, null)" />
         </div>
         <div v-if="!viewingCamera[1]">
           <PvCameraInfoCard :camera="viewingCamera[0]" />
@@ -417,7 +415,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             color="buttonActive"
             density="compact"
             text="A different camera may have been connected to this device! Compare the following information carefully."
-            icon="mdi-information-outline"
+            :icon="IconInformationOutline"
           />
           <PvCameraMatchCard :saved="viewingCamera[0]" :current="getMatchedDevice(viewingCamera[0])" />
         </div>
