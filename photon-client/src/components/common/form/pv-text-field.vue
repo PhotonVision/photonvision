@@ -101,7 +101,7 @@ const fieldClass = computed(() =>
       {{ label }}
     </div>
     <div :class="fieldClass">
-      <component v-if="prependIcon" :is="prependIcon" class="size-4 text-white/70" aria-hidden="true" />
+      <component :is="prependIcon" v-if="prependIcon" class="size-4 text-white/70" aria-hidden="true" />
       <input
         v-model="inputValue"
         v-bind="inputAttrs"

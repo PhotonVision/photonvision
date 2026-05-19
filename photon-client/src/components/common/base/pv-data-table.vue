@@ -249,9 +249,9 @@ const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
               <td v-if="showExpand && !row.getIsGrouped()" class="text-center">
                 <slot
                   name="item.data-table-expand"
-                  :internalItem="row.original"
-                  :toggleExpand="makeToggleExpand(row)"
-                  :isExpanded="row.getIsExpanded()"
+                  :internal-item="row.original"
+                  :toggle-expand="makeToggleExpand(row)"
+                  :is-expanded="row.getIsExpanded()"
                 >
                   <pv-button
                     size="icon"
@@ -265,7 +265,7 @@ const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
               </td>
               <td v-for="cell in row.getVisibleCells()" :key="cell.id">
                 <div v-if="cell.getIsGrouped()" class="flex items-center gap-2">
-                  <pv-button @click="row.toggleExpanded()" size="icon">
+                  <pv-button size="icon" @click="row.toggleExpanded()">
                     {{ row.getIsExpanded() ? "-" : "+" }}
                   </pv-button>
                   <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
@@ -308,9 +308,9 @@ const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
         <pv-select
           class="min-w-20"
           :value="pagination.pageSize"
-          @change="onPageSizeChange"
           :items="pageSizeOptions.map((size) => ({ name: size.toString(), value: size }))"
           label="Rows per page"
+          @change="onPageSizeChange"
         >
         </pv-select>
         <span class="text-xs text-white/60">Page {{ pagination.pageIndex + 1 }} of {{ pageCount }}</span>

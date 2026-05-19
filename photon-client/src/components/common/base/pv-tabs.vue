@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { TabsList, TabsRoot, TabsTrigger,TabsIndicator } from "reka-ui";
+import { TabsList, TabsRoot, TabsTrigger, TabsIndicator } from "reka-ui";
 
 export interface PvTabItem<TValue extends string> {
   label: string;
