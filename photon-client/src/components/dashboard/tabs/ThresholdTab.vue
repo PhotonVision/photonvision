@@ -8,6 +8,7 @@ import { computed, onBeforeUnmount, onMounted } from "vue";
 import { useStateStore } from "@/stores/StateStore";
 import { ColorPicker, type HSV } from "@/lib/ColorPicker";
 import { useCustomBreakpoints } from "@/lib/Breakpoints";
+import type { WebsocketNumberPair } from "@/types/WebsocketDataTypes";
 const averageHue = computed<number>(() => {
   const isHueInverted = useCameraSettingsStore().currentPipelineSettings.hueInverted;
   let val = Object.values(useCameraSettingsStore().currentPipelineSettings.hsvHue).reduce((a, b) => a + b, 0);
@@ -31,6 +32,9 @@ const hsvValue = computed<[number, number]>({
   get: () => Object.values(useCameraSettingsStore().currentPipelineSettings.hsvValue) as [number, number],
   set: (v) => (useCameraSettingsStore().currentPipelineSettings.hsvValue = v)
 });
+
+const normalizeNumberPair = (value: WebsocketNumberPair | [number, number]): [number, number] =>
+  Array.isArray(value) ? value : [value.first, value.second];
 
 let selectedEventMode: 0 | 1 | 2 | 3 = 0;
 const handleStreamClick = (event: MouseEvent) => {
@@ -147,7 +151,10 @@ const interactiveCols = computed(() =>
       :max="180"
       :slider-cols="interactiveCols"
       :inverted="useCameraSettingsStore().currentPipelineSettings.hueInverted"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: value }, false)"
+      @update:modelValue="
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hsvHue: normalizeNumberPair(value) }, false)
+      "
     />
     <pv-range-slider
       id="sat-slider"
@@ -159,7 +166,8 @@ const interactiveCols = computed(() =>
       :max="255"
       :slider-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: value }, false)
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hsvSaturation: normalizeNumberPair(value) }, false)
       "
     />
     <pv-range-slider
@@ -171,7 +179,10 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="255"
       :slider-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: value }, false)"
+      @update:modelValue="
+        (value: WebsocketNumberPair | [number, number]) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ hsvValue: normalizeNumberPair(value) }, false)
+      "
     />
     <pv-switch
       v-model="useCameraSettingsStore().currentPipelineSettings.hueInverted"
@@ -179,14 +190,15 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ hueInverted: value }, false)
       "
     />
     <div>
-      <div class="text-white pt-3">Color Picker</div>
+      <div class="pt-3 text-white">Color Picker</div>
       <div class="flex pt-3">
         <template v-if="!useStateStore().colorPickingMode">
-          <div class="w-1/3 pl-0 pr-2">
+          <div class="w-1/3 pr-2 pl-0">
             <pv-button
               size="sm"
               variant="primary"
@@ -197,12 +209,12 @@ const interactiveCols = computed(() =>
               Shrink Range
             </pv-button>
           </div>
-          <div class="w-1/3 pl-0 pr-0">
+          <div class="w-1/3 pr-0 pl-0">
             <pv-button size="sm" variant="primary" :icon="IconPlusMinus" block @click="enableColorPicking(1)">
               {{ useCameraSettingsStore().currentPipelineSettings.hueInverted ? "Exclude" : "Set to" }} Average
             </pv-button>
           </div>
-          <div class="w-1/3 pl-2 pr-0">
+          <div class="w-1/3 pr-0 pl-2">
             <pv-button
               size="sm"
               variant="primary"

@@ -50,11 +50,6 @@ const changeFromSlot = (v: string, i: number) => {
   localValue.value = temp;
 };
 
-const checkNumberRange = (v: string): boolean => {
-  const val: number = parseFloat(v);
-  return isFinite(val) && val >= props.min && val <= props.max;
-};
-
 const sliderModel = computed<number[]>({
   get: () => [...localValue.value],
   set: (v) => {
@@ -82,22 +77,24 @@ const sliderModel = computed<number[]>({
       />
       <slider-root
         v-model="sliderModel"
-        class="relative flex h-10 w-full touch-none select-none items-center"
+        class="relative flex h-10 w-full touch-none items-center select-none"
         :min="min"
         :max="max"
         :step="step"
         :disabled="disabled"
         :min-steps-between-thumbs="0"
       >
-        <slider-track class="relative h-2 w-full rounded-full pv-slider-track" :class="inverted ? 'bg-pv-primary' : 'bg-white/12'">
-          <slider-range class="absolute h-full rounded-full pv-slider-range" :class="inverted ? 'bg-white/12' : 'bg-pv-primary'" />
+        <slider-track
+          class="pv-slider-track relative h-2 w-full rounded-full"
+          :class="inverted ? 'bg-pv-primary' : 'bg-white/12'"
+        >
+          <slider-range
+            class="pv-slider-range absolute h-full rounded-full"
+            :class="inverted ? 'bg-white/12' : 'bg-pv-primary'"
+          />
         </slider-track>
-        <slider-thumb
-          :class="sliderThumbClass"
-        />
-        <slider-thumb
-          :class="sliderThumbClass"
-        />
+        <slider-thumb :class="sliderThumbClass" />
+        <slider-thumb :class="sliderThumbClass" />
       </slider-root>
       <input
         :value="localValue[1]"

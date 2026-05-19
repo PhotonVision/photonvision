@@ -41,7 +41,7 @@ const preventDismiss = (event: Event) => {
       <dialog-content
         :style="contentStyle"
         :class="[
-          'fixed top-1/2 left-1/2 z-2401 max-h-[calc(100vh-4rem)]  -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border border-white/10 bg-pv-surface text-white shadow-2xl shadow-black/50 outline-none w-(--dialog-width) max-w-[calc(100vw-2rem)]',
+          'bg-pv-surface fixed top-1/2 left-1/2 z-2401 max-h-[calc(100vh-4rem)] w-(--dialog-width) max-w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-auto rounded-2xl border border-white/10 text-white shadow-2xl shadow-black/50 outline-none',
           contentClass
         ]"
         @escape-key-down="preventDismiss"

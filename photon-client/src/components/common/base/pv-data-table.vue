@@ -9,7 +9,6 @@ import {
   useVueTable,
   type ColumnDef,
   type Cell,
-  type ExpandedState,
   type GroupingState,
   type PaginationState,
   type Row
@@ -77,21 +76,22 @@ const pagination = ref<PaginationState>({
 });
 
 const grouping = ref<GroupingState>([...props.grouping]);
-const expanded = ref<ExpandedState>({});
+type ExpandedMap = Record<string, boolean>;
+const expandedState = ref<ExpandedMap>({});
 
-const getRowIdValue = (row: unknown, index: number, parent?: Row<unknown>) => {
+const getRowIdValue = (row: unknown, index: number, parent?: Row<unknown>): string => {
   if (props.getRowId) {
     return props.getRowId(row, index, parent);
   }
 
   if (typeof props.itemValue === "function") {
-    return props.itemValue(row);
+    return String(props.itemValue(row));
   }
 
   if (typeof props.itemValue === "string" && row && typeof row === "object") {
     const record = row as Record<string, unknown>;
     const value = record[props.itemValue];
-    if (value !== undefined) {
+    if (value !== undefined && (typeof value === "string" || typeof value === "number" || typeof value === "boolean")) {
       return String(value);
     }
   }
@@ -99,11 +99,13 @@ const getRowIdValue = (row: unknown, index: number, parent?: Row<unknown>) => {
   return String(index);
 };
 
-const toExpandedState = (values: Array<string | number> | undefined): ExpandedState =>
-  (values ?? []).reduce<ExpandedState>((acc, value) => {
-    acc[String(value)] = true;
-    return acc;
-  }, {});
+const toExpandedState = (values: Array<string | number> | undefined): ExpandedMap => {
+  const next: ExpandedMap = {};
+  (values ?? []).forEach((value) => {
+    next[String(value)] = true;
+  });
+  return next;
+};
 
 watch(
   () => props.pageIndex,
@@ -137,7 +139,7 @@ watch(
   () => props.expanded,
   (value) => {
     if (value) {
-      expanded.value = toExpandedState(value);
+      expandedState.value = toExpandedState(value);
     }
   },
   { immediate: true }
@@ -159,7 +161,7 @@ const table = useVueTable({
       return grouping.value;
     },
     get expanded() {
-      return expanded.value;
+      return expandedState.value;
     }
   },
   onPaginationChange: (updater) => {
@@ -172,8 +174,9 @@ const table = useVueTable({
     emit("update:grouping", grouping.value);
   },
   onExpandedChange: (updater) => {
-    expanded.value = typeof updater === "function" ? updater(expanded.value) : updater;
-    emit("update:expanded", Object.keys(expanded.value));
+    const next = typeof updater === "function" ? updater(expandedState.value) : updater;
+    expandedState.value = next === true ? {} : next;
+    emit("update:expanded", Object.keys(expandedState.value));
   },
   getCoreRowModel: getCoreRowModel(),
   getGroupedRowModel: getGroupedRowModel(),
@@ -196,17 +199,17 @@ const expandedSlotColumns = computed(() =>
   props.showExpand ? [null, ...table.getVisibleLeafColumns()] : table.getVisibleLeafColumns()
 );
 
-const onPageSizeChange = (event: Event) => {
-  const value = Number((event.target as HTMLSelectElement).value);
-  if (Number.isFinite(value)) {
-    table.setPageSize(value);
+const onPageSizeChange = (value: number | string) => {
+  const nextValue = Number(value);
+  if (Number.isFinite(nextValue)) {
+    table.setPageSize(nextValue);
   }
 };
 
 const rootClasses = computed(() => ["pv-data-table", attrs.class]);
 
 const getCellSlotName = (cell: Cell<unknown, unknown>) => `item.${cell.column.id}`;
-const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
+const makeToggleExpand = (row: Row<unknown>) => () => {
   row.toggleExpanded();
 };
 </script>
@@ -307,12 +310,11 @@ const makeToggleExpand = (row: Row<unknown>) => (_item?: unknown) => {
       <div class="flex flex-wrap items-center gap-3">
         <pv-select
           class="min-w-20"
-          :value="pagination.pageSize"
+          :model-value="pagination.pageSize"
           :items="pageSizeOptions.map((size) => ({ name: size.toString(), value: size }))"
           label="Rows per page"
-          @change="onPageSizeChange"
-        >
-        </pv-select>
+          @update:modelValue="onPageSizeChange"
+        />
         <span class="text-xs text-white/60">Page {{ pagination.pageIndex + 1 }} of {{ pageCount }}</span>
         <div class="flex items-center gap-2">
           <pv-button size="sm" variant="ghost" :disabled="!table.getCanPreviousPage()" @click="table.previousPage()">

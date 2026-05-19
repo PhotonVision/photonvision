@@ -76,15 +76,15 @@ const displayValue = computed(() => {
 
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="flex items-center pl-0 pt-10px pb-10px">
+    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
 
-    <div :class="inputWidthClass" class="flex items-center pr-0 pt-10px pb-10px">
-      <div class="flex flex-col gap-1 w-full">
+    <div :class="inputWidthClass" class="pt-10px pb-10px flex items-center pr-0">
+      <div class="flex w-full flex-col gap-1">
         <div :class="fieldClass">
           <label
-            class="flex-1 min-w-0 cursor-pointer flex items-center"
+            class="flex min-w-0 flex-1 cursor-pointer items-center"
             :class="[{ 'text-white': value, 'text-white/40': !value }, props.variant === 'outline' ? 'py-2' : 'py-1']"
           >
             <input
@@ -101,14 +101,14 @@ const displayValue = computed(() => {
           <button
             v-if="clearable && value"
             type="button"
-            class="inline-flex items-center justify-center text-white/60 transition hover:text-white px-2"
+            class="inline-flex items-center justify-center px-2 text-white/60 transition hover:text-white"
             aria-label="Clear"
             @click.prevent="clearValue"
           >
             <IconClose class="size-4" aria-hidden="true" />
           </button>
         </div>
-        <p v-if="hasError" class="text-xs text-pv-error">
+        <p v-if="hasError" class="text-pv-error text-xs">
           {{ errorMessage }}
         </p>
       </div>

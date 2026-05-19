@@ -28,7 +28,9 @@ const interactiveCols = computed(() =>
         { value: AprilTagFamily.Family16h5, name: 'AprilTag 16h5 (6in)' }
       ]"
       :select-cols="interactiveCols"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)"
+      @update:modelValue="
+        (value: AprilTagFamily) => useCameraSettingsStore().changeCurrentPipelineSetting({ tagFamily: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.decimate"
@@ -37,7 +39,9 @@ const interactiveCols = computed(() =>
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
       :min="1"
       :max="8"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ decimate: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.blur"
@@ -47,7 +51,9 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="5"
       :step="0.1"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ blur: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.threads"
@@ -56,7 +62,9 @@ const interactiveCols = computed(() =>
       tooltip="Number of threads spawned by the AprilTag detector"
       :min="1"
       :max="8"
-      @update:modelValue="(value) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)"
+      @update:modelValue="
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ threads: value }, false)
+      "
     />
     <pv-slider
       v-model="currentPipelineSettings.decisionMargin"
@@ -66,7 +74,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="250"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ decisionMargin: value }, false)
       "
     />
     <pv-slider
@@ -77,7 +85,7 @@ const interactiveCols = computed(() =>
       :min="0"
       :max="500"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ numIterations: value }, false)
       "
     />
     <pv-switch
@@ -86,7 +94,8 @@ const interactiveCols = computed(() =>
       label="Refine Edges"
       tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ refineEdges: value }, false)
       "
     />
   </div>

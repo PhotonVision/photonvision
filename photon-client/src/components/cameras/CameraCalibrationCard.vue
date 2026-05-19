@@ -28,6 +28,12 @@ const jspdf = import("jspdf");
 
 const MM_PER_INCH = 25.4;
 
+type RuleValue = string | number | null;
+
+const positiveNumberRule = (value: RuleValue) => (typeof value === "number" && value > 0) || "Size must be positive";
+const minWidthRule = (value: RuleValue) => (typeof value === "number" && value >= 4) || "Width must be at least 4";
+const minHeightRule = (value: RuleValue) => (typeof value === "number" && value >= 4) || "Height must be at least 4";
+
 const settingsValid = computed(() => {
   if (!Number.isFinite(squareSize.value) || squareSize.value <= 0) return false;
   if (
@@ -293,6 +299,48 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
   selectedVideoFormat.value = format;
   showCalDialog.value = true;
 };
+
+const updateVideoFormatIndex = (value: number) => {
+  useStateStore().calibrationData.videoFormatIndex = value;
+};
+
+const updateStreamingFrameDivisor = (value: number | string) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: Number(value) }, false);
+};
+
+const updateDrawAllSnapshots = (value: boolean | undefined) => {
+  if (value === undefined) {
+    return;
+  }
+  useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: value }, false);
+};
+
+const updateCameraAutoExposure = (value: boolean | undefined) => {
+  if (value === undefined) {
+    return;
+  }
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: value }, false);
+};
+
+const updateCameraExposure = (value: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: value }, false);
+};
+
+const updateCameraBrightness = (value: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: value }, false);
+};
+
+const updateCameraGain = (value: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: value }, false);
+};
+
+const updateCameraRedGain = (value: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: value }, false);
+};
+
+const updateCameraBlueGain = (value: number) => {
+  useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: value }, false);
+};
 </script>
 
 <template>
@@ -344,7 +392,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
         </div>
         <div class="pt-0">
           <div v-if="useCameraSettingsStore().isConnected" class="d-flex flex-column">
-            <div v-if="!isCalibrating" class="pl-0 pb-3 pt-4 opacity-100 text-base font-semibold">
+            <div v-if="!isCalibrating" class="pt-4 pb-3 pl-0 text-base font-semibold opacity-100">
               Configure New Calibration
             </div>
             <div>
@@ -355,7 +403,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :disabled="isCalibrating"
                 tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
                 :items="getUniqueVideoResolutionStrings()"
-                @update:model-value="(value) => (useStateStore().calibrationData.videoFormatIndex = value)"
+                @update:model-value="updateVideoFormatIndex"
               />
               <pv-select
                 v-model="boardType"
@@ -385,9 +433,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
                 :items="calibrationDivisors"
                 :select-cols="8"
-                @update:modelValue="
-                  (v) => useCameraSettingsStore().changeCurrentPipelineSetting({ streamingFrameDivisor: +v }, false)
-                "
+                @update:modelValue="updateStreamingFrameDivisor"
               />
               <pv-select
                 v-if="boardType === CalibrationBoardTypes.Charuco"
@@ -419,7 +465,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :label="`Pattern Spacing (${dimensionUnit})`"
                 :tooltip="`Spacing between pattern features in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}`"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number' && v > 0) || 'Size must be positive']"
+                :rules="[positiveNumberRule]"
                 :label-cols="4"
                 :step="dimensionStep"
               />
@@ -429,7 +475,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 :label="`Marker Size (${dimensionUnit})`"
                 :tooltip="`Size of the tag markers in ${dimensionUnit === 'mm' ? 'millimeters' : 'inches'}; must be smaller than pattern spacing`"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number' && v > 0) || 'Size must be positive']"
+                :rules="[positiveNumberRule]"
                 :label-cols="4"
                 :step="dimensionStep"
               />
@@ -438,7 +484,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 label="Board Width (squares)"
                 tooltip="Width of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number' && v >= 4) || 'Width must be at least 4']"
+                :rules="[minWidthRule]"
                 :label-cols="4"
               />
               <pv-number-input
@@ -446,7 +492,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 label="Board Height (squares)"
                 tooltip="Height of the board in dots or chessboard squares"
                 :disabled="isCalibrating"
-                :rules="[(v) => (typeof v === 'number' && v >= 4) || 'Height must be at least 4']"
+                :rules="[minHeightRule]"
                 :label-cols="4"
               />
               <pv-switch
@@ -465,18 +511,14 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               label="Draw Collected Corners"
               :switch-cols="8"
               tooltip="Draw all snapshots"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ drawAllSnapshots: args }, false)
-              "
+              @update:modelValue="updateDrawAllSnapshots"
             />
             <pv-switch
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraAutoExposure"
               label="Auto Exposure"
               :label-cols="4"
               tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraAutoExposure: args }, false)
-              "
+              @update:modelValue="updateCameraAutoExposure"
             />
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraExposureRaw"
@@ -487,9 +529,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :max="useCameraSettingsStore().maxExposureRaw"
               :slider-cols="8"
               :step="1"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraExposureRaw: args }, false)
-              "
+              @update:modelValue="updateCameraExposure"
             />
             <pv-slider
               v-model="useCameraSettingsStore().currentPipelineSettings.cameraBrightness"
@@ -497,9 +537,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :min="0"
               :max="100"
               :slider-cols="8"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBrightness: args }, false)
-              "
+              @update:modelValue="updateCameraBrightness"
             />
             <pv-slider
               v-if="useCameraSettingsStore().currentPipelineSettings.cameraGain >= 0"
@@ -509,9 +547,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :min="0"
               :max="100"
               :slider-cols="8"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraGain: args }, false)
-              "
+              @update:modelValue="updateCameraGain"
             />
             <pv-slider
               v-if="useCameraSettingsStore().currentPipelineSettings.cameraRedGain !== -1"
@@ -521,9 +557,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :max="100"
               :slider-cols="8"
               tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraRedGain: args }, false)
-              "
+              @update:modelValue="updateCameraRedGain"
             />
             <pv-slider
               v-if="useCameraSettingsStore().currentPipelineSettings.cameraBlueGain !== -1"
@@ -533,9 +567,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
               :max="100"
               :slider-cols="8"
               tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
-              @update:modelValue="
-                (args) => useCameraSettingsStore().changeCurrentPipelineSetting({ cameraBlueGain: args }, false)
-              "
+              @update:modelValue="updateCameraBlueGain"
             />
           </div>
           <pv-alert
@@ -550,7 +582,7 @@ const setSelectedVideoFormat = (format: VideoFormat) => {
                 : 'MrCal failed to load, check journalctl logs for details.'
             "
           />
-          <div v-if="isCalibrating" class="d-flex justify-center align-center pb-5">
+          <div v-if="isCalibrating" class="d-flex align-center justify-center pb-5">
             <pv-chip label :color="useStateStore().calibrationData.hasEnoughImages ? 'buttonPassive' : 'light-grey'">
               Snapshots: {{ useStateStore().calibrationData.imageCount }} of at least
               {{ useStateStore().calibrationData.minimumImageCount }}

@@ -356,7 +356,7 @@ watch(
 
 <template>
   <div style="width: 100%; height: 100%" class="flex flex-col">
-    <div class="flex flex-wrap pt-0 pb-2 items-center">
+    <div class="flex flex-wrap items-center pt-0 pb-2">
       <div class="w-full pl-0 md:w-1/2">
         <div class="p-0 text-base font-semibold">
           {{ props.title }}
@@ -372,7 +372,7 @@ watch(
       </div>
     </div>
     <div id="container" style="flex: 1 1 auto">
-      <canvas id="view" class="max-w-full h-auto" />
+      <canvas id="view" class="h-auto max-w-full" />
     </div>
   </div>
 </template>

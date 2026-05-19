@@ -6,8 +6,6 @@ import { PlaceholderCameraSettings, PVCameraInfo } from "@/types/SettingTypes";
 import { axiosPost, getResolutionString, cameraInfoFor } from "@/lib/PhotonUtils";
 import PhotonCameraStream from "@/components/app/photon-camera-stream.vue";
 
-import IconCameraOff from "~icons/mdi/camera-off";
-import IconCameraPlus from "~icons/mdi/camera-plus";
 import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
 import IconClose from "~icons/mdi/close";
 import IconInformationOutline from "~icons/mdi/information-outline";
@@ -125,15 +123,15 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
 
 <template>
   <div class="p-3">
-    <div class="flex flex-wrap -mx-3">
+    <div class="-mx-3 flex flex-wrap">
       <!-- Active modules -->
       <div
         v-for="(module, index) in activeVisionModules"
         :key="`enabled-${module.uniqueName}`"
-        class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3"
+        class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3"
       >
         <pv-card class="rounded-2xl">
-          <div class="text-lg font-semibold break-words">
+          <div class="text-lg font-semibold wrap-break-word">
             {{ cameraInfoFor(module.matchedCameraInfo).name }}
           </div>
           <div v-if="!cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)" class="text-sm">
@@ -195,7 +193,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             <div
               v-if="cameraConnected(cameraInfoFor(module.matchedCameraInfo).uniquePath)"
               :id="`stream-container-${index}`"
-              class="d-flex flex-column justify-center align-center mt-3"
+              class="d-flex flex-column align-center mt-3 justify-center"
               style="height: 250px"
             >
               <photon-camera-stream
@@ -206,8 +204,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             </div>
           </div>
           <div class="pt-0">
-            <div class="flex flex-wrap -mx-2">
-              <div class="w-full md:w-1/3 px-2 pb-3 md:pb-0">
+            <div class="-mx-2 flex flex-wrap">
+              <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
                 <pv-button
                   variant="passive"
                   block
@@ -221,7 +219,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   <span>Details</span>
                 </pv-button>
               </div>
-              <div class="w-1/2 md:w-[41.666%] px-2">
+              <div class="w-1/2 px-2 md:w-[41.666%]">
                 <pv-button
                   variant="primary"
                   block
@@ -231,7 +229,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   Deactivate
                 </pv-button>
               </div>
-              <div class="w-1/2 md:w-1/4 px-2">
+              <div class="w-1/2 px-2 md:w-1/4">
                 <pv-button
                   size="icon"
                   variant="danger"
@@ -258,10 +256,10 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       <div
         v-for="module in disabledVisionModules"
         :key="`disabled-${module.uniqueName}`"
-        class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3"
+        class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3"
       >
         <pv-card class="rounded-2xl">
-          <div class="text-lg font-semibold break-words">
+          <div class="text-lg font-semibold wrap-break-word">
             {{ module.cameraQuirks.baseName }}
           </div>
           <div class="text-sm">Status: <span class="inactive-status">Deactivated</span></div>
@@ -295,8 +293,8 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             </pv-table>
           </div>
           <div class="pt-0">
-            <div class="flex flex-wrap -mx-2">
-              <div class="w-full md:w-1/3 px-2 pb-3 md:pb-0">
+            <div class="-mx-2 flex flex-wrap">
+              <div class="w-full px-2 pb-3 md:w-1/3 md:pb-0">
                 <pv-button
                   variant="passive"
                   block
@@ -310,7 +308,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   <span>Details</span>
                 </pv-button>
               </div>
-              <div class="w-1/2 md:w-[41.666%] px-2">
+              <div class="w-1/2 px-2 md:w-[41.666%]">
                 <pv-button
                   variant="primary"
                   block
@@ -320,7 +318,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
                   Activate
                 </pv-button>
               </div>
-              <div class="w-1/2 md:w-1/4 px-2">
+              <div class="w-1/2 px-2 md:w-1/4">
                 <pv-button
                   size="icon"
                   variant="danger"
@@ -344,9 +342,9 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       </div>
 
       <!-- Unassigned cameras -->
-      <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3">
+      <div v-for="(camera, index) in unmatchedCameras" :key="index" class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
         <pv-card class="rounded-2xl">
-          <div class="text-lg font-semibold break-words">
+          <div class="text-lg font-semibold wrap-break-word">
             <span v-if="camera.PVUsbCameraInfo">USB Camera:</span>
             <span v-else-if="camera.PVCSICameraInfo">CSI Camera:</span>
             <span v-else-if="camera.PVFileCameraInfo">File Camera:</span>
@@ -358,7 +356,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
             <span style="word-break: break-all">{{ cameraInfoFor(camera)?.path }}</span>
           </div>
           <div class="pt-0">
-            <div class="flex flex-wrap -mx-2">
+            <div class="-mx-2 flex flex-wrap">
               <div class="w-1/2 px-2">
                 <pv-button variant="passive" block @click="setCameraView(camera, false)">
                   <span>Details</span>
@@ -375,7 +373,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
       </div>
 
       <!-- Info card -->
-      <div class="w-full sm:w-1/2 lg:w-1/3 px-3 pb-3">
+      <div class="w-full px-3 pb-3 sm:w-1/2 lg:w-1/3">
         <pv-card
           variant="transparent"
           :bordered="false"
@@ -395,7 +393,7 @@ const getMatchedDevice = (info: PVCameraInfo | undefined): PVCameraInfo => {
     <pv-dialog v-model="viewingDetails" :max-width="800">
       <pv-card v-if="viewingCamera[0] !== null" class="flex flex-col gap-3">
         <div class="flex items-center justify-between text-lg font-semibold">
-          <span class="break-words">
+          <span class="wrap-break-word">
             {{ cameraInfoFor(viewingCamera[0])?.name ?? cameraInfoFor(viewingCamera[0])?.baseName }}
           </span>
           <pv-button variant="text" size="icon" :icon="IconClose" @click="setCameraView(null, null)" />

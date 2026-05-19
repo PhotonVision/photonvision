@@ -18,17 +18,17 @@ const borderThemeColor = computed(() => `color-mix(in srgb, ${themeColor.value} 
     <ToastRoot
       v-model:open="useStateStore().snackbarData.show"
       :style="{ backgroundColor: themeColor, border: `1px solid ${borderThemeColor}` }"
-      class="rounded-lg shadow-sm border p-4 grid [grid-template-areas:'title_action'_'description_action'] grid-cols-[auto_max-content] gap-x-4 items-center data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=move]:translate-x-(--reka-toast-swipe-move-x) data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=end]:animate-swipeOut"
+      class="data-[state=open]:animate-slideIn data-[state=closed]:animate-hide data-[swipe=end]:animate-swipeOut grid grid-cols-[auto_max-content] items-center gap-x-4 rounded-lg border p-4 shadow-sm [grid-template-areas:'title_action'_'description_action'] data-[swipe=cancel]:translate-x-0 data-[swipe=cancel]:transition-[transform_200ms_ease-out] data-[swipe=move]:translate-x-(--reka-toast-swipe-move-x)"
       :duration="useStateStore().snackbarData.timeout"
     >
       <ToastTitle
-        class="[grid-area:title] mb-1.25 font-medium text-sm"
+        class="mb-1.25 text-sm font-medium [grid-area:title]"
         :style="{ color: `contrast-color(${themeColor})` }"
       >
         {{ useStateStore().snackbarData.message }}
       </ToastTitle>
       <ToastDescription as-child>
-        <div class="w-full flex [grid-area:description]">
+        <div class="flex w-full [grid-area:description]">
           <pv-progress
             v-if="useStateStore().snackbarData.progressBar !== -1"
             v-model="useStateStore().snackbarData.progressBar"
@@ -38,7 +38,7 @@ const borderThemeColor = computed(() => `color-mix(in srgb, ${themeColor.value} 
       </ToastDescription>
     </ToastRoot>
     <ToastViewport
-      class="[--viewport-padding:25px] fixed bottom-0 right-0 flex flex-col p-(--viewport-padding) gap-2.5 w-97.5 max-w-[100vw] m-0 list-none z-2147483647 outline-none"
+      class="fixed right-0 bottom-0 z-2147483647 m-0 flex w-97.5 max-w-[100vw] list-none flex-col gap-2.5 p-(--viewport-padding) outline-none [--viewport-padding:25px]"
     />
   </ToastProvider>
 </template>

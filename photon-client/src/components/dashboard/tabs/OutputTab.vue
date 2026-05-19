@@ -70,7 +70,7 @@ const interactiveCols = computed(() =>
       :step="1"
       :switch-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
+        (value: number) => useCameraSettingsStore().changeCurrentPipelineSetting({ outputMaximumTargets: value }, false)
       "
     />
     <pv-switch
@@ -86,7 +86,8 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       :disabled="!isTagPipeline"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined && useCameraSettingsStore().changeCurrentPipelineSetting({ doMultiTarget: value }, false)
       "
     />
     <pv-switch
@@ -102,7 +103,9 @@ const interactiveCols = computed(() =>
       :switch-cols="interactiveCols"
       :disabled="!isTagPipeline || !currentPipelineSettings.doMultiTarget"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
+        (value: boolean | undefined) =>
+          value !== undefined &&
+          useCameraSettingsStore().changeCurrentPipelineSetting({ doSingleTargetAlways: value }, false)
       "
     />
     <pv-select
@@ -118,7 +121,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
+        (value: ContourTargetOffsetPointEdge) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOffsetPointEdge: value }, false)
       "
     />
     <pv-select
@@ -132,7 +136,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
+        (value: ContourTargetOrientation) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ contourTargetOrientation: value }, false)
       "
     />
     <pv-select
@@ -146,7 +151,8 @@ const interactiveCols = computed(() =>
       ]"
       :select-cols="interactiveCols"
       @update:modelValue="
-        (value) => useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
+        (value: RobotOffsetPointMode) =>
+          useCameraSettingsStore().changeCurrentPipelineSetting({ offsetRobotOffsetMode: value }, false)
       "
     />
     <table
@@ -201,7 +207,7 @@ const interactiveCols = computed(() =>
         v-else-if="useCameraSettingsStore().currentPipelineSettings.offsetRobotOffsetMode === RobotOffsetPointMode.Dual"
         class="flex flex-wrap p-0"
       >
-        <div class="w-1/2 pl-0 pr-2 lg:w-1/3">
+        <div class="w-1/2 pr-2 pl-0 lg:w-1/3">
           <pv-button
             size="sm"
             variant="primary"
@@ -211,7 +217,7 @@ const interactiveCols = computed(() =>
             Take First Point
           </pv-button>
         </div>
-        <div class="w-1/2 pl-2 pr-0 lg:w-1/3 lg:pr-2">
+        <div class="w-1/2 pr-0 pl-2 lg:w-1/3 lg:pr-2">
           <pv-button
             size="sm"
             variant="primary"
@@ -221,7 +227,7 @@ const interactiveCols = computed(() =>
             Take Second Point
           </pv-button>
         </div>
-        <div class="w-full pl-0 pr-0 lg:w-1/3 lg:pl-2">
+        <div class="w-full pr-0 pl-0 lg:w-1/3 lg:pl-2">
           <pv-button
             size="sm"
             variant="danger"

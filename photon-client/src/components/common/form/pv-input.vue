@@ -51,11 +51,11 @@ const handleKeydown = ({ key }: KeyboardEvent) => {
 </script>
 <template>
   <div class="flex gap-2 sm:gap-3">
-    <div :class="labelWidthClass" class="flex items-center pl-0 pt-10px pb-10px">
+    <div :class="labelWidthClass" class="pt-10px pb-10px flex items-center pl-0">
       <pv-tooltipped-label :tooltip="tooltip" :label="label" />
     </div>
 
-    <div :class="inputWidthClass" class="flex items-center pr-0 pt-10px pb-10px">
+    <div :class="inputWidthClass" class="pt-10px pb-10px flex items-center pr-0">
       <pv-text-field
         v-model="value"
         density="compact"

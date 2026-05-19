@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Component } from "vue";
-import { computed, ref, watchEffect } from "vue";
+import { computed, ref } from "vue";
 import IconAlertCircleOutline from "~icons/mdi/alert-circle-outline";
+import type { PvTabItem } from "@/components/common/base/pv-tabs.vue";
 
 import { useCameraSettingsStore } from "@/stores/settings/CameraSettingsStore";
 import { useStateStore } from "@/stores/StateStore";
@@ -156,7 +157,7 @@ const getTabItems = (tabGroupData: ConfigOption[]): PvTabItem<string>[] =>
         ]"
         @vue:before-update="onBeforeTabUpdate"
       >
-        <pv-card padding="none" class="pr-5 pl-5 h-full">
+        <pv-card padding="none" class="h-full pr-5 pl-5">
           <pv-tabs v-model="selectedTabs[tabGroupIndex]" :items="getTabItems(tabGroupData)" class="mt-2" />
           <div class="pt-10px pb-10px">
             <KeepAlive>
